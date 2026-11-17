@@ -53,7 +53,14 @@ export type PaneHead = z.infer<typeof PaneHead>
 export const ChatEntry = z.discriminatedUnion('type', [
   z.object({ type: z.literal('user'), text: z.string() }),
   z.object({ type: z.literal('tool'), name: z.string(), target: z.string() }),
-  z.object({ type: z.literal('assistant'), kind: AgentKind, name: z.string(), text: z.string(), copy: z.string() }),
+  /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). */
+  z.object({
+    type: z.literal('assistant'),
+    kind: AgentKind,
+    name: z.string(),
+    text: z.string(),
+    copy: z.string().optional(),
+  }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */
@@ -133,6 +140,59 @@ export const SideChat = z.object({
 })
 export type SideChat = z.infer<typeof SideChat>
 
+/** One subagent or subtask of the chat (D3 105:1322): its title, status, meta line, transcript and description. */
+export const Subagent = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: PaneStatus,
+  /** The agent, its time and its tokens, such as "Explore agent · 0:41 · 18k tokens". */
+  meta: z.string(),
+  /** A line under the meta that says what it is, as a subtask has. */
+  description: z.string().optional(),
+  /** The last lines of its transcript, shown when the transcript is open. */
+  transcript: z.array(z.string()),
+})
+export type Subagent = z.infer<typeof Subagent>
+
+/** The subagents panel beside the main chat (D3 105:1312): each subagent with its transcript and Stop. */
+export const SubagentsPanel = z.object({
+  title: z.string(),
+  closeLabel: z.string(),
+  showTranscript: z.string(),
+  hideTranscript: z.string(),
+  /** The label of the button that stops a running subagent. */
+  stop: z.string(),
+  items: z.array(Subagent),
+})
+export type SubagentsPanel = z.infer<typeof SubagentsPanel>
+
+/** The New chat form (D3 105:1379): the labels and the values it opens with. */
+export const NewChatForm = z.object({
+  title: z.string(),
+  /** The field labels, as Figma writes them, in capitals. */
+  labels: z.object({
+    name: z.string(),
+    runsIn: z.string(),
+    workspace: z.string(),
+    folders: z.string(),
+    model: z.string(),
+    message: z.string(),
+  }),
+  /** The random name a blank name becomes, shown as the placeholder, and the hint that says so. */
+  name: z.object({ placeholder: z.string(), hint: z.string() }),
+  runsIn: z.object({ options: z.array(z.object({ kind: AgentKind, label: z.string() })), value: AgentKind }),
+  /** The workspace the chat starts in, by id. */
+  workspace: z.string(),
+  /** The folders the chat may read; the first is the workspace's own. */
+  folders: z.array(z.string()),
+  addFolder: z.string(),
+  model: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  message: z.object({ placeholder: z.string(), skills: z.string() }),
+  cancel: z.string(),
+  start: z.string(),
+})
+export type NewChatForm = z.infer<typeof NewChatForm>
+
 /** The workspace sidebar's labels (D2 105:611). */
 export const SidebarText = z.object({
   title: z.string(),
@@ -169,6 +229,9 @@ export const SidebarLayers = z.object({
   sideNote: z.string().optional(),
   sideComposer: z.string().optional(),
   sideEntries: z.array(z.string().optional()).optional(),
+  /** The subagents panel and its cards, by subagent id (D3). */
+  subagents: z.string().optional(),
+  subagentCards: z.record(z.string(), z.string()).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -199,6 +262,10 @@ export const WorkspacesData = z.object({
   chatMenu: z.array(PaneAction).optional(),
   /** The Figma layers of the sidebar frame's parts; D2's when not set. */
   layers: SidebarLayers.optional(),
+  /** The subagents and subtasks of the chat shown alone (D3). */
+  subagents: SubagentsPanel.optional(),
+  /** The New chat form (D3). */
+  newChat: NewChatForm.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -226,6 +293,12 @@ export const WorkspacesUi = z.object({
   drag: z.object({ chat: z.string(), over: z.string() }).nullable().optional(),
   /** The side chat shows beside the main chat. */
   sideChatOpen: z.boolean().optional(),
+  /** The subagents panel shows beside the main chat, in place of the side chat (D3). */
+  subagentsOpen: z.boolean().optional(),
+  /** The subagents whose transcript is open. */
+  transcripts: z.array(z.string()).optional(),
+  /** The New chat form is open over the screen (D3). */
+  newChatOpen: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

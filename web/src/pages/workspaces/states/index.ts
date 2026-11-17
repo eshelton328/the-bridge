@@ -3,10 +3,12 @@
 // the page's default state.
 import { chatActions } from './chatActions.ts'
 import { sideChat } from './sideChat.ts'
+import { subagents } from './subagents.ts'
 import { workbench } from './workbench.ts'
 
 export const workspacesStates = {
   workbench,
   sideChat,
   chatActions,
+  subagents,
 }

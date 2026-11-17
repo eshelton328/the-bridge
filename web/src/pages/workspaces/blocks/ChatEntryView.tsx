@@ -40,10 +40,12 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
             kind={entry.kind}
             name={entry.name}
             actions={
-              <Button size="xs" textSize="xs">
-                <CopyIcon size="12" />
-                {entry.copy}
-              </Button>
+              entry.copy === undefined ? undefined : (
+                <Button size="xs" textSize="xs">
+                  <CopyIcon size="12" />
+                  {entry.copy}
+                </Button>
+              )
             }
           >
             {entry.text}

@@ -59,3 +59,24 @@ export const ChatActions: Story = {
     await expect(await body.findByRole('menuitem', { name: 'New chat' })).toBeVisible()
   },
 }
+
+export const Subagents: Story = {
+  name: 'D3: the subagents panel and the New chat form',
+  args: { data: workspacesStates.subagents.data, ui: workspacesStates.subagents.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    // The open dialog hides the screen behind it from assistive technology, so its roles need `hidden`.
+    await expect(canvas.getByRole('complementary', { name: 'Subagents', hidden: true })).toBeVisible()
+    await expect(canvas.getByText('Subtask: theme tokens')).toBeVisible()
+    await expect(canvas.getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Hide transcript', hidden: true })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    // The dialog renders in a portal, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('dialog', { name: 'New chat' })).toBeVisible()
+    await expect(await body.findByRole('button', { name: /Claude Code/ })).toHaveAttribute('aria-pressed', 'true')
+    await expect(await body.findByPlaceholderText('quiet-nebula')).toBeVisible()
+    await expect(await body.findByRole('button', { name: /Start chat/ })).toBeVisible()
+  },
+}

@@ -6,13 +6,16 @@
 // the state changes; `onUiChange` reports it. With the sidebar (D2) the
 // workspaces and their chats are listed beside the focused chat, which shows
 // alone, with its side chat beside it; its actions sit behind the ⋯ of its
-// header (D2b).
+// header (D2b). In place of the side chat the subagents panel can show,
+// and the New chat form can open over the screen (D3).
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { MainChat } from '../blocks/MainChat.tsx'
+import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
+import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
@@ -64,6 +67,30 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           figma={{ trigger: data.layers?.chatActions, menu: data.layers?.chatMenu }}
         />
       )
+    const subagents =
+      ui.subagentsOpen === true && data.subagents !== undefined ? (
+        <SubagentsPane
+          panel={data.subagents}
+          open={ui.transcripts ?? []}
+          onOpenChange={(transcripts) => {
+            change({ transcripts })
+          }}
+          onClose={() => {
+            change({ subagentsOpen: false })
+          }}
+          figma={{ panel: data.layers?.subagents, cards: data.layers?.subagentCards }}
+        />
+      ) : undefined
+    const sideChat =
+      ui.sideChatOpen === true && data.sideChat !== undefined ? (
+        <SideChatPanel
+          chat={data.sideChat}
+          layers={data.layers}
+          onClose={() => {
+            change({ sideChatOpen: false })
+          }}
+        />
+      ) : undefined
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -93,18 +120,19 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
               layers={data.layers}
             />
           }
-          side={
-            ui.sideChatOpen === true && data.sideChat !== undefined ? (
-              <SideChatPanel
-                chat={data.sideChat}
-                layers={data.layers}
-                onClose={() => {
-                  change({ sideChatOpen: false })
-                }}
-              />
-            ) : undefined
-          }
+          sideWidth={subagents === undefined ? 'side' : 'wide'}
+          side={subagents ?? sideChat}
         />
+        {data.newChat === undefined ? null : (
+          <NewChatDialog
+            form={data.newChat}
+            workspaces={data.workspaces}
+            open={ui.newChatOpen === true}
+            onOpenChange={(open) => {
+              change({ newChatOpen: open })
+            }}
+          />
+        )}
       </Backdrop>
     )
   }
