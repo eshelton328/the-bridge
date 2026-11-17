@@ -1,0 +1,14 @@
+# Folders that do not get their own AGENTS.md; they use the nearest
+# ancestor's. Gitignore syntax. Dot-folders and gitignored paths are always
+# skipped. scripts/checkAgentsMd.ts reads this file.
+
+# Source of the shared package; shared/AGENTS.md covers it
+shared/src/
+
+# The folders inside a page; the page's AGENTS.md covers them
+web/src/pages/*/screens/
+web/src/pages/*/blocks/
+web/src/pages/*/states/
+
+# Templates of `pnpm new`; scripts/AGENTS.md covers them
+scripts/templates/
