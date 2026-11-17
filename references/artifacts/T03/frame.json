@@ -8,7 +8,7 @@
   "w": 756,
   "h": 1158,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "407:1258",
@@ -81,7 +81,7 @@
       "w": 20,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "407:1265",
@@ -717,7 +717,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Skill eval pass rates > body > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "407:1343",
@@ -759,7 +759,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Skill eval pass rates > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "407:1348",
@@ -992,7 +992,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Hono server spike > body > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "407:1372",
@@ -1034,7 +1034,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Hono server spike > body",
-      "text": "description"
+      "text": "Routes, the RPC client and the owner check over Tailscale"
     },
     {
       "id": "407:1377",
@@ -1247,7 +1247,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Inbox task lifecycle > body > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "407:1401",
@@ -1289,7 +1289,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Inbox task lifecycle > body",
-      "text": "description"
+      "text": "How a task moves from Next step to Running to Done"
     },
     {
       "id": "407:1406",
@@ -1512,7 +1512,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Tailscale access check > body > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:707",
@@ -1554,7 +1554,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Tailscale access check > body",
-      "text": "description"
+      "text": "Which devices reach the-bridge, and the owner check on writes"
     },
     {
       "id": "414:712",
@@ -1809,7 +1809,7 @@
       "w": 319,
       "h": 20,
       "path": "content > library > card row > artifact card · the-bridge theme ideas > body > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "407:1434",
@@ -1820,7 +1820,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · the-bridge theme ideas > body",
-      "text": "description"
+      "text": "Viewscreen, Captain’s Log, Engineering and Console"
     },
     {
       "id": "407:1435",
@@ -2043,7 +2043,7 @@
       "w": 319,
       "h": 20,
       "path": "content > library > card row > artifact card · Application versioning and releases > body > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "407:1458",
@@ -2054,7 +2054,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Application versioning and releases > body",
-      "text": "description"
+      "text": "Research report: versioning, changelogs and release automation"
     },
     {
       "id": "407:1459",
@@ -2611,16 +2611,6 @@
       "path": "sheet · Filter > sheet body > check · Codex sites"
     },
     {
-      "id": "407:1524",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 648.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Codex sites > box"
-    },
-    {
       "id": "407:1518",
       "name": "kind · codex",
       "type": "frame",
@@ -2766,16 +2756,6 @@
       "path": "sheet · Filter > sheet body > check · omni"
     },
     {
-      "id": "407:1542",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 737,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · omni > box"
-    },
-    {
       "id": "407:1545",
       "name": "omni",
       "type": "text",
@@ -2826,16 +2806,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · skill-evals"
-    },
-    {
-      "id": "407:1550",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 767,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · skill-evals > box"
     },
     {
       "id": "407:1553",
@@ -2890,16 +2860,6 @@
       "path": "sheet · Filter > sheet body > check · omni-brain"
     },
     {
-      "id": "407:1558",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 797,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · omni-brain > box"
-    },
-    {
       "id": "407:1561",
       "name": "omni-brain",
       "type": "text",
@@ -2950,16 +2910,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · Not in a project"
-    },
-    {
-      "id": "407:1566",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 827.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Not in a project > box"
     },
     {
       "id": "407:1569",
@@ -3035,16 +2985,6 @@
       "path": "sheet · Filter > sheet body > check · Artifact hook"
     },
     {
-      "id": "407:1576",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 886.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Artifact hook > box"
-    },
-    {
       "id": "407:1579",
       "name": "Artifact hook",
       "type": "text",
@@ -3097,16 +3037,6 @@
       "path": "sheet · Filter > sheet body > check · Codex session log"
     },
     {
-      "id": "407:1584",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 917.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Codex session log > box"
-    },
-    {
       "id": "407:1587",
       "name": "Codex session log",
       "type": "text",
@@ -3157,16 +3087,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · Added by hand"
-    },
-    {
-      "id": "407:1592",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 948.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Added by hand > box"
     },
     {
       "id": "407:1595",
@@ -3242,16 +3162,6 @@
       "path": "sheet · Filter > sheet body > check · Today"
     },
     {
-      "id": "407:1602",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 1007.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Today > box"
-    },
-    {
       "id": "407:1605",
       "name": "Today",
       "type": "text",
@@ -3302,16 +3212,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · This week"
-    },
-    {
-      "id": "407:1610",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 1038.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · This week > box"
     },
     {
       "id": "407:1613",
@@ -3385,6 +3285,7 @@
     }
   ],
   "skipped": {
-    "star": 58
+    "star": 58,
+    "hidden": 10
   }
 }

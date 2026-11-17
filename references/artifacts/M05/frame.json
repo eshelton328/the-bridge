@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "408:25",
@@ -81,7 +81,7 @@
       "w": 53,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "3 of 24"
     },
     {
       "id": "408:32",
@@ -382,7 +382,7 @@
       "w": 0,
       "h": 14,
       "path": "content > library > group · matches",
-      "text": "Text"
+      "text": ""
     },
     {
       "id": "408:76",
@@ -433,7 +433,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "408:93",
@@ -444,7 +444,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "408:94",
@@ -567,7 +567,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · readme cold-reader run > text > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "408:314",
@@ -578,7 +578,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · readme cold-reader run > text > title row",
-      "text": "age"
+      "text": "1w"
     },
     {
       "id": "408:315",
@@ -620,7 +620,7 @@
       "w": 270,
       "h": 17,
       "path": "content > library > artifact row · readme cold-reader run > text",
-      "text": "match"
+      "text": "…the cold-reader eval of the readme skill…"
     },
     {
       "id": "408:329",
@@ -671,7 +671,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Writer cross-family round x1 > text > title row",
-      "text": "title"
+      "text": "Writer cross-family round x1"
     },
     {
       "id": "408:346",
@@ -682,7 +682,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Writer cross-family round x1 > text > title row",
-      "text": "age"
+      "text": "2w"
     },
     {
       "id": "408:347",
@@ -724,7 +724,7 @@
       "w": 270,
       "h": 17,
       "path": "content > library > artifact row · Writer cross-family round x1 > text",
-      "text": "match"
+      "text": "claude.ai/artifact/c71e…/writer-eval-x1"
     },
     {
       "id": "408:247",
@@ -1575,6 +1575,141 @@
       "id": "408:26",
       "text": "9:41",
       "reason": "iOS status bar (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:362",
+      "text": "q",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:364",
+      "text": "w",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:366",
+      "text": "e",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:368",
+      "text": "r",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:370",
+      "text": "t",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:372",
+      "text": "y",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:374",
+      "text": "u",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:376",
+      "text": "i",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:378",
+      "text": "o",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:380",
+      "text": "p",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:382",
+      "text": "a",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:384",
+      "text": "s",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:386",
+      "text": "d",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:388",
+      "text": "f",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:390",
+      "text": "g",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:392",
+      "text": "h",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:394",
+      "text": "j",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:396",
+      "text": "k",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:398",
+      "text": "l",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:400",
+      "text": "z",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:402",
+      "text": "x",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:404",
+      "text": "c",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:406",
+      "text": "v",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:408",
+      "text": "b",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:410",
+      "text": "n",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:412",
+      "text": "m",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "408:415",
+      "text": "search",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
     }
   ],
   "skipped": {

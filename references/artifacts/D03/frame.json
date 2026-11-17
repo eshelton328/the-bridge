@@ -8,7 +8,7 @@
   "w": 1512,
   "h": 982,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "403:6369",
@@ -326,7 +326,7 @@
       "w": 20,
       "h": 21,
       "path": "library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "403:6414",
@@ -992,7 +992,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Skill eval pass rates > body > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "403:6494",
@@ -1034,7 +1034,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Skill eval pass rates > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "403:6499",
@@ -1429,7 +1429,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Hono server spike > body > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "403:6539",
@@ -1471,7 +1471,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Hono server spike > body",
-      "text": "description"
+      "text": "Routes, the RPC client and the owner check over Tailscale"
     },
     {
       "id": "403:6544",
@@ -1756,7 +1756,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Inbox task lifecycle > body > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "403:6575",
@@ -1798,7 +1798,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Inbox task lifecycle > body",
-      "text": "description"
+      "text": "How a task moves from Next step to Running to Done"
     },
     {
       "id": "403:6580",
@@ -2073,7 +2073,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Tailscale access check > body > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:490",
@@ -2115,7 +2115,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Tailscale access check > body",
-      "text": "description"
+      "text": "Which devices reach the-bridge, and the owner check on writes"
     },
     {
       "id": "414:495",
@@ -2462,7 +2462,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · the-bridge theme ideas > body > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "403:6617",
@@ -2473,7 +2473,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · the-bridge theme ideas > body",
-      "text": "description"
+      "text": "Viewscreen, Captain’s Log, Engineering and Console side by side"
     },
     {
       "id": "403:6618",
@@ -2748,7 +2748,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Application versioning and releases > body > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "403:6646",
@@ -2759,7 +2759,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Application versioning and releases > body",
-      "text": "description"
+      "text": "Research report: versioning schemes, changelogs and release automation"
     },
     {
       "id": "403:6647",
@@ -3054,7 +3054,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Panda tokens playground > body > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "403:6677",
@@ -3065,7 +3065,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Panda tokens playground > body",
-      "text": "description"
+      "text": "Semantic tokens for Viewscreen, switched live"
     },
     {
       "id": "403:6678",
@@ -3340,7 +3340,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Agent factory and session tracking > body > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "403:6708",
@@ -3351,7 +3351,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Agent factory and session tracking > body",
-      "text": "description"
+      "text": "Research report: run manifests and session history"
     },
     {
       "id": "403:6709",
@@ -3646,7 +3646,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Brain map prototype > body > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "403:6739",
@@ -3657,7 +3657,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Brain map prototype > body",
-      "text": "description"
+      "text": "Notes and their links, by folder"
     },
     {
       "id": "403:6740",
@@ -3932,7 +3932,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Type safety in agentic systems > body > title row",
-      "text": "title"
+      "text": "Type safety in agentic systems"
     },
     {
       "id": "403:6768",
@@ -3943,7 +3943,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Type safety in agentic systems > body",
-      "text": "description"
+      "text": "Research report"
     },
     {
       "id": "403:6769",
@@ -4238,7 +4238,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Logo options > body > title row",
-      "text": "title"
+      "text": "Logo options"
     },
     {
       "id": "403:6799",
@@ -4249,7 +4249,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Logo options > body",
-      "text": "description"
+      "text": "Twelve marks, Span in use for now"
     },
     {
       "id": "403:6800",
@@ -4534,7 +4534,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · readme cold-reader run > body > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "403:6829",
@@ -4545,7 +4545,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · readme cold-reader run > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "403:6830",
@@ -4755,16 +4755,6 @@
       "path": "menu · Filter > check · Codex sites"
     },
     {
-      "id": "403:6871",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 228.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Codex sites > box"
-    },
-    {
       "id": "403:6865",
       "name": "kind · codex",
       "type": "frame",
@@ -4910,16 +4900,6 @@
       "path": "menu · Filter > check · omni"
     },
     {
-      "id": "403:6889",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 317,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · omni > box"
-    },
-    {
       "id": "403:6892",
       "name": "omni",
       "type": "text",
@@ -4970,16 +4950,6 @@
       "w": 16,
       "h": 16,
       "path": "menu · Filter > check · skill-evals"
-    },
-    {
-      "id": "403:6897",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 347,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · skill-evals > box"
     },
     {
       "id": "403:6900",
@@ -5034,16 +5004,6 @@
       "path": "menu · Filter > check · omni-brain"
     },
     {
-      "id": "403:6905",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 377,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · omni-brain > box"
-    },
-    {
       "id": "403:6908",
       "name": "omni-brain",
       "type": "text",
@@ -5094,16 +5054,6 @@
       "w": 16,
       "h": 16,
       "path": "menu · Filter > check · Not in a project"
-    },
-    {
-      "id": "403:6913",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 407.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Not in a project > box"
     },
     {
       "id": "403:6916",
@@ -5179,16 +5129,6 @@
       "path": "menu · Filter > check · Artifact hook"
     },
     {
-      "id": "403:6923",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 466.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Artifact hook > box"
-    },
-    {
       "id": "403:6926",
       "name": "Artifact hook",
       "type": "text",
@@ -5241,16 +5181,6 @@
       "path": "menu · Filter > check · Codex session log"
     },
     {
-      "id": "403:6931",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 497.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Codex session log > box"
-    },
-    {
       "id": "403:6934",
       "name": "Codex session log",
       "type": "text",
@@ -5301,16 +5231,6 @@
       "w": 16,
       "h": 16,
       "path": "menu · Filter > check · Added by hand"
-    },
-    {
-      "id": "403:6939",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 528.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Added by hand > box"
     },
     {
       "id": "403:6942",
@@ -5386,16 +5306,6 @@
       "path": "menu · Filter > check · Today"
     },
     {
-      "id": "403:6949",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 587.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · Today > box"
-    },
-    {
       "id": "403:6952",
       "name": "Today",
       "type": "text",
@@ -5446,16 +5356,6 @@
       "w": 16,
       "h": 16,
       "path": "menu · Filter > check · This week"
-    },
-    {
-      "id": "403:6957",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 678.5,
-      "y": 618.5,
-      "w": 12,
-      "h": 12,
-      "path": "menu · Filter > check · This week > box"
     },
     {
       "id": "403:6960",
@@ -5544,6 +5444,7 @@
   ],
   "exclude": [],
   "skipped": {
-    "star": 99
+    "star": 99,
+    "hidden": 10
   }
 }

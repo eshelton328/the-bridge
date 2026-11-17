@@ -8,7 +8,7 @@
   "w": 1512,
   "h": 982,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "403:7730",
@@ -326,7 +326,7 @@
       "w": 53,
       "h": 21,
       "path": "library > header",
-      "text": "count"
+      "text": "3 of 24"
     },
     {
       "id": "403:7775",
@@ -771,7 +771,7 @@
       "w": 0,
       "h": 14,
       "path": "library > group · matches",
-      "text": "Text"
+      "text": ""
     },
     {
       "id": "403:8215",
@@ -832,7 +832,7 @@
       "w": 131,
       "h": 20,
       "path": "library > result list > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "403:8233",
@@ -853,7 +853,7 @@
       "w": 265,
       "h": 17,
       "path": "library > result list > artifact row · Skill eval pass rates > text",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "403:8235",
@@ -938,7 +938,7 @@
       "w": 22,
       "h": 17,
       "path": "library > result list > artifact row · Skill eval pass rates",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "403:8244",
@@ -1009,7 +1009,7 @@
       "w": 156,
       "h": 20,
       "path": "library > result list > artifact row · readme cold-reader run > text > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "403:8264",
@@ -1020,7 +1020,7 @@
       "w": 534,
       "h": 17,
       "path": "library > result list > artifact row · readme cold-reader run > text",
-      "text": "description"
+      "text": "The cold-reader eval of the readme skill: what a stranger understood, and each command’s result"
     },
     {
       "id": "403:8265",
@@ -1105,7 +1105,7 @@
       "w": 15,
       "h": 17,
       "path": "library > result list > artifact row · readme cold-reader run",
-      "text": "age"
+      "text": "1w"
     },
     {
       "id": "403:8276",
@@ -1176,7 +1176,7 @@
       "w": 185,
       "h": 20,
       "path": "library > result list > artifact row · Writer cross-family round x1 > text > title row",
-      "text": "title"
+      "text": "Writer cross-family round x1"
     },
     {
       "id": "403:8293",
@@ -1187,7 +1187,7 @@
       "w": 275,
       "h": 17,
       "path": "library > result list > artifact row · Writer cross-family round x1 > text",
-      "text": "description"
+      "text": "Grades for the writer skill against the writing rules"
     },
     {
       "id": "403:8294",
@@ -1262,7 +1262,7 @@
       "w": 276,
       "h": 17,
       "path": "library > result list > artifact row · Writer cross-family round x1 > text > meta",
-      "text": "link"
+      "text": "claude.ai/artifact/c71e…/writer-eval-x1"
     },
     {
       "id": "403:8302",
@@ -1294,7 +1294,7 @@
       "w": 15,
       "h": 17,
       "path": "library > result list > artifact row · Writer cross-family round x1",
-      "text": "age"
+      "text": "2w"
     },
     {
       "id": "403:8305",
@@ -1325,7 +1325,7 @@
       "w": 493,
       "h": 17,
       "path": "library",
-      "text": "hint"
+      "text": "Search reads titles, descriptions, projects and links. Filters and the source chips still apply."
     }
   ],
   "exclude": [],

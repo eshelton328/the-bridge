@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "406:316",
@@ -193,7 +193,7 @@
       "w": 268,
       "h": 41,
       "path": "content > artifact page > title block",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "406:378",
@@ -204,7 +204,7 @@
       "w": 366,
       "h": 40,
       "path": "content > artifact page > title block",
-      "text": "description"
+      "text": "Pass rates per round for every skill in the toolkit, with and without the skill."
     },
     {
       "id": "406:379",
@@ -643,7 +643,7 @@
       "w": 137,
       "h": 17,
       "path": "content > artifact page > section · MADE IN > made in > text",
-      "text": "link · Open in workspace"
+      "text": "Open in workspace ›"
     },
     {
       "id": "406:319",

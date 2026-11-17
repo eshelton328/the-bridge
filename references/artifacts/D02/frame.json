@@ -8,7 +8,7 @@
   "w": 1512,
   "h": 982,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "403:102",
@@ -326,7 +326,7 @@
       "w": 20,
       "h": 21,
       "path": "library list > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "403:147",
@@ -720,7 +720,7 @@
       "w": 251,
       "h": 20,
       "path": "library list > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "403:213",
@@ -772,7 +772,7 @@
       "w": 22,
       "h": 17,
       "path": "library list > artifact row · Skill eval pass rates",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "403:219",
@@ -823,7 +823,7 @@
       "w": 253,
       "h": 20,
       "path": "library list > artifact row · Hono server spike > text > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "403:237",
@@ -875,7 +875,7 @@
       "w": 22,
       "h": 17,
       "path": "library list > artifact row · Hono server spike",
-      "text": "age"
+      "text": "40m"
     },
     {
       "id": "403:245",
@@ -926,7 +926,7 @@
       "w": 260,
       "h": 20,
       "path": "library list > artifact row · Inbox task lifecycle > text > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "403:260",
@@ -978,7 +978,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Inbox task lifecycle",
-      "text": "age"
+      "text": "1h"
     },
     {
       "id": "414:733",
@@ -1029,7 +1029,7 @@
       "w": 260,
       "h": 20,
       "path": "library list > artifact row · Tailscale access check > text > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:751",
@@ -1081,7 +1081,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Tailscale access check",
-      "text": "age"
+      "text": "2h"
     },
     {
       "id": "403:266",
@@ -1174,7 +1174,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · the-bridge theme ideas > text > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "403:288",
@@ -1216,7 +1216,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · the-bridge theme ideas",
-      "text": "age"
+      "text": "1d"
     },
     {
       "id": "403:293",
@@ -1267,7 +1267,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Application versioning and releases > text > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "403:310",
@@ -1309,7 +1309,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Application versioning and releases",
-      "text": "age"
+      "text": "2d"
     },
     {
       "id": "403:315",
@@ -1360,7 +1360,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Panda tokens playground > text > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "403:330",
@@ -1402,7 +1402,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Panda tokens playground",
-      "text": "age"
+      "text": "3d"
     },
     {
       "id": "403:337",
@@ -1453,7 +1453,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Agent factory and session tracking > text > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "403:354",
@@ -1495,7 +1495,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Agent factory and session tracking",
-      "text": "age"
+      "text": "4d"
     },
     {
       "id": "403:359",
@@ -1546,7 +1546,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Brain map prototype > text > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "403:374",
@@ -1588,7 +1588,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Brain map prototype",
-      "text": "age"
+      "text": "5d"
     },
     {
       "id": "403:379",
@@ -1639,7 +1639,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Type safety in agentic systems > text > title row",
-      "text": "title"
+      "text": "Type safety in agentic systems"
     },
     {
       "id": "403:396",
@@ -1681,7 +1681,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Type safety in agentic systems",
-      "text": "age"
+      "text": "1w"
     },
     {
       "id": "403:401",
@@ -1732,7 +1732,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · Logo options > text > title row",
-      "text": "title"
+      "text": "Logo options"
     },
     {
       "id": "403:416",
@@ -1774,7 +1774,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · Logo options",
-      "text": "age"
+      "text": "1w"
     },
     {
       "id": "403:421",
@@ -1825,7 +1825,7 @@
       "w": 272,
       "h": 20,
       "path": "library list > artifact row · readme cold-reader run > text > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "403:441",
@@ -1867,7 +1867,7 @@
       "w": 15,
       "h": 17,
       "path": "library list > artifact row · readme cold-reader run",
-      "text": "age"
+      "text": "1w"
     },
     {
       "id": "403:448",
@@ -2053,7 +2053,7 @@
       "w": 248,
       "h": 34,
       "path": "artifact pane > title block",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "403:466",
@@ -2064,7 +2064,7 @@
       "w": 748,
       "h": 20,
       "path": "artifact pane > title block",
-      "text": "description"
+      "text": "Pass rates per round for every skill in the toolkit, with and without the skill, from the skill-evals method log."
     },
     {
       "id": "403:467",
@@ -2378,7 +2378,7 @@
       "w": 281,
       "h": 17,
       "path": "artifact pane > preview > preview footer",
-      "text": "link"
+      "text": "claude.ai/artifact/8f3c2a91-skill-evals"
     },
     {
       "id": "403:503",
@@ -2440,7 +2440,7 @@
       "w": 51,
       "h": 17,
       "path": "artifact pane > section · MADE IN",
-      "text": "label"
+      "text": "MADE IN"
     },
     {
       "id": "403:508",
@@ -2492,7 +2492,7 @@
       "w": 303,
       "h": 17,
       "path": "artifact pane > section · MADE IN > made in > text",
-      "text": "workspace skill-evals · Opus 5.5 · 12m a"
+      "text": "workspace skill-evals · Opus 5.5 · 12m ago"
     },
     {
       "id": "403:514",

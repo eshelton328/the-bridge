@@ -8,7 +8,7 @@
   "w": 1512,
   "h": 982,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "402:15329",
@@ -326,7 +326,7 @@
       "w": 20,
       "h": 21,
       "path": "library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "402:15374",
@@ -982,7 +982,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Skill eval pass rates > body > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "402:15454",
@@ -1024,7 +1024,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Skill eval pass rates > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "402:15459",
@@ -1419,7 +1419,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Hono server spike > body > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "402:15499",
@@ -1461,7 +1461,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Hono server spike > body",
-      "text": "description"
+      "text": "Routes, the RPC client and the owner check over Tailscale"
     },
     {
       "id": "402:15504",
@@ -1746,7 +1746,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Inbox task lifecycle > body > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "402:15535",
@@ -1788,7 +1788,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Inbox task lifecycle > body",
-      "text": "description"
+      "text": "How a task moves from Next step to Running to Done"
     },
     {
       "id": "402:15540",
@@ -2063,7 +2063,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Tailscale access check > body > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:428",
@@ -2105,7 +2105,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Tailscale access check > body",
-      "text": "description"
+      "text": "Which devices reach the-bridge, and the owner check on writes"
     },
     {
       "id": "414:433",
@@ -2452,7 +2452,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · the-bridge theme ideas > body > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "402:15578",
@@ -2463,7 +2463,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · the-bridge theme ideas > body",
-      "text": "description"
+      "text": "Viewscreen, Captain’s Log, Engineering and Console side by side"
     },
     {
       "id": "402:15579",
@@ -2738,7 +2738,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Application versioning and releases > body > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "402:15607",
@@ -2749,7 +2749,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Application versioning and releases > body",
-      "text": "description"
+      "text": "Research report: versioning schemes, changelogs and release automation"
     },
     {
       "id": "402:15608",
@@ -3044,7 +3044,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Panda tokens playground > body > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "402:15638",
@@ -3055,7 +3055,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Panda tokens playground > body",
-      "text": "description"
+      "text": "Semantic tokens for Viewscreen, switched live"
     },
     {
       "id": "402:15639",
@@ -3330,7 +3330,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Agent factory and session tracking > body > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "402:15669",
@@ -3341,7 +3341,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Agent factory and session tracking > body",
-      "text": "description"
+      "text": "Research report: run manifests and session history"
     },
     {
       "id": "402:15670",
@@ -3636,7 +3636,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Brain map prototype > body > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "402:15700",
@@ -3647,7 +3647,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Brain map prototype > body",
-      "text": "description"
+      "text": "Notes and their links, by folder"
     },
     {
       "id": "402:15701",
@@ -3922,7 +3922,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Type safety in agentic systems > body > title row",
-      "text": "title"
+      "text": "Type safety in agentic systems"
     },
     {
       "id": "402:15729",
@@ -3933,7 +3933,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Type safety in agentic systems > body",
-      "text": "description"
+      "text": "Research report"
     },
     {
       "id": "402:15730",
@@ -4228,7 +4228,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Logo options > body > title row",
-      "text": "title"
+      "text": "Logo options"
     },
     {
       "id": "402:15760",
@@ -4239,7 +4239,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Logo options > body",
-      "text": "description"
+      "text": "Twelve marks, Span in use for now"
     },
     {
       "id": "402:15761",
@@ -4524,7 +4524,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · readme cold-reader run > body > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "402:15790",
@@ -4535,7 +4535,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · readme cold-reader run > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "402:15791",

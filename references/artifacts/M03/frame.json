@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "407:25",
@@ -81,7 +81,7 @@
       "w": 20,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "407:32",
@@ -464,7 +464,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "407:93",
@@ -475,7 +475,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "407:94",
@@ -598,7 +598,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "407:118",
@@ -609,7 +609,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "age"
+      "text": "40m"
     },
     {
       "id": "407:119",
@@ -732,7 +732,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "407:141",
@@ -743,7 +743,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "age"
+      "text": "1h"
     },
     {
       "id": "407:142",
@@ -866,7 +866,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:824",
@@ -877,7 +877,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "age"
+      "text": "2h"
     },
     {
       "id": "414:825",
@@ -1042,7 +1042,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "407:169",
@@ -1053,7 +1053,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "age"
+      "text": "1d"
     },
     {
       "id": "407:170",
@@ -1135,7 +1135,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "407:188",
@@ -1146,7 +1146,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "age"
+      "text": "2d"
     },
     {
       "id": "407:189",
@@ -1228,7 +1228,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "407:205",
@@ -1239,7 +1239,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "age"
+      "text": "3d"
     },
     {
       "id": "407:206",
@@ -1321,7 +1321,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "407:226",
@@ -1332,7 +1332,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "age"
+      "text": "4d"
     },
     {
       "id": "407:227",
@@ -1414,7 +1414,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "407:242",
@@ -1425,7 +1425,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "age"
+      "text": "5d"
     },
     {
       "id": "407:243",
@@ -1920,16 +1920,6 @@
       "path": "sheet · Filter > sheet body > check · Codex sites"
     },
     {
-      "id": "407:306",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 334.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Codex sites > box"
-    },
-    {
       "id": "407:300",
       "name": "kind · codex",
       "type": "frame",
@@ -2075,16 +2065,6 @@
       "path": "sheet · Filter > sheet body > check · omni"
     },
     {
-      "id": "407:324",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 423,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · omni > box"
-    },
-    {
       "id": "407:327",
       "name": "omni",
       "type": "text",
@@ -2135,16 +2115,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · skill-evals"
-    },
-    {
-      "id": "407:332",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 453,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · skill-evals > box"
     },
     {
       "id": "407:335",
@@ -2199,16 +2169,6 @@
       "path": "sheet · Filter > sheet body > check · omni-brain"
     },
     {
-      "id": "407:340",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 483,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · omni-brain > box"
-    },
-    {
       "id": "407:343",
       "name": "omni-brain",
       "type": "text",
@@ -2259,16 +2219,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · Not in a project"
-    },
-    {
-      "id": "407:348",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 513.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Not in a project > box"
     },
     {
       "id": "407:351",
@@ -2344,16 +2294,6 @@
       "path": "sheet · Filter > sheet body > check · Artifact hook"
     },
     {
-      "id": "407:358",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 572.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Artifact hook > box"
-    },
-    {
       "id": "407:361",
       "name": "Artifact hook",
       "type": "text",
@@ -2406,16 +2346,6 @@
       "path": "sheet · Filter > sheet body > check · Codex session log"
     },
     {
-      "id": "407:366",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 603.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Codex session log > box"
-    },
-    {
       "id": "407:369",
       "name": "Codex session log",
       "type": "text",
@@ -2466,16 +2396,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · Added by hand"
-    },
-    {
-      "id": "407:374",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 634.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Added by hand > box"
     },
     {
       "id": "407:377",
@@ -2551,16 +2471,6 @@
       "path": "sheet · Filter > sheet body > check · Today"
     },
     {
-      "id": "407:384",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 693.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · Today > box"
-    },
-    {
       "id": "407:387",
       "name": "Today",
       "type": "text",
@@ -2611,16 +2521,6 @@
       "w": 16,
       "h": 16,
       "path": "sheet · Filter > sheet body > check · This week"
-    },
-    {
-      "id": "407:392",
-      "name": "icon/check",
-      "type": "frame",
-      "x": 23,
-      "y": 724.5,
-      "w": 12,
-      "h": 12,
-      "path": "sheet · Filter > sheet body > check · This week > box"
     },
     {
       "id": "407:395",
@@ -2694,6 +2594,7 @@
     }
   ],
   "skipped": {
-    "star": 22
+    "star": 22,
+    "hidden": 10
   }
 }

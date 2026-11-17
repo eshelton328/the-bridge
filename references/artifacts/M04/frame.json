@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "407:527",
@@ -81,7 +81,7 @@
       "w": 20,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "407:534",
@@ -464,7 +464,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "407:595",
@@ -475,7 +475,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "407:596",
@@ -598,7 +598,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "407:620",
@@ -609,7 +609,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "age"
+      "text": "40m"
     },
     {
       "id": "407:621",
@@ -732,7 +732,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "407:643",
@@ -743,7 +743,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "age"
+      "text": "1h"
     },
     {
       "id": "407:644",
@@ -866,7 +866,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:861",
@@ -877,7 +877,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "age"
+      "text": "2h"
     },
     {
       "id": "414:862",
@@ -1042,7 +1042,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "407:671",
@@ -1053,7 +1053,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "age"
+      "text": "1d"
     },
     {
       "id": "407:672",
@@ -1135,7 +1135,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "407:690",
@@ -1146,7 +1146,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "age"
+      "text": "2d"
     },
     {
       "id": "407:691",
@@ -1228,7 +1228,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "407:707",
@@ -1239,7 +1239,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "age"
+      "text": "3d"
     },
     {
       "id": "407:708",
@@ -1321,7 +1321,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "407:728",
@@ -1332,7 +1332,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "age"
+      "text": "4d"
     },
     {
       "id": "407:729",
@@ -1414,7 +1414,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "407:744",
@@ -1425,7 +1425,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "age"
+      "text": "5d"
     },
     {
       "id": "407:745",
@@ -1786,17 +1786,6 @@
       "path": "sheet · Sort by > sheet header"
     },
     {
-      "id": "407:820",
-      "name": "Clear",
-      "type": "text",
-      "x": 335,
-      "y": 545,
-      "w": 38,
-      "h": 20,
-      "path": "sheet · Sort by > sheet header",
-      "text": "Clear"
-    },
-    {
       "id": "407:821",
       "name": "sheet body",
       "type": "frame",
@@ -2023,7 +2012,7 @@
       "w": 364,
       "h": 17,
       "path": "sheet · Sort by > sheet body",
-      "text": "note"
+      "text": "Found since you last looked stays at the top."
     }
   ],
   "exclude": [
@@ -2034,6 +2023,7 @@
     }
   ],
   "skipped": {
-    "star": 22
+    "star": 22,
+    "hidden": 1
   }
 }

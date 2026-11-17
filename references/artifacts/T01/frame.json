@@ -8,7 +8,7 @@
   "w": 756,
   "h": 1158,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "405:61",
@@ -81,7 +81,7 @@
       "w": 20,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "405:109",
@@ -717,7 +717,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Skill eval pass rates > body > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "405:187",
@@ -759,7 +759,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Skill eval pass rates > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "405:192",
@@ -992,7 +992,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Hono server spike > body > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "405:216",
@@ -1034,7 +1034,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Hono server spike > body",
-      "text": "description"
+      "text": "Routes, the RPC client and the owner check over Tailscale"
     },
     {
       "id": "405:221",
@@ -1247,7 +1247,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Inbox task lifecycle > body > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "405:245",
@@ -1289,7 +1289,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Inbox task lifecycle > body",
-      "text": "description"
+      "text": "How a task moves from Next step to Running to Done"
     },
     {
       "id": "405:250",
@@ -1512,7 +1512,7 @@
       "w": 259,
       "h": 20,
       "path": "content > library > card row > artifact card · Tailscale access check > body > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:663",
@@ -1554,7 +1554,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Tailscale access check > body",
-      "text": "description"
+      "text": "Which devices reach the-bridge, and the owner check on writes"
     },
     {
       "id": "414:668",
@@ -1809,7 +1809,7 @@
       "w": 319,
       "h": 20,
       "path": "content > library > card row > artifact card · the-bridge theme ideas > body > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "405:279",
@@ -1820,7 +1820,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · the-bridge theme ideas > body",
-      "text": "description"
+      "text": "Viewscreen, Captain’s Log, Engineering and Console"
     },
     {
       "id": "405:280",
@@ -2043,7 +2043,7 @@
       "w": 319,
       "h": 20,
       "path": "content > library > card row > artifact card · Application versioning and releases > body > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "405:303",
@@ -2054,7 +2054,7 @@
       "w": 319,
       "h": 17,
       "path": "content > library > card row > artifact card · Application versioning and releases > body",
-      "text": "description"
+      "text": "Research report: versioning, changelogs and release automation"
     },
     {
       "id": "405:304",

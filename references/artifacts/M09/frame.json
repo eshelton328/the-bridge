@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "452:4005",
@@ -112,37 +112,6 @@
       "h": 18,
       "path": "content > nav > button · Open in workspace",
       "text": "Open in workspace"
-    },
-    {
-      "id": "452:4014",
-      "name": "pill · Discussion",
-      "type": "frame",
-      "x": 295,
-      "y": 52,
-      "w": 83,
-      "h": 20,
-      "path": "content > nav"
-    },
-    {
-      "id": "452:4015",
-      "name": "Ellipse",
-      "type": "ellipse",
-      "x": 303,
-      "y": 59,
-      "w": 6,
-      "h": 6,
-      "path": "content > nav > pill · Discussion"
-    },
-    {
-      "id": "452:4016",
-      "name": "Discussion",
-      "type": "text",
-      "x": 314,
-      "y": 55,
-      "w": 56,
-      "h": 14,
-      "path": "content > nav > pill · Discussion",
-      "text": "Discussion"
     },
     {
       "id": "452:4017",
@@ -841,6 +810,7 @@
     }
   ],
   "skipped": {
-    "star": 22
+    "star": 22,
+    "hidden": 1
   }
 }

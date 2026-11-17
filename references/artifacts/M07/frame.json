@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "407:942",
@@ -193,7 +193,7 @@
       "w": 268,
       "h": 41,
       "path": "content > artifact page > title block",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "407:963",
@@ -204,7 +204,7 @@
       "w": 366,
       "h": 40,
       "path": "content > artifact page > title block",
-      "text": "description"
+      "text": "Pass rates per round for every skill in the toolkit, with and without the skill."
     },
     {
       "id": "407:964",
@@ -991,7 +991,7 @@
       "w": 364,
       "h": 17,
       "path": "sheet · File in a project > sheet body",
-      "text": "artifact name"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "407:1054",
@@ -1303,7 +1303,7 @@
       "w": 364,
       "h": 34,
       "path": "sheet · File in a project > sheet body",
-      "text": "remove note"
+      "text": "Removing takes the link out of the library only; the artifact stays where it was published."
     }
   ],
   "exclude": [

@@ -8,7 +8,7 @@
   "w": 390,
   "h": 844,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "408:439",
@@ -81,7 +81,7 @@
       "w": 20,
       "h": 21,
       "path": "content > library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "408:446",
@@ -464,7 +464,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "408:507",
@@ -475,7 +475,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Skill eval pass rates > text > title row",
-      "text": "age"
+      "text": "12m"
     },
     {
       "id": "408:508",
@@ -598,7 +598,7 @@
       "w": 242,
       "h": 20,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "408:532",
@@ -609,7 +609,7 @@
       "w": 22,
       "h": 17,
       "path": "content > library > artifact row · Hono server spike > text > title row",
-      "text": "age"
+      "text": "40m"
     },
     {
       "id": "408:533",
@@ -732,7 +732,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "408:555",
@@ -743,7 +743,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Inbox task lifecycle > text > title row",
-      "text": "age"
+      "text": "1h"
     },
     {
       "id": "408:556",
@@ -866,7 +866,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:898",
@@ -877,7 +877,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Tailscale access check > text > title row",
-      "text": "age"
+      "text": "2h"
     },
     {
       "id": "414:899",
@@ -1042,7 +1042,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "408:583",
@@ -1053,7 +1053,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · the-bridge theme ideas > text > title row",
-      "text": "age"
+      "text": "1d"
     },
     {
       "id": "408:584",
@@ -1135,7 +1135,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "408:602",
@@ -1146,7 +1146,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Application versioning and releases > text > title row",
-      "text": "age"
+      "text": "2d"
     },
     {
       "id": "408:603",
@@ -1228,7 +1228,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "408:619",
@@ -1239,7 +1239,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Panda tokens playground > text > title row",
-      "text": "age"
+      "text": "3d"
     },
     {
       "id": "408:620",
@@ -1321,7 +1321,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "408:640",
@@ -1332,7 +1332,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Agent factory and session tracking > text > title row",
-      "text": "age"
+      "text": "4d"
     },
     {
       "id": "408:641",
@@ -1414,7 +1414,7 @@
       "w": 249,
       "h": 20,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "408:656",
@@ -1425,7 +1425,7 @@
       "w": 15,
       "h": 17,
       "path": "content > library > artifact row · Brain map prototype > text > title row",
-      "text": "age"
+      "text": "5d"
     },
     {
       "id": "408:657",
@@ -1826,7 +1826,7 @@
       "w": 358,
       "h": 17,
       "path": "sheet · Add a link",
-      "text": "For an artifact the library did not find"
+      "text": "For an artifact the library did not find."
     },
     {
       "id": "408:715",
@@ -1878,7 +1878,7 @@
       "w": 308,
       "h": 17,
       "path": "sheet · Add a link > field · Link > input",
-      "text": "https://panda-tokens.example.com/playgro"
+      "text": "https://panda-tokens.example.com/playground"
     },
     {
       "id": "408:719",
@@ -1889,7 +1889,7 @@
       "w": 358,
       "h": 34,
       "path": "sheet · Add a link > field · Link",
-      "text": "Any HTTPS link. A claude.ai/artifact lin"
+      "text": "Any HTTPS link. A claude.ai/artifact link is saved as a Claude artifact."
     },
     {
       "id": "408:720",

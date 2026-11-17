@@ -8,7 +8,7 @@
   "w": 1512,
   "h": 982,
   "tolerance": 4,
-  "source": "get_metadata of the page, saved 2026-11-16",
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
   "layers": [
     {
       "id": "403:7068",
@@ -326,7 +326,7 @@
       "w": 20,
       "h": 21,
       "path": "library > header",
-      "text": "count"
+      "text": "24"
     },
     {
       "id": "403:7113",
@@ -982,7 +982,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Skill eval pass rates > body > title row",
-      "text": "title"
+      "text": "Skill eval pass rates"
     },
     {
       "id": "403:7193",
@@ -1024,7 +1024,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Skill eval pass rates > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "403:7198",
@@ -1419,7 +1419,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Hono server spike > body > title row",
-      "text": "title"
+      "text": "Hono server spike"
     },
     {
       "id": "403:7238",
@@ -1461,7 +1461,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Hono server spike > body",
-      "text": "description"
+      "text": "Routes, the RPC client and the owner check over Tailscale"
     },
     {
       "id": "403:7243",
@@ -1746,7 +1746,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Inbox task lifecycle > body > title row",
-      "text": "title"
+      "text": "Inbox task lifecycle"
     },
     {
       "id": "403:7274",
@@ -1788,7 +1788,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Inbox task lifecycle > body",
-      "text": "description"
+      "text": "How a task moves from Next step to Running to Done"
     },
     {
       "id": "403:7279",
@@ -2063,7 +2063,7 @@
       "w": 244,
       "h": 20,
       "path": "library > card row > artifact card · Tailscale access check > body > title row",
-      "text": "title"
+      "text": "Tailscale access check"
     },
     {
       "id": "414:552",
@@ -2105,7 +2105,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Tailscale access check > body",
-      "text": "description"
+      "text": "Which devices reach the-bridge, and the owner check on writes"
     },
     {
       "id": "414:557",
@@ -2452,7 +2452,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · the-bridge theme ideas > body > title row",
-      "text": "title"
+      "text": "the-bridge theme ideas"
     },
     {
       "id": "403:7316",
@@ -2463,7 +2463,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · the-bridge theme ideas > body",
-      "text": "description"
+      "text": "Viewscreen, Captain’s Log, Engineering and Console side by side"
     },
     {
       "id": "403:7317",
@@ -2738,7 +2738,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Application versioning and releases > body > title row",
-      "text": "title"
+      "text": "Application versioning and releases"
     },
     {
       "id": "403:7345",
@@ -2749,7 +2749,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Application versioning and releases > body",
-      "text": "description"
+      "text": "Research report: versioning schemes, changelogs and release automation"
     },
     {
       "id": "403:7346",
@@ -3044,7 +3044,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Panda tokens playground > body > title row",
-      "text": "title"
+      "text": "Panda tokens playground"
     },
     {
       "id": "403:7376",
@@ -3055,7 +3055,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Panda tokens playground > body",
-      "text": "description"
+      "text": "Semantic tokens for Viewscreen, switched live"
     },
     {
       "id": "403:7377",
@@ -3330,7 +3330,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Agent factory and session tracking > body > title row",
-      "text": "title"
+      "text": "Agent factory and session tracking"
     },
     {
       "id": "403:7407",
@@ -3341,7 +3341,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Agent factory and session tracking > body",
-      "text": "description"
+      "text": "Research report: run manifests and session history"
     },
     {
       "id": "403:7408",
@@ -3636,7 +3636,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Brain map prototype > body > title row",
-      "text": "title"
+      "text": "Brain map prototype"
     },
     {
       "id": "403:7438",
@@ -3647,7 +3647,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Brain map prototype > body",
-      "text": "description"
+      "text": "Notes and their links, by folder"
     },
     {
       "id": "403:7439",
@@ -3922,7 +3922,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Type safety in agentic systems > body > title row",
-      "text": "title"
+      "text": "Type safety in agentic systems"
     },
     {
       "id": "403:7467",
@@ -3933,7 +3933,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Type safety in agentic systems > body",
-      "text": "description"
+      "text": "Research report"
     },
     {
       "id": "403:7468",
@@ -4228,7 +4228,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · Logo options > body > title row",
-      "text": "title"
+      "text": "Logo options"
     },
     {
       "id": "403:7498",
@@ -4239,7 +4239,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · Logo options > body",
-      "text": "description"
+      "text": "Twelve marks, Span in use for now"
     },
     {
       "id": "403:7499",
@@ -4524,7 +4524,7 @@
       "w": 304,
       "h": 20,
       "path": "library > card row > artifact card · readme cold-reader run > body > title row",
-      "text": "title"
+      "text": "readme cold-reader run"
     },
     {
       "id": "403:7528",
@@ -4535,7 +4535,7 @@
       "w": 304,
       "h": 17,
       "path": "library > card row > artifact card · readme cold-reader run > body",
-      "text": "description"
+      "text": "Pass rates per round, with and without each skill"
     },
     {
       "id": "403:7529",
@@ -4691,7 +4691,7 @@
       "w": 492,
       "h": 40,
       "path": "dialog · Add a link",
-      "text": "For an artifact the library did not find"
+      "text": "For an artifact the library did not find. Links from Claude chats and Codex sessions are added on their own."
     },
     {
       "id": "403:7550",
@@ -4743,7 +4743,7 @@
       "w": 442,
       "h": 20,
       "path": "dialog · Add a link > field · Link > input",
-      "text": "https://panda-tokens.example.com/playgro"
+      "text": "https://panda-tokens.example.com/playground"
     },
     {
       "id": "403:7554",
@@ -4754,7 +4754,7 @@
       "w": 376,
       "h": 17,
       "path": "dialog · Add a link > field · Link",
-      "text": "Any HTTPS link. A claude.ai/artifact lin"
+      "text": "Any HTTPS link. A claude.ai/artifact link is saved as a Claude artifact."
     },
     {
       "id": "403:7555",
@@ -4858,7 +4858,7 @@
       "w": 244,
       "h": 17,
       "path": "dialog · Add a link > field · Source",
-      "text": "Chosen from the link; change it if it is"
+      "text": "Chosen from the link; change it if it is wrong."
     },
     {
       "id": "403:7569",
@@ -4984,7 +4984,7 @@
       "w": 220,
       "h": 17,
       "path": "dialog · Add a link > field · Project",
-      "text": "Optional. You can file it in a project l"
+      "text": "Optional. You can file it in a project later."
     },
     {
       "id": "403:7583",
