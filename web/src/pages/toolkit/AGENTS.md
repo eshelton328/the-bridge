@@ -18,13 +18,15 @@ what each file of a page folder is for.
   file) narrows the groups by the kind chip and the search.
 - `blocks/`: `ToolkitHeader` (title, count, source, Read-only, the List,
   Map and Activity switch), `ToolkitListTools` (search, Sort, the counts
-  legend), `ToolkitGroup` (a kind's header and card grid) and
+  legend), `ToolkitGroup` (a kind's header and card grid),
   `ToolkitCard` (one item: a card on the desktop, a row with no
-  description on a tablet or phone). Props only.
+  description on a tablet) and `ToolkitRow` (one item as a list row on
+  the phone, M1). On the phone the header shows the views as icon
+  buttons, and Read-only moves under the search. Props only.
 - `types.ts`: the view models: items, groups, kind chips, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
   the state it shows, or a state of its own when its data differs
-  (`toolkitListTablet`, T1, adds the Rules group); the map (D2) and an open item (D3) add a
+  (`toolkitListTablet`, T1 and M1, adds the Rules group); the map (D2) and an open item (D3) add a
   `ui.view` or an item and their own screens.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
