@@ -7,6 +7,11 @@ import type { InboxData, InboxDetailHead, InboxGroupView, InboxRunIn, InboxUi } 
 
 const selected = InboxItemId.parse('write-the-tickets')
 
+// The selected next step's prompt and note, which its detail shows and the search matches.
+const prompt =
+  'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.'
+const note = 'Check the milestone name matches Linear before I approve.'
+
 const needsYou = {
   id: 'needsYou',
   label: 'Needs you',
@@ -70,6 +75,7 @@ const nextSteps = {
       blocks: null,
       approval: false,
       tags: ['global/planning', 'project/ncc-1701/the-bridge'],
+      text: [prompt, note],
     },
     {
       id: InboxItemId.parse('readme-cross-family-round'),
@@ -239,7 +245,7 @@ export const nextStep = {
       snoozeMenu,
       why: 'Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.',
       prompt: {
-        text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.',
+        text: prompt,
         long: true,
         state: 'suggested',
       },
@@ -255,7 +261,7 @@ export const nextStep = {
         startHint: 'Opens the new chat and sends the prompt.',
       },
       notes: {
-        note: { text: 'Check the milestone name matches Linear before I approve.', by: 'You · 2m ago' },
+        note: { text: note, by: 'You · 2m ago' },
         add: 'Add a note…',
       },
       sources: [

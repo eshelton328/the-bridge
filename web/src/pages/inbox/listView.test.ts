@@ -57,6 +57,16 @@ describe('listView search', () => {
   it('matches a title', () => {
     expect(titles(listView(list.data, list.ui, 'brain'), 'nextSteps')).toEqual(['Commit the brain: 34 changes'])
   })
+
+  it('matches a prompt and a note, as the summary line says', () => {
+    expect(titles(listView(list.data, list.ui, 'Backlog'), 'nextSteps')).toEqual([
+      'Write the tickets for increment one',
+    ])
+    expect(listView(list.data, list.ui, 'linear').results).toBe(1)
+    expect(titles(listView(list.data, list.ui, 'milestone name'), 'nextSteps')).toEqual([
+      'Write the tickets for increment one',
+    ])
+  })
 })
 
 describe('listView filters', () => {

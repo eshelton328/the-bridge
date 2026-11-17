@@ -58,10 +58,10 @@ function passes(row: InboxRowView, sections: readonly AppliedSection[]): boolean
   return sections.every((section) => facets.some((facet) => section.values.includes(facet)))
 }
 
-/** Whether a row matches the search, in its title or its meta line (project, feature and issue IDs). */
+/** Whether a row matches the search, in its title, its meta line (project, feature and issue IDs), its prompt or its notes. */
 function matches(row: InboxRowView, query: string): boolean {
   const q = query.trim().toLowerCase()
-  return q === '' || row.title.toLowerCase().includes(q) || row.meta.toLowerCase().includes(q)
+  return q === '' || [row.title, row.meta, ...(row.text ?? [])].some((text) => text.toLowerCase().includes(q))
 }
 
 /** The rows in the sort's order. The state's rows are newest first. */

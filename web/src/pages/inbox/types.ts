@@ -44,6 +44,8 @@ export const InboxRowView = z.object({
   pill: InboxPill.optional(),
   /** The item's tags, which the Filter menu's tag boxes match. */
   tags: z.array(z.string()).optional(),
+  /** The item's prompt and notes, which the search matches besides the title and the meta line. */
+  text: z.array(z.string()).optional(),
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
