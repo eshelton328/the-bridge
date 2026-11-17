@@ -3,6 +3,7 @@
 // state the app shows without `?state=`.
 import { addLink } from './addLink.ts'
 import { artifactOpen } from './artifactOpen.ts'
+import { artifactTablet } from './artifactTablet.ts'
 import { changeApplied } from './changeApplied.ts'
 import { changeProposed } from './changeProposed.ts'
 import { discussOpen } from './discussOpen.ts'
@@ -23,4 +24,5 @@ export const artifactsStates = {
   changeProposed,
   changeApplied,
   libraryTablet,
+  artifactTablet,
 }

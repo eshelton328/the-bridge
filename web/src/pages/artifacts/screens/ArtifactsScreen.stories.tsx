@@ -156,3 +156,13 @@ export const LibraryTablet: Story = {
     await expect(canvas.getByText('Viewscreen, Captain’s Log, Engineering and Console')).toBeInTheDocument()
   },
 }
+
+export const ArtifactTablet: Story = {
+  name: 'T2: an artifact on its own page on a tablet',
+  args: { data: artifactsStates.artifactTablet.data, ui: artifactsStates.artifactTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
+    // The story renders at the width Storybook gives it; app/ArtifactsStickyBars.test.tsx checks T2's Back bar.
+    await expect(canvas.getByText('claude.ai/artifact/8f3c2a91-skill-evals')).toBeVisible()
+  },
+}
