@@ -360,7 +360,7 @@ export const SortList: Story = {
 }
 
 export const SearchList: Story = {
-  name: 'T10, M14: search, the list',
+  name: 'T10: search, the list',
   args: { data: inboxStates.searchList.data, ui: inboxStates.searchList.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')

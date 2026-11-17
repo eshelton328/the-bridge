@@ -4,7 +4,8 @@ import { inboxStates } from './states/index.ts'
 import { allChecks, listView } from './screens/listView.ts'
 import type { InboxGroupView, InboxRowView, InboxUi } from './types.ts'
 
-const { list, runningList, filtered, filterList, searchList } = inboxStates
+const { list, runningList, filtered, filterList } = inboxStates
+const { searchList } = inboxStates
 const titles = (view: ReturnType<typeof listView>, group: string) =>
   view.groups.find((g) => g.id === group)?.rows.map((row) => row.title)
 const chip = (view: ReturnType<typeof listView>, value: string) => view.filters.find((c) => c.value === value)?.count
