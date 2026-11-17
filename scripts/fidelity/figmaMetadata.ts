@@ -12,6 +12,8 @@ export type XmlNode = {
   y: number
   w: number
   h: number
+  /** get_metadata's `hidden="true"`: Figma does not draw the layer or its children. */
+  hidden?: boolean
   children: XmlNode[]
 }
 
@@ -88,6 +90,7 @@ export function parseMetadata(xml: string): XmlNode {
       h: Number(attrs.height ?? 0),
       children: [],
     }
+    if (attrs.hidden === 'true') node.hidden = true
     const parent = stack.at(-1)
     if (parent) parent.children.push(node)
     if (selfClosing) {
@@ -156,6 +159,11 @@ export function buildFrameRef(frame: XmlNode, fileKey: string, source: string): 
       const y = oy + child.y
       if (child.tag === 'ellipse' && decorative.has(child.name)) {
         skipped[child.name] = (skipped[child.name] ?? 0) + 1
+        continue
+      }
+      // A hidden layer is not drawn, so neither it nor its children are in the frame.
+      if (child.hidden) {
+        skipped.hidden = (skipped.hidden ?? 0) + 1
         continue
       }
       const layer: Layer = {

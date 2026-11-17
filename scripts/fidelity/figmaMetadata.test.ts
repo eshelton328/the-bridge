@@ -58,6 +58,23 @@ void test('builds absolute boxes relative to the frame, skips stars and excludes
   assert.match(ref.exclude[1]?.reason ?? '', /keyboard/)
 })
 
+void test('leaves out a hidden layer and its children', () => {
+  const hidden = `<frame id="3:1" name="D7 · Discuss" x="0" y="0" width="1512" height="982">
+    <frame id="3:2" name="library list" x="64" y="0" width="420" height="982" hidden="true">
+      <text id="3:3" name="Artifacts" x="4" y="1" width="85" height="29" />
+    </frame>
+    <frame id="3:4" name="discussion" x="64" y="0" width="420" height="982">
+      <text id="3:5" name="Discuss" x="4" y="1" width="85" height="29" />
+    </frame>
+  </frame>`
+  const ref = buildFrameRef(parseMetadata(hidden), 'KEY', 'test')
+  assert.deepEqual(
+    ref.layers.map((l) => l.id),
+    ['3:4', '3:5'],
+  )
+  assert.deepEqual(ref.skipped, { hidden: 1 })
+})
+
 void test('finds note frames by the name of the frame they annotate', () => {
   assert.equal(findNotes(parseMetadata(xml)).get('M3 · Edit the prompt'), 'Edit opens the keyboard.')
 })
