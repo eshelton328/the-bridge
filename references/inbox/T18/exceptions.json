@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "9%",
+      "layers": ["454:153"],
       "reason": "Layer 454:153 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 9%, as in D14."
     }
   ]

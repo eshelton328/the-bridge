@@ -8,36 +8,29 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (38 strings checked; 2 Figma strings under exceptions.json).
-- Position: 1 of 9 layers pass (`tab bar`).
+- Position: 6 of 9 layers pass (`header`, `filter · chips`, `list tools`, `search summary`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass (1 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `inbox list`: x +0, y -38, w +0, h +6; 38 px removed: y +0.
-- `header`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `filter · chips`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
-- `list tools`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `search summary`: x +0, y -42, w -1.2, h +0; 38 px removed: y -4.
-- `group · NEEDS YOU`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
-- `group · RUNNING`: x +0, y -27, w +0, h +4; 38 px removed: y +11.
-- `done hint`: x +0, y -18, w +0, h +0; 38 px removed: y +20.
+- `inbox list`: x +0, y +0, w +0, h +6.
+- `group · RUNNING`: x +0, y +11, w +0, h +4.
+- `done hint`: x +0, y +20, w +0, h +0.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in M01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts
@@ -66,8 +59,7 @@ status bar.
   and the keyboard up. The story focuses the field (`toHaveFocus`, the
   T10 and M14 story), so the render shows its focused border; the
   keyboard is design-only chrome (d-089), so none covers the list, and
-  the Done hint shows under the Running row (`done hint` y +20 with the
-  status bar removed).
+  the Done hint shows under the Running row (`done hint` y +20).
   Figma's metadata gives the summary and the hint by their layer names;
   the exceptions say why.
 - **Show it.** The Done hint's link selects the Done chip, which lists

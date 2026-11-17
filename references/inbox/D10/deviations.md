@@ -59,8 +59,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   cyan only, as Figma does.
 - **Selected row.** The open task's row under RUNNING has the selected
   colours, as in D6, D9 and D11. Figma's D10 draws it as a plain row
-  while the task stays open on the right. The render follows the other
-  frames; a question for Erik.
+  while the task stays open on the right. d-101 keeps it selected: the
+  list shows which task is open, the usual list and detail behaviour.
+  On the desktop the list draws the open task's row selected even when
+  nothing is selected, as after Back on a tablet and a resize
+  (`InboxLayout.test.tsx`).
 - **Beta.5 (2026-11-17).** The new library parts move these layers:
   `running card` x +4, y +10, h +1 (was x +4, y +15, h +1);
   `section · MY NOTES` x +4, y +13, h +12 (was x +4, y +18, h +12);
@@ -98,7 +101,8 @@ For D10 it also found:
 
 - P2: no focus border or caret: see above. The clear icon and the bold,
   underlined marks are fixed in round 5 with #101.
-- P2: the Running row is drawn selected: see "Selected row" above.
+- P2: the Running row is drawn selected: kept by d-101; see "Selected
+  row" above.
 - The Done hint sits closer to the last row: the selected row's
   border and the row heights.
 

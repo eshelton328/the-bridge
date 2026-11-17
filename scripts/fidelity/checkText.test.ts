@@ -58,7 +58,7 @@ void test('exclude and exceptions remove strings from the check; exceptions allo
   const r = checkText(
     ref([layer('1', '9:41'), layer('2', 'Add a note…')], [{ id: '1', text: '9:41', reason: 'status bar' }]),
     {
-      missing: [{ text: 'Add a note…', reason: 'placeholder in the library' }],
+      missing: [{ text: 'Add a note…', layers: ['2'], reason: 'placeholder in the library' }],
       extra: [{ text: 'Beta', reason: 'x' }],
     },
     page(['Beta']),
@@ -105,4 +105,23 @@ void test('a run claimed by a long string is not reused for a shorter string ins
   const layers = [layer('1', 'Inbox'), layer('2', 'Inbox zero today')]
   assert.deepEqual(checkText(ref(layers), none, page(['Inbox zero today'])).notVisible, [{ id: '1', text: 'Inbox' }])
   assert.equal(checkText(ref(layers), none, page(['Inbox', 'Inbox zero today'])).ok, true)
+})
+
+void test('a missing exception skips only the layers it names; the same text in another layer is checked (d-101)', () => {
+  // D14: the list row's title is under the task pane, the pane's heading is not.
+  const layers = [layer('1', 'Write the tickets'), layer('2', 'Write the tickets', 200)]
+  const exceptions = {
+    missing: [{ text: 'Write the tickets', layers: ['1'], reason: 'under the task pane' }],
+    extra: [],
+  }
+  const shown = checkText(ref(layers), exceptions, page(['Write the tickets']))
+  assert.deepEqual([shown.ok, shown.checked, shown.excepted], [true, 1, 1])
+  const gone = checkText(ref(layers), exceptions, page([]))
+  assert.deepEqual(gone.missing, [{ id: '2', text: 'Write the tickets' }])
+  assert.equal(gone.ok, false)
+})
+
+void test('a missing exception that names a layer without its text is an error', () => {
+  const exceptions = { missing: [{ text: 'Reset', layers: ['9'], reason: 'hidden button' }], extra: [] }
+  assert.throws(() => checkText(ref([layer('1', 'Reset')]), exceptions, page([])), /names layer 9/)
 })

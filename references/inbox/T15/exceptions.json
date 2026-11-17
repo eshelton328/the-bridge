@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "hidden count",
+      "layers": ["359:549"],
       "reason": "get_metadata gives the layer name of text 359:549 as its characters; frame.png shows \"1 task hidden by filters\"."
     }
   ],

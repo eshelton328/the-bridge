@@ -7,41 +7,37 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (35 strings checked, 3 excepted in `exceptions.json`).
-- Position: 2 of 14 layers pass (`sticky action`, `tab bar`).
+- Text: pass (36 strings checked, 3 excepted in `exceptions.json`).
+- Position: 4 of 14 layers pass (`task bar`, `button · Change`, `sticky action`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +57; 38 px removed: y +2.
-- `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
-- `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
-- `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -4; 38 px removed: y +17.
-- `change history`: x +0, y -23, w +75, h -2; 38 px removed: y +15.
-- `section · RUN IN`: x +0, y -23, w +0, h -21; 38 px removed: y +15.
-- `button · Change`: x +0, y -34.5, w -2, h +4; 38 px removed: y +3.5.
-- `section · MY NOTES`: x +0, y -42, w +0, h +7; anchored to the bottom, no status bar offset.
-- `notes field`: x +0, y -40, w +0, h +5; anchored to the bottom, no status bar offset.
-- `section · SOURCES`: x +0, y +113, w +0, h +2; 38 px removed: y +151.
+- `nav`: x +0, y +0, w +0, h -8.
+- `task · next step`: x +0, y +2, w +0, h +57.
+- `title block`: x +0, y +6, w +0, h +5.
+- `section · WHY`: x +0, y +13, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +0, y +17, w +0, h -4.
+- `change history`: x +0, y +15, w +75, h -2.
+- `section · RUN IN`: x +0, y +15, w +0, h -21.
+- `section · MY NOTES`: x +0, y -4, w +0, h +7.
+- `notes field`: x +0, y -2, w +0, h +5.
+- `section · SOURCES`: x +0, y +151, w +0, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **Same page as M2.** The task page is M2's (`taskPage`), so its
   differences are M2's, with the same causes: `nav` h -8 (`BackRow` and
   32 px buttons against Figma's 40 px row); the sections 20 apart
@@ -65,7 +61,11 @@ status bar.
   (its 13 px text in the panel's 14 px line made 21 px lines) onto a
   block. Figma's lines are 21, which no token has; the prompt box is
   now within tolerance (`section · SUGGESTED PROMPT` h +1 to -4). Together
-  the layers below move up 5 to 9 px: `change history` y -18 to -23, `section · RUN IN` y -18 to -23, `button · Change` y -27.5 to -34.5, `section · MY NOTES` y -33 to -42, `notes field` y -31 to -40, and `task · next step` is 9 px shorter (h +66 to +57); `section · SOURCES` comes 9 px closer (y +122 to +113).
+  the layers below move up 5 to 9 px, which leaves `change history` and
+  `section · RUN IN` y +15, `button · Change` within tolerance,
+  `section · MY NOTES` y -4 and `notes field` y -2; `task · next step`
+  is 9 px shorter (h +66 to +57), and `section · SOURCES` comes 9 px
+  closer (y +151).
 - **Disabled Reset.** Reset keeps its fill and `border.default` border
   while disabled, with only its label and icon in `fg.muted`, as Figma
   draws it (#105).

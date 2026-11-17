@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "hidden count",
+      "layers": ["359:252"],
       "reason": "get_metadata gives the layer name of text 359:252 as its characters; T15's frame.png shows the same line, \"1 task hidden by filters\", which M16 draws under the tab bar."
     }
   ],

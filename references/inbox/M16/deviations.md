@@ -8,37 +8,31 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (56 strings checked; 1 Figma strings under exceptions.json).
-- Position: 2 of 11 layers pass (`hidden count`, `tab bar`).
+- Position: 6 of 11 layers pass (`header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `inbox list`: x +0, y -38, w +0, h +24; 38 px removed: y +0.
-- `header`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `filter · chips`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
-- `list tools`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `filters applied`: x +0, y -42, w +0, h +2; 38 px removed: y -4.
-- `group · NEEDS YOU`: x +0, y -40, w +0, h +4; 38 px removed: y -2.
-- `group · NEXT STEPS`: x +0, y -20, w +0, h +4; 38 px removed: y +18.
-- `group · SNOOZED`: x +0, y -13, w +0, h +4; 38 px removed: y +25.
-- `group · RUNNING`: x +0, y -9, w +0, h +4; 38 px removed: y +29.
+- `inbox list`: x +0, y +0, w +0, h +24.
+- `group · NEXT STEPS`: x +0, y +18, w +0, h +4.
+- `group · SNOOZED`: x +0, y +25, w +0, h +4.
+- `group · RUNNING`: x +0, y +29, w +0, h +4.
+- `hidden count`: x +0, y +38, w -1.3, h +0.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in M01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts
@@ -68,8 +62,9 @@ status bar.
   22 px chips (`filters applied` h +2). Library gap: Removable filter
   chip.
 - **Hidden count.** "1 task hidden by filters" ends the list, under the
-  tab bar, as in Figma (`hidden count` passes); Figma's metadata gives
-  the text by its layer name, and the exception says why.
+  tab bar, as in Figma; the taller rows and group headers above it put
+  it lower (`hidden count` y +38). Figma's metadata gives the text by
+  its layer name, and the exception says why.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13. Library gap: Button label
   size.

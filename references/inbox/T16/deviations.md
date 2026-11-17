@@ -8,35 +8,32 @@ against the installed library 1.0.0-beta.5, which has #104 to #106), each with i
 ## Checks
 
 - Text: pass.
-- Position: 2 of 12 layers pass (`section · SOURCES`, `tab bar`).
+- Position: 4 of 12 layers pass (`nav · back`, `task bar`, `title block`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · next step`: x +2, y -25, w -4, h -5; 29 px removed: y +4.
-- `task bar`: x +2, y -31, w -4, h +2; 29 px removed: y -2.
-- `title block`: x +2, y -27, w -4, h +4; 29 px removed: y +2.
-- `section · WHY`: x +2, y -21, w -4, h +2; 29 px removed: y +8.
-- `section · SUGGESTED PROMPT`: x +2, y -17, w -4, h -2; 29 px removed: y +12.
-- `section · RUN IN`: x +2, y -17, w -4, h +1; 29 px removed: y +12.
-- `start`: x +2, y -14, w -4, h -1; 29 px removed: y +15.
-- `section · MY NOTES`: x +2, y -13, w -4, h +7; 29 px removed: y +16.
-- `notes field`: x +2, y -11, w -4, h +5; 29 px removed: y +18.
+- `task · next step`: x +2, y +4, w -4, h -5.
+- `section · WHY`: x +2, y +8, w -4, h +2.
+- `section · SUGGESTED PROMPT`: x +2, y +12, w -4, h -2.
+- `section · RUN IN`: x +2, y +12, w -4, h +1.
+- `start`: x +2, y +15, w -4, h -1.
+- `section · MY NOTES`: x +2, y +16, w -4, h +7.
+- `notes field`: x +2, y +18, w -4, h +5.
+- `section · SOURCES`: x +2, y +25, w -4, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in T02: sections are 24 px apart against
@@ -52,12 +49,13 @@ status bar.
   in the panel's 14 px line made 21 px lines, onto a block. Figma's lines
   are 21, which no token has; the prompt section box is now within the
   tolerance (`section · SUGGESTED PROMPT` h +3 → -2), and `section · RUN
-  IN` starts 5 px higher (y -12 → -17). The Recommended pill is now 20 px
-  (`Badge size="sm"`, #106), as Figma's pills are, against 24 before, so
-  the Run in card is 1 px taller than Figma's 85 (h +5 → +1), and the
-  layers below it start 9 px higher than before (`start` y -5 → -14,
-  `section · MY NOTES` y -4 → -13, `notes field` y -2 → -11);
-  `section · SOURCES` (y +5 before) now passes.
+  IN` starts 5 px higher than before (now y +12). The Recommended pill
+  is now 20 px (`Badge size="sm"`, #106), as Figma's pills are,
+  against 24 before, so the Run in card is 1 px taller than Figma's 85
+  (h +5 → +1), and the
+  layers below it start 9 px higher than before (now `start` y +15,
+  `section · MY NOTES` y +16, `notes field` y +18, `section · SOURCES`
+  y +25).
 - **Discuss.** Figma draws Discuss in violet (402:11096); the
   library has no discuss toggle, so it is a secondary `Button`, 32 px
   high against Figma's 30 (`task bar` h +2). Library gap: Discuss

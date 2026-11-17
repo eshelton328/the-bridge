@@ -126,6 +126,9 @@ const deviceOf = (code: string): FrameRef['device'] =>
 /** Decorative layers that carry no design meaning: the backdrop's stars. */
 const decorative = new Set(['star'])
 
+/** The `exclude` reason of the iOS status bar's text; checkPosition finds the bar by it. */
+export const statusBarReason = 'iOS status bar (design-only chrome, d-089)'
+
 // Design-only chrome (d-089): the iOS status bar, keyboard and home
 // indicator are drawn in Figma but are not app UI, so their text is not
 // expected in a render of the page.
@@ -133,7 +136,7 @@ const chromeRules: { test: (path: string[], text: string, top: XmlNode | undefin
   {
     test: (_path, _text, top) =>
       top?.y === 0 && top.h <= 40 && [...walk(top)].some((n) => /^\d{1,2}:\d{2}$/.test(n.name)),
-    reason: 'iOS status bar (design-only chrome, d-089)',
+    reason: statusBarReason,
   },
   {
     test: (path) => path.some((p) => p.startsWith('keyboard (iOS')),

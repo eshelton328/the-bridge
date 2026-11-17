@@ -8,37 +8,30 @@ library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library
 ## Checks
 
 - Text: pass (59 strings; 1 excepted in `exceptions.json`).
-- Position: 1 of 13 layers pass (`tab bar`).
+- Position: 7 of 13 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `section · RUN IN`, `start`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · next step`: x +2, y -25, w -4, h -19; 29 px removed: y +4.
-- `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
-- `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `section · WHY`: x +2, y -25, w -4, h +2; 29 px removed: y +4.
-- `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h -12; 29 px removed: y +8.
-- `section · RUN IN`: x +2, y -31, w -4, h +1; 29 px removed: y -2.
-- `start`: x +2, y -28, w -4, h -1; 29 px removed: y +1.
-- `section · MY NOTES`: x +2, y -27, w -4, h +7; 29 px removed: y +2.
-- `notes field`: x +2, y -25, w -4, h +5; 29 px removed: y +4.
-- `section · SOURCES`: x +2, y -18, w -4, h +2; 29 px removed: y +11.
-- `run in picker`: x -4, y -29.5, w +0, h +5; 29 px removed: y -0.5.
+- `task · next step`: x +2, y +4, w -4, h -19.
+- `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -12.
+- `section · MY NOTES`: x +2, y +2, w -4, h +7.
+- `notes field`: x +2, y +4, w -4, h +5.
+- `section · SOURCES`: x +2, y +11, w -4, h +2.
+- `run in picker`: x -4, y -0.5, w +0, h +5.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in T02: sections are 24 px apart against
@@ -50,18 +43,17 @@ status bar.
   above and below with 20 px lines, where Figma's field is taller with
   21 px lines and a 15 px inset, so the section is 12 px shorter
   (`section · SUGGESTED PROMPT` h -12) and the sections below start
-  higher. Library gap: Small text in the detail. The Edited pill beside
+  higher than the section spacing alone would put them. Library gap: Small text in the detail. The Edited pill beside
   the heading is 20 px high, as Figma's (`Badge size="sm"`, beta.5).
-- **Offsets that beta.5 exposed.** The Recommended pill in the Run in
+- **What beta.5 changed.** The Recommended pill in the Run in
   card is now 20 px high, as Figma's (`Badge size="sm"`, 24 before), so
   the card is 1 px taller instead of 5 (`section · RUN IN` h +1) and the
   task 4 px shorter (`task · next step` h -15 to -19). The layers below
-  it move up 4 px and further from Figma's y (`start` y -24 to -28,
-  `section · MY NOTES` y -23 to -27, `notes field` y -21 to -25,
-  `section · SOURCES` y -14 to -18): these are the existing offsets of
-  the shorter prompt editor and the status bar above, no longer hidden
-  by the taller pill. The picker opens under Change, which sits 2 px
-  higher in the shorter card (`run in picker` y -27.5 to -29.5).
+  it move up 4 px, closer to Figma's y: `start` is within the
+  tolerance, and `section · MY NOTES` (y +2), `notes field` (y +4) and
+  `section · SOURCES` (y +11) sit lower by the section spacing, less
+  the shorter prompt editor. The picker opens under Change, which sits
+  2 px higher in the shorter card (`run in picker` y -0.5).
 - **Text caret.** Figma draws the editor's caret as a "|" after the
   prompt (346:8169); `exceptions.json` excepts that string, and the
   story checks the editor's text.

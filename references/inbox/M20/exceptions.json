@@ -2,10 +2,12 @@
   "missing": [
     {
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and to its Figma frame from pages.md, and leave them in Backlog for me to review. Before writing, check that each frame exists, and list any that do not.",
+      "layers": ["402:2348"],
       "reason": "Figma cuts the prompt too: the text layer 402:2348 is 210 high inside the 128 px prompt box 402:2347, under the fade 402:2349, as in M2. The render's Clamp cuts it after five lines; Read the whole prompt opens it in full."
     },
     {
       "text": "f-005 the-bridge",
+      "layers": ["402:2385"],
       "reason": "Layer 402:2385 is the detail of a source in the SOURCES section (402:2375, y 623), which sits under the pinned Start (402:2435) where frame.png does not show it. The render keeps Sources below My notes, where the page scrolls, as in M2. The same text in the visible chip is then not checked either, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions)."
     }
   ],

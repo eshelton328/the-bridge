@@ -8,32 +8,28 @@ library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 3 of 11 layers pass (`running`, `running card`, `tab bar`).
+- Position: 7 of 11 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `running`, `running card`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · running`: x +2, y -25, w -4, h -13; 29 px removed: y +4.
-- `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
-- `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `section · WHY`: x +2, y -25, w -4, h +2; 29 px removed: y +4.
-- `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h -2; 29 px removed: y +8.
-- `section · MY NOTES`: x +2, y -21, w -4, h +7; 29 px removed: y +8.
-- `section · SOURCES`: x +2, y -12, w -4, h +2; 29 px removed: y +17.
+- `task · running`: x +2, y +4, w -4, h -13.
+- `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -2.
+- `section · MY NOTES`: x +2, y +8, w -4, h +7.
+- `section · SOURCES`: x +2, y +17, w -4, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets below give the rest as "29 px removed". Library gap: Top and
-  bottom safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in D01: sections are 24 px apart against
@@ -43,16 +39,15 @@ status bar.
   (library gap: 22 px title). `BackRow` is 28 px high against Figma's
   32 (`nav · back` h -4); 12 px under it puts the task bar 40 px below
   the row's top against Figma's 42.
-- **Offset that beta.5 exposed.** The sent prompt is now five 20 px
+- **What beta.5 changed.** The sent prompt is now five 20 px
   `bodySm` lines (100 px) where it was 105: the faded `Clamp` cuts by
   height (#104), so the prompt's text style moved from an inline span,
   whose 13 px text in the panel's 14 px line made 21 px lines, onto a
   block. Figma's lines are 21, which no token has. The prompt section is
   now within the tolerance (h +3 to -2) and the task 5 px shorter
-  (`task · running` h -8 to -13), so MY NOTES and SOURCES move up 5 px
-  and further from Figma's y (`section · MY NOTES` y -16 to -21,
-  `section · SOURCES` y -7 to -12): the existing status bar and section
-  spacing offsets, no longer hidden by the taller prompt.
+  (`task · running` h -8 to -13), so MY NOTES and SOURCES move up 5 px,
+  closer to Figma's y, and still sit lower by the section spacing
+  above (`section · MY NOTES` y +8, `section · SOURCES` y +17).
 - **Run card.** The run card stays at the bottom of the screen above
   the tab bar, on the chrome with a top border (`running`, `running card`
   pass).
@@ -91,9 +86,9 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   the open item through the page store (`inboxStore` `setItemOpen`), so
   the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
 
-`section · SOURCES` failed only by moving up: the MY NOTES card is 4 px
-shorter, and the status bar's -29 no longer cancels the layout's +26;
-beta.5's 5 px shorter prompt moved it up again (y -12).
+`section · SOURCES` fails on the section spacing above it (y +17,
+measured below Figma's status bar, d-101). The 4 px shorter MY NOTES
+card and beta.5's 5 px shorter prompt each moved it closer to Figma's y.
 
 ## Disabled controls
 

@@ -28,8 +28,8 @@ const storyWithPortal = `<body style="margin:0;background:#123">
 </script>
 </body>`
 
-async function screenshotOf(tab: Page, html: string, path: string) {
-  await tab.setViewportSize({ width: w, height: h })
+async function screenshotOf(tab: Page, html: string, path: string, height = h) {
+  await tab.setViewportSize({ width: w, height })
   await tab.setContent(html)
   await tab.screenshot({ path })
 }
@@ -80,6 +80,42 @@ void test('draws the Figma frame unchanged when the story tab has an open portal
     assert.deepEqual(await pixels(helper, out, 0, sideBySideLabel), await pixels(helper, figma, 0, 0))
     assert.deepEqual(await pixels(helper, out, w + sideBySideGap, sideBySideLabel), await pixels(helper, render, 0, 0))
     assert.equal(context.pages().length, 2, 'the compose page is closed')
+  } finally {
+    await browser.close()
+    rmSync(dir, { recursive: true })
+  }
+})
+
+void test('draws the render below the status bar, so its layers line up with Figma and both end at the bottom', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'side-by-side-'))
+  const browser = await chromium.launch()
+  const statusBar = 10
+  try {
+    const context = await browser.newContext({ deviceScaleFactor: 1 })
+    const helper = await context.newPage()
+    const figma = join(dir, 'frame.png')
+    const render = join(dir, 'render.png')
+    await screenshotOf(helper, '<body style="margin:0;background:#3e3"></body>', figma)
+    // Taken w × (h − statusBar), as fidelity.ts takes a phone or tablet render.
+    await screenshotOf(
+      helper,
+      '<body style="margin:0;background:linear-gradient(#e33,#33e)"></body>',
+      render,
+      h - statusBar,
+    )
+    const out = join(dir, 'sideBySide.png')
+    await composeSideBySide(helper, figma, render, out, w, h, statusBar)
+
+    // The whole render, from its first row, starts statusBar px lower: the
+    // area below it in both reads as empty, past the bottom of each image.
+    assert.deepEqual(
+      await pixels(helper, out, w + sideBySideGap, sideBySideLabel + statusBar),
+      await pixels(helper, render, 0, 0),
+    )
+    // Above it, where Figma draws the status bar, an empty white band.
+    const band = await pixels(helper, out, w + sideBySideGap, sideBySideLabel)
+    assert.deepEqual(band.slice(0, 4 * w), Array.from({ length: w }, () => [255, 255, 255, 255]).flat())
+    assert.deepEqual(await pixels(helper, out, 0, sideBySideLabel), await pixels(helper, figma, 0, 0))
   } finally {
     await browser.close()
     rmSync(dir, { recursive: true })

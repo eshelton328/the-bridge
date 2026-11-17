@@ -83,7 +83,7 @@ const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textD
 
 function Rows({
   rows,
-  ui,
+  selectedId,
   query,
   onSelectItem,
   onActions,
@@ -91,7 +91,8 @@ function Rows({
   phone,
 }: {
   rows: InboxGroupView['rows']
-  ui: InboxUi
+  /** The row drawn selected: the open task's. */
+  selectedId: string | null
   query: string | undefined
   onSelectItem: ((id: string) => void) | undefined
   /** The row that opens: the item the state has a detail for. */
@@ -103,7 +104,7 @@ function Rows({
     <InboxRow
       key={row.id}
       row={row}
-      selected={row.id === ui.selectedId}
+      selected={row.id === selectedId}
       query={query}
       phone={phone}
       onSelect={
@@ -128,6 +129,8 @@ function Rows({
 export type InboxListPaneProps = {
   data: InboxData
   ui: InboxUi
+  /** The row drawn selected: the open task's (d-101). */
+  selectedId: string | null
   /** The screen's layout: a pane beside the detail on the desktop, the whole screen on a tablet or phone. */
   layout?: Viewport | undefined
   onFilterChange?: ((filter: string) => void) | undefined
@@ -149,6 +152,7 @@ const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' 
 export function InboxListPane({
   data,
   ui,
+  selectedId,
   layout = 'desktop',
   onFilterChange,
   onGroupOpenChange,
@@ -290,7 +294,7 @@ export function InboxListPane({
             {open && group.projects === undefined ? (
               <Rows
                 rows={group.rows}
-                ui={ui}
+                selectedId={selectedId}
                 query={marked}
                 onSelectItem={onSelectItem}
                 onActions={onActions}
@@ -304,7 +308,7 @@ export function InboxListPane({
                     <GroupHeader variant="project" label={p.label} leading={<FolderIcon />} />
                     <Rows
                       rows={p.rows}
-                      ui={ui}
+                      selectedId={selectedId}
                       query={marked}
                       onSelectItem={onSelectItem}
                       onActions={onActions}

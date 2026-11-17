@@ -10,8 +10,8 @@ The Figma references the checks read are in
 | File                 | What it does                                                                                                                                                       |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks                                                                            |
-| `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have                                                                             |
-| `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px)                                                                          |
+| `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have; a `missing` exception skips only the layers it names                       |
+| `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px), measured below Figma's status bar on a tablet or phone                  |
 | `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills the frame's height, no stretched pill                                                 |
 | `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs) |
 | `sideBySide.ts`      | Draws the side-by-side PNG (Figma left, render right) in a new page, so no popover of the story leaks into it                                                      |
@@ -84,15 +84,29 @@ entry needs a reason. All keys are optional:
 
 ```json
 {
-  "missing": [{ "text": "Add a note…", "reason": "…" }],
+  "missing": [{ "text": "Add a note…", "layers": ["346:1189"], "reason": "…" }],
   "extra": [{ "text": "Beta", "reason": "…" }],
   "position": [{ "layer": "task pane", "reason": "…" }],
   "rules": [{ "rule": "scrollBar", "selector": "section", "reason": "…" }]
 }
 ```
 
+A `missing` entry names the Figma text layers it covers by id
+(`layers`, one or more); the text check skips only those layers, so the
+same text in another layer is still checked (d-101). Each id must be a
+text layer with that text, or the check stops with an error.
+
 Design-only chrome text (the iOS status bar and keyboard, d-089) is in
 the `exclude` list of `frame.json`, which `buildReferences.ts` writes.
+
+The app draws no status bar (d-089). On a frame with one (tablet 29 px,
+phone 38 px; the top-level layer at y 0 that holds the excluded
+status-bar text), `pnpm fidelity` measures the text and rules in the
+frame's full size, then renders the page again in a viewport the bar's
+height shorter for the position check, which adds that height to each
+render y (d-101). That render is `<frameId>.render.png`, and the
+side-by-side draws it that much lower, under a blank band where Figma
+has the bar. Desktop frames have no status bar and render once.
 
 ## Rules
 

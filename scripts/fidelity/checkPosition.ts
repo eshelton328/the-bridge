@@ -1,7 +1,10 @@
 // The position check (fidelity loop step 4): each element that carries
 // data-figma="<layer name or node id>" sits where the Figma layer sits,
 // within the frame's tolerance (4 px unless frame.json sets another).
-import type { FrameRef, Layer } from './figmaMetadata.ts'
+// On a tablet or phone frame Figma draws an iOS status bar that the app
+// does not (d-089), so fidelity.ts renders the page that much shorter and
+// this check adds the bar's height to each render y (d-101).
+import { statusBarReason, type FrameRef, type Layer } from './figmaMetadata.ts'
 import type { FigmaBox } from './inPage.ts'
 import type { Exceptions } from './references.ts'
 
@@ -21,6 +24,8 @@ export type PositionResult = {
   ok: boolean
   tolerance: number
   checked: number
+  /** Height of Figma's status bar in px, added to each render y; 0 when the frame has none. */
+  statusBar: number
   passed: string[]
   diffs: PositionDiff[]
   excepted: string[]
@@ -35,8 +40,40 @@ export function findLayer(layers: readonly Layer[], key: string): Layer | Layer[
   return named.length === 1 ? named[0] : named.length > 1 ? named : undefined
 }
 
+/**
+ * Height of the iOS status bar that Figma draws at the top of the frame, in
+ * px; 0 when the frame has none (desktop). The bar is the top-level layer at
+ * y 0 that holds a text layer `exclude` lists as the status bar.
+ */
+export function statusBarHeight(ref: Pick<FrameRef, 'layers' | 'exclude'>): number {
+  const ids = new Set(ref.exclude.filter((e) => e.reason === statusBarReason).map((e) => e.id))
+  const heights = new Set<number>()
+  for (const text of ref.layers.filter((l) => ids.has(l.id))) {
+    const top = text.path.split(' > ')[0]
+    const bar = ref.layers.find(
+      (l) =>
+        l.path === '' &&
+        l.name === top &&
+        l.y === 0 &&
+        l.x <= text.x &&
+        l.y <= text.y &&
+        l.x + l.w >= text.x + text.w &&
+        l.y + l.h >= text.y + text.h,
+    )
+    if (bar === undefined) throw new Error(`No top-level layer at y 0 holds the status bar text ${text.id}`)
+    heights.add(bar.h)
+  }
+  if (heights.size > 1)
+    throw new Error(`The status bar texts sit in bars of different heights: ${[...heights].join(', ')}`)
+  return [...heights][0] ?? 0
+}
+
+/**
+ * `boxes` are measured in a viewport the status bar's height shorter than
+ * the frame (fidelity.ts), so each y moves down by that height.
+ */
 export function checkPosition(
-  ref: Pick<FrameRef, 'layers' | 'tolerance'>,
+  ref: Pick<FrameRef, 'layers' | 'tolerance' | 'exclude'>,
   exceptions: Pick<Exceptions, 'position'>,
   boxes: readonly FigmaBox[],
   tolerance = ref.tolerance,
@@ -44,6 +81,7 @@ export function checkPosition(
   // NaN or a negative tolerance would pass or fail every box unseen.
   if (!Number.isFinite(tolerance) || tolerance < 0)
     throw new Error(`The position tolerance must be a finite number of px, 0 or more; got ${String(tolerance)}`)
+  const statusBar = statusBarHeight(ref)
   const allowed = new Set(exceptions.position.map((p) => p.layer))
   const diffs: PositionDiff[] = []
   const passed: string[] = []
@@ -51,7 +89,8 @@ export function checkPosition(
   const counts = new Map<string, number>()
   for (const b of boxes) counts.set(b.key, (counts.get(b.key) ?? 0) + 1)
 
-  for (const box of boxes) {
+  for (const measured of boxes) {
+    const box = { ...measured, y: measured.y + statusBar }
     if (allowed.has(box.key)) {
       excepted.push(box.key)
       continue
@@ -105,5 +144,5 @@ export function checkPosition(
       })
     } else passed.push(box.key)
   }
-  return { ok: diffs.length === 0, tolerance, checked: boxes.length, passed, diffs, excepted }
+  return { ok: diffs.length === 0, tolerance, statusBar, checked: boxes.length, passed, diffs, excepted }
 }

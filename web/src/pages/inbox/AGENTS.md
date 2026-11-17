@@ -13,7 +13,8 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   setters, and `onUiChange` reports the `ui` changes.
 - `screens/InboxScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail, the list pane
-  (`InboxListPane`) and the detail (`InboxDetail`) side by side; on a
+  (`InboxListPane`) and the detail (`InboxDetail`) side by side, with the
+  open task's row drawn selected (d-101); on a
   tablet or phone the list, or the open item under Back
   (`BackToInbox`), full width over the tab bar (`AppTabBar`), which a
   chat hides. The `viewport` prop applies only until the width is
@@ -64,8 +65,8 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   discussion's reply box adds Erik's message after its entries
   (`ui.sent`); the box has no attach button until a file flow is designed.
   Undo in the toast also takes out the rows a state draws as created
-  (`toast.created`, D18 and T21). The removal flow is
-  not decided (M25 note). Start on a next step starts it
+  (`toast.created`, D18 and T21). The removal flow
+  stays as built (d-101; the M25 note calls it undecided). Start on a next step starts it
   (`ui.started`): `screens/startView.ts` (tested in
   `discussionView.test.ts`) shows the launch's `start`, the run card of
   the chat D5 shows, whose Reply here opens that chat. D7's Open chat

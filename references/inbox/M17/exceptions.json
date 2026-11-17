@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "layers": ["402:1853"],
       "reason": "Figma cuts the prompt too: the text layer 402:1853 is 210 high inside the 128 px prompt box 402:1852, under the fade 402:1854, as in M2. The render's Clamp cuts it after five lines; Read the whole prompt opens it in full."
     }
   ],

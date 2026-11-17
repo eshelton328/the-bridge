@@ -2,10 +2,12 @@
   "missing": [
     {
       "text": "quiet-nebula · Creating 9 issues…",
+      "layers": ["346:11296"],
       "reason": "Figma draws the Running row's chat line under the tab bar too: layer 346:11296 sits at y 773, and the tab bar starts at y 767, so frame.png shows none of it. The render scrolls the list under the tab bar the same way."
     },
     {
       "text": "Working",
+      "layers": ["346:11301"],
       "reason": "Figma draws the Running row's Working pill under the tab bar too: layer 346:11301 sits at y 757, and the tab bar starts at y 767, so frame.png shows part of it. The render scrolls the list under the tab bar the same way."
     }
   ],

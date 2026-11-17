@@ -137,10 +137,15 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     )
     onBack?.()
   }
+  // The list draws the open task's row selected (d-101). The desktop shows the list and the state's task side by
+  // side, so its row is selected even after Back on a tablet and a resize, when `ui.selectedId` is null; a tablet or
+  // phone shows the list without a task, and selects the row of `ui.selectedId`.
+  const selectedId = desktop ? (data.detail?.id ?? null) : ui.selectedId
   const list = (
     <InboxListPane
       data={data}
       ui={ui}
+      selectedId={selectedId}
       layout={layout}
       onFilterChange={props.onFilterChange}
       onGroupOpenChange={props.onGroupOpenChange}

@@ -42,8 +42,11 @@ const reason = z.string().min(1)
 
 /** Hand-written exceptions for one frame; each needs a reason. */
 const exceptions = z.object({
-  /** Figma strings the render may leave out. */
-  missing: z.array(z.object({ text: z.string(), reason })).default([]),
+  /**
+   * Figma strings the render may leave out, each in the text layers named by
+   * id; the same string in another layer is still checked (d-101).
+   */
+  missing: z.array(z.object({ text: z.string(), layers: z.array(z.string()).min(1), reason })).default([]),
   /** Render strings Figma does not have that are allowed. */
   extra: z.array(z.object({ text: z.string(), reason })).default([]),
   /** data-figma keys whose box may differ. */
@@ -82,10 +85,15 @@ export function readFrameRef(page: string, frameId: string): FrameRef {
   return parseFrameRef(JSON.parse(readFileSync(file, 'utf8')), file)
 }
 
+/** Checks a parsed exceptions.json; `file` names it in the error. */
+export function parseExceptions(data: unknown, file: string): Exceptions {
+  const parsed = exceptions.safeParse(data)
+  if (!parsed.success) throw new Error(`${file}: ${z.prettifyError(parsed.error)}`)
+  return parsed.data
+}
+
 export function readExceptions(page: string, frameId: string): Exceptions {
   const file = join(frameDir(page, frameId), 'exceptions.json')
   if (!existsSync(file)) return exceptions.parse({})
-  const parsed = exceptions.safeParse(JSON.parse(readFileSync(file, 'utf8')))
-  if (!parsed.success) throw new Error(`${file}: ${z.prettifyError(parsed.error)}`)
-  return parsed.data
+  return parseExceptions(JSON.parse(readFileSync(file, 'utf8')), file)
 }

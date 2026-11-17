@@ -2,14 +2,17 @@
   "missing": [
     {
       "text": "Reset",
+      "layers": ["359:930"],
       "reason": "Layer 359:925 is a hidden button in the prompt header: frame.png shows no Reset beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
     },
     {
       "text": "Edit",
+      "layers": ["359:935"],
       "reason": "Layer 359:931 is a hidden button in the prompt header: frame.png shows no Edit beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
     },
     {
       "text": "hidden count",
+      "layers": ["359:1004"],
       "reason": "get_metadata gives the layer name of text 359:1004 as its characters; frame.png shows \"1 task hidden by filters\"."
     }
   ],

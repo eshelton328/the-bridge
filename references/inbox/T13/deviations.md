@@ -8,37 +8,32 @@ against the installed library 1.0.0-beta.5, which has #104 to #106), each with i
 ## Checks
 
 - Text: pass (49 strings).
-- Position: 1 of 13 layers pass (`tab bar`).
+- Position: 5 of 13 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · next step`: x +2, y -25, w -4, h -9; 29 px removed: y +4.
-- `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
-- `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `section · WHY`: x +2, y -25, w -4, h +2; 29 px removed: y +4.
-- `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h -2; 29 px removed: y +8.
-- `section · RUN IN`: x +2, y -21, w -4, h +1; 29 px removed: y +8.
-- `start`: x +2, y -18, w -4, h -1; 29 px removed: y +11.
-- `section · MY NOTES`: x +2, y -17, w -4, h +7; 29 px removed: y +12.
-- `notes field`: x +2, y -15, w -4, h +5; 29 px removed: y +14.
-- `section · SOURCES`: x +2, y -8, w -4, h +2; 29 px removed: y +21.
-- `menu · Snooze or dismiss`: x -5, y -35, w +0, h +22; 29 px removed: y -6.
+- `task · next step`: x +2, y +4, w -4, h -9.
+- `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -2.
+- `section · RUN IN`: x +2, y +8, w -4, h +1.
+- `start`: x +2, y +11, w -4, h -1.
+- `section · MY NOTES`: x +2, y +12, w -4, h +7.
+- `notes field`: x +2, y +14, w -4, h +5.
+- `section · SOURCES`: x +2, y +21, w -4, h +2.
+- `menu · Snooze or dismiss`: x -5, y -6, w +0, h +22.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in T02: sections are 24 px apart against
@@ -53,12 +48,13 @@ status bar.
   the panel's 14 px line made 21 px lines, onto a block. Figma's lines
   are 21, which no token has; the prompt section box is now within the
   tolerance (`section · SUGGESTED PROMPT` h +3 → -2), and `section · RUN
-  IN` starts 5 px higher (y -16 → -21). The Recommended pill is now 20 px
-  (`Badge size="sm"`, #106), as Figma's pills are, against 24 before, so
-  the Run in card is 1 px taller than Figma's 85 (h +5 → +1), and the
-  layers below it start 9 px higher than before (`start` y -9 → -18,
-  `section · MY NOTES` y -8 → -17, `notes field` y -6 → -15).
-  `section · SOURCES`, which passed before, is now y -8.
+  IN` starts 5 px higher than before (now y +8). The Recommended pill is
+  now 20 px (`Badge size="sm"`, #106), as Figma's pills are,
+  against 24 before, so the Run in card is 1 px taller than Figma's 85
+  (h +5 → +1), and the
+  layers below it start 9 px higher than before (now `start` y +11,
+  `section · MY NOTES` y +12, `notes field` y +14, `section · SOURCES`
+  y +21).
 - **Snooze menu.** As in D12: `Menu size="lg" width="md"` has
   Figma's 320 px width and 44 px rows, but its heading and separator
   make it 22 px taller (`menu · Snooze or dismiss` h +22); it opens 5
