@@ -3,7 +3,7 @@
 What still differs from Figma M9 · Read the whole prompt (the prompt in a sheet over the phone's task page, `promptSheet`), after the last
 fidelity run (`pnpm fidelity inbox M09`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -30,7 +30,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `section · SOURCES`: x +0, y +127, w +0, h +2.
 - `sticky action`: x +0, y -54, w +0, h -23.
 - `tab bar`: the frame has no layer "tab bar".
-- `346:10794`: x +0, y +54, w +0, h -53.
+- `346:10794`: x +0, y -10, w +0, h +11.
 
 ## Deviations
 
@@ -75,20 +75,25 @@ shorter, below Figma's status bar (d-102), and the position check adds
   the whole prompt, the read-only hint, and Edit prompt and Copy
   (`sheet actions`, `button · Edit prompt` and `button · Copy` pass).
   Figma sets the prompt in Regular 15 with 23 px lines (346:10794, 253
-  high); the render uses `body` (14/20), so the text is 53 px shorter
-  and the sheet starts lower (`346:10794` y +54, h -53). Done shows the
-  focus ring: the sheet focuses its first control. Library gaps:
-  Regular 15 px text, Bottom sheet sections and data attribute.
+  high); the render uses `bodyLg` (Regular 15/24, the 4 px grid value,
+  d-100), so the text is 11 px taller and the sheet starts 10 px higher
+  (`346:10794` y -10, h +11). Done shows the focus ring: the sheet
+  focuses its first control. Library gap: Bottom sheet sections and
+  data attribute.
 - **What the buttons do.** Edit prompt closes the sheet and opens the
   prompt editor with the focus in it (M3); Copy copies the whole prompt
   (`InboxRoute.test.tsx`). A sent prompt's sheet (M10) has Copy only.
 - **Sources under the sheet.** The checks render 806 px high (d-102).
   The source's detail lies under the prompt sheet in Figma and in the
   render (the exception says why).
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+- **Button labels.** Reset and Edit are `Button textSize="xs"`
+  (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100). Change,
+  Snooze and Dismiss are icons; the sheet's Edit prompt and Copy and the
+  pinned Start are `size="xl"` with the default label. The labels
+  match.
 - **Prompt fade.** Behind the sheet the task's prompt is cut by height
   and fades with no ellipsis, as Figma's (#104, as M2).
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `346:10794` x +0, y -10, w +0, h +11 (was x
+  +0, y +54, w +0, h -53). The cause is the whole prompt in `bodyLg`
+  (Regular 15/24, d-100; Figma 15/23; was `body`, 14/20).

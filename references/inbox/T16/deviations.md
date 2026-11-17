@@ -2,7 +2,7 @@
 
 What still differs from Figma T16 · Discuss, on the task page (`discussTask`, T2 with the task's discussion), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -70,9 +70,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
   bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Discuss, Snooze, Dismiss, Reset, Edit and Change
+  take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's
+  Medium 12, and Start takes `textSize="smStrong"` (`labelSmStrong`,
+  SemiBold 13/16), Figma's SemiBold 13 (d-100). The labels match
+  Figma's.
 
 ## Second review, round 2
 

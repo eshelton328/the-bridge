@@ -2,14 +2,14 @@
 
 What still differs from Figma T7 · Done (Done, the list, `doneList`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106; no layer moved), each
+library 1.0.0-beta.7, which has #107 and #108; no layer moved), each
 with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass.
-- Position: 5 of 7 layers pass (`header`, `filter · chips`, `list tools`, `group · TODAY`, `tab bar`).
+- Position: 6 of 7 layers pass (`header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -18,8 +18,7 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `inbox list`: x +2, y +0, w -4, h +12.
-- `group · YESTERDAY`: x +2, y +12, w -4, h +4.
+- `inbox list`: x +2, y +0, w -4, h -8.
 
 ## Deviations
 
@@ -34,27 +33,34 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in D01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower. Library gap: Small text in the detail.
-- **Done rows.** Figma fades the kind tiles of done rows (0.6); no
-  opacity token has it, and the fade waits on Erik (d-050). Library
-  gap: Styles that differ from Figma.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108), so each later group starts a little lower. The
+  later group now starts within the tolerance (`group · YESTERDAY`), and
+  the list is 8 px shorter than Figma's (`inbox list` h -8).
+- **Done rows.** A finished `ListRow` fades its kind tile to
+  `opacity.finished` 0.75 against Figma's 0.6 (library #107): at 0.6
+  the icons fall to 2.4:1 in light mode, under the 3:1 an icon needs
+  (d-100).
 - **Tab bar.** `TabBar` spreads its five tabs over the full width
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
 - **Button labels.** Newest and Filter use `Button textSize="sm"`
-  (Medium 13), as Figma's (beta.5, #105). The row actions and other
-  small buttons keep the 14 px `label`; Figma sets them in Medium 12,
-  which no text style has (d-050), so they are a little wider. Library
-  gap: Button label size.
+  (Medium 13), as Figma's (beta.5, #105). No other button shows. The
+  labels match Figma's.
 - **Search field and chip counts.** The search field sets its text and
   placeholder in `bodySm` (13 px, `SearchField textSize="sm"`), as
   Figma's. The placeholder stays `fg.subtle` #7986a6 against Figma's
   #4a5675 by d-055. Idle filter chip counts are `fg.subtle` (#7986a6,
   #106); Figma's #4a5675 stays out by d-099, because it fails WCAG AA
   (d-055).
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `inbox list` x +2, y +0, w -4, h -8 (was x
+  +2, y +0, w -4, h +12); `group · YESTERDAY` within tolerance (was x
+  +2, y +12, w -4, h +4). The cause is #108's compact `ListRow` (56
+  px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
+  34).
 
 ## Second review
 
@@ -71,8 +77,7 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   line is `fg.subtle` #7986a6 against Figma's #4a5675 (d-055).
 - Search placeholder larger and lighter than Figma's: stays.
   `SearchField` draws its text in `body` (14 px) at every size against
-  Figma's 13 (library gap: Search field and chip count text, the same in
-  D01 to D21). Its colour is `fg.subtle` #7986a6 against Figma's
+  Figma's 13 (then a library gap, the same in D01 to D21; closed by #106). Its colour is `fg.subtle` #7986a6 against Figma's
   #4a5675 by d-055.
   (Fixed by beta.5: `SearchField textSize="sm"` sets the text and
   placeholder in `bodySm`, 13 px; the colour stays by d-055.)

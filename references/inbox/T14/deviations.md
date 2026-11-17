@@ -2,13 +2,13 @@
 
 What still differs from Figma T14 · Filter (the Filter menu open over the list, `filterList`, T1 `list` with skill-evals cleared in the menu), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (85 strings).
-- Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
+- Position: 6 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -17,9 +17,8 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `inbox list`: x +2, y +0, w -4, h +21.
-- `group · NEXT STEPS`: x +2, y +18, w -4, h +4.
-- `group · SNOOZED`: x +2, y +31, w -4, h +4.
+- `inbox list`: x +2, y +0, w -4, h -5.
+- `group · SNOOZED`: x +2, y +7, w -4, h +2.
 - `filter popover`: x -2, y -2, w +0, h +62.
 
 ## Deviations
@@ -35,10 +34,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in T01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower and the list is taller (`inbox list` h). Library gap: Small text
-  in the detail.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108), so each later group starts a little lower
+  (`group · SNOOZED` y +7). The list is 5 px shorter than Figma's
+  (`inbox list` h -5).
 - **Search field and chip counts.** The search field's text and
   placeholder are 13 px (`SearchField textSize="sm"`, `bodySm`, #106),
   as Figma's (346:8703). Idle chip counts are `fg.subtle` (#7986a6, #106);
@@ -51,10 +51,19 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
 - **Button labels.** Newest and Filter take `Button textSize="sm"`
-  (Medium 13, #105), as Figma draws them. The other labels are 14 px
-  (`label`), where Figma sets small buttons in Medium 12 (no token,
-  d-050), so those buttons are a little wider. Library gap: Button
-  label size.
+  (Medium 13, #105), as Figma draws them. The approval row's Allow
+  once, Deny and Open chat take `textSize="xs"` (`labelXs`, Medium
+  12/16), Figma's Medium 12 (d-100). The Filter menu's Clear is still
+  `Button size="sm"` in `label` (Medium 14) against Figma's Medium 12
+  (346:8975, a 16 px text box), so it is a little wider: `ListTools`
+  passes it no `textSize`. Library gap: Button label size.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `inbox list` x +2, y +0, w -4, h -5 (was x
+  +2, y +0, w -4, h +21); `group · NEXT STEPS` within tolerance (was x
+  +2, y +18, w -4, h +4); `group · SNOOZED` x +2, y +7, w -4, h +2
+  (was x +2, y +31, w -4, h +4). The cause is #108's compact `ListRow`
+  (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
+  Figma 34).
 
 ## Second review
 

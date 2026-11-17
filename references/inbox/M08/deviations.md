@@ -3,7 +3,7 @@
 What still differs from Figma M8 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
 fidelity run (`pnpm fidelity inbox M08`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -42,7 +42,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Figma's 13, so the chevron is 4 px left (`chevron · open task` x -4,
   within the tolerance) and the chat line 4 px right (`running
   in` x +4, w -8); the box is 6 px taller (`started task` h +6).
-  Workspaces is wider because of its 14 px label (`button · Open in
+  Workspaces is wider because of its 14 px label (`label`) against
+  Figma's smaller one (346:10847, a 16 px line; `button · Open in
   Workspaces` x -7, w +7). Library gaps: Chat header on the tablet,
   Button label size.
 - **Title.** The title shows whole on one line, as Figma draws it, and
@@ -54,8 +55,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `paneTitle` (15) cuts it. Library gaps: Title of the started task on
   the phone, Chat header on the tablet.
 - **Chat.** The entries are 12 apart, as in Figma (346:10863 to
-  346:10884). Copy, Stop and send are larger than Figma's because of
-  their 14 px labels and sizes. Library gap: Button label size.
+  346:10884). Copy under the reply is `Button size="xs" textSize="xs"`:
+  24 px high against Figma's 22 (the 4 px grid value, d-100) and
+  Medium 12 against Figma's 11 px label, since no label style is 11.
+  Stop and send are larger than Figma's because of `Composer`'s 14 px
+  label and sizes. Library gap: Button label size.
 - **Reply box.** `AppShell` keeps the home-indicator area under the
   reply box on the phone, so the box sits 6 px higher than Figma's and
   3 px taller (`346:10886` y -6, h +3). It is not focused: Figma draws a

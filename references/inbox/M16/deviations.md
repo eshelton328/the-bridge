@@ -2,13 +2,13 @@
 
 What still differs from Figma M16 · Filtered (`filteredList`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fail (56 strings checked; 1 Figma strings under exceptions.json). Not shown: `ncc-1701 · f-005 · NCC-28`, `quiet-nebula · Creating 9 issues…`, `Working`.
-- Position: 6 of 11 layers pass (`header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `tab bar`).
+- Text: pass (56 strings checked; 1 Figma strings under exceptions.json).
+- Position: 8 of 11 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -17,11 +17,9 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `inbox list`: x +0, y +0, w +0, h +24.
-- `group · NEXT STEPS`: x +0, y +18, w +0, h +4.
-- `group · SNOOZED`: x +0, y +25, w +0, h +4.
-- `group · RUNNING`: x +0, y +29, w +0, h +4.
-- `hidden count`: x +0, y +38, w -1.3, h +0.
+- `group · SNOOZED`: x +0, y +5, w +0, h +2.
+- `group · RUNNING`: x +0, y +7, w +0, h +2.
+- `hidden count`: x +0, y +10, w -1.3, h +0.
 
 ## Deviations
 
@@ -36,10 +34,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   neither. Library gap:
   Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in M01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower and the list is taller (`inbox list` h). Library gap: Small
-  text in the detail.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108), so each later group starts a little lower
+  (`group · NEXT STEPS` and `inbox list` within tolerance,
+  `group · SNOOZED` y +5, `group · RUNNING` y +7).
 - **Header, chips and tools.** As in M01: `PageHeader size="phone"` is
   40 px high against Figma's 44 (`header` h -4) and the tools row 40
   against 44 (`list tools` h -4); the chip row's box is 34 against
@@ -64,16 +63,26 @@ shorter, below Figma's status bar (d-102), and the position check adds
   22 px chips (`filters applied` h +2). Library gap: Removable filter
   chip.
 - **Hidden count.** "1 task hidden by filters" ends the list, under the
-  tab bar, as in Figma; the taller rows and group headers above it put
-  it lower (`hidden count` y +38). Figma's metadata gives the text by
+  tab bar, as in Figma; the rows and group headers above it put it a
+  little lower (`hidden count` y +10). Figma's metadata gives the text by
   its layer name, and the exception says why.
 - **Running row below the fold.** The checks render 806 px high, the
-  screen below the status bar (d-102). The taller rows and group headers
-  put the Running row 29 px lower than Figma's (`group · RUNNING` y +29),
-  so its meta line (`ncc-1701 · f-005 · NCC-28`), chat line
-  (`quiet-nebula · Creating 9 issues…`) and `Working` pill, which Figma
-  shows above the tab bar, lie under it. The text check fails on them
-  until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
+  screen below the status bar (d-102). The Running group starts 7 px
+  lower than Figma's (`group · RUNNING` y +7), and its row's meta line
+  (`ncc-1701 · f-005 · NCC-28`), chat line
+  (`quiet-nebula · Creating 9 issues…`) and `Working` pill show above
+  the tab bar, as in Figma, so the text check passes.
+- **Button labels.** The approval row's Allow once, Deny and Open chat
+  are `Button textSize="xs"` (`labelXs`, Medium 12/16), as Figma's
+  Medium 12 (d-100). Sort and Filter are icons, Clear is a link, and the
+  applied values are pressed small buttons (see Filters that apply).
+  No other label in this frame is open in the library.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `inbox list` within tolerance (was x +0, y
+  +0, w +0, h +24); `group · NEXT STEPS` within tolerance (was x +0, y
+  +18, w +0, h +4); `group · SNOOZED` x +0, y +5, w +0, h +2 (was x
+  +0, y +25, w +0, h +4); `group · RUNNING` x +0, y +7, w +0, h +2
+  (was x +0, y +29, w +0, h +4); `hidden count` x +0, y +10, w -1.3, h
+  +0 (was x +0, y +38, w -1.3, h +0). The cause is #108's compact
+  `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
+  was 38; Figma 34).

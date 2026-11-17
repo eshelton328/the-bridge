@@ -2,7 +2,7 @@
 
 What still differs from Figma M24 · Confirm the removal (`removeConfirmPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -23,8 +23,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `discussion`: x +0, y +27, w +0, h -126.
 - `event`: x +0, y +13, w -51, h +2.
 - `message · you`: x +0, y +15, w +0, h +1.
-- `message · discussion`: x +0, y +16, w +0, h +6.
-- `proposal · REMOVE THIS TASK`: x +0, y +22, w +0, h +6.
+- `message · discussion`: x +0, y +16, w +0, h +2.
+- `proposal · REMOVE THIS TASK`: x +0, y +18, w +0, h +6.
 - `composer · discussion`: x +0, y -6, w +0, h +3.
 - `sheet · Remove this task`: x +13, y +52, w -26, h -87.
 - `402:7846`: x +0, y -2, w +0, h +8.
@@ -76,10 +76,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   shows it, as in T17.
 - **Messages.** Erik's message and the reply as in T18 and D15: their
   text is `body` (14/20) against Figma's 13/19, so each is a few px
-  taller (`message · you`, `message · discussion` h). The reply's
-  author, "Discussion" (402:7804), is `label` (Medium 14); Figma sets it
-  in SemiBold 12/16, which no text style is. Library gap:
-  Message author icon and small text.
+  taller (`message · you`, `message · discussion` h). Library gap:
+  Message author icon and small text. The reply's author, "Discussion"
+  (402:7804), is `labelXsStrong` (SemiBold 12/16), as Figma's.
 - **Proposal block.** `ProposalBlock` as in T18 to T23; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
@@ -111,6 +110,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Behaviour.** Remove task closes the sheet and the discussion and
   shows the list, the task in Done with its reason; Keep it closes the
   sheet. `InboxRoute.test.tsx` checks both on the phone.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** The sheet's Remove task and Keep it are
+  `size="xl"` with the default label. Behind the sheet, the proposal's
+  Remove… and Keep it are `ProposalBlock`'s own `size="sm"` buttons in
+  `label` (Medium 14), which take no `textSize`; Figma sets them in
+  Medium 12, so they are a little wider. `Composer`'s send is larger
+  than Figma's 26 × 26. Library gap: Button label size.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `message · discussion` x +0, y +16, w +0, h
+  +2 (was x +0, y +16, w +0, h +6); `proposal · REMOVE THIS TASK` x
+  +0, y +18, w +0, h +6 (was x +0, y +22, w +0, h +6). The cause is
+  the discussion reply's author name in `labelXsStrong` (SemiBold
+  12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.

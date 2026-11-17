@@ -2,7 +2,7 @@
 
 What still differs from Figma T18 · A proposed update (`changeProposedPage`, D15 on the discussion page), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -24,8 +24,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `guard`: x +6, y +10, w -12, h +2.
 - `discussion`: x +2, y +30, w -4, h -103.
 - `message · you`: x +2, y +16, w +148, h +1.
-- `message · discussion`: x +2, y +17, w +148, h -14.
-- `proposal · UPDATE THIS TASK`: x +2, y +3, w +148, h -10.
+- `message · discussion`: x +2, y +17, w +148, h -18.
+- `proposal · UPDATE THIS TASK`: x +2, y -1, w +148, h -10.
 - `composer · discussion`: x +2, y +20, w -4, h +3.
 
 ## Deviations
@@ -77,7 +77,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Messages.** Erik's message is `Message from="user"` and the reply is
   composed in `DiscussionEntry`, as in D15; their text is `body`
   (14/20) against Figma's 13/19, and the reply has the bubble Figma
-  draws. Library gap: Message author icon and small text.
+  draws. The reply's author name, "Discussion", is `labelXsStrong`
+  (SemiBold 12/16), Figma's (was `label`, Medium 14/20). Library gap:
+  Message author icon and small text.
 - **Proposal block.** `ProposalBlock` as in D15 to D19; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
@@ -85,9 +87,22 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Discard takes the proposal out, Edit first opens the prompt editor
   with the change filled in, and Undo takes the change back.
   `InboxRoute.test.tsx` checks each at 756 px.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Apply, Discard and Edit first are `ProposalBlock`'s own
+  `size="sm"` buttons in `label` (Medium 14) and take no `textSize`;
+  Figma sets them in Medium 12, so they are a little wider. Library
+  gap: Button label size.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108), with this branch's app changes, move these layers: `message · discussion` x +2, y +17, w +148,
+  h -18 (was x +2, y +17, w +148, h -14); `proposal · UPDATE THIS
+  TASK` x +2, y -1, w +148, h -10 (was x +2, y +3, w +148, h -10). The
+  cause is the discussion reply's author name in `labelXsStrong`
+  (SemiBold 12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter
+  line. `message · discussion` moves further from Figma: a
+  Figma-matching change exposes an offset that was already there: the
+  reply was already shorter than Figma's (its text runs
+  148 px wider than Figma's 560 px column and wraps to fewer lines, see
+  Discussion column), and the Figma-matching author line
+  takes 4 px more off it.
 
 ## Second review, round 2
 

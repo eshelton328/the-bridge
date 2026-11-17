@@ -2,7 +2,7 @@
 
 What still differs from Figma T22 · Proposed removal (`removalProposedPage`, D19 on the discussion page), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -25,8 +25,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `discussion`: x +2, y +30, w -4, h -103.
 - `event`: x +2, y +16, w +0, h +2.
 - `message · you`: x +2, y +18, w +148, h +1.
-- `message · discussion`: x +2, y +19, w +148, h -14.
-- `proposal · REMOVE THIS TASK`: x +2, y +5, w +148, h +8.
+- `message · discussion`: x +2, y +19, w +148, h -18.
+- `proposal · REMOVE THIS TASK`: x +2, y +1, w +148, h +8.
 - `composer · discussion`: x +2, y +20, w -4, h +3.
 
 ## Deviations
@@ -78,15 +78,30 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Messages.** Erik's message is `Message from="user"` and the reply is
   composed in `DiscussionEntry`, as in D15; their text is `body`
   (14/20) against Figma's 13/19, and the reply has the bubble Figma
-  draws. Library gap: Message author icon and small text.
+  draws. The reply's author name, "Discussion", is `labelXsStrong`
+  (SemiBold 12/16), Figma's (was `label`, Medium 14/20). Library gap:
+  Message author icon and small text.
 - **Proposal block.** `ProposalBlock` as in D15 to D19; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
 - **Behaviour.** Remove… opens the confirm dialog (T23) and Keep it
   takes the proposal out (`InboxRoute.test.tsx`).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Remove… and Keep it are `ProposalBlock`'s own
+  `size="sm"` buttons in `label` (Medium 14) and take no `textSize`;
+  Figma sets them in Medium 12, so they are a little wider. Library
+  gap: Button label size.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108), with this branch's app changes, move these layers: `message · discussion` x +2, y +19, w +148,
+  h -18 (was x +2, y +19, w +148, h -14); `proposal · REMOVE THIS
+  TASK` x +2, y +1, w +148, h +8 (was x +2, y +5, w +148, h +8). The
+  cause is the discussion reply's author name in `labelXsStrong`
+  (SemiBold 12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter
+  line. `message · discussion` moves further from Figma: a
+  Figma-matching change exposes an offset that was already there: the
+  reply was already shorter than Figma's (its text runs
+  148 px wider than Figma's 560 px column and wraps to fewer lines, see
+  Discussion column), and the Figma-matching author line
+  takes 4 px more off it.
 
 ## Second review, round 2
 
@@ -94,5 +109,5 @@ A second blind review compared `frame.png` with the render (2026-11-17). Each fi
 
 - Reply box not focused (P1): checked, it is. The play test focuses the reply box and asserts `toHaveFocus`, and the capture shows the focused border: the reply box's top edge is #3a819d (`border.selected` over the fill) against #24314f unfocused. Figma's focused border is #6863b0, so the render's focus reads as a faint cyan line. Library gap: Composer focus.
 - Remove… with a neutral fill and grey border (P2): fixed. It is `Button variant="dangerSoft"` now: the danger tint fill and the danger border, as Figma draws it (402:12385). The library notes its label falls under 4.5:1 in light mode only; the-bridge is dark. D19 and D20 share the block and change with it.
-- "Discussion" author label larger and lighter (P2): recorded. Figma sets it in SemiBold 12/16; no text style is 12 px SemiBold, so it stays `label` (Medium 14). Library gap: Message author icon and small text.
+- "Discussion" author label larger and lighter (P2): recorded. Figma sets it in SemiBold 12/16; no text style is 12 px SemiBold, so it stays `label` (Medium 14). Library gap: Message author icon and small text. (Fixed by beta.7: the name is `labelXsStrong`, SemiBold 12/16, Figma's.)
 - Model chip chevron thin and grey (P3): recorded. `ModelChip` draws its chevron in `fg.muted` and has no prop for Figma's heavier #e6ecff one. Library gap: Styles that differ from Figma.

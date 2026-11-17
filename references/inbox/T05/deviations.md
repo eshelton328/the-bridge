@@ -2,7 +2,7 @@
 
 What still differs from Figma T5 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106; no T5 layer moved), each
+library 1.0.0-beta.7, which has #107 and #108; no T5 layer moved), each
 with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -42,8 +42,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (`nav` y +8, h -10). The header `Panel` pads 16 against Figma's 12,
   so the chevron is 6 px left (`chevron · open task` x -6) and the chat line
   6 px right (`running in` x +6, w -12). Workspaces is wider because of
-  its 14 px label (`button · Open in Workspaces` x -8.8, w +6.8).
-  Library gaps: Chat header on the tablet, Button label size.
+  its 14 px label (`button · Open in Workspaces` x -8.8, w +6.8):
+  `OpenInWorkspaces` passes no `textSize`, so it draws `label` (Medium
+  14) against Figma's 12 px label (346:6377). Library gaps: Chat header
+  on the tablet, Button label size.
 - **Reply box.** Figma leaves a 21 px home-indicator area under the
   reply box; `AppShell` keeps it only on the phone, so the reply box
   sits 20 px lower (`346:6416` y +20). The story focuses the reply box,
@@ -53,6 +55,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Messages.** Messages are `body` (14/20) against Figma's 13/19, so
   Claude's reply wraps three words earlier. Library gap: Message author
   icon and small text.
+- **Copy and the reply box's buttons.** Copy under the reply is
+  `Button size="xs" textSize="xs"`: 24 px high against Figma's 22, the
+  4 px grid value (d-100), with a Medium 12 label (`labelXs`) against
+  Figma's 11, because no label style is 11. Stop and send are
+  `Composer`'s 28 px controls with 14 px labels, against Figma's 26.
+  Library gap: Button label size.
 
 ## Second review
 
@@ -69,7 +77,9 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 - Copy under the reply 72 × 28 with a 14 px label against 62 × 20 and
   11 px; Stop 69 × 30 and send 28 against 59 × 26 and 24: stays. The
   library's `Button size="sm"` and `Composer` controls are 28 px high
-  with 14 px labels (library gap: Button label size).
+  with 14 px labels (library gap: Button label size). (Copy fixed in
+  part by beta.7: `Button size="xs" textSize="xs"`, 24 px high with a
+  12 px label, d-100. Stop and send stay.)
 - 17 px from the task card to the first message against 23: fixed. The
   chat starts 24 below the card (Figma 22, 24 on the grid, d-072).
 - Back did not return to the list (caller's review). Fixed: Back closes

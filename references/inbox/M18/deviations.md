@@ -2,7 +2,7 @@
 
 What still differs from Figma M18 · Discussion, before the first message (`discussionPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -92,6 +92,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   is `eyebrow` in `fg.subtle`. A suggestion puts its question in the
   reply box (`InboxRoute.test.tsx`); Figma draws no state after the
   press, and nothing sends it.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** The suggestions are `Button textSize="xs"`
+  (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100); before, they
+  took `small` at the label weight through `css()`, the same 12/16
+  Medium. Still open: `Composer`'s send is larger than Figma's 26 × 26.
+  Library gap: Button label size.

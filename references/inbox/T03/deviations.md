@@ -2,7 +2,7 @@
 
 What still differs from Figma T3 · A question that blocks a chat (the question, `question`, shared with D2), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -43,8 +43,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   32 (`nav · back` h -4); 12 px under it puts the task bar 40 px below
   the row's top against Figma's 42.
 - **Waiting box.** `Panel tone="needsYou"` is 9 px taller than Figma's
-  (`blocking` h +9) and its tint is lighter: the needs-you panel tint
-  waits on Erik (d-050). Library gaps: Styles that differ from Figma.
+  (`blocking` h +9). Its tint is 0.08, Figma's (library #107). Its
+  border is `status.needsYou.border` at 0.5 against Figma's 0.35,
+  because 0.35 gives 2.0:1 against the tint and a border needs 3:1
+  (d-100).
 - **What beta.5 changed.** The Recommended pill in the selected
   option card is now 20 px high, as Figma's (`Badge size="sm"`, 24
   before), so CHOOSE ONE is 3 px taller than Figma's instead of 7
@@ -56,10 +58,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
-- **Button labels.** Snooze, Dismiss, Allow once, Deny and Open chat
-  keep the 14 px `label`; Figma sets them in Medium 12, which no text
-  style has (d-050), so they are a little wider. Library gap: Button
-  label size.
+- **Button labels.** Snooze, Dismiss and the waiting box's Open chat
+  take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's
+  Medium 12 (d-100). The labels match Figma's.
 
 ## Second review
 
@@ -70,7 +71,8 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   It is the `secondary` button with Figma's own fill (#17213a,
   `surface.raised`, sampled from both pictures); it reads as filled
   because the waiting box's needs-you tint is lighter than Figma's
-  (#302b2d against #1a191b), which waits on Erik.
+  (#302b2d against #1a191b). (Fixed by beta.7: the tint is Figma's
+  0.08, library #107.)
 - "Sends your answer to the waiting chat." lighter than Figma's: stays.
   `fg.subtle` #7986a6 against #4a5675 (d-055).
 - The selected option card 5 px taller than Figma's: stays. Its

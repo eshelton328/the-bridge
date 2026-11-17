@@ -5,7 +5,7 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
@@ -43,27 +43,33 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   Figma fits on one line wraps to two here (`message · you` h +21 when
   it wraps). The discussion's reply is composed in the app: Figma puts a
   violet bubble before "Discussion", and `Message` draws only an agent's
-  kind mark there (library gap). Its text is `body` too, so it can wrap
-  where Figma's does not (`message · discussion` h +25).
+  kind mark there (library gap). The name "Discussion" is
+  `labelXsStrong` (SemiBold 12/16), as Figma's. Its text is `body` too,
+  so it can wrap where Figma's does not; here it does not
+  (`message · discussion` h +2).
 - **Proposal block.** The library's `ProposalBlock` with `ProposalDiff`,
   `ProposalSection` or checkboxes. Figma draws a spark icon before the
-  eyebrow; the block has no icon slot (library gap). Its buttons are
-  `sm`, as Figma's.
+  eyebrow; the block has no icon slot (library gap). Its buttons
+  (Remove…, Keep it) are `sm`, as Figma's, but their labels are the
+  default `label` (Medium 14) where Figma's are Medium 12:
+  `ProposalBlock`'s buttons take no `textSize` (LIBRARY_GAPS.md, row
+  "Button label size").
 - **Event line.** "Created 3 tasks · …" in `monoSm` with a green check,
   as Figma's (`event` passes).
 - **Proposed removal.** `ProposalBlock tone="remove"`: the struck-through
   title, the reason as `ProposalSection`, the note, Remove… as a
-  `dangerSoft` button with a bin (the danger tint and border, as Figma draws it) and Keep it. 13 px lower and 8 px
+  `dangerSoft` button with a bin (the danger tint and border, as Figma draws it) and Keep it. 9 px lower and 8 px
   taller, from the messages above and the library's spacing.
 - **Confirm dialog.** The library's `Dialog` (`role="alertdialog"`, 440
   px, `shell.dialog`) on its scrim: the meta line in `monoSm`, the text
   in `bodySm` and `fg.muted` (403:3918), the reason as an eyebrow and
   `bodySm` text in a `Panel` (403:3921), Keep it and a `danger` Remove
   task with a bin. It is 19 px taller and starts 9.5 px higher
-  (`dialog · Remove this task`): the 20 px lines against Figma's 19, the
-  panel's 16 px padding against 12 by 10, and the 14 px Remove task
-  label (Figma's SemiBold 13, d-050); Keep it is Medium 13 since beta.5
-  (`Button textSize="sm"`), as Figma's 403:3924. Keep it has the first
+  (`dialog · Remove this task`): the 20 px lines against Figma's 19 and
+  the panel's 16 px padding against 12 by 10. Remove task is SemiBold 13
+  since beta.7 (`Button textSize="smStrong"`, `labelSmStrong`), and Keep
+  it Medium 13 since beta.5 (`Button textSize="sm"`), as Figma's
+  403:3924. Keep it has the first
   focus and shows its focus ring (see Second review).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
@@ -80,6 +86,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
   lower: RUN IN y +12, start y +15, MY NOTES y +16, SOURCES y +30.
+- **Button labels.** Snooze, Dismiss and Discuss in the task bar, Reset
+  and Edit in the prompt section and Change in the run card are
+  `textSize="xs"` (`labelXs`, Medium 12/16), and Start and the dialog's
+  Remove task are `textSize="smStrong"` (`labelSmStrong`, SemiBold
+  13/16), as Figma's. Only the proposal's buttons still differ (see
+  Proposal block).
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -91,6 +103,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   +3); `start` x +4, y +15, h -1 (was x +4, y +24, h -1). The cause is
   the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
   24) and the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `message · discussion` x +0, y +7, w -1, h
+  +2 (was x +0, y +7, w -1, h +6); `proposal · REMOVE THIS TASK` x +0,
+  y +9, w +0, h +8 (was x +0, y +13, w +0, h +8). The cause is the
+  discussion reply's author name in `labelXsStrong` (SemiBold 12/16,
+  Figma's; was `label`, Medium 14/20), a 4 px shorter line.
 
 ## Second review
 

@@ -5,7 +5,7 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
@@ -43,19 +43,24 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   Figma fits on one line wraps to two here (`message · you` h +21 when
   it wraps). The discussion's reply is composed in the app: Figma puts a
   violet bubble before "Discussion", and `Message` draws only an agent's
-  kind mark there (library gap). Its text is `body` too, so it can wrap
-  where Figma's does not (`message · discussion` h +25).
+  kind mark there (library gap). The name "Discussion" is
+  `labelXsStrong` (SemiBold 12/16), as Figma's. Its text is `body` too,
+  so it can wrap where Figma's does not (`message · discussion` h +21).
 - **Proposal block.** The library's `ProposalBlock` with `ProposalDiff`,
   `ProposalSection` or checkboxes. Figma draws a spark icon before the
-  eyebrow; the block has no icon slot (library gap). Its buttons are
-  `sm`, as Figma's.
+  eyebrow; the block has no icon slot (library gap). Its buttons
+  (Create 3 tasks, Discard) are `sm`, as Figma's, but their labels are
+  the default `label` (Medium 14) where Figma's are Medium 12:
+  `ProposalBlock`'s buttons take no `textSize` (LIBRARY_GAPS.md, row
+  "Button label size").
 - **New tasks.** Each task is a bordered box (`border.default`, radius
   `lg`, 8 by 10 padding) with a `Checkbox` and the meta line under the
   title; in a `Panel` each box was 12 px taller (round 1). The `Checkbox` label is `body`
   (14/20) where Figma's title is 13/17, and "Also remove this task" is a `size="sm"`
   `Checkbox` too, so the block is 60 px taller
-  (`proposal · CREATE 3 TASKS` h +60). Create 3 tasks counts the checked
-  tasks.
+  (`proposal · CREATE 3 TASKS` h +60). A checked box is
+  `Checkbox tone="discuss"` (violet, `accent.discuss`, #9e8fff), as
+  Figma's. Create 3 tasks counts the checked tasks.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
   px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
@@ -71,6 +76,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
   lower: RUN IN y +12, start y +15, MY NOTES y +16, SOURCES y +30.
+- **Button labels.** Snooze, Dismiss and Discuss in the task bar, Reset
+  and Edit in the prompt section and Change in the run card are
+  `textSize="xs"` (`labelXs`, Medium 12/16), and Start is
+  `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
+  Only the proposal's buttons still differ (see Proposal block).
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -82,6 +92,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   +3); `start` x +4, y +15, h -1 (was x +4, y +24, h -1). The cause is
   the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
   24) and the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `message · discussion` x +0, y +5, w -1, h
+  +21 (was x +0, y +5, w -1, h +25); `proposal · CREATE 3 TASKS` x +0,
+  y +26, w +0, h +60 (was x +0, y +30, w +0, h +60). The cause is the
+  discussion reply's author name in `labelXsStrong` (SemiBold 12/16,
+  Figma's; was `label`, Medium 14/20), a 4 px shorter line.
 
 ## Second review
 
@@ -90,5 +106,5 @@ The blind second review of round 3 (`reports/fidelity/inbox/D17.sideBySide.png`,
 - Composer at rest: fixed. The story's play test puts the focus in the composer, as Figma draws it (a caret). The focused border is the library's `border.selected` (cyan), where Figma draws a lighter grey border (LIBRARY_GAPS.md, row "Composer focus").
 - Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
 - Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
-- Discuss, Snooze, Dismiss, Reset, Edit, Change and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- Discuss, Snooze, Dismiss, Reset, Edit, Change and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Since beta.7 these take `textSize="xs"` (Start `textSize="smStrong"`), Figma's (see Button labels).
 - Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".

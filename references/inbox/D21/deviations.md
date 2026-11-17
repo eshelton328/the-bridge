@@ -5,34 +5,37 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
 
 - Text: pass; the hidden Snooze, Dismiss, Reset and Edit are excepted in `exceptions.json`.
-- Position: 8 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `task pane`, `task bar`, `title block`).
+- Position: 9 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (YESTERDAY y +10).
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55: the 4 px
+  grid value nearest Figma's (d-100, library #108). YESTERDAY starts
+  within the 4 px tolerance.
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header): the 4 px grid value nearest Figma's (d-100, library #108). The
+  label's centre is 20 px from the header's top (Figma 21).
 - **Removed row.** The outcome line has a bin and is `status.danger.fg`,
   as Figma's red line.
 - **Removed task.** The status pill is `danger` "Removed", the prompt
   heading "Prompt · not run" with no buttons, and the card that shows
   how it ended is `RunCard` (`result card`) with a `danger` pill, Open
-  discussion and Restore. Figma draws its border red; `Panel` has no
-  danger tone (library gap), so the border is the default. It starts
-  23 px lower, from the offsets above.
-- **Done rows.** As in D07: Figma fades the kind tile of a done row that
-  is not selected to 0.6; no token has that opacity.
+  discussion and Restore. Its `Panel tone="danger"` draws the red border
+  (`status.danger.border`), as Figma's. It starts 14 px lower, from the
+  offsets above.
+- **Done rows.** As in D07: the kind tile of a finished row fades to
+  `opacity.finished` 0.75 (library #107), where Figma fades it to 0.6:
+  at 0.6 the icons fall to 2.4:1 in light mode, under AA's 3:1 (d-100
+  rule 2).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
   px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
@@ -60,6 +63,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   `section · SOURCES` x +4, y +31, h +2 (was x +4, y +36, h +2);
   `section · SUGGESTED PROMPT` x +4, y +14, h -2 (was x +4, y +14, h
   +3). The cause is the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · YESTERDAY` within tolerance (was x
+  +0, y +10, w +1, h +4). The cause is #108's compact `ListRow` (56
+  px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
+  34).
 
 ## Second review
 

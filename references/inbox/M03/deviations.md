@@ -3,7 +3,7 @@
 What still differs from Figma M3 · Edit the prompt (the prompt in its editor with the keyboard, `promptKeyboard`), after the last
 fidelity run (`pnpm fidelity inbox M03`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -68,11 +68,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   card Change moved 2 px up and Sources 4 px up.
 - **Hidden layers.** M3 keeps the task bar, title block and Why as
   hidden layers at y 94; the exceptions say why their text is not
-  checked. Since an exception names a text, the visible scrolled title
-  with the same text is not checked either (open request
-  `fidelity-layer-scoped-exceptions`).
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+  checked. The title's exception names the visible scrolled title
+  (346:9435) as well as the hidden one (346:9442), so the scrolled
+  title is not checked either; the render shows it.
+- **Button labels.** Reset and Done (Edit while the editor is closed)
+  are `Button textSize="xs"` (`labelXs`, Medium 12/16), as Figma's
+  Medium 12 (d-100). Change is an icon. The labels match.
