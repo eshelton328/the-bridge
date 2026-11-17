@@ -64,11 +64,56 @@ export function fieldText(field: { tagName: string; type: string; value: string;
   return collapse(field.placeholder)
 }
 
-type Helpers = { fullyVisible: typeof fullyVisible; isPortalRoot: typeof isPortalRoot; fieldText: typeof fieldText }
+/** What scrollBars reads from one element: its computed overflow and its sizes. */
+export type ScrollBox = {
+  overflowX: string
+  overflowY: string
+  scrollWidth: number
+  scrollHeight: number
+  clientWidth: number
+  clientHeight: number
+  /** offsetWidth or offsetHeight less clientWidth or clientHeight and the borders: the space a classic bar takes. */
+  barWidth: number
+  barHeight: number
+}
+
+/**
+ * The scroll bars an element shows, as the detail of a scrollBar finding,
+ * or '' when it shows none. An axis shows one when its overflow is auto or
+ * scroll and its content is more than 1 px larger than its client box, or
+ * when its overflow is scroll and a classic bar takes space with nothing to
+ * scroll. The space alone (offsetWidth less clientWidth and borders) does
+ * not count: Chrome leaves an input's padding out of its clientWidth, so it
+ * flags every padded input, and an overlay bar takes none.
+ */
+export function scrollBars(el: ScrollBox): string {
+  const scrolls = (v: string) => v === 'auto' || v === 'scroll'
+  const bars: string[] = []
+  if (el.clientHeight > 0 && scrolls(el.overflowY) && el.scrollHeight > el.clientHeight + 1)
+    bars.push(
+      `vertical: scrollHeight ${String(el.scrollHeight)} > clientHeight ${String(el.clientHeight)}, overflow-y ${el.overflowY}`,
+    )
+  else if (el.overflowY === 'scroll' && el.barWidth > 0.5)
+    bars.push(`vertical: ${String(el.barWidth)} px, overflow-y scroll`)
+  if (el.clientWidth > 0 && scrolls(el.overflowX) && el.scrollWidth > el.clientWidth + 1)
+    bars.push(
+      `horizontal: scrollWidth ${String(el.scrollWidth)} > clientWidth ${String(el.clientWidth)}, overflow-x ${el.overflowX}`,
+    )
+  else if (el.overflowX === 'scroll' && el.barHeight > 0.5)
+    bars.push(`horizontal: ${String(el.barHeight)} px, overflow-x scroll`)
+  return bars.join('; ')
+}
+
+type Helpers = {
+  fullyVisible: typeof fullyVisible
+  isPortalRoot: typeof isPortalRoot
+  fieldText: typeof fieldText
+  scrollBars: typeof scrollBars
+}
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()} })`
 }
 
 export type PageMeasure = {
@@ -257,17 +302,20 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
           detail: `scrollHeight ${String(el.scrollHeight)} > clientHeight ${String(el.clientHeight)}, overflow-y ${s.overflowY}, text "${text.slice(0, 60)}"`,
         })
     }
-    // 2. A scroll bar that takes space (classic scroll bars; Figma draws none).
+    // 2. A scroll bar (Figma draws none): a box that scrolls its overflow.
     const borderX = Number.parseFloat(s.borderLeftWidth) + Number.parseFloat(s.borderRightWidth)
     const borderY = Number.parseFloat(s.borderTopWidth) + Number.parseFloat(s.borderBottomWidth)
-    const barY = el.offsetWidth - el.clientWidth - borderX
-    const barX = el.offsetHeight - el.clientHeight - borderY
-    if ((barY > 0.5 || barX > 0.5) && el.clientHeight > 0)
-      rules.push({
-        rule: 'scrollBar',
-        selector: selectorOf(el),
-        detail: `${barY > 0.5 ? `vertical ${String(barY)} px` : ''}${barY > 0.5 && barX > 0.5 ? ', ' : ''}${barX > 0.5 ? `horizontal ${String(barX)} px` : ''}`,
-      })
+    const bars = helpers.scrollBars({
+      overflowX: s.overflowX,
+      overflowY: s.overflowY,
+      scrollWidth: el.scrollWidth,
+      scrollHeight: el.scrollHeight,
+      clientWidth: el.clientWidth,
+      clientHeight: el.clientHeight,
+      barWidth: el.offsetWidth - el.clientWidth - borderX,
+      barHeight: el.offsetHeight - el.clientHeight - borderY,
+    })
+    if (bars !== '') rules.push({ rule: 'scrollBar', selector: selectorOf(el), detail: bars })
     // 4. A badge or pill stretched to its container's width.
     const badge =
       [...el.classList].some((c) => /(pill|badge|chip)(__root|__item)?$/i.test(c) && !/chips$/i.test(c)) ||

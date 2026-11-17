@@ -5,7 +5,7 @@ import { chromium } from 'playwright'
 import { renderViewport } from './checkPosition.ts'
 import { checkText } from './checkText.ts'
 import { statusBarReason, type Layer } from './figmaMetadata.ts'
-import { collectPageScript, fieldText, fullyVisible, isPortalRoot, type PageMeasure } from './inPage.ts'
+import { collectPageScript, fieldText, fullyVisible, isPortalRoot, scrollBars, type PageMeasure } from './inPage.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
 const viewport = edges(0, 0, 1280, 800)
@@ -67,6 +67,7 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /fullyVisible: function fullyVisible\(/)
   assert.match(script, /isPortalRoot: function isPortalRoot\(/)
   assert.match(script, /fieldText: function fieldText\(/)
+  assert.match(script, /scrollBars: function scrollBars\(/)
 })
 
 void test('a checkbox, radio, hidden or password value is not field text; a text value is', () => {
@@ -147,4 +148,62 @@ void test('text in the bottom status-bar band of a phone frame counts as not sho
 void test('a desktop frame without a status bar renders at its full size', () => {
   const desktop = { w: 1512, h: 982, layers: [textLayer('1:1', 'Inbox', 20)], exclude: [] }
   assert.deepEqual(renderViewport(desktop), { w: 1512, h: 982, statusBar: 0 })
+})
+
+// checkRules' scrollBar rule. Chrome leaves an input's padding out of its
+// clientWidth: a 498 px input with 2 px of border has a clientWidth of 476,
+// which offsetWidth less clientWidth read as a 20 px scroll bar.
+const box = {
+  overflowX: 'visible',
+  overflowY: 'visible',
+  scrollWidth: 476,
+  scrollHeight: 36,
+  clientWidth: 476,
+  clientHeight: 36,
+  barWidth: 0,
+  barHeight: 0,
+}
+
+void test('a padded input has no scroll bar', () => {
+  assert.equal(scrollBars({ ...box, overflowX: 'clip', overflowY: 'clip', barWidth: 20 }), '')
+})
+
+void test('a box that scrolls its overflow, or a classic bar on overflow scroll, is a scroll bar', () => {
+  assert.equal(
+    scrollBars({ ...box, overflowY: 'auto', scrollHeight: 900, clientHeight: 400 }),
+    'vertical: scrollHeight 900 > clientHeight 400, overflow-y auto',
+  )
+  assert.equal(
+    scrollBars({ ...box, overflowX: 'scroll', scrollWidth: 700 }),
+    'horizontal: scrollWidth 700 > clientWidth 476, overflow-x scroll',
+  )
+  assert.equal(scrollBars({ ...box, overflowY: 'scroll', barWidth: 15 }), 'vertical: 15 px, overflow-y scroll')
+  // Overflow that the box does not scroll, or a scroll box whose content fits, shows no bar.
+  assert.equal(scrollBars({ ...box, overflowY: 'hidden', scrollHeight: 900 }), '')
+  assert.equal(scrollBars({ ...box, overflowY: 'auto', scrollHeight: 37 }), '')
+})
+
+async function rulesOf(html: string): Promise<PageMeasure['rules']> {
+  const browser = await chromium.launch()
+  try {
+    const tab = await browser.newPage({ viewport: { width: 800, height: 600 } })
+    await tab.setContent(`<body style="margin:0"><div id="storybook-root">${html}</div></body>`)
+    return (await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))).rules
+  } finally {
+    await browser.close()
+  }
+}
+
+void test('in Chromium a padded input passes the scrollBar rule and a scrolling box fails it', async () => {
+  const input =
+    '<input placeholder="Search" style="box-sizing:border-box;width:498px;padding:0 10px;border:1px solid gray">'
+  assert.deepEqual(
+    (await rulesOf(input)).filter((r) => r.rule === 'scrollBar'),
+    [],
+  )
+  const list = `<section style="height:100px;overflow-y:auto"><div style="height:400px"></div></section>`
+  assert.deepEqual(
+    (await rulesOf(list)).filter((r) => r.rule === 'scrollBar').map((r) => [r.selector, r.detail]),
+    [['section', 'vertical: scrollHeight 400 > clientHeight 100, overflow-y auto']],
+  )
 })
