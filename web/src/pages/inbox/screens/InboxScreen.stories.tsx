@@ -17,6 +17,7 @@ type Story = StoryObj<typeof meta>
 export const NextStep: Story = {
   name: 'D1: a next step',
   args: { data: inboxStates.nextStep.data, ui: inboxStates.nextStep.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Allow once' })).toBeVisible()
@@ -28,6 +29,7 @@ export const NextStep: Story = {
 export const Question: Story = {
   name: 'D2: a question that blocks a chat',
   args: { data: inboxStates.question.data, ui: inboxStates.question.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(
       canvas.getByRole('heading', { level: 1, name: 'Hono RPC client or plain fetch for the API?' }),
@@ -41,6 +43,7 @@ export const Question: Story = {
 export const PromptEditing: Story = {
   name: 'D3: edit the prompt, choose where it runs',
   args: { data: inboxStates.promptEditing.data, ui: inboxStates.promptEditing.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('textbox', { name: 'Suggested prompt' })).toHaveValue(
       inboxStates.promptEditing.data.detail.prompt.text,
@@ -56,6 +59,7 @@ export const PromptEditing: Story = {
 export const FilterOpen: Story = {
   name: 'D4: filter and snoozed tasks',
   args: { data: inboxStates.filterOpen.data, ui: inboxStates.filterOpen.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Snoozed until tomorrow 9:00')).toBeVisible()
     await expect(canvas.queryByText('Run the readme cross-family round x2')).toBeNull()
@@ -69,6 +73,7 @@ export const FilterOpen: Story = {
 export const Running: Story = {
   name: 'D5: started, the chat stays in the inbox',
   args: { data: inboxStates.running.data, ui: inboxStates.running.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
     await expect(canvas.getByText('Wait for increment two.')).toBeVisible()
@@ -80,6 +85,7 @@ export const Running: Story = {
 export const RunningTask: Story = {
   name: 'D6: running, on the task page',
   args: { data: inboxStates.runningTask.data, ui: inboxStates.runningTask.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Running in quiet-nebula')).toBeVisible()
     await expect(canvas.getByRole('heading', { level: 2, name: 'Sent prompt' })).toBeVisible()
@@ -91,6 +97,7 @@ export const RunningTask: Story = {
 export const Done: Story = {
   name: 'D7: done',
   args: { data: inboxStates.done.data, ui: inboxStates.done.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Dismissed: already done by hand')).toBeVisible()
     await expect(canvas.getByText('Finished in quiet-nebula')).toBeVisible()
@@ -102,6 +109,7 @@ export const Done: Story = {
 export const PromptRead: Story = {
   name: 'D8: read the whole prompt',
   args: { data: inboxStates.promptRead.data, ui: inboxStates.promptRead.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async () => {
     // The dialog renders in a portal, outside the story's canvas.
     const dialog = await within(document.body).findByRole('dialog', { name: 'Suggested prompt' })
@@ -114,6 +122,7 @@ export const PromptRead: Story = {
 export const SortOpen: Story = {
   name: 'D9: sort',
   args: { data: inboxStates.sortOpen.data, ui: inboxStates.sortOpen.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async () => {
     const menu = await within(document.body).findByRole('menu')
     await expect(within(menu).getByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
@@ -124,6 +133,7 @@ export const SortOpen: Story = {
 export const Search: Story = {
   name: 'D10: search',
   args: { data: inboxStates.search.data, ui: inboxStates.search.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')
     await expect(canvas.getByText('4 results for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
@@ -135,6 +145,7 @@ export const Search: Story = {
 export const SortedByProject: Story = {
   name: 'D11: sorted by project',
   args: { data: inboxStates.sortedByProject.data, ui: inboxStates.sortedByProject.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Project' })).toHaveAttribute('aria-pressed', 'true')
     await expect(canvas.getByText('skill-evals', { selector: '.group-header__label *' })).toBeVisible()
@@ -145,6 +156,7 @@ export const SortedByProject: Story = {
 export const SnoozeOpen: Story = {
   name: 'D12: snooze or dismiss',
   args: { data: inboxStates.snoozeOpen.data, ui: inboxStates.snoozeOpen.ui, viewport: 'desktop' },
+  globals: { viewport: { value: 'desktop', isRotated: false } },
   play: async () => {
     const menu = await within(document.body).findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: /This evening/ })).toBeVisible()
