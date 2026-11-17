@@ -6,7 +6,7 @@
 // and reach the page as collectPage's second argument (collectPageScript).
 
 export type Box = { x: number; y: number; w: number; h: number }
-export type TextRun = Box & {
+type TextRun = Box & {
   text: string
   selector: string
   /** Another element draws over part of the run in the render, such as an open menu (see coveredAt). */
