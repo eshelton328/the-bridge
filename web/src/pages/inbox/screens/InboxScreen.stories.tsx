@@ -433,7 +433,7 @@ export const FilteredList: Story = {
 }
 
 export const DiscussTask: Story = {
-  name: 'T16: Discuss, on the task page',
+  name: 'T16, M17: Discuss, on the task page',
   args: { data: inboxStates.discussTask.data, ui: inboxStates.discussTask.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Discuss' })).toHaveAttribute('aria-pressed', 'false')
@@ -442,7 +442,7 @@ export const DiscussTask: Story = {
 }
 
 export const DiscussionPage: Story = {
-  name: 'T17: the discussion, on its own page',
+  name: 'T17, M18: the discussion, on its own page',
   args: { data: inboxStates.discussionPage.data, ui: inboxStates.discussionPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
@@ -452,7 +452,7 @@ export const DiscussionPage: Story = {
 }
 
 export const ChangeProposedPage: Story = {
-  name: 'T18: a proposed update, on the discussion page',
+  name: 'T18, M19: a proposed update, on the discussion page',
   args: { data: inboxStates.changeProposedPage.data, ui: inboxStates.changeProposedPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     const proposal = canvas.getByRole('group', { name: 'Proposed · Update this task' })
@@ -462,7 +462,7 @@ export const ChangeProposedPage: Story = {
 }
 
 export const ChangeAppliedPage: Story = {
-  name: 'T19: the task after Apply, on the task page',
+  name: 'T19, M20: the task after Apply, on the task page',
   args: { data: inboxStates.changeAppliedPage.data, ui: inboxStates.changeAppliedPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Changed in a discussion · just now')).toBeVisible()
@@ -472,7 +472,7 @@ export const ChangeAppliedPage: Story = {
 }
 
 export const TasksProposedPage: Story = {
-  name: 'T20: proposed new tasks, on the discussion page',
+  name: 'T20, M21: proposed new tasks, on the discussion page',
   args: { data: inboxStates.tasksProposedPage.data, ui: inboxStates.tasksProposedPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('checkbox', { name: 'Write the Workbench tickets' })).toBeChecked()
@@ -491,7 +491,7 @@ export const TasksCreatedList: Story = {
 }
 
 export const RemovalProposedPage: Story = {
-  name: 'T22: proposed removal, on the discussion page',
+  name: 'T22, M23: proposed removal, on the discussion page',
   args: { data: inboxStates.removalProposedPage.data, ui: inboxStates.removalProposedPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     const proposal = canvas.getByRole('group', { name: 'Proposed · Remove this task' })
@@ -501,7 +501,7 @@ export const RemovalProposedPage: Story = {
 }
 
 export const RemoveConfirmPage: Story = {
-  name: 'T23: confirm the removal, on the discussion page',
+  name: 'T23, M24: confirm the removal, on the discussion page',
   args: { data: inboxStates.removeConfirmPage.data, ui: inboxStates.removeConfirmPage.ui, viewport: 'tablet' },
   play: async () => {
     // The dialog renders in a portal, outside the story's canvas.
@@ -560,5 +560,26 @@ export const QuestionPhone: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText('hono server is waiting')).toBeVisible()
     await expect(canvas.getByText('the-bridge · Sonnet 5.5 · 12 min')).toBeVisible()
+  },
+}
+
+export const RemovedPhone: Story = {
+  name: 'M25: removed, in Done, on the phone',
+  args: { data: inboxStates.removedPhone.data, ui: inboxStates.removedPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Removed in a discussion · split into 3')).toBeVisible()
+    // Figma counts 5 next steps here (T24 counts 2).
+    await expect(canvas.getByRole('radio', { name: 'Next steps 5' })).toBeInTheDocument()
+  },
+}
+
+export const TasksCreatedPhone: Story = {
+  name: 'M22: the new tasks in the inbox, on the phone',
+  args: { data: inboxStates.tasksCreatedPhone.data, ui: inboxStates.tasksCreatedPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByText('New')).toHaveLength(3)
+    await expect(canvas.getByText('Created 3 tasks from a discussion')).toBeVisible()
+    // Unlike T21, Needs you is closed.
+    await expect(canvas.queryByText('drift check wants to run git mv')).toBeNull()
   },
 }

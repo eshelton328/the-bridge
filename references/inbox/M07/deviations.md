@@ -35,7 +35,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in D01 and T01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts

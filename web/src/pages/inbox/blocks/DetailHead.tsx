@@ -120,13 +120,29 @@ export function SnoozeActions({ snooze, iconOnly = false }: { snooze: SnoozeCont
   )
 }
 
+/** Discuss: in the task bar, or in the phone's nav before Snooze and Dismiss (M17, 402:1945). */
+export function DiscussButton({ discuss }: { discuss: DiscussControl }) {
+  // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
+  return (
+    <Button
+      pressed={discuss.open}
+      onClick={() => {
+        discuss.onOpenChange?.(!discuss.open)
+      }}
+    >
+      <BubbleIcon />
+      Discuss
+    </Button>
+  )
+}
+
 export type DetailHeadProps = {
   head: InboxDetailHead
   /** The Snooze menu; closed when not set. */
   snooze?: SnoozeControl | undefined
   /** The task has a discussion: the task bar shows Discuss, pressed while the discussion is open. */
   discuss?: DiscussControl | undefined
-  /** Snooze and Dismiss sit in the task bar; on the phone they sit in the nav instead (M2). */
+  /** Discuss, Snooze and Dismiss sit in the task bar; on the phone they sit in the nav instead (M2, M17). */
   barActions?: boolean | undefined
 }
 
@@ -136,18 +152,7 @@ export function DetailHead({ head, snooze = { open: false }, discuss, barActions
       <Inline gap="8" align="center" data-figma="task bar">
         <StatusPill tone={head.status.tone} label={head.status.label} dot />
         <span className={origin}>{head.origin}</span>
-        {discuss === undefined ? null : (
-          // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
-          <Button
-            pressed={discuss.open}
-            onClick={() => {
-              discuss.onOpenChange?.(!discuss.open)
-            }}
-          >
-            <BubbleIcon />
-            Discuss
-          </Button>
-        )}
+        {discuss === undefined || !barActions ? null : <DiscussButton discuss={discuss} />}
         {head.actions && barActions ? <SnoozeActions snooze={snooze} /> : null}
       </Inline>
       <Stack gap="10" data-figma="title block">

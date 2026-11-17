@@ -41,9 +41,11 @@ export type DiscussionPanelProps = {
   onClose?: (() => void) | undefined
   /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** Erik sent a message from the reply box. */
+  onSend?: ((text: string) => void) | undefined
 }
 
-export function DiscussionPanel({ discussion, control, onClose, drafts }: DiscussionPanelProps) {
+export function DiscussionPanel({ discussion, control, onClose, drafts, onSend }: DiscussionPanelProps) {
   return (
     <aside aria-label={discussion.title} className={panel} data-figma="discussion panel">
       <Inline gap="8" align="center">
@@ -57,7 +59,7 @@ export function DiscussionPanel({ discussion, control, onClose, drafts }: Discus
       </Inline>
       <ModelContext discussion={discussion} />
       <DiscussionGuard text={discussion.guard} />
-      <DiscussionThread discussion={discussion} control={control} className={entries} drafts={drafts} />
+      <DiscussionThread discussion={discussion} control={control} className={entries} drafts={drafts} onSend={onSend} />
     </aside>
   )
 }

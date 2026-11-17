@@ -187,3 +187,25 @@ describe('listView snooze, done and dismiss', () => {
     ])
   })
 })
+
+describe('the states', () => {
+  // An open item and a finished one are different items: marking the open one done must not find the finished one too.
+  it.each(Object.entries(inboxStates))('%s lists each item in one group only', (_, state) => {
+    const ids = state.data.groups.flatMap((group) => group.rows.map((row) => row.id))
+    expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([])
+  })
+
+  it('adds one row to Today when Erik marks an open item done in D21', () => {
+    const { removed } = inboxStates
+    const drift = InboxItemId.parse('drift-check-git-mv')
+    const ui: InboxUi = {
+      ...removed.ui,
+      filter: 'done',
+      finished: [...removed.ui.finished, { id: drift, result: 'done' }],
+    }
+    const view = listView(removed.data, ui, '')
+    const today = view.groups.find((g) => g.id === 'today')
+    expect(today?.rows.filter((row) => row.id === drift)).toHaveLength(1)
+    expect(chip(view, 'done')).toBe((chip(listView(removed.data, removed.ui, ''), 'done') ?? 0) + 1)
+  })
+})

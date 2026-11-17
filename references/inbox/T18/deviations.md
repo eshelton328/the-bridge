@@ -18,13 +18,13 @@ status bar.
 
 - `nav`: x +2, y -21, w -4, h -2; 29 px removed: y +8.
 - `model and context`: x -4.7, y -24, w +9.6, h +4; 29 px removed: y +5.
-- `task · discussing`: x +2, y -15, w -4, h +8; 29 px removed: y +14.
-- `chevron · open task`: x -6, y -12, w +0, h +0; 29 px removed: y +17.
-- `guard`: x +6, y -11, w -12, h +2; 29 px removed: y +18.
-- `discussion`: x +2, y +9, w -4, h -90; 29 px removed: y +38.
-- `message · you`: x +2, y -5, w +148, h +1; 29 px removed: y +24.
-- `message · discussion`: x +2, y -4, w +148, h -14; 29 px removed: y +25.
-- `proposal · UPDATE THIS TASK`: x +2, y -18, w +148, h -10; 29 px removed: y +11.
+- `task · discussing`: x +2, y -23, w -4, h +8; 29 px removed: y +6.
+- `chevron · open task`: x -6, y -20, w +0, h +0; 29 px removed: y +9.
+- `guard`: x +6, y -19, w -12, h +2; 29 px removed: y +10.
+- `discussion`: x +2, y +1, w -4, h -74; 29 px removed: y +30.
+- `message · you`: x +2, y -13, w +148, h +1; 29 px removed: y +16.
+- `message · discussion`: x +2, y -12, w +148, h -14; 29 px removed: y +17.
+- `proposal · UPDATE THIS TASK`: x +2, y -26, w +148, h -10; 29 px removed: y +3.
 - `composer · discussion`: x +2, y +20, w -4, h +3; anchored to the bottom, no status bar offset.
 
 ## Deviations
@@ -37,6 +37,11 @@ status bar.
   offsets above give the rest as "29 px removed". Measuring below the
   status bar is an open request to Erik. Library gap: Top and bottom
   safe areas on the tablet.
+- **Task card under the nav.** The card sits 8 under the nav, as
+  Figma draws it (was 16), so with the status bar removed it is within
+  6 px of Figma (`task · discussing` y). Every layer under it moved up
+  8 too, which makes its raw y offset 8 px larger: the fix exposes the
+  status bar offset that was there before; it adds no difference.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Discussion page header.** Back ("Task") is the library's

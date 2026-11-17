@@ -1,5 +1,5 @@
 // The Inbox after what Erik did to the open task's discussion
-// (InboxUi.proposals and proposalChecks): an applied update puts its prompt
+// (InboxUi.proposals, proposalChecks and sent): the messages he sent follow its entries; an applied update puts its prompt
 // in the task with the change line; created tasks join Next steps with a
 // New pill and a toast that offers Undo; a discarded proposal leaves the
 // discussion; the boxes Erik checked or cleared replace the proposal's.
@@ -12,13 +12,14 @@ import {
   type InboxDecision,
   type InboxDiscussionEntry,
   type InboxGroupView,
+  type InboxNextStep,
   type InboxProposal,
   type InboxRowView,
   type InboxUi,
   ProposalKind,
 } from '../types.ts'
 
-type Decisions = Pick<InboxUi, 'proposals' | 'proposalChecks'>
+type Decisions = Pick<InboxUi, 'proposals' | 'proposalChecks' | 'sent'>
 
 /** The discussion's proposal of `kind`, if it has one. */
 export function proposalOf<K extends ProposalKind>(
@@ -74,14 +75,65 @@ function withCreated(groups: readonly InboxGroupView[], rows: readonly InboxRowV
   })
 }
 
+type Removed = Extract<InboxProposal, { kind: 'remove' }>['removed']
+
+/**
+ * The task after Remove task (D21): its page says it was removed, has no Snooze or Dismiss and offers Open discussion
+ * and Restore; its prompt never ran. Its row says why, for when it shows in Done.
+ */
+function removedView(data: InboxData, task: InboxNextStep, removed: Removed): InboxData {
+  const outcome = { line: removed.line, result: 'removed' } as const
+  return {
+    ...data,
+    groups: data.groups.map((group) => ({
+      ...group,
+      rows: group.rows.map((row) => (row.id === task.id ? { ...row, age: removed.age, outcome } : row)),
+    })),
+    detail: {
+      ...task,
+      status: removed.status,
+      origin: removed.origin,
+      actions: false,
+      prompt: { ...task.prompt, state: 'notRun' },
+      launch: { stage: 'started', run: removed.run },
+    },
+  }
+}
+
+/** Whether the open task was removed in its discussion: its page then offers Restore. */
+export const isRemoved = (data: Pick<InboxData, 'discussion'>, ui: Pick<InboxUi, 'proposals'>): boolean =>
+  proposalOf(data, 'remove') !== undefined && ui.proposals.remove === 'applied'
+
+/**
+ * The list without the rows a state draws as created (`InboxToast.created`, D18) once Undo took them back: the
+ * groups, the count and the All and Next steps chips lose them, and the toast goes.
+ */
+function undoneView(data: InboxData): InboxData {
+  const created = data.toast?.created ?? []
+  const n = created.length
+  return {
+    ...data,
+    toast: undefined,
+    count: data.count - n,
+    filters: data.filters.map((f) => (f.value === 'all' || f.value === 'next' ? { ...f, count: f.count - n } : f)),
+    groups: data.groups.map((group) => {
+      const rows = group.rows.filter((row) => !created.includes(row.id))
+      return { ...group, count: group.count - (group.rows.length - rows.length), rows }
+    }),
+  }
+}
+
 export function discussionView(data: InboxData, ui: Decisions): InboxData {
   const { discussion } = data
+  if (data.toast?.created !== undefined && ui.proposals.create !== 'applied') return undoneView(data)
   if (discussion === undefined) return data
   const entries = discussion.entries.flatMap((entry): InboxDiscussionEntry[] => {
     if (entry.type !== 'proposal') return [entry]
     if (ui.proposals[entry.proposal.kind] === 'discarded') return []
     return [{ ...entry, proposal: checked(entry.proposal, ui.proposalChecks) }]
   })
+  // The messages Erik sent follow the entries; nothing answers them in this mock-up.
+  for (const text of ui.sent) entries.push({ type: 'user', text })
   let view: InboxData = { ...data, discussion: { ...discussion, entries } }
   const update = proposalOf(view, 'update')
   if (update !== undefined && ui.proposals.update === 'applied' && view.detail?.kind === 'next') {
@@ -94,6 +146,10 @@ export function discussionView(data: InboxData, ui: Decisions): InboxData {
         prompt: { ...view.detail.prompt, text: apply.prompt, change: apply.change },
       },
     }
+  }
+  const remove = proposalOf(view, 'remove')
+  if (remove !== undefined && ui.proposals.remove === 'applied' && view.detail?.kind === 'next') {
+    view = removedView(view, view.detail, remove.removed)
   }
   const create = proposalOf(view, 'create')
   if (create !== undefined && ui.proposals.create === 'applied') {
@@ -157,7 +213,12 @@ export function proposalEffect(
   desktop: boolean,
   typed?: string,
 ): DiscussionEffect {
-  if (act === 'discard') return { ui: { proposals: decide(ui.proposals, kind, 'discarded') } }
+  if (act === 'discard') {
+    // Keep it on a removal already applied (Open discussion on a removed task) keeps the task: it leaves Done too.
+    const id = data.detail?.id
+    const kept = kind === 'remove' ? { finished: ui.finished.filter((f) => f.id !== id || f.result !== 'removed') } : {}
+    return { ui: { proposals: decide(ui.proposals, kind, 'discarded'), ...kept } }
+  }
   if (act === 'undo')
     return kind === 'update' ? undoUpdateEffect(ui) : { ui: { proposals: decide(ui.proposals, kind) } }
   if (kind === 'remove') return { ui: {}, removeOpen: true }
@@ -198,6 +259,15 @@ export function removeEffect(data: EffectData, ui: EffectUi): DiscussionEffect {
     removeOpen: false,
     back: true,
   }
+}
+
+/**
+ * Restore on a removed task's page (D21, M25 notes): the removal waits again and the task leaves Done for the group it
+ * came from. The page stays open and shows the task as it was.
+ */
+export function restoreEffect(data: EffectData, ui: EffectUi): DiscussionEffect {
+  const id = data.detail?.id
+  return { ui: { proposals: decide(ui.proposals, 'remove'), finished: ui.finished.filter((f) => f.id !== id) } }
 }
 
 /** Undo on the line under a changed prompt: the update waits again, and the prompt is as Erik left it before Apply. */

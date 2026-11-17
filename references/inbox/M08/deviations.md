@@ -33,7 +33,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Chat header.** As in T5: Back with Workspaces is `BackRow` (28 px)
   against Figma's 38 px row (`nav` h -10), so the header starts 2 px
   higher (`started task` y -2 with the status bar removed). The header

@@ -3,7 +3,7 @@ import { board, type Board } from '../lib/board.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage'
+export type BoardId = 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage'
 
 export const boards: readonly Board[] = [
   board(inboxPage, 'changeApplied'),
@@ -35,6 +35,7 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'removeConfirmPage'),
   board(inboxPage, 'removed'),
   board(inboxPage, 'removedList'),
+  board(inboxPage, 'removedPhone'),
   board(inboxPage, 'rowActions'),
   board(inboxPage, 'runInSheet'),
   board(inboxPage, 'running'),
@@ -52,6 +53,7 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'taskPage'),
   board(inboxPage, 'tasksCreated'),
   board(inboxPage, 'tasksCreatedList'),
+  board(inboxPage, 'tasksCreatedPhone'),
   board(inboxPage, 'tasksProposed'),
   board(inboxPage, 'tasksProposedPage'),
 ]

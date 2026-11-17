@@ -127,8 +127,12 @@ export type InboxSnoozeMenu = z.infer<typeof InboxSnoozeMenu>
 /** A Filter menu section that narrows the list: its label and its checked values. */
 export type AppliedSection = { label: string; values: string[] }
 
-/** A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. */
-const InboxToast = z.object({ text: z.string(), action: z.string() })
+/**
+ * A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. `created` names the rows a
+ * state draws as created (D18, whose task has no discussion to apply): they show while `InboxUi.proposals.create` is
+ * applied, and Undo takes them out, as it takes out the rows of an applied proposal (M22).
+ */
+const InboxToast = z.object({ text: z.string(), action: z.string(), created: z.array(InboxItemId).optional() })
 
 const InboxMetaChip = z.object({ label: z.string(), icon: InboxChipIcon, issue: z.boolean() })
 
@@ -212,7 +216,7 @@ const InboxRunCard = z.object({
   meta: z.string(),
   /** The primary button, such as "Reply here" or "Open chat". */
   open: z.string(),
-  /** The secondary button, such as "Open in Workspaces". */
+  /** The secondary button, such as "Open in Workspaces"; on a removed task's card, Restore. */
   openElsewhere: z.string(),
   /** The chat the primary button opens in the inbox (Reply here, M10 to M8); a card without it has no chat to open. */
   chat: InboxRunning.optional(),
@@ -221,7 +225,22 @@ export type InboxRunCard = z.infer<typeof InboxRunCard>
 
 /** Before Start: where it will run and the Start button; after: the run card. */
 const InboxLaunch = z.discriminatedUnion('stage', [
-  z.object({ stage: z.literal('suggested'), runIn: InboxRunIn, startLabel: z.string(), startHint: z.string() }),
+  z.object({
+    stage: z.literal('suggested'),
+    runIn: InboxRunIn,
+    startLabel: z.string(),
+    startHint: z.string(),
+    /**
+     * What Start makes of the task, as D5 and D6 draw it: its status and origin, the run card of its chat, and the
+     * line its row shows in the Running group.
+     */
+    start: z.object({
+      status: InboxDetailHead.shape.status,
+      origin: z.string(),
+      run: InboxRunCard,
+      row: InboxRowView.shape.running.unwrap(),
+    }),
+  }),
   z.object({ stage: z.literal('started'), run: InboxRunCard }),
 ])
 
@@ -313,6 +332,17 @@ const InboxProposal = z.discriminatedUnion('kind', [
     note: z.string(),
     /** The confirm dialog: its title, the meta line and what happens. */
     confirm: z.object({ title: z.string(), meta: z.string(), text: z.string() }),
+    /**
+     * The task once removed (D21): its row's line and age in Done, and on its page the status, the origin line and
+     * the card that says how it was removed, with Open discussion and Restore.
+     */
+    removed: z.object({
+      line: z.string(),
+      age: z.string(),
+      status: z.object({ tone: InboxTone, label: z.string() }),
+      origin: z.string(),
+      run: InboxRunCard,
+    }),
   }),
 ])
 export type InboxProposal = z.infer<typeof InboxProposal>
@@ -354,6 +384,8 @@ const InboxDiscussion = z.object({
       canLabel: z.string(),
       can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
       suggestions: z.array(z.string()),
+      /** The label over the suggestions, which only the phone shows (M18). */
+      tryLabel: z.string(),
     })
     .optional(),
   placeholder: z.string(),
@@ -427,6 +459,10 @@ export const InboxUi = z.object({
   proposalChecks: z.record(z.string(), z.boolean()),
   /** The prompt the task showed when Erik applied a proposed update, with his edits; Undo brings it back. */
   promptBeforeApply: z.string().nullable(),
+  /** The messages Erik sent in the open task's discussion, in order; each follows the discussion's entries. */
+  sent: z.array(z.string()),
+  /** The next steps Erik started with Start: each shows the run card its launch's `start` holds. */
+  started: z.array(InboxItemId),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

@@ -38,7 +38,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Nav.** `BackRow` with Snooze and Dismiss as 32 px icon buttons is
   32 px high against Figma's 40 (`nav` h -8); 12 below it the task
   starts 2 px lower than Figma's (`task · next step` y +2 with the
@@ -73,6 +75,8 @@ status bar.
   prompt." is left out, as Figma does. The button is `size="xl"`. The
   bar is opaque, as Figma's: the chrome over the canvas, so the page
   that scrolls under it does not show through.
+  Start starts the task: its run card takes Start's place, and Reply
+  here opens its chat (`InboxRoute.test.tsx`).
 - **My notes and Sources.** The page scrolls under Start, as the note
   says. My notes starts lower than Figma's by what the sections above
   add, less the 17 px the Run in card saves (`section · MY NOTES` y +7,

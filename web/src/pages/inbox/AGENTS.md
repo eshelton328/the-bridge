@@ -49,12 +49,27 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   task's discussion (`ui.discussOpen`): on the desktop the list hides and
   `DiscussionPanel` sits beside the task; on a tablet or phone
   `DiscussionPage` takes the task's page, with no tab bar, and Back
-  returns to the task. `screens/discussionView.ts` (pure, tested in
+  returns to the task. On the phone Discuss sits in the nav, the model
+  and context in the task card, the suggestions stack under "Try" (a
+  suggestion fills the reply box) and the remove confirm is a sheet
+  that starts on Keep it. `screens/discussionView.ts` (pure, tested in
   `discussionView.test.ts` beside this file) applies what Erik did to the
   proposals (`ui.proposals`, `ui.proposalChecks`): an applied update puts
   its prompt in the task, created tasks join Next steps with a toast, a
-  discarded proposal leaves; its effects say what each press changes
-  (Apply, Discard, Edit first, Undo, Create, Remove task).
+  discarded proposal leaves, an applied removal shows the task as
+  removed (the remove proposal's `removed`: its Done line, and on its
+  page Open discussion and Restore); its effects say what each press
+  changes (Apply, Discard, Edit first, Undo, Create, Remove task,
+  Restore, which puts the task back in its group). Send in the
+  discussion's reply box adds Erik's message after its entries
+  (`ui.sent`); the box has no attach button until a file flow is designed.
+  Undo in the toast also takes out the rows a state draws as created
+  (`toast.created`, D18 and T21). The removal flow is
+  not decided (M25 note). Start on a next step starts it
+  (`ui.started`): `screens/startView.ts` (tested in
+  `discussionView.test.ts`) shows the launch's `start`, the run card of
+  the chat D5 shows, whose Reply here opens that chat. D7's Open chat
+  opens the finished chat.
 - `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
   `MenuSection` (a menu's labelled section, in a popover or a sheet),
@@ -86,11 +101,16 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   `taskPage`, M3 `promptKeyboard`, M4 `runInSheet`, M5 `questionPhone`,
   M6 `rowActions`, M7 `filterList`, M8 `chat`, M9 `promptSheet`, M10
   `runningTaskPage`, M11 `runningList`, M12 `doneList`, M13 `sortList`,
-  M14 `searchList`, M15 `sortedList`, M16 `filteredList`. D16 is D15 with the update
+  M14 `searchList`, M15 `sortedList`, M16 `filteredList`, M17
+  `discussTask`, M18 `discussionPage`, M19 `changeProposedPage`, M20
+  `changeAppliedPage`, M21 `tasksProposedPage`, M22 `tasksCreatedPhone`,
+  M23 `removalProposedPage`, M24 `removeConfirmPage`, M25
+  `removedPhone`. D16 is D15 with the update
   applied in its `ui`. A T
   state that shows only the list sets `selectedId` to null. The others start
   from `nextStep` and its `nextStepGroups`; D9 to D11 and D13 start from
-  `runningTask`, D15 to D20 from `discussOpen`, D21 from `done`.
+  `runningTask`, D15 to D20 from `discussOpen`, D21 from `removalProposed`
+  with the removal in its `ui` and D7's Done days.
   `nextStep` also holds what every state shares: the Sort, Filter and
   Snooze menus, the Run in picker and the row tags the Filter menu
   matches; a state that shows a menu or a sort only sets its `ui`.

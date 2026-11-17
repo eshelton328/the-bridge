@@ -70,18 +70,27 @@ export type NextStepDetailProps = {
   snooze?: SnoozeControl | undefined
   /** Reports the prompt editor or the Run in picker opened or closed. */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
+  /** A task removed in its discussion: its card's Open discussion and Restore. */
+  removed?: RemovedControl | undefined
+  /** Start: the task starts and shows its run card (`startView`). */
+  onStart?: (() => void) | undefined
 }
+
+/** A removed task's card: Open discussion opens its discussion, Restore puts the task back. */
+export type RemovedControl = { onOpenDiscussion: () => void; onRestore: () => void }
 
 type LaunchProps = {
   launch: InboxNextStep['launch']
   onOpenChat: (() => void) | undefined
+  onRestore: (() => void) | undefined
+  onStart: (() => void) | undefined
   pickerOpen: boolean
   onPickerOpenChange: (open: boolean) => void
   layout: Viewport
 }
 
-function Launch({ launch, onOpenChat, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
-  if (launch.stage === 'started') return <RunCard run={launch.run} onOpen={onOpenChat} />
+function Launch({ launch, onOpenChat, onRestore, onStart, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
+  if (launch.stage === 'started') return <RunCard run={launch.run} onOpen={onOpenChat} onRestore={onRestore} />
   return (
     <>
       <DetailSection title="Run in">
@@ -95,7 +104,7 @@ function Launch({ launch, onOpenChat, pickerOpen, onPickerOpenChange, layout }: 
       {/* The phone pins Start above the tab bar (PinnedAction). */}
       {layout === 'phone' ? null : (
         <Inline gap="12" align="center" data-figma="start">
-          <Button variant="primary" size="lg">
+          <Button variant="primary" size="lg" onClick={onStart}>
             <PlayIcon />
             {launch.startLabel}
           </Button>
@@ -117,6 +126,8 @@ export function NextStepDetail({
   snooze,
   onUiChange,
   onUndoChange,
+  removed,
+  onStart,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
   const phone = layout === 'phone'
@@ -124,13 +135,15 @@ export function NextStepDetail({
   const keyboard = phone && ui.editingPrompt
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
   const start = phone && !keyboard && detail.launch.stage === 'suggested' ? detail.launch.startLabel : undefined
-  // Reply here opens the chat in the inbox, when the state has it.
+  // Reply here opens the chat in the inbox, when the state has it; a removed task's card opens its discussion.
   const onOpenChat =
-    detail.launch.stage === 'started' && detail.launch.run.chat !== undefined
+    removed?.onOpenDiscussion ??
+    (detail.launch.stage === 'started' && detail.launch.run.chat !== undefined
       ? () => {
           onUiChange?.({ chatOpen: true })
         }
-      : undefined
+      : undefined)
+  const onRestore = removed?.onRestore
   const column = (
     <Container
       size={detailContainerSize(layout)}
@@ -173,6 +186,8 @@ export function NextStepDetail({
           <Launch
             launch={detail.launch}
             onOpenChat={onOpenChat}
+            onRestore={onRestore}
+            onStart={onStart}
             pickerOpen={ui.pickerOpen}
             onPickerOpenChange={(pickerOpen) => {
               onUiChange?.({ pickerOpen })
@@ -195,7 +210,7 @@ export function NextStepDetail({
     return (
       <>
         {column}
-        <PinnedAction label={start} />
+        <PinnedAction label={start} onPress={onStart} />
       </>
     )
   if (pinned === undefined) return column
@@ -203,7 +218,7 @@ export function NextStepDetail({
     <>
       {column}
       <div className={cx(footer, footerInset[layout])} data-figma="running">
-        <RunCard run={pinned} onOpen={onOpenChat} />
+        <RunCard run={pinned} onOpen={onOpenChat} onRestore={onRestore} />
       </div>
     </>
   )

@@ -26,7 +26,10 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   a dot under the meta line, as Figma's pill.
 - **Toast.** The library's `Toast tone="discuss"` with a check and Undo,
   12 px in and 16 px up from the list's bottom (`toast · created`
-  passes).
+  passes). Undo takes the three new tasks out of Next steps, with the
+  counts and the toast (`InboxRoute.test.tsx`): the state names the rows
+  it draws as created, since Figma's task here has no discussion to
+  apply, and its `ui` has the tasks created.
 - **List height.** The scrolling list ends at the toast's bottom edge
   (y 966): the pane (`inbox list`, full height) pads 16 px under it, so
   nothing shows below the toast, as in Figma. With the taller rows the

@@ -149,6 +149,68 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 
+  it('starts the task with Start on the desktop: its run card replaces Start, and Reply here opens the chat', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('nextStep').rendered
+    await page.getByRole('button', { name: 'Start in the-bridge' }).click()
+    await expect.element(page.getByText('Running in quiet-nebula')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Start in the-bridge' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+    await view.unmount()
+  })
+
+  it('closes the prompt editor when Start sends the prompt', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('nextStep').rendered
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start in the-bridge' }).click()
+    await expect.element(page.getByText('Running in quiet-nebula')).toBeVisible()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).not.toBeInTheDocument()
+    await view.unmount()
+  })
+
+  it("opens the finished task's chat with Open chat in D7", async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('done').rendered
+    await page.getByRole('button', { name: 'Open chat' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+    await expect.element(page.getByText('Wait for increment two.')).toBeVisible()
+    await page.getByRole('button', { name: 'View task' }).click()
+    await expect.element(page.getByText('Finished in quiet-nebula')).toBeVisible()
+    await view.unmount()
+  })
+
+  it('takes the new tasks out with Undo in the toast in D18 and T21', async () => {
+    for (const [state, width, height] of [
+      ['tasksCreated', 1512, 982],
+      ['tasksCreatedList', 756, 1158],
+    ] as const) {
+      await page.viewport(width, height)
+      const view = await renderInbox(state).rendered
+      await expect.element(page.getByText('Write the Workbench tickets')).toBeVisible()
+      await page.getByRole('button', { name: 'Undo' }).click()
+      await expect.element(page.getByText('Write the Workbench tickets')).not.toBeInTheDocument()
+      await expect.element(page.getByText('Created 3 tasks from a discussion')).not.toBeInTheDocument()
+      await view.unmount()
+      resetAllStores()
+    }
+  })
+
+  it('adds the message Erik sends to the desktop discussion and empties the reply box', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('discussOpen').rendered
+    const box = page.getByRole('textbox', { name: 'Ask about this task' })
+    await userEvent.type(box, 'Can it wait a week?')
+    await page.getByRole('button', { name: 'Send' }).click()
+    await expect.element(page.getByText('Can it wait a week?')).toBeVisible()
+    await expect.element(box).toHaveValue('')
+    await expect.element(page.getByRole('heading', { name: 'Talk this task through' })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Attach a file' })).not.toBeInTheDocument()
+    await view.unmount()
+  })
+
   it('scrolls the Snoozed toggle clear of the toast in D18', async () => {
     await page.viewport(1512, 982)
     const { rendered } = renderInbox('tasksCreated')
@@ -810,6 +872,91 @@ describe('the Inbox on the phone', () => {
     const chips = page.getByRole('radiogroup', { name: 'Filter the inbox' }).element()
     await expect.poll(() => box(chip).right).toBeLessThanOrEqual(box(chips).right)
     expect(box(chip).left).toBeGreaterThanOrEqual(box(chips).left)
+  })
+
+  it('opens the discussion with Discuss in the nav, and a suggestion fills the reply box', async () => {
+    await phone('discussTask')
+    const nav = page.getByRole('button', { name: 'Back to Inbox' }).element().parentElement
+    expect(nav?.textContent).toContain('Discuss')
+    await page.getByRole('button', { name: 'Discuss' }).click()
+    await expect.element(page.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Is this still worth doing?' }).click()
+    await expect
+      .element(page.getByRole('textbox', { name: 'Ask about this task' }))
+      .toHaveValue('Is this still worth doing?')
+    await page.getByRole('button', { name: 'Back to the task' }).click()
+    await expect.element(title()).toBeVisible()
+  })
+
+  it('confirms a removal in a sheet that starts on Keep it, and Remove task puts the task in Done', async () => {
+    await phone('removalProposedPage')
+    await page.getByRole('button', { name: 'Remove…' }).click()
+    const confirm = sheet('Remove this task?')
+    await expect.element(confirm.getByRole('button', { name: 'Keep it' })).toHaveFocus()
+    await confirm.getByRole('button', { name: 'Remove task' }).click()
+    await expect.element(confirm).not.toBeInTheDocument()
+    await expect.element(title()).not.toBeInTheDocument()
+    await page.getByRole('radio', { name: 'Done 5' }).click()
+    await page.getByRole('button', { name: /Today/ }).click()
+    await expect.element(page.getByText('Removed in a discussion · split into 3')).toBeVisible()
+  })
+
+  it('restores a removed task from its page, from the keyboard, back into Next steps', async () => {
+    await phone('removedPhone')
+    await page.getByText('Write the tickets for increment one').click()
+    await expect.element(page.getByText('removed today at 14:40 in a discussion')).toBeVisible()
+    const restore = page.getByRole('button', { name: 'Restore' })
+    restore.element().focus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(page.getByRole('button', { name: 'Restore' })).not.toBeInTheDocument()
+    await expect.element(page.getByText('suggested 2h ago by the planning run')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Start in the-bridge' })).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(page.getByText('Removed in a discussion · split into 3')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('radio', { name: 'Done 3' })).toBeInTheDocument()
+    await page.getByRole('radio', { name: 'Next steps 6' }).click()
+    await expect.element(page.getByText('Write the tickets for increment one')).toBeVisible()
+  })
+
+  it('opens the discussion from a removed task’s Open discussion', async () => {
+    await phone('removedPhone')
+    await page.getByText('Write the tickets for increment one').click()
+    await page.getByRole('button', { name: 'Open discussion' }).click()
+    await expect.element(page.getByRole('group', { name: 'Proposed · Remove this task' })).toBeVisible()
+  })
+
+  it('starts the task with the pinned Start: the run card takes its place above the tab bar', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Start in the-bridge' }).click()
+    await expect.element(page.getByText('Running in quiet-nebula')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Start in the-bridge' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+  })
+
+  it('adds the message Erik sends in the discussion page to it', async () => {
+    await phone('tasksProposedPage')
+    await userEvent.type(page.getByRole('textbox', { name: 'Ask about this task' }), 'Keep the Inbox one.{Enter}')
+    await expect.element(page.getByText('Keep the Inbox one.')).toBeVisible()
+    await expect.element(page.getByRole('textbox', { name: 'Ask about this task' })).toHaveValue('')
+  })
+
+  it('places the toast just above the tab bar', async () => {
+    await phone('tasksCreatedPhone')
+    const toast = document.querySelector('[data-figma="toast · created"]')
+    const tabBar = document.querySelector('[data-figma="tab bar"]')
+    expect(toast).not.toBeNull()
+    expect(tabBar).not.toBeNull()
+    if (toast !== null && tabBar !== null) expect(box(tabBar).top - box(toast).bottom).toBe(12)
+  })
+
+  it('takes the new tasks out with Undo in the toast', async () => {
+    await phone('tasksCreatedPhone')
+    await expect.element(page.getByText('Write the Workbench tickets')).toBeVisible()
+    await page.getByRole('button', { name: 'Undo' }).click()
+    await expect.element(page.getByText('Write the Workbench tickets')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Created 3 tasks from a discussion')).not.toBeInTheDocument()
   })
 
   it('keeps the reply Erik types in the chat', async () => {

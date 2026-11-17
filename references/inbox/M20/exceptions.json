@@ -1,0 +1,24 @@
+{
+  "missing": [
+    {
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and to its Figma frame from pages.md, and leave them in Backlog for me to review. Before writing, check that each frame exists, and list any that do not.",
+      "reason": "Figma cuts the prompt too: the text layer 402:2348 is 210 high inside the 128 px prompt box 402:2347, under the fade 402:2349, as in M2. The render's Clamp cuts it after five lines; Read the whole prompt opens it in full."
+    },
+    {
+      "text": "f-005 the-bridge",
+      "reason": "Layer 402:2385 is the detail of a source in the SOURCES section (402:2375, y 623), which sits under the pinned Start (402:2435) where frame.png does not show it. The render keeps Sources below My notes, where the page scrolls, as in M2. The same text in the visible chip is then not checked either, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The task page scrolls on the phone, as in M2: Figma cuts My notes (402:2371) under the pinned Start (402:2435); the render scrolls the detail under the pinned Start the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "reason": "The cut prompt Figma draws (402:2348 is 210 high in the 128 px box 402:2347, with the fade 402:2349); see the prompt's missing entry."
+    }
+  ]
+}

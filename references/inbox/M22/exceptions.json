@@ -1,0 +1,79 @@
+{
+  "missing": [
+    {
+      "text": "drift check wants to run git mv",
+      "reason": "Layer 402:7399 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "omni-brain · drift check",
+      "reason": "Layer 402:7400 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Codex is waiting",
+      "reason": "Layer 402:7406 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Allow once",
+      "reason": "Layer 402:7409 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Deny",
+      "reason": "Layer 402:7411 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Open chat",
+      "reason": "Layer 402:7413 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "4m",
+      "reason": "Layer 402:7415 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Hono RPC client or plain fetch for the API?",
+      "reason": "Layer 402:7424 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-31",
+      "reason": "Layer 402:7425 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Blocks hono server",
+      "reason": "Layer 402:7431 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "12m",
+      "reason": "Layer 402:7433 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Pick the header logo",
+      "reason": "Layer 402:7441 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-36",
+      "reason": "Layer 402:7442 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "1h",
+      "reason": "Layer 402:7444 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "Try the tablet layout on the iPad mini",
+      "reason": "Layer 402:7452 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "3h",
+      "reason": "Layer 402:7455 is in a row of Needs you, which frame.png draws closed (the chevron of group · NEEDS YOU 402:7385 points right). get_metadata does not say a layer is hidden, so frame.json lists the closed group's rows, all at y 212 under Next steps; the render closes the group too."
+    },
+    {
+      "text": "ncc-1701 · f-005",
+      "reason": "Layer 402:7453 is the meta line of the closed group's last row (Try the tablet layout on the iPad mini), hidden like the others above; the visible \"ncc-1701 · f-005 · …\" lines are other texts."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row scrolls sideways on the phone, as in M1: Done (and its count) runs off the right edge under the fade. The render's chips clip the same way; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

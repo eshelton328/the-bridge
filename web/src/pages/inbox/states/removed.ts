@@ -1,62 +1,42 @@
-// Figma Inbox D21 "Removed, in Done": the removed task sits in Done with
-// its reason in red. Its page offers Open discussion and Restore; the
-// prompt never ran. Copy word for word from
-// references/inbox/D21/frame.json.
+// Figma Inbox D21 "Removed, in Done": D20 after Remove task. The removed
+// task sits in Done with its reason in red; its page offers Open
+// discussion and Restore, which puts it back in Next steps. The prompt
+// never ran. The removal is the state's `ui` (the remove proposal applied,
+// the task finished as removed), so Restore can take it back. Copy word for
+// word from references/inbox/D21/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'
 import { done } from './done.ts'
-import { nextStep } from './nextStep.ts'
+import { nextStep, nextStepGroups } from './nextStep.ts'
+import { removalProposed } from './removalProposed.ts'
 
-const base = nextStep.data.detail
-// The finished next step of D7 is the removed task here.
-const groups = done.data.groups.map((group) =>
-  group.id === 'today'
-    ? {
-        ...group,
-        rows: group.rows.map((row, i) =>
-          i === 0
-            ? {
-                ...row,
-                age: '14:40',
-                outcome: { line: 'Removed in a discussion · split into 3', result: 'removed' as const },
-              }
-            : row,
-        ),
-      }
-    : group,
+const task = nextStep.ui.selectedId
+// D7's Done days without its finished next step: the removed task joins Today from Next steps.
+const days = done.data.groups.map((group) =>
+  group.id === 'today' ? { ...group, count: 1, rows: group.rows.filter((row) => row.id !== task) } : group,
 )
 
 export const removed = {
   title: 'removed, in Done',
   frames: [{ id: 'D21', node: '403:3929', viewport: 'desktop' }],
   data: {
-    ...done.data,
+    ...removalProposed.data,
+    // Before the removal: the list takes the task out of the counts and adds it to Done (Figma: 7 in all, 2 next
+    // steps, 4 in Done).
+    count: 8,
     filters: [
-      { value: 'all', label: 'All', count: 7 },
+      { value: 'all', label: 'All', count: 8 },
       { value: 'needs', label: 'Needs you', count: 4 },
-      { value: 'next', label: 'Next steps', count: 2 },
+      { value: 'next', label: 'Next steps', count: 3 },
       { value: 'running', label: 'Running', count: 1 },
-      { value: 'done', label: 'Done', count: 4 },
+      { value: 'done', label: 'Done', count: 3 },
     ],
-    groups,
-    detail: {
-      ...base,
-      status: { tone: 'danger', label: 'Removed' },
-      origin: 'removed today at 14:40 in a discussion',
-      actions: false,
-      prompt: { ...base.prompt, state: 'notRun' },
-      launch: {
-        stage: 'started',
-        run: {
-          agent: 'claude',
-          title: 'Removed in a discussion',
-          status: { tone: 'danger', label: 'Removed', dot: true },
-          meta: 'Reason: split into three tasks: the Workbench, Inbox and App frame tickets.',
-          open: 'Open discussion',
-          openElsewhere: 'Restore',
-        },
-      },
-    },
+    groups: [nextStepGroups.needsYou, nextStepGroups.nextSteps, nextStepGroups.snoozed, ...days],
   },
-  ui: done.ui,
+  ui: {
+    ...done.ui,
+    selectedId: task,
+    proposals: { remove: 'applied' },
+    finished: [{ id: task, result: 'removed' }],
+  },
 } satisfies ScreenState<InboxData, InboxUi>

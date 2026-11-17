@@ -8,9 +8,9 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { BackToInbox } from '../blocks/BackToInbox.tsx'
-import { type DiscussControl, SnoozeActions } from '../blocks/DetailHead.tsx'
+import { type DiscussControl, DiscussButton, SnoozeActions } from '../blocks/DetailHead.tsx'
 import { type InboxDrafts, type InboxDetailView, type InboxSnoozeMenu, type InboxUi } from '../types.ts'
-import { NextStepDetail } from './NextStepDetail.tsx'
+import { NextStepDetail, type RemovedControl } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
 
@@ -44,6 +44,10 @@ export type InboxDetailProps = {
   onSnooze?: ((until: string | null) => void) | undefined
   /** Dismiss in the task bar. */
   onDismiss?: (() => void) | undefined
+  /** A task removed in its discussion: Open discussion and Restore on its card. */
+  removed?: RemovedControl | undefined
+  /** Start on a next step that has not started. */
+  onStart?: (() => void) | undefined
 }
 
 export function InboxDetail({
@@ -61,6 +65,8 @@ export function InboxDetail({
   onUiChange,
   onSnooze,
   onDismiss,
+  removed,
+  onStart,
 }: InboxDetailProps) {
   const snooze = {
     menu: snoozeMenu,
@@ -71,10 +77,13 @@ export function InboxDetail({
     onPick: onSnooze,
     onDismiss,
   }
-  // The phone puts Snooze and Dismiss in the nav, as icons (M2); a finished item has neither.
+  // The phone puts Discuss, and Snooze and Dismiss as icons, in the nav (M2, M17); a finished item has neither.
   const navActions =
     layout === 'phone' && detail.kind !== 'running' && detail.actions ? (
-      <SnoozeActions snooze={snooze} iconOnly />
+      <>
+        {discuss === undefined ? null : <DiscussButton discuss={discuss} />}
+        <SnoozeActions snooze={snooze} iconOnly />
+      </>
     ) : undefined
   const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} actions={navActions} />
   const item = (
@@ -91,6 +100,8 @@ export function InboxDetail({
           drafts={drafts}
           snooze={snooze}
           onUiChange={onUiChange}
+          removed={removed}
+          onStart={onStart}
         />
       ) : null}
       {detail.kind === 'question' ? (

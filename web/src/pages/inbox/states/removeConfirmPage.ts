@@ -1,4 +1,4 @@
-// Figma Inbox T23 "Confirm the removal": T22 after Remove…, with the
+// Figma Inbox T23 and M24 "Confirm the removal": T22 after Remove…, with the
 // confirm dialog (a dialog, not a sheet) over the discussion's page.
 // Linear is not changed. Copy word for word from
 // references/inbox/T23/frame.json.
@@ -8,7 +8,10 @@ import { removeConfirm } from './removeConfirm.ts'
 
 export const removeConfirmPage = {
   title: 'confirm the removal, on the discussion page',
-  frames: [{ id: 'T23', node: '402:12404', viewport: 'tablet' }],
+  frames: [
+    { id: 'T23', node: '402:12404', viewport: 'tablet' },
+    { id: 'M24', node: '402:7743', viewport: 'phone' },
+  ],
   data: removeConfirm.data,
   ui: removeConfirm.ui,
 } satisfies ScreenState<InboxData, InboxUi>

@@ -1,5 +1,6 @@
 // A discussion before the first message: what it is for, what it can do
-// to the task, and questions to start with. Props only.
+// to the task, and questions to start with; a press puts the question in
+// the reply box. Props only.
 import {
   BubbleIcon,
   Button,
@@ -36,12 +37,26 @@ const text = css({
   alignSelf: 'center',
   maxW: 'shell.widePane',
 })
+// M18 402:2060: on the phone the text is 320 wide, centred, so its lines break where Figma's do. No token names a
+// text column's width; `shell.popover` has the same 320 (LIBRARY_GAPS.md, Empty state with an icon tile).
+const phoneText = css({
+  textStyle: 'bodySm',
+  color: 'fg.muted',
+  m: '0',
+  textAlign: 'center',
+  alignSelf: 'center',
+  maxW: 'shell.popover',
+})
 const can = css({ textStyle: 'small', color: 'fg.default' })
-const canIcon = css({ display: 'inline-flex', color: 'fg.muted' })
+// Figma tints the three icons violet (#9e8fff, D14, T17 and M18 402:2064 to 402:2072): `accent.discuss`.
+const canIcon = css({ display: 'inline-flex', color: 'accent.discuss' })
 // Figma 403:984: the suggestion labels are Geist Medium 12, not the Button's Medium 14. At 14 the row
 // is about 80 px wider than Figma's 507 and fills the 587 px column, so it wraps where glyph widths
 // round up (Linux).
 const suggestion = css({ textStyle: 'small', fontWeight: 'text.label' })
+// M18 402:2075: on the phone the suggestions stack under "Try", full width, their labels at the start.
+const tryLabel = css({ textStyle: 'eyebrow', textTransform: 'uppercase', color: 'fg.subtle', m: '0' })
+const stackedSuggestion = css({ textStyle: 'small', fontWeight: 'text.label', justifyContent: 'flex-start' })
 
 const icons = {
   edit: <EditIcon size="12" />,
@@ -49,14 +64,25 @@ const icons = {
   trash: <TrashIcon size="12" />,
 } as const satisfies Record<NonNullable<InboxDiscussion['empty']>['can'][number]['icon'], ReactNode>
 
-export function DiscussionEmpty({ empty }: { empty: NonNullable<InboxDiscussion['empty']> }) {
+export type DiscussionEmptyProps = {
+  empty: NonNullable<InboxDiscussion['empty']>
+  /** The phone's layout: the suggestions one under the other, under their label (M18). */
+  stacked?: boolean | undefined
+  /** A suggestion was pressed: its question goes in the reply box. */
+  onPick?: ((text: string) => void) | undefined
+}
+
+export function DiscussionEmpty({ empty, stacked = false, onPick }: DiscussionEmptyProps) {
+  const pick = (s: string) => () => {
+    onPick?.(s)
+  }
   return (
     <Stack gap="10" data-figma="empty state">
       <span className={tile}>
         <BubbleIcon size="20" />
       </span>
       <h3 className={title}>{empty.title}</h3>
-      <p className={text}>{empty.text}</p>
+      <p className={stacked ? phoneText : text}>{empty.text}</p>
       <div data-figma="it can">
         <Panel title={empty.canLabel}>
           <Stack gap="8">
@@ -69,14 +95,25 @@ export function DiscussionEmpty({ empty }: { empty: NonNullable<InboxDiscussion[
           </Stack>
         </Panel>
       </div>
-      {/* One row at 1512 (Figma 403:521); the buttons wrap in a narrower panel, which clips its overflow. */}
-      <Inline gap="6" align="center" justify="center" wrap data-figma="suggestions">
-        {empty.suggestions.map((s) => (
-          <Button key={s} className={suggestion}>
-            {s}
-          </Button>
-        ))}
-      </Inline>
+      {stacked ? (
+        <Stack gap="6" data-figma="suggestions">
+          <p className={tryLabel}>{empty.tryLabel}</p>
+          {empty.suggestions.map((s) => (
+            <Button key={s} className={stackedSuggestion} onClick={pick(s)}>
+              {s}
+            </Button>
+          ))}
+        </Stack>
+      ) : (
+        // One row at 1512 (Figma 403:521); the buttons wrap in a narrower panel, which clips its overflow.
+        <Inline gap="6" align="center" justify="center" wrap data-figma="suggestions">
+          {empty.suggestions.map((s) => (
+            <Button key={s} className={suggestion} onClick={pick(s)}>
+              {s}
+            </Button>
+          ))}
+        </Inline>
+      )}
     </Stack>
   )
 }

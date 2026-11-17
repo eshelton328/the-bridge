@@ -22,13 +22,16 @@ import {
   type DiscussionEffect,
   discussionView,
   proposalEffect,
+  isRemoved,
   proposalOf,
   removeEffect,
+  restoreEffect,
   undoCreateEffect,
   undoUpdateEffect,
 } from './discussionView.ts'
 import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
+import { startView } from './startView.ts'
 
 export type InboxScreenProps = {
   data: InboxData
@@ -59,7 +62,7 @@ type InboxLayoutProps = Omit<InboxScreenProps, 'viewport'> & { layout: Viewport;
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange } = props
-  const data = discussionView(props.data, ui)
+  const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
   // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
@@ -75,6 +78,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const discussing = desktop && discussOpen
   const discussPage = !desktop && discussOpen && open?.kind === 'next' ? discussion : undefined
   const remove = proposalOf(data, 'remove')
+  // A task removed in its discussion has no Discuss in its task bar; its card opens the discussion and restores it.
+  const removed = isRemoved(data, ui)
   // Only a chat hides the tab bar (T1 note): a started item's chat or a discussion fills the screen down to its reply box.
   const inChat = open?.kind === 'running' || discussPage !== undefined
   // On the phone the prompt editor's keyboard covers the bottom of the screen, tab bar and all (M3).
@@ -108,6 +113,10 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       if (ui.proposals.create === 'applied') return
       onUiChange?.({ proposalChecks: { ...ui.proposalChecks, [label]: checked } })
     },
+  }
+  // Send in the discussion's reply box: the message follows its entries (`discussionView`).
+  const send = (text: string) => {
+    onUiChange?.({ sent: [...ui.sent, text] })
   }
   const closeDiscussion = () => {
     onUiChange?.({ discussOpen: false })
@@ -157,6 +166,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onClose={closeDiscussion}
         control={control}
         drafts={drafts}
+        onSend={send}
       />
     ) : shown === null ? undefined : (
       <InboxDetail
@@ -184,8 +194,33 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onUndoChange={() => {
           run(undoUpdateEffect(ui))
         }}
+        onStart={
+          shown.kind === 'next' && shown.launch.stage === 'suggested'
+            ? () => {
+                onUiChange?.({
+                  started: [...ui.started.filter((id) => id !== shown.id), shown.id],
+                  // The started row moves to Running (`startView`), which opens to show it.
+                  groupsOpen: { ...ui.groupsOpen, running: true },
+                  // Start sends the prompt: its editor closes, as the sent prompt cannot change.
+                  editingPrompt: false,
+                })
+              }
+            : undefined
+        }
+        removed={
+          removed
+            ? {
+                onOpenDiscussion: () => {
+                  onUiChange?.({ discussOpen: true })
+                },
+                onRestore: () => {
+                  run(restoreEffect(data, ui))
+                },
+              }
+            : undefined
+        }
         discuss={
-          discussion === undefined
+          discussion === undefined || removed
             ? undefined
             : {
                 open: discussing,
@@ -196,7 +231,13 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         }
         side={
           discussing ? (
-            <DiscussionPanel discussion={discussion} control={control} onClose={closeDiscussion} drafts={drafts} />
+            <DiscussionPanel
+              discussion={discussion}
+              control={control}
+              onClose={closeDiscussion}
+              drafts={drafts}
+              onSend={send}
+            />
           ) : undefined
         }
       />
@@ -219,6 +260,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         <RemoveDialog
           proposal={remove}
           open={ui.removeOpen}
+          layout={layout}
           onOpenChange={onRemoveOpenChange}
           onConfirm={() => {
             run(removeEffect(data, ui))

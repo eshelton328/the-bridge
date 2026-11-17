@@ -111,6 +111,23 @@ export function PromptSection({
       <ChevronRightIcon size="12" />
     </a>
   ) : null
+  const changeLine =
+    prompt.change === undefined ? null : (
+      <span className={change} data-figma="change history">
+        <UndoIcon size="12" />
+        {prompt.change.line}
+        <a
+          className={undo}
+          href="#undo"
+          onClick={(e) => {
+            e.preventDefault()
+            onUndoChange?.()
+          }}
+        >
+          {prompt.change.undo}
+        </a>
+      </span>
+    )
   return (
     <DetailSection
       title={titles[prompt.state]}
@@ -163,26 +180,19 @@ export function PromptSection({
               <span className={text}>{breakAfterSlashes(current)}</span>
             </Clamp>
           </Panel>
-          {prompt.change === undefined ? (
-            readMore
-          ) : (
+          {/* The phone puts the change line under Read the whole prompt (M20 402:2440), 8 below it. */}
+          {changeLine !== null && layout === 'phone' ? (
+            <Stack gap="8">
+              {readMore}
+              {changeLine}
+            </Stack>
+          ) : changeLine !== null ? (
             <Inline gap="16" align="center">
               {readMore}
-              <span className={change} data-figma="change history">
-                <UndoIcon size="12" />
-                {prompt.change.line}
-                <a
-                  className={undo}
-                  href="#undo"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onUndoChange?.()
-                  }}
-                >
-                  {prompt.change.undo}
-                </a>
-              </span>
+              {changeLine}
             </Inline>
+          ) : (
+            readMore
           )}
           <PromptDialog
             title="Suggested prompt"

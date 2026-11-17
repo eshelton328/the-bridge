@@ -4,7 +4,7 @@
 // references/inbox/D05/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'
-import { nextStep, nextStepGroups } from './nextStep.ts'
+import { nextStep, nextStepGroups, startedChat } from './nextStep.ts'
 
 const { needsYou, nextSteps, snoozed } = nextStepGroups
 const started = nextStep.ui.selectedId
@@ -33,45 +33,10 @@ export const running = {
         dot: 'working',
         rows: nextSteps.rows
           .filter((row) => row.id === started)
-          .map((row) => ({
-            ...row,
-            running: {
-              agent: 'claude',
-              line: 'quiet-nebula · Creating 9 issues…',
-              status: { tone: 'working', label: 'Working', dot: true },
-            },
-          })),
+          .map((row) => ({ ...row, running: nextStep.data.detail.launch.start.row })),
       },
     ],
-    detail: {
-      kind: 'running',
-      id: nextStep.data.detail.id,
-      title: 'Write the tickets for increment one',
-      agent: 'claude',
-      meta: {
-        task: 'ncc-1701 · f-005 · NCC-28',
-        started: 'started 3 min ago in',
-        chat: 'quiet-nebula · the-bridge · Sonnet 5.5',
-      },
-      status: { tone: 'working', label: 'Working', dot: true },
-      chat: [
-        {
-          type: 'user',
-          text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review…',
-        },
-        { type: 'tool', name: 'Read', target: 'increment-1.md, linear.md', state: 'done' },
-        {
-          type: 'assistant',
-          agent: 'claude',
-          name: 'Claude',
-          text: 'Increment one has nine screens. The inbox screens are newer than the increment. Should they join this cycle, or wait for increment two?',
-        },
-        { type: 'user', text: 'Wait for increment two.' },
-        { type: 'tool', name: 'Creating', target: '9 issues in NCC…', state: 'running' },
-      ],
-      reply: 'Reply to quiet-nebula',
-      model: 'Sonnet 5.5',
-    },
+    detail: startedChat,
   },
   ui: { ...nextStep.ui, groupsOpen: { ...nextStep.ui.groupsOpen, running: true } },
 } satisfies ScreenState<InboxData, InboxUi>

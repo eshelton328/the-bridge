@@ -34,7 +34,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Nav and detail.** As in M02: the nav is 32 px high against Figma's
   40 (`nav` h -8); sections are 20 apart against Figma's 18 (d-072), the
   title is `title` (20/28) against Figma's 22 px and the prompt's lines

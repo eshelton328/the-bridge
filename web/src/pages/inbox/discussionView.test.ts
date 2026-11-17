@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { discussionView, proposalEffect, removeEffect, undoCreateEffect } from './screens/discussionView.ts'
+import { restoreEffect } from './screens/discussionView.ts'
+import { startView } from './screens/startView.ts'
 import { inboxStates } from './states/index.ts'
 
 const { changeProposed, tasksProposed, removalProposed } = inboxStates
+const { removed } = inboxStates
 const selected = changeProposed.data.detail.id
 
 describe('discussionView', () => {
@@ -71,5 +74,74 @@ describe('the discussion effects', () => {
     expect(created.ui.finished).toEqual([{ id: selected, result: 'removed' }])
     const ui = { ...tasksProposed.ui, ...created.ui }
     expect(undoCreateEffect(data, ui).ui).toEqual({ proposals: {}, finished: [] })
+  })
+
+  it('shows a removed task as removed, with its reason on its row, and Restore takes the removal back', () => {
+    const view = discussionView(removed.data, removed.ui)
+    const detail = view.detail?.kind === 'next' ? view.detail : undefined
+    expect(detail?.status).toEqual({ tone: 'danger', label: 'Removed' })
+    expect(detail?.actions).toBe(false)
+    expect(detail?.launch.stage === 'started' ? detail.launch.run.openElsewhere : undefined).toBe('Restore')
+    const row = view.groups.flatMap((g) => g.rows).find((r) => r.id === selected)
+    expect(row?.outcome).toEqual({ line: 'Removed in a discussion · split into 3', result: 'removed' })
+    const restored = { ...removed.ui, ...restoreEffect(view, removed.ui).ui }
+    expect(restored.finished).toEqual([])
+    expect(restored.proposals).toEqual({})
+    expect(discussionView(removed.data, restored).detail).toEqual(removed.data.detail)
+  })
+
+  it('keeps a removed task with Keep it in its discussion: it leaves Done and its page shows it as it was', () => {
+    const view = discussionView(removed.data, removed.ui)
+    const kept = { ...removed.ui, ...proposalEffect(view, removed.ui, 'remove', 'discard', true).ui }
+    expect(kept.proposals).toEqual({ remove: 'discarded' })
+    expect(kept.finished).toEqual([])
+    expect(discussionView(removed.data, kept).detail).toEqual(removed.data.detail)
+  })
+
+  it('adds the messages Erik sent after the entries', () => {
+    const view = discussionView(tasksProposed.data, { ...tasksProposed.ui, sent: ['Keep the Inbox one.'] })
+    expect(view.discussion?.entries.at(-1)).toEqual({ type: 'user', text: 'Keep the Inbox one.' })
+  })
+
+  it('takes the rows a state draws as created out after Undo, with the counts and the toast', () => {
+    const { tasksCreated } = inboxStates
+    const shown = discussionView(tasksCreated.data, tasksCreated.ui)
+    expect(shown.toast).toBeDefined()
+    const undone = discussionView(tasksCreated.data, {
+      ...tasksCreated.ui,
+      ...undoCreateEffect(tasksCreated.data, tasksCreated.ui).ui,
+    })
+    expect(undone.toast).toBeUndefined()
+    expect(undone.count).toBe(tasksCreated.data.count - 3)
+    const next = undone.groups.find((g) => g.id === 'nextSteps')
+    expect(next?.rows.map((r) => r.pill?.label)).not.toContain('New')
+    expect(next?.count).toBe(next?.rows.length)
+  })
+})
+
+describe('startView', () => {
+  it('shows a started next step with its run card, Running and its prompt sent', () => {
+    const { nextStep } = inboxStates
+    const view = startView(nextStep.data, { started: [nextStep.data.detail.id] })
+    const detail = view.detail?.kind === 'next' ? view.detail : undefined
+    expect(detail?.status.label).toBe('Running')
+    expect(detail?.prompt.state).toBe('sent')
+    expect(detail?.launch.stage === 'started' ? detail.launch.run.chat?.reply : undefined).toBe('Reply to quiet-nebula')
+    expect(startView(nextStep.data, { started: [] })).toBe(nextStep.data)
+  })
+
+  it('moves the started row from Next steps to Running, with both chips counting it there', () => {
+    const { nextStep } = inboxStates
+    const id = nextStep.data.detail.id
+    const view = startView(nextStep.data, { started: [id] })
+    const group = (g: string) => view.groups.find((x) => x.id === g)
+    expect(group('nextSteps')?.rows.map((r) => r.id)).not.toContain(id)
+    expect(group('nextSteps')?.count).toBe(2)
+    expect(group('running')?.rows.map((r) => r.id)).toEqual([id])
+    expect(group('running')?.rows[0]?.running?.line).toBe('quiet-nebula · Creating 9 issues…')
+    expect(group('running')?.count).toBe(1)
+    const chip = (v: string) => view.filters.find((f) => f.value === v)?.count
+    expect([chip('all'), chip('next'), chip('running')]).toEqual([7, 2, 1])
+    expect(view.count).toBe(nextStep.data.count)
   })
 })

@@ -22,7 +22,7 @@ status bar.
 - `group · NEEDS YOU`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
 - `group · NEXT STEPS`: x +2, y -11, w -4, h +4; 29 px removed: y +18.
 - `group · SNOOZED`: x +2, y +11, w -4, h +4; 29 px removed: y +40.
-- `toast · created`: x -144, y -21, w +288, h +0; anchored to the bottom, no status bar offset.
+- `toast · created`: x -144, y -4, w +288, h +0; anchored to the bottom, no status bar offset.
 
 ## Deviations
 
@@ -46,11 +46,12 @@ status bar.
   gap: New list row.
 - **Toast.** `Toast` takes the list's width (708 px); Figma's is 420
   px and centred (`toast · created` x -144, w +288). It sticks to the
-  bottom of the list, 21 px higher than Figma's toast over the tab bar
-  (`toast · created` y -21). Library gap: Toast
-  width on the tablet. Its Undo takes back tasks Erik created on the
-  discussion page; this state's tasks are drawn by its data, so Undo
-  here changes nothing.
+  bottom of the list, which fills the screen above the tab bar, so it
+  sits 20 above the tab bar (the Container's padding) against Figma's
+  16 (`toast · created` y -4; it was -21, after the last group).
+  Library gap: Toast width on the tablet. Undo takes the new tasks out,
+  as on the phone (M22): the state names the rows it draws as created,
+  and Undo clears its applied Create (`InboxRoute.test.tsx`).
 - **Tab bar.** `TabBar` spreads its five tabs over the full width
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab

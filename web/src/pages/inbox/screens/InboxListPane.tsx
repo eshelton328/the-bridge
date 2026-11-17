@@ -25,7 +25,7 @@ import {
   Toast,
 } from '@eshelton328/component-library-1701'
 import { useLayoutEffect, useRef } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
@@ -60,6 +60,10 @@ const frame = css({
 // in Figma, and at the bottom of the scroll it sits under the last group, so no row stays behind it.
 // The top margin keeps it at the bottom when the list is short.
 const toast = css({ position: 'sticky', bottom: '0', mt: 'auto' })
+// On a tablet or phone the list fills the screen above the tab bar when it has a toast, so the toast sits at its
+// bottom: 12 above the tab bar on the phone (M22 402:7589 to 402:7503, the Container's bottom padding) and 16 on the
+// tablet (T21 402:12214, 20 with the Container's padding). Without the fill the toast followed the last group.
+const compactFill = css({ flex: '1' })
 // The tablet list (T1 346:5415) sits on the backdrop, with no pane fill; the Container pads it.
 const compactPane = css({ display: 'flex', flexDirection: 'column', gap: '2' })
 const header = css({ py: '4' })
@@ -182,7 +186,7 @@ export function InboxListPane({
   const list = (
     <section
       aria-label="Inbox list"
-      className={desktop ? pane : compactPane}
+      className={desktop ? pane : cx(compactPane, data.toast === undefined ? undefined : compactFill)}
       data-figma={data.toast === undefined ? 'inbox list' : undefined}
     >
       <div className={desktop ? header : layout === 'phone' ? phoneHeader : undefined} data-figma="header">
@@ -375,7 +379,7 @@ export function InboxListPane({
     )
   if (!desktop)
     return (
-      <Container size={layout}>
+      <Container size={layout} className={data.toast === undefined ? undefined : compactFill}>
         {list}
         {actions}
       </Container>

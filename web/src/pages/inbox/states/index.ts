@@ -29,6 +29,7 @@ import { removeConfirm } from './removeConfirm.ts'
 import { removeConfirmPage } from './removeConfirmPage.ts'
 import { removed } from './removed.ts'
 import { removedList } from './removedList.ts'
+import { removedPhone } from './removedPhone.ts'
 import { rowActions } from './rowActions.ts'
 import { runInSheet } from './runInSheet.ts'
 import { running } from './running.ts'
@@ -46,6 +47,7 @@ import { sortedList } from './sortedList.ts'
 import { taskPage } from './taskPage.ts'
 import { tasksCreated } from './tasksCreated.ts'
 import { tasksCreatedList } from './tasksCreatedList.ts'
+import { tasksCreatedPhone } from './tasksCreatedPhone.ts'
 import { tasksProposed } from './tasksProposed.ts'
 import { tasksProposedPage } from './tasksProposedPage.ts'
 
@@ -79,6 +81,7 @@ export const inboxStates = {
   removeConfirmPage,
   removed,
   removedList,
+  removedPhone,
   rowActions,
   runInSheet,
   running,
@@ -96,6 +99,7 @@ export const inboxStates = {
   taskPage,
   tasksCreated,
   tasksCreatedList,
+  tasksCreatedPhone,
   tasksProposed,
   tasksProposedPage,
 }
