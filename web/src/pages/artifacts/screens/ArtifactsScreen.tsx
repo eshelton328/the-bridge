@@ -1,17 +1,119 @@
-// ArtifactsScreen: props only. Data comes in as props; changes go out through callbacks.
+// The Artifacts page as one props-only screen, laid out by the width it
+// gets (ViewportFrame): on the desktop the rail with Artifacts selected and
+// the library beside it (Figma D1), or, with an artifact open, the library
+// as a list and the artifact beside it (D2), or with its discussion open
+// the artifact and the discussion, the list closed (D7), and in it a
+// proposed change with Apply, Discard and Edit first (D8), which Apply
+// turns into the applied artifact and proposal (D9); on a tablet or phone the
+// library over the tab bar. A state file's data and ui are its props; the callbacks are
+// optional, so a story or a canvas board needs none.
+import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
+import { AppRail } from '../../../blocks/AppRail.tsx'
+import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
+import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
+import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
+import { ArtifactDetail } from './ArtifactDetail.tsx'
+import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
+import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
+import { LibraryList } from './LibraryList.tsx'
 
 export type ArtifactsScreenProps = {
   data: ArtifactsData
   ui: ArtifactsUi
+  /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
+  onNavigate?: ((page: string) => void) | undefined
+  /** Reports what Erik changes: the chip, the search, the view and the open groups. */
+  onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
 }
 
-export function ArtifactsScreen({ data, viewport }: ArtifactsScreenProps) {
+export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: ArtifactsScreenProps) {
   return (
-    <section data-viewport={viewport}>
-      <h1>{data.title}</h1>
-    </section>
+    <ViewportFrame initial={viewport}>
+      {(layout) => {
+        // D2: the desktop opens an artifact beside the list. A tablet or phone frame of it comes later.
+        const open = layout === 'desktop' ? data.open : undefined
+        // D9: after Apply the artifact shows Updated and the proposal its applied form.
+        const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
+        // D7: Discuss opens the artifact's discussion beside it, and the list closes.
+        const discussion = view?.discussion
+        const discussing = discussion !== undefined && ui.discussOpen === true
+        const sent = ui.discussSent ?? []
+        return (
+          <Backdrop size={layout}>
+            <AppShell
+              size={layout}
+              rail={
+                layout === 'desktop' ? (
+                  <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} />
+                ) : undefined
+              }
+              tabBar={
+                layout === 'desktop' ? undefined : (
+                  <AppTabBar
+                    // The phone opens Artifacts from More (d-105).
+                    selected={layout === 'tablet' ? 'artifacts' : 'more'}
+                    device={layout === 'tablet' ? 'tablet' : 'phone'}
+                    inboxBadge={data.railBadge}
+                    onSelect={onNavigate}
+                  />
+                )
+              }
+              list={
+                open === undefined || discussing ? undefined : (
+                  <LibraryList data={data} ui={ui} selectedId={open.id} onUiChange={onUiChange} />
+                )
+              }
+              detail={
+                open === undefined || view === undefined ? (
+                  <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
+                ) : (
+                  <ArtifactDetail
+                    artifact={view.artifact}
+                    badge={view.badge}
+                    onDiscuss={
+                      discussion === undefined
+                        ? undefined
+                        : () => {
+                            onUiChange?.({ discussOpen: !discussing })
+                          }
+                    }
+                    madeInLayer={discussion?.layers.madeIn}
+                    side={
+                      discussing ? (
+                        <DiscussionPanel
+                          discussion={discussion}
+                          draft={ui.discussDraft}
+                          entries={discussionEntries(discussion, ui)}
+                          applied={view.applied}
+                          onAct={(act) => {
+                            onUiChange?.(proposalEffect(discussion, act))
+                          }}
+                          onDraftChange={
+                            onUiChange === undefined
+                              ? undefined
+                              : (text) => {
+                                  onUiChange({ discussDraft: text })
+                                }
+                          }
+                          onSend={(text) => {
+                            onUiChange?.({ discussSent: [...sent, text], discussDraft: '' })
+                          }}
+                          onClose={() => {
+                            onUiChange?.({ discussOpen: false })
+                          }}
+                        />
+                      ) : undefined
+                    }
+                  />
+                )
+              }
+            />
+          </Backdrop>
+        )
+      }}
+    </ViewportFrame>
   )
 }

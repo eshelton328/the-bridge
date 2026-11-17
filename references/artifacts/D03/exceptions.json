@@ -1,0 +1,57 @@
+{
+  "missing": [
+    {
+      "text": "Routes, the RPC client and the owner check over Tailscale",
+      "layers": ["403:6543"],
+      "reason": "Figma cuts this one-line description with an ellipsis (D01 shows \"…over Tails…\"); in D03 the Filter menu also covers its end. The card's TruncatedText cuts it the same way and shows it in full in a tooltip. The layer holds the whole string, so the check expects it in full."
+    },
+    {
+      "text": "Which devices reach the-bridge, and the owner check on writes",
+      "layers": ["414:494"],
+      "reason": "Figma cuts this one-line description with an ellipsis (\"…the owner check…\" in frame.png, as in D01), as the card's TruncatedText does; the full text shows in its tooltip."
+    },
+    {
+      "text": "Viewscreen, Captain’s Log, Engineering and Console side by side",
+      "layers": ["403:6617"],
+      "reason": "Figma cuts this one-line description with an ellipsis (\"…and Console s…\" in frame.png, as in D01), as the card's TruncatedText does; the full text shows in its tooltip."
+    },
+    {
+      "text": "Research report: versioning schemes, changelogs and release automation",
+      "layers": ["403:6646"],
+      "reason": "Figma cuts this one-line description with an ellipsis (\"…changelogs and…\" in frame.png, as in D01), as the card's TruncatedText does; the full text shows in its tooltip."
+    }
+  ],
+  "extra": [
+    {
+      "text": "Toolkit",
+      "reason": "The rail's Toolkit item comes from the Toolkit page (d-105); the Artifacts frames are older than it."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The library scrolls: Figma draws the third card row past the frame's bottom edge (403:6718, y 842 to 1128 in a 982 px frame), so the frame clips it as the scrolling pane does."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · Hono server spike\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "Figma cuts this description with an ellipsis too; TruncatedText shows it in full in a tooltip."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · Tailscale access check\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "Figma cuts this description with an ellipsis too; TruncatedText shows it in full in a tooltip."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · the-bridge theme ideas\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "Figma cuts this description with an ellipsis too; TruncatedText shows it in full in a tooltip."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · Application versioning and releases\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "Figma cuts this description with an ellipsis too; TruncatedText shows it in full in a tooltip."
+    }
+  ]
+}
