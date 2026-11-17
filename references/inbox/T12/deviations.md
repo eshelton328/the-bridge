@@ -76,17 +76,11 @@ it stays:
 - The picker's search placeholder "Search workspaces and chats" and its footer note larger and lighter (F2): stays. `SearchField` draws the placeholder in `body` (14) against Figma's 13 and `fg.subtle` by d-055 (library gap: Search field and chip count text); the note is the popover's `small` note in `fg.muted`, the role Figma's #4a5675 has on `surface.overlay` (library gap: Styles that differ from Figma).
 - Black shapes and a stray text line over the Figma side: a defect of the side-by-side picture, not of the reference or the render. See below.
 
-## Reference defect in the side-by-side
+## Side-by-side image
 
-The second review saw black shapes on the Figma side: a large hexagon (the Codex mark), a check and a plus, and the text "New Codex chatthe-bridge · GPT-5.5" over the prompt field. The saved
-`frame.png` does not have them: it is clean, as Figma draws the frame,
-and it was not edited or saved again. The shapes come from how
-`pnpm fidelity` draws `T12.sideBySide.png`: `composeSideBySide` in
-`scripts/fidelity/fidelity.ts` replaces the story tab's page with
-`setContent`, and, as far as the picture shows, the open Run in picker (a portal in `body`) is put back
-into the new page without its styles, so its icons draw at full size
-and its text unstyled over the left picture: the shapes are that
-menu's own icons and words. The render side, `T12.render.png` and the
-checks are not affected. A fix (compose on a new page) belongs in
-`scripts/`, which this branch may not change; it is a known defect of
-this frame's side-by-side until then.
+The second review saw the open Run in picker's icons and text drawn unstyled
+on the Figma side of `T12.sideBySide.png`; the saved `frame.png` and
+the render side did not have them. #13 changed `composeSideBySide` in
+`scripts/fidelity/fidelity.ts` to draw the side-by-side in a fresh
+page. After this branch was rebased onto it, `pnpm fidelity inbox T12`
+draws the Figma side of `T12.sideBySide.png` without them.

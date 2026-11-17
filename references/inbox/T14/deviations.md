@@ -62,17 +62,11 @@ it stays:
 - "Showing 6 of 7" a little larger and lighter (F2): stays. It is the popover's `small` note in `fg.muted`, against Figma's 11 px (346:8972, a 14 px box; `small` is 12) in #4a5675, which `fg.subtle` has but which is not for `surface.overlay` (d-055). Library gaps: Small sans text for row lines, Styles that differ from Figma.
 - Black shapes, unstyled text and a white "Clear" box over the Figma side: a defect of the side-by-side picture, not of the reference or the render. See below.
 
-## Reference defect in the side-by-side
+## Side-by-side image
 
-The second review saw black shapes on the Figma side: a large check, a notch at the top, unstyled text ("omni-brain", "skill-evals", "Tags · global", "global/decision", "project/ncc-1701/the-bridge", "Showing 6…") and a white "Clear" box over the first rows. The saved
-`frame.png` does not have them: it is clean, as Figma draws the frame,
-and it was not edited or saved again. The shapes come from how
-`pnpm fidelity` draws `T14.sideBySide.png`: `composeSideBySide` in
-`scripts/fidelity/fidelity.ts` replaces the story tab's page with
-`setContent`, and, as far as the picture shows, the open Filter menu (a portal in `body`) is put back
-into the new page without its styles, so its icons draw at full size
-and its text unstyled over the left picture: the shapes are that
-menu's own icons and words. The render side, `T14.render.png` and the
-checks are not affected. A fix (compose on a new page) belongs in
-`scripts/`, which this branch may not change; it is a known defect of
-this frame's side-by-side until then.
+The second review saw the open Filter menu's icons and text drawn unstyled
+on the Figma side of `T14.sideBySide.png`; the saved `frame.png` and
+the render side did not have them. #13 changed `composeSideBySide` in
+`scripts/fidelity/fidelity.ts` to draw the side-by-side in a fresh
+page. After this branch was rebased onto it, `pnpm fidelity inbox T14`
+draws the Figma side of `T14.sideBySide.png` without them.
