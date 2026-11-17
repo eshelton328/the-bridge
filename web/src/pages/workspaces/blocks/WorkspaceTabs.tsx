@@ -36,6 +36,7 @@ export function WorkspaceTabs({ data, ui, onUiChange, toggle }: WorkspaceTabsPro
             iconOnly
             aria-label="Show the workspace sidebar"
             data-figma={data.layers?.toggle ?? '158:2'}
+            onClick={() => onUiChange?.({ sidebar: true })}
           >
             <PanelIcon size="16" />
           </Button>

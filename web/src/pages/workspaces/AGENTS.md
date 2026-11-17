@@ -52,8 +52,8 @@ first: it says what each file of a page folder is for.
   `overlay`. D6 adds `PaneDropZone` (the drop zone over the part of the
   chat alone where a dragged chat would open, with the dragged chat), which
   `MainChat` draws as its `overlay`. D7 adds `WorkspaceTabs` (the
-  `Workbench` with New chat, the sidebar toggle when the sidebar is
-  hidden, `WorkbenchPanes` and the status bar), which both layouts use.
+  `Workbench` with New chat, the sidebar toggle, which shows the
+  sidebar again, when the sidebar is hidden, `WorkbenchPanes` and the status bar), which both layouts use.
   Later frames add to these blocks.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
