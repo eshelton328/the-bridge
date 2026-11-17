@@ -246,6 +246,8 @@ export const SidebarLayers = z.object({
   emptyRows: z.array(z.string()).optional(),
   /** The empty pane's Close pane button and its shortcut (D13 402:6502, 402:6504). */
   emptyClose: z.object({ close: z.string(), shortcut: z.string() }).optional(),
+  /** The split's readout while a handle is dragged (D14 402:7151). */
+  resizeHint: z.string().optional(),
   newWorkspace: z.string().optional(),
   /** The group headers, by workspace id. */
   headers: z.record(z.string(), z.string()).optional(),
@@ -376,8 +378,19 @@ export const WorkspacesData = z.object({
   folderPicker: FolderPicker.optional(),
   /** The drop zone's text while a chat is dragged onto the chat shown alone (D6) or a pane of the workbench (D8). */
   paneDrop: PaneDrop.optional(),
+  /**
+   * `rows` (D14): the split puts the first two panes side by side in the top row and the others in the bottom row,
+   * each row with its own column handle. When not set, the library's `SplitPanes` splits the columns first.
+   */
+  split: z.enum(['rows']).optional(),
+  /** The readout beside a handle while Erik drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
+  resizeHint: z.string().optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
+
+/** A handle of a rows-first split (D14): between the rows, or between the columns of the top or bottom row. */
+export const ResizePart = z.enum(['rows', 'top', 'bottom'])
+export type ResizePart = z.infer<typeof ResizePart>
 
 /** The view state a Figma frame shows. */
 export const WorkspacesUi = z.object({
@@ -428,6 +441,14 @@ export const WorkspacesUi = z.object({
    * alone (D7): a chat opened from the sidebar fills the panes area.
    */
   workbench: z.boolean().optional(),
+  /**
+   * The handle of a rows-first split that Erik drags and the sizes it gives, in percent (D14): `rows` between the
+   * rows, `top` and `bottom` between a row's columns. The readout shows the sizes as a ratio.
+   */
+  resize: z
+    .object({ part: ResizePart, sizes: z.array(z.number()) })
+    .nullable()
+    .optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

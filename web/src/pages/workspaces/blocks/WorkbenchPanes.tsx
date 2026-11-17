@@ -2,15 +2,19 @@
 // (D1 105:174): each chat or shell in a `PaneFrame` with its menu, and an
 // empty pane as it is. An open side chat shows inside the pane it belongs
 // to (D5), and a chat dragged from the sidebar over a pane shows the drop
-// zone over the part of the pane where it would open (D8). Props only; `ui` says which pane is focused and which menu,
+// zone over the part of the pane where it would open (D8). With `data.split`
+// `rows` the split is rows first (D14), and a dragged handle shows its
+// readout over the pane before it. Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
-import type { WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { ChatPane } from './ChatPane.tsx'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
 import { PaneFrame } from './PaneFrame.tsx'
 import { PaneMenu } from './PaneMenu.tsx'
+import { ResizeReadout } from './ResizeReadout.tsx'
+import { RowsSplit } from './RowsSplit.tsx'
 import { ShellPane } from './ShellPane.tsx'
 import { SideChatPanel } from './SideChatPanel.tsx'
 
@@ -21,6 +25,13 @@ const chatLayers = [
   { composer: '105:230', entries: ['105:210', undefined, '105:215'] },
   { composer: '105:304', entries: [undefined, '105:291'] },
 ]
+
+// The pane before each handle of a rows-first split, by its place in `panes`, and where its readout sits.
+const readoutPane: Record<ResizePart, { place: number; placement: 'end' | 'bottom' }> = {
+  rows: { place: 0, placement: 'bottom' },
+  top: { place: 0, placement: 'end' },
+  bottom: { place: 3, placement: 'end' },
+}
 
 export type WorkbenchPanesProps = {
   data: WorkspacesData
@@ -35,6 +46,14 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
   const side = ui.sideChatOpen === true ? data.sideChat : undefined
   const drag = ui.paneDrag
   const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === drag?.chat)
+  const resize = data.split === 'rows' ? (ui.resize ?? undefined) : undefined
+  const readout =
+    resize !== undefined && data.resizeHint !== undefined
+      ? {
+          ...readoutPane[resize.part],
+          label: data.resizeHint.replace('{ratio}', resize.sizes.map((s) => Math.round(s)).join(' : ')),
+        }
+      : undefined
   let chats = 0
   const render = (pane: WorkbenchPane, place: number) => {
     if (pane.type === 'empty')
@@ -78,6 +97,8 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
               placement="pane"
               figma={data.layers?.dropZone}
             />
+          ) : readout?.place === place ? (
+            <ResizeReadout label={readout.label} placement={readout.placement} figma={data.layers?.resizeHint} />
           ) : undefined
         }
       >
@@ -110,5 +131,14 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
       </PaneFrame>
     )
   }
-  return <SplitPanes panes={data.panes.map((pane, i) => ({ id: pane.id, content: render(pane, i) }))} />
+  const shown = data.panes.map((pane, i) => ({ id: pane.id, content: render(pane, i) }))
+  if (data.split === 'rows')
+    return (
+      <RowsSplit
+        panes={shown}
+        sizes={resize === undefined ? undefined : { [resize.part]: resize.sizes }}
+        onSizeChange={(part, sizes) => onUiChange?.({ resize: { part, sizes } })}
+      />
+    )
+  return <SplitPanes panes={shown} />
 }

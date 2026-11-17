@@ -220,3 +220,15 @@ export const EmptiedPane: Story = {
     await expect(canvas.queryByRole('status')).toBeNull()
   },
 }
+
+export const ResizedPanes: Story = {
+  name: 'D14: brain git takes the bottom row and the top row resizes 60 : 40',
+  args: { data: workspacesStates.resizedPanes.data, ui: workspacesStates.resizedPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 3 panes')).toBeVisible()
+    await expect(canvas.getByRole('status')).toHaveTextContent('60 : 40 · double-click for 50 : 50')
+    // Rows first: one handle between the top row's panes and one between the rows; brain git's row has none.
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
+  },
+}
