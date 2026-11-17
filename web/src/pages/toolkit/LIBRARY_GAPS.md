@@ -9,5 +9,5 @@ the frame's `deviations.md` lists the difference.
 
 ## Open
 
-| Gap | Frames | Figma | Used now |
+| Part or token | Frames | What is missing | Used now |
 | --- | --- | --- | --- |
