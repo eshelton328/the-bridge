@@ -28,7 +28,9 @@ import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
 
 // D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
 // the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
-const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '40' })
+// The pane fills the frame's height; 24 under the content keeps D8's item (its content ends 42 over the frame's foot,
+// 940, and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
+const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '24' })
 // D3 427:251: the kind badge at the start, the two buttons 10 apart at the end. Show on map (427:258) is 36 high,
 // but the lg button is 9 px wider than Figma's 136, so it takes the md size, as Discuss does (34 in Figma).
 // The row is 40 high (4 above and below its 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
@@ -52,12 +54,13 @@ const copy = css({
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
-// writing-reviewer in D7 (433:524), the hook commit-msg in D9 (433:1536).
+// writing-reviewer in D7 (433:524), the hook commit-msg in D9 (433:1536), the workflow skill-eval-round in D8 (433:1032).
 const titleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '427:270',
   'rules/skills.md': '427:626',
   'agents/writing-reviewer.md': '433:524',
   'hooks/commit-msg': '433:1536',
+  'workflows/skill-eval-round.md': '433:1032',
 }
 
 // D3 500:8143: the kind badge starts with the kind's icon.
@@ -79,9 +82,22 @@ export type ToolkitItemProps = {
   /** Shows the item on the map. */
   onShowOnMap?: (() => void) | undefined
   onDiscuss?: (() => void) | undefined
+  /** Opens a workflow's steps on a page of their own (D8 Open full page, D13). */
+  onOpenFullPage?: (() => void) | undefined
+  /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
+  onOpenItem?: ((path: string) => void) | undefined
 }
 
-export function ToolkitItem({ open, back, onTabChange, onCopyPath, onShowOnMap, onDiscuss }: ToolkitItemProps) {
+export function ToolkitItem({
+  open,
+  back,
+  onTabChange,
+  onCopyPath,
+  onShowOnMap,
+  onDiscuss,
+  onOpenFullPage,
+  onOpenItem,
+}: ToolkitItemProps) {
   const { item, detail, tab } = open
   return (
     <article aria-label={item.name} className={pane} data-figma="toolkit item">
@@ -136,7 +152,13 @@ export function ToolkitItem({ open, back, onTabChange, onCopyPath, onShowOnMap, 
           content:
             // The other tabs are later frames (D4, D7 to D9); until then their panels are empty.
             t.value === 'overview' ? (
-              <ToolkitItemOverview detail={detail} kind={item.kind} onTabChange={onTabChange} />
+              <ToolkitItemOverview
+                detail={detail}
+                kind={item.kind}
+                onTabChange={onTabChange}
+                onOpenFullPage={onOpenFullPage}
+                onOpenItem={onOpenItem}
+              />
             ) : null,
         }))}
       />

@@ -121,6 +121,38 @@ const ToolkitCodeSegment = z.object({
   kind: z.enum(['keyword', 'string', 'comment', 'number', 'function']).optional(),
 })
 
+/**
+ * One step card of a workflow's flow (D8 `step · Runs` 458:25): its mark (the step's number, "?" for a gate, "×" for
+ * an end), its title, what it runs in mono (a script, or an agent in the agent kind's colour) and one or two lines of
+ * notes. `row` is its place in its phase, from 0 at the top: a phase may leave a row empty (D8 CHECK has no step in
+ * row 1). A `gate` (a question the flow stops at) has the needs-you border and title; an `end` (the flow stops) has a
+ * dashed needs-you border.
+ */
+const ToolkitFlowStep = z.object({
+  row: z.number().int().nonnegative(),
+  mark: z.string(),
+  title: z.string(),
+  type: z.enum(['step', 'gate', 'end']),
+  uses: z.object({ text: z.string(), kind: z.enum(['code', 'agent']) }).optional(),
+  notes: z.array(z.string()),
+  /** The label on the arrow down from this step to the next step of its phase, such as "no" (D8 458:93). */
+  down: z.string().optional(),
+})
+
+/**
+ * One phase of a workflow's flow (D8 `lane` 458:3, with its label 458:7): its label ("Check", "Grade · in parallel")
+ * and its steps. `from` lists the rows an arrow from the phase before comes in at, and `fromLabel` the label over
+ * the first of them, such as "yes" (458:92).
+ */
+const ToolkitFlowPhase = z.object({
+  label: z.string(),
+  steps: z.array(ToolkitFlowStep).min(1),
+  /** Its steps run side by side (D8 GRADE · IN PARALLEL): no arrow joins them. One after another when not set. */
+  parallel: z.boolean().optional(),
+  from: z.array(z.number().int().nonnegative()).optional(),
+  fromLabel: z.string().optional(),
+})
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -151,6 +183,21 @@ export const ToolkitItemDetailView = z.object({
    * size. None for an item that is not an agent or a hook.
    */
   runs: z.object({ label: z.string(), facts: z.array(ToolkitFact).min(1) }).optional(),
+  /**
+   * A workflow's steps by phase, from the Mermaid flow in its file (D8 `kind section · workflow` 433:1034): the
+   * section's label, the phases left to right, the label of the loop back to the start (D8 `label · new failure`
+   * 466:11), the agents it runs, and a note after them, such as "Gates in amber; …". None for an item that is not a
+   * workflow.
+   */
+  flow: z
+    .object({
+      label: z.string(),
+      phases: z.array(ToolkitFlowPhase).min(1),
+      loop: z.string().optional(),
+      agents: z.object({ label: z.string(), items: z.array(ToolkitItemRef) }),
+      note: z.string().optional(),
+    })
+    .optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -220,6 +267,11 @@ export const ToolkitUi = z.object({
   open: z.string().nullable().optional(),
   /** The open item's tab, by value; its first tab when not set. */
   itemTab: z.string().optional(),
+  /**
+   * Whether the open workflow's steps fill the page (D8's Open full page; the page is D13, a later frame). Until D13
+   * is built the screen shows the item as before. Not open when not set.
+   */
+  flowFullPage: z.boolean().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

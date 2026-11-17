@@ -67,10 +67,19 @@ what each file of a page folder is for.
   fact's `status`, the rule it enforces, its test; captions in small
   text), shows its script as code (`preview.code`, drawn with the
   library's `CodeLines`) and lists its files with the code icon (a file
-  line's `type: 'code'`). A click on a card, a row or the map card's Open
+  line's `type: 'code'`). A workflow (D8, `workflowOpen`, D9's list)
+  adds `flow` to its details: its steps by phase
+  (`ToolkitWorkflowFlow`, each card a `ToolkitFlowStep`), drawn in a grid
+  whose card rows are equal, so every card has one size; a phase's
+  `from` rows take an arrow from the phase before, a `parallel` phase
+  has no arrow between its steps, gates and ends are amber, and the
+  loop's label sits under the lanes (the library has no connector line:
+  LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
+  `ui.flowFullPage` (D13 is a later frame), and the agent buttons under
+  the flow open the agent. A click on a card, a row or the map card's Open
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (D8, T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
+  (T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

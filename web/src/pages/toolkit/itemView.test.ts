@@ -3,7 +3,7 @@ import { openItem } from './screens/itemView.ts'
 import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
-const { ruleOpen, skillOpen, toolkitList } = toolkitStates
+const { ruleOpen, skillOpen, toolkitList, workflowOpen } = toolkitStates
 
 describe('openItem', () => {
   it('opens nothing without ui.open, or for a path the list does not have', () => {
@@ -39,6 +39,19 @@ describe('openItem', () => {
     expect(open?.detail.loads?.when).toBe('a file under toolkit/skills/** or skills/** changes')
     expect(open?.detail.usedIn).toBeUndefined()
     expect(open?.detail.files).toBeUndefined()
+  })
+
+  it('opens a workflow with its steps by phase, each step in a row of its phase (D8)', () => {
+    const open = openItem(workflowOpen.data, workflowOpen.ui)
+    expect(open?.item).toMatchObject({ kind: 'workflow', name: 'skill-eval-round' })
+    const phases = open?.detail.flow?.phases ?? []
+    expect(phases.map((p) => p.label)).toEqual(['Check', 'Run', 'Grade · in parallel', 'Decide'])
+    for (const phase of phases) {
+      const rows = phase.steps.map((s) => s.row)
+      // The flow draws three rows; a phase's steps are in order and never share a row.
+      expect(rows.every((r) => r >= 0 && r <= 2)).toBe(true)
+      expect(rows).toEqual([...new Set(rows)].sort((a, b) => a - b))
+    }
   })
 })
 
