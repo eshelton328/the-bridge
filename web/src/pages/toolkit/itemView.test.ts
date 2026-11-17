@@ -3,7 +3,8 @@ import { openItem } from './screens/itemView.ts'
 import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
-const { ruleOpen, skillOpen, toolkitList, workflowOpen } = toolkitStates
+const { ruleOpen, skillOpen, toolkitList } = toolkitStates
+const { workflowOpen } = toolkitStates
 
 describe('openItem', () => {
   it('opens nothing without ui.open, or for a path the list does not have', () => {
