@@ -67,6 +67,8 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   as on D01.
 - **Empty pane.** `158:378` y -10.5, h +27: the OPEN IN THIS PANE rows are
   56 px `ListRow`s (Figma 50), as on D01.
+- **Approval buttons.** Deny is `variant="secondaryDanger"`: red text on
+  the raised fill with a border, as Figma draws it beside Always allow.
 - **Bridge themes under the side chat.** The chat's user bubble, reply
   and composer (with Stop and send) run under the side chat as in Figma.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More

@@ -71,7 +71,8 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
             title={entry.title}
             actions={entry.actions.map((label, i) => ({
               label,
-              variant: i === 0 ? 'primary' : i === entry.actions.length - 1 ? 'dangerText' : 'secondary',
+              // Figma draws Deny as a filled button with red text, like Always allow (D5 158:310).
+              variant: i === 0 ? 'primary' : i === entry.actions.length - 1 ? 'secondaryDanger' : 'secondary',
               onClick: () => onAct?.(label),
             }))}
           >
