@@ -13,7 +13,7 @@ export function ChatEntry({ entry }: { entry: InboxChatEntry }) {
           kind={entry.agent}
           name={entry.name}
           actions={
-            <Button size="sm">
+            <Button size="xs" textSize="xs">
               <CopyIcon />
               Copy
             </Button>

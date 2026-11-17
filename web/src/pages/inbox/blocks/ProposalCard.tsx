@@ -59,6 +59,7 @@ function Body({ proposal, onCheck, created }: BodyProps) {
           {proposal.tasks.map((t) => (
             <Stack key={t.title} gap="0" className={task}>
               <Checkbox
+                tone="discuss"
                 label={t.title}
                 checked={t.checked}
                 disabled={created}

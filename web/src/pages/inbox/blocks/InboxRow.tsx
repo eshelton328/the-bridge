@@ -153,13 +153,15 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
       actions={
         row.approval ? (
           <>
-            <Button variant="primary" size="sm">
+            <Button variant="primary" size="sm" textSize="xs">
               Allow once
             </Button>
-            <Button variant="secondaryDanger" size="sm">
+            <Button variant="secondaryDanger" size="sm" textSize="xs">
               Deny
             </Button>
-            <Button size="sm">Open chat</Button>
+            <Button size="sm" textSize="xs">
+              Open chat
+            </Button>
           </>
         ) : undefined
       }

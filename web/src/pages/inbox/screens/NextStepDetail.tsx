@@ -104,7 +104,7 @@ function Launch({ launch, onOpenChat, onRestore, onStart, pickerOpen, onPickerOp
       {/* The phone pins Start above the tab bar (PinnedAction). */}
       {layout === 'phone' ? null : (
         <Inline gap="12" align="center" data-figma="start">
-          <Button variant="primary" size="lg" onClick={onStart}>
+          <Button variant="primary" size="lg" textSize="smStrong" onClick={onStart}>
             <PlayIcon />
             {launch.startLabel}
           </Button>

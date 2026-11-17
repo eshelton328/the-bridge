@@ -68,7 +68,7 @@ function SnoozeButton({ snooze, iconOnly }: { snooze: SnoozeControl; iconOnly: b
       <ClockIcon />
     </Button>
   ) : (
-    <Button size="sm" pressed={open ? true : undefined}>
+    <Button size="sm" textSize="xs" pressed={open ? true : undefined}>
       <SnoozeIcon />
       Snooze
     </Button>
@@ -111,7 +111,7 @@ export function SnoozeActions({ snooze, iconOnly = false }: { snooze: SnoozeCont
           <CloseIcon />
         </Button>
       ) : (
-        <Button size="sm" onClick={snooze.onDismiss}>
+        <Button size="sm" textSize="xs" onClick={snooze.onDismiss}>
           <CloseIcon />
           Dismiss
         </Button>
@@ -125,6 +125,7 @@ export function DiscussButton({ discuss }: { discuss: DiscussControl }) {
   // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
   return (
     <Button
+      textSize="xs"
       pressed={discuss.open}
       onClick={() => {
         discuss.onOpenChange?.(!discuss.open)
@@ -162,6 +163,7 @@ export function DetailHead({ head, snooze = { open: false }, discuss, barActions
             <MetaChip
               key={c.label}
               size="sm"
+              surface="raised"
               label={c.label}
               icon={chipIcons[c.icon]}
               tone={c.issue ? 'issue' : 'muted'}

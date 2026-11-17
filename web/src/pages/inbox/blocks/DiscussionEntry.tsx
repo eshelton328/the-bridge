@@ -6,7 +6,13 @@ import type { InboxDiscussionEntry } from '../types.ts'
 import { ProposalCard, type ProposalControl } from './ProposalCard.tsx'
 
 const event = css({ textStyle: 'monoSm', color: 'fg.muted', alignSelf: 'flex-start' })
-const name = css({ display: 'inline-flex', alignItems: 'center', gap: '6', textStyle: 'label', color: 'fg.default' })
+const name = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6',
+  textStyle: 'labelXsStrong',
+  color: 'fg.default',
+})
 const bubble = css({ display: 'inline-flex', color: 'accent.discuss' })
 const body = css({ textStyle: 'body', color: 'fg.default', m: '0' })
 const check = css({ display: 'inline-flex', color: 'status.done.fg' })

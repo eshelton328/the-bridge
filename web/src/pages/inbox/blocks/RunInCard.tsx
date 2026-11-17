@@ -71,7 +71,7 @@ export function RunInCard({ runIn, pickerOpen, onPickerOpenChange, layout = 'des
       <ChevronDownIcon />
     </Button>
   ) : (
-    <Button size="sm" pressed={pickerOpen ? true : undefined}>
+    <Button size="sm" textSize="xs" pressed={pickerOpen ? true : undefined}>
       Change
       <ChevronDownIcon />
     </Button>
