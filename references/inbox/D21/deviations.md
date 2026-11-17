@@ -1,8 +1,8 @@
 # D21 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
+What still differs from Figma after round 4 of the fidelity loop
 (`pnpm fidelity inbox D21`, 2026-11-16, against the installed
-library 1.0.0-beta.3), each with its reason. The library gaps are in
+library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -38,7 +38,7 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: RESULT CARD y +23, MY NOTES y +26, SOURCES y +44.
+  lower: RESULT CARD y +19, MY NOTES y +22, SOURCES y +40.
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -48,5 +48,10 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 
 ## Second review
 
-Not run by the builder; the coordinator runs the blind fidelity-reviewer
-on `reports/fidelity/inbox/D21.sideBySide.png`.
+The blind second review of round 3 (`reports/fidelity/inbox/D21.sideBySide.png`, Figma left) listed the findings below. Round 4 fixed or recorded each one.
+
+- Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
+- Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
+- Newest and Filter wider, Search narrower: recorded. Newest and Filter are `Button`s with 14 px labels against Figma's Medium 13 (403:1663, 403:1671), so they are wider and Search takes what is left (row "Button label size").
+- Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".
+- Tag chips larger and whiter: colour fixed. The chips are now `MetaChip tone="muted"` (Figma #8a97b8, `fg.muted`); the NCC chip keeps `tone="issue"`. Their widths match Figma's within 1 px (88.8, 141.6 and 75.6 against 88, 141 and 75); they are 26 px high against 24 because `monoSm` keeps a 16 px line on the 4 px grid (d-072).

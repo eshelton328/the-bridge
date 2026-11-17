@@ -2,18 +2,18 @@
   "missing": [
     {
       "text": "SNOOZED",
-      "reason": "Layer 403:2777 (y 930) is the SNOOZED group header, which the toast 403:2943 (y 928 to 966) covers in frame.png. In the render the list rows are taller (List row heights in deviations.md), so the header sits below the pane's bottom edge, also out of sight."
+      "reason": "Layer 403:2777 (y 930) is the SNOOZED group header, which the toast 403:2943 (y 928 to 966) covers in frame.png. In the render the list ends at the toast's bottom edge (y 966), and the header (y 954 to 992, 38 px lower because of the taller library rows, List row heights in deviations.md) sits behind the toast and below that edge, so it is out of sight in both."
     },
     {
       "text": "1",
-      "reason": "Layer 403:2778 (y 930) is the count of the SNOOZED group header, which the toast 403:2943 covers in frame.png; in the render it sits below the pane's bottom edge, as SNOOZED does."
+      "reason": "Layer 403:2778 (y 930) is the count of the SNOOZED group header, which the toast 403:2943 covers in frame.png; in the render it is behind the toast and below the list's bottom edge, as SNOOZED is."
     }
   ],
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "[data-figma=\"inbox list\"]",
-      "reason": "Figma's list (403:2620) runs to y 950, under the toast, and its last group header is out of sight. The render's rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), so the list is 10 px taller than the pane and the pane scrolls to the collapsed SNOOZED header. No task row is cut."
+      "selector": "[data-figma=\"inbox list\"] > section",
+      "reason": "Figma's list (403:2620) runs on under the toast, and its last group header is out of sight there. The render's scrolling list ends at the toast's bottom edge (y 966), so nothing shows under the toast, as in Figma. Its rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), so the list is 26 px taller than that area and only the collapsed SNOOZED header lies past its edge."
     }
   ]
 }

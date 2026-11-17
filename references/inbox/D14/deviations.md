@@ -1,8 +1,8 @@
 # D14 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
+What still differs from Figma after round 4 of the fidelity loop
 (`pnpm fidelity inbox D14`, 2026-11-16, against the installed
-library 1.0.0-beta.3), each with its reason. The library gaps are in
+library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -36,13 +36,15 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 - **Empty state.** The library has no empty state with an icon tile
   (`ErrorState` is for errors and not-found pages), so the app composes
   it: a round `surface.raised` tile with the bubble, the title in
-  `subtitle`, the text in `body` and `fg.muted`, "It can" as a `Panel`
-  with its eyebrow title, and the suggestions as `Button`s. Figma places
-  it with 120 px above it (403:962 starts at y 140, its icon at 260); no
-  spacing token is that large, so the render centres it in the
-  discussion area, about 100 px lower (`empty state` y +217 against the frame's
-  box, `it can` y +84, `suggestions` y +86). The suggestion buttons are
-  `md` with 14 px labels against Figma's 13, so the row is 80 px wider.
+  `subtitle`, the text in `bodySm` and `fg.muted` in a 420 px column
+  (`shell.widePane`), as Figma's 403:967 (Regular 13/19, w 420), "It can"
+  as a `Panel` with its eyebrow title, and the suggestions as `Button`s.
+  Figma places it with 120 px above it (403:962 starts at y 140, its icon
+  at 260); no spacing token is that large, so the render centres it in
+  the discussion area, about 100 px lower (`empty state` y +207 against
+  the frame's box, `it can` y +94, `suggestions` y +96). The suggestion
+  buttons are `md` with 14 px labels against Figma's Medium 12, so the
+  row is 80 px wider (row "Button label size" in LIBRARY_GAPS.md).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px
   apart and its mono boxes 14 px high; the library keeps 20 and 16 (4 px
@@ -51,12 +53,19 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: RUN IN y +21, start y +32, MY NOTES y +33, SOURCES y +51.
+  lower: RUN IN y +17, start y +28, MY NOTES y +29, SOURCES y +47.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
 
 ## Second review
 
-Not run by the builder; the coordinator runs the blind fidelity-reviewer
-on `reports/fidelity/inbox/D14.sideBySide.png`.
+The blind second review of round 3 (`reports/fidelity/inbox/D14.sideBySide.png`, Figma left) listed the findings below. Round 4 fixed or recorded each one.
+
+- Composer at rest: fixed. The story's play test puts the focus in the composer, as Figma draws it (a caret). The focused border is the library's `border.selected` (cyan), where Figma draws a lighter grey border (LIBRARY_GAPS.md, row "Composer focus").
+- Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
+- Empty-state text wider (2 lines against 3): fixed. It is `bodySm` (Figma 403:967: Regular 13/19) in a 420 px column (`maxW: shell.widePane`, the 420 px size token), so it wraps at Figma's words in three lines.
+- Task title smaller: recorded. Figma's title is Geist SemiBold 22/28 (403:1809). No text style has 22 px (`title` is 20, `heading` 28), so the title is in `title`. LIBRARY_GAPS.md, row "22 px title".
+- Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
+- Change, Reset, Edit and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".

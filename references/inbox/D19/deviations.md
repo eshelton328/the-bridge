@@ -1,8 +1,8 @@
 # D19 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
+What still differs from Figma after round 4 of the fidelity loop
 (`pnpm fidelity inbox D19`, 2026-11-16, against the installed
-library 1.0.0-beta.3), each with its reason. The library gaps are in
+library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -58,12 +58,17 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: RUN IN y +21, start y +32, MY NOTES y +33, SOURCES y +51.
+  lower: RUN IN y +17, start y +28, MY NOTES y +29, SOURCES y +47.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
 
 ## Second review
 
-Not run by the builder; the coordinator runs the blind fidelity-reviewer
-on `reports/fidelity/inbox/D19.sideBySide.png`.
+The blind second review of round 3 (`reports/fidelity/inbox/D19.sideBySide.png`, Figma left) listed the findings below. Round 4 fixed or recorded each one.
+
+- Composer at rest: fixed. The story's play test puts the focus in the composer, as Figma draws it (a caret). The focused border is the library's `border.selected` (cyan), where Figma draws a lighter grey border (LIBRARY_GAPS.md, row "Composer focus").
+- Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
+- Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
+- Change larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- RUN IN card 58 against 52 px: in part. Its title is now 13 px; the card keeps the `Panel` padding and the `sm` button height.

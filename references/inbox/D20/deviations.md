@@ -1,8 +1,8 @@
 # D20 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
+What still differs from Figma after round 4 of the fidelity loop
 (`pnpm fidelity inbox D20`, 2026-11-16, against the installed
-library 1.0.0-beta.3), each with its reason. The library gaps are in
+library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -52,10 +52,13 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
   taller, from the messages above and the library's spacing.
 - **Confirm dialog.** The library's `Dialog` (`role="alertdialog"`, 440
   px, `shell.dialog`) on its scrim: the meta line in `monoSm`, the text in
-  `body`, the reason as `ProposalSection` in a `Panel`, Keep it and a
-  `danger` Remove task with a bin. It is 11 px taller and starts 5.5 px
-  higher (`dialog · Remove this task`), from the 14 px text (Figma 13)
-  and the panel's padding.
+  `bodySm` and `fg.muted` (403:3918), the reason as an eyebrow and
+  `bodySm` text in a `Panel` (403:3921), Keep it and a `danger` Remove
+  task with a bin. It is 19 px taller and starts 9.5 px higher
+  (`dialog · Remove this task`): the 20 px lines against Figma's 19, the
+  panel's 16 px padding against 12 by 10, and the 14 px button labels.
+  Keep it has the first focus and shows its focus ring (see Second
+  review).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px
   apart and its mono boxes 14 px high; the library keeps 20 and 16 (4 px
@@ -64,12 +67,18 @@ library 1.0.0-beta.3), each with its reason. The library gaps are in
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: RUN IN y +21, start y +32, MY NOTES y +33, SOURCES y +51.
+  lower: RUN IN y +17, start y +28, MY NOTES y +29, SOURCES y +47.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
 
 ## Second review
 
-Not run by the builder; the coordinator runs the blind fidelity-reviewer
-on `reports/fidelity/inbox/D20.sideBySide.png`.
+The blind second review of round 3 (`reports/fidelity/inbox/D20.sideBySide.png`, Figma left) listed the findings below. Round 4 fixed or recorded each one.
+
+- Keep it shows a focus ring: kept. The dialog gives Keep it the first focus, so a keyboard user starts on the safe action (the same choice as D08 Done); the library draws `:focus-visible` for it. Figma draws no ring.
+- Composer at rest: recorded. The confirm dialog holds the focus while it is open, so the composer cannot show it as Figma draws it.
+- REASON text smaller: fixed. The dialog's text and reason are Geist Regular 13/19 (403:3918, 403:3921): `bodySm`, the text in `fg.muted`. `ProposalSection` sets its text in `small` (12), the size of a proposal, so the dialog composes the eyebrow and the text in the `Panel` itself. The dialog is now 19 px taller (`dialog · Remove this task` h +19): `bodySm` lines are 20 px against 19 and the `Panel` pads 16 against Figma's 12 by 10.
+- Read the whole prompt and SOURCES links larger: fixed. They are Figma's 12 px (Medium and Regular): `small`.
+- Close X a bare X: no change needed. The render's close is the library's `Button size="sm" iconOnly`, a 28 px box with the raised fill, as in D14; under the scrim both look darker.
+- Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
