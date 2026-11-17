@@ -66,7 +66,10 @@ what each file of a page folder is for.
   shown as the Overview's load box, and has no side column: `usedIn` and
   `files` are optional. On a tablet (T17, `ruleOpenTablet`, D4's data) the rule
   opens in `DetailFrame` as T3's skill does, and its load box spans the
-  item. An agent (D7, `agentOpen`, T1's list with only
+  item. On the phone (M19, `ruleOpenPhone`, D4's data) the rule opens as
+  M2's skill does; the load box spans the item, its condition wraps beside
+  the label, and the overview's rows are 8 apart, so the file's last line
+  stays above the tab bar. An agent (D7, `agentOpen`, T1's list with only
   the Skills and Agents groups and Skills closed) adds `runs` to its
   details, the How it runs cards (`ToolkitAgentRuns`) between the
   description and the columns, a `meta` after the preview's file name and
@@ -89,6 +92,6 @@ what each file of a page folder is for.
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T7, T18, T19, M19 to M22) fill `details` and
+  (T7, T18, T19, M20 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

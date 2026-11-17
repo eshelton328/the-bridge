@@ -8,7 +8,7 @@
 // (`ToolkitWorkflowFlow`) in the same place. On a tablet or phone (T3, M2) the
 // side comes under the file, full width. Props only.
 import { ClockIcon, Panel } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitItemDetailView, ToolkitKind } from '../types.ts'
 import { ToolkitAgentRuns } from './ToolkitAgentRuns.tsx'
@@ -26,14 +26,23 @@ const phoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' 
 // space token has 14, and the Panel pads the box 12 where Figma has 10, so it is 4 px taller. 12 apart keeps each row
 // within 2 px of Figma's (LIBRARY_GAPS.md, Tablet item spacing).
 const ruleTabletOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' })
+// M19: a rule on the phone has its description (487:1403), the load box (487:1404) and the file (487:1410) 12 apart.
+// The tabs' list is 36 high (Figma 32) and the Panel makes the box 58 high (Figma 56), so at 12 apart the file runs
+// 5 px low and its last line (487:1427, which Figma ends 1 px over the tab bar) goes under the tab bar. 8 apart keeps
+// each row within 3 px of Figma's and that line in view (LIBRARY_GAPS.md, Rule load box, Item tab spacing).
+const rulePhoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 const description = css({ textStyle: 'body', color: 'fg.muted' })
 // D4 427:628: a box with the needs-you border and tint, as wide as its line: the clock icon, "Loads when" in the
 // needs-you colour and the condition in mono, 10 apart. The Panel pads it 12 above and below, where Figma has 10
 // (LIBRARY_GAPS.md, Rule load box).
 const loadsBox = css({ alignSelf: 'flex-start' })
-// T17 487:502: on a tablet the box spans the page (712 wide).
+// T17 487:502: on a tablet the box spans the page (712 wide); on the phone (M19 487:1404) too.
 const loadsBoxPage = css({ alignSelf: 'stretch' })
 const loadsLine = css({ display: 'flex', alignItems: 'center', gap: '10', whiteSpace: 'nowrap' })
+// M19 487:1404: on the phone the box spans the item too, and the condition (487:1409) wraps onto two lines beside
+// the label, which keeps to one.
+const loadsLinePhone = css({ display: 'flex', alignItems: 'center', gap: '10' })
+const loadsLabelPhone = css({ flexShrink: '0', whiteSpace: 'nowrap' })
 const loadsLabel = css({
   display: 'inline-flex',
   alignItems: 'center',
@@ -56,8 +65,11 @@ const pageDescriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '487:78',
   'rules/skills.md': '487:501',
 }
-// M2: the description of writer on the phone (487:142).
-const phoneDescriptionLayers: Readonly<Record<string, string>> = { 'skills/writer/': '487:142' }
+// M2: the description of writer on the phone (487:142); M19: the rule skills's (487:1403).
+const phoneDescriptionLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '487:142',
+  'rules/skills.md': '487:1403',
+}
 const descriptionLayersOf = {
   desktop: descriptionLayers,
   tablet: pageDescriptionLayers,
@@ -92,14 +104,17 @@ export function ToolkitItemOverview({
 }: ToolkitItemOverviewProps) {
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   const desktop = layout === 'desktop'
+  const phone = layout === 'phone'
   const sideColumn = side ? (
     <ToolkitItemSide detail={detail} onTabChange={onTabChange} compact={layout === 'phone'} />
   ) : null
   return (
     <div
       className={
-        layout === 'phone'
-          ? phoneOverview
+        phone
+          ? detail.loads === undefined
+            ? phoneOverview
+            : rulePhoneOverview
           : layout === 'tablet' && detail.loads !== undefined
             ? ruleTabletOverview
             : overview
@@ -109,10 +124,10 @@ export function ToolkitItemOverview({
         {detail.description}
       </p>
       {detail.loads === undefined ? null : (
-        <div className={layout === 'tablet' ? loadsBoxPage : loadsBox} data-figma="when it loads">
+        <div className={desktop ? loadsBox : loadsBoxPage} data-figma="when it loads">
           <Panel tone="needsYou">
-            <p className={loadsLine}>
-              <span className={loadsLabel}>
+            <p className={phone ? loadsLinePhone : loadsLine}>
+              <span className={phone ? cx(loadsLabel, loadsLabelPhone) : loadsLabel}>
                 <ClockIcon size="16" />
                 {detail.loads.label}
               </span>

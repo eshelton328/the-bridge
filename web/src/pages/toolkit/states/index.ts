@@ -14,6 +14,7 @@ import { workflowOpen } from './workflowOpen.ts'
 import { skillOpenTablet } from './skillOpenTablet.ts'
 import { skillOpenPhone } from './skillOpenPhone.ts'
 import { ruleOpenTablet } from './ruleOpenTablet.ts'
+import { ruleOpenPhone } from './ruleOpenPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -29,4 +30,5 @@ export const toolkitStates = {
   skillOpenTablet,
   skillOpenPhone,
   ruleOpenTablet,
+  ruleOpenPhone,
 }

@@ -65,8 +65,11 @@ const pageTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '428:567',
   'rules/skills.md': '487:355',
 }
-// On the phone: writer in M2 (429:303).
-const phoneTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '429:303' }
+// On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264).
+const phoneTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '429:303',
+  'rules/skills.md': '487:1264',
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
 const itemLayer = { desktop: 'toolkit item', tablet: 'toolkit item', phone: 'toolkit' }

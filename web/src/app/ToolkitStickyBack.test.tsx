@@ -136,4 +136,36 @@ describe('the open item on the phone (d-107)', () => {
     expect(box(evals).bottom).toBeLessThanOrEqual(box(tabBar).top)
     await view.unmount()
   })
+
+  it('opens the rule skills under Back, its load box across the item and its file above the tab bar (M19)', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('ruleOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="when it loads"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const discuss = root.querySelector('button[aria-label="Discuss"]')
+    const map = root.querySelector('button[aria-label="Show on map"]')
+    const item = root.querySelector('article[aria-label="skills"]')
+    const loads = root.querySelector('[data-figma="when it loads"]')
+    const last = [...root.querySelectorAll('[data-figma="rendered markdown"] p')].at(-1)
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (discuss === null || map === null || item === null || loads === null || last === undefined || tabBar === null) {
+      throw new Error('no actions, item, load box, file or tab bar')
+    }
+    // The actions are icon buttons in the back row, and the item is under it (M19 496:5, 487:1252).
+    expect(backRow.contains(discuss)).toBe(true)
+    expect(backRow.contains(map)).toBe(true)
+    expect(discuss.textContent).toBe('')
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The load box spans the item (487:1404, 366 wide), and its condition wraps beside the label in the box.
+    expect(box(loads).width).toBe(box(item).width)
+    expect(box(loads).height).toBeLessThan(80)
+    // The file's last line ends above the tab bar, as Figma's (487:1427) does.
+    expect(box(last).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })
