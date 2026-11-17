@@ -10,8 +10,8 @@ What still differs from Figma after round 2 of the fidelity loop
 - Text: pass. Eight card descriptions are cut with an ellipsis, as
   Figma cuts them; `exceptions.json` names each layer (425:85, 425:99,
   425:113, 425:142, 425:184, 425:199, 425:235, 425:250).
-- Position: 5 of 25 layers pass (`header`, `list tools`, `search`,
-  `counts legend`, `group · SKILLS`).
+- Position: 6 of 25 layers pass (`header`, `read-only`, `list tools`,
+  `search`, `counts legend`, `group · SKILLS`).
 - Rules: pass. The `hiddenOverflow` findings on the eight cut
   descriptions are in `exceptions.json`.
 
@@ -37,14 +37,13 @@ What still differs from Figma after round 2 of the fidelity loop
 - **Kind tile.** The card's kind tile is 36 px (`KindTile size="lg"`)
   against Figma's 32; the library has 28 and 36 (gap: Kind tile 32 px).
   The name and path move 2 px down in the title row.
-- **View switch.** List, Map and Activity are 232.5 px wide and 36 high
+- **View switch.** List, Map and Activity are 244.5 px wide and 36 high
   against Figma's 239 and 38, with 12 px icons against 15
-  (`view · List, Map or Activity` x +6.5, w -6.5; gap: View switch
-  38 px). The Read-only badge before it moves right with it
-  (`read-only` x +8.2), and the rows below start 2 px higher (within
-  the tolerance).
-- **Kind chips.** The chip row is 594 px wide against Figma's 580 and
-  36 high against 34 (`filter · chips` w +13.8): `FilterChips` pads the
+  (`view · List, Map or Activity` x -5.5, w +5.5 with library beta.15;
+  gap: View switch 38 px). The Read-only badge before it now passes,
+  and the rows below start 2 px higher (within the tolerance).
+- **Kind chips.** The chip row is 569.8 px wide against Figma's 580 and
+  36 high against 34 (`filter · chips` w -10.2 with library beta.15): `FilterChips` pads the
   row 2 px and its labels are a little wider (gap: Kind chip row).
 - **Sort button.** Name is 116.5 px wide against Figma's 105
   (`button · Sort` w +11.5): `Button size="lg"` has wider sides and gaps
@@ -65,8 +64,5 @@ What still differs from Figma after round 2 of the fidelity loop
   white label; Figma draws the selected fill with no border and a cyan
   label and icon. The library's checked `ViewSwitch` item has
   `border.selected` and `fg.default` (gap: View switch 38 px).
-- **Rail.** The rail items are 54 px high and 60 px apart against
-  Figma's 50 and 56, so Workspaces to More sit 4 to 20 px lower
-  (gap: Rail item height).
 - The reviewer read a comma after "Read from toolkit/ in the brain" in a
   scaled image; the code and the text check have none.

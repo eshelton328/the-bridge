@@ -18,7 +18,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
 - `nav`: x +2, y +8, w -4, h -2.
-- `model and context`: x -4.7, y +5, w +9.6, h +4.
+- `model and context`: y +5, w +6.4, h +4 (x passes with library beta.15).
 - `task · discussing`: x +2, y +6, w -4, h +8.
 - `chevron · open task`: x -6, y +9, w +0, h +0.
 - `guard`: x +6, y +10, w -12, h +2.

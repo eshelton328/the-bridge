@@ -18,7 +18,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
 - `task · discussing`: x +0, y -1, w +0, h +12.
-- `model and context`: x +4, y +3, w +9.6, h +4.
+- `model and context`: x +4, y +3, w +6.4, h +4.
 - `guard`: x +4, y +6, w -8, h +3.
 - `discussion`: x +0, y +27, w +0, h -126.
 - `message · you`: x +0, y +13, w +0, h +2.

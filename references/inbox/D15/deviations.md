@@ -30,7 +30,7 @@ the checks and offsets below are from the beta.9 run.
   guard and the composer pass.
 - **Model and context.** `ModelChip` with the model as its one option,
   `ContextMeter` and "context" in `monoSm`. The chip is 10 px wider than
-  Figma's (`model and context` w +9.6): the library chip's own padding.
+  Figma's (`model and context` w +6.4 with library beta.15): the library chip's own padding.
 - **Discussion area.** 7 px shorter (`discussion` h -7): the composer
   below it is the library's `Composer`, a few px taller than Figma's 75,
   with no model chip, as Figma's. Its attach button is left out

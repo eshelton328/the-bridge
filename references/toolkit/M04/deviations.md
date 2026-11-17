@@ -45,7 +45,8 @@ has all its text and is the same in both.
     `skills/project-setup/`, `→1 ←0` and `Search the toolkit`.
   - The Inbox tab's badge `4` (424:6912) is in `exceptions.json`: the
     drawer covers it in Figma as in the render.
-- Position: 3 of 38 layers pass (`header`, `tab bar`, `icon/flow`).
+- Position: 6 of 38 layers pass (`header`, `tab bar`, `icon/layers`,
+  `icon/toolkit`, `icon/brain`, `icon/flow`).
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`,
   as in M01: the Toolkit list scrolls under the pinned tab bar
   (`main.app-shell__detail`), and its kind chips scroll sideways
@@ -83,12 +84,11 @@ has all its text and is the same in both.
   first item, so Artifacts has a cyan focus ring that Figma does not
   draw. `MoreDrawer` has no `initialFocus` (gap: More drawer first
   focus).
-- **Item spacing.** The drawer's items stand about 71 px apart against
-  Figma's 66 to 68, and the Later label sits higher, so each item above
-  Workflows is higher than Figma's: `icon/layers` y -22 (Artifacts),
-  `icon/toolkit` y -17 (Toolkit), `icon/brain` y -9 (Brain). Workflows
-  (`icon/flow`) passes, and the drawer's bottom edge is Figma's (gap:
-  More drawer item spacing).
+- **Item spacing.** Library #115 (beta.14) closed it: the four item
+  icons (`icon/layers`, `icon/toolkit`, `icon/brain`, `icon/flow`)
+  now pass the position check. Before it, the items stood about 71 px
+  apart against Figma's 66 to 68. The item titles are still about 6 %
+  wider than Figma's (gap: More drawer item titles).
 - **Workflows icon.** Figma's `icon/flow` (424:6973) is two circles on a
   branch; the library has no flow icon, and `BranchIcon` draws the same
   shape.

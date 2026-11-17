@@ -17,7 +17,8 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
   `rules/releases.md`, `skills`, `rules/skills.md` and `→1 ←0`. The
   ste100 and writing names and counts (428:288, 428:291, 428:298,
   428:301) lie under Figma's tab bar too; `exceptions.json` names them.
-- Position: 3 of 32 layers pass (`header`, `group · SKILLS`, `tab bar`).
+- Position: 4 of 32 layers pass (`header`, `filter · chips`,
+  `group · SKILLS`, `tab bar`).
 - Rules: pass. The `hiddenOverflow` finding on the scrolling detail
   (`main.app-shell__detail`) is in `exceptions.json`: Figma's list runs
   on under the pinned tab bar, as the render's does.
@@ -55,13 +56,12 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
   from x 0, and as high as all its rows (`toolkit` x -22, y -12, w +44,
   h +306). The side is 24 px against Figma's 22: no space token has 22.
 - **View switch.** List, Map and Activity are 232.5 px wide and 36 high
-  against Figma's 239 and 38 (`view · List, Map or Activity` x +4.5,
-  w -6.5; gap: View switch 38 px). The Read-only badge before it moves
-  right with it (`read-only` x +5.2).
-- **Kind chips.** The chip row is 594 px wide and 36 high against
-  Figma's 568 and 32 (`filter · chips` w +25.8): `FilterChips` pads the
-  row 2 px and its labels are wider (gap: Kind chip row). The search
-  below starts 6 px lower (`search` y +6).
+  against Figma's 239 and 38 (`view · List, Map or Activity` x -7.5,
+  w +5.5 with library beta.15; gap: View switch 38 px). The Read-only
+  badge before it moves left with it (`read-only` x -6.8).
+- **Kind chips.** With library beta.15 the chip row passes the position
+  check. It is still 36 high against Figma's 32 (gap: Kind chip row), so
+  the search below starts 6 px lower (`search` y +6).
 - **Group headers.** SKILLS, AGENTS and RULES are 30 px high against
   Figma's 27 (`GroupHeader variant="sidebar"`; gap: Toolkit group
   header).

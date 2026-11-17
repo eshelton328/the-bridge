@@ -30,7 +30,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   guard and the composer pass.
 - **Model and context.** `ModelChip` with the model as its one option,
   `ContextMeter` and "context" in `monoSm`. The chip is 10 px wider than
-  Figma's (`model and context` w +9.6): the library chip's own padding.
+  Figma's (`model and context` w +6.4 with library beta.15): the library chip's own padding.
 - **Discussion area.** 7 px shorter (`discussion` h -7): the composer
   below it is the library's `Composer`, a few px taller than Figma's 75,
   with no model chip, as Figma's. Its attach button is left out
@@ -92,4 +92,4 @@ The blind second review of round 3 (`reports/fidelity/inbox/D14.sideBySide.png`,
 - Task title smaller: recorded. Figma's title is Geist SemiBold 22/28 (403:1809). No text style has 22 px (`title` is 20, `heading` 28), so the title is in `title`. LIBRARY_GAPS.md, row "22 px title".
 - Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
 - Change, Reset, Edit and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Fixed by beta.7: Change, Reset and Edit take `Button textSize="xs"` (`labelXs`, Medium 12/16) and Start `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
-- Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".
+- Rail items: library #115 (beta.14) closed the gap. `NavRail` items are 50 px high and 56 px apart, as Figma's.
