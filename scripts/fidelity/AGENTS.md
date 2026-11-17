@@ -18,6 +18,8 @@ The Figma references the checks read are in
 | `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply                                                                         |
 | `figmaMetadata.ts`   | Parses `get_metadata` XML into a frame record; marks design-only chrome text as excluded                                                                           |
 | `references.ts`      | Reads `frame.json` and `exceptions.json` with Zod                                                                                                                  |
+| `buildRecord.ts`     | The fidelity-builder agent's build record and the checks of it: matches the last report, deviations.md names each failure, gaps, no guarded file changed           |
+| `checkBuild.ts`      | `pnpm fidelity:check-build <record.json \| ->`: runs those checks against this checkout; `--guard <path>` says whether the agent may change a file                 |
 
 ## Run the loop for one frame
 
@@ -48,9 +50,31 @@ The Figma references the checks read are in
      `badgeFullWidth`, each with the element's selector.
 5. **Second review.** Give a separate agent only the side-by-side PNG and
    the report JSON. It lists each difference with a severity (P1 to P4).
+   In Erik's brain that agent is `fidelity-reviewer`.
 6. **Fix and run again**, at most three rounds. A difference you cannot
    fix goes into `exceptions.json` with its reason, and on the
    deviations list for Erik.
+
+## The fidelity-builder agent
+
+`fidelity-builder` runs steps 1 to 4 and 6 for one frame in a worktree,
+at most three fix rounds, and returns a JSON build record; the caller runs
+step 5 with `fidelity-reviewer` on the record's side-by-side PNG and
+deviations, then ships the branch. Both agents live in Erik's brain
+(`~/ncc-1701/engine/projects/ncc-1701/toolkit/agents/`, d-040), and its
+hooks call `pnpm fidelity:check-build` in the worktree: `--guard` before
+each edit, and the record check before it replies. The record check
+fails when:
+
+- the record's fidelity result is not the last report's, or a file in
+  `web/` or the frame's references changed after that report;
+- the report fails and `deviations.md` does not name each failing
+  position key, rule and text;
+- a listed gap is not a `LIBRARY_GAPS.md` row whose Frames cell includes
+  the frame, or the state file does not list the frame;
+- the branch changes `scripts/`, CI, a saved reference, a baseline, check
+  config or `package.json`, deletes a test or removes lines from one, or a
+  story sets `globals.viewport`.
 
 ## Exceptions
 

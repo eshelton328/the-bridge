@@ -28,7 +28,9 @@ pnpm workspace; every version is pinned once in the catalog of
 - [references/AGENTS.md](references/AGENTS.md): the saved Figma frames
   (picture, layers, note) that the fidelity checks compare against.
   `pnpm fidelity <page> [frameId…]` runs those checks; see
-  [scripts/fidelity/AGENTS.md](scripts/fidelity/AGENTS.md).
+  [scripts/fidelity/AGENTS.md](scripts/fidelity/AGENTS.md). The
+  `fidelity-builder` agent builds one frame at a time with them, and
+  `pnpm fidelity:check-build` checks the record it returns.
 
 ## Verify
 

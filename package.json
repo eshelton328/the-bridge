@@ -16,6 +16,7 @@
     "new": "node scripts/new.ts",
     "fidelity": "node scripts/fidelity/fidelity.ts",
     "fidelity:refs": "node scripts/fidelity/buildReferences.ts",
+    "fidelity:check-build": "node scripts/fidelity/checkBuild.ts",
     "typecheck": "tsc -p tsconfig.json && pnpm -r typecheck",
     "lint": "eslint --max-warnings 0 .",
     "format": "biome format --write .",
