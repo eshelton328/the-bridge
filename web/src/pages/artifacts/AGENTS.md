@@ -18,11 +18,18 @@ each file of a page folder is for.
   tablet or phone the library over the tab bar (`AppTabBar`; the phone
   selects More, which opens Artifacts, d-105). Do not change `AppRail` or
   `AppTabBar` from this page; a difference goes in `deviations.md`.
-  A later frame with an artifact open beside the list (D2) puts the
-  library in the shell's `list` and the artifact in `detail`.
+  With an artifact open (`data.open`, D2) the desktop puts the library
+  as a list in the shell's `list` (`LibraryList`) and the artifact in
+  `detail` (`ArtifactDetail`); a tablet or phone frame of it comes later.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1).
+  `screens/LibraryList.tsx`: the library beside an open artifact (D2):
+  the header with an icon-only Add a link, the chips, `LibraryTools`
+  without the view switch and a `RowGroup` per group.
+  `screens/ArtifactDetail.tsx`: the open artifact in a `Container
+  size="detail"`: `ArtifactBar`, `ArtifactTitleBlock`, `ArtifactPreview`
+  and `MadeIn`, 20 apart.
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search
   and leaves out a group with none; the chip and group counts stay the
@@ -34,15 +41,25 @@ each file of a page folder is for.
   D3), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
-  source, project and age; `onOpen` makes it a button for D2).
-- `states/`: D1 `library`. It also holds what later states share: the
+  source, project and age; `onOpen` makes it a button). For D2:
+  `RowGroup` and `ArtifactRow` (`ListRow` with a compact `Thumbnail`,
+  the kind mark and project, the New dot and the age; the open
+  artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
+  Copy link, Remove), `ArtifactTitleBlock` (title, description and the
+  source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
+  `Thumbnail` over the link and Open artifact) and `MadeIn` (the chat
+  that published it and Open in workspace).
+- `states/`: D1 `library` and D2 `artifactOpen` (D1's data with the
+  open artifact). `library` stays first in `states/index.ts`: the app
+  shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
   and the sorts. A state that opens a menu, searches or opens an
   artifact starts from it and sets its `ui` or adds its data.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
-  each with its `preview` kind and `source`) and `ArtifactsUi` (chip,
+  each with its `preview` kind and `source`, and the optional `open`
+  `ArtifactDetail`) and `ArtifactsUi` (chip,
   sort, view, open groups and search text), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
