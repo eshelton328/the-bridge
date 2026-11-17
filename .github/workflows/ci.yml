@@ -1,0 +1,97 @@
+name: ci
+
+# TODO (library 1.0.0-beta.1): install fails here until the component
+# library is on GitHub Packages and pnpm-workspace.yaml no longer
+# overrides it with the sibling clone. See web/AGENTS.md.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Each check is its own job, so a PR shows which one failed. pnpm verify
+  # runs the same commands in one go on a laptop.
+  typecheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+      - run: pnpm codegen
+      - run: pnpm check:routes
+      - run: pnpm check:registry
+      - run: pnpm typecheck
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+      - run: pnpm codegen
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm knip
+
+  checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+      - run: pnpm check:agents-md
+      - run: pnpm check:cycles
+      - run: pnpm check:structure
+      - run: pnpm check:states
+      - run: pnpm check:ci
+      - run: pnpm test:scripts
+
+  test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          browser: "true"
+      - run: pnpm codegen
+      - run: pnpm test
+
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+      - run: pnpm codegen
+      - run: pnpm build
+      - run: pnpm build:canvas
+      - run: pnpm build-storybook
+
+  pr-title:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Check the title is a Conventional Commits header
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          re='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: [a-z].*[^.]$'
+          if ! [[ "$TITLE" =~ $re ]] || [ ${#TITLE} -gt 72 ]; then
+            echo "::error::The PR title becomes the squash commit header. Use 'type(scope): description', lowercase, imperative, at most 72 characters, no final period."
+            exit 1
+          fi
