@@ -59,5 +59,9 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T15.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The values that apply ("ncc-1701", "omni-brain") in sans 14 px against Figma's small mono chips (F1): fixed in part. Each value is now in `monoSm` (Geist Mono 11, as 359:539 is). The chip is still a pressed small `Button` (taller, with a 12 px x and the button's border) because the library has no removable filter chip. Library gap: Removable filter chip.
+- The search placeholder larger and lighter (F2): stays. Library gap: Search field and chip count text.

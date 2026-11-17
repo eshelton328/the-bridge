@@ -55,5 +55,9 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T11.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The search icon and placeholder lighter and about 1 px larger (F1, F3), and the chip counts as bright as their labels (F2): stays. Library gap: Search field and chip count text.
+- The chip row 2 px closer to the title (F4): stays. The header is 40 px high (`PageHeader size="phone"`, a 40 px line) against Figma's 42 (`header` h -2), so the chips start 2 px higher (`filter · chips` y -2 once the status bar is removed). No token gives 42 (4 px grid, d-072). Library gap: Styles that differ from Figma.

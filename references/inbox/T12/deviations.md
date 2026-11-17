@@ -68,5 +68,25 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T12.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The prompt editor not focused (F1, P1): fixed. The story focuses the editor after its checks, as Erik sees it while he edits, and checks that the Run in picker stays open; the render shows `TextArea`'s focused border (`border.focus`). Playwright hides the caret. The review saw Figma's focused border heavier than the library's 1 px one. Library gap: Styles that differ from Figma.
+- The picker's search placeholder "Search workspaces and chats" and its footer note larger and lighter (F2): stays. `SearchField` draws the placeholder in `body` (14) against Figma's 13 and `fg.subtle` by d-055 (library gap: Search field and chip count text); the note is the popover's `small` note in `fg.muted`, the role Figma's #4a5675 has on `surface.overlay` (library gap: Styles that differ from Figma).
+- Black shapes and a stray text line over the Figma side: a defect of the side-by-side picture, not of the reference or the render. See below.
+
+## Reference defect in the side-by-side
+
+The second review saw black shapes on the Figma side: a large hexagon (the Codex mark), a check and a plus, and the text "New Codex chatthe-bridge · GPT-5.5" over the prompt field. The saved
+`frame.png` does not have them: it is clean, as Figma draws the frame,
+and it was not edited or saved again. The shapes come from how
+`pnpm fidelity` draws `T12.sideBySide.png`: `composeSideBySide` in
+`scripts/fidelity/fidelity.ts` replaces the story tab's page with
+`setContent`, and, as far as the picture shows, the open Run in picker (a portal in `body`) is put back
+into the new page without its styles, so its icons draw at full size
+and its text unstyled over the left picture: the shapes are that
+menu's own icons and words. The render side, `T12.render.png` and the
+checks are not affected. A fix (compose on a new page) belongs in
+`scripts/`, which this branch may not change; it is a known defect of
+this frame's side-by-side until then.

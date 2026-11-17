@@ -58,5 +58,9 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T10.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The search field not focused (F1, P1): fixed. The story focuses the field after its checks (`searchbox` has focus), as Erik sees it while he types, so the render shows `SearchField`'s focused border (`border.focus`). Playwright hides the caret. Figma's focused field also tints its fill; `SearchField` changes only the border. Library gap: Styles that differ from Figma.
+- The clear icon brighter and larger than Figma's dim grey (F2): stays. `CloseCircleIcon` at `clearSize="16"` in the field's icon colour is the library's clear button (#101). Library gap: Search field and chip count text.

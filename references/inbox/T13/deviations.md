@@ -58,5 +58,10 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T13.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The suggested prompt's last line not faded (F1): stays, as recorded on T02, T04 and T08: `Clamp` fades only a text it cuts, and the prompt's lines hold all of it.
+- The MY NOTES field 5 px taller and its placeholder a little larger (F2): stays. `TextArea textSize="sm"` with one row is 44 px high against Figma's 39 (346:8502, `notes field` h +5); the field's padding and 20 px line are the library's, and Figma's 17 px placeholder line and 11 px inset have no token. Library gap: Panel and text field padding.
+- The Snooze menu's times lighter than Figma's dim grey, and the check before Mark done dimmer than Figma's (F3): stays. The menu draws a time in `mono`, `fg.muted`, because `fg.subtle` (Figma's #4a5675) is not for `surface.overlay`, and every item icon in `fg.muted` (the menu recipe, D12). Library gap: Styles that differ from Figma.

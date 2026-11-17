@@ -58,5 +58,12 @@ status bar.
 
 ## Second review
 
-Not run by the builder: the caller hands `reports/fidelity/inbox/T09.sideBySide.png`
-and these deviations to the fidelity-reviewer agent.
+A separate agent compared the side-by-side picture with the render,
+blind to how it was built (2026-11-17). Each finding, fixed or with why
+it stays:
+
+- The search field's placeholder and icon larger and lighter (F1, F2), and the chip counts lighter (F6): stays. Library gap: Search field and chip count text.
+- Sort menu descriptions ("Most recent activity at the top") and the note "Sorting applies inside each group." one size larger (F3): stays. Figma sets them in Regular 11 (346:7479, 346:7499, 14 px boxes); `RadioMenu` draws them in `small` (12/16), and no sans style has 11 px. Library gap: Small sans text for row lines.
+- The note lighter than Figma's dim grey (F4): stays. It is `fg.muted`; Figma's #4a5675 is `fg.subtle`'s role, and `fg.subtle` is not for `surface.overlay` (the menu recipe, d-055). Library gap: Styles that differ from Figma.
+- Row status lines ("Codex is waiting", "Blocks hono server", "quiet-nebula · Creating 9 issues…") one size larger (F5): stays. `ListRow` lines are `small` (12) against Figma's 11. Library gap: Small sans text for row lines.
+- "Inbox" a little larger (F7): stays. `PageHeader size="phone"` draws the title in its own style with a 40 px line against Figma's 34 px text box (346:7261) in a 42 px header (`header` h -2, 4 px grid, d-072). Library gap: Styles that differ from Figma.
