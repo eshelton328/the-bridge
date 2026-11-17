@@ -45,6 +45,10 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
         onOpenChange={(open) => onUiChange?.({ menuFor: open ? pane.id : null, moveOpen: false })}
         moveOpen={ui.menuFor === pane.id && ui.moveOpen}
         onMoveOpenChange={(open) => onUiChange?.({ moveOpen: open })}
+        highlighted={ui.menuHighlight}
+        onHighlightChange={(menuHighlight) => onUiChange?.({ menuHighlight })}
+        moveTarget={ui.moveTarget}
+        onMoveTargetChange={(moveTarget) => onUiChange?.({ moveTarget })}
       />
     )
     const layers = pane.type === 'chat' ? (chatsLayers[chats++] ?? { composer: pane.id }) : { composer: pane.id }

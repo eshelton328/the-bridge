@@ -73,6 +73,14 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           onMoveOpenChange={(open) => {
             change({ moveOpen: open })
           }}
+          highlighted={ui.menuHighlight}
+          onHighlightChange={(menuHighlight) => {
+            change({ menuHighlight })
+          }}
+          moveTarget={ui.moveTarget}
+          onMoveTargetChange={(moveTarget) => {
+            change({ moveTarget })
+          }}
           figma={{ trigger: data.layers?.chatActions, menu: data.layers?.chatMenu }}
         />
       )

@@ -57,5 +57,6 @@ export const chatActions = {
     ...sideChat.ui,
     drag: null,
     menuFor: 'bridge-themes',
+    menuHighlight: 'move',
   },
 } satisfies ScreenState<WorkspacesData, WorkspacesUi>

@@ -369,6 +369,8 @@ export const WorkspacesUi = z.object({
   moveOpen: z.boolean(),
   /** The workspace highlighted in that list. */
   moveTarget: z.string().nullable(),
+  /** The highlighted row of the open menu, such as `move` while its list is open (D1, D2b); the menu's own when not set. */
+  menuHighlight: z.string().nullable().optional(),
   /** The pane whose composer lists the skills, or null. */
   skillsFor: z.string().nullable(),
   /** The highlighted skill. */

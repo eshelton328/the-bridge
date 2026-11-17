@@ -16,6 +16,11 @@ export type ChatActionsMenuProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   moveOpen: boolean
   onMoveOpenChange?: ((open: boolean) => void) | undefined
+  /** The highlighted row and the highlighted workspace of Move to workspace's list, as on `PaneMenu`. */
+  highlighted?: string | null | undefined
+  onHighlightChange?: ((value: string | null) => void) | undefined
+  moveTarget?: string | null | undefined
+  onMoveTargetChange?: ((workspace: string | null) => void) | undefined
   /** The Figma layers of the ⋯ and of the open menu, for the fidelity checks; D2's ⋯ when not set. */
   figma?: { trigger?: string | undefined; menu?: string | undefined } | undefined
 }

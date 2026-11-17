@@ -142,6 +142,7 @@ export const workbench = {
     menuFor: 'bridge-themes',
     moveOpen: true,
     moveTarget: 'the-bridge',
+    menuHighlight: 'move',
     skillsFor: 'bridge-themes',
     skill: '/writer',
   },
