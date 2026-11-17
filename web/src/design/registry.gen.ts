@@ -3,9 +3,10 @@ import { board, type Board } from '../lib/board.ts'
 import { artifactsPage } from '../pages/artifacts/index.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 import { toolkitPage } from '../pages/toolkit/index.ts'
+import { workspacesPage } from '../pages/workspaces/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'artifacts/library' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/moreDrawer' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet'
+export type BoardId = 'artifacts/library' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/moreDrawer' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet' | 'workspaces/workbench'
 
 export const boards: readonly Board[] = [
   board(artifactsPage, 'library'),
@@ -62,4 +63,5 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'moreDrawer'),
   board(toolkitPage, 'toolkitList'),
   board(toolkitPage, 'toolkitListTablet'),
+  board(workspacesPage, 'workbench'),
 ]
