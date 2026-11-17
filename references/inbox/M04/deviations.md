@@ -17,16 +17,16 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -38, w +0, h +190; 38 px removed: y +0.
+- `task · next step`: x +0, y -38, w +0, h +166; 38 px removed: y +0.
 - `task bar`: x +0, y -38, w +0, h +2; 38 px removed: y +0.
-- `title block`: x +0, y -30, w +0, h +5; 38 px removed: y +8.
-- `section · WHY`: x +0, y -19, w +0, h +2; 38 px removed: y +19.
-- `section · SUGGESTED PROMPT`: x +0, y -11, w +0, h +22; 38 px removed: y +27.
-- `section · RUN IN`: x +0, y +17, w +0, h -17; 38 px removed: y +55.
-- `button · Change`: x +0, y +8, w -2, h +4; 38 px removed: y +46.
+- `title block`: x +0, y -34, w +0, h +5; 38 px removed: y +4.
+- `section · WHY`: x +0, y -27, w +0, h +2; 38 px removed: y +11.
+- `section · SUGGESTED PROMPT`: x +0, y -23, w +0, h +22; 38 px removed: y +15.
+- `section · RUN IN`: x +0, y +1, w +0, h -17; 38 px removed: y +39.
+- `button · Change`: x +0, y -8, w -2, h +4; 38 px removed: y +30.
 - `section · MY NOTES`: noLayer
 - `notes field`: noLayer
-- `section · SOURCES`: x +0, y +120, w +0, h +2; 38 px removed: y +158.
+- `section · SOURCES`: x +0, y +96, w +0, h +2; 38 px removed: y +134.
 - `sticky action`: x +0, y -54, w +0, h -23; anchored to the bottom, no status bar offset.
 - `tab bar`: noLayer
 - `run in picker`: x +0, y -37, w +0, h +37; 38 px removed: y +1.
@@ -46,15 +46,15 @@ status bar.
   32 px high against Figma's 40 (`nav` h -8); 12 below it the task
   starts 2 px lower than Figma's (`task · next step` y +2 with the
   status bar removed).
-- **Detail spacing.** As in T2: sections are 24 px apart against
-  Figma's 18 to 22 (no such token, d-072), the title is `title` (20/28)
-  against Figma's 22 px and the prompt's lines are 20 px against 21, so
-  each section starts lower than the one above it (`title block` +8,
-  `section · WHY` +19, `section · SUGGESTED PROMPT` +27 with the status
-  bar removed). Figma's M4 prompt has no Read the whole prompt under it
+- **Detail spacing.** As in M2: sections are 20 px apart against
+  Figma's 18 (d-072: a tie takes the larger token), the title is
+  `title` (20/28) against Figma's 22 px and the prompt's lines are 20
+  px against 21, so each section starts a little lower than the one
+  above it (`title block` +4, `section · WHY` +11, `section · SUGGESTED
+  PROMPT` +15 with the status bar removed). Figma's M4 prompt has no Read the whole prompt under it
   (346:9682 is 169 high); the render keeps M2's link, so the section is
   taller (`section · SUGGESTED PROMPT` h +22) and Run in starts lower
-  (`section · RUN IN` y +55, `button · Change` y +46). Library gaps:
+  (`section · RUN IN` y +39, `button · Change` y +30). Library gaps:
   Small text in the detail, 22 px title.
 - **Run in card.** The render puts the Recommended pill beside the
   title, as on the desktop and tablet; Figma's phone card puts it on its
@@ -72,13 +72,17 @@ status bar.
   the tab bar (`sticky action` y -54, h -23; `tab bar`, `section · MY
   NOTES` and `notes field` have no layer in M4). The sheet covers all of
   them; the exceptions name the covered text. The task frame runs on to
-  the end of the page (`task · next step` h +190) and Sources lies below
+  the end of the page (`task · next step` h +166) and Sources lies below
   the fold (`section · SOURCES`).
 - **Run in sheet.** `BottomSheet` titled Run in with Done, the picker's
   search, sections and note. The rows and the section labels
   (`GroupHeader`, 26 px) are a little taller than Figma's, so the picker
   is 37 px taller (`run in picker` h +37) and the sheet starts higher.
   Done shows the focus ring: the sheet focuses its first control.
+  Figma sets the note "Shells are not listed…" on a panel one step
+  lighter than the sheet (346:9822, #101727 on #0f1526); no surface
+  token is that close, so the note has none. Library gap: Picker note
+  panel on the phone.
   Library gaps: Bottom sheet sections and data attribute, Pill height.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13. Library gap: Button label

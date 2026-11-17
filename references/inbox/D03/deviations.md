@@ -53,11 +53,27 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   (`run in picker` h +9, round 5 h +12), within the library's own row
   and group heights; this round did not measure which rows add it. The
   note and the last row are in full view. The `run in picker` key sits on the popover's box (#98).
+- **Prompt line break.** Figma breaks the editor's first line after
+  "toolkit/" (346:1188); the render breaks it before
+  "toolkit/rules/linear.md". The read-only prompt puts a `<wbr>` after
+  each slash (PR #4), but the editor is a `textarea`, whose value is
+  plain text and takes no element. No CSS rule adds a break only after
+  a slash: `overflow-wrap: anywhere` breaks a word only when it does
+  not fit on a line by itself, which the path does, and `word-break:
+  break-all` and `line-break: anywhere` break inside any word, so the
+  other lines would change too. A zero-width space after each slash
+  would give the break but would go into the text Erik edits and
+  copies. The break stays where the browser puts it.
 - **Prompt editor.** The editor is not shown focused, so its border is
   the field border, not cyan. A story cannot focus a field without a
   user action.
 
 ## Second review
+
+The second review of this frame was run again after PR #13, on a clean
+image: the old picture had the popover of an earlier story over it,
+which hid some differences. Its findings are in this file; the one it
+added is "Prompt line break" above.
 
 Rounds 4 to 6 had no new second review: round 4 changed only the row
 and body text sizes, round 5 only put in the #101 parts and round 6

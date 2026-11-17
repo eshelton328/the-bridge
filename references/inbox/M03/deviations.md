@@ -17,12 +17,12 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -38, w +0, h +40; 38 px removed: y +0.
+- `task · next step`: x +0, y -38, w +0, h +28; 38 px removed: y +0.
 - `scrolled title`: x +0, y -38, w +0, h -1; 38 px removed: y +0.
-- `section · SUGGESTED PROMPT`: x +0, y -33, w +0, h -14; 38 px removed: y +5.
-- `section · RUN IN`: x +0, y -41, w +0, h -17; 38 px removed: y -3.
-- `button · Change`: x +0, y -50, w -2, h +4; 38 px removed: y -12.
-- `section · SOURCES`: x +0, y -209, w +0, h +2; 38 px removed: y -171.
+- `section · SUGGESTED PROMPT`: x +0, y -37, w +0, h -14; 38 px removed: y +1.
+- `section · RUN IN`: x +0, y -49, w +0, h -17; 38 px removed: y -11.
+- `button · Change`: x +0, y -58, w -2, h +4; 38 px removed: y -20.
+- `section · SOURCES`: x +0, y -221, w +0, h +2; 38 px removed: y -183.
 
 ## Deviations
 
@@ -42,14 +42,21 @@ status bar.
   the title on one line over the prompt instead of the head and Why
   (`scrolled title`), as Figma does. Sources, which Figma keeps hidden
   under the keyboard (346:9508), shows below Run in (`section ·
-  SOURCES` y -171), and the task frame ends there (`task · next
-  step` h +40).
+  SOURCES` y -183), and the task frame ends there (`task · next
+  step` h +28).
 - **Nav.** As in M2: the nav is 32 px against 40 (`nav` h -8).
-- **Editor.** The editor is not focused: the story does not focus it,
-  so it has the plain border, not Figma's cyan focus border, and no
-  caret. The editor is 14 px shorter (`section · SUGGESTED PROMPT`
-  h -14): `TextArea textSize="sm"` pads 8 with 20 px lines. Library
-  gap: Small text in the detail.
+- **Editor.** Edit puts the focus in the editor (`InboxRoute.test.tsx`),
+  and the story focuses it, so it has Figma's focus border and a caret.
+  The editor is 14 px shorter (`section · SUGGESTED PROMPT` h -14):
+  `TextArea textSize="sm"` pads 8 with 20 px lines. Library gap: Small
+  text in the detail.
+- **Spacing.** The scrolled title, the prompt and Run in are 20 apart
+  against Figma's 18 (d-072: a tie takes the larger token), so the
+  prompt starts 1 px lower than Figma's (`section · SUGGESTED PROMPT`
+  y +1 with the status bar removed). The editor is 14 px shorter, so
+  Run in starts 11 px higher (`section · RUN IN` y -11, `button ·
+  Change` y -20 with the status bar removed). With 24 px gaps Run in
+  started 3 px higher, but each gap was 6 px larger than Figma's.
 - **Run in card.** As in M2: the pill beside the title makes the card
   17 px shorter (`section · RUN IN` h -17), and Change is 28 × 28
   against 30 × 24 (`button · Change`). Library gaps: Small icon button,

@@ -52,6 +52,10 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 
 ## Second review
 
+The second review of this frame was run again after PR #13, on a clean
+image: the old picture had the popover of an earlier story over it,
+which hid some differences.
+
 Rounds 4 to 6 had no new second review: round 4 changed only the row
 and body text sizes, round 5 only put in the #101 parts and round 6
 only the #102 small sizes; the checks

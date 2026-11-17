@@ -43,11 +43,17 @@ status bar.
   Workspaces is wider because of its 14 px label (`button · Open in
   Workspaces` x -7, w +7). Library gaps: Chat header on the tablet,
   Button label size.
-- **Title.** The title stays on one line and ends with an ellipsis when
-  it does not fit, as the note says (`TruncatedText`). Figma's is 14 px
-  SemiBold; the phone draws it in `label` (Medium 14), since
-  `paneTitle` (15) cuts it. Library gap: Title of the started task on
-  the phone.
+- **Title.** The title shows whole on one line, as Figma draws it, and
+  a longer one ends with an ellipsis, as the note says (`TruncatedText`).
+  The header's `Panel` pads 16 against Figma's 13, so its row is 8 px
+  narrower; the title, the pill and the chevron are 6 apart against
+  Figma's 8, which gives the title the room it needs. Figma's title is
+  14 px SemiBold; the phone draws it in `label` (Medium 14), since
+  `paneTitle` (15) cuts it. Library gaps: Title of the started task on
+  the phone, Chat header on the tablet.
+- **Chat.** The entries are 12 apart, as in Figma (346:10863 to
+  346:10884). Copy, Stop and send are larger than Figma's because of
+  their 14 px labels and sizes. Library gap: Button label size.
 - **Reply box.** `AppShell` keeps the home-indicator area under the
   reply box on the phone, so the box sits 6 px higher than Figma's and
   3 px taller (`346:10886` y -6, h +3). It is not focused: Figma draws a
