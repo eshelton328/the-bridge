@@ -141,6 +141,11 @@ describe('listView snooze, done and dismiss', () => {
     expect(listView(list.data, { ...list.ui, filter: 'done' }, '').groups).toEqual([])
   })
 
+  it('shows a task removed in a discussion in Done, with its outcome', () => {
+    const view = listView(list.data, { ...list.ui, filter: 'done', finished: [{ id: tickets, result: 'removed' }] }, '')
+    expect(view.groups[0]?.rows[0]?.outcome).toEqual({ line: 'Removed in a discussion', result: 'removed' })
+  })
+
   it('puts the finished items at the top of Today in the Done list, newest first, with how each ended', () => {
     const earlier: InboxRowView = {
       id: InboxItemId.parse('allowed-earlier'),
