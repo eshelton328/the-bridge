@@ -118,4 +118,18 @@ describe('the Inbox screen by width', () => {
     await expect.element(back()).not.toBeInTheDocument()
     await expect.element(tabBar()).not.toBeInTheDocument()
   })
+
+  it("draws each proposed new task's box 52 px high, as Figma does (D17 403:2435)", async () => {
+    await page.viewport(1512, 982)
+    const { data, ui } = inboxStates.tasksProposed
+    view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)
+    await expect.element(page.getByText('Also remove this task')).toBeVisible()
+    const proposal = document.querySelector('[data-figma="proposal · CREATE 3 TASKS"]')
+    // Each new task is a box around its `Checkbox`; "Also remove this task" has none.
+    const boxes = [...(proposal?.querySelectorAll('.checkbox__root') ?? [])]
+      .map((root) => root.parentElement)
+      .filter((box) => box !== null && box !== proposal && !box.textContent.includes('Also remove this task'))
+      .map((box) => box?.getBoundingClientRect().height)
+    expect(boxes).toEqual([52, 52, 52])
+  })
 })
