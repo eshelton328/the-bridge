@@ -37,6 +37,10 @@ what each file of a page folder is for.
   columns, each item's column and row, and the links. The tablet map
   (T2, `toolkitMapTablet`) has D2's items with its own first heading and
   no meta text; `ToolkitMap` draws it with smaller nodes, no legend and no
-  description, and the screen leaves out the search row. An open item (D3)
+  description, and the screen leaves out the search row. The phone map
+  (M11) is the same state: the screen shows the header and the map, with
+  no chips and no search; `ToolkitMap` draws the tablet's map in a window
+  that scrolls sideways, the hint at its foot and the selected item's card
+  under the window. An open item (D3)
   adds an item and its own screen.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
