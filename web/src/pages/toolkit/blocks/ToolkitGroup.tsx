@@ -42,7 +42,13 @@ export function ToolkitGroup({ group, open, onOpenChange, layout, selected, onOp
   return (
     <>
       {/* The group is a level 2 heading between the page title and the cards' titles (h3). */}
-      <div role="heading" aria-level={2} className={header} data-figma={`group · ${group.label.toUpperCase()}`}>
+      <div
+        role="heading"
+        aria-level={2}
+        className={header}
+        data-group={group.kind}
+        data-figma={`group · ${group.label.toUpperCase()}`}
+      >
         <GroupHeader
           label={group.label}
           count={group.items.length}
