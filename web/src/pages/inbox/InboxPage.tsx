@@ -56,7 +56,7 @@ export function InboxPage() {
       }}
       onNavigate={(page) => {
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+        if (page === 'workspaces' || page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
       }}
       ui={ui}
       viewport="desktop"

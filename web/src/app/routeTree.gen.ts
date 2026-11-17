@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './../routes/index'
 import { Route as ArtifactsRouteImport } from './../routes/artifacts'
 import { Route as InboxRouteImport } from './../routes/inbox'
 import { Route as ToolkitRouteImport } from './../routes/toolkit'
+import { Route as WorkspacesRouteImport } from './../routes/workspaces'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const ToolkitRoute = ToolkitRouteImport.update({
   path: '/toolkit',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkspacesRoute = WorkspacesRouteImport.update({
+  id: '/workspaces',
+  path: '/workspaces',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
   '/toolkit': typeof ToolkitRoute
+  '/workspaces': typeof WorkspacesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
   '/toolkit': typeof ToolkitRoute
+  '/workspaces': typeof WorkspacesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/artifacts': typeof ArtifactsRoute
   '/inbox': typeof InboxRoute
   '/toolkit': typeof ToolkitRoute
+  '/workspaces': typeof WorkspacesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/artifacts' | '/inbox' | '/toolkit'
+  fullPaths: '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/artifacts' | '/inbox' | '/toolkit'
-  id: '__root__' | '/' | '/artifacts' | '/inbox' | '/toolkit'
+  to: '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
+  id: '__root__' | '/' | '/artifacts' | '/inbox' | '/toolkit' | '/workspaces'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   ArtifactsRoute: typeof ArtifactsRoute
   InboxRoute: typeof InboxRoute
   ToolkitRoute: typeof ToolkitRoute
+  WorkspacesRoute: typeof WorkspacesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ToolkitRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workspaces': {
+      id: '/workspaces'
+      path: '/workspaces'
+      fullPath: '/workspaces'
+      preLoaderRoute: typeof WorkspacesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArtifactsRoute: ArtifactsRoute,
   InboxRoute: InboxRoute,
   ToolkitRoute: ToolkitRoute,
+  WorkspacesRoute: WorkspacesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
