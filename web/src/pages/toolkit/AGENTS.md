@@ -34,6 +34,9 @@ what each file of a page folder is for.
   (`toolkitListTablet`, T1 and M1, adds the Rules group; `moreDrawer`,
   M4, opens the More drawer over M1's list). The map (D2, `toolkitMap`)
   sets `ui.view` to `map` and `ui.mapSelected`, and adds `data.map`: the
-  columns, each item's column and row, and the links. An open item (D3)
+  columns, each item's column and row, and the links. The tablet map
+  (T2, `toolkitMapTablet`) has D2's items with its own first heading and
+  no meta text; `ToolkitMap` draws it with smaller nodes, no legend and no
+  description, and the screen leaves out the search row. An open item (D3)
   adds an item and its own screen.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
