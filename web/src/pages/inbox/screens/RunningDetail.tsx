@@ -25,6 +25,9 @@ import { InboxStatus } from '../blocks/InboxStatus.tsx'
 import type { InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
+// T5: the first message 22 below the started task (346:6378 to 346:6393), 24 on the grid (d-072); D5 has 18, the
+// stack's 16. On the tablet the chat takes 8 more than the stack's gap.
+const chatCompact = css({ flex: '1', mt: '8' })
 const title = css({ textStyle: 'subtitle', m: '0', flex: '1' })
 // T5 346:6380: SemiBold 15.
 const compactTitle = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
@@ -106,7 +109,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack }: RunningDet
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
         {layout === 'desktop' ? <DesktopHeader detail={detail} /> : <CompactHeader detail={detail} onBack={onBack} />}
-        <Stack gap="16" className={fill}>
+        <Stack gap="16" className={layout === 'desktop' ? fill : chatCompact}>
           {detail.chat.map((entry, i) => (
             <ChatEntry key={`${String(i)}:${entry.type}`} entry={entry} />
           ))}

@@ -19,6 +19,9 @@ const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 // T8 346:7180: the hint's row is 38 high, the text 10 below its top.
 const sheetHint = css({ textStyle: 'small', color: 'fg.subtle', py: '10' })
+// T8 346:7176 and 346:7179: the title and the text share one left edge. BottomSheet pads its header 4 more than its
+// content, so the content takes those 4 too.
+const sheetBody = css({ px: '4' })
 
 export type PromptDialogProps = {
   title: string
@@ -58,7 +61,7 @@ export function PromptDialog({ title, text: prompt, open, onOpenChange, layout =
           </BottomSheetClose>
         }
       >
-        <Stack gap="4">
+        <Stack gap="4" className={sheetBody}>
           <p className={text} data-figma="346:7179">
             {prompt}
           </p>

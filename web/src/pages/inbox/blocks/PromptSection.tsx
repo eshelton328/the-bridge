@@ -80,7 +80,8 @@ export function PromptSection({ prompt, editing, open, onOpenChange, layout }: P
       actions={
         prompt.state !== 'suggested' ? undefined : (
           <>
-            <Button size="sm">
+            {/* Reset brings back the suggested prompt, so it does nothing until Erik edits it (Figma D1 346:359, T2 346:5736). */}
+            <Button size="sm" disabled={!prompt.edited}>
               <ResetIcon />
               Reset
             </Button>
