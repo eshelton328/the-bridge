@@ -90,3 +90,19 @@ void test('coveredBy accepts runs made of Figma strings and punctuation', () => 
   assert.equal(coveredBy('drift', ['drift check']), true)
   assert.equal(coveredBy('nested', ['Next steps']), false)
 })
+
+void test('each Figma layer needs its own visible occurrence of its string', () => {
+  // D01: the detail heading has the same text as its list row's title.
+  const layers = [layer('1', 'Fix the drift check'), layer('2', 'Fix the drift check', 200)]
+  const once = checkText(ref(layers), none, page(['Fix the drift check']))
+  assert.deepEqual(once.notVisible, [{ id: '2', text: 'Fix the drift check' }])
+  assert.equal(once.ok, false)
+  const twice = checkText(ref(layers), none, page(['Fix the drift check', 'Fix the drift check']))
+  assert.equal(twice.ok, true)
+})
+
+void test('a run claimed by a long string is not reused for a shorter string inside it', () => {
+  const layers = [layer('1', 'Inbox'), layer('2', 'Inbox zero today')]
+  assert.deepEqual(checkText(ref(layers), none, page(['Inbox zero today'])).notVisible, [{ id: '1', text: 'Inbox' }])
+  assert.equal(checkText(ref(layers), none, page(['Inbox', 'Inbox zero today'])).ok, true)
+})

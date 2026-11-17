@@ -58,14 +58,18 @@ export function checkText(
   const haystacks = [page.textContent, page.innerText, ...page.fieldTexts].map(collapse)
   const present = (s: string) =>
     s.length <= shortLength ? nodes.has(s) : haystacks.some((h) => h.includes(s)) || nodes.has(s)
-  const visible = page.visibleTexts.map((v) => collapse(v.text))
-  const seen = (s: string) =>
-    s.length <= shortLength ? visible.includes(s) : visible.some((v) => v.includes(s)) || coveredByRuns(s, visible)
 
   const missing = checked.filter((t) => !present(t.text)).map((t) => ({ id: t.id, text: t.text }))
-  const notVisible = checked
-    .filter((t) => t.inFrame && present(t.text) && !seen(t.text))
-    .map((t) => ({ id: t.id, text: t.text }))
+  // Each Figma layer needs its own visible occurrence: two layers with the
+  // same string need two, so one DOM string cannot stand for a heading and
+  // a list row at once. Longest strings claim first, so a long string takes
+  // its run before a shorter string inside it.
+  const pool = page.visibleTexts.map((v) => collapse(v.text))
+  const needed = checked.filter((t) => t.inFrame && present(t.text))
+  const unseen = new Set(
+    [...needed].sort((a, b) => b.text.length - a.text.length).filter((t) => !claimRun(t.text, pool)),
+  )
+  const notVisible = needed.filter((t) => unseen.has(t)).map((t) => ({ id: t.id, text: t.text }))
 
   const extra: TextResult['extra'] = []
   const reported = new Set<string>()
@@ -88,10 +92,38 @@ export function checkText(
   }
 }
 
-/** True when a long Figma string is split over several visible runs, each part of it. */
-function coveredByRuns(s: string, visible: readonly string[]): boolean {
-  const parts = visible.filter((v) => v.length > 0 && s.includes(v))
+/** Claimed text in a run: no Figma string can match across it. */
+const claimed = '\u0000'
+
+/**
+ * Finds one unclaimed occurrence of `s` in the visible runs and claims it,
+ * so no other Figma layer can use it: a short string must be a whole run, a
+ * long one may be part of a run or split over several runs (each part of it,
+ * the rest punctuation). Returns false when no occurrence is left.
+ */
+function claimRun(s: string, pool: string[]): boolean {
+  if (s.length <= shortLength) {
+    const i = pool.indexOf(s)
+    if (i >= 0) pool[i] = claimed
+    return i >= 0
+  }
+  const i = pool.findIndex((v) => v.includes(s))
+  if (i >= 0) {
+    pool[i] = (pool[i] ?? '').replace(s, claimed)
+    return true
+  }
   let rest = s
-  for (const p of parts.sort((a, b) => b.length - a.length)) rest = rest.split(p).join(' ')
-  return parts.length > 0 && isPunctuation(rest)
+  const used: number[] = []
+  const parts = pool
+    .map((v, j) => ({ v, j }))
+    .filter(({ v }) => v.length > 0 && !v.includes(claimed) && s.includes(v))
+    .sort((a, b) => b.v.length - a.v.length)
+  for (const { v, j } of parts)
+    if (rest.includes(v)) {
+      rest = rest.replace(v, ' ')
+      used.push(j)
+    }
+  if (used.length === 0 || !isPunctuation(rest)) return false
+  for (const j of used) pool[j] = claimed
+  return true
 }
