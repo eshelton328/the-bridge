@@ -154,3 +154,17 @@ export const DragOverPane: Story = {
     await expect(canvas.queryByText(/edge: split beside/)).toBeNull()
   },
 }
+
+export const TwoPanes: Story = {
+  name: 'D9: two panes side by side, with the resize handle between them',
+  args: { data: workspacesStates.twoPanes.data, ui: workspacesStates.twoPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 2 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    await expect(canvas.getByText('Codex wants to run a command')).toBeVisible()
+    // The two panes share the width; the handle between them resizes them (D14).
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+  },
+}
