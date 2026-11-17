@@ -15,7 +15,7 @@ import type { InboxRunCard } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
 
 const title = css({ textStyle: 'label', flex: '1' })
-const meta = css({ textStyle: 'mono', color: 'fg.muted' })
+const meta = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
 export function RunCard({ run }: { run: InboxRunCard }) {
   // Figma names the card after the run's state: "running card" (D6) or "result card" (D7).

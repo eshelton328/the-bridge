@@ -13,7 +13,7 @@ const link = css({
   textDecoration: 'none',
   _hover: { textDecoration: 'underline' },
 })
-const detail = css({ textStyle: 'mono', color: 'fg.subtle' })
+const detail = css({ textStyle: 'monoSm', color: 'fg.subtle' })
 
 export function SourceList({ sources }: { sources: InboxNextStep['sources'] }) {
   return (

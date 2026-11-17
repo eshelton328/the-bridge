@@ -8,6 +8,7 @@ import {
   ExternalLinkIcon,
   Inline,
   KindMark,
+  MarkdownView,
   OptionList,
   Panel,
   PlayIcon,
@@ -21,8 +22,7 @@ import type { InboxQuestion } from '../types.ts'
 
 const grow = css({ flex: '1' })
 const waitTitle = css({ textStyle: 'label' })
-const mono = css({ textStyle: 'mono', color: 'fg.muted' })
-const context = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
+const mono = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
 export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
@@ -48,12 +48,15 @@ export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
           </Panel>
         </div>
         <DetailSection title="Context">
-          <p className={context}>{detail.context}</p>
+          <MarkdownView size="sm" padding="none">
+            <p>{detail.context}</p>
+          </MarkdownView>
         </DetailSection>
         <DetailSection title="Choose one">
           <OptionList
             label="Choose one"
             variant="card"
+            size="sm"
             value={detail.selected}
             items={detail.options.map((o) => ({
               value: o.value,
@@ -64,7 +67,7 @@ export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
           />
         </DetailSection>
         <DetailSection title={detail.noteLabel}>
-          <TextArea labelHidden label={detail.noteLabel} defaultValue={detail.note} autoresize rows={1} />
+          <TextArea labelHidden label={detail.noteLabel} textSize="sm" defaultValue={detail.note} autoresize rows={1} />
         </DetailSection>
         <Inline gap="12" align="center" data-figma="answer">
           <Button variant="primary" size="lg">

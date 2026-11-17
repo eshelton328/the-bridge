@@ -1,7 +1,7 @@
 // The detail of a next step: why, the prompt, where to run it and the
 // Start button (or, once started, the chat it runs in), Erik's notes and
 // the sources. Props only.
-import { Button, Container, Inline, PlayIcon, Stack } from '@eshelton328/component-library-1701'
+import { Button, Container, Inline, MarkdownView, PlayIcon, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailHead } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
@@ -12,7 +12,6 @@ import { RunInCard } from '../blocks/RunInCard.tsx'
 import { SourceList } from '../blocks/SourceList.tsx'
 import type { InboxNextStep, InboxUi } from '../types.ts'
 
-const why = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
 export type NextStepDetailProps = {
@@ -45,7 +44,9 @@ export function NextStepDetail({ detail, ui, onPromptOpenChange }: NextStepDetai
       <Stack gap="24">
         <DetailHead head={detail} snoozeOpen={ui.snoozeOpen} />
         <DetailSection title="Why">
-          <p className={why}>{detail.why}</p>
+          <MarkdownView size="sm" padding="none">
+            <p>{detail.why}</p>
+          </MarkdownView>
         </DetailSection>
         <PromptSection
           prompt={detail.prompt}

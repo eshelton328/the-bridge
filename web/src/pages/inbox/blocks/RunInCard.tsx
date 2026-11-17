@@ -16,7 +16,7 @@ import { RunInPicker } from './RunInPicker.tsx'
 
 const grow = css({ flex: '1' })
 const title = css({ textStyle: 'label' })
-const detail = css({ textStyle: 'mono', color: 'fg.muted' })
+const detail = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
 export type RunInCardProps = {
   runIn: InboxRunIn

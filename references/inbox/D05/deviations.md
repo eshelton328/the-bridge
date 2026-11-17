@@ -1,14 +1,14 @@
 # D05 deviations
 
-What still differs from Figma after round 5 of the fidelity loop
+What still differs from Figma after round 6 of the fidelity loop
 (`pnpm fidelity inbox D05`, 2026-11-16, against the installed
-library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
+library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass.
-- Position: 6 of 10 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`).
+- Position: 7 of 10 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `started task`).
 - Rules: pass.
 
 ## Deviations
@@ -21,16 +21,17 @@ library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library 
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Started task header.** 12 px taller (`started task` h +12): the mono
-  meta line is wider than Figma's and wraps "5.5" onto a second line.
-  Same text-size cause as the rows.
+- **Started task header.** Its meta line uses `monoSm` (11/16, #102),
+  Figma's 11 px, and fits on one line, so `started task` now passes
+  (round 5: h +12, the 12 px `mono` line wrapped "5.5").
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie).
 
 ## Second review
 
-Rounds 4 and 5 had no new second review: round 4 changed only the row
-and body text sizes, and round 5 only put in the #101 parts; the checks
+Rounds 4 to 6 had no new second review: round 4 changed only the row
+and body text sizes, round 5 only put in the #101 parts and round 6
+only the #102 small sizes; the checks
 above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").

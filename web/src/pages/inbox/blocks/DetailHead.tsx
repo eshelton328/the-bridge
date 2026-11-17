@@ -25,7 +25,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDetailHead } from '../types.ts'
 
-const origin = css({ textStyle: 'mono', color: 'fg.muted', flex: '1' })
+const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
 const title = css({ textStyle: 'title', m: '0' })
 
 const chipIcons = {
@@ -100,7 +100,7 @@ export function DetailHead({ head, snoozeOpen = false }: DetailHeadProps) {
             />
           ))}
         </Inline>
-        <TagsLine tags={head.tags} icon={<TagIcon />} />
+        <TagsLine size="sm" tags={head.tags} icon={<TagIcon />} />
       </Stack>
     </>
   )

@@ -62,7 +62,7 @@ export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSec
     >
       {editing ? (
         <Stack gap="8">
-          <TextArea labelHidden label="Suggested prompt" defaultValue={prompt.text} autoresize rows={2} />
+          <TextArea labelHidden label="Suggested prompt" textSize="sm" defaultValue={prompt.text} autoresize rows={2} />
           <span className={hint}>Edits stay with this task until you start it or press Reset.</span>
         </Stack>
       ) : (
