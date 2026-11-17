@@ -111,20 +111,22 @@ export function checkText(
   // (such layers try the covered runs first, and claim after the others of
   // their length).
   const figmaCovered = coveredInFigma(ref.layers)
-  const openRuns = page.visibleTexts.filter((v) => !v.covered).map((v) => collapse(v.text))
-  const coveredRuns = page.visibleTexts.filter((v) => v.covered).map((v) => collapse(v.text))
+  const pool = page.visibleTexts.map((v) => collapse(v.text))
+  const covered = page.visibleTexts.map((v) => v.covered)
+  const open = (j: number) => !covered[j]
+  const under = (j: number) => covered[j] === true
+  const any = () => true
   const needed = checked.filter((t) => t.inFrame && present(t.text))
   const order = [...needed].sort(
     (a, b) => b.text.length - a.text.length || Number(figmaCovered.has(a.id)) - Number(figmaCovered.has(b.id)),
   )
   const unseen = new Map<(typeof needed)[number], boolean>()
   for (const t of order) {
-    if (
-      figmaCovered.has(t.id) ? claimRun(t.text, coveredRuns) || claimRun(t.text, openRuns) : claimRun(t.text, openRuns)
-    )
-      continue
+    const seen = figmaCovered.has(t.id)
+      ? claimRun(t.text, pool, under) || claimRun(t.text, pool, any)
+      : claimRun(t.text, pool, open)
     // Not seen; say so when the render has it under another element.
-    unseen.set(t, claimRun(t.text, [...coveredRuns]))
+    if (!seen) unseen.set(t, claimRun(t.text, [...pool], any))
   }
   const notVisible = needed.flatMap((t) => {
     const covered = unseen.get(t)
@@ -157,18 +159,19 @@ export function checkText(
 const claimed = '\u0000'
 
 /**
- * Finds one unclaimed occurrence of `s` in the visible runs and claims it,
- * so no other Figma layer can use it: a short string must be a whole run, a
- * long one may be part of a run or split over several runs (each part of it,
- * the rest punctuation). Returns false when no occurrence is left.
+ * Finds one unclaimed occurrence of `s` in the visible runs that `usable`
+ * accepts (by index) and claims it, so no other Figma layer can use it: a
+ * short string must be a whole run, a long one may be part of a run or
+ * split over several runs (each part of it, the rest punctuation). Returns
+ * false when no occurrence is left.
  */
-function claimRun(s: string, pool: string[]): boolean {
+function claimRun(s: string, pool: string[], usable: (j: number) => boolean): boolean {
   if (s.length <= shortLength) {
-    const i = pool.indexOf(s)
+    const i = pool.findIndex((v, j) => v === s && usable(j))
     if (i >= 0) pool[i] = claimed
     return i >= 0
   }
-  const i = pool.findIndex((v) => v.includes(s))
+  const i = pool.findIndex((v, j) => v.includes(s) && usable(j))
   if (i >= 0) {
     pool[i] = (pool[i] ?? '').replace(s, claimed)
     return true
@@ -177,7 +180,7 @@ function claimRun(s: string, pool: string[]): boolean {
   const used: number[] = []
   const parts = pool
     .map((v, j) => ({ v, j }))
-    .filter(({ v }) => v.length > 0 && !v.includes(claimed) && s.includes(v))
+    .filter(({ v, j }) => usable(j) && v.length > 0 && !v.includes(claimed) && s.includes(v))
     .sort((a, b) => b.v.length - a.v.length)
   for (const { v, j } of parts)
     if (rest.includes(v)) {

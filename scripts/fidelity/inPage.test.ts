@@ -9,6 +9,7 @@ import {
   collectPageScript,
   coveredAt,
   fieldText,
+  fieldTextLine,
   fullyVisible,
   isPortalRoot,
   paints,
@@ -80,6 +81,7 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /scrollBars: function scrollBars\(/)
   assert.match(script, /samplePoints: function samplePoints\(/)
   assert.match(script, /paints: function paints\(/)
+  assert.match(script, /fieldTextLine: function fieldTextLine\(/)
   assert.match(script, /coveredAt: function coveredAt\(/)
 })
 
@@ -231,6 +233,16 @@ void test('a run is sampled at three points along the middle of each line it dra
   ])
 })
 
+void test('a field is tested only where its text is, not over its whole box', () => {
+  // Inbox T12: a menu covers the right end of "Add a note for yourself…", not its text.
+  const field = { box: edges(20, 700, 740, 740), startInset: 13, endInset: 13, textWidth: 150 }
+  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'start' }), edges(33, 700, 183, 740))
+  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'right' }), edges(577, 700, 727, 740))
+  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'center' }), edges(305, 700, 455, 740))
+  // Text wider than the field stops at its padding.
+  assert.deepEqual(fieldTextLine({ ...field, textWidth: 900, textAlign: 'left' }), edges(33, 700, 727, 740))
+})
+
 void test('an element paints when it has a background, an image or replaced content', () => {
   const el = (backgroundColor: string, tagName = 'DIV', backgroundImage = 'none', backdropFilter = 'none') => ({
     tagName,
@@ -281,7 +293,11 @@ void test('in Chromium a run under an open menu is covered; under a transparent 
 <p style="position:absolute;top:80px;left:20px;margin:0">Under a positioner</p>
 <p style="position:absolute;top:140px;left:20px;margin:0;pointer-events:none">Not covered</p>
 <div style="position:absolute;top:60px;left:0;width:400px;height:60px"></div>
+<input placeholder="Add a note" style="position:absolute;top:200px;left:20px;width:500px;padding:4px 12px">
 </div></div>
+<div style="position:fixed;top:190px;left:300px;width:200px;height:60px;background:rgb(30,30,40)"></div>
+<div><input placeholder="Search chats" style="position:fixed;top:300px;left:20px;width:500px;padding:4px 12px"></div>
+<div style="position:fixed;top:290px;left:0;width:200px;height:60px;background:rgb(30,30,40)"></div>
 <div style="position:fixed;top:10px;left:60px;width:200px;height:40px;background:rgb(30,30,40)"><span>Rename</span></div>
 </body>`)
   const covered = Object.fromEntries(measured.visibleTexts.map((v) => [v.text, v.covered]))
@@ -289,6 +305,8 @@ void test('in Chromium a run under an open menu is covered; under a transparent 
     'Start a chat.': true,
     'Under a positioner': false,
     'Not covered': false,
+    'Add a note': false,
+    'Search chats': true,
     Rename: false,
   })
   // The text check fails the covered run where Figma draws nothing over it.

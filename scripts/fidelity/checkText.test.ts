@@ -150,6 +150,16 @@ void test('text covered in the render and in Figma passes', () => {
   assert.deepEqual([r.ok, r.notVisible], [true, []])
 })
 
+void test('text covered in Figma may span covered and open runs of the render', () => {
+  // A long prompt under a fade: Figma draws the fade over the text layer,
+  // the render's fade covers only its last lines.
+  const prompt = layer('t', 'Read the plan. Write the tickets.', 40)
+  const runs = [run('Read the plan.'), run('Write the tickets.', true)]
+  const measure = page(['Read the plan.', 'Write the tickets.'], { visibleTexts: runs })
+  assert.equal(checkText(ref([prompt, menu(0)]), none, measure).ok, true)
+  assert.deepEqual(checkText(ref([prompt]), none, measure).notVisible, [{ id: 't', text: prompt.text, covered: true }])
+})
+
 void test('text that nothing covers in the render passes', () => {
   assert.equal(checkText(ref([chatText]), none, page(['…a chat.'])).ok, true)
   assert.equal(checkText(ref([chatText, menu(0)]), none, page(['…a chat.'])).ok, true)

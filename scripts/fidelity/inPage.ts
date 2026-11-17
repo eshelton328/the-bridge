@@ -80,6 +80,30 @@ export function samplePoints(rects: readonly Edges[]): { x: number; y: number }[
 }
 
 /**
+ * The line a form field's text takes inside its box: its content box (the
+ * box less border and padding), as wide as the text and placed by its
+ * text-align. A field taller than one line (a text area) keeps its height.
+ */
+export function fieldTextLine(field: {
+  box: Edges
+  startInset: number
+  endInset: number
+  textWidth: number
+  textAlign: string
+}): Edges {
+  const left = field.box.left + field.startInset
+  const right = field.box.right - field.endInset
+  const width = Math.max(0, Math.min(field.textWidth, right - left))
+  const { top, bottom } = field.box
+  if (field.textAlign === 'center') {
+    const middle = (left + right) / 2
+    return { left: middle - width / 2, top, right: middle + width / 2, bottom }
+  }
+  if (field.textAlign === 'right' || field.textAlign === 'end') return { left: right - width, top, right, bottom }
+  return { left, top, right: left + width, bottom }
+}
+
+/**
  * True when an element draws something of its own over what lies beneath:
  * a background colour that is not fully transparent, a background image,
  * a backdrop filter, or replaced content (an image, SVG, canvas, video or
@@ -181,13 +205,14 @@ type Helpers = {
   fieldText: typeof fieldText
   scrollBars: typeof scrollBars
   samplePoints: typeof samplePoints
+  fieldTextLine: typeof fieldTextLine
   paints: typeof paints
   coveredAt: typeof coveredAt
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLine: ${fieldTextLine.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
 }
 
 export type PageMeasure = {
@@ -355,9 +380,19 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     fieldTexts.push(text)
     const rect = f.getBoundingClientRect()
     if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport)) {
-      // A field's box holds more than its text (an icon over its padding), so
-      // only its middle is tested.
-      const covered = helpers.coveredAt([stackAt(rect.left + rect.width / 2, rect.top + rect.height / 2, f)])
+      // A field's box holds more than its text (an icon over its padding, a
+      // menu over its empty end), so only the line its text takes is tested.
+      const fs = getComputedStyle(f)
+      const context = document.createElement('canvas').getContext('2d')
+      if (context !== null) context.font = fs.font
+      const line = helpers.fieldTextLine({
+        box: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+        startInset: Number.parseFloat(fs.borderLeftWidth) + Number.parseFloat(fs.paddingLeft),
+        endInset: Number.parseFloat(fs.borderRightWidth) + Number.parseFloat(fs.paddingRight),
+        textWidth: context === null ? rect.width : context.measureText(text).width,
+        textAlign: fs.textAlign,
+      })
+      const covered = helpers.coveredAt(helpers.samplePoints([line]).map((p) => stackAt(p.x, p.y, f)))
       visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f), covered })
     }
   }
