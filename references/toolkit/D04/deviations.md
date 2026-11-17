@@ -82,3 +82,13 @@ same results as before D04.
   and adds no text; the list row shows `←0`.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D7 to D9).
+
+## Second review
+
+- **All chip.** The render draws All as the selected chip, because the
+  filter is All; Figma D4 draws no chip selected, as D3 does. The app
+  keeps one rule for every frame: the chip of the current filter is
+  selected (see D03).
+- **Preview line break.** The narrower preview (554 against 560 px)
+  moves "nobody" to the second line of the first paragraph (gap: Item
+  overview columns).
