@@ -24,6 +24,8 @@ export const ArtifactCard = z.object({
   age: z.string(),
   /** Found since Erik last looked: the card shows New. */
   isNew: z.boolean(),
+  /** The artifact's address without the scheme; search reads it, and a match in it shows in the list (D4). */
+  link: z.string().optional(),
 })
 export type ArtifactCard = z.infer<typeof ArtifactCard>
 
@@ -116,6 +118,18 @@ export const ArtifactFilterMenu = z.object({
 })
 export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
 
+/** Where a search matched an artifact, in the order search reads them (D4). */
+const MatchPlace = z.enum(['title', 'description', 'link', 'project'])
+export type MatchPlace = z.infer<typeof MatchPlace>
+
+/** What the list view shows for a search (D4): the label of each match place and the hint under the results. */
+const ArtifactSearch = z.object({
+  /** Such as "in title" for each place. */
+  places: z.record(MatchPlace, z.string()),
+  /** What search reads, under the results. */
+  hint: z.string(),
+})
+
 export const ArtifactsData = z.object({
   title: z.string(),
   /** The number of artifacts in the library, after the title. */
@@ -134,6 +148,8 @@ export const ArtifactsData = z.object({
   open: ArtifactDetail.optional(),
   /** The Filter menu (D3); without it Filter opens nothing yet (D1, D2). */
   filterMenu: ArtifactFilterMenu.optional(),
+  /** The search's match places and hint (D4); without it a search in the list view shows no places or hint. */
+  search: ArtifactSearch.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -150,6 +166,8 @@ export const ArtifactsUi = z.object({
   filterOpen: z.boolean().optional(),
   /** The Filter menu's checked boxes; they apply when Erik selects Show. */
   filterChecks: z.array(z.string()).optional(),
+  /** Whether the list view's group of search matches is open (D4); open when not set. */
+  matchesOpen: z.boolean().optional(),
 })
 export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 

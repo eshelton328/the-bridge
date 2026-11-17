@@ -4,9 +4,11 @@
 import { artifactOpen } from './artifactOpen.ts'
 import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
+import { searchList } from './searchList.ts'
 
 export const artifactsStates = {
   library,
   artifactOpen,
   filterOpen,
+  searchList,
 }

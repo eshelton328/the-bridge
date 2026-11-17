@@ -54,3 +54,20 @@ export const FilterOpen: Story = {
     await expect(page.getByRole('button', { name: 'Show 7' })).toBeVisible()
   },
 }
+
+export const SearchList: Story = {
+  name: 'D4: a search in the list view',
+  args: { data: artifactsStates.searchList.data, ui: artifactsStates.searchList.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: /3 matches for “eval”/i })).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByText('in title')).toBeVisible()
+    await expect(canvas.getByText('in description')).toBeVisible()
+    await expect(canvas.getByText('in link')).toBeVisible()
+    await expect(canvas.getAllByText('eval', { selector: 'mark' })).toHaveLength(3)
+    await expect(
+      canvas.getByText(
+        'Search reads titles, descriptions, projects and links. Filters and the source chips still apply.',
+      ),
+    ).toBeVisible()
+  },
+}
