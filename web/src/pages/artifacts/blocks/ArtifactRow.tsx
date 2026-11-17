@@ -5,22 +5,11 @@
 import { Inline, KindMark, ListRow, MetaLine, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactCard } from '../types.ts'
+import { NewDot } from './NewDot.tsx'
 
 // Figma's row preview is 64 × 40 (403:194). No size token is 64 (LIBRARY_GAPS.md: List row thumbnail);
 // `control.xl` (44) is the nearest, and the compact thumbnail keeps its 8:5 shape, so it is 27.5 high.
 const thumb = css({ w: 'control.xl', alignSelf: 'center' })
-// The New dot (403:213): the library has no dot for a row (LIBRARY_GAPS.md: New dot in a list row); it is
-// drawn 6 px round in `status.working.fg`, as GroupHeader's dot: no size token is 6, so a 2 px padding inside a
-// 1 px border of the same colour makes it.
-const dot = css({
-  flexShrink: '0',
-  p: '2',
-  borderRadius: 'full',
-  borderWidth: 'default',
-  borderStyle: 'solid',
-  borderColor: 'status.working.fg',
-  bg: 'status.working.fg',
-})
 const end = css({ alignSelf: 'center' })
 
 export type ArtifactRowProps = {
@@ -42,7 +31,7 @@ export function ArtifactRow({ card, selected, onOpen }: ArtifactRowProps) {
         meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
         trailing={
           <Inline gap="12" align="center" className={end}>
-            {card.isNew ? <span className={dot} role="img" aria-label="New" /> : null}
+            {card.isNew ? <NewDot label="New" /> : null}
             {card.age}
           </Inline>
         }

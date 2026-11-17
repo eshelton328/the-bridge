@@ -6,6 +6,7 @@
 import {
   Button,
   ChevronDownIcon,
+  CloseIcon,
   FilterIcon,
   GridIcon,
   Inline,
@@ -67,6 +68,8 @@ export function LibraryTools({
           textSize="sm"
           placeholder={placeholder}
           icon={<SearchIcon />}
+          clearIcon={<CloseIcon />}
+          clearLabel="Clear the search"
           value={query}
           onValueChange={onQueryChange}
         />

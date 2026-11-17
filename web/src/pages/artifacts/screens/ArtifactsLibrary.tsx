@@ -2,6 +2,8 @@
 // chips, the search row, and the groups of artifact cards, newest first,
 // with what the library found since Erik last looked at the top. The cards
 // come from libraryView (the chip and the search over the state's groups).
+// The List view (D4) shows them as rows (LibraryRows). During a search the
+// count says how many of the library's artifacts show, such as "3 of 24".
 // Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -10,6 +12,7 @@ import { CardGroup } from '../blocks/CardGroup.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
+import { LibraryRows } from './LibraryRows.tsx'
 import { libraryView } from './libraryView.ts'
 
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
@@ -34,11 +37,12 @@ export type ArtifactsLibraryProps = {
 export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact, onAddLink }: ArtifactsLibraryProps) {
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
+  const shown = groups.reduce((n, group) => n + group.cards.length, 0)
   return (
     <Stack gap="12" className={page[layout]}>
       <LibraryHeader
         title={data.title}
-        count={data.count}
+        count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
         onAddLink={onAddLink}
@@ -80,7 +84,10 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
           onUiChange?.({ view })
         }}
       />
-      {groups.map((group) => (
+      {ui.view === 'list' ? (
+        <LibraryRows data={data} ui={ui} onUiChange={onUiChange} onOpenArtifact={onOpenArtifact} />
+      ) : null}
+      {(ui.view === 'list' ? [] : groups).map((group) => (
         <CardGroup
           key={group.id}
           group={group}

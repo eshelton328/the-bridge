@@ -6,7 +6,8 @@ import { FoundStatus } from './FoundStatus.tsx'
 
 export type LibraryHeaderProps = {
   title: string
-  count: number
+  /** The library's count, or during a search what it shows of it, such as "3 of 24". */
+  count: number | string
   found: string
   addLink: string
   onAddLink?: (() => void) | undefined
