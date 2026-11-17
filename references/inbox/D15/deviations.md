@@ -29,7 +29,9 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   Figma's (`model and context` w +9.6): the library chip's own padding.
 - **Discussion area.** 7 px shorter (`discussion` h -7): the composer
   below it is the library's `Composer`, a few px taller than Figma's 75,
-  with the attach button and no model chip, as Figma's.
+  with no model chip, as Figma's. Its attach button is left out
+  (LIBRARY_GAPS.md, Waiting for a design), and send adds the message to
+  the discussion.
 - **Task column.** The task's sections start 2 px lower than in D1
   (`section · WHY` y +8 against +6); the task bar now holds the 32 px
   Discuss button beside the 30 px Snooze and Dismiss.

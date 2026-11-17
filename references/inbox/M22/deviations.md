@@ -22,7 +22,7 @@ status bar.
 - `group · NEEDS YOU`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
 - `group · NEXT STEPS`: x +0, y -38, w +0, h +4; 38 px removed: y +0.
 - `group · SNOOZED`: x +0, y -16, w +0, h +4; 38 px removed: y +22.
-- `toast · created`: x -4, y -35, w +8, h +0; anchored to the bottom, no status bar offset.
+- `toast · created`: x -4, y +0, w +8, h +0; anchored to the bottom, no status bar offset.
 
 ## Deviations
 
@@ -34,7 +34,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in M01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts
@@ -58,11 +60,12 @@ status bar.
   "New"; Figma draws them as bordered rows on a raised fill. Library
   gap: New list row.
 - **Toast.** `Toast` over the bottom of the list, full width less the
-  list's padding (`toast · created` x -4, w +8), 3 px lower than
-  Figma's once the status bar is removed. The new tasks come from the
-  discussion's proposal applied in the state's `ui`, so Undo takes them
-  out (`InboxRoute.test.tsx`), unlike T21, whose tasks are drawn by its
-  data.
+  list's padding (`toast · created` x -4, w +8). It is anchored to the
+  bottom, 12 above the tab bar, as Figma draws it (`toast · created` y
+  +0): the list fills the screen above the tab bar when it has a toast.
+  It used to follow the last group, 47 above the tab bar. The new tasks
+  come from the discussion's proposal applied in the state's `ui`, so
+  Undo takes them out (`InboxRoute.test.tsx`).
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.

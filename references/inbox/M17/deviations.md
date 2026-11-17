@@ -38,7 +38,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Same page as M2.** The task page is M2's (`taskPage`), so its
   differences are M2's, with the same causes: `nav` h -8 (`BackRow` and
   32 px buttons against Figma's 40 px row); the sections 20 apart
@@ -61,6 +63,8 @@ status bar.
   no tab bar; `InboxRoute.test.tsx` checks it on the phone.
 - **Start.** Pinned above the tab bar, full width, as in M2 (`sticky
   action` passes); the bar is opaque.
+  Start starts the task: its run card takes Start's place, and Reply
+  here opens its chat (`InboxRoute.test.tsx`).
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.

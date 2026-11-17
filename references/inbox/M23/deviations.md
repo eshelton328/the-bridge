@@ -17,15 +17,15 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -1; 38 px removed: y +0.
-- `task · discussing`: x +0, y -31, w +0, h +12; 38 px removed: y +7.
-- `chevron · open task`: x -4, y -28, w +0, h +0; 38 px removed: y +10.
-- `model and context`: x +4, y -27, w +9.6, h +4; 38 px removed: y +11.
-- `guard`: x +4, y -24, w -8, h +3; 38 px removed: y +14.
-- `discussion`: x +0, y -3, w +0, h -104; 38 px removed: y +35.
-- `event`: x +0, y -17, w -51, h +2; 38 px removed: y +21.
-- `message · you`: x +0, y -15, w +0, h +1; 38 px removed: y +23.
-- `message · discussion`: x +0, y -14, w +0, h +6; 38 px removed: y +24.
-- `proposal · REMOVE THIS TASK`: x +0, y -8, w +0, h +6; 38 px removed: y +30.
+- `task · discussing`: x +0, y -39, w +0, h +12; 38 px removed: y -1.
+- `chevron · open task`: x -4, y -36, w +0, h +0; 38 px removed: y +2.
+- `model and context`: x +4, y -35, w +9.6, h +4; 38 px removed: y +3.
+- `guard`: x +4, y -32, w -8, h +3; 38 px removed: y +6.
+- `discussion`: x +0, y -11, w +0, h -88; 38 px removed: y +27.
+- `event`: x +0, y -25, w -51, h +2; 38 px removed: y +13.
+- `message · you`: x +0, y -23, w +0, h +1; 38 px removed: y +15.
+- `message · discussion`: x +0, y -22, w +0, h +6; 38 px removed: y +16.
+- `proposal · REMOVE THIS TASK`: x +0, y -16, w +0, h +6; 38 px removed: y +22.
 - `composer · discussion`: x +0, y -6, w +0, h +3; anchored to the bottom, no status bar offset.
 
 ## Deviations
@@ -38,7 +38,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Discussion page header.** As on the tablet (T17), but the phone
   puts the model and context in the task card, under the task's place,
   as Figma draws them (`model and context` 454:216), and the nav keeps
@@ -46,6 +48,11 @@ status bar.
   against Figma's 29 (`nav` h -1). The model chip's own padding makes
   the group about 10 px wider and 4 px taller (`model and context` w,
   h). Library gap: Chat header on the tablet.
+- **Task card under the nav.** The card sits 8 under the nav, as
+  Figma draws it (was 16), so with the status bar removed it is within
+  1 px of Figma (`task · discussing` y). Every layer under it moved up
+  8 too, which makes its raw y offset 8 px larger: the fix exposes the
+  status bar offset that was there before; it adds no difference.
 - **Task card.** A `Panel` with the title, cut on one line with an
   ellipsis as Figma cuts it (TruncatedText; the exception says why the
   cut title passes), the Next step pill, a chevron, the place, the model
@@ -58,16 +65,22 @@ status bar.
 - **Reply box.** The reply box sits above the home indicator, as Figma
   draws it (`composer · discussion` within 6 px). The story focuses the
   composer, as Figma draws it with a caret; the focused border is cyan,
-  not Figma's lighter grey (Library gap: Composer focus). Its attach
-  and send buttons do nothing yet, as on D14 to T23: nothing answers a
-  discussion message in this mock-up.
+  not Figma's lighter grey (Library gap: Composer focus). Send adds
+  Erik's message to the discussion and empties the box
+  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  has no attach button, where Figma draws a clip at its start: no file
+  flow is designed, and `Composer` cannot draw its attach button
+  disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret
+  blinks, so a still picture may show it or not; no change.
 - **Context meter value.** `exceptions.json` excepts the meter's
   percentage: `ContextMeter` draws the number and the % sign as two text
   nodes, so the text check cannot match the whole string; the meter
   shows it, as in T17.
 - **Messages.** Erik's message and the reply as in T18 and D15: their
   text is `body` (14/20) against Figma's 13/19, so each is a few px
-  taller (`message · you`, `message · discussion` h). Library gap:
+  taller (`message · you`, `message · discussion` h). The reply's
+  author, "Discussion" (402:7711), is `label` (Medium 14); Figma sets it
+  in SemiBold 12/16, which no text style is. Library gap:
   Message author icon and small text.
 - **Proposal block.** `ProposalBlock` as in T18 to T23; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon

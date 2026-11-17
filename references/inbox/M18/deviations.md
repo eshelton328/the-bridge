@@ -17,14 +17,14 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -1; 38 px removed: y +0.
-- `task · discussing`: x +0, y -31, w +0, h +12; 38 px removed: y +7.
-- `chevron · open task`: x -4, y -28, w +0, h +0; 38 px removed: y +10.
-- `model and context`: x +4, y -27, w +9.6, h +4; 38 px removed: y +11.
-- `guard`: x +4, y -24, w -8, h +3; 38 px removed: y +14.
-- `discussion`: x +0, y -3, w +0, h -104; 38 px removed: y +35.
-- `empty state`: x +0, y -17, w +0, h +235; 38 px removed: y +21.
-- `it can`: x +0, y -48, w +0, h +2; 38 px removed: y -10.
-- `suggestions`: x +0, y -48, w +0, h +2; 38 px removed: y -10.
+- `task · discussing`: x +0, y -39, w +0, h +12; 38 px removed: y -1.
+- `chevron · open task`: x -4, y -36, w +0, h +0; 38 px removed: y +2.
+- `model and context`: x +4, y -35, w +9.6, h +4; 38 px removed: y +3.
+- `guard`: x +4, y -32, w -8, h +3; 38 px removed: y +6.
+- `discussion`: x +0, y -11, w +0, h -88; 38 px removed: y +27.
+- `empty state`: x +0, y -25, w +0, h +235; 38 px removed: y +13.
+- `it can`: x +0, y -56, w +0, h +2; 38 px removed: y -18.
+- `suggestions`: x +0, y -56, w +0, h +2; 38 px removed: y -18.
 - `composer · discussion`: x +0, y -6, w +0, h +3; anchored to the bottom, no status bar offset.
 
 ## Deviations
@@ -37,7 +37,9 @@ status bar.
   the rest as "38 px removed". The open request
   `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
   brain asks how to measure it (it names the phone frames too).
-  Library gap: Top and bottom safe areas on the phone.
+  Figma's home indicator (the bar at the bottom) and the frame's
+  rounded corners are device chrome too (d-089): the render draws
+  neither. Library gap: Top and bottom safe areas on the phone.
 - **Discussion page header.** As on the tablet (T17), but the phone
   puts the model and context in the task card, under the task's place,
   as Figma draws them (`model and context` 454:216), and the nav keeps
@@ -45,6 +47,11 @@ status bar.
   against Figma's 29 (`nav` h -1). The model chip's own padding makes
   the group about 10 px wider and 4 px taller (`model and context` w,
   h). Library gap: Chat header on the tablet.
+- **Task card under the nav.** The card sits 8 under the nav, as
+  Figma draws it (was 16), so with the status bar removed it is within
+  1 px of Figma (`task · discussing` y). Every layer under it moved up
+  8 too, which makes its raw y offset 8 px larger: the fix exposes the
+  status bar offset that was there before; it adds no difference.
 - **Task card.** A `Panel` with the title, cut on one line with an
   ellipsis as Figma cuts it (TruncatedText; the exception says why the
   cut title passes), the Next step pill, a chevron, the place, the model
@@ -57,9 +64,13 @@ status bar.
 - **Reply box.** The reply box sits above the home indicator, as Figma
   draws it (`composer · discussion` within 6 px). The story focuses the
   composer, as Figma draws it with a caret; the focused border is cyan,
-  not Figma's lighter grey (Library gap: Composer focus). Its attach
-  and send buttons do nothing yet, as on D14 to T23: nothing answers a
-  discussion message in this mock-up.
+  not Figma's lighter grey (Library gap: Composer focus). Send adds
+  Erik's message to the discussion and empties the box
+  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  has no attach button, where Figma draws a clip at its start: no file
+  flow is designed, and `Composer` cannot draw its attach button
+  disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret
+  blinks, so a still picture may show it or not; no change.
 - **Context meter value.** `exceptions.json` excepts the meter's
   percentage: `ContextMeter` draws the number and the % sign as two text
   nodes, so the text check cannot match the whole string; the meter
@@ -68,9 +79,19 @@ status bar.
   (Library gap: Empty state with an icon tile). The empty state holds
   the It can panel and the suggestions, so its box is taller than
   Figma's (`empty state` h). The empty state's top sits higher than
-  Figma centres it, so the panel and the suggestions start 10 px higher
+  Figma centres it, so the panel and the suggestions start 18 px higher
   than Figma's once the status bar is removed (`it can`, `suggestions`
   y).
+- **Empty state text and icons.** On the phone the text is at most
+  320 wide, as Figma's (402:2060), so its lines break where Figma's do
+  ("When / you ask…", "…proposal. / Nothing changes…"). No token names a
+  text column's width; `shell.popover` has the same 320 (Library gap:
+  Empty state with an icon tile). The It can icons are violet
+  (`accent.discuss`, #9e8fff), as Figma draws all three (402:2064 to
+  402:2072), on D14 and T17 too.
+- **Placeholder.** "Ask about this task" is `body` 14 in `Composer`;
+  Figma's is 13 (402:2087), about 1 px larger in the picture. Library
+  gap: Composer focus.
 - **Suggestions.** On the phone they stack under "Try", full width,
   their labels at the start, as Figma draws them (402:2075); the label
   is `eyebrow` in `fg.subtle`. A suggestion puts its question in the

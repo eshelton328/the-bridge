@@ -44,6 +44,11 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   card has a green border, and the library has no token for it (#101
   left it out, d-050); `tone="accent"` would draw it cyan, as a running
   card. It starts 23 px lower (round 3: 38), from the offsets above.
+- **Open chat.** Opens the finished task's chat in the task's place,
+  as Reply here does on a running task; View task returns
+  (`InboxRoute.test.tsx`). No frame draws the finished chat: it is the
+  chat Start opened (D5), with its status Done and its last tool line
+  done.
 - **Done rows.** `ListRow finished` (#101) draws the title of a done row
   that is not selected in `fg.muted`, as Figma does. Figma also fades
   the kind tile of such a row to 0.6; no token has that opacity.
