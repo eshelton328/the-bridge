@@ -10,14 +10,15 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 
 ## Checks
 
-- Text: pass. `ContextMeter` draws each percentage as one text node, so
-  `26%`, `42%`, `23%` and `18%` pass without an exception. Figma has `78%`
-  twice, in the hono server row (158:760) and the dragged chat
-  (158:1044); the dragged chat shows it in full, but the row cuts it 2 px
-  (see `hiddenOverflow` below), and the check wants one visible run per
-  layer, so `exceptions.json` keeps the dragged chat's entry with that
-  measured reason. `Artifacts` and `Toolkit` (rail, d-105) are excepted
-  as on D01 to D05.
+- Text: fails on `78%` (158:1044). `ContextMeter` draws each percentage
+  as one text node, so `26%`, `42%`, `23%` and `18%` pass. Figma has `78%`
+  twice, in the hono server row (158:760) and the dragged chat (158:1044).
+  The dragged chat shows it in full, but the hono server row's `78%` is
+  cut by 2 px (`hiddenOverflow` below; LIBRARY_GAPS.md row "Sidebar chat
+  row"), and the check wants one visible run per layer, so it reports one
+  `78%` as not visible. The fix is in the library; there is no exception
+  for it. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
+  to D05.
 - Position: 20 of 24 layers pass; `158:919`, `158:934`, `158:1048` and
   `158:1034` fail.
 - Rules: `hiddenOverflow` on the hono server row's meta line (158:750).

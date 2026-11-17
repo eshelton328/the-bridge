@@ -9,12 +9,13 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
 
 ## Checks
 
-- Text: pass. `ContextMeter` draws each percentage as one text node, so
-  `42%`, `23%` and `18%` pass without an exception. Figma has `78%` twice,
-  in the hono server row (105:1164) and the chat header (105:1235); the
-  header shows it in full, but the row cuts it 2 px (see `hiddenOverflow`
-  below), and the check wants one visible run per layer, so
-  `exceptions.json` keeps the header's entry with that measured reason.
+- Text: fails on `78%` (105:1235). `ContextMeter` draws each percentage
+  as one text node, so `42%`, `23%` and `18%` pass. Figma has `78%` twice,
+  in the hono server row (105:1164) and the chat header (105:1235). The
+  header shows it in full, but the hono server row's `78%` is cut by 2 px
+  (`hiddenOverflow` below; LIBRARY_GAPS.md row "Sidebar chat row"), and
+  the check wants one visible run per layer, so it reports one `78%` as
+  not visible. The fix is in the library; there is no exception for it.
   `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 and D02b.
 - Position: 23 of 43 layers pass. `105:1277`, `105:1283`, `105:1335`,
   `105:1358`, `105:1379`, `114:2`, `105:1404`, `105:1389`, `105:1393`,
