@@ -14,6 +14,9 @@ and exits 1 on a problem.
 | `checkCycles.ts`    | No import cycle in `web/src` or `shared/src` (ported from the library)                                                      |
 | `checkAgentsMd.ts`  | Every folder has an AGENTS.md, a CLAUDE.md shim, and a link from its parent (ported)                                        |
 
+[fidelity/AGENTS.md](fidelity/AGENTS.md): `pnpm fidelity`, the text, position
+and rule checks of the fidelity loop, and `pnpm fidelity:refs`.
+
 `pnpm new`:
 
 ```sh
