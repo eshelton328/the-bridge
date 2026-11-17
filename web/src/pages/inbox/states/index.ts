@@ -1,9 +1,13 @@
 // Every Figma state of the Inbox page, by id. scripts/genRegistry.ts reads the
 // file names in this folder; each must be a key here and a story.
 import { changeApplied } from './changeApplied.ts'
+import { changeAppliedPage } from './changeAppliedPage.ts'
 import { changeProposed } from './changeProposed.ts'
+import { changeProposedPage } from './changeProposedPage.ts'
 import { chat } from './chat.ts'
 import { discussOpen } from './discussOpen.ts'
+import { discussTask } from './discussTask.ts'
+import { discussionPage } from './discussionPage.ts'
 import { done } from './done.ts'
 import { doneList } from './doneList.ts'
 import { filterList } from './filterList.ts'
@@ -18,8 +22,11 @@ import { promptRead } from './promptRead.ts'
 import { promptSheet } from './promptSheet.ts'
 import { question } from './question.ts'
 import { removalProposed } from './removalProposed.ts'
+import { removalProposedPage } from './removalProposedPage.ts'
 import { removeConfirm } from './removeConfirm.ts'
+import { removeConfirmPage } from './removeConfirmPage.ts'
 import { removed } from './removed.ts'
+import { removedList } from './removedList.ts'
 import { running } from './running.ts'
 import { runningList } from './runningList.ts'
 import { runningTask } from './runningTask.ts'
@@ -34,13 +41,19 @@ import { sortedByProject } from './sortedByProject.ts'
 import { sortedList } from './sortedList.ts'
 import { taskPage } from './taskPage.ts'
 import { tasksCreated } from './tasksCreated.ts'
+import { tasksCreatedList } from './tasksCreatedList.ts'
 import { tasksProposed } from './tasksProposed.ts'
+import { tasksProposedPage } from './tasksProposedPage.ts'
 
 export const inboxStates = {
   changeApplied,
+  changeAppliedPage,
   changeProposed,
+  changeProposedPage,
   chat,
   discussOpen,
+  discussTask,
+  discussionPage,
   done,
   doneList,
   filterList,
@@ -55,8 +68,11 @@ export const inboxStates = {
   promptSheet,
   question,
   removalProposed,
+  removalProposedPage,
   removeConfirm,
+  removeConfirmPage,
   removed,
+  removedList,
   running,
   runningList,
   runningTask,
@@ -71,5 +87,7 @@ export const inboxStates = {
   sortedList,
   taskPage,
   tasksCreated,
+  tasksCreatedList,
   tasksProposed,
+  tasksProposedPage,
 }

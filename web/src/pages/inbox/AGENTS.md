@@ -28,8 +28,16 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   each of them through the route. `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`; on a tablet a started next step's `RunCard` stays at
-  the bottom, and the whole prompt opens in a sheet. While the task's discussion is open (`ui.discussOpen`),
-  the list hides and `DiscussionPanel` sits beside the task.
+  the bottom, and the whole prompt opens in a sheet. Discuss opens the
+  task's discussion (`ui.discussOpen`): on the desktop the list hides and
+  `DiscussionPanel` sits beside the task; on a tablet or phone
+  `DiscussionPage` takes the task's page, with no tab bar, and Back
+  returns to the task. `screens/discussionView.ts` (pure, tested in
+  `discussionView.test.ts` beside this file) applies what Erik did to the
+  proposals (`ui.proposals`, `ui.proposalChecks`): an applied update puts
+  its prompt in the task, created tasks join Next steps with a toast, a
+  discarded proposal leaves; its effects say what each press changes
+  (Apply, Discard, Edit first, Undo, Create, Remove task).
 - `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
   `DetailHead` (with the Snooze menu), `DetailSection`, `PromptSection`
@@ -37,8 +45,10 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   next step's chat, or how a removed one ended), `NotesBox`,
   `SourceList`, `ChatEntry`, `InboxStatus` (a pill), `AppliedFilters`
   (the filters that apply, under the tools), and the discussion:
-  `DiscussionPanel`, `DiscussionEmpty`, `DiscussionEntry`, `ProposalCard`
-  (a proposed update, new tasks or a removal) and `RemoveDialog`.
+  `DiscussionPanel`, `DiscussionThread` (its entries and reply box, which
+  the panel and the page share), `ModelContext`, `DiscussionGuard`,
+  `DiscussionEmpty`, `DiscussionEntry`, `ProposalCard` (a proposed update,
+  new tasks or a removal) and `RemoveDialog`.
 - `states/`: D1 `nextStep`, D2 `question`, D3 `promptEditing`, D4
   `filterOpen`, D5 `running`, D6 `runningTask`, D7 `done`, D8
   `promptRead`, D9 `sortOpen`, D10 `search`, D11 `sortedByProject`, D12
@@ -49,7 +59,11 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   T5 `chat`, T6 `runningList`, T7 `doneList`, T8 `promptSheet`, T9
   `sortList`, T10 `searchList`, T11 `sortedList`, T12
   `promptEditingPage`, T13 `snoozePage`, T14 `filterList`, T15
-  `filteredList`. A T
+  `filteredList`, T16 `discussTask`, T17 `discussionPage`, T18
+  `changeProposedPage`, T19 `changeAppliedPage`, T20 `tasksProposedPage`,
+  T21 `tasksCreatedList`, T22 `removalProposedPage`, T23
+  `removeConfirmPage`, T24 `removedList`. D16 is D15 with the update
+  applied in its `ui`. A T
   state that shows only the list sets `selectedId` to null. The others start
   from `nextStep` and its `nextStepGroups`; D9 to D11 and D13 start from
   `runningTask`, D15 to D20 from `discussOpen`, D21 from `done`.
@@ -57,16 +71,18 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   Snooze menus, the Run in picker and the row tags the Filter menu
   matches; a state that shows a menu or a sort only sets its `ui`.
 - `types.ts`: `InboxData` (what Figma shows; the detail is a union on
-  `kind` and carries its item's `id`, which Snooze, Mark done and Dismiss act on
+  `kind` and carries its item's `id`, which Snooze, Mark done, Dismiss and a removal act on
   in every layout, even with nothing selected, and a next step's `launch` a union on `stage`: suggested or
   started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
   picker, the Snooze menu, the discussion or the remove dialog is open,
   the sort, the Filter menu's boxes and the filters that apply, the
-  items snoozed, and the items finished from the task bar, each marked
-  done or dismissed),
+  items snoozed, the items finished (marked done or dismissed from the
+  task bar, or removed in a discussion), and what Erik did to each
+  proposal and its boxes),
   each a Zod schema. `InboxData.discussion` is the open task's discussion;
-  its entries are a union on `type`, and a proposal a union on `kind`.
+  its entries are a union on `type`, and a proposal a union on `kind`;
+  an update's `apply` holds what Apply makes of the task.
   `InboxDrafts` is the text Erik types in the open item (note, answer,
   prompt, reply); `InboxScreen` keeps it above `ViewportFrame`, so a
   width change that swaps the layout keeps it, and `draftProps()` gives a

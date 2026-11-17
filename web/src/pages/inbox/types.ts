@@ -272,8 +272,17 @@ const InboxProposal = z.discriminatedUnion('kind', [
     label: z.string(),
     section: z.string(),
     lines: z.array(InboxDiffLine),
-    /** After Apply: the line that says so; the block then offers Undo. */
-    applied: z.string().optional(),
+    /**
+     * What Apply does: the task's new origin, prompt and change line (with
+     * Undo), and the block's label and the line that says it is applied.
+     */
+    apply: z.object({
+      label: z.string(),
+      note: z.string(),
+      origin: z.string(),
+      prompt: z.string(),
+      change: z.object({ line: z.string(), undo: z.string() }),
+    }),
   }),
   z.object({
     kind: z.literal('create'),
@@ -293,6 +302,14 @@ const InboxProposal = z.discriminatedUnion('kind', [
   }),
 ])
 export type InboxProposal = z.infer<typeof InboxProposal>
+
+/** The kinds of proposal: an update of the task, new tasks or its removal. */
+export const ProposalKind = z.enum(['update', 'create', 'remove'])
+export type ProposalKind = z.infer<typeof ProposalKind>
+
+/** What Erik did to a proposal: applied it (Apply, Create, Remove task) or discarded it (Discard, Keep it). */
+const InboxDecision = z.enum(['applied', 'discarded'])
+export type InboxDecision = z.infer<typeof InboxDecision>
 
 /** One entry of a discussion: an event line, Erik's message, the discussion's reply or a proposal. */
 const InboxDiscussionEntry = z.discriminatedUnion('type', [
@@ -380,8 +397,15 @@ export const InboxUi = z.object({
   filters: z.array(z.string()),
   /** Items Erik snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
   snoozed: z.array(z.object({ id: InboxItemId, until: z.string() })),
-  /** Items Erik finished from the task bar, in Done now: marked done from the Snooze menu, or dismissed. */
-  finished: z.array(z.object({ id: InboxItemId, result: InboxResult.exclude(['removed']) })),
+  /**
+   * Items Erik finished, in Done now: marked done or dismissed from the task bar, or removed in a discussion,
+   * each with how it ended.
+   */
+  finished: z.array(z.object({ id: InboxItemId, result: InboxResult })),
+  /** What Erik did to each proposal of the discussion, by its kind; a proposal without one waits. */
+  proposals: z.partialRecord(ProposalKind, InboxDecision),
+  /** The boxes of a proposal Erik checked or cleared, by label; the others keep the proposal's own. */
+  proposalChecks: z.record(z.string(), z.boolean()),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

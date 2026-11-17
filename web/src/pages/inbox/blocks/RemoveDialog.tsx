@@ -15,9 +15,11 @@ export type RemoveDialogProps = {
   proposal: Extract<InboxProposal, { kind: 'remove' }>
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
+  /** Remove task was pressed. */
+  onConfirm?: (() => void) | undefined
 }
 
-export function RemoveDialog({ proposal, open, onOpenChange }: RemoveDialogProps) {
+export function RemoveDialog({ proposal, open, onOpenChange, onConfirm }: RemoveDialogProps) {
   const { confirm } = proposal
   return (
     <Dialog
@@ -31,7 +33,7 @@ export function RemoveDialog({ proposal, open, onOpenChange }: RemoveDialogProps
           <DialogClose>
             <Button>Keep it</Button>
           </DialogClose>
-          <Button variant="danger">
+          <Button variant="danger" onClick={onConfirm}>
             <TrashIcon />
             Remove task
           </Button>

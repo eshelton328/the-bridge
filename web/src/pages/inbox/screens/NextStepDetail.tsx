@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
+import { type DiscussControl, DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { NotesBox } from '../blocks/NotesBox.tsx'
 import { PromptSection } from '../blocks/PromptSection.tsx'
@@ -41,7 +41,9 @@ export type NextStepDetailProps = {
   back?: ReactNode
   onPromptOpenChange?: ((open: boolean) => void) | undefined
   /** The task has a discussion; see `DetailHead`. */
-  discuss?: { open: boolean } | undefined
+  discuss?: DiscussControl | undefined
+  /** Undo on the line under a prompt that a discussion changed. */
+  onUndoChange?: (() => void) | undefined
   /** Keeps what Erik types in the prompt and his note; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** The Snooze menu of the task bar. */
@@ -84,6 +86,7 @@ export function NextStepDetail({
   drafts,
   snooze,
   onUiChange,
+  onUndoChange,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
@@ -104,6 +107,7 @@ export function NextStepDetail({
           onOpenChange={onPromptOpenChange}
           layout={layout}
           drafts={drafts}
+          onUndoChange={onUndoChange}
           onEditingChange={(editingPrompt) => {
             onUiChange?.({ editingPrompt })
           }}

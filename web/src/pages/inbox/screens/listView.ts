@@ -78,11 +78,12 @@ function byProject(rows: readonly InboxRowView[]): { label: string; rows: InboxR
   return labels.map((label) => ({ label, rows: rows.filter((row) => projectOf(row) === label) }))
 }
 
-/** The outcome line of an item Erik finished from the task bar; the Done list shows it under the title. */
-const finishedLine = { done: 'Marked done', dismissed: 'Dismissed' } as const satisfies Record<
-  InboxUi['finished'][number]['result'],
-  string
->
+/** The outcome line of an item Erik finished from the task bar or removed in a discussion; the Done list shows it under the title. */
+const finishedLine = {
+  done: 'Marked done',
+  dismissed: 'Dismissed',
+  removed: 'Removed in a discussion',
+} as const satisfies Record<InboxUi['finished'][number]['result'], string>
 
 /**
  * The rows Erik finished from the task bar, with how each ended, newest
