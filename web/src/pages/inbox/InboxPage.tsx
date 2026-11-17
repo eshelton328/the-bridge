@@ -44,6 +44,10 @@ export function InboxPage() {
   return (
     <InboxScreen
       data={state.data}
+      onNavigate={(page) => {
+        // Only the pages that have a route go somewhere; the others wait for theirs.
+        if (page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+      }}
       ui={ui}
       viewport="desktop"
       query={query}

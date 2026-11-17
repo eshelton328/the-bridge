@@ -43,6 +43,20 @@ afterEach(async () => {
 const box = (el: Element) => el.getBoundingClientRect()
 
 describe('the Inbox route', () => {
+  it('opens the Toolkit and Artifacts pages from the rail', async () => {
+    await page.viewport(1512, 982)
+    const { router, rendered } = renderInbox('nextStep')
+    const view = await rendered
+    await page.getByRole('button', { name: 'Toolkit' }).click()
+    await expect.element(page.getByRole('heading', { name: 'Toolkit' })).toBeVisible()
+    expect(router.state.location.pathname).toBe('/toolkit')
+    await showState(router, 'nextStep')
+    await page.getByRole('button', { name: 'Artifacts' }).click()
+    await expect.element(page.getByRole('heading', { name: 'Artifacts' })).toBeVisible()
+    expect(router.state.location.pathname).toBe('/artifacts')
+    await view.unmount()
+  })
+
   it('closes the prompt dialog with Escape', async () => {
     const { rendered } = renderInbox('promptRead')
     const view = await rendered

@@ -33,6 +33,14 @@
     {
       "text": "Show it",
       "reason": "The link at the end of layer 346:4292, as frame.png shows it; get_metadata gives the layer's name, \"done hint\"."
+    },
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
     }
   ]
 }

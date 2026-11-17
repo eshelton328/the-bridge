@@ -20,6 +20,14 @@
     {
       "text": "1 task hidden by filters",
       "reason": "The text of layer 359:1004 as frame.png shows it; get_metadata gives its name, \"hidden count\"."
+    },
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
     }
   ]
 }

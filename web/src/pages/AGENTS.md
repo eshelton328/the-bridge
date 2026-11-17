@@ -5,6 +5,8 @@ One folder per page of the-bridge: `home`, `inbox`, `workspaces`,
 Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 
 - [inbox/AGENTS.md](inbox/AGENTS.md): the Inbox, the first page built.
+- [artifacts/AGENTS.md](artifacts/AGENTS.md): the Artifacts page, empty until its loop builds it.
+- [toolkit/AGENTS.md](toolkit/AGENTS.md): the Toolkit page, empty until its loop builds it.
 
 ## A page folder
 

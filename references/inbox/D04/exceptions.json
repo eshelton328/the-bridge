@@ -15,5 +15,15 @@
       "layers": ["346:1592"],
       "reason": "The age of the hidden row 346:1582; see \"Run the readme cross-family round x2\"."
     }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    }
   ]
 }

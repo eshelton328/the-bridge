@@ -255,7 +255,12 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
         tabBar={
           desktop || inChat || keyboard ? undefined : (
-            <AppTabBar selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} />
+            <AppTabBar
+              selected="inbox"
+              device={layout === 'tablet' ? 'tablet' : 'phone'}
+              inboxBadge={data.railBadge}
+              onSelect={onNavigate}
+            />
           )
         }
         list={discussing ? undefined : list}

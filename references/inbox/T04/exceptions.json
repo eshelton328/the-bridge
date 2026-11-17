@@ -10,5 +10,11 @@
       "layers": ["346:6207"],
       "reason": "Layer 346:6207 (in button 346:6203) is a hidden button in the prompt header: frame.png shows no Edit beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text. D06 has the same hidden layer."
     }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The tab bar item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one tab bar for every page (d-105)."
+    }
   ]
 }

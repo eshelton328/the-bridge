@@ -5,5 +5,11 @@
       "layers": ["454:153"],
       "reason": "Layer 454:153 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 9%, as in D14."
     }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The tab bar item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one tab bar for every page (d-105)."
+    }
   ]
 }

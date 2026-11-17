@@ -5,5 +5,15 @@
       "layers": ["346:1189"],
       "reason": "Figma draws the text caret of the focused prompt editor as a trailing \"|\" character (346:1189). The render's editor holds the same text without it and shows a real caret when focused; the PromptEditing story's play test checks the text."
     }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    }
   ]
 }

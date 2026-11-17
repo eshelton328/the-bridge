@@ -220,5 +220,15 @@
       "layers": ["403:3699"],
       "reason": "frame.json has this string in layer 403:3699, in the inbox list (403:3572), which the task pane (403:3731, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text. The text check wants a visible copy for each layer, so the covered copy needs this entry; an entry by text also takes any shown copy out of the check."
     }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    }
   ]
 }
