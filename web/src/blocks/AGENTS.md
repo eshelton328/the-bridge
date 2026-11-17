@@ -6,6 +6,10 @@ here when a second page needs it.
 
 - `AppRail`: the desktop nav rail; `AppTabBar`: the tablet and phone tab
   bar (Home and the four pages).
+- `MoreDrawer`: the phone's More drawer (Toolkit M4) on the library's
+  `MoreDrawer`: Artifacts and Toolkit, then Brain and Workflows under
+  Later. A screen opens it from the phone tab bar's More and passes
+  `onNavigate` for Artifacts and Toolkit.
 - `ViewportFrame`: fills its parent, measures its width and renders a
   page screen for that width's layout (`lib/viewport.ts`). A screen lays
   out by its width, never by a story's prop or `globals.viewport`.

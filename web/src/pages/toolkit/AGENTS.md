@@ -12,7 +12,8 @@ what each file of a page folder is for.
 - `screens/ToolkitScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail (`AppRail`) and the list; on
   a tablet or phone the list over the tab bar (`AppTabBar`, Toolkit opens
-  from More). Without `onUiChange` it keeps the changes itself, so a story
+  from More; on the phone More opens the shared `MoreDrawer`, kept
+  open by `ui.moreOpen`, M4). Without `onUiChange` it keeps the changes itself, so a story
   or canvas board can use the chips, the search and the groups.
   `screens/listView.ts` (pure, tested in `listView.test.ts` beside this
   file) narrows the groups by the kind chip and the search.
@@ -27,6 +28,7 @@ what each file of a page folder is for.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
   the state it shows, or a state of its own when its data differs
-  (`toolkitListTablet`, T1 and M1, adds the Rules group); the map (D2) and an open item (D3) add a
+  (`toolkitListTablet`, T1 and M1, adds the Rules group; `moreDrawer`,
+  M4, opens the More drawer over M1's list); the map (D2) and an open item (D3) add a
   `ui.view` or an item and their own screens.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
