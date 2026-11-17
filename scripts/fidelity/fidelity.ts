@@ -18,7 +18,7 @@ import { checkPosition } from './checkPosition.ts'
 import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
-import { collectPage } from './inPage.ts'
+import { collectPageScript, type PageMeasure } from './inPage.ts'
 import {
   frameDir,
   parseTolerance,
@@ -113,7 +113,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   await tab.waitForSelector('#storybook-root > *')
   await tab.evaluate(() => document.fonts.ready.then(() => undefined))
   await tab.waitForLoadState('networkidle')
-  const measured = await tab.evaluate(collectPage, '#storybook-root')
+  const measured = await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
   const renderPng = join(outDir, `${frameId}.render.png`)
   await tab.screenshot({ path: renderPng })
 
