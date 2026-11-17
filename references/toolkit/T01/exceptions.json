@@ -1,0 +1,31 @@
+{
+  "missing": [
+    {
+      "text": "ste100",
+      "layers": ["428:288"],
+      "reason": "Figma draws the ste100 row (428:282, y 1114) under the tab bar (424:3863, y 1081), so frame.png does not show its name; the text check counts it as shown because it lies inside the frame. The render scrolls the row under the tab bar the same way."
+    },
+    {
+      "text": "→2 ←2",
+      "layers": ["428:291"],
+      "reason": "The ste100 row's counts (y 1135) are under Figma's tab bar (y 1081), and frame.png does not show them. The render scrolls the row under the tab bar the same way."
+    },
+    {
+      "text": "writing",
+      "layers": ["428:298"],
+      "reason": "Figma draws the writing row (428:292, y 1114) under the tab bar (424:3863, y 1081), so frame.png does not show its name; the text check counts it as shown because it lies inside the frame. The render scrolls the row under the tab bar the same way."
+    },
+    {
+      "text": "→6 ←3",
+      "layers": ["428:301"],
+      "reason": "The writing row's counts (y 1135) are under Figma's tab bar (y 1081), and frame.png does not show them. The render scrolls the row under the tab bar the same way."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The list scrolls on the tablet: Figma's list (428:2) runs on under the tab bar and past the frame's bottom edge (the Rules rows end at y 1173, the Workflows and Hooks groups lie below), and the tab bar stays pinned. The render scrolls the detail under the pinned tab bar the same way."
+    }
+  ]
+}

@@ -11,6 +11,7 @@ import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
+import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
@@ -67,6 +68,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
+  // On the phone the tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
+  const [moreOpen, setMoreOpen] = useState(false)
   // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
   // closes the chat and shows the list; the task opens again from its row. On the desktop, View task in the chat's
   // header or a click on the task's row closes the chat and shows the task.
@@ -261,13 +264,17 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
               selected="inbox"
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
-              onSelect={onNavigate}
+              onSelect={(next) => {
+                if (next === 'more' && layout === 'phone') setMoreOpen(true)
+                else onNavigate?.(next)
+              }}
             />
           )
         }
         list={discussing ? undefined : list}
         detail={detail}
       />
+      {layout === 'phone' ? <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} /> : null}
       {remove === undefined ? null : (
         <RemoveDialog
           proposal={remove}

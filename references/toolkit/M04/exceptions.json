@@ -1,0 +1,21 @@
+{
+  "missing": [
+    {
+      "text": "4",
+      "layers": ["424:6912"],
+      "reason": "The Inbox tab's needs-you badge (424:6911) lies under the drawer in Figma as in the render: the drawer (424:6940, y 450 to 844) covers the tab bar (424:6898, y 767). The render draws the badge on the Inbox tab, and the drawer covers it the same way, so no viewer sees it in either."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The page under the drawer scrolls on the phone: Figma's list behind the drawer (`library`, 424:6653, y 42 to 875) runs on under the tab bar (424:6898, y 767) and past the frame's bottom edge, and the tab bar stays pinned. The render scrolls the Toolkit list (M1, 429:50) under the pinned tab bar the same way, as M01's exceptions say."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The page under the drawer is the Toolkit list, whose kind chips scroll sideways on the phone: in M1 (429:61) the chip row is 366 wide and its Workflows chip runs past the frame's right edge. FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge, as M01's exceptions say. M4 draws the Artifacts chips there, which fit."
+    }
+  ]
+}
