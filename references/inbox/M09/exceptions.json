@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "layers": ["346:10737", "346:10794"],
       "reason": "Figma cuts the prompt on the page: the text layer 346:10737 is 210 high inside its 128 px prompt box, under a fade, and the sheet covers the rest. The render's Clamp cuts it after five lines. The same text in the sheet (346:10794) is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions); the sheet shows it in full in the render (sideBySide)."
     }
   ],

@@ -2,50 +2,62 @@
   "missing": [
     {
       "text": "Next step",
+      "layers": ["346:9439"],
       "reason": "Layer 346:9439 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "suggested 2h ago by the planning run",
+      "layers": ["346:9440"],
       "reason": "Layer 346:9440 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "ncc-1701",
+      "layers": ["346:9448"],
       "reason": "Layer 346:9448 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "NCC-28",
+      "layers": ["346:9459"],
       "reason": "Layer 346:9459 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "global/planning",
+      "layers": ["346:9465"],
       "reason": "Layer 346:9465 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "·",
+      "layers": ["346:9466"],
       "reason": "Layer 346:9466 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "project/ncc-1701/the-bridge",
+      "layers": ["346:9467"],
       "reason": "Layer 346:9467 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "WHY",
+      "layers": ["346:9470"],
       "reason": "Layer 346:9470 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.",
+      "layers": ["346:9471"],
       "reason": "Layer 346:9471 is hidden in Figma: in M3 the task bar, title block and Why (346:9436, 346:9441, 346:9468) all sit at y 94 under the scrolled title 346:9434, and frame.png shows none of them. get_metadata does not say a layer is hidden, so frame.json lists its text. The render shows the title on one line instead, as Figma does."
     },
     {
       "text": "Write the tickets for increment one",
+      "layers": ["346:9435", "346:9442"],
       "reason": "Layer 346:9442, the title in the hidden title block (346:9441, see \"Next step\"). The visible scrolled title 346:9435 has the same text and is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions); the render shows it, and the PromptKeyboard story's state shows the title on one line."
     },
     {
       "text": "f-005 the-bridge",
+      "layers": ["346:9453", "346:9518"],
       "reason": "Layers 346:9453 (a chip in the hidden title block) and 346:9518 (a source in the hidden SOURCES section 346:9508, under the keyboard): frame.png shows neither."
     },
     {
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.|",
+      "layers": ["346:9490"],
       "reason": "Figma draws the text caret of the focused prompt editor as a trailing \"|\" character (346:9490), as in D3. The render's editor holds the same text without it and shows a real caret when focused; the PromptKeyboard story's play test checks the text."
     }
   ]

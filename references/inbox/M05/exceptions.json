@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "Keep the client in packages/api so omni can import it later.",
+      "layers": ["346:9937"],
       "reason": "Figma draws the note (346:9937, y 765 to 799) under the pinned answer bar and the tab bar (346:9938 starts at y 767), so frame.png does not show it. The render puts it in the same place: the page scrolls to it."
     }
   ],

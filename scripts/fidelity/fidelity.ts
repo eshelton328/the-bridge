@@ -4,7 +4,7 @@
 // size, runs the text, position and rule checks against
 // references/<page>/<frameId>/, and writes reports/fidelity/<page>/:
 //   <frameId>.json            the three results
-//   <frameId>.render.png      the render
+//   <frameId>.render.png      the render (below the status bar on a tablet or phone)
 //   <frameId>.sideBySide.png  Figma left, render right, for the reviewer
 // With no frame ids it checks every frame that a state file lists.
 // Exits 1 when any check fails. Flags: --skip-build reuses
@@ -13,8 +13,8 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { chromium, type Browser } from 'playwright'
-import { checkPosition } from './checkPosition.ts'
+import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
+import { checkPosition, statusBarHeight } from './checkPosition.ts'
 import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
@@ -101,30 +101,31 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   const story = storyForState(page, state, indexJson)
   if (story === undefined) throw new Error(`No story renders ${page}States.${state}; run pnpm check:states`)
 
-  const context = await b.newContext({
-    viewport: { width: ref.w, height: ref.h },
-    deviceScaleFactor: 1,
-    colorScheme: 'dark',
-    reducedMotion: 'reduce',
-  })
-  const tab = await context.newPage()
+  // Text and rules measure the page in the frame's full size. On a tablet
+  // or phone the position check measures it again below Figma's status bar,
+  // which the app does not draw (d-089, d-101): in a viewport the bar's
+  // height shorter, whose render the side-by-side draws that much lower.
+  const statusBar = statusBarHeight(ref)
+  const url = `${origin}/iframe.html?id=${story}&viewMode=story`
   const errors: string[] = []
-  tab.on('pageerror', (e) => errors.push(e.message))
-  await tab.goto(`${origin}/iframe.html?id=${story}&viewMode=story`)
-  await tab.waitForSelector('#storybook-root > *')
-  await tab.evaluate(() => document.fonts.ready.then(() => undefined))
-  await tab.waitForLoadState('networkidle')
-  const measured = await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+  let shown = await openStory(b, url, ref.w, ref.h, errors)
+  const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+  let figmaBoxes = measured.figmaBoxes
+  if (statusBar > 0) {
+    await shown.context.close()
+    shown = await openStory(b, url, ref.w, ref.h - statusBar, errors)
+    figmaBoxes = (await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))).figmaBoxes
+  }
   const renderPng = join(outDir, `${frameId}.render.png`)
-  await tab.screenshot({ path: renderPng })
+  await shown.tab.screenshot({ path: renderPng })
 
   const figmaPng = join(frameDir(page, frameId), 'frame.png')
   const sideBySide = join(outDir, `${frameId}.sideBySide.png`)
-  await composeSideBySide(tab, figmaPng, renderPng, sideBySide, ref.w, ref.h)
-  await context.close()
+  await composeSideBySide(shown.tab, figmaPng, renderPng, sideBySide, ref.w, ref.h, statusBar)
+  await shown.context.close()
 
   const text = checkText(ref, exceptions, measured)
-  const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance)
+  const position = checkPosition(ref, exceptions, figmaBoxes, tolerance ?? ref.tolerance)
   const rules = checkRules(ref, exceptions, measured)
   const ok = text.ok && position.ok && rules.ok && errors.length === 0
   const report = {
@@ -134,6 +135,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
     state: `${page}/${state}`,
     story,
     viewport: { w: ref.w, h: ref.h },
+    positionViewport: { w: ref.w, h: ref.h - statusBar },
     ok,
     pageErrors: errors,
     text,
@@ -144,4 +146,27 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   }
   writeFileSync(join(outDir, `${frameId}.json`), `${JSON.stringify(report, null, 2)}\n`)
   return { frameId, ok, text: text.ok, position: position.ok, rules: rules.ok }
+}
+
+/** Opens the story in a new context of `w` × `h` and waits until it has drawn; page errors go to `errors`. */
+async function openStory(
+  b: Browser,
+  url: string,
+  w: number,
+  h: number,
+  errors: string[],
+): Promise<{ context: BrowserContext; tab: Page }> {
+  const context = await b.newContext({
+    viewport: { width: w, height: h },
+    deviceScaleFactor: 1,
+    colorScheme: 'dark',
+    reducedMotion: 'reduce',
+  })
+  const tab = await context.newPage()
+  tab.on('pageerror', (e) => errors.push(e.message))
+  await tab.goto(url)
+  await tab.waitForSelector('#storybook-root > *')
+  await tab.evaluate(() => document.fonts.ready.then(() => undefined))
+  await tab.waitForLoadState('networkidle')
+  return { context, tab }
 }

@@ -2,10 +2,12 @@
   "missing": [
     {
       "text": "search summary",
+      "layers": ["346:11908"],
       "reason": "get_metadata gives the layer name of text 346:11908 as its characters; frame.png shows \"4 results for “f-005” in titles, IDs, prompts and notes\"."
     },
     {
       "text": "done hint",
+      "layers": ["346:11981"],
       "reason": "get_metadata gives the layer name of text 346:11981 as its characters; frame.png shows the Done hint under the keyboard, as T10 shows \"Done has 1 more match. Show it\"."
     }
   ],

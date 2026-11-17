@@ -43,15 +43,20 @@ export function checkText(
   page: Pick<PageMeasure, 'textContent' | 'innerText' | 'allTexts' | 'fieldTexts' | 'visibleTexts'>,
 ): TextResult {
   const excludedIds = new Set(ref.exclude.map((e) => e.id))
-  const allowedMissing = new Set(exceptions.missing.map((e) => collapse(e.text)))
+  // A missing exception covers only the text layers it names (d-101).
+  const allowedMissing = new Set(exceptions.missing.flatMap((e) => e.layers))
   const allowedExtra = new Set(exceptions.extra.map((e) => collapse(e.text)))
   const inFrame = (l: { x: number; y: number; w: number; h: number }) =>
     l.x >= 0 && l.y >= 0 && l.x + l.w <= ref.w + 0.5 && l.y + l.h <= ref.h + 0.5
   const texts = ref.layers.flatMap((l) =>
     l.text === undefined ? [] : [{ id: l.id, text: collapse(l.text), inFrame: inFrame(l) }],
   )
+  for (const e of exceptions.missing)
+    for (const id of e.layers)
+      if (!texts.some((t) => t.id === id && t.text === collapse(e.text)))
+        throw new Error(`The missing exception "${e.text}" names layer ${id}, which is not a text layer with that text`)
   const kept = texts.filter((t) => t.text !== '' && !excludedIds.has(t.id))
-  const checked = kept.filter((t) => !allowedMissing.has(t.text))
+  const checked = kept.filter((t) => !allowedMissing.has(t.id))
   const figmaStrings = kept.map((t) => t.text)
 
   const nodes = new Set([...page.allTexts.map(collapse), ...page.fieldTexts.map(collapse)])

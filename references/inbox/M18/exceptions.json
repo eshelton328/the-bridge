@@ -2,10 +2,12 @@
   "missing": [
     {
       "text": "6%",
+      "layers": ["454:233"],
       "reason": "Layer 454:233 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 6%, as in T17 to T23."
     },
     {
       "text": "Write the tickets for increment one",
+      "layers": ["402:1989"],
       "reason": "Figma cuts the task card's title on the phone: layer 402:1989 is one line, 230 wide, and frame.png ends it at \"increment o…\". The render keeps it on one line and cuts it with an ellipsis (TruncatedText)."
     }
   ],

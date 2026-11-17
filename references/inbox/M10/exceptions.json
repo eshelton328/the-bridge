@@ -2,18 +2,22 @@
   "missing": [
     {
       "text": "Reset",
+      "layers": ["346:11006"],
       "reason": "Layer 346:11006 is a hidden button in the prompt header: frame.png shows no Reset beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text. T04 and D06 have the same hidden layer."
     },
     {
       "text": "Edit",
+      "layers": ["346:11011"],
       "reason": "Layer 346:11011 is a hidden button in the prompt header: frame.png shows no Edit beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text. T04 and D06 have the same hidden layer."
     },
     {
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "layers": ["346:11013"],
       "reason": "Figma cuts the sent prompt too: the text layer 346:11013 is 210 high inside its 128 px prompt box, under a fade. The render's Clamp cuts it after five lines; Read the whole prompt opens it in full (M9)."
     },
     {
       "text": "the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…",
+      "layers": ["346:11095"],
       "reason": "Figma cuts the run card's meta line too: layer 346:11095 is one 14 px line, 337 wide, and frame.png ends it at \"in NCC…\". The render keeps it on one line and cuts it with an ellipsis (TruncatedText) at the card's width."
     }
   ],

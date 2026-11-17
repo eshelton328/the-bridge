@@ -2,6 +2,7 @@
   "missing": [
     {
       "text": "menu header",
+      "layers": ["346:7474"],
       "reason": "get_metadata gives the layer name of text 346:7474 as its characters; frame.png shows the menu heading as SORT BY."
     }
   ],

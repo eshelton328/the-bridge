@@ -2,10 +2,12 @@
   "missing": [
     {
       "text": "SNOOZED",
+      "layers": ["403:2777"],
       "reason": "Layer 403:2777 (y 930) is the SNOOZED group header, which the toast 403:2943 (y 928 to 966) covers in frame.png. In the render the list ends at the toast's bottom edge (y 966), and the header (y 954 to 992, 38 px lower because of the taller library rows, List row heights in deviations.md) sits behind the toast and below that edge, so it is out of sight in both."
     },
     {
       "text": "1",
+      "layers": ["403:2778"],
       "reason": "Layer 403:2778 (y 930) is the count of the SNOOZED group header, which the toast 403:2943 covers in frame.png; in the render it is behind the toast and below the list's bottom edge, as SNOOZED is."
     }
   ],
