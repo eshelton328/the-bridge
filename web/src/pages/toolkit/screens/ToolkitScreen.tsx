@@ -91,6 +91,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
       {showChips ? (
         <div className={chips} data-figma="filter · chips">
           <FilterChips
+            padding="none"
             label="Filter by kind"
             multiple={false}
             items={data.chips.map((c) => ({

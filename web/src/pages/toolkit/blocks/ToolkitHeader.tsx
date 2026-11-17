@@ -59,6 +59,7 @@ export function ToolkitHeader({ count, view, onViewChange, layout }: ToolkitHead
               size="lg"
               iconOnly
               aria-label={item.label}
+              pressedTone="accent"
               pressed={view === item.value}
               data-figma={`button · ${item.value}`}
               onClick={() => {
@@ -82,6 +83,7 @@ export function ToolkitHeader({ count, view, onViewChange, layout }: ToolkitHead
         </div>
         <div data-figma="view · List, Map or Activity">
           <ViewSwitch
+            tone="accent"
             label="View"
             size="lg"
             items={views}
