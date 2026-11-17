@@ -43,6 +43,40 @@ afterEach(async () => {
 const box = (el: Element) => el.getBoundingClientRect()
 
 describe('the Inbox route', () => {
+  /** The WCAG contrast ratio of two `rgb()` colours. */
+  function contrast(a: string, b: string): number {
+    const lum = (c: string) => {
+      const [r = 0, g = 0, bl = 0] = (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number)
+      const lin = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4)
+      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(bl)
+    }
+    const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x)
+    return ((hi ?? 0) + 0.05) / ((lo ?? 0) + 0.05)
+  }
+
+  it('keeps the Filter counts and the Run in placeholder at WCAG AA on the raised popovers', async () => {
+    await page.viewport(1512, 982)
+    const { router, rendered } = renderInbox('filterOpen')
+    const view = await rendered
+    const popover = (figma: string) => document.querySelector(`[data-figma="${figma}"]`)
+    await expect.poll(() => popover('filter popover')).not.toBeNull()
+    const filter = popover('filter popover') ?? document.body
+    const filterBg = getComputedStyle(filter).backgroundColor
+    const counts = [...filter.querySelectorAll('[data-part="root"] span')].filter((el) => /^\d+$/.test(el.textContent))
+    expect(counts.length).toBeGreaterThan(0)
+    for (const el of counts) expect(contrast(getComputedStyle(el).color, filterBg)).toBeGreaterThanOrEqual(4.5)
+    await showState(router, 'promptEditing')
+    await expect.poll(() => popover('run in picker')).not.toBeNull()
+    const picker = popover('run in picker') ?? document.body
+    const input = picker.querySelector('input')
+    expect(input).not.toBeNull()
+    if (input !== null) {
+      const placeholder = getComputedStyle(input, '::placeholder').color
+      expect(contrast(placeholder, getComputedStyle(picker).backgroundColor)).toBeGreaterThanOrEqual(4.5)
+    }
+    await view.unmount()
+  })
+
   it('opens the Toolkit and Artifacts pages from the rail', async () => {
     await page.viewport(1512, 982)
     const { router, rendered } = renderInbox('nextStep')
