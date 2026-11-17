@@ -38,11 +38,13 @@ export type ChatHeadProps = {
   contextLabel: string
   /** The chat actions menu, with its trigger; a plain button when not set. */
   menu?: ReactNode
+  /** The Figma layers of the header and of the chat actions button, for the fidelity checks; D2's when not set. */
+  figma?: { head?: string | undefined; actions?: string | undefined } | undefined
 }
 
-export function ChatHead({ head: chat, workspace, contextLabel, menu }: ChatHeadProps) {
+export function ChatHead({ head: chat, workspace, contextLabel, menu, figma }: ChatHeadProps) {
   return (
-    <header data-figma="105:785" className={head}>
+    <header data-figma={figma?.head ?? '105:785'} className={head}>
       <Inline gap="8" align="center">
         <KindMark kind={chat.kind} size="20" />
         <div className={titles}>
@@ -51,7 +53,7 @@ export function ChatHead({ head: chat, workspace, contextLabel, menu }: ChatHead
         </div>
         <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
         {menu ?? (
-          <Button size="xs" aria-label={`${chat.title} actions`} data-figma="400:2">
+          <Button size="xs" aria-label={`${chat.title} actions`} data-figma={figma?.actions ?? '400:2'}>
             <MoreIcon size="12" />
           </Button>
         )}

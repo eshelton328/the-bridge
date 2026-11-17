@@ -114,9 +114,9 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
 ])
 export type WorkbenchPane = z.infer<typeof WorkbenchPane>
 
-/** An action of a pane's menu; `move` opens the list of workspaces. */
+/** An action of a pane's or a chat's menu; `move` opens the list of workspaces. */
 export const PaneAction = z.object({
-  value: z.enum(['fork', 'sideChat', 'subtask', 'move', 'rename', 'close']),
+  value: z.enum(['newChat', 'fork', 'sideChat', 'subtask', 'subagents', 'folders', 'move', 'rename', 'close']),
   label: z.string(),
 })
 export type PaneAction = z.infer<typeof PaneAction>
@@ -145,6 +145,33 @@ export const SidebarText = z.object({
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
+/**
+ * The Figma layer ids of a sidebar frame's parts, for the fidelity checks (`data-figma`). Each frame has its own
+ * ids; a block uses D2's for a part a state does not name.
+ */
+export const SidebarLayers = z.object({
+  sidebar: z.string().optional(),
+  toggle: z.string().optional(),
+  newWorkspace: z.string().optional(),
+  /** The group headers, by workspace id. */
+  headers: z.record(z.string(), z.string()).optional(),
+  /** The chat rows, by chat id. */
+  rows: z.record(z.string(), z.string()).optional(),
+  mainChat: z.string().optional(),
+  chatHead: z.string().optional(),
+  chatActions: z.string().optional(),
+  /** The chat actions menu, when it is open. */
+  chatMenu: z.string().optional(),
+  composer: z.string().optional(),
+  /** The main chat's entries, in order; an entry with no layer has none. */
+  entries: z.array(z.string().optional()).optional(),
+  sideChat: z.string().optional(),
+  sideNote: z.string().optional(),
+  sideComposer: z.string().optional(),
+  sideEntries: z.array(z.string().optional()).optional(),
+})
+export type SidebarLayers = z.infer<typeof SidebarLayers>
+
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
@@ -168,6 +195,10 @@ export const WorkspacesData = z.object({
   sidebar: SidebarText.optional(),
   /** The side chat of the current chat, when one is open. */
   sideChat: SideChat.optional(),
+  /** The actions behind the ⋯ of the chat shown alone (D2b), with a separator before `subagents`. */
+  chatMenu: z.array(PaneAction).optional(),
+  /** The Figma layers of the sidebar frame's parts; D2's when not set. */
+  layers: SidebarLayers.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 

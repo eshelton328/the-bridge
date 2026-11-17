@@ -24,14 +24,17 @@ first: it says what each file of a page folder is for.
   `WorkspaceSidebar` (the title, the toggle, + and the groups),
   `SidebarGroup` (a workspace's header and chats, the drop target and the
   dragged chat), `SidebarChatRow`, `MainChat` (the chat alone: `ChatHead`
-  over `ChatPane size="full"`) and `SideChatPanel`. Later frames add to
-  these blocks.
-- `states/`: D1 `workbench`, D2 `sideChat`. Later states start from
+  over `ChatPane size="full"`) and `SideChatPanel`. D2b adds
+  `ChatActionsMenu` (the `PaneMenu` behind the chat header's ⋯). Later
+  frames add to these blocks.
+- `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`. Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
   the skills; for D2 each workspace's chats, the sidebar's labels and the
-  side chat) and `WorkspacesUi` (the focused pane, the open menu and
+  side chat; for D2b the chat actions and the frame's Figma `layers`,
+  which the sidebar blocks put on `data-figma`, D2's when not set) and
+  `WorkspacesUi` (the focused pane, the open menu and
   list, the open skill list; for D2 the sidebar, closed groups, the
   hovered header, the drag and the side chat), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component

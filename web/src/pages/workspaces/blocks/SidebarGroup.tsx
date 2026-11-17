@@ -17,10 +17,10 @@ import {
 } from '@eshelton328/component-library-1701'
 import { useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { SidebarChat, Workspace } from '../types.ts'
+import type { SidebarChat, SidebarLayers, Workspace } from '../types.ts'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
 
-// The Figma layers of the headers by workspace, and of the rows by chat.
+// D2's Figma layers of the headers by workspace, and of the rows by chat; a state's `layers` replaces them.
 const headerLayers: Record<string, string> = {
   'omni-brain': '105:623',
   'the-bridge': '105:687',
@@ -78,14 +78,20 @@ export type SidebarGroupProps = {
   onSelect?: ((chat: string) => void) | undefined
   /** The chat dragged over this workspace, and the hint under it. */
   drop?: { chat: SidebarChat; hint: string } | undefined
+  /** The frame's Figma layers; D2's when not set. */
+  layers?: SidebarLayers | undefined
 }
 
-export function SidebarGroup({ workspace, open, onOpenChange, hovered, selected, onSelect, drop }: SidebarGroupProps) {
+export function SidebarGroup(props: SidebarGroupProps) {
+  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers } = props
   const rowsId = useId()
   const name = workspace.label
   return (
     <div className={group}>
-      <div data-figma={headerLayers[workspace.id]} className={drop === undefined ? undefined : dropTarget}>
+      <div
+        data-figma={(layers?.headers ?? headerLayers)[workspace.id]}
+        className={drop === undefined ? undefined : dropTarget}
+      >
         <GroupHeader
           variant="sidebar"
           label={name}
@@ -121,7 +127,7 @@ export function SidebarGroup({ workspace, open, onOpenChange, hovered, selected,
             <SidebarChatRow
               key={chat.id}
               chat={chat}
-              figma={rowLayers[chat.id]}
+              figma={(layers?.rows ?? rowLayers)[chat.id]}
               selected={chat.id === selected}
               onSelect={() => onSelect?.(chat.id)}
             />

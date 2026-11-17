@@ -5,13 +5,15 @@
 // (a pane menu, the skill list, the focused pane) the screen keeps until
 // the state changes; `onUiChange` reports it. With the sidebar (D2) the
 // workspaces and their chats are listed beside the focused chat, which shows
-// alone, with its side chat beside it.
+// alone, with its side chat beside it; its actions sit behind the ⋯ of its
+// header (D2b).
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { MainChat } from '../blocks/MainChat.tsx'
+import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
@@ -43,6 +45,25 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
   )
   const chat = data.panes.find((p) => p.id === ui.focusedPane)
   if (ui.sidebar === true && data.sidebar !== undefined && chat?.type === 'chat') {
+    const menuOpen = ui.menuFor === chat.id
+    const chatMenu =
+      data.chatMenu === undefined ? undefined : (
+        <ChatActionsMenu
+          title={chat.head.title}
+          actions={data.chatMenu}
+          targets={data.workspaces.filter((w) => w.id !== data.current)}
+          newWorkspace={data.newWorkspace}
+          open={menuOpen}
+          onOpenChange={(open) => {
+            change({ menuFor: open ? chat.id : null, moveOpen: false })
+          }}
+          moveOpen={menuOpen && ui.moveOpen}
+          onMoveOpenChange={(open) => {
+            change({ moveOpen: open })
+          }}
+          figma={{ trigger: data.layers?.chatActions, menu: data.layers?.chatMenu }}
+        />
+      )
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -56,6 +77,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
               selected={chat.id}
               ui={ui}
               onUiChange={change}
+              layers={data.layers}
             />
           }
           detail={
@@ -67,12 +89,15 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
               onSkillsOpenChange={(open) => {
                 change({ skillsFor: open ? chat.id : null })
               }}
+              menu={chatMenu}
+              layers={data.layers}
             />
           }
           side={
             ui.sideChatOpen === true && data.sideChat !== undefined ? (
               <SideChatPanel
                 chat={data.sideChat}
+                layers={data.layers}
                 onClose={() => {
                   change({ sideChatOpen: false })
                 }}

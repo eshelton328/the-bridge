@@ -45,3 +45,17 @@ export const SideChat: Story = {
     await expect(canvas.getByText('Can Panda CSS switch themes while the app runs?')).toBeVisible()
   },
 }
+
+export const ChatActions: Story = {
+  name: 'D2b: the chat actions menu behind the ⋯',
+  args: { data: workspacesStates.chatActions.data, ui: workspacesStates.chatActions.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'bridge themes actions' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.queryByRole('status')).toBeNull()
+    // The menu renders in a portal, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: 'Subagents · 2' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'Folders…' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'New chat' })).toBeVisible()
+  },
+}

@@ -3,7 +3,7 @@
 // chat, the question and the answer, and its own composer. Props only.
 import { BubbleIcon, Button, CloseIcon, Inline } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { SideChat } from '../types.ts'
+import type { SideChat, SidebarLayers } from '../types.ts'
 import { ChatPane } from './ChatPane.tsx'
 
 const panel = css({
@@ -26,11 +26,13 @@ const note = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
 export type SideChatPanelProps = {
   chat: SideChat
   onClose?: (() => void) | undefined
+  /** The frame's Figma layers; D2's when not set. */
+  layers?: SidebarLayers | undefined
 }
 
-export function SideChatPanel({ chat, onClose }: SideChatPanelProps) {
+export function SideChatPanel({ chat, onClose, layers }: SideChatPanelProps) {
   return (
-    <aside data-figma="105:920" aria-label={chat.title} className={panel}>
+    <aside data-figma={layers?.sideChat ?? '105:920'} aria-label={chat.title} className={panel}>
       <div className={top}>
         <Inline gap="8" align="center">
           <span className={bubble}>
@@ -42,13 +44,16 @@ export function SideChatPanel({ chat, onClose }: SideChatPanelProps) {
             <CloseIcon size="16" />
           </Button>
         </Inline>
-        <p className={note} data-figma="105:932">
+        <p className={note} data-figma={layers?.sideNote ?? '105:932'}>
           {chat.note}
         </p>
       </div>
       <ChatPane
         size="side"
-        figma={{ composer: '105:948', entries: ['105:933', '105:935'] }}
+        figma={{
+          composer: layers?.sideComposer ?? '105:948',
+          entries: layers?.sideEntries ?? ['105:933', '105:935'],
+        }}
         entries={chat.entries}
         composer={chat.composer}
       />
