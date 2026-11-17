@@ -3,7 +3,7 @@ import { board, type Board } from '../lib/board.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'inbox/changeApplied' | 'inbox/changeProposed' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/removalProposed' | 'inbox/removeConfirm' | 'inbox/removed' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/snoozeOpen' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksProposed'
+export type BoardId = 'inbox/changeApplied' | 'inbox/changeProposed' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/removalProposed' | 'inbox/removeConfirm' | 'inbox/removed' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksProposed'
 
 export const boards: readonly Board[] = [
   board(inboxPage, 'changeApplied'),
@@ -12,11 +12,14 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'discussOpen'),
   board(inboxPage, 'done'),
   board(inboxPage, 'doneList'),
+  board(inboxPage, 'filterList'),
   board(inboxPage, 'filterOpen'),
   board(inboxPage, 'filtered'),
+  board(inboxPage, 'filteredList'),
   board(inboxPage, 'list'),
   board(inboxPage, 'nextStep'),
   board(inboxPage, 'promptEditing'),
+  board(inboxPage, 'promptEditingPage'),
   board(inboxPage, 'promptRead'),
   board(inboxPage, 'promptSheet'),
   board(inboxPage, 'question'),
@@ -28,9 +31,13 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'runningTask'),
   board(inboxPage, 'runningTaskPage'),
   board(inboxPage, 'search'),
+  board(inboxPage, 'searchList'),
   board(inboxPage, 'snoozeOpen'),
+  board(inboxPage, 'snoozePage'),
+  board(inboxPage, 'sortList'),
   board(inboxPage, 'sortOpen'),
   board(inboxPage, 'sortedByProject'),
+  board(inboxPage, 'sortedList'),
   board(inboxPage, 'taskPage'),
   board(inboxPage, 'tasksCreated'),
   board(inboxPage, 'tasksProposed'),

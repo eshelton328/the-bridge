@@ -184,3 +184,117 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 })
+
+describe('the Inbox list tools and task bar', () => {
+  let view: { unmount: () => Promise<void> } | undefined
+
+  // The view unmounts after each test, even one that fails, so the next test sees only its own.
+  afterEach(async () => {
+    await view?.unmount()
+    view = undefined
+  })
+
+  /** Renders a state at the tablet width. */
+  async function tablet(state: string) {
+    await page.viewport(756, 1158)
+    view = await renderInbox(state).rendered
+  }
+
+  /** How far down the page a text is. */
+  const top = (text: string) => box(page.getByText(text).element()).top
+
+  it('sorts the list with the Sort menu, and names the sort on the button', async () => {
+    await tablet('list')
+    await page.getByRole('button', { name: 'Newest' }).click()
+    await page.getByRole('menuitemradio', { name: /Oldest first/ }).click()
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Oldest' })).toHaveAttribute('aria-pressed', 'true')
+    await expect.element(page.getByText('Commit the brain: 34 changes')).toBeVisible()
+    expect(top('Commit the brain: 34 changes')).toBeLessThan(top('Write the tickets for increment one'))
+    await page.getByRole('button', { name: 'Oldest' }).click()
+    await page.getByRole('menuitemradio', { name: /Project/ }).click()
+    const list = page.getByRole('region', { name: 'Inbox list' })
+    await expect.element(list.getByText('skill-evals', { exact: true })).toBeVisible()
+  })
+
+  it('keeps only the rows that match the search', async () => {
+    await tablet('list')
+    await searchbox().fill('commit')
+    await expect.element(page.getByText('1 result for “commit” in titles, IDs, prompts and notes')).toBeVisible()
+    await expect.element(page.getByText('Commit the brain: 34 changes')).toBeVisible()
+    await expect.element(page.getByText('Pick the header logo')).not.toBeInTheDocument()
+  })
+
+  it('applies the Filter menu when it closes, and Clear under the tools removes the filter', async () => {
+    await tablet('list')
+    const readme = () => page.getByText('Run the readme cross-family round x2')
+    await page.getByRole('button', { name: 'Filter' }).click()
+    await page.getByRole('dialog', { name: 'Filter the inbox' }).getByText('skill-evals', { exact: true }).click()
+    await expect.element(page.getByText('Showing 6 of 7')).toBeVisible()
+    await expect.element(readme()).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+    await expect.element(readme()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Filter · 1' })).toBeVisible()
+    await expect.element(page.getByText('1 task hidden by filters')).toBeVisible()
+    await page.getByRole('link', { name: 'Clear' }).click()
+    await expect.element(readme()).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Filter', exact: true })).toBeVisible()
+  })
+
+  it('removes one filter with its button under the tools', async () => {
+    await tablet('filteredList')
+    await expect.element(page.getByText('drift check wants to run git mv')).toBeVisible()
+    await page.getByRole('button', { name: 'Remove omni-brain' }).click()
+    await expect.element(page.getByText('drift check wants to run git mv')).not.toBeInTheDocument()
+    await expect.element(page.getByText('2 tasks hidden by filters')).toBeVisible()
+  })
+
+  it('snoozes the open task from the Snooze menu and shows the list on the tablet', async () => {
+    await tablet('snoozePage')
+    await page.getByRole('menuitem', { name: /In 1 hour/ }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await page.getByRole('button', { name: /Snoozed/ }).click()
+    await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
+    // The header counts the tasks still to do: one fewer.
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+  })
+
+  it('marks the open task done from the Snooze menu', async () => {
+    await tablet('taskPage')
+    await page.getByRole('button', { name: 'Snooze' }).click()
+    await page.getByRole('menuitem', { name: 'Mark done' }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()
+  })
+
+  it('edits the prompt with Edit and Done, and brings the suggestion back with Reset', async () => {
+    await tablet('taskPage')
+    const editor = () => page.getByRole('textbox', { name: 'Suggested prompt' })
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await editor().fill('Write one ticket per screen.')
+    await page.getByRole('button', { name: 'Done' }).click()
+    await expect.element(editor()).not.toBeInTheDocument()
+    await expect.element(page.getByText('Write one ticket per screen.')).toBeVisible()
+    await expect.element(page.getByText('Edited')).toBeVisible()
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await expect.element(page.getByText('Edited')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Write one ticket per screen.')).not.toBeInTheDocument()
+  })
+
+  it('ends the long suggestion that Reset brings back with Read the whole prompt', async () => {
+    await tablet('promptEditingPage')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await page.getByRole('button', { name: 'Done' }).click()
+    await expect.element(page.getByText('Edited')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('link', { name: 'Read the whole prompt' })).toBeVisible()
+  })
+
+  it('opens and closes the Run in picker with Change', async () => {
+    await tablet('taskPage')
+    const picker = () => page.getByRole('dialog', { name: 'Run in' })
+    await page.getByRole('button', { name: 'Change' }).click()
+    await expect.element(picker()).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+    await expect.element(picker()).not.toBeInTheDocument()
+  })
+})

@@ -1,0 +1,14 @@
+{
+  "missing": [
+    {
+      "text": "hidden count",
+      "reason": "get_metadata gives the layer name of text 359:549 as its characters; frame.png shows \"1 task hidden by filters\"."
+    }
+  ],
+  "extra": [
+    {
+      "text": "1 task hidden by filters",
+      "reason": "The text of layer 359:549 as frame.png shows it; get_metadata gives its name, \"hidden count\"."
+    }
+  ]
+}

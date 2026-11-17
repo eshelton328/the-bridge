@@ -1,0 +1,8 @@
+{
+  "missing": [
+    {
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.|",
+      "reason": "Figma draws the text caret of the focused prompt editor as a trailing \"|\" character (346:8169). The render's editor holds the same text without it and shows a real caret when focused; the PromptEditingPage story's play test checks the text."
+    }
+  ]
+}

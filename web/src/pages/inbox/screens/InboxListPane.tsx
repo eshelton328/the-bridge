@@ -5,7 +5,9 @@
 // of them under the tools and how many tasks they hide; and a toast that
 // sticks to the bottom of the list. On the tablet and phone (T1, T6, T7)
 // the list fills the screen on the backdrop, with the page's large title.
-// Props only.
+// The rows and counts come from listView (Erik's sort, search, filters and
+// snoozed items over the state's groups); the menus report through
+// onUiChange. Props only.
 import {
   CheckIcon,
   Container,
@@ -22,6 +24,7 @@ import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
 import type { InboxData, InboxGroupId, InboxGroupView, InboxUi } from '../types.ts'
+import { allChecks, listView } from './listView.ts'
 
 const pane = css({
   display: 'flex',
@@ -94,7 +97,11 @@ export type InboxListPaneProps = {
   /** The text Erik typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
+  /** Reports what Erik changes in the list: the sort, the filters and their menus. */
+  onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
 }
+
+const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' : 's'}`
 
 export function InboxListPane({
   data,
@@ -105,8 +112,19 @@ export function InboxListPane({
   onSelectItem,
   query,
   onQueryChange,
+  onUiChange,
 }: InboxListPaneProps) {
   const desktop = layout === 'desktop'
+  const q = query ?? data.search?.query ?? ''
+  const view = listView(data, ui, q)
+  const marked = q.trim() === '' ? undefined : q
+  // The hint about matches in Done belongs to the state's own search.
+  const more = data.search?.query === q ? data.search.more : undefined
+  // While the Filter menu is open it shows the filters; the applied row, the count on Filter and the hidden line wait.
+  const applied = ui.filterOpen ? [] : view.applied
+  const setFilters = (filters: string[]) => {
+    onUiChange?.({ filters, filterChecks: filters })
+  }
   const list = (
     <section
       aria-label="Inbox list"
@@ -117,15 +135,15 @@ export function InboxListPane({
         <PageHeader
           size={desktop ? 'pane' : 'phone'}
           title="Inbox"
-          count={data.count}
-          countLabel={data.countLabel}
+          count={view.count}
+          countLabel={plural(view.count, 'task')}
           level={desktop ? 2 : 1}
         />
       </div>
       <div data-figma="filter · chips">
         <FilterChips
           label="Filter the inbox"
-          items={data.filters}
+          items={view.filters}
           value={[ui.filter]}
           multiple={false}
           size="compact"
@@ -136,23 +154,50 @@ export function InboxListPane({
         />
       </div>
       <ListTools
-        sort={data.sort}
-        sortActive={data.sortActive}
         sortMenu={data.sortMenu}
+        sort={ui.sort}
         sortOpen={ui.sortOpen}
-        query={query ?? data.search?.query}
+        onSortOpenChange={(sortOpen) => {
+          onUiChange?.({ sortOpen })
+        }}
+        onSortChange={(sort) => {
+          onUiChange?.({ sort, sortOpen: false })
+        }}
+        query={q}
         onQueryChange={onQueryChange}
         filterMenu={data.filterMenu}
+        filterChecks={ui.filterChecks}
         filterOpen={ui.filterOpen}
-        filterCount={data.applied === undefined ? 0 : 1}
+        filterNote={`Showing ${String(view.preview.shown)} of ${String(view.preview.of)}`}
+        filterCount={applied.length}
+        onFilterOpenChange={(filterOpen) => {
+          // The menu opens on the filters that apply, and its boxes apply when it closes.
+          onUiChange?.(filterOpen ? { filterOpen, filterChecks: ui.filters } : { filterOpen, filters: ui.filterChecks })
+        }}
+        onFilterChecksChange={(filterChecks) => {
+          onUiChange?.({ filterChecks })
+        }}
+        onFilterClear={() => {
+          onUiChange?.({ filterChecks: allChecks(data.filterMenu) })
+        }}
       />
-      {data.applied === undefined ? null : <AppliedFilters applied={data.applied} />}
-      {data.search === undefined ? null : (
+      {applied.length === 0 ? null : (
+        <AppliedFilters
+          sections={applied}
+          onRemove={(value) => {
+            setFilters(ui.filters.filter((v) => v !== value))
+          }}
+          onClear={() => {
+            setFilters(allChecks(data.filterMenu))
+          }}
+        />
+      )}
+      {marked === undefined ? null : (
         <span className={summary} data-figma="search summary">
-          {data.search.summary}
+          {`${plural(view.results, 'result')} for “${q}” in titles, IDs, prompts and notes`}
         </span>
       )}
-      {data.groups.map((group) => {
+      {view.groups.map((group) => {
         const open = ui.groupsOpen[group.id]
         return (
           <Stack key={group.id} gap="2">
@@ -168,30 +213,30 @@ export function InboxListPane({
               />
             </div>
             {open && group.projects === undefined ? (
-              <Rows rows={group.rows} ui={ui} query={data.search?.query} onSelectItem={onSelectItem} />
+              <Rows rows={group.rows} ui={ui} query={marked} onSelectItem={onSelectItem} />
             ) : null}
             {open && group.projects !== undefined
               ? group.projects.map((p) => (
                   <Stack key={p.label} gap="2">
                     <GroupHeader variant="project" label={p.label} leading={<FolderIcon />} />
-                    <Rows rows={p.rows} ui={ui} query={data.search?.query} onSelectItem={onSelectItem} />
+                    <Rows rows={p.rows} ui={ui} query={marked} onSelectItem={onSelectItem} />
                   </Stack>
                 ))
               : null}
           </Stack>
         )
       })}
-      {data.search === undefined ? null : (
+      {more === undefined ? null : (
         <span className={summary} data-figma="done hint">
-          {data.search.more.text}{' '}
+          {more.text}{' '}
           <a className={showIt} href="#done">
-            {data.search.more.link}
+            {more.link}
           </a>
         </span>
       )}
-      {data.applied === undefined ? null : (
+      {ui.filterOpen || view.hidden === 0 ? null : (
         <span className={summary} data-figma="hidden count">
-          {data.applied.hidden}
+          {`${plural(view.hidden, 'task')} hidden by filters`}
         </span>
       )}
       {data.toast === undefined ? null : (

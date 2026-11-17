@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { InboxItemId } from '@bridge/shared'
 
 /** The kind of an Inbox item; it picks the row's kind tile. */
-const InboxKind = z.enum(['approval', 'question', 'review', 'action', 'next'])
+export const InboxKind = z.enum(['approval', 'question', 'review', 'action', 'next'])
 
 /** A status colour, as the library's group dots and pills take it. */
 const InboxTone = z.enum(['working', 'running', 'needsYou', 'idle', 'done', 'danger'])
@@ -42,6 +42,10 @@ export const InboxRowView = z.object({
   outcome: z.object({ line: z.string(), result: z.enum(['done', 'dismissed', 'removed']) }).optional(),
   /** A pill under the meta line, such as "New" on a task a discussion just created. */
   pill: InboxPill.optional(),
+  /** The item's tags, which the Filter menu's tag boxes match. */
+  tags: z.array(z.string()).optional(),
+  /** The item's prompt and notes, which the search matches besides the title and the meta line. */
+  text: z.array(z.string()).optional(),
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
@@ -54,40 +58,47 @@ export const InboxGroupView = z.object({
   count: z.number().int().nonnegative(),
   dot: InboxTone.nullable(),
   rows: z.array(InboxRowView),
-  /** With the sort by project: the same rows under a heading per project, in this order. */
-  projects: z.array(z.object({ label: z.string(), rows: z.array(InboxRowView) })).optional(),
 })
 export type InboxGroupView = z.infer<typeof InboxGroupView>
 
+/** A sort of the list: newest first (the default), oldest first, by project, or by kind. */
+export const SortValue = z.enum(['newest', 'oldest', 'project', 'kind'])
+export type SortValue = z.infer<typeof SortValue>
+
 const InboxFilterChip = z.object({ value: z.string(), label: z.string(), count: z.number().int().nonnegative() })
 
-/** The Filter menu under the list tools: sections of checkboxes with counts. */
+/**
+ * The Filter menu under the list tools: sections of checkboxes with counts.
+ * Which boxes are checked is `InboxUi.filterChecks`. A value is a row's
+ * kind, its project (the first part of its meta line) or one of its tags.
+ */
 const InboxFilterMenu = z.object({
   sections: z.array(
     z.object({
       label: z.string(),
       /** The labels are names from the brain (projects, tags), set in mono; kinds are words, in sans. */
       mono: z.boolean(),
-      items: z.array(z.object({ value: z.string(), label: z.string(), count: z.number(), checked: z.boolean() })),
+      items: z.array(z.object({ value: z.string(), label: z.string(), count: z.number() })),
     }),
   ),
-  note: z.string(),
 })
 export type InboxFilterMenu = z.infer<typeof InboxFilterMenu>
 
-/** The Sort menu: a heading, the choices with what each does, and a note under them. */
+/**
+ * The Sort menu: a heading, the choices with what each does and the word
+ * the Sort button shows for it, and a note under them. The first choice is
+ * the default; which one applies is `InboxUi.sort`.
+ */
 const InboxSortMenu = z.object({
   heading: z.string(),
-  options: z.array(z.object({ value: z.string(), label: z.string(), description: z.string() })),
-  selected: z.string(),
+  options: z.array(z.object({ value: SortValue, label: z.string(), description: z.string(), short: z.string() })),
   note: z.string(),
 })
 export type InboxSortMenu = z.infer<typeof InboxSortMenu>
 
-/** A search in the list: the query, the line that sums up the results and the hint about matches in Done. */
+/** A search in the list: the query, and the hint about its matches in Done, which the list does not hold. */
 const InboxSearch = z.object({
   query: z.string(),
-  summary: z.string(),
   more: z.object({ text: z.string(), link: z.string() }),
 })
 
@@ -100,13 +111,8 @@ const InboxSnoozeMenu = z.object({
   dismiss: z.string(),
 })
 
-/** Filters that apply, under the list tools: a label, its values (each with a remove button) and Clear. */
-const InboxAppliedFilters = z.object({
-  label: z.string(),
-  values: z.array(z.string()),
-  /** The line under the list, such as "1 task hidden by filters". */
-  hidden: z.string(),
-})
+/** A Filter menu section that narrows the list: its label and its checked values. */
+export type AppliedSection = { label: string; values: string[] }
 
 /** A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. */
 const InboxToast = z.object({ text: z.string(), action: z.string() })
@@ -178,11 +184,14 @@ const InboxNextStep = InboxDetailHead.extend({
   /**
    * `suggested` has Reset and Edit; `sent` (started) and `notRun` (removed
    * before it ran) are read-only. `change` is the line under a prompt that
-   * a discussion changed, with Undo.
+   * a discussion changed, with Undo. `suggested` is the prompt as it was
+   * suggested, and whether it is long, when `text` is Erik's edit of it;
+   * Reset brings it back. `long` is about `text`: it ends with "Read the
+   * whole prompt".
    */
   prompt: z.object({
     text: z.string(),
-    edited: z.boolean(),
+    suggested: z.object({ text: z.string(), long: z.boolean() }).optional(),
     long: z.boolean(),
     state: z.enum(['suggested', 'sent', 'notRun']),
     change: z.object({ line: z.string(), undo: z.string() }).optional(),
@@ -319,16 +328,14 @@ export type InboxDetailView = z.infer<typeof InboxDetailView>
 export const InboxData = z.object({
   /** The needs-you count on the rail's Inbox item. */
   railBadge: z.number().int().nonnegative(),
+  /** The tasks in Needs you, Next steps and Running before filters; the list subtracts what they hide. */
   count: z.number().int().nonnegative(),
-  countLabel: z.string(),
+  /** The filter chips with their counts before filters, like `count`. */
   filters: z.array(InboxFilterChip),
-  sort: z.string(),
-  /** A sort other than the default applies; the Sort button shows it pressed. */
-  sortActive: z.boolean(),
-  sortMenu: InboxSortMenu.optional(),
+  sortMenu: InboxSortMenu,
   search: InboxSearch.optional(),
-  filterMenu: InboxFilterMenu.optional(),
-  applied: InboxAppliedFilters.optional(),
+  filterMenu: InboxFilterMenu,
+  /** The groups, newest first, before Erik's sort, search and filters (`InboxUi`). */
   groups: z.array(InboxGroupView),
   detail: InboxDetailView.nullable(),
   /** The open task's discussion; the task bar then shows Discuss. */
@@ -358,6 +365,16 @@ export const InboxUi = z.object({
   discussOpen: z.boolean(),
   /** The dialog that confirms a proposed removal is open. */
   removeOpen: z.boolean(),
+  /** The Sort menu's choice. */
+  sort: SortValue,
+  /** The Filter menu's checked boxes; they apply to the list when the menu closes. */
+  filterChecks: z.array(z.string()),
+  /** The checked boxes that apply to the list. A section narrows it only when some, not all, of its boxes are checked. */
+  filters: z.array(z.string()),
+  /** Items Erik snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
+  snoozed: z.array(z.object({ id: InboxItemId, until: z.string() })),
+  /** Items Erik marked done from the Snooze menu. */
+  done: z.array(InboxItemId),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

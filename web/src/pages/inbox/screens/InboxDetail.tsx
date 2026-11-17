@@ -31,6 +31,10 @@ export type InboxDetailProps = {
   side?: ReactNode
   /** Keeps what Erik types in the item; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** Reports a menu, the prompt editor or the Run in picker opened or closed. */
+  onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
+  /** A snooze time, or `null` for Mark done, picked in the Snooze menu. */
+  onSnooze?: ((until: string | null) => void) | undefined
 }
 
 export function InboxDetail({
@@ -42,8 +46,17 @@ export function InboxDetail({
   discuss,
   side,
   drafts,
+  onUiChange,
+  onSnooze,
 }: InboxDetailProps) {
   const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} />
+  const snooze = {
+    open: ui.snoozeOpen,
+    onOpenChange: (snoozeOpen: boolean) => {
+      onUiChange?.({ snoozeOpen })
+    },
+    onPick: onSnooze,
+  }
   const item = (
     <>
       {detail.kind === 'next' ? (
@@ -55,10 +68,12 @@ export function InboxDetail({
           onPromptOpenChange={onPromptOpenChange}
           discuss={discuss}
           drafts={drafts}
+          snooze={snooze}
+          onUiChange={onUiChange}
         />
       ) : null}
       {detail.kind === 'question' ? (
-        <QuestionDetail detail={detail} layout={layout} back={back} drafts={drafts} />
+        <QuestionDetail detail={detail} layout={layout} back={back} drafts={drafts} snooze={snooze} />
       ) : null}
       {detail.kind === 'running' ? (
         <RunningDetail detail={detail} layout={layout} onBack={onBack} drafts={drafts} />

@@ -7,15 +7,24 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
 - `InboxPage.tsx`: reads the loader's state, `?filter=`, and from
   `inboxStore.ts` the open groups and, for the shown `?state=`, whether
   Erik closed the open item with Back (tablet or phone), the prompt or
-  remove dialog, and the search text he typed; it passes them to
-  `InboxScreen` with the setters.
+  remove dialog, the search text he typed and the rest of what he changed
+  in its `ui` (`setUi`: menus, the prompt editor, the sort, the filters,
+  items snoozed or marked done); it passes them to `InboxScreen` with the
+  setters, and `onUiChange` reports the `ui` changes.
 - `screens/InboxScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail, the list pane
   (`InboxListPane`) and the detail (`InboxDetail`) side by side; on a
   tablet or phone the list, or the open item under Back
   (`BackToInbox`), full width over the tab bar (`AppTabBar`), which a
   chat hides. The `viewport` prop applies only until the width is
-  measured; `InboxLayout.test.tsx` checks both layouts. `InboxDetail` picks
+  measured; `InboxLayout.test.tsx` checks both layouts. `InboxListPane`
+  shows the list through `screens/listView.ts` (pure, tested in
+  `listView.test.ts` beside this file): the state's groups less the items snoozed or marked
+  done, then the filters that apply, the search and the sort, with the
+  counts that follow. The Filter menu's boxes apply when it closes; the
+  Sort, Filter, Snooze and Run in menus open and close by `ui`, and Edit
+  and Done open and close the prompt editor. `InboxRoute.test.tsx` uses
+  each of them through the route. `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`; on a tablet a started next step's `RunCard` stays at
   the bottom, and the whole prompt opens in a sheet. While the task's discussion is open (`ui.discussOpen`),
@@ -36,15 +45,23 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   D16 `changeApplied`, D17 `tasksProposed`, D18 `tasksCreated`, D19
   `removalProposed`, D20 `removeConfirm`, D21 `removed`; tablet T1
   `list`, T2 `taskPage`, T3 `question` (with D2), T4 `runningTaskPage`,
-  T5 `chat`, T6 `runningList`, T7 `doneList`, T8 `promptSheet`. A T
+  T5 `chat`, T6 `runningList`, T7 `doneList`, T8 `promptSheet`, T9
+  `sortList`, T10 `searchList`, T11 `sortedList`, T12
+  `promptEditingPage`, T13 `snoozePage`, T14 `filterList`, T15
+  `filteredList`. A T
   state that shows only the list sets `selectedId` to null. The others start
   from `nextStep` and its `nextStepGroups`; D9 to D11 and D13 start from
   `runningTask`, D15 to D20 from `discussOpen`, D21 from `done`.
+  `nextStep` also holds what every state shares: the Sort, Filter and
+  Snooze menus, the Run in picker and the row tags the Filter menu
+  matches; a state that shows a menu or a sort only sets its `ui`.
 - `types.ts`: `InboxData` (what Figma shows; the detail is a union on
   `kind`, and a next step's `launch` a union on `stage`: suggested or
-  started) and `InboxUi` (filter, selected id, open groups, and whether
+  started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
-  picker, the Snooze menu, the discussion or the remove dialog is open),
+  picker, the Snooze menu, the discussion or the remove dialog is open,
+  the sort, the Filter menu's boxes and the filters that apply, and the
+  items snoozed or marked done),
   each a Zod schema. `InboxData.discussion` is the open task's discussion;
   its entries are a union on `type`, and a proposal a union on `kind`.
   `InboxDrafts` is the text Erik types in the open item (note, answer,

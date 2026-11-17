@@ -6,11 +6,14 @@ import { chat } from './chat.ts'
 import { discussOpen } from './discussOpen.ts'
 import { done } from './done.ts'
 import { doneList } from './doneList.ts'
+import { filterList } from './filterList.ts'
 import { filterOpen } from './filterOpen.ts'
 import { filtered } from './filtered.ts'
+import { filteredList } from './filteredList.ts'
 import { list } from './list.ts'
 import { nextStep } from './nextStep.ts'
 import { promptEditing } from './promptEditing.ts'
+import { promptEditingPage } from './promptEditingPage.ts'
 import { promptRead } from './promptRead.ts'
 import { promptSheet } from './promptSheet.ts'
 import { question } from './question.ts'
@@ -22,9 +25,13 @@ import { runningList } from './runningList.ts'
 import { runningTask } from './runningTask.ts'
 import { runningTaskPage } from './runningTaskPage.ts'
 import { search } from './search.ts'
+import { searchList } from './searchList.ts'
 import { snoozeOpen } from './snoozeOpen.ts'
+import { snoozePage } from './snoozePage.ts'
+import { sortList } from './sortList.ts'
 import { sortOpen } from './sortOpen.ts'
 import { sortedByProject } from './sortedByProject.ts'
+import { sortedList } from './sortedList.ts'
 import { taskPage } from './taskPage.ts'
 import { tasksCreated } from './tasksCreated.ts'
 import { tasksProposed } from './tasksProposed.ts'
@@ -36,11 +43,14 @@ export const inboxStates = {
   discussOpen,
   done,
   doneList,
+  filterList,
   filterOpen,
   filtered,
+  filteredList,
   list,
   nextStep,
   promptEditing,
+  promptEditingPage,
   promptRead,
   promptSheet,
   question,
@@ -52,9 +62,13 @@ export const inboxStates = {
   runningTask,
   runningTaskPage,
   search,
+  searchList,
   snoozeOpen,
+  snoozePage,
+  sortList,
   sortOpen,
   sortedByProject,
+  sortedList,
   taskPage,
   tasksCreated,
   tasksProposed,

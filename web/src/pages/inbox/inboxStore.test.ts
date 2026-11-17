@@ -84,3 +84,23 @@ describe('inboxStore open item', () => {
     expect(inboxStore.getState().edits.itemOpen).toBeUndefined()
   })
 })
+
+describe('inboxStore ui edits', () => {
+  it('merges changes to the ui of one state and drops them when another is shown', () => {
+    const { setUi, showState } = inboxStore.getState().actions
+    setUi('list', { sortOpen: true })
+    setUi('list', { sort: 'oldest', sortOpen: false })
+    expect(inboxStore.getState().uiEdits).toEqual({ state: 'list', ui: { sort: 'oldest', sortOpen: false } })
+    showState('list')
+    expect(inboxStore.getState().uiEdits.ui).toEqual({ sort: 'oldest', sortOpen: false })
+    showState('nextStep')
+    expect(inboxStore.getState().uiEdits).toEqual({ state: 'nextStep', ui: {} })
+  })
+
+  it('starts a new state from no changes', () => {
+    const { setUi } = inboxStore.getState().actions
+    setUi('list', { filterOpen: true })
+    setUi('search', { sort: 'kind' })
+    expect(inboxStore.getState().uiEdits).toEqual({ state: 'search', ui: { sort: 'kind' } })
+  })
+})

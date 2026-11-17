@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { DetailHead } from '../blocks/DetailHead.tsx'
+import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { NotesBox } from '../blocks/NotesBox.tsx'
 import { PromptSection } from '../blocks/PromptSection.tsx'
@@ -34,7 +34,7 @@ const footer = css({
 
 export type NextStepDetailProps = {
   detail: InboxNextStep
-  ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
+  ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'promptOpen'>
   /** The screen's layout. */
   layout?: Viewport | undefined
   /** Back, over the item on a tablet or phone. */
@@ -44,14 +44,24 @@ export type NextStepDetailProps = {
   discuss?: { open: boolean } | undefined
   /** Keeps what Erik types in the prompt and his note; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** The Snooze menu of the task bar. */
+  snooze?: SnoozeControl | undefined
+  /** Reports the prompt editor or the Run in picker opened or closed. */
+  onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
 }
 
-function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; pickerOpen: boolean }) {
+type LaunchProps = {
+  launch: InboxNextStep['launch']
+  pickerOpen: boolean
+  onPickerOpenChange: (open: boolean) => void
+}
+
+function Launch({ launch, pickerOpen, onPickerOpenChange }: LaunchProps) {
   if (launch.stage === 'started') return <RunCard run={launch.run} />
   return (
     <>
       <DetailSection title="Run in">
-        <RunInCard runIn={launch.runIn} pickerOpen={pickerOpen} />
+        <RunInCard runIn={launch.runIn} pickerOpen={pickerOpen} onPickerOpenChange={onPickerOpenChange} />
       </DetailSection>
       <Inline gap="12" align="center" data-figma="start">
         <Button variant="primary" size="lg">
@@ -72,6 +82,8 @@ export function NextStepDetail({
   onPromptOpenChange,
   discuss,
   drafts,
+  snooze,
+  onUiChange,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
@@ -79,7 +91,7 @@ export function NextStepDetail({
     <Container size={detailContainerSize(layout)} className={pinned === undefined ? undefined : fill}>
       {back}
       <Stack gap="24" data-figma={compact ? `task · ${pinned === undefined ? 'next step' : 'running'}` : undefined}>
-        <DetailHead head={detail} snoozeOpen={ui.snoozeOpen} discuss={discuss} />
+        <DetailHead head={detail} snooze={snooze} discuss={discuss} />
         <DetailSection title="Why">
           <MarkdownView size="sm" padding="none">
             <p>{detail.why}</p>
@@ -92,8 +104,19 @@ export function NextStepDetail({
           onOpenChange={onPromptOpenChange}
           layout={layout}
           drafts={drafts}
+          onEditingChange={(editingPrompt) => {
+            onUiChange?.({ editingPrompt })
+          }}
         />
-        {pinned === undefined ? <Launch launch={detail.launch} pickerOpen={ui.pickerOpen} /> : null}
+        {pinned === undefined ? (
+          <Launch
+            launch={detail.launch}
+            pickerOpen={ui.pickerOpen}
+            onPickerOpenChange={(pickerOpen) => {
+              onUiChange?.({ pickerOpen })
+            }}
+          />
+        ) : null}
         {detail.notes === null ? null : (
           <DetailSection title="My notes">
             <NotesBox notes={detail.notes} drafts={drafts} />
