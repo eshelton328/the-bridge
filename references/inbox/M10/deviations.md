@@ -3,7 +3,7 @@
 What still differs from Figma M10 · Running, on the task page (`runningTaskPage`), after the last
 fidelity run (`pnpm fidelity inbox M10`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -75,11 +75,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   chat. D5 still shows the chat beside the list, as Figma draws it.
 - **Hidden Figma text.** Figma keeps Reset and Edit as hidden layers in
   the SENT PROMPT header (346:11006, 346:11011); the exceptions say why.
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+- **Button labels.** Snooze and Dismiss are icons, and the run card's
+  Reply here and Open in Workspaces are `size="lg"` with the default
+  label; Reset and Edit are hidden (above). No label in this frame is
+  open in the library.
 - **Prompt fade.** The sent prompt is cut by height and its last lines
   fade with no ellipsis, as Figma's (346:11014). Before #104,
   `Clamp fade` kept `line-clamp` and Chrome ended the last visible line

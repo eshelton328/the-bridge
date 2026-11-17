@@ -2,7 +2,7 @@
 
 What still differs from Figma M20 · The task after Apply (`changeAppliedPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -91,6 +91,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   a SOURCES section at y 623 that it does not draw (frame.png shows Run
   in there); the render keeps Sources below My notes, under the pinned
   Start (the exceptions say why).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Discuss in the nav, Reset and Edit are `Button
+  textSize="xs"` (`labelXs`, Medium 12/16), as Figma's Medium 12
+  (d-100). Change, Snooze and Dismiss are icons, Undo is a link, and the
+  pinned Start is `size="xl"` with the default label. The labels
+  match.

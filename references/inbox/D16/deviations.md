@@ -5,7 +5,7 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
@@ -43,8 +43,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   Figma fits on one line wraps to two here (`message · you` h +21 when
   it wraps). The discussion's reply is composed in the app: Figma puts a
   violet bubble before "Discussion", and `Message` draws only an agent's
-  kind mark there (library gap). Its text is `body` too, so it can wrap
-  where Figma's does not (`message · discussion` h +25).
+  kind mark there (library gap). The name "Discussion" is
+  `labelXsStrong` (SemiBold 12/16), as Figma's. Its text is `body` too,
+  so it can wrap where Figma's does not (`message · discussion` h +21).
 - **Proposal block.** The library's `ProposalBlock` with `ProposalDiff`,
   `ProposalSection` or checkboxes. Figma draws a spark icon before the
   eyebrow; the block has no icon slot (library gap). Its buttons are
@@ -83,6 +84,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   notes box (12 px, the `TextArea` field; 16 before the note and its
   author moved 4 closer) the sections below WHY start lower; SOURCES was
   within the tolerance before beta.5 (now y -10, see "New prompt").
+- **Button labels.** Snooze, Dismiss and Discuss in the task bar, Reset
+  and Edit in the prompt section and Change in the run card are
+  `textSize="xs"` (`labelXs`, Medium 12/16), and Start is
+  `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
+  The labels match Figma's in this frame.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -100,6 +106,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   further from Figma: the Figma-matching change exposes an offset that
   was already there, which the 24 px pills and 21 px prompt lines had
   hidden.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `message · discussion` x +0, y +25, w -1, h
+  +21 (was x +0, y +25, w -1, h +25); `proposal · UPDATE THIS TASK` x
+  +0, y +46, w +0, h +8 (was x +0, y +50, w +0, h +8). The cause is
+  the discussion reply's author name in `labelXsStrong` (SemiBold
+  12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.
 
 ## Second review
 
@@ -107,6 +119,6 @@ The blind second review of round 3 (`reports/fidelity/inbox/D16.sideBySide.png`,
 
 - Composer at rest: fixed. The story's play test puts the focus in the composer, as Figma draws it (a caret). The focused border is the library's `border.selected` (cyan), where Figma draws a lighter grey border (LIBRARY_GAPS.md, row "Composer focus").
 - Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
-- Change button larger and 25 px high: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- Change button larger and 25 px high: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Since beta.7 Change is `textSize="xs"` and Start `textSize="smStrong"`, Figma's (see Button labels).
 - SOURCES links larger, 24 px apart: fixed with `small`; the rows are now 24 px apart, as Figma's 403:1901 and 403:1909 (y 776 and 800).
 - Undo on the change line larger: fixed. It is Geist Medium 12 (403:1980), `small` at the `label` weight.

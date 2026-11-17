@@ -5,25 +5,26 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
 
 - Text: pass; the summary and Done hint, which get_metadata gives by their layer names, and the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 9 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `search summary`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 10 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `search summary`, `group · NEEDS YOU`, `group · RUNNING`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (RUNNING y +13, `done hint` y +22),
-  about half the offset of the 14 px rows.
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the row takes the 4 px grid
+  value nearest Figma's (d-100, library #108). Each group below the
+  first starts a little lower (RUNNING within tolerance, `done hint` y +6).
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header), the 4 px grid value nearest Figma's (d-100, library #108).
+  The label's centre is 20 px from the header's top (Figma 21).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
   through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
   (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
@@ -54,7 +55,8 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
 - **Search field.** Not shown focused: a story cannot focus a field
   without a user action, so it has no cyan border or caret. The clear
   button is `CloseCircleIcon` at 16 px (`clearSize="16"`, #101); Figma
-  draws it at 15.
+  draws it at 15. The icon is `fg.subtle` (library #107); Figma's
+  #4a5675 fails WCAG AA (d-099).
 - **Marked query.** `Highlight variant="colour"` (#101) sets "f-005" in
   cyan only, as Figma does.
 - **Selected row.** The open task's row under RUNNING has the selected
@@ -70,6 +72,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   `section · SOURCES` x +4, y +27, h +2 (was x +4, y +32, h +2);
   `section · SUGGESTED PROMPT` x +4, y +10, h -2 (was x +4, y +10, h
   +3). The cause is the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · RUNNING` within tolerance (was x
+  +0, y +13, w +1, h +4); `done hint` x +0, y +6, w +0, h +0 (was x
+  +0, y +22, w +0, h +0). The cause is #108's compact `ListRow` (56
+  px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
+  34).
 
 ## Second review
 
@@ -85,7 +93,8 @@ notes. What it found in every frame, and why it stays:
 
 - List rows taller, list, title and detail text larger, approval
   buttons larger, WHY on two lines, the prompt without its fade, MY
-  NOTES 12 to 16 px taller: the type sizes above.
+  NOTES 12 to 16 px taller: the type sizes above. (Since beta.7 the approval
+  buttons take Figma's Medium 12, `Button textSize="xs"`.)
 - Search, Sort and Filter differ by up to 19 px in width, the chip
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,

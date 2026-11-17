@@ -2,7 +2,7 @@
 
 What still differs from Figma T23 · Confirm the removal (`removeConfirmPage`, T22 with the confirm dialog), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -25,8 +25,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `discussion`: x +2, y +30, w -4, h -103.
 - `event`: x +2, y +16, w +0, h +2.
 - `message · you`: x +2, y +18, w +148, h +1.
-- `message · discussion`: x +2, y +19, w +148, h -14.
-- `proposal · REMOVE THIS TASK`: x +2, y +5, w +148, h +8.
+- `message · discussion`: x +2, y +19, w +148, h -18.
+- `proposal · REMOVE THIS TASK`: x +2, y +1, w +148, h +8.
 - `composer · discussion`: x +2, y +20, w -4, h +3.
 - `dialog · Remove this task`: x -10, y +5, w +20, h +19.
 
@@ -80,7 +80,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Messages.** Erik's message is `Message from="user"` and the reply is
   composed in `DiscussionEntry`, as in D15; their text is `body`
   (14/20) against Figma's 13/19, and the reply has the bubble Figma
-  draws. Library gap: Message author icon and small text.
+  draws. The reply's author name, "Discussion", is `labelXsStrong`
+  (SemiBold 12/16), Figma's (was `label`, Medium 14/20). Library gap:
+  Message author icon and small text.
 - **Proposal block.** `ProposalBlock` as in D15 to D19; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
@@ -91,10 +93,24 @@ shorter, below Figma's status bar (d-102), and the position check adds
   the safe action the first focus. Remove task takes the task out of
   the list and shows the list (`InboxRoute.test.tsx`).
 - **Button labels.** The dialog's Keep it takes `Button textSize="sm"`
-  (Medium 13, #105), as Figma's (402:12546). The other labels are 14 px
-  (`label`): Figma sets the small buttons in Medium 12 and Remove task
-  in SemiBold 13, which no token has (d-050), so those buttons are a
-  little wider. Library gap: Button label size.
+  (Medium 13, #105), as Figma's (402:12546), and Remove task takes
+  `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), Figma's
+  SemiBold 13 (d-100). The proposal's Remove… and Keep it behind the
+  dialog are `ProposalBlock`'s own `size="sm"` buttons in `label`
+  (Medium 14) and take no `textSize`; Figma sets them in Medium 12, so
+  they are a little wider. Library gap: Button label size.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108), with this branch's app changes, move these layers: `message · discussion` x +2, y +19, w +148,
+  h -18 (was x +2, y +19, w +148, h -14); `proposal · REMOVE THIS
+  TASK` x +2, y +1, w +148, h +8 (was x +2, y +5, w +148, h +8). The
+  cause is the discussion reply's author name in `labelXsStrong`
+  (SemiBold 12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter
+  line. `message · discussion` moves further from Figma: a
+  Figma-matching change exposes an offset that was already there: the
+  reply was already shorter than Figma's (its text runs
+  148 px wider than Figma's 560 px column and wraps to fewer lines, see
+  Discussion column), and the Figma-matching author line
+  takes 4 px more off it.
 
 ## Second review, round 2
 

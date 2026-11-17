@@ -3,14 +3,14 @@
 What still differs from Figma M1 · Inbox (the phone list, `list`), after the last
 fidelity run (`pnpm fidelity inbox M01`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fail (51 strings checked; 0 Figma strings under exceptions.json). Not shown: `SNOOZED`, `1`.
-- Position: 5 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
-- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
+- Text: pass (51 strings checked; 0 Figma strings under exceptions.json).
+- Position: 6 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
+- Rules: pass (1 findings under exceptions.json).
 
 ## Failing layers
 
@@ -18,9 +18,8 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `inbox list`: x +0, y +0, w +0, h +19.
-- `group · NEXT STEPS`: x +0, y +16, w +0, h +4.
-- `group · SNOOZED`: x +0, y +29, w +0, h +4.
+- `inbox list`: x +0, y +0, w +0, h -7.
+- `group · SNOOZED`: x +0, y +5, w +0, h +2.
 
 ## Deviations
 
@@ -35,11 +34,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   neither. Library gap:
   Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in D01 and T01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower (`group · NEXT STEPS` y +16, `group · SNOOZED` y +29) and the
-  list is taller (`inbox list` h +19).
-  Library gap: Small text in the detail.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108), so each later group starts a little lower
+  (`group · NEXT STEPS` within tolerance, `group · SNOOZED` y +5). The
+  list's box ends 7 px above Figma's (`inbox list` h -7).
 - **Header, chips and tools.** `PageHeader size="phone"` is 40 px high
   against Figma's 44 (`header` h -4) and the tools row 40 against 44
   (`list tools` h -4); the chip row's box is 34 against Figma's 30
@@ -73,14 +72,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square
   as in Figma (346:9036, 346:9041).
 - **Below the fold.** The checks render 806 px high, the screen below
-  the status bar (d-102). The taller rows and group headers make the list
-  19 px taller than Figma's (`inbox list` h +19), so it scrolls
-  (`hiddenOverflow` on `main.app-shell__detail`) where Figma's fits, and
-  the Snoozed header (`SNOOZED` and its count `1`), which Figma shows
-  just above the tab bar, lies under it. The text and rules checks fail
-  on it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+  the status bar (d-102). The list fits its viewport, as Figma's does
+  (`main.app-shell__detail` does not scroll), and the Snoozed header
+  (`SNOOZED` and its count `1`) shows just above the tab bar, as in
+  Figma, so the text and rules checks pass.
+- **Button labels.** The approval row's Allow once, Deny and Open chat
+  are `Button textSize="xs"` (`labelXs`, Medium 12/16), as Figma's
+  Medium 12 (d-100). Sort and Filter are icons. The labels match.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `inbox list` x +0, y +0, w +0, h -7 (was x
+  +0, y +0, w +0, h +19); `group · NEXT STEPS` within tolerance (was x
+  +0, y +16, w +0, h +4); `group · SNOOZED` x +0, y +5, w +0, h +2
+  (was x +0, y +29, w +0, h +4). The cause is #108's compact `ListRow`
+  (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
+  Figma 34).

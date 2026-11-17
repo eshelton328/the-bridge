@@ -5,25 +5,26 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
 
 - Text: pass. The note "Sorting applies inside each group." is drawn (`RadioMenu note`, #101). The hidden Reset and Edit and the heading Figma names "menu header" (frame.png: SORT BY) are excepted in `exceptions.json`.
-- Position: 8 of 17 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 9 of 17 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +28, RUNNING y +32),
-  about half the offset of the 14 px rows.
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the row takes the 4 px grid
+  value nearest Figma's (d-100, library #108). Each group below the
+  first starts a little lower (NEXT STEPS within tolerance, SNOOZED y +6, RUNNING y +8).
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header), the 4 px grid value nearest Figma's (d-100, library #108).
+  The label's centre is 20 px from the header's top (Figma 21).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
   through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
   (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
@@ -67,6 +68,13 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   +3). The cause is Newest's Medium 13 label (`Button textSize="sm"`),
   as Figma's, which makes the Sort button narrower, and the prompt's 20
   px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · NEXT STEPS` within tolerance (was
+  x +0, y +18, w +1, h +4); `group · SNOOZED` x +0, y +6, w +1, h +2
+  (was x +0, y +28, w +1, h +4); `group · RUNNING` x +0, y +8, w +1, h
+  +2 (was x +0, y +32, w +1, h +4). The cause is #108's compact
+  `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
+  was 38; Figma 34).
 
 ## Second review
 
@@ -82,7 +90,8 @@ notes. What it found in every frame, and why it stays:
 
 - List rows taller, list, title and detail text larger, approval
   buttons larger, WHY on two lines, the prompt without its fade, MY
-  NOTES 12 to 16 px taller: the type sizes above.
+  NOTES 12 to 16 px taller: the type sizes above. (Since beta.7 the approval
+  buttons take Figma's Medium 12, `Button textSize="xs"`.)
 - Search, Sort and Filter differ by up to 19 px in width, the chip
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,

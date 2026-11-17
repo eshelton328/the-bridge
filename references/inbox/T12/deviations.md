@@ -2,7 +2,7 @@
 
 What still differs from Figma T12 · Edit the prompt, choose where it runs (the prompt in its editor and the Run in picker open on the task page, `promptEditingPage`, D3 `promptEditing` with T2's notes), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -63,17 +63,18 @@ shorter, below Figma's status bar (d-102), and the position check adds
   picker make it 5 px taller (`run in picker` h +5, 9 before beta.5's
   20 px pills), within the
   library's own row and group heights; it opens under Change
-  (`placement="bottom-end"`), 4 px to the left, under the wider Change
-  button (button labels). Its search field sets the text and
+  (`placement="bottom-end"`), 4 px to the left of Figma's (`run in
+  picker` x -4). Change now has Figma's Medium 12 label, and the offset
+  did not move with it. Its search field sets the text and
   placeholder in `bodySm` (13 px, `SearchField textSize="sm"`), as
   Figma's 13 px placeholder.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
-- **Button labels.** Reset, Done, Change and the other small buttons
-  keep the 14 px `label`; Figma sets them in Medium 12, which no text
-  style has (d-050), so they are a little wider. Library gap: Button
-  label size.
+- **Button labels.** Snooze, Dismiss, Reset, Done and Change take
+  `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12,
+  and Start takes `textSize="smStrong"` (`labelSmStrong`, SemiBold
+  13/16), Figma's SemiBold 13 (d-100). The labels match Figma's.
 
 ## Second review
 

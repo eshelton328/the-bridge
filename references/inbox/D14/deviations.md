@@ -5,7 +5,7 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
@@ -19,7 +19,8 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
 - **Discuss button.** Figma draws Discuss in violet while the discussion
   is open (403:943). The library has no discuss toggle (its button recipe
   says it comes later), so it is a `pressed` secondary `Button`, which is
-  cyan. It is 32 px high (`md`), as Figma's.
+  cyan. It is 32 px high (`md`), as Figma's, and its label is Medium
+  12 (`Button textSize="xs"`, `labelXs`), as Figma's.
 - **Discussion panel width.** Figma's panel (403:947) is 628 px wide,
   what is left beside an 820 px task. The task is `Container
   size="detail"` (748 + 2 × 40 = 828), so the panel starts 8 px further
@@ -48,12 +49,12 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   at 260); no spacing token is that large, so the render centres it in
   the discussion area, about 100 px lower (`empty state` y +207 against
   the frame's box, `it can` y +94, `suggestions` y +96). The suggestion
-  buttons are `md` with Figma's Medium 12 labels (`small` at the `label`
-  weight on the `Button`), so the three buttons span about 518 px against
+  buttons are `md` with Figma's Medium 12 labels (`Button
+  textSize="xs"`, `labelXs`, Medium 12/16; before beta.7 the app drew
+  `small` at the `label` weight, the same 12/16 Medium), so the three buttons span about 518 px against
   Figma's 507 and stay on one row; the `suggestions` box itself spans the
   587 px column (w +80). With the Button's own 14 px labels the buttons
-  filled the column and wrapped on Linux, where glyph widths round up
-  (row "Button label size" in LIBRARY_GAPS.md).
+  filled the column and wrapped on Linux, where glyph widths round up.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
   px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
@@ -90,5 +91,5 @@ The blind second review of round 3 (`reports/fidelity/inbox/D14.sideBySide.png`,
 - Empty-state text wider (2 lines against 3): fixed. It is `bodySm` (Figma 403:967: Regular 13/19) in a 420 px column (`maxW: shell.widePane`, the 420 px size token), so it wraps at Figma's words in three lines.
 - Task title smaller: recorded. Figma's title is Geist SemiBold 22/28 (403:1809). No text style has 22 px (`title` is 20, `heading` 28), so the title is in `title`. LIBRARY_GAPS.md, row "22 px title".
 - Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
-- Change, Reset, Edit and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- Change, Reset, Edit and Start in the-bridge larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Fixed by beta.7: Change, Reset and Edit take `Button textSize="xs"` (`labelXs`, Medium 12/16) and Start `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
 - Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".

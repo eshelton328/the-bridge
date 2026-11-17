@@ -2,7 +2,7 @@
 
 What still differs from Figma T13 · Snooze or dismiss (the Snooze menu open on the task page, `snoozePage`, T2 `taskPage`), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -24,7 +24,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `section · MY NOTES`: x +2, y +12, w -4, h +7.
 - `notes field`: x +2, y +14, w -4, h +5.
 - `section · SOURCES`: x +2, y +21, w -4, h +2.
-- `menu · Snooze or dismiss`: x -5, y -6, w +0, h +22.
+- `menu · Snooze or dismiss`: x +2, y -6, w +0, h +22.
 
 ## Deviations
 
@@ -58,15 +58,23 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `section · MY NOTES` y +12, `notes field` y +14, `section · SOURCES`
   y +21).
 - **Snooze menu.** As in D12: `Menu size="lg" width="md"` has
-  Figma's 320 px width and 44 px rows, but its heading and separator
-  make it 22 px taller (`menu · Snooze or dismiss` h +22); it opens 5
-  px further left, under the wider Snooze button (button labels).
+  Figma's 320 px width and 44 px rows, and its labels are `bodyLg`
+  (Regular 15/24), Figma's Regular 15 (library #107). Its heading and
+  separator make it 22 px taller (`menu · Snooze or dismiss` h +22). It
+  opens under Snooze, within the tolerance across (x +2), since Snooze
+  takes Figma's Medium 12 label.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Snooze, Dismiss, Reset, Edit and Change take
+  `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12,
+  and Start takes `textSize="smStrong"` (`labelSmStrong`, SemiBold
+  13/16), Figma's SemiBold 13 (d-100). The labels match Figma's.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108), with this branch's app changes, move these layers: `menu · Snooze or dismiss` x +2, y -6, w
+  +0, h +22 (was x -5, y -6, w +0, h +22). The cause is Snooze and
+  Dismiss in Medium 12 (`Button textSize="xs"`), so both buttons are
+  narrower and the menu, placed at Snooze's end, moves with it.
 
 ## Second review
 

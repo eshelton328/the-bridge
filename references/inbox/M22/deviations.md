@@ -2,14 +2,14 @@
 
 What still differs from Figma M22 · The new tasks in the inbox (`tasksCreatedPhone`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (48 strings checked; 17 Figma strings under exceptions.json).
-- Position: 6 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
-- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
+- Position: 7 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
+- Rules: pass (1 findings under exceptions.json).
 
 ## Failing layers
 
@@ -17,8 +17,7 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `group · SNOOZED`: x +0, y +22, w +0, h +4.
-- `toast · created`: x -4, y +3, w +8, h +0.
+- `toast · created`: x -4, y +0, w +8, h +0.
 
 ## Deviations
 
@@ -33,9 +32,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   neither. Library gap:
   Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in M01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower. Library gap: Small text in the detail.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108), so each later group starts a little lower, within
+  tolerance (`group · NEXT STEPS`, `group · SNOOZED` pass).
 - **Header, chips and tools.** As in M01: `PageHeader size="phone"` is
   40 px high against Figma's 44 (`header` h -4) and the tools row 40
   against 44 (`list tools` h -4); the chip row's box is 34 against
@@ -60,16 +60,22 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Toast.** `Toast` over the bottom of the list, full width less the
   list's padding (`toast · created` x -4, w +8). It is anchored to the
   bottom, 12 above the tab bar, as Figma draws it (`toast · created` y
-  +3, within tolerance): the list fills the screen above the tab bar
+  +0): the list fills the screen above the tab bar
   when it has a toast.
   It used to follow the last group, 47 above the tab bar. The new tasks
   come from the discussion's proposal applied in the state's `ui`, so
   Undo takes them out (`InboxRoute.test.tsx`).
-- **List 3 px too tall.** The checks render 806 px high (d-102). The
-  taller rows and group headers make the list 3 px taller than the screen
-  above the tab bar, so it scrolls (`hiddenOverflow` on
-  `main.app-shell__detail`) where Figma's fits. The rules check fails on
-  it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **List fits.** The checks render 806 px high (d-102). The list fits
+  the screen above the tab bar, as Figma's does (`main.app-shell__detail`
+  does not scroll), so the rules check passes. With 58 px rows and 38 px
+  headers it was 3 px too tall and scrolled.
+- **Button labels.** Sort and Filter are icons, and the toast's Undo
+  is `Toast`'s own action. The approval row's buttons (`textSize="xs"`,
+  Medium 12 as Figma's) sit in the closed Needs you group. No label in
+  this frame is open in the library.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · SNOOZED` within tolerance (was x
+  +0, y +22, w +0, h +4); `toast · created` x -4, y +0, w +8, h +0
+  (was x -4, y +3, w +8, h +0). The cause is #108's compact `ListRow`
+  (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
+  Figma 34).

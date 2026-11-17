@@ -139,6 +139,7 @@ export function PromptSection({
             {/* Reset brings back the suggested prompt, so it does nothing until Erik edits it (Figma D1 346:359, T2 346:5736). */}
             <Button
               size="sm"
+              textSize="xs"
               disabled={!edited}
               onClick={() => {
                 drafts?.onChange('prompt', suggested.text)
@@ -149,6 +150,7 @@ export function PromptSection({
             </Button>
             <Button
               size="sm"
+              textSize="xs"
               onClick={() => {
                 focusEditorRef.current = !editing
                 onEditingChange?.(!editing)

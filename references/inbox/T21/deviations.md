@@ -2,14 +2,14 @@
 
 What still differs from Figma T21 · The new tasks in the inbox (`tasksCreatedList`, D18's list on the tablet), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (67 strings checked; 0 Figma strings under exceptions.json).
-- Position: 5 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
-- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (0 other findings under exceptions.json).
+- Position: 7 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
+- Rules: pass.
 
 ## Failing layers
 
@@ -17,9 +17,7 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `group · NEXT STEPS`: x +2, y +18, w -4, h +4.
-- `group · SNOOZED`: x +2, y +40, w -4, h +4.
-- `toast · created`: x -144, y +8, w +288, h +0.
+- `toast · created`: x -144, y -4, w +288, h +0.
 
 ## Deviations
 
@@ -34,9 +32,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in T01: `ListRow
-  density="compact"` rows are 58 px against Figma's 55 and group
-  headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower. Library gap: Small text in the detail.
+  density="compact"` rows are 56 px against Figma's 55 and group
+  headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
+  library #108). The later groups start within the tolerance
+  (`group · NEXT STEPS`, `group · SNOOZED`).
 - **Search field and chip counts.** The search field's text and
   placeholder are 13 px (`SearchField textSize="sm"`, `bodySm`, #106),
   as Figma's (402:11999). Idle chip counts are `fg.subtle` (#7986a6, #106);
@@ -46,10 +45,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   gap: New list row.
 - **Toast.** `Toast` takes the list's width (708 px); Figma's is 420
   px and centred (`toast · created` x -144, w +288). It sticks to the
-  bottom of the list, which fills the screen above the tab bar. In the
-  position check's page, 29 px shorter (d-101), it sits 8 above the tab
-  bar against Figma's 16 (`toast · created` y +8); in the full 1158 px
-  page it sits 20 above it.
+  bottom of the list. In the position check's page, 29 px shorter
+  (d-101), it sits 20 above the tab bar against Figma's 16
+  (`toast · created` y -4).
   Library gap: Toast width on the tablet. Undo takes the new tasks out,
   as on the phone (M22): the state names the rows it draws as created,
   and Undo clears its applied Create (`InboxRoute.test.tsx`).
@@ -57,16 +55,24 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
   bar.
-- **List 12 px too tall.** The checks render 1129 px high, the screen
-  below the status bar (d-102). The taller rows and group headers make
-  the list 12 px taller than the screen above the tab bar, so it scrolls
-  (`hiddenOverflow` on `main.app-shell__detail`) where Figma's fits. The
-  rules check fails on it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
+- **List fits.** The checks render 1129 px high, the screen below the
+  status bar (d-102). With 56 px rows and 36 px group headers (library
+  #108) the list fits the screen above the tab bar, as Figma's does, so
+  the rules check passes. With 58 px rows and 38 px headers it was 12
+  px taller than that screen and scrolled (`hiddenOverflow` on
+  `main.app-shell__detail`).
 - **Button labels.** Newest and Filter take `Button textSize="sm"`
-  (Medium 13, #105), as Figma draws them. The other labels are 14 px
-  (`label`), where Figma sets small buttons in Medium 12 (no token,
-  d-050), so those buttons are a little wider. Library gap: Button
-  label size.
+  (Medium 13, #105), as Figma draws them. The approval row's Allow
+  once, Deny and Open chat take `textSize="xs"` (`labelXs`, Medium
+  12/16), Figma's Medium 12 (d-100). The labels match Figma's; the
+  toast's Undo is `Toast`'s own action.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · NEXT STEPS` within tolerance (was
+  x +2, y +18, w -4, h +4); `group · SNOOZED` within tolerance (was x
+  +2, y +40, w -4, h +4); `toast · created` x -144, y -4, w +288, h +0
+  (was x -144, y +8, w +288, h +0). The cause is #108's compact
+  `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
+  was 38; Figma 34).
 
 ## Second review, round 2
 

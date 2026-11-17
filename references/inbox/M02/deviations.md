@@ -3,7 +3,7 @@
 What still differs from Figma M2 · A next step (the next step on the phone's task page, `taskPage`), after the last
 fidelity run (`pnpm fidelity inbox M02`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -94,8 +94,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Sources after My notes, below the fold (`section · SOURCES` y +127).
 - **Task frame.** The task runs on under Start to the end of the page,
   so its box is taller than Figma's (`task · next step` h +59).
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+- **Button labels.** Reset and Edit are `Button textSize="xs"`
+  (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100). Change,
+  Snooze and Dismiss are icons, and the pinned Start is `size="xl"` with
+  the default label. The labels match.

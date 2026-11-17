@@ -3,7 +3,7 @@
 What still differs from Figma M4 · Choose where it runs (M2's task page with the Run in sheet, `runInSheet`), after the last
 fidelity run (`pnpm fidelity inbox M04`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -30,7 +30,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `section · SOURCES`: x +0, y +125, w +0, h +2.
 - `sticky action`: x +0, y -54, w +0, h -23.
 - `tab bar`: the frame has no layer "tab bar".
-- `run in picker`: x +0, y -33, w +0, h +33.
+- `run in picker`: x +0, y -27, w +0, h +27.
 
 ## Deviations
 
@@ -86,17 +86,23 @@ shorter, below Figma's status bar (d-102), and the position check adds
   search, sections and note. The search field's text and placeholder
   are 13 px (`SearchField textSize="sm"`, #106), as Figma's, and the
   Recommended pill is 20 px (`Badge size="sm"`), as Figma's. The rows
-  and the section labels (`GroupHeader`, 26 px) are still a little
-  taller than Figma's, so the picker is 33 px taller (`run in picker`
-  h +33, +37 before the 20 px pills) and the sheet starts higher.
+  and the section labels (`GroupHeader`, 36 px since library #108,
+  against Figma's 28) are still taller than Figma's, so the picker is
+  27 px taller (`run in picker` h +27; +33 before #108, +37 before the
+  20 px pills) and the sheet starts higher (y -27).
   Done shows the focus ring: the sheet focuses its first control.
   Figma sets the note "Shells are not listed…" on a panel one step
   lighter than the sheet (346:9822, #101727 on #0f1526); no surface
   token is that close, so the note has none. Library gap: Picker note
   panel on the phone.
   Library gap: Bottom sheet sections and data attribute.
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+- **Button labels.** Reset and Edit are `Button textSize="xs"`
+  (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100). Change,
+  Snooze and Dismiss are icons, and the pinned Start is `size="xl"` with
+  the default label. The labels match.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `run in picker` x +0, y -27, w +0, h +27
+  (was x +0, y -33, w +0, h +33). The cause is #108's list
+  `GroupHeader` (36 px, was 38): the sheet's three section labels
+  (`MenuSection`) are 2 px shorter each. The choices are `OptionList`
+  rows, which #108 did not change.

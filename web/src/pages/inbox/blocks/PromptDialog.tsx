@@ -16,7 +16,8 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 
-const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
+// D08 346:3548: Regular 15 with 23 px lines; `bodyLg` is 15/24 (d-100, the 4 px grid).
+const text = css({ textStyle: 'bodyLg', color: 'fg.default', m: '0' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 // T8 346:7180: the hint's row is 38 high, the text 10 below its top.
 const sheetHint = css({ textStyle: 'small', color: 'fg.subtle', py: '10' })

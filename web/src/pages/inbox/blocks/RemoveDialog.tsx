@@ -89,7 +89,7 @@ export function RemoveDialog({ proposal, open, onOpenChange, onConfirm, layout =
             {/* Figma sets the dialog's Keep it in Medium 13 (D20 403:3924). */}
             <Button textSize="sm">Keep it</Button>
           </DialogClose>
-          <Button variant="danger" onClick={onConfirm}>
+          <Button variant="danger" textSize="smStrong" onClick={onConfirm}>
             <TrashIcon />
             Remove task
           </Button>

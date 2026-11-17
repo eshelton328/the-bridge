@@ -5,25 +5,26 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
 
 - Text: pass.
-- Position: 8 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 9 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +29),
-  about half the offset of the 14 px rows.
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the row takes the 4 px grid
+  value nearest Figma's (d-100, library #108). Each group below the
+  first starts a little lower (NEXT STEPS within tolerance, SNOOZED y +5).
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header), the 4 px grid value nearest Figma's (d-100, library #108).
+  The label's centre is 20 px from the header's top (Figma 21).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
   through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
   (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
@@ -48,10 +49,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
 - **Prompt dialog.** `Dialog size="wide"` (#101) is 720 px wide, as
   Figma's 346:3543, with Done as a text button at the end of the title
   row (`headerAction`). The dialog box carries `dialog · Suggested
-  prompt`. The prompt is in `body` (14/20) against Figma's Regular 15
-  with 23 px lines, which no text style has (library gap: Regular 15 px
-  text), so it is 38 px shorter (`346:3548` y +35.5, h -38) and the
-  dialog 51 px shorter (y +25.5, h -51).
+  prompt`. The whole prompt is in `bodyLg` (Regular 15/24) against
+  Figma's Regular 15 with 23 px lines: 24 is the 4 px grid value
+  nearest 23 (d-100). The prompt is 6 px taller (`346:3548` y +13.5,
+  h +6) and the dialog 7 px shorter (`dialog · Suggested prompt` y
+  +3.5, h -7).
 - **Focus.** Ark focuses the first control when the dialog opens, which
   is now Done in the title row, so Done shows a focus ring; Figma shows
   none.
@@ -63,6 +65,15 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   +3); `start` x +4, y +13, h -1 (was x +4, y +22, h -1). The cause is
   the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
   24) and the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · NEXT STEPS` within tolerance (was
+  x +0, y +18, w +1, h +4); `group · SNOOZED` x +0, y +5, w +1, h +2
+  (was x +0, y +29, w +1, h +4); `dialog · Suggested prompt` x +0, y
+  +3.5, w +0, h -7 (was x +0, y +25.5, w +0, h -51); `346:3548` x +0,
+  y +13.5, w +0, h +6 (was x +0, y +35.5, w +0, h -38). The cause is
+  #108's compact `ListRow` (56 px, was 58; Figma 55) and list
+  `GroupHeader` (36 px, was 38; Figma 34) and the whole prompt in
+  `bodyLg` (Regular 15/24, d-100; Figma 15/23; was `body`, 14/20).
 
 ## Second review
 
@@ -78,7 +89,8 @@ notes. What it found in every frame, and why it stays:
 
 - List rows taller, list, title and detail text larger, approval
   buttons larger, WHY on two lines, the prompt without its fade, MY
-  NOTES 12 to 16 px taller: the type sizes above.
+  NOTES 12 to 16 px taller: the type sizes above. (Since beta.7 the approval
+  buttons take Figma's Medium 12, `Button textSize="xs"`.)
 - Search, Sort and Filter differ by up to 19 px in width, the chip
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,
@@ -97,4 +109,5 @@ For D08 it also found:
 - P2: Edit prompt has a focus ring (see Focus above; the ring is now on
   Done).
 - The body is 14 px against Figma's 15 and the title larger: library
-  type styles (`body`, `subtitle`).
+  type styles (`body`, `subtitle`). Since beta.7 the prompt is
+  `bodyLg` (Regular 15/24), Figma's 15 px.

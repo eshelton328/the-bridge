@@ -2,7 +2,7 @@
 
 What still differs from Figma T17 · Discussion, before the first message (`discussionPage`, D14's discussion as a page), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -83,9 +83,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   x, w). The empty state holds the panel and the suggestions, so it is
   taller than Figma's (`empty state` h). Library gaps: Discussion column
   on the tablet, Empty state with an icon tile.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** The suggestions take `Button textSize="xs"`
+  (`labelXs`, Medium 12/16), Figma's Medium 12 (d-100). The labels
+  match Figma's.
 
 ## Second review, round 2
 

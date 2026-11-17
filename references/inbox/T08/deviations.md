@@ -2,7 +2,7 @@
 
 What still differs from Figma T8 · Read the whole prompt (the prompt in a sheet, `promptSheet`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -24,7 +24,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `section · MY NOTES`: x +2, y +12, w -4, h +7.
 - `notes field`: x +2, y +14, w -4, h +5.
 - `section · SOURCES`: x +2, y +21, w -4, h +2.
-- `346:7179`: x -6, y +39, w +12, h -38.
+- `346:7179`: x -6, y -5, w +12, h +6.
 - `sheet actions`: x -6, y -1, w +12, h +1.
 - `button · Edit prompt`: x -6, y -1, w +6, h +1.
 - `button · Copy`: x +0, y -1, w +6, h +1.
@@ -65,24 +65,30 @@ shorter, below Figma's status bar (d-102), and the position check adds
   row. It pads its content 12 and its header 16 against Figma's 23; the
   content takes 4 more, so the title and text share one left edge, 6 px
   left of Figma's (`346:7179` x -6, w +12; `sheet actions` x -6, w +12;
-  `button · Edit prompt` x -6; library gap: Sheet inset on the tablet). The prompt is `body` (14/20)
-  against Figma's Regular 15 with 23 px lines, so it is 38 px shorter
-  (`346:7179` h -38) and starts 39 px lower, since the sheet is anchored
-  to the bottom; Regular 15 text waits on Erik (library gap: Regular
-  15 px text).
+  `button · Edit prompt` x -6; library gap: Sheet inset on the tablet). The prompt is `bodyLg`
+  (Regular 15/24) against Figma's Regular 15 with 23 px lines, the 4 px
+  grid value (d-100), so it is 6 px taller (`346:7179` h +6) and starts
+  5 px higher, since the sheet is anchored to the bottom (y -5).
 - **Focus.** Ark focuses the first control when the sheet opens, Done,
   so Done shows a focus ring; Figma shows none (as D08).
 - **Tab bar.** `TabBar` spreads its five tabs over the full width
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
-- **Button labels.** Snooze, Dismiss, Reset, Edit, Change and the
-  sheet's Edit prompt and Copy keep the 14 px `label`; Figma sets them in
-  Medium 12, which no text style has (d-050), so they are a little wider.
-  Library gap: Button label size.
+- **Button labels.** Snooze, Dismiss, Reset, Edit and Change behind the
+  sheet take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's
+  Medium 12, and Start takes `textSize="smStrong"` (`labelSmStrong`,
+  SemiBold 13/16), Figma's SemiBold 13 (d-100). The sheet's Edit prompt
+  and Copy are `size="xl"` in `label` (Medium 14); Figma's labels are
+  smaller, about 13 px (17 px text boxes, 346:7187, 346:7193), so they
+  are a little wider. Library gap: Button label size.
 - **Disabled Reset.** Reset behind the sheet keeps its fill and
   `border.default` border with only its label and icon in `fg.muted`, as
   Figma draws it; beta.5 (#105) stopped fading the whole button.
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108), with this branch's app changes, move these layers: `346:7179` x -6, y -5, w +12, h +6 (was x
+  -6, y +39, w +12, h -38). The cause is the whole prompt in `bodyLg`
+  (Regular 15/24, d-100; Figma 15/23; was `body`, 14/20).
 
 ## Second review
 

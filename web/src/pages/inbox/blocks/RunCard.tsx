@@ -12,6 +12,7 @@ import {
   Inline,
   KindMark,
   Panel,
+  type PanelProps,
   Stack,
   TruncatedText,
 } from '@eshelton328/component-library-1701'
@@ -24,6 +25,15 @@ const title = css({ textStyle: 'label', flex: '1' })
 // M10 346:11097: the meta stays on one line, cut with an ellipsis, on the phone's narrow card.
 const meta = css({ textStyle: 'monoSm', color: 'fg.muted', display: 'grid' })
 
+const panelTones = {
+  working: 'accent',
+  running: undefined,
+  done: 'done',
+  danger: 'danger',
+  needsYou: undefined,
+  idle: undefined,
+} as const satisfies Record<InboxRunCard['status']['tone'], PanelProps['tone']>
+
 export type RunCardProps = {
   run: InboxRunCard
   /** The primary button: opens the card's chat, or a removed task's discussion. */
@@ -35,11 +45,11 @@ export type RunCardProps = {
 export function RunCard({ run, onOpen, onRestore }: RunCardProps) {
   // Figma names the card after the run's state: "running card" (D6) or "result card" (D7, D21).
   const running = run.status.tone === 'working'
-  // A running card has the accent border and tint; Figma's green border of a result card (D7) and red border
-  // of a removed one (D21) have no Panel tone (LIBRARY_GAPS.md).
+  // A running card has the accent border and tint, a finished one Figma's green border (D7) and a removed one its
+  // red border (D21 403:4261).
   return (
     <div data-figma={running ? 'running card' : 'result card'}>
-      <Panel tone={running ? 'accent' : undefined}>
+      <Panel tone={panelTones[run.status.tone]}>
         <Stack gap="8">
           <Inline gap="8" align="center">
             <KindMark kind={run.agent} size="16" />

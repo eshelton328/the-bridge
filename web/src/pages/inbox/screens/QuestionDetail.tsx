@@ -68,7 +68,7 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
                   <span className={mono}>{detail.waiting.detail}</span>
                 </Stack>
               </div>
-              <Button size="sm">
+              <Button size="sm" textSize="xs">
                 <ExternalLinkIcon />
                 {phone ? 'Open' : 'Open chat'}
               </Button>

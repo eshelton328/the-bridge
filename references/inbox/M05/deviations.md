@@ -3,7 +3,7 @@
 What still differs from Figma M5 · A question that blocks a chat (the question on the phone, `questionPhone`), after the last
 fidelity run (`pnpm fidelity inbox M05`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -52,10 +52,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   CHOOSE ONE` +29). Library gap: Small text in the detail.
 - **Waiting box.** `Panel tone="needsYou"` pads 16 against Figma's 13,
   so the box is 9 px taller (`blocking` h +9). Its title is `label`
-  (14 px), and its fill is warmer than Figma's near-black: the
-  needs-you tint waits on Erik (d-050). The button says Open on
-  the phone, Open chat on the desktop and tablet, as Figma does. Library
-  gap: Panel and text field padding.
+  (14 px). Its tint is 0.08, as Figma's (library #107); its border
+  stays `status.needsYou.border` at 0.5 against Figma's 0.35, because
+  0.35 gives 2.0:1 against the tint, under WCAG AA's 3:1 (d-100). The
+  button says Open on the phone, Open chat on the desktop and tablet,
+  as Figma does. Library gap: Panel and text field padding.
 - **Options.** The Recommended pill is 20 px high, as Figma's
   (`Badge size="sm"`, #106), so the option cards are within 3 px of
   Figma's (`section · CHOOSE ONE` h +3; h +7 with the 24 px pill).
@@ -63,13 +64,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   as Figma draws it (`sticky action` passes). The bar is opaque, as
   Figma's: the chrome over the canvas, so the options and the note that
   scroll under it do not show through. The note to the chat lies under
-  it (`section · NOTE TO THE CHAT · OPTIONAL` passes); the page scrolls
-  to it.
+  it, 34 px lower than Figma's from the sections above (`section · NOTE
+  TO THE CHAT · OPTIONAL` y +34); the page scrolls to it.
 - **Note under Answer.** The checks render 806 px high (d-102). The
   note's label lies under the pinned Answer in Figma and in the render
   (the exception says why).
-- **Button labels.** Button labels are 14 px (`label`) here;
-  Figma sets small buttons in Medium 12 or 13, which no text style has
-  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
-  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
-  it on the desktop and tablet). Library gap: Button label size.
+- **Button labels.** Open in the waiting box is `Button
+  textSize="xs"` (`labelXs`, Medium 12/16), as Figma's Medium 12
+  (d-100). Snooze and Dismiss are icons, and the pinned Answer is
+  `size="xl"` with the default label. The labels match.

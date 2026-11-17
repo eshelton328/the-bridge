@@ -5,24 +5,27 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
 
 - Text: pass; the hidden Reset and Edit and the hidden-count layer name are excepted in `exceptions.json`.
-- Position: 9 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 10 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +20, SNOOZED y +27, RUNNING y +31; the hidden-count line y +38).
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the row takes the 4 px grid
+  value nearest Figma's (d-100, library #108). Each group below the
+  first starts a little lower (NEXT STEPS within tolerance, SNOOZED y
+  +7, RUNNING y +9; the hidden-count line y +10).
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header), the 4 px grid value nearest Figma's (d-100, library #108).
+  The label's centre is 20 px from the header's top (Figma 21).
 - **Filters that apply.** The row (`filters applied`) passes. The library
   has no removable filter chip (Figma 359:993: 22 px high, `monoSm`, a
   cyan border and an x), so each value is a pressed `Button size="sm"`
@@ -60,6 +63,14 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   `section · SOURCES` x +4, y +27, h +2 (was x +4, y +32, h +2);
   `section · SUGGESTED PROMPT` x +4, y +10, h -2 (was x +4, y +10, h
   +3). The cause is the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · NEXT STEPS` within tolerance (was
+  x +0, y +20, w +1, h +4); `group · SNOOZED` x +0, y +7, w +1, h +2
+  (was x +0, y +27, w +1, h +4); `group · RUNNING` x +0, y +9, w +1, h
+  +2 (was x +0, y +31, w +1, h +4); `hidden count` x +0, y +10, w
+  -1.3, h +0 (was x +0, y +38, w -1.3, h +0). The cause is #108's
+  compact `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader`
+  (36 px, was 38; Figma 34).
 
 ## Second review
 
@@ -67,7 +78,7 @@ The blind second review of round 3 (`reports/fidelity/inbox/D13.sideBySide.png`,
 
 - Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
 - Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
-- Needs-you row actions (Allow once, Deny, Open chat) larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size".
+- Needs-you row actions (Allow once, Deny, Open chat) larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Fixed by beta.7: Allow once, Deny and Open chat take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12.
 - Newest and Filter wider, Search narrower: recorded. Newest and Filter
   are `Button`s with 14 px labels against Figma's Medium 13 (403:1663,
   403:1671), so they are wider and Search takes what is left (row

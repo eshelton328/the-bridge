@@ -5,7 +5,7 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
-Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 `pnpm fidelity inbox`; the checks and offsets below are from that run.
 
 ## Checks
@@ -14,19 +14,19 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   `exceptions.json`. Dismiss is new this round: the stricter check gives
   each Figma layer its own text run, so "Dismissed: already done by hand"
   no longer covers it.
-- Position: 8 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `task pane`, `task bar`, `title block`).
+- Position: 9 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
-  11/16). A title and meta row is 58 px against Figma's 55: Figma's
-  text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (YESTERDAY y +10),
-  about half the offset of the 14 px rows.
-- **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
-  header): the library's `GroupHeader` after the 4 px grid (#96).
+  11/16). A title and meta row is 56 px against Figma's 55, the 4 px
+  grid value nearest Figma's (d-100, library #108). YESTERDAY starts
+  within the 4 px tolerance.
+- **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
+  header), the 4 px grid value nearest Figma's (d-100, library #108).
+  The label's centre is 20 px from its top (Figma 21).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
   through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
   (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
@@ -48,18 +48,18 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
-- **Result card.** `Panel` with the default border. Figma's result
-  card has a green border, and the library has no token for it (#101
-  left it out, d-050); `tone="accent"` would draw it cyan, as a running
-  card. It starts 23 px lower (round 3: 38), from the offsets above.
+- **Result card.** `Panel tone="done"` (library #107) draws Figma's
+  green border (`status.done.border`). It starts 14 px lower (round 3:
+  38), from the offsets above.
 - **Open chat.** Opens the finished task's chat in the task's place,
   as Reply here does on a running task; View task returns
   (`InboxRoute.test.tsx`). No frame draws the finished chat: it is the
   chat Start opened (D5), with its status Done and its last tool line
   done.
 - **Done rows.** `ListRow finished` (#101) draws the title of a done row
-  that is not selected in `fg.muted`, as Figma does. Figma also fades
-  the kind tile of such a row to 0.6; no token has that opacity.
+  that is not selected in `fg.muted`, as Figma does. Its kind tile fades
+  to `opacity.finished` 0.75 against Figma's 0.6 (library #107): at 0.6
+  the icons fall to 2.4:1 in light mode, under AA's 3:1 (d-100).
 - **Hidden Figma text.** Figma keeps Snooze and Dismiss in the task bar
   and Reset and Edit in the prompt header as hidden layers; the render
   leaves them out, and `exceptions.json` excepts them.
@@ -69,6 +69,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
   `section · SOURCES` x +4, y +31, h +2 (was x +4, y +36, h +2);
   `section · SUGGESTED PROMPT` x +4, y +14, h -2 (was x +4, y +14, h
   +3). The cause is the prompt's 20 px lines (see "Detail text").
+- **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
+  #108) move these layers: `group · YESTERDAY` within tolerance (was x
+  +0, y +10, w +1, h +4). The cause is #108's compact `ListRow` (56
+  px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
+  34).
 
 ## Second review
 
@@ -84,7 +89,8 @@ notes. What it found in every frame, and why it stays:
 
 - List rows taller, list, title and detail text larger, approval
   buttons larger, WHY on two lines, the prompt without its fade, MY
-  NOTES 12 to 16 px taller: the type sizes above.
+  NOTES 12 to 16 px taller: the type sizes above. (Since beta.7 the
+  rows are 56 px against 55.)
 - Search, Sort and Filter differ by up to 19 px in width, the chip
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,
@@ -102,7 +108,9 @@ For D07 it also found:
   selected; the render draws them as open rows. `ListRow` has a dimmed
   `snoozed` state but no finished one, and a snoozed row is a different
   thing, so the render does not borrow it. Library gap to add: a
-  finished (dimmed) `ListRow`.
+  finished (dimmed) `ListRow`. (Fixed: `ListRow finished`, #101, dims
+  the title, and since #107 the kind tile fades to 0.75; see "Done
+  rows".)
 - "Dismissed: already done by hand" and the times are brighter: the
   `fg.subtle` token and the type sizes.
 

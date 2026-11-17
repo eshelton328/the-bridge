@@ -2,7 +2,7 @@
 
 What still differs from Figma T2 · A next step (the next step on its own page, `taskPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -64,9 +64,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
-- **Button labels.** Snooze, Dismiss, Reset, Edit and Change keep the
-  14 px `label`; Figma sets them in Medium 12, which no text style has
-  (d-050), so they are a little wider. Library gap: Button label size.
+- **Button labels.** Snooze, Dismiss, Reset, Edit and Change take
+  `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12,
+  and Start takes `textSize="smStrong"` (`labelSmStrong`, SemiBold
+  13/16), Figma's SemiBold 13 (d-100). The labels match Figma's.
 - **Disabled Reset.** Reset keeps its fill and `border.default` border
   with only its label and icon in `fg.muted`, as Figma draws it
   (346:5736); beta.5 (#105) stopped fading the whole button.
