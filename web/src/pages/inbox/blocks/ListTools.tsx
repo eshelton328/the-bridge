@@ -11,6 +11,7 @@ import {
   CloseCircleIcon,
   FilterIcon,
   Inline,
+  OptionList,
   Popover,
   RadioMenu,
   SearchField,
@@ -28,6 +29,16 @@ const row = css({ py: '4' })
 // M7 346:10586: the Show button 2 under the boxes, 4 in from the sheet's 13 px inset.
 const sheetFoot = css({ px: '4', pt: '8' })
 const wide = css({ w: '[100%]' })
+// M13 346:11834: the note under the sort choices, centred under a rule.
+const sortNote = css({
+  textStyle: 'small',
+  color: 'fg.subtle',
+  textAlign: 'center',
+  pt: '16',
+  borderTopWidth: 'default',
+  borderTopStyle: 'solid',
+  borderTopColor: 'border.default',
+})
 
 export type ListToolsProps = {
   sortMenu: InboxSortMenu
@@ -62,21 +73,47 @@ type SortButtonProps = Pick<ListToolsProps, 'sortMenu' | 'sort' | 'sortOpen' | '
 function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, iconOnly }: SortButtonProps) {
   // The first choice is the default; another shows the button pressed (T11: picking Newest first again resets it).
   const active = sortMenu.options[0]?.value !== sort
-  const button = iconOnly ? (
-    <Button iconOnly aria-label="Sort" pressed={active || sortOpen ? true : undefined}>
-      <SortDescIcon />
-    </Button>
-  ) : (
-    <Button pressed={active || sortOpen ? true : undefined}>
-      <SortDescIcon />
-      {sortMenu.options.find((o) => o.value === sort)?.short}
-      <ChevronDownIcon size="12" />
-    </Button>
-  )
+  const pick = (value: string) => {
+    const picked = SortValue.safeParse(value)
+    if (picked.success) onSortChange?.(picked.data)
+  }
+  if (iconOnly)
+    // The phone's Sort is an icon with a dot while a sort applies (M15), and its menu a sheet (M13).
+    return (
+      <BottomSheet
+        title="Sort"
+        trigger={
+          <Button iconOnly aria-label="Sort" pressed={active || sortOpen ? true : undefined} indicator={active}>
+            <SortDescIcon />
+          </Button>
+        }
+        open={sortOpen}
+        onOpenChange={onSortOpenChange}
+        actions={
+          <BottomSheetClose>
+            <Button variant="text">Done</Button>
+          </BottomSheetClose>
+        }
+      >
+        <OptionList
+          label={sortMenu.heading}
+          value={sort}
+          onItemSelect={pick}
+          items={sortMenu.options.map((o) => ({ value: o.value, label: o.label, description: o.description }))}
+        />
+        <span className={sortNote}>{sortMenu.note}</span>
+      </BottomSheet>
+    )
   // A menu keeps its box in the page while closed; it stands for its Figma layer only while open.
   return (
     <RadioMenu
-      trigger={button}
+      trigger={
+        <Button pressed={active || sortOpen ? true : undefined}>
+          <SortDescIcon />
+          {sortMenu.options.find((o) => o.value === sort)?.short}
+          <ChevronDownIcon size="12" />
+        </Button>
+      }
       label={sortMenu.heading}
       heading={sortMenu.heading}
       width="sort"
@@ -84,10 +121,7 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
       open={sortOpen}
       onOpenChange={onSortOpenChange}
       value={sort}
-      onValueChange={(value) => {
-        const picked = SortValue.safeParse(value)
-        if (picked.success) onSortChange?.(picked.data)
-      }}
+      onValueChange={pick}
       options={sortMenu.options}
       note={sortMenu.note}
     />
@@ -111,7 +145,12 @@ export function ListTools({
 }: ListToolsProps) {
   const phone = layout === 'phone'
   const filter = phone ? (
-    <Button iconOnly aria-label="Filter" pressed={filterOpen || filterCount > 0 ? true : undefined}>
+    <Button
+      iconOnly
+      aria-label="Filter"
+      pressed={filterOpen || filterCount > 0 ? true : undefined}
+      indicator={filterCount > 0}
+    >
       <FilterIcon />
     </Button>
   ) : (

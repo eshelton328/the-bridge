@@ -9,17 +9,21 @@
 // snoozed items over the state's groups); the menus report through
 // onUiChange. On the phone a long-press on a row opens its actions sheet
 // (M6), which snoozes, marks done or dismisses it; a state with
-// `ui.actionsFor` shows the sheet at any width. Props only.
+// `ui.actionsFor` shows the sheet at any width. On the phone the chip row
+// scrolls the selected chip into view (M12), and a sort other than the first
+// shows a line under the tools with Reset (M15). Props only.
 import {
   CheckIcon,
   Container,
   FilterChips,
   FolderIcon,
   GroupHeader,
+  Inline,
   PageHeader,
   Stack,
   Toast,
 } from '@eshelton328/component-library-1701'
+import { useLayoutEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
@@ -61,6 +65,15 @@ const header = css({ py: '4' })
 // M1 346:9010: the phone's large title sits 4 in from the header's edge, over the group chevrons and the kind tiles.
 const phoneHeader = css({ px: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
+// M15 346:12164: "Sorted by project" and Reset, 4 in, under the tools.
+const sortLine = css({ px: '4' })
+const reset = css({
+  textStyle: 'small',
+  fontWeight: 'text.label',
+  color: 'fg.accent',
+  textDecoration: 'none',
+  _hover: { textDecoration: 'underline' },
+})
 const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
 
 function Rows({
@@ -70,6 +83,7 @@ function Rows({
   onSelectItem,
   onActions,
   openable,
+  phone,
 }: {
   rows: InboxGroupView['rows']
   ui: InboxUi
@@ -78,6 +92,7 @@ function Rows({
   /** The row that opens: the item the state has a detail for. */
   openable: string | undefined
   onActions: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
+  phone: boolean
 }) {
   return rows.map((row) => (
     <InboxRow
@@ -85,6 +100,7 @@ function Rows({
       row={row}
       selected={row.id === ui.selectedId}
       query={query}
+      phone={phone}
       onSelect={
         onSelectItem === undefined || row.id !== openable
           ? undefined
@@ -152,6 +168,13 @@ export function InboxListPane({
   const more = data.search?.query === q ? data.search.more : undefined
   // While the Filter menu is open it shows the filters; the applied row, the count on Filter and the hidden line wait.
   const applied = ui.filterOpen ? [] : view.applied
+  // The chip row scrolls sideways on the phone; the selected chip scrolls into view, as a tap on it does (M12).
+  const chipsRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    chipsRef.current?.querySelector('[data-state="on"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [ui.filter])
+  const sortFirst = data.sortMenu.options[0]
+  const sorted = data.sortMenu.options.find((o) => o.value === ui.sort)
   const setFilters = (filters: string[]) => {
     onUiChange?.({ filters, filterChecks: filters })
   }
@@ -170,7 +193,7 @@ export function InboxListPane({
           level={desktop ? 2 : 1}
         />
       </div>
-      <div data-figma="filter · chips">
+      <div data-figma="filter · chips" ref={chipsRef}>
         <FilterChips
           label="Filter the inbox"
           items={view.filters}
@@ -213,6 +236,21 @@ export function InboxListPane({
           onUiChange?.({ filterChecks: allChecks(data.filterMenu) })
         }}
       />
+      {layout !== 'phone' || sortFirst === undefined || sorted === undefined || sorted === sortFirst ? null : (
+        <Inline gap="6" align="center" className={sortLine} data-figma="sort applied">
+          <span className={summary}>{`${data.sortMenu.applied} ${sorted.label.toLowerCase()}`}</span>
+          <a
+            className={reset}
+            href="#reset"
+            onClick={(event) => {
+              event.preventDefault()
+              onUiChange?.({ sort: sortFirst.value })
+            }}
+          >
+            {data.sortMenu.reset}
+          </a>
+        </Inline>
+      )}
       {applied.length === 0 ? null : (
         <AppliedFilters
           sections={applied}
@@ -252,6 +290,7 @@ export function InboxListPane({
                 onSelectItem={onSelectItem}
                 onActions={onActions}
                 openable={data.detail?.id}
+                phone={layout === 'phone'}
               />
             ) : null}
             {open && group.projects !== undefined
@@ -265,6 +304,7 @@ export function InboxListPane({
                       onSelectItem={onSelectItem}
                       onActions={onActions}
                       openable={data.detail?.id}
+                      phone={layout === 'phone'}
                     />
                   </Stack>
                 ))

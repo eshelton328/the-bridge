@@ -667,6 +667,83 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByText('1 task hidden by filters')).toBeVisible()
   })
 
+  it('closes the prompt sheet with Edit prompt and puts the focus in the editor', async () => {
+    await phone('promptSheet')
+    await dialog().getByRole('button', { name: 'Edit prompt' }).click()
+    await expect.element(dialog()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
+  })
+
+  it('copies the whole prompt with Copy', async () => {
+    const copied: string[] = []
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = (text) => {
+      copied.push(text)
+      return Promise.resolve()
+    }
+    try {
+      await phone('promptSheet')
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      expect(copied).toHaveLength(1)
+      expect(copied[0]).toMatch(/^Read f-005-the-bridge\/increment-1\.md .* with the reason\.$/)
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
+  it('offers no Edit prompt for a sent prompt', async () => {
+    await phone('runningTaskPage')
+    await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+    await expect.element(dialog().getByRole('button', { name: 'Copy' })).toBeVisible()
+    expect(dialog().getByRole('button', { name: 'Edit prompt' }).elements()).toHaveLength(0)
+  })
+
+  it('opens the chat with Reply here, and Back shows the list, whose row opens the task again', async () => {
+    await phone('runningTaskPage')
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(title()).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+  })
+
+  it('sorts in the Sort sheet, names the sort under the tools, and Reset brings back Newest first', async () => {
+    await phone('list')
+    const sort = () => page.getByRole('button', { name: 'Sort', exact: true })
+    await sort().click()
+    await sheet('Sort').getByText('Project', { exact: true }).click()
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by project')).toBeVisible()
+    await expect.element(sort()).toHaveAttribute('aria-pressed', 'true')
+    await page.getByRole('link', { name: 'Reset' }).click()
+    await expect.element(page.getByText('Sorted by project')).not.toBeInTheDocument()
+    await expect.element(sort()).not.toHaveAttribute('aria-pressed')
+  })
+
+  it('picks a sort in the Sort sheet from the keyboard', async () => {
+    await phone('list')
+    page.getByRole('button', { name: 'Sort', exact: true }).element().focus()
+    await userEvent.keyboard('{Enter}')
+    const kind = sheet('Sort').getByRole('radio', { name: /Kind/ })
+    await expect.element(kind).toBeVisible()
+    kind.element().focus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by kind')).toBeVisible()
+  })
+
+  it('scrolls the selected Done chip into view', async () => {
+    await phone('doneList')
+    const chip = page.getByRole('radio', { name: 'Done 4' }).element()
+    const chips = page.getByRole('radiogroup', { name: 'Filter the inbox' }).element()
+    await expect.poll(() => box(chip).right).toBeLessThanOrEqual(box(chips).right)
+    expect(box(chip).left).toBeGreaterThanOrEqual(box(chips).left)
+  })
+
   it('keeps the reply Erik types in the chat', async () => {
     await phone('chat')
     const reply = page.getByRole('textbox', { name: 'Reply' })

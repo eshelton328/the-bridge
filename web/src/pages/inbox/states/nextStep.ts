@@ -115,6 +115,8 @@ const sortMenu = {
     { value: 'kind', label: 'Kind', description: 'Approvals first, next steps last', short: 'Kind' },
   ],
   note: 'Sorting applies inside each group.',
+  applied: 'Sorted by',
+  reset: 'Reset',
 } satisfies InboxData['sortMenu']
 
 const filterMenu = {
@@ -284,6 +286,7 @@ export const nextStep = {
     actionsFor: null,
     promptOpen: false,
     discussOpen: false,
+    chatOpen: false,
     removeOpen: false,
     sort: 'newest',
     filterChecks: noFilter,

@@ -46,6 +46,8 @@ export type InboxRowProps = {
   query?: string | undefined
   /** Opens the row's actions: a long-press or the context menu. */
   onActions?: (() => void) | undefined
+  /** The row is in the phone's list, which pulls it out of the list's padding, with or without actions (M12). */
+  phone?: boolean | undefined
 }
 
 /** How long a touch is held before it opens the row's actions, in ms; iOS's own long-press is about this. */
@@ -120,7 +122,7 @@ function Lines({ row }: { row: InboxRowView }) {
   )
 }
 
-export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRowProps) {
+export function InboxRow({ row, selected, onSelect, query, onActions, phone = false }: InboxRowProps) {
   const press = useLongPress(onActions)
   const lines =
     row.outcome !== undefined ||
@@ -165,8 +167,10 @@ export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRow
       {lines ? <Lines row={row} /> : undefined}
     </ListRow>
   )
-  // Only a row with actions (the phone's) gets the wrapper, so the desktop and tablet lists keep their boxes.
-  if (onActions === undefined) return item
+  // Only a phone row gets the wrapper, so the desktop and tablet lists keep their boxes; a finished row in the phone's
+  // Done has no actions, but lines up with the others.
+  if (!phone) return item
+  if (onActions === undefined) return <div className={phoneRow}>{item}</div>
   // A row that does not open is not a button itself, so the wrapper is the row's control: a tap, Enter or Space opens
   // its actions, and a keyboard or screen reader reaches it. A row that opens keeps its own button, and the context
   // menu key on that button opens the actions through the wrapper.

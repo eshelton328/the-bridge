@@ -28,6 +28,7 @@ export const runningTask = {
           meta: 'the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…',
           open: 'Reply here',
           openElsewhere: 'Open in Workspaces',
+          chat: running.data.detail,
         },
       },
     },

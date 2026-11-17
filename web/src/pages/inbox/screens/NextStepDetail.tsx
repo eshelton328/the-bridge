@@ -16,7 +16,7 @@ import {
   TruncatedText,
 } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { type DiscussControl, DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
@@ -42,7 +42,6 @@ const footer = css({
   bottom: '0',
   pt: '10',
   pb: '10',
-  px: '24',
   // Opaque, as PinnedAction: the chrome over the canvas, so the page that scrolls under it does not show through.
   bg: 'bg.canvas',
   backgroundImage: 'linear-gradient(token(colors.surface.chrome), token(colors.surface.chrome))',
@@ -50,6 +49,8 @@ const footer = css({
   borderTopStyle: 'solid',
   borderTopColor: 'border.default',
 })
+// T4: 22 in on the tablet (24, d-072); M10 346:11086: 12 in on the phone.
+const footerInset = { desktop: css({ px: '24' }), tablet: css({ px: '24' }), phone: css({ px: '12' }) } as const
 
 export type NextStepDetailProps = {
   detail: InboxNextStep
@@ -73,13 +74,14 @@ export type NextStepDetailProps = {
 
 type LaunchProps = {
   launch: InboxNextStep['launch']
+  onOpenChat: (() => void) | undefined
   pickerOpen: boolean
   onPickerOpenChange: (open: boolean) => void
   layout: Viewport
 }
 
-function Launch({ launch, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
-  if (launch.stage === 'started') return <RunCard run={launch.run} />
+function Launch({ launch, onOpenChat, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
+  if (launch.stage === 'started') return <RunCard run={launch.run} onOpen={onOpenChat} />
   return (
     <>
       <DetailSection title="Run in">
@@ -122,6 +124,13 @@ export function NextStepDetail({
   const keyboard = phone && ui.editingPrompt
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
   const start = phone && !keyboard && detail.launch.stage === 'suggested' ? detail.launch.startLabel : undefined
+  // Reply here opens the chat in the inbox, when the state has it.
+  const onOpenChat =
+    detail.launch.stage === 'started' && detail.launch.run.chat !== undefined
+      ? () => {
+          onUiChange?.({ chatOpen: true })
+        }
+      : undefined
   const column = (
     <Container
       size={detailContainerSize(layout)}
@@ -131,7 +140,8 @@ export function NextStepDetail({
       <Stack
         gap={phone ? '20' : '24'}
         className={phone ? phoneTask : undefined}
-        data-figma={compact ? `task · ${pinned === undefined ? 'next step' : 'running'}` : undefined}
+        // The tablet names a started task's frame "task · running" (T4); the phone keeps "task · next step" (M10).
+        data-figma={compact ? `task · ${pinned === undefined || phone ? 'next step' : 'running'}` : undefined}
       >
         {keyboard ? (
           <h1 className={scrolledTitle} data-figma="scrolled title">
@@ -162,6 +172,7 @@ export function NextStepDetail({
         {pinned === undefined ? (
           <Launch
             launch={detail.launch}
+            onOpenChat={onOpenChat}
             pickerOpen={ui.pickerOpen}
             onPickerOpenChange={(pickerOpen) => {
               onUiChange?.({ pickerOpen })
@@ -191,8 +202,8 @@ export function NextStepDetail({
   return (
     <>
       {column}
-      <div className={footer} data-figma="running">
-        <RunCard run={pinned} />
+      <div className={cx(footer, footerInset[layout])} data-figma="running">
+        <RunCard run={pinned} onOpen={onOpenChat} />
       </div>
     </>
   )

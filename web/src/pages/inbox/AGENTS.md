@@ -33,7 +33,14 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   the tab bar (`PinnedAction`), Sort and Filter are icons, the Filter menu
   and the Run in picker are sheets, a long-press on a row opens its
   actions sheet (`RowActionsSheet`, `ui.actionsFor`), and while the prompt
-  editor is open the keyboard hides Start and the tab bar. Discuss opens the
+  editor is open the keyboard hides Start and the tab bar. The phone's
+  Sort menu is a sheet too; an applied sort or filter puts a dot on its
+  icon, a sort other than the first adds a line with Reset under the
+  tools, and the chip row scrolls the selected chip into view. Reply here
+  on a started task's run card shows its chat (`ui.chatOpen`, the card's
+  `chat`) in the task's place at every size; Back closes it. In the
+  whole prompt's dialog or sheet, Edit prompt opens the editor and Copy
+  copies the prompt. Discuss opens the
   task's discussion (`ui.discussOpen`): on the desktop the list hides and
   `DiscussionPanel` sits beside the task; on a tablet or phone
   `DiscussionPage` takes the task's page, with no tab bar, and Back
@@ -71,7 +78,9 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   T21 `tasksCreatedList`, T22 `removalProposedPage`, T23
   `removeConfirmPage`, T24 `removedList`; phone M1 `list`, M2
   `taskPage`, M3 `promptKeyboard`, M4 `runInSheet`, M5 `questionPhone`,
-  M6 `rowActions`, M7 `filterList`, M8 `chat`. D16 is D15 with the update
+  M6 `rowActions`, M7 `filterList`, M8 `chat`, M9 `promptSheet`, M10
+  `runningTaskPage`, M11 `runningList`, M12 `doneList`, M13 `sortList`,
+  M14 `searchList`, M15 `sortedList`, M16 `filteredList`. D16 is D15 with the update
   applied in its `ui`. A T
   state that shows only the list sets `selectedId` to null. The others start
   from `nextStep` and its `nextStepGroups`; D9 to D11 and D13 start from
@@ -84,7 +93,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   in every layout, even with nothing selected, and a next step's `launch` a union on `stage`: suggested or
   started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
-  picker, the Snooze menu, a row's actions sheet, the discussion or the remove dialog is open,
+  picker, the Snooze menu, a row's actions sheet, the discussion, the started task's chat or the remove dialog is open,
   the sort, the Filter menu's boxes and the filters that apply, the
   items snoozed, the items finished (marked done or dismissed from the
   task bar, or removed in a discussion), and what Erik did to each
