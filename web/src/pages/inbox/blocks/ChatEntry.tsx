@@ -13,6 +13,7 @@ export function ChatEntry({ entry }: { entry: InboxChatEntry }) {
           kind={entry.agent}
           name={entry.name}
           actions={
+            // Figma sets Copy in Medium 11 (T5 346:6409); no label style has 11, so it takes `xs` (Medium 12).
             <Button size="xs" textSize="xs">
               <CopyIcon />
               Copy

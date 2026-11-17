@@ -89,7 +89,7 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
     <>
       <div data-figma="nav">
         <BackRow label="Inbox" onBack={onBack}>
-          <OpenInWorkspaces size="sm" label="Workspaces" figma="button · Open in Workspaces" />
+          <OpenInWorkspaces size="sm" textSize="xs" label="Workspaces" figma="button · Open in Workspaces" />
         </BackRow>
       </div>
       <div data-figma="started task">

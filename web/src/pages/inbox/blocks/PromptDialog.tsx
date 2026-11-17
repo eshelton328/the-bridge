@@ -43,13 +43,15 @@ function Actions({ prompt, onEdit, figma }: { prompt: string; onEdit: (() => voi
   return (
     <>
       {onEdit === undefined ? null : (
-        <Button size="xl" data-figma={figma ? 'button · Edit prompt' : undefined} onClick={onEdit}>
+        // Figma sets Edit prompt and Copy in Medium 13 (T8 346:7187, 346:7193).
+        <Button size="xl" textSize="sm" data-figma={figma ? 'button · Edit prompt' : undefined} onClick={onEdit}>
           <EditIcon />
           Edit prompt
         </Button>
       )}
       <Button
         size="xl"
+        textSize="sm"
         data-figma={figma ? 'button · Copy' : undefined}
         onClick={() => {
           void navigator.clipboard.writeText(prompt)

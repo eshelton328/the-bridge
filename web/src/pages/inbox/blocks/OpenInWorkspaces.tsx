@@ -14,13 +14,16 @@ export type OpenInWorkspacesProps = {
   /** The label, such as "Open in Workspaces", or "Workspaces" in the nav of a tablet or phone. */
   label: string
   size?: ComponentProps<typeof Button>['size']
+  /** The label's type: `xs` (Medium 12) in the chat header's nav (T5 346:6377, M8 346:10847), `sm` (Medium 13) on
+      the run card (T4 346:6303). */
+  textSize?: ComponentProps<typeof Button>['textSize']
   /** The Figma layer the button stands for. */
   figma?: string | undefined
 }
 
-export function OpenInWorkspaces({ label, size, figma }: OpenInWorkspacesProps) {
+export function OpenInWorkspaces({ label, size, textSize, figma }: OpenInWorkspacesProps) {
   return (
-    <Button size={size} aria-disabled="true" title={workspacesWaiting} data-figma={figma}>
+    <Button size={size} textSize={textSize} aria-disabled="true" title={workspacesWaiting} data-figma={figma}>
       <ExternalLinkIcon />
       {label}
     </Button>

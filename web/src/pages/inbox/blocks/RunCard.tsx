@@ -60,12 +60,13 @@ export function RunCard({ run, onOpen, onRestore }: RunCardProps) {
             <TruncatedText>{run.meta}</TruncatedText>
           </span>
           <Grid columns="2" gap="8">
-            <Button variant="primary" size="lg" onClick={onOpen}>
+            {/* Figma sets Reply here in SemiBold 13 (T4 346:6297) and Open in Workspaces in Medium 13 (346:6303). */}
+            <Button variant="primary" size="lg" textSize="smStrong" onClick={onOpen}>
               <BubbleIcon />
               {run.open}
             </Button>
             {onRestore === undefined ? (
-              <OpenInWorkspaces size="lg" label={run.openElsewhere} />
+              <OpenInWorkspaces size="lg" textSize="sm" label={run.openElsewhere} />
             ) : (
               // Figma draws Restore with Open in Workspaces' icon (D21 403:4278).
               <Button size="lg" onClick={onRestore}>
