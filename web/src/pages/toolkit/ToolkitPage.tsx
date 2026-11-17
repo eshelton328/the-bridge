@@ -5,6 +5,7 @@
 // The open item's copy button writes its path to the clipboard here.
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
+import { copyText } from '../../lib/copyText.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 
@@ -32,7 +33,7 @@ export function ToolkitPage() {
       }}
       onCopyPath={(path) => {
         // The badge's copy button; a page without clipboard access (an insecure origin) copies nothing.
-        void navigator.clipboard.writeText(path).catch(() => undefined)
+        copyText(path)
       }}
     />
   )

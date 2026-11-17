@@ -11,5 +11,7 @@ layer, a store or the router.
   phone) for a width. The library has no breakpoint tokens, so the
   widths come from the shell's size tokens: rail + list pane + detail
   (1232) for the desktop, one list pane (420) for the tablet.
+- `copyText.ts`: `copyText()`, which copies text to the clipboard when
+  the page has one and copies nothing (and throws nothing) when not.
 - `containerSize.ts`: the library `Container` size of a detail column
   for each layout.
