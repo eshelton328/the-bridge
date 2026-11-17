@@ -94,8 +94,12 @@ each file of a page folder is for.
   (pure, tested in `discussionView.test.ts`) drops a discarded proposal,
   puts the sent messages after the entries, and says what each button
   does: Discard sets `ui.discussProposal` to `discarded`, Apply to
-  `applied` (the applied artifact is D9's state, built later), and Edit
-  first puts the lines the proposal adds in the reply box.
+  `applied`, and Edit first puts the lines the proposal adds in the reply
+  box. For D9: with `applied`, `appliedView` (same file) shows the
+  artifact's `applied` pill, bar line and updated chip and the proposal's
+  `apply` context; `ArtifactProposal` draws its `apply` eyebrow, the lines
+  it put in and its note, with no buttons, as the Inbox's applied update
+  (Inbox D16). The link stays: Apply republishes to it.
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
@@ -107,7 +111,8 @@ each file of a page folder is for.
   holds the discussion, so D2's Discuss opens it) and D8 `changeProposed`
   (D7's data with a question, the reply and a proposed update to the
   chart; the discussion's `layers` hold each frame's node ids of its two
-  Open in workspace buttons). `library` stays first in `states/index.ts`: the app
+  Open in workspace buttons; it also holds what Apply shows, so its Apply
+  shows D9) and D9 `changeApplied` (D8's data after Apply). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
