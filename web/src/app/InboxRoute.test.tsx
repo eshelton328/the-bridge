@@ -600,6 +600,25 @@ describe('the Inbox on the phone', () => {
     await expect.element(dialog()).toBeVisible()
   })
 
+  it('puts the focus in the prompt editor that Edit opens', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
+  })
+
+  it('makes only a row with a detail a button, so no row is a dead control', async () => {
+    await phone('list')
+    const titles = ['drift check wants to run git mv', 'Pick the header logo', 'Commit the brain: 34 changes']
+    for (const text of titles) {
+      await expect.element(page.getByText(text, { exact: true })).toBeVisible()
+      expect(page.getByRole('button', { name: text, exact: true }).elements()).toHaveLength(0)
+    }
+    await expect.element(page.getByRole('button', { name: 'Write the tickets for increment one' })).toBeVisible()
+    await page.getByText('Pick the header logo', { exact: true }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(title()).not.toBeInTheDocument()
+  })
+
   it('hides the tab bar and Start while the prompt editor is open, and brings them back with Done', async () => {
     await phone('taskPage')
     const tabBar = () => page.getByRole('button', { name: 'Home' })

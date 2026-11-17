@@ -4,7 +4,8 @@
 // editor; Reset brings back the suggested prompt. A sent prompt, or one removed before it ran, has no
 // buttons. A long prompt ends with "Read the whole prompt", which opens it
 // in a dialog; a prompt a discussion changed has a line with Undo beside
-// it, which takes the change back. Props only.
+// it, which takes the change back. Edit puts the focus in the editor, as
+// Figma draws it (M3, T12, D3). Props only.
 import {
   Badge,
   Button,
@@ -19,7 +20,7 @@ import {
   TextArea,
   UndoIcon,
 } from '@eshelton328/component-library-1701'
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { draftProps, type InboxDrafts, type InboxNextStep } from '../types.ts'
@@ -88,6 +89,14 @@ export function PromptSection({
   const edited = current !== suggested.text
   // The suggestion keeps its own length after Reset; any other text is as long as the state's prompt.
   const long = current === suggested.text ? suggested.long : prompt.long
+  // Edit puts the focus in the editor it opens; a state that starts with the editor open leaves the focus alone.
+  const editorRef = useRef<HTMLDivElement>(null)
+  const focusEditorRef = useRef(false)
+  useEffect(() => {
+    if (!editing || !focusEditorRef.current) return
+    focusEditorRef.current = false
+    editorRef.current?.querySelector('textarea')?.focus()
+  }, [editing])
   const readMore = long ? (
     <a
       className={more}
@@ -124,6 +133,7 @@ export function PromptSection({
             <Button
               size="sm"
               onClick={() => {
+                focusEditorRef.current = !editing
                 onEditingChange?.(!editing)
               }}
             >
@@ -135,7 +145,7 @@ export function PromptSection({
       }
     >
       {editing ? (
-        <Stack gap="8">
+        <Stack gap="8" ref={editorRef}>
           <TextArea
             labelHidden
             label="Suggested prompt"

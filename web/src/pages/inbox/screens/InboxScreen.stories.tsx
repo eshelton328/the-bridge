@@ -534,6 +534,10 @@ export const PromptKeyboard: Story = {
     await expect(canvas.getByDisplayValue(/put them in the Increment 1 cycle/)).toBeVisible()
     // Unlike D3 and T12, the Run in picker is closed.
     await expect(within(document.body).queryByRole('dialog', { name: 'Run in' })).toBeNull()
+    // Figma draws the editor focused (its cyan border and a caret), as after Edit, which focuses it (InboxRoute.test.tsx).
+    const editor = canvas.getByRole('textbox', { name: 'Suggested prompt' })
+    editor.focus()
+    await expect(editor).toHaveFocus()
   },
 }
 

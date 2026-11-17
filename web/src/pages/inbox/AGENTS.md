@@ -24,7 +24,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   when the state shows the Done list), then the filters that apply, the search and the sort, with the
   counts that follow. The Filter menu's boxes apply when it closes; the
   Sort, Filter, Snooze and Run in menus open and close by `ui`, and Edit
-  and Done open and close the prompt editor. `InboxRoute.test.tsx` uses
+  and Done open and close the prompt editor (Edit puts the focus in it). `InboxRoute.test.tsx` uses
   each of them through the route. `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`; on a tablet a started next step's `RunCard` stays at
