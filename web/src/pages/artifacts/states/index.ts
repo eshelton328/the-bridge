@@ -8,6 +8,7 @@ import { changeProposed } from './changeProposed.ts'
 import { discussOpen } from './discussOpen.ts'
 import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
+import { libraryTablet } from './libraryTablet.ts'
 import { searchList } from './searchList.ts'
 import { sortOpen } from './sortOpen.ts'
 
@@ -21,4 +22,5 @@ export const artifactsStates = {
   discussOpen,
   changeProposed,
   changeApplied,
+  libraryTablet,
 }

@@ -146,3 +146,13 @@ export const ChangeApplied: Story = {
     await expect(canvas.queryByRole('button', { name: 'Apply' })).toBeNull()
   },
 }
+
+export const LibraryTablet: Story = {
+  name: 'T1: the library on a tablet, in two columns',
+  args: { data: artifactsStates.libraryTablet.data, ui: artifactsStates.libraryTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Artifacts' })).toBeVisible()
+    await expect(canvas.getByRole('searchbox', { name: /Search artifacts/i })).toBeVisible()
+    await expect(canvas.getByText('Viewscreen, Captain’s Log, Engineering and Console')).toBeInTheDocument()
+  },
+}
