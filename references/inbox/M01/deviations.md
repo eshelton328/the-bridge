@@ -2,7 +2,8 @@
 
 What still differs from Figma M1 · Inbox (the phone list, `list`), after the last
 fidelity run (`pnpm fidelity inbox M01`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -47,8 +48,11 @@ status bar.
   against Figma's 44 (`header` h -4) and the tools row 40 against 44
   (`list tools` h -4); the chip row's box is 34 against Figma's 30
   (`filter · chips` h +4), so it and `group · NEEDS YOU` start 4 px
-  higher. Library gaps: Search field and chip count text, Breakpoint
-  tokens.
+  higher. The search field's text and placeholder
+  are 13 px (`SearchField textSize="sm"`, `bodySm`, #106), as Figma's. An idle
+  chip's count is `fg.subtle` (#7986a6, #106) against Figma's #4a5675,
+  which stays out by d-099 because it fails WCAG AA (d-055).
+  Library gap: Breakpoint tokens.
 - **Row inset and title.** Figma's phone rows pad their content 4 at
   the sides (346:9052), so the kind tiles line up under the group
   chevrons; `ListRow` pads 10 inside a 1 px border. The phone pulls each
@@ -72,6 +76,8 @@ status bar.
   control that does nothing (`InboxRoute.test.tsx`).
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square
   as in Figma (346:9036, 346:9041).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
+- **Button labels.** Button labels are 14 px (`label`) here;
+  Figma sets small buttons in Medium 12 or 13, which no text style has
+  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
+  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
+  it on the desktop and tablet). Library gap: Button label size.

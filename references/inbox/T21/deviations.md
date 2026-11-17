@@ -1,8 +1,8 @@
 # T21 deviations
 
 What still differs from Figma T21 · The new tasks in the inbox (`tasksCreatedList`, D18's list on the tablet), after the last
-fidelity run (`pnpm fidelity inbox T21`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
+against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -39,8 +39,11 @@ status bar.
 - **List rows and group headers.** As in T01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower. Library gaps: Small text in the detail, Search field and chip
-  count text.
+  lower. Library gap: Small text in the detail.
+- **Search field and chip counts.** The search field's text and
+  placeholder are 13 px (`SearchField textSize="sm"`, `bodySm`, #106),
+  as Figma's (402:11999). Idle chip counts are `fg.subtle` (#7986a6, #106);
+  Figma's #4a5675 stays out by d-099, because it fails WCAG AA (d-055).
 - **New rows.** The new tasks are `ListRow` rows with a `StatusPill`
   "New"; Figma draws them as bordered rows on a raised fill. Library
   gap: New list row.
@@ -56,12 +59,14 @@ status bar.
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
   bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Newest and Filter take `Button textSize="sm"`
+  (Medium 13, #105), as Figma draws them. The other labels are 14 px
+  (`label`), where Figma sets small buttons in Medium 12 (no token,
+  d-050), so those buttons are a little wider. Library gap: Button
+  label size.
 
 ## Second review, round 2
 
 A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
 
-- Search placeholder larger and lighter, chip counts lighter (P3): already recorded. Library gap: Search field and chip count text.
+- Search placeholder larger and lighter, chip counts lighter (P3): fixed in part by beta.5: the placeholder is 13 px and idle counts are `fg.subtle`; Figma's #4a5675 stays out by d-099 (fails WCAG AA, d-055).

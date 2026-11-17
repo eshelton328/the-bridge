@@ -2,7 +2,8 @@
 
 What still differs from Figma M2 · A next step (the next step on the phone's task page, `taskPage`), after the last
 fidelity run (`pnpm fidelity inbox M02`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -17,16 +18,16 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +68; 38 px removed: y +2.
+- `task · next step`: x +0, y -36, w +0, h +59; 38 px removed: y +2.
 - `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
 - `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
 - `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h +3; 38 px removed: y +17.
-- `section · RUN IN`: x +0, y -16, w +0, h -17; 38 px removed: y +22.
-- `button · Change`: x +0, y -26, w -2, h +4; 38 px removed: y +12.
-- `section · MY NOTES`: x +0, y -31, w +0, h +7; 38 px removed: y +7.
-- `notes field`: x +0, y -29, w +0, h +5; 38 px removed: y +9.
-- `section · SOURCES`: x +0, y +98, w +0, h +2; 38 px removed: y +136.
+- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -2; 38 px removed: y +17.
+- `section · RUN IN`: x +0, y -21, w +0, h -21; 38 px removed: y +17.
+- `button · Change`: x +0, y -32.5, w -2, h +4; 38 px removed: y +5.5.
+- `section · MY NOTES`: x +0, y -40, w +0, h +7; 38 px removed: y -2.
+- `notes field`: x +0, y -38, w +0, h +5; 38 px removed: y +0.
+- `section · SOURCES`: x +0, y +89, w +0, h +2; 38 px removed: y +127.
 
 ## Deviations
 
@@ -55,21 +56,31 @@ status bar.
   title.
 - **Run in card.** The render puts the Recommended pill beside the
   title, as on the desktop and tablet; Figma's phone card puts it on its
-  own line under the detail (346:9316), so the card is 17 px shorter
-  (`section · RUN IN` h -17) and Change sits 10 px higher in it
-  (`button · Change` y +12 against the card's +22). Change is
+  own line under the detail (346:9316), so the card is 21 px shorter
+  (`section · RUN IN` h -21) and Change sits 11.5 px higher in it
+  (`button · Change` y +5.5 against the card's +17). Change is
   `Button size="sm" iconOnly`, 28 × 28 against Figma's 30 × 24
-  (`button · Change` w -2, h +4). Library gaps: Small icon button, Pill
-  height.
+  (`button · Change` w -2, h +4). Library gap: Small icon button.
+  The pill is now 20 px high, as Figma's (`Badge size="sm"`, #106); at
+  24 px its extra 4 px hid part of the card's offset, so the card went
+  from h -17 to h -21, and Change moved 2 px up with the shorter title
+  row. The card, Change and everything below it also start 5 px higher
+  than before, because the prompt above is 5 px shorter (see Prompt).
 - **Reset.** Reset is disabled until the prompt differs from the
-  suggestion. Figma dims only its label and icon and keeps the border;
-  a disabled `Button` fades the whole button, border included. Library
-  gap: Disabled button style.
-- **Prompt.** `Clamp` cuts the prompt after five lines with an ellipsis
-  and its fade; Figma cuts the text box at 128 px under a fade
-  (346:9300) and draws no ellipsis. `Clamp fade` keeps `line-clamp`,
-  which draws the "…" in Chrome. The exception says why the cut text
-  passes. Library gap: Prompt fade without an ellipsis.
+  suggestion. As Figma draws it, it keeps its fill and `border.default`
+  border and only its label and icon are `fg.muted` (#105: a disabled
+  secondary `Button` no longer fades).
+- **Prompt.** `Clamp lines={5} fade` cuts the prompt by height after
+  five lines and fades its end with no ellipsis (#104), as Figma cuts
+  the text box at 128 px under a fade (346:9300). The prompt's text
+  style (`bodySm`) now sits on a block around the `Clamp`: on the
+  inline span it had, the 13 px text in the panel's 14 px line made
+  21 px lines, and the cut at five 20 px lines hid part of the fifth.
+  The lines are now 20 px against Figma's 21 (no token has 21), so the
+  prompt section is 5 px shorter (`section · SUGGESTED PROMPT` h -2,
+  within tolerance; it was h +3) and every layer below it starts 5 px
+  higher than before. The `hiddenOverflow` exception says why the cut
+  text passes; its selector now ends `div > div.clamp` for that block.
 - **Start.** Pinned above the tab bar, full width, as Figma draws it
   (`sticky action` passes); the hint "Opens the new chat and sends the
   prompt." is left out, as Figma does. The button is `size="xl"`. The
@@ -79,12 +90,15 @@ status bar.
   here opens its chat (`InboxRoute.test.tsx`).
 - **My notes and Sources.** The page scrolls under Start, as the note
   says. My notes starts lower than Figma's by what the sections above
-  add, less the 17 px the Run in card saves (`section · MY NOTES` y +7,
-  `notes field` y +9 with the status bar removed). Figma
+  add, less the 21 px the Run in card saves (`section · MY NOTES` y -2,
+  `notes field` y +0 with the status bar removed; y -40 and -38 as
+  measured, 9 px higher than before from the shorter prompt and pill). Figma
   keeps a hidden SOURCES section at y 623 (346:9326); the render has
-  Sources after My notes, below the fold (`section · SOURCES` y +136).
+  Sources after My notes, below the fold (`section · SOURCES` y +127).
 - **Task frame.** The task runs on under Start to the end of the page,
-  so its box is taller than Figma's (`task · next step` h +68).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
+  so its box is taller than Figma's (`task · next step` h +59).
+- **Button labels.** Button labels are 14 px (`label`) here;
+  Figma sets small buttons in Medium 12 or 13, which no text style has
+  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
+  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
+  it on the desktop and tablet). Library gap: Button label size.

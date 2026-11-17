@@ -5,6 +5,9 @@ What still differs from Figma after round 7 of the fidelity loop
 library 1.0.0-beta.4, which has #97 to #103), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass. The text check of main 3546ac7 (#3) skips the values of
@@ -24,17 +27,22 @@ library 1.0.0-beta.4, which has #97 to #103), each with its reason. The library 
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY through
-  `MarkdownView size="sm" padding="none"`, #102), as
-  Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
-  prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
-  prompt's five lines hold all of it, so it does not fade where Figma
-  fades its fifth line.
-  The mono lines in the detail (the task bar, the chips, the tags, the
-  run line, the note's author and the source details) use `monoSm`
-  (11/16, #102), Figma's 11 px; `MetaChip` and `TagsLine` take
-  `size="sm"`. Their line boxes stay 16 px against Figma's 14 (4 px
-  grid), so no layer moved.
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
+  through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
+  (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
+  are 21 px apart; `bodySm` keeps 20 (4 px grid). The prompt's five
+  lines hold all of it, so it does not fade where Figma fades its fifth
+  line (`section · SUGGESTED PROMPT` h -4). Since beta.5 the prompt's
+  `bodySm` sits on a block around `Clamp`, not on an inline span: there
+  its 13 px text in the panel's 14 px line made 21 px lines, and the
+  faded `Clamp` (#104), which now cuts at five lines' height with no
+  ellipsis, would hide the fifth. Five 20 px lines are 100 px, not 105,
+  so the prompt is 5 px shorter and the layers below it 5 px higher. The
+  mono lines in the detail (the task bar, the chips, the tags, the run
+  line, the note's author and the source details) use `monoSm` (11/16,
+  #102), Figma's 11 px; `MetaChip` and `TagsLine` take `size="sm"`.
+  Their line boxes stay 16 px against Figma's 14 (4 px grid), so no
+  layer moved.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520: the
@@ -49,9 +57,19 @@ library 1.0.0-beta.4, which has #97 to #103), each with its reason. The library 
   (`Checkbox labelStyle="mono"`, #98). The `filter popover` key now sits
   on the popover's box (#98); the box starts 6 px lower than Figma's
   (y +6).
-- **Section offsets.** WHY starts 6 px lower and the sections after it 10
-  to 22 px lower (SOURCES y +22), from the title block, the run card and
-  the gaps. Round 3 had 28 to 40: WHY no longer wraps.
+- **Section offsets.** WHY starts 6 px lower and the sections after it
+  10 to 12 px lower (SOURCES y +12; RUN IN y +8), from the title block,
+  the run card and the gaps. Round 3 had 28 to 40: WHY no longer wraps.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `section · RUN IN` x +4, y +8, h +1 (was x +4, y +10, h +5);
+  `section · SOURCES` x +4, y +12, h +2 (was x +4, y +18, h +2);
+  `section · SUGGESTED PROMPT` x +4, y +10, h -4 (was x +4, y +10, h
+  -2); `start` x +4, y +11, h -1 (was x +4, y +17, h -1). The cause is
+  the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
+  24) and the prompt's 20 px lines (see "Detail text").
+  `section · SUGGESTED PROMPT` moves further from Figma: the
+  Figma-matching change exposes an offset that was already there, which
+  the 24 px pills and 21 px prompt lines had hidden.
 
 ## Second review
 
@@ -74,7 +92,11 @@ notes. What it found in every frame, and why it stays:
   chip counts, the pane count, timestamps, meta lines and section labels
   are brighter, and the rail labels sit 4 to 12 px lower: library styles
   (`SearchField`, `Button`, `FilterChips`, `PageHeader`, the rail) and
-  their colour tokens. The app sets none of these values.
+  their colour tokens. The app sets none of these values. (Fixed in part
+  by beta.5: Newest or Sort and Filter take Medium 13 labels and the
+  search field 13 px text, as Figma's, and the idle chip counts are
+  `fg.subtle`, still brighter than Figma's #4a5675, which d-099 keeps
+  out because it fails WCAG AA, d-055.)
 - The NCC chip's tint is fainter than Figma's (`MetaChip tone="issue"`):
   library style.
 - The detail column is 4 px to the right: the 40 px inset above.

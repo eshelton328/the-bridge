@@ -2,13 +2,14 @@
 
 What still differs from Figma M10 · Running, on the task page (`runningTaskPage`), after the last
 fidelity run (`pnpm fidelity inbox M10`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (32 strings checked; 4 Figma strings under exceptions.json).
-- Position: 4 of 11 layers pass (`section · SOURCES`, `running`, `running card`, `tab bar`).
+- Position: 3 of 11 layers pass (`running`, `running card`, `tab bar`).
 - Rules: pass (3 findings under exceptions.json).
 
 ## Failing layers
@@ -17,12 +18,13 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +83; 38 px removed: y +2.
+- `task · next step`: x +0, y -36, w +0, h +78; 38 px removed: y +2.
 - `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
 - `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
 - `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h +3; 38 px removed: y +17.
-- `section · MY NOTES`: x +0, y -16, w +0, h +7; 38 px removed: y +22.
+- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -2; 38 px removed: y +17.
+- `section · MY NOTES`: x +0, y -21, w +0, h +7; 38 px removed: y +17.
+- `section · SOURCES`: x +0, y -7, w +0, h +2; 38 px removed: y +31.
 
 ## Deviations
 
@@ -42,13 +44,20 @@ status bar.
   title is `title` (20/28) against Figma's 22 px and the prompt's lines
   are 20 px against 21, so each section starts a little lower (`title
   block` +6, `section · WHY` +13, `section · SUGGESTED PROMPT` +17,
-  `section · MY NOTES` +22 with the status bar removed). Figma and the
+  `section · MY NOTES` +17 with the status bar removed). The prompt's
+  lines are now 20 px in `bodySm` on a block around the `Clamp` (as in
+  M2): the sent prompt's section is h -2 (within tolerance; h +3
+  before), so My notes and Sources start 5 px higher than before. As
+  measured from the frame's top that moves My notes from y -16 to
+  y -21, and Sources, which passed at y -2, now fails at y -7
+  (`section · SOURCES`, y +31 with the status bar removed: Figma's
+  SOURCES at y 623 runs under the run card's bar at y 631). Figma and the
   render both put 8 between the prompt's box and Read the whole prompt
   (346:11012 ends at y 483, 346:11015 starts at 491); the link sits
   lower only by the offsets above. Library gaps: Small text in the detail, 22 px title.
 - **Task frame.** The task runs on under the run card's bar to the end
   of the page, so its box is taller than Figma's (`task · next step` h
-  +83), and Sources shows at the bar's top edge as the page scrolls.
+  +78), and Sources shows at the bar's top edge as the page scrolls.
   The phone names the frame `task · next step`, as M10 does; the tablet
   keeps `task · running` (T4).
 - **Run card.** The bar and the card pass (`running`, `running card`):
@@ -69,13 +78,16 @@ status bar.
   chat. D5 still shows the chat beside the list, as Figma draws it.
 - **Hidden Figma text.** Figma keeps Reset and Edit as hidden layers in
   the SENT PROMPT header (346:11006, 346:11011); the exceptions say why.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
-- **Prompt fade.** Figma fades the sent prompt's last lines with no
-  ellipsis (346:11014); `Clamp fade` keeps `line-clamp`, so Chrome also
-  ends the last visible line with "…" ("…milestone named…"). Library
-  gap: Prompt fade without an ellipsis.
+- **Button labels.** Button labels are 14 px (`label`) here;
+  Figma sets small buttons in Medium 12 or 13, which no text style has
+  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
+  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
+  it on the desktop and tablet). Library gap: Button label size.
+- **Prompt fade.** The sent prompt is cut by height and its last lines
+  fade with no ellipsis, as Figma's (346:11014). Before #104,
+  `Clamp fade` kept `line-clamp` and Chrome ended the last visible line
+  with "…" ("…milestone named…"). The exception's selector now ends
+  `div > div.clamp`, the block that carries the prompt's text style.
 - **Run card padding.** Figma pads the run card 13 (346:11086 at x 12,
   its content at 25); `Panel` pads 16, so the kind mark, the meta line
   and Reply here sit 3 px further in. Library gap: Panel and text field
@@ -84,5 +96,6 @@ status bar.
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  a press (`InboxRoute.test.tsx`); a disabled secondary `Button` keeps its
+  fill and border and draws its label and icon in `fg.muted` (#105; before,
+  the whole button faded), where Figma draws it enabled.

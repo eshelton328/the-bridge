@@ -5,6 +5,9 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` (one entry per string).
@@ -54,17 +57,31 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   (`proposal · CREATE 3 TASKS` h +60). Create 3 tasks counts the checked
   tasks.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
-  lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px
-  apart and its mono boxes 14 px high; the library keeps 20 and 16 (4 px
-  grid). The prompt's five lines hold all of it, so it does not fade where
-  Figma fades its fifth line (`section · SUGGESTED PROMPT` h +7).
+  lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
+  px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
+  px grid). The prompt's five lines hold all of it, so it does not fade
+  where Figma fades its fifth line (`section · SUGGESTED PROMPT` h -2).
+  Since beta.5 the prompt's `bodySm` sits on a block around `Clamp`, not
+  on an inline span: there its 13 px text in the panel's 14 px line made
+  21 px lines, and the faded `Clamp` (#104), which now cuts at five
+  lines' height with no ellipsis, would hide the fifth. Five 20 px lines
+  are 100 px, not 105, so the prompt is 5 px shorter and the layers
+  below it 5 px higher.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: RUN IN y +17, start y +28, MY NOTES y +29, SOURCES y +47.
+  lower: RUN IN y +12, start y +15, MY NOTES y +16, SOURCES y +30.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `section · MY NOTES` x +4, y +16, h +12 (was x +4, y +25, h +12);
+  `section · RUN IN` x +4, y +12, h +1 (was x +4, y +17, h +5);
+  `section · SOURCES` x +4, y +30, h +2 (was x +4, y +39, h +2);
+  `section · SUGGESTED PROMPT` x +4, y +12, h -2 (was x +4, y +12, h
+  +3); `start` x +4, y +15, h -1 (was x +4, y +24, h -1). The cause is
+  the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
+  24) and the prompt's 20 px lines (see "Detail text").
 
 ## Second review
 

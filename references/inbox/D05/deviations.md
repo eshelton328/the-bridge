@@ -5,6 +5,9 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass.
@@ -48,7 +51,11 @@ notes. What it found in every frame, and why it stays:
   chip counts, the pane count, timestamps, meta lines and section labels
   are brighter, and the rail labels sit 4 to 12 px lower: library styles
   (`SearchField`, `Button`, `FilterChips`, `PageHeader`, the rail) and
-  their colour tokens. The app sets none of these values.
+  their colour tokens. The app sets none of these values. (Fixed in part
+  by beta.5: Newest or Sort and Filter take Medium 13 labels and the
+  search field 13 px text, as Figma's, and the idle chip counts are
+  `fg.subtle`, still brighter than Figma's #4a5675, which d-099 keeps
+  out because it fails WCAG AA, d-055.)
 - The NCC chip's tint is fainter than Figma's (`MetaChip tone="issue"`):
   library style.
 - The detail column is 4 px to the right: the 40 px inset above.
@@ -75,7 +82,9 @@ For D05 it also found:
 
 - **Open in Workspaces.** Disabled: the Workspaces page is not built and
   no Inbox frame draws where the button goes, so it waits for a design
-  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
-  title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and
+  the title "Workspaces is not built yet", keeps the focus and does
+  nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
+  disabled secondary `Button` no longer fades: it keeps its fill and
+  border and only its label and icon turn `fg.muted`, where Figma draws
+  it enabled.

@@ -2,7 +2,8 @@
 
 What still differs from Figma M8 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
 fidelity run (`pnpm fidelity inbox M08`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -65,5 +66,6 @@ status bar.
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  a press (`InboxRoute.test.tsx`); a disabled secondary `Button` keeps its
+  fill and border and draws its label and icon in `fg.muted` (#105; before,
+  the whole button faded), where Figma draws it enabled.

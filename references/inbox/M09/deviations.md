@@ -2,12 +2,13 @@
 
 What still differs from Figma M9 · Read the whole prompt (the prompt in a sheet over the phone's task page, `promptSheet`), after the last
 fidelity run (`pnpm fidelity inbox M09`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: pass (31 strings checked; 1 Figma strings under exceptions.json).
+- Text: pass (31 strings checked; 2 Figma strings under exceptions.json).
 - Position: 3 of 17 layers pass (`sheet actions`, `button · Edit prompt`, `button · Copy`).
 - Rules: pass (2 findings under exceptions.json).
 
@@ -17,16 +18,16 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +147; 38 px removed: y +2.
+- `task · next step`: x +0, y -36, w +0, h +138; 38 px removed: y +2.
 - `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
 - `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
 - `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h +3; 38 px removed: y +17.
-- `section · RUN IN`: x +0, y -16, w +0, h -17; 38 px removed: y +22.
-- `button · Change`: x +0, y -25.5, w -2, h +4; 38 px removed: y +12.5.
+- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -2; 38 px removed: y +17.
+- `section · RUN IN`: x +0, y -21, w +0, h -21; 38 px removed: y +17.
+- `button · Change`: x +0, y -32.5, w -2, h +4; 38 px removed: y +5.5.
 - `section · MY NOTES`: noLayer
 - `notes field`: noLayer
-- `section · SOURCES`: x +0, y +98, w +0, h +2; 38 px removed: y +136.
+- `section · SOURCES`: x +0, y +89, w +0, h +2; 38 px removed: y +127.
 - `sticky action`: x +0, y -54, w +0, h -23; anchored to the bottom, no status bar offset.
 - `tab bar`: noLayer
 - `346:10794`: x +0, y +54, w +0, h -53; anchored to the bottom, no status bar offset.
@@ -49,20 +50,27 @@ status bar.
   title is `title` (20/28) against Figma's 22 px and the prompt's lines
   are 20 px against 21, so each section starts a little lower (`title
   block` +6, `section · WHY` +13, `section · SUGGESTED PROMPT` +17,
-  `section · RUN IN` +22 with the status bar removed). The Run in card
-  puts Recommended beside the title (`section · RUN IN` h -17) and
+  `section · RUN IN` +17 with the status bar removed). The Run in card
+  puts Recommended beside the title (`section · RUN IN` h -21) and
   Change is 28 × 28 against 30 × 24 (`button · Change` w -2, h +4).
-  Reset is disabled and fades its border too. Library gaps: Small text
-  in the detail, 22 px title, Small icon button, Pill height, Disabled
-  button style.
+  As in M2, two Figma-matching changes moved the layers from the prompt
+  down: the prompt's lines are now 20 px in `bodySm` on a block around
+  the `Clamp` (the section is h -2, within tolerance, against h +3), so
+  Run in, Change and Sources start 5 px higher; and the Recommended pill
+  is 20 px as Figma's (`Badge size="sm"`, #106), so the card is 4 px
+  shorter (h -17 before; the 24 px pill hid part of that offset) and
+  Change 2 px higher. Reset is disabled and, as Figma draws it, keeps
+  its fill and border with its label and icon in `fg.muted` (#105).
+  Library gaps: Small text in the detail, 22 px title, Small icon
+  button.
 - **Under the sheet.** M9 draws M2's page with no tab bar, no My notes
   and Start at the very bottom (346:10779 at y 752, 92 high). The render
   keeps M2's page under the sheet: the tab bar, My notes and Start above
   the tab bar (`sticky action` y -54, h -23; `tab bar`, `section · MY
   NOTES` and `notes field` have no layer in M9). The sheet and its scrim
   cover all of them; the exceptions name the covered text. The task
-  frame runs on to the end of the page (`task · next step` h +147) and
-  Sources lies below the fold (`section · SOURCES` y +136 with the
+  frame runs on to the end of the page (`task · next step` h +138) and
+  Sources lies below the fold (`section · SOURCES` y +127 with the
   status bar removed); Figma keeps a hidden SOURCES section at y 623.
 - **Prompt sheet.** `BottomSheet` titled Suggested prompt with Done,
   the whole prompt, the read-only hint, and Edit prompt and Copy
@@ -75,9 +83,10 @@ status bar.
 - **What the buttons do.** Edit prompt closes the sheet and opens the
   prompt editor with the focus in it (M3); Copy copies the whole prompt
   (`InboxRoute.test.tsx`). A sent prompt's sheet (M10) has Copy only.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
-- **Prompt fade.** Behind the sheet the task's prompt ends with "…"
-  under its fade, where Figma fades it with no ellipsis (as M2). Library
-  gap: Prompt fade without an ellipsis.
+- **Button labels.** Button labels are 14 px (`label`) here;
+  Figma sets small buttons in Medium 12 or 13, which no text style has
+  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
+  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
+  it on the desktop and tablet). Library gap: Button label size.
+- **Prompt fade.** Behind the sheet the task's prompt is cut by height
+  and fades with no ellipsis, as Figma's (#104, as M2).

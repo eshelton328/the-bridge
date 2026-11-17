@@ -128,7 +128,7 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
   return (
     <RadioMenu
       trigger={
-        <Button pressed={active || sortOpen ? true : undefined}>
+        <Button textSize="sm" pressed={active || sortOpen ? true : undefined}>
           <SortDescIcon />
           {sortMenu.options.find((o) => o.value === sort)?.short}
           <ChevronDownIcon size="12" />
@@ -174,7 +174,8 @@ export function ListTools({
       <FilterIcon />
     </Button>
   ) : (
-    <Button pressed={filterOpen || filterCount > 0 ? true : undefined}>
+    // Figma sets Newest and Filter in Medium 13 (D16 403:1663, 403:1671).
+    <Button textSize="sm" pressed={filterOpen || filterCount > 0 ? true : undefined}>
       <FilterIcon />
       {filterCount > 0 ? `Filter · ${String(filterCount)}` : 'Filter'}
     </Button>
@@ -184,6 +185,7 @@ export function ListTools({
       <div className={search}>
         <SearchField
           label="Search the inbox"
+          textSize="sm"
           placeholder="Search the inbox"
           icon={<SearchIcon />}
           value={query ?? ''}

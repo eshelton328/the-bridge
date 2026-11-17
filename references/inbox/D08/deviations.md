@@ -5,6 +5,9 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass.
@@ -21,17 +24,22 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY through
-  `MarkdownView size="sm" padding="none"`, #102), as
-  Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
-  prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
-  prompt's five lines hold all of it, so it does not fade where Figma
-  fades its fifth line (`section · SUGGESTED PROMPT` h +7).
-  The mono lines in the detail (the task bar, the chips, the tags, the
-  run line, the note's author and the source details) use `monoSm`
-  (11/16, #102), Figma's 11 px; `MetaChip` and `TagsLine` take
-  `size="sm"`. Their line boxes stay 16 px against Figma's 14 (4 px
-  grid), so no layer moved.
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
+  through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
+  (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
+  are 21 px apart; `bodySm` keeps 20 (4 px grid). The prompt's five
+  lines hold all of it, so it does not fade where Figma fades its fifth
+  line (`section · SUGGESTED PROMPT` h -2). Since beta.5 the prompt's
+  `bodySm` sits on a block around `Clamp`, not on an inline span: there
+  its 13 px text in the panel's 14 px line made 21 px lines, and the
+  faded `Clamp` (#104), which now cuts at five lines' height with no
+  ellipsis, would hide the fifth. Five 20 px lines are 100 px, not 105,
+  so the prompt is 5 px shorter and the layers below it 5 px higher. The
+  mono lines in the detail (the task bar, the chips, the tags, the run
+  line, the note's author and the source details) use `monoSm` (11/16,
+  #102), Figma's 11 px; `MetaChip` and `TagsLine` take `size="sm"`.
+  Their line boxes stay 16 px against Figma's 14 (4 px grid), so no
+  layer moved.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
@@ -47,6 +55,14 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 - **Focus.** Ark focuses the first control when the dialog opens, which
   is now Done in the title row, so Done shows a focus ring; Figma shows
   none.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `section · MY NOTES` x +4, y +14, h +12 (was x +4, y +23, h +12);
+  `section · RUN IN` x +4, y +10, h +1 (was x +4, y +15, h +5);
+  `section · SOURCES` x +4, y +28, h +2 (was x +4, y +37, h +2);
+  `section · SUGGESTED PROMPT` x +4, y +10, h -2 (was x +4, y +10, h
+  +3); `start` x +4, y +13, h -1 (was x +4, y +22, h -1). The cause is
+  the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
+  24) and the prompt's 20 px lines (see "Detail text").
 
 ## Second review
 
@@ -67,7 +83,11 @@ notes. What it found in every frame, and why it stays:
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,
   `Button`, `FilterChips`, `PageHeader`, the rail) and their colour
-  tokens. The app sets none of these values.
+  tokens. The app sets none of these values. (Fixed in part by beta.5:
+  Newest or Sort and Filter take Medium 13 labels and the search field
+  13 px text, as Figma's, and the idle chip counts are `fg.subtle`,
+  still brighter than Figma's #4a5675, which d-099 keeps out because it
+  fails WCAG AA, d-055.)
 - The detail column is 4 px to the right: the 40 px inset above.
 
 For D08 it also found:

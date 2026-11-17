@@ -5,10 +5,13 @@ What still differs from Figma after round 4 of the fidelity loop
 library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` (one entry per string).
-- Position: 6 of 18 layers pass (`task pane`, `task bar`, `title block`, `section · SOURCES`, `guard`, `composer · discussion`).
+- Position: 5 of 18 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
 - Rules: pass.
 
 ## Deviations
@@ -51,30 +54,52 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   with a check. `ProposalBlock` has no applied tone (library gap), so the
   block keeps the violet update tone and the line is its `note`
   (`small`, `fg.muted`, no check), with Undo.
-- **New prompt.** Three lines in a box Figma keeps 128 px high (403:1854);
-  the `Panel` hugs its text, and 128 is no size token, so the section is
-  39 px shorter (`section · SUGGESTED PROMPT` h -39) and the sections
-  below start higher (RUN IN y -25, start y -18, MY NOTES y -17). Round 4
-  made the links under the box 4 px shorter (12 px text), which adds 4
-  to these offsets. The tablet fix round (2026-11-17) took the 4 px gap
-  out of the Run in card, under its title row, as Figma's card has
-  (`section · RUN IN` h +5, was +9), which adds 4 more to start and MY
-  NOTES; SOURCES now passes. The change line ("Changed in a discussion · just
-  now" and Undo) sits beside "Read the whole prompt", 16 px after it, as
-  in Figma, and now starts at Figma's x (`change history` y -26 only).
+- **New prompt.** Three lines in a box Figma keeps 128 px high
+  (403:1854); the `Panel` hugs its text, and 128 is no size token, so
+  the section is 42 px shorter (`section · SUGGESTED PROMPT` h -42) and
+  the sections below start higher (RUN IN y -28, start y -25, MY NOTES y
+  -24). Round 4 made the links under the box 4 px shorter (12 px text),
+  which adds 4 to these offsets. The tablet fix round (2026-11-17) took
+  the 4 px gap out of the Run in card, under its title row, as Figma's
+  card has (`section · RUN IN` h +5, was +9), which adds 4 more to start
+  and MY NOTES. Beta.5's 20 px pill takes 4 more (h +1) and the prompt's
+  20 px lines 3, so SOURCES, which passed, now starts 10 px higher
+  (`section · SOURCES` y -10). The change line ("Changed in a discussion
+  · just now" and Undo) sits beside "Read the whole prompt", 16 px after
+  it, as in Figma, and now starts at Figma's x (`change history` y -29
+  only).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
-  lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px
-  apart and its mono boxes 14 px high; the library keeps 20 and 16 (4 px
-  grid). The prompt's five lines hold all of it, so it does not fade where
-  Figma fades its fifth line (in D16 the prompt has three lines).
+  lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
+  px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
+  px grid). The prompt fits, so it does not fade (in D16 the prompt has
+  three lines). Since beta.5 the prompt's `bodySm` sits on a block
+  around `Clamp`, not on an inline span: there its 13 px text in the
+  panel's 14 px line made 21 px lines, and the faded `Clamp` (#104),
+  which now cuts at five lines' height with no ellipsis, would hide the
+  fifth. Its three 20 px lines are 60 px, not 63, so the layers below it
+  are 3 px higher.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
   notes box (12 px, the `TextArea` field; 16 before the note and its
-  author moved 4 closer) the sections below WHY start lower; SOURCES
-  is within the tolerance.
+  author moved 4 closer) the sections below WHY start lower; SOURCES was
+  within the tolerance before beta.5 (now y -10, see "New prompt").
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `change history` x -1.1, y -29, w -1.1 (was x -1.1, y -26, w -1.1);
+  `section · MY NOTES` x +4, y -24, h +12 (was x +4, y -17, h +12);
+  `section · RUN IN` x +4, y -28, h +1 (was x +4, y -25, h +5);
+  `section · SOURCES` x +4, y -10, h +2 (was within tolerance);
+  `section · SUGGESTED PROMPT` x +4, y +12, h -42 (was x +4, y +12, h
+  -39); `start` x +4, y -25, h -1 (was x +4, y -18, h -1). The cause is
+  the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
+  24) and the prompt's 20 px lines (see "Detail text").
+  `change history`, `section · MY NOTES`, `section · RUN IN`,
+  `section · SOURCES`, `section · SUGGESTED PROMPT`, `start` move
+  further from Figma: the Figma-matching change exposes an offset that
+  was already there, which the 24 px pills and 21 px prompt lines had
+  hidden.
 
 ## Second review
 

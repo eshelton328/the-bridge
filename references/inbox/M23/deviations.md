@@ -1,8 +1,8 @@
 # M23 deviations
 
 What still differs from Figma M23 · Proposed removal (`removalProposedPage`), after the last
-fidelity run (`pnpm fidelity inbox M23`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
+1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks

@@ -1,8 +1,9 @@
 # T05 deviations
 
 What still differs from Figma T5 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
-fidelity run (`pnpm fidelity inbox T05`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
+library 1.0.0-beta.5, which has #104 to #106; no T5 layer moved), each
+with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -80,5 +81,7 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  a press (`InboxRoute.test.tsx`). Since beta.5 (#105) a disabled
+  `secondary` Button keeps its fill and border and draws its label and
+  icon in `fg.muted`, where Figma draws it enabled with a brighter
+  label.

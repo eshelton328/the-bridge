@@ -1,8 +1,9 @@
 # T06 deviations
 
 What still differs from Figma T6 · Inbox after starting a task (the list after starting a task, `runningList`), after the last
-fidelity run (`pnpm fidelity inbox T06`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
+library 1.0.0-beta.5, which has #104 to #106; no layer moved), each
+with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -42,10 +43,17 @@ status bar.
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
-  Newest, Filter and the row actions are a little wider. Library gap:
-  Button label size.
+- **Button labels.** Newest and Filter use `Button textSize="sm"`
+  (Medium 13), as Figma's (beta.5, #105). The row actions and other
+  small buttons keep the 14 px `label`; Figma sets them in Medium 12,
+  which no text style has (d-050), so they are a little wider. Library
+  gap: Button label size.
+- **Search field and chip counts.** The search field sets its text and
+  placeholder in `bodySm` (13 px, `SearchField textSize="sm"`), as
+  Figma's. The placeholder stays `fg.subtle` #7986a6 against Figma's
+  #4a5675 by d-055. Idle filter chip counts are `fg.subtle` (#7986a6,
+  #106); Figma's #4a5675 stays out by d-099, because it fails WCAG AA
+  (d-055).
 
 ## Second review
 
@@ -57,9 +65,13 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   Figma's 13 (library gap: Search field and chip count text, the same in
   D01 to D21). Its colour is `fg.subtle` #7986a6 against Figma's
   #4a5675 by d-055.
+  (Fixed by beta.5: `SearchField textSize="sm"` sets the text and
+  placeholder in `bodySm`, 13 px; the colour stays by d-055.)
 - Filter chip counts as bright as their labels: stays. `FilterChips`
   draws counts in `fg.muted`; Figma draws them in #4a5675 (same library
   gap, the same in D01 to D21).
+  (Beta.5 draws idle counts in `fg.subtle`, #7986a6; Figma's #4a5675
+  stays out by d-099.)
 
 ## Running row
 

@@ -8,6 +8,6 @@ export function InboxStatus({ pill }: { pill: InboxPill }) {
   return pill.dot ? (
     <StatusPill tone={pill.tone} label={pill.label} dot />
   ) : (
-    <Badge variant="pill" tone={pill.tone} label={pill.label} />
+    <Badge variant="pill" size="sm" tone={pill.tone} label={pill.label} />
   )
 }

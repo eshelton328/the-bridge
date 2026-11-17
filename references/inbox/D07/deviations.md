@@ -5,6 +5,9 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass; the hidden Snooze, Dismiss, Reset and Edit are excepted in
@@ -24,17 +27,22 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY through
-  `MarkdownView size="sm" padding="none"`, #102), as
-  Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
-  prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
-  prompt's five lines hold all of it, so it does not fade where Figma
-  fades its fifth line (`section · SUGGESTED PROMPT` h +7).
-  The mono lines in the detail (the task bar, the chips, the tags, the
-  run line, the note's author and the source details) use `monoSm`
-  (11/16, #102), Figma's 11 px; `MetaChip` and `TagsLine` take
-  `size="sm"`. Their line boxes stay 16 px against Figma's 14 (4 px
-  grid), so no layer moved.
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY
+  through `MarkdownView size="sm" padding="none"`, #102), as Figma's WHY
+  (346:354 in D1) does, so WHY fits on one line. Figma's prompt lines
+  are 21 px apart; `bodySm` keeps 20 (4 px grid). The prompt's five
+  lines hold all of it, so it does not fade where Figma fades its fifth
+  line (`section · SUGGESTED PROMPT` h -2). Since beta.5 the prompt's
+  `bodySm` sits on a block around `Clamp`, not on an inline span: there
+  its 13 px text in the panel's 14 px line made 21 px lines, and the
+  faded `Clamp` (#104), which now cuts at five lines' height with no
+  ellipsis, would hide the fifth. Five 20 px lines are 100 px, not 105,
+  so the prompt is 5 px shorter and the layers below it 5 px higher. The
+  mono lines in the detail (the task bar, the chips, the tags, the run
+  line, the note's author and the source details) use `monoSm` (11/16,
+  #102), Figma's 11 px; `MetaChip` and `TagsLine` take `size="sm"`.
+  Their line boxes stay 16 px against Figma's 14 (4 px grid), so no
+  layer moved.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
@@ -55,6 +63,12 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 - **Hidden Figma text.** Figma keeps Snooze and Dismiss in the task bar
   and Reset and Edit in the prompt header as hidden layers; the render
   leaves them out, and `exceptions.json` excepts them.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `result card` x +4, y +14, h +1 (was x +4, y +19, h +1);
+  `section · MY NOTES` x +4, y +17, h +12 (was x +4, y +22, h +12);
+  `section · SOURCES` x +4, y +31, h +2 (was x +4, y +36, h +2);
+  `section · SUGGESTED PROMPT` x +4, y +14, h -2 (was x +4, y +14, h
+  +3). The cause is the prompt's 20 px lines (see "Detail text").
 
 ## Second review
 
@@ -75,7 +89,11 @@ notes. What it found in every frame, and why it stays:
   counts, placeholder, timestamps and meta lines are brighter, and the
   rail labels sit 4 to 12 px lower: library styles (`SearchField`,
   `Button`, `FilterChips`, `PageHeader`, the rail) and their colour
-  tokens. The app sets none of these values.
+  tokens. The app sets none of these values. (Fixed in part by beta.5:
+  Newest or Sort and Filter take Medium 13 labels and the search field
+  13 px text, as Figma's, and the idle chip counts are `fg.subtle`,
+  still brighter than Figma's #4a5675, which d-099 keeps out because it
+  fails WCAG AA, d-055.)
 - The detail column is 4 px to the right: the 40 px inset above.
 
 For D07 it also found:
@@ -92,7 +110,9 @@ For D07 it also found:
 
 - **Open in Workspaces.** Disabled: the Workspaces page is not built and
   no Inbox frame draws where the button goes, so it waits for a design
-  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
-  title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and
+  the title "Workspaces is not built yet", keeps the focus and does
+  nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
+  disabled secondary `Button` no longer fades: it keeps its fill and
+  border and only its label and icon turn `fg.muted`, where Figma draws
+  it enabled.

@@ -82,12 +82,12 @@ export function RunInCard({ runIn, pickerOpen, onPickerOpenChange, layout = 'des
       <Inline gap="10" align="center">
         <KindMark kind="claude" size="16" />
         <div className={grow}>
-          {/* Figma T2 346:5761: the 20 px title row and the 14 px detail 3 apart. The Recommended pill makes the row
-              24 high, so the detail follows with no gap. */}
+          {/* Figma T2 346:5761: the 20 px title row and the 14 px detail 3 apart. The Recommended pill is 20 high
+              (`Badge size="sm"`), as the title; no spacing token is 3, so the detail follows with no gap. */}
           <Stack gap="0">
             <Inline gap="6" align="center">
               <span className={title}>{runIn.title}</span>
-              <Badge variant="pill" tone="working" label={runIn.badge} />
+              <Badge variant="pill" size="sm" tone="working" label={runIn.badge} />
             </Inline>
             <span className={detail}>{where}</span>
           </Stack>
