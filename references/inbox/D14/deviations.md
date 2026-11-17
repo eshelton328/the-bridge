@@ -43,8 +43,12 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   at 260); no spacing token is that large, so the render centres it in
   the discussion area, about 100 px lower (`empty state` y +207 against
   the frame's box, `it can` y +94, `suggestions` y +96). The suggestion
-  buttons are `md` with 14 px labels against Figma's Medium 12, so the
-  row is 80 px wider (row "Button label size" in LIBRARY_GAPS.md).
+  buttons are `md` with Figma's Medium 12 labels (`small` at the `label`
+  weight on the `Button`), so the three buttons span about 518 px against
+  Figma's 507 and stay on one row; the `suggestions` box itself spans the
+  587 px column (w +80). With the Button's own 14 px labels the buttons
+  filled the column and wrapped on Linux, where glyph widths round up
+  (row "Button label size" in LIBRARY_GAPS.md).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px
   apart and its mono boxes 14 px high; the library keeps 20 and 16 (4 px

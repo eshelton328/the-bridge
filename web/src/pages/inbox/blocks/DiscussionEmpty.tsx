@@ -38,6 +38,10 @@ const text = css({
 })
 const can = css({ textStyle: 'small', color: 'fg.default' })
 const canIcon = css({ display: 'inline-flex', color: 'fg.muted' })
+// Figma 403:984: the suggestion labels are Geist Medium 12, not the Button's Medium 14. At 14 the row
+// is about 80 px wider than Figma's 507 and fills the 587 px column, so it wraps where glyph widths
+// round up (Linux).
+const suggestion = css({ textStyle: 'small', fontWeight: 'text.label' })
 
 const icons = {
   edit: <EditIcon size="12" />,
@@ -68,7 +72,9 @@ export function DiscussionEmpty({ empty }: { empty: NonNullable<InboxDiscussion[
       {/* One row at 1512 (Figma 403:521); the buttons wrap in a narrower panel, which clips its overflow. */}
       <Inline gap="6" align="center" justify="center" wrap data-figma="suggestions">
         {empty.suggestions.map((s) => (
-          <Button key={s}>{s}</Button>
+          <Button key={s} className={suggestion}>
+            {s}
+          </Button>
         ))}
       </Inline>
     </Stack>
