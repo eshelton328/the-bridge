@@ -14,7 +14,6 @@ import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { SkillPicker } from './SkillPicker.tsx'
 
-// The body is a size container, so a long draft can be held to half of it (`reply`).
 const body = css({
   position: 'relative',
   display: 'flex',
@@ -22,7 +21,6 @@ const body = css({
   flex: '1',
   p: '12',
   minH: '[0]',
-  containerType: 'size',
 })
 // D2 105:868: the transcript and composer sit 22 in from the chat's sides and 16 from its top and bottom.
 const sizes = {
@@ -42,8 +40,8 @@ const gaps = {
   inset: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
 } satisfies Record<keyof typeof sizes, { body: string; footer: string }>
 const footer = css({ display: 'flex', flexDirection: 'column' })
-// A long draft grows the composer; past half the window, or half the pane in a short pane of the split, it scrolls
-// inside, so Send stays in reach (d-107).
+// A long draft grows the composer; past half the window, or half the pane in a short pane of the split (`PaneFrame`
+// is a size container; with none, `cqh` is the window's), it scrolls inside, so Send stays in reach (d-107).
 const reply = css({ maxH: '[min(50vh, 50cqh)]', overflowY: 'auto' })
 
 export type ChatPaneProps = {
