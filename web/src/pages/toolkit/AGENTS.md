@@ -54,9 +54,7 @@ what each file of a page folder is for.
   (`ToolkitListPane`) and `ToolkitItem` fills the rest, with its
   Overview (`ToolkitItemOverview`, `ToolkitFilePreview`,
   `ToolkitItemSide`); on a tablet or phone the item fills the screen
-  under a back row. In the list pane the header, chips and search stay
-  at the top while the groups scroll, and when the open row is out of
-  view the pane scrolls its group to the top. A rule (D4, `ruleOpen`,
+  under a back row. A rule (D4, `ruleOpen`,
   which adds the Workflows and Hooks groups) adds `loads` to its details,
   shown as the Overview's load box, and has no side column: `usedIn` and
   `files` are optional. A click on a card, a row or the map card's Open

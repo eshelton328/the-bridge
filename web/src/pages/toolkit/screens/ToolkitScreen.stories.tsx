@@ -97,8 +97,8 @@ export const RuleOpen: Story = {
     await expect(within(item).getByText('Loads when')).toBeVisible()
     await expect(within(item).getByText('a file under toolkit/skills/** or skills/** changes')).toBeVisible()
     await expect(within(item).getByRole('heading', { level: 2, name: 'Layout' })).toBeVisible()
-    // The list opens with the open rule's group under the search; its row is the open one.
-    await expect(canvas.getByRole('button', { name: 'skills', current: true })).toBeVisible()
-    await expect(canvas.getByRole('heading', { name: /Hooks/ })).toBeVisible()
+    // The rule's row in the list is the open one; the list adds the Hooks group.
+    await expect(canvas.getByRole('button', { name: 'skills', current: true })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: /Hooks/ })).toBeInTheDocument()
   },
 }

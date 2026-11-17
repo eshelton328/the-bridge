@@ -6,8 +6,9 @@
 // for word from references/toolkit/D04/frame.json.
 // The list beside it has T1's data (toolkitListTablet) and adds the Workflows
 // and Hooks groups, which this frame shows; their paths are the list's text
-// (427:576, 427:602). The pane opens with the Rules group at its top, under
-// the search, as the open row lies below the first screen.
+// (427:576, 427:602). Figma draws the list scrolled to the Rules group under
+// a pinned header, chips and search; the pane starts at the Skills group
+// until the library's ScrollFrame (beta.15, d-107).
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitGroupView, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
