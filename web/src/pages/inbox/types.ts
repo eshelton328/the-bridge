@@ -212,7 +212,7 @@ const InboxRunCard = z.object({
   meta: z.string(),
   /** The primary button, such as "Reply here" or "Open chat". */
   open: z.string(),
-  /** The secondary button, such as "Open in Workspaces". */
+  /** The secondary button, such as "Open in Workspaces"; on a removed task's card, Restore. */
   openElsewhere: z.string(),
   /** The chat the primary button opens in the inbox (Reply here, M10 to M8); a card without it has no chat to open. */
   chat: InboxRunning.optional(),
@@ -313,6 +313,17 @@ const InboxProposal = z.discriminatedUnion('kind', [
     note: z.string(),
     /** The confirm dialog: its title, the meta line and what happens. */
     confirm: z.object({ title: z.string(), meta: z.string(), text: z.string() }),
+    /**
+     * The task once removed (D21): its row's line and age in Done, and on its page the status, the origin line and
+     * the card that says how it was removed, with Open discussion and Restore.
+     */
+    removed: z.object({
+      line: z.string(),
+      age: z.string(),
+      status: z.object({ tone: InboxTone, label: z.string() }),
+      origin: z.string(),
+      run: InboxRunCard,
+    }),
   }),
 ])
 export type InboxProposal = z.infer<typeof InboxProposal>
@@ -354,6 +365,8 @@ const InboxDiscussion = z.object({
       canLabel: z.string(),
       can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
       suggestions: z.array(z.string()),
+      /** The label over the suggestions, which only the phone shows (M18). */
+      tryLabel: z.string(),
     })
     .optional(),
   placeholder: z.string(),

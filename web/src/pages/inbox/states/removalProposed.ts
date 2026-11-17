@@ -36,6 +36,21 @@ export const removalProposed = {
               meta: 'ncc-1701 · f-005 · NCC-28 · Next step',
               text: '“Write the tickets for increment one” moves to Done as Removed, with this reason. NCC-28 in Linear stays as it is.',
             },
+            // What D21 shows once the task is removed.
+            removed: {
+              line: 'Removed in a discussion · split into 3',
+              age: '14:40',
+              status: { tone: 'danger', label: 'Removed' },
+              origin: 'removed today at 14:40 in a discussion',
+              run: {
+                agent: 'claude',
+                title: 'Removed in a discussion',
+                status: { tone: 'danger', label: 'Removed', dot: true },
+                meta: 'Reason: split into three tasks: the Workbench, Inbox and App frame tickets.',
+                open: 'Open discussion',
+                openElsewhere: 'Restore',
+              },
+            },
           },
         },
       ],

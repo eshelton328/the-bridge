@@ -1,9 +1,9 @@
-// A task's discussion on a tablet or phone (T17 to T23): a page of its
-// own, like a started task's chat (T5). Back returns to the task, the
-// model and context sit in the middle of the row and a Discussion pill at
-// its end; the task card under it says what the
-// discussion may do. The entries and the reply box fill the rest. Props
-// only.
+// A task's discussion on a tablet or phone (T17 to T23, M18 to M23): a
+// page of its own, like a started task's chat (T5). Back returns to the
+// task, the model and context sit in the middle of the row (in the task
+// card on the phone, M18) and a Discussion pill at its end; the task card
+// under it says what the discussion may do. The entries and the reply box
+// fill the rest. Props only.
 import {
   BackRow,
   ChevronRightIcon,
@@ -12,8 +12,9 @@ import {
   Panel,
   Stack,
   StatusPill,
+  TruncatedText,
 } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionGuard } from '../blocks/DiscussionGuard.tsx'
@@ -26,6 +27,8 @@ const fill = css({ flex: '1' })
 const spacer = css({ flex: '1' })
 // T17 402:11176: SemiBold 15, as the chat's task card (T5 346:6380).
 const title = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
+// M18 402:1989: on the phone the title stays on one line, cut with an ellipsis.
+const oneLine = css({ display: 'grid' })
 const meta = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const chevron = css({ color: 'fg.muted', display: 'inline-flex' })
 // T18: the first entry 22 below the task card (402:11357 to 402:11425), 24 on the grid (d-072): the stack's 16 and 8.
@@ -46,27 +49,35 @@ export type DiscussionPageProps = {
 }
 
 export function DiscussionPage({ discussion, task, place, layout, onClose, control, drafts }: DiscussionPageProps) {
+  const phone = layout === 'phone'
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
         <Inline gap="8" align="center" data-figma="nav">
           <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
           <span className={spacer} />
-          <ModelContext discussion={discussion} centred />
-          <span className={spacer} />
+          {phone ? null : (
+            <>
+              <ModelContext discussion={discussion} centred />
+              <span className={spacer} />
+            </>
+          )}
           <StatusPill tone="running" label="Discussion" dot />
         </Inline>
         <div data-figma="task · discussing">
           <Panel>
             <Stack gap="4">
               <Inline gap="8" align="center">
-                <h1 className={title}>{task.title}</h1>
+                <h1 className={phone ? cx(title, oneLine) : title}>
+                  {phone ? <TruncatedText>{task.title}</TruncatedText> : task.title}
+                </h1>
                 <StatusPill tone={task.status.tone} label={task.status.label} dot />
                 <span className={chevron} data-figma="chevron · open task">
                   <ChevronRightIcon size="16" />
                 </span>
               </Inline>
               <span className={meta}>{place}</span>
+              {phone ? <ModelContext discussion={discussion} /> : null}
               <DiscussionGuard text={discussion.guard} />
             </Stack>
           </Panel>
@@ -77,6 +88,7 @@ export function DiscussionPage({ discussion, task, place, layout, onClose, contr
           centred={false}
           className={thread}
           drafts={drafts}
+          stacked={phone}
         />
       </Stack>
     </Container>

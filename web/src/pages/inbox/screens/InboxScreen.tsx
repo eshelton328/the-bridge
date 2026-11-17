@@ -22,8 +22,10 @@ import {
   type DiscussionEffect,
   discussionView,
   proposalEffect,
+  isRemoved,
   proposalOf,
   removeEffect,
+  restoreEffect,
   undoCreateEffect,
   undoUpdateEffect,
 } from './discussionView.ts'
@@ -75,6 +77,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const discussing = desktop && discussOpen
   const discussPage = !desktop && discussOpen && open?.kind === 'next' ? discussion : undefined
   const remove = proposalOf(data, 'remove')
+  // A task removed in its discussion has no Discuss in its task bar; its card opens the discussion and restores it.
+  const removed = isRemoved(data, ui)
   // Only a chat hides the tab bar (T1 note): a started item's chat or a discussion fills the screen down to its reply box.
   const inChat = open?.kind === 'running' || discussPage !== undefined
   // On the phone the prompt editor's keyboard covers the bottom of the screen, tab bar and all (M3).
@@ -184,8 +188,20 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onUndoChange={() => {
           run(undoUpdateEffect(ui))
         }}
+        removed={
+          removed
+            ? {
+                onOpenDiscussion: () => {
+                  onUiChange?.({ discussOpen: true })
+                },
+                onRestore: () => {
+                  run(restoreEffect(data, ui))
+                },
+              }
+            : undefined
+        }
         discuss={
-          discussion === undefined
+          discussion === undefined || removed
             ? undefined
             : {
                 open: discussing,
@@ -219,6 +235,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         <RemoveDialog
           proposal={remove}
           open={ui.removeOpen}
+          layout={layout}
           onOpenChange={onRemoveOpenChange}
           onConfirm={() => {
             run(removeEffect(data, ui))

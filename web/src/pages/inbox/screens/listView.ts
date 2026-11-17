@@ -91,11 +91,15 @@ const finishedLine = {
  */
 function finishedRows(groups: readonly InboxGroupView[], finished: InboxUi['finished']): InboxRowView[] {
   const all = groups.flatMap((group) => group.rows)
-  return finished
-    .toReversed()
-    .flatMap(({ id, result }) =>
-      all.filter((row) => row.id === id).map((row) => ({ ...row, outcome: { line: finishedLine[result], result } })),
-    )
+  return finished.toReversed().flatMap(({ id, result }) =>
+    all
+      .filter((row) => row.id === id)
+      // A row that already says how it ended in this way keeps its line, such as a removal's reason (D21).
+      .map((row) => ({
+        ...row,
+        outcome: row.outcome?.result === result ? row.outcome : { line: finishedLine[result], result },
+      })),
+  )
 }
 
 /**

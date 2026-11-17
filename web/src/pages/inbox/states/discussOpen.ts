@@ -24,6 +24,7 @@ export const discussion = {
       { icon: 'trash', text: 'Remove this task, with a reason' },
     ],
     suggestions: ['Make the prompt shorter', 'Split this into smaller tasks', 'Is this still worth doing?'],
+    tryLabel: 'Try',
   },
   placeholder: 'Ask about this task',
 } satisfies InboxDiscussion

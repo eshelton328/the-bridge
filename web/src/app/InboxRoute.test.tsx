@@ -812,6 +812,66 @@ describe('the Inbox on the phone', () => {
     expect(box(chip).left).toBeGreaterThanOrEqual(box(chips).left)
   })
 
+  it('opens the discussion with Discuss in the nav, and a suggestion fills the reply box', async () => {
+    await phone('discussTask')
+    const nav = page.getByRole('button', { name: 'Back to Inbox' }).element().parentElement
+    expect(nav?.textContent).toContain('Discuss')
+    await page.getByRole('button', { name: 'Discuss' }).click()
+    await expect.element(page.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Is this still worth doing?' }).click()
+    await expect
+      .element(page.getByRole('textbox', { name: 'Ask about this task' }))
+      .toHaveValue('Is this still worth doing?')
+    await page.getByRole('button', { name: 'Back to the task' }).click()
+    await expect.element(title()).toBeVisible()
+  })
+
+  it('confirms a removal in a sheet that starts on Keep it, and Remove task puts the task in Done', async () => {
+    await phone('removalProposedPage')
+    await page.getByRole('button', { name: 'Remove…' }).click()
+    const confirm = sheet('Remove this task?')
+    await expect.element(confirm.getByRole('button', { name: 'Keep it' })).toHaveFocus()
+    await confirm.getByRole('button', { name: 'Remove task' }).click()
+    await expect.element(confirm).not.toBeInTheDocument()
+    await expect.element(title()).not.toBeInTheDocument()
+    await page.getByRole('radio', { name: 'Done 5' }).click()
+    await page.getByRole('button', { name: /Today/ }).click()
+    await expect.element(page.getByText('Removed in a discussion · split into 3')).toBeVisible()
+  })
+
+  it('restores a removed task from its page, from the keyboard, back into Next steps', async () => {
+    await phone('removedPhone')
+    await page.getByText('Write the tickets for increment one').click()
+    await expect.element(page.getByText('removed today at 14:40 in a discussion')).toBeVisible()
+    const restore = page.getByRole('button', { name: 'Restore' })
+    restore.element().focus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(page.getByRole('button', { name: 'Restore' })).not.toBeInTheDocument()
+    await expect.element(page.getByText('suggested 2h ago by the planning run')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Start in the-bridge' })).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(page.getByText('Removed in a discussion · split into 3')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('radio', { name: 'Done 3' })).toBeInTheDocument()
+    await page.getByRole('radio', { name: 'Next steps 6' }).click()
+    await expect.element(page.getByText('Write the tickets for increment one')).toBeVisible()
+  })
+
+  it('opens the discussion from a removed task’s Open discussion', async () => {
+    await phone('removedPhone')
+    await page.getByText('Write the tickets for increment one').click()
+    await page.getByRole('button', { name: 'Open discussion' }).click()
+    await expect.element(page.getByRole('group', { name: 'Proposed · Remove this task' })).toBeVisible()
+  })
+
+  it('takes the new tasks out with Undo in the toast', async () => {
+    await phone('tasksCreatedPhone')
+    await expect.element(page.getByText('Write the Workbench tickets')).toBeVisible()
+    await page.getByRole('button', { name: 'Undo' }).click()
+    await expect.element(page.getByText('Write the Workbench tickets')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Created 3 tasks from a discussion')).not.toBeInTheDocument()
+  })
+
   it('keeps the reply Erik types in the chat', async () => {
     await phone('chat')
     const reply = page.getByRole('textbox', { name: 'Reply' })

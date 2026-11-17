@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { discussionView, proposalEffect, removeEffect, undoCreateEffect } from './screens/discussionView.ts'
+import { restoreEffect } from './screens/discussionView.ts'
 import { inboxStates } from './states/index.ts'
 
 const { changeProposed, tasksProposed, removalProposed } = inboxStates
+const { removed } = inboxStates
 const selected = changeProposed.data.detail.id
 
 describe('discussionView', () => {
@@ -71,5 +73,19 @@ describe('the discussion effects', () => {
     expect(created.ui.finished).toEqual([{ id: selected, result: 'removed' }])
     const ui = { ...tasksProposed.ui, ...created.ui }
     expect(undoCreateEffect(data, ui).ui).toEqual({ proposals: {}, finished: [] })
+  })
+
+  it('shows a removed task as removed, with its reason on its row, and Restore takes the removal back', () => {
+    const view = discussionView(removed.data, removed.ui)
+    const detail = view.detail?.kind === 'next' ? view.detail : undefined
+    expect(detail?.status).toEqual({ tone: 'danger', label: 'Removed' })
+    expect(detail?.actions).toBe(false)
+    expect(detail?.launch.stage === 'started' ? detail.launch.run.openElsewhere : undefined).toBe('Restore')
+    const row = view.groups.flatMap((g) => g.rows).find((r) => r.id === selected)
+    expect(row?.outcome).toEqual({ line: 'Removed in a discussion · split into 3', result: 'removed' })
+    const restored = { ...removed.ui, ...restoreEffect(view, removed.ui).ui }
+    expect(restored.finished).toEqual([])
+    expect(restored.proposals).toEqual({})
+    expect(discussionView(removed.data, restored).detail).toEqual(removed.data.detail)
   })
 })

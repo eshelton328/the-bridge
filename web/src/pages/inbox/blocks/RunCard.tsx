@@ -1,11 +1,13 @@
 // A started next step's chat: where it runs or ran, its state, what it is
 // doing or what it did, and the two ways to open it. A removed next step
 // uses the same card for how it was removed. The primary button opens the
-// chat in the inbox when the card has one (Reply here, M10 to M8); the
-// other waits for the Workspaces page (`OpenInWorkspaces`). Props only.
+// chat in the inbox when the card has one (Reply here, M10 to M8), or a
+// removed task's discussion; the other waits for the Workspaces page
+// (`OpenInWorkspaces`), or on a removed task's card is Restore. Props only.
 import {
   BubbleIcon,
   Button,
+  ExternalLinkIcon,
   Grid,
   Inline,
   KindMark,
@@ -24,11 +26,13 @@ const meta = css({ textStyle: 'monoSm', color: 'fg.muted', display: 'grid' })
 
 export type RunCardProps = {
   run: InboxRunCard
-  /** The primary button: opens the card's chat. */
+  /** The primary button: opens the card's chat, or a removed task's discussion. */
   onOpen?: (() => void) | undefined
+  /** A removed task's card: the secondary button is Restore, which puts the task back. */
+  onRestore?: (() => void) | undefined
 }
 
-export function RunCard({ run, onOpen }: RunCardProps) {
+export function RunCard({ run, onOpen, onRestore }: RunCardProps) {
   // Figma names the card after the run's state: "running card" (D6) or "result card" (D7, D21).
   const running = run.status.tone === 'working'
   // A running card has the accent border and tint; Figma's green border of a result card (D7) and red border
@@ -50,7 +54,15 @@ export function RunCard({ run, onOpen }: RunCardProps) {
               <BubbleIcon />
               {run.open}
             </Button>
-            <OpenInWorkspaces size="lg" label={run.openElsewhere} />
+            {onRestore === undefined ? (
+              <OpenInWorkspaces size="lg" label={run.openElsewhere} />
+            ) : (
+              // Figma draws Restore with Open in Workspaces' icon (D21 403:4278).
+              <Button size="lg" onClick={onRestore}>
+                <ExternalLinkIcon />
+                {run.openElsewhere}
+              </Button>
+            )}
           </Grid>
         </Stack>
       </Panel>
