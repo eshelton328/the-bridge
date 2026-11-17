@@ -8,7 +8,7 @@ library 1.0.0-beta.7, which has #107 and #108), each with its reason. The librar
 ## Checks
 
 - Text: pass.
-- Position: 5 of 10 layers pass (`nav · back`, `task · question`, `task bar`, `title block`, `tab bar`).
+- Position: 5 of 10 layers pass (`nav · back`, `task bar`, `title block`, `blocking`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -17,14 +17,16 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `blocking`: x +2, y +4, w -4, h +9.
-- `section · CONTEXT`: x +2, y +15, w -4, h +2.
-- `section · CHOOSE ONE`: x +2, y +19, w -4, h +3.
-- `section · NOTE TO THE CHAT · OPTIONAL`: x +2, y +24, w -4, h +3.
-- `answer`: x +2, y +29, w -4, h -1.
+- `task · question`: x +2, y -2, w -4, h +24.
+- `section · CONTEXT`: x +2, y +5, w -4, h +2.
+- `section · CHOOSE ONE`: x +2, y +9, w -4, h +3.
+- `section · NOTE TO THE CHAT · OPTIONAL`: x +2, y +14, w -4, h +3.
+- `answer`: x +2, y +19, w -4, h -1.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 6` (read with `use_figma`, T2 346:5683, T3 346:5911, T4 346:6144), so it ends 28 px under its last section. The build now pads the task the same way: 6 at the top (the Back row's margin is 6, not 12, so the task bar stays 40 under the row's top) and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). `task · question` h +24 is 4 px from the 32 against Figma's 28; the rest is the content's own excess: the sections are 24 apart against Figma's 22 (d-072), and the section labels and text lines are on the 4 px grid (16 against Figma's 14 and 17, d-100). Before, the missing padding hid that excess.
+- **Waiting card title (step 13).** The card's title is Geist Medium 13 in Figma (T3 346:5911), `labelSm` (13/16) here, not `label`, so the card is 56 high: Figma's 55 on the 4 px grid. `blocking` passes, and each layer under it moves 4 px up.
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 29 px shorter (d-102),

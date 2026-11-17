@@ -13,11 +13,22 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - Text: pass. The text check of main 3546ac7 (#3) skips the values of
   radio, checkbox, hidden and password inputs, so the option ids inside
   `OptionList` rows no longer count as visible text.
-- Position: 9 of 15 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+- Position: 10 of 15 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`, `blocking`).
 - Rules: pass.
+
+## Failing layers
+
+Render minus Figma, in px, from the step 13 run (`pnpm fidelity inbox`, 2026-11-17, library 1.0.0-beta.18).
+
+- `group · SNOOZED`: x +0, y +5, w +1, h +2.
+- `section · CONTEXT`: x +4, y +7, w +0, h +2.
+- `section · CHOOSE ONE`: x +4, y +11, w +0, h +3.
+- `section · NOTE TO THE CHAT · OPTIONAL`: x +4, y +16, w +0, h +3.
+- `answer`: x +4, y +21, w +0, h -1.
 
 ## Deviations
 
+- **Waiting card title (step 13).** The card's title is Geist Medium 13 in Figma (T3 346:5911), `labelSm` (13/16) here, not `label`, so the card is 56 high: Figma's 55 on the 4 px grid. `blocking` passes, and each layer under it moves 4 px up.
 - **List row heights.** Rows use `ListRow density="compact"` (#99):
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
   11/16). A title and meta row is 56 px against Figma's 55, the 4 px

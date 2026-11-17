@@ -17,18 +17,19 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `task · next step`: x +2, y +4, w -4, h -45.
-- `section · WHY`: x +2, y +8, w -4, h +2.
-- `section · SUGGESTED PROMPT`: x +2, y +12, w -4, h -42.
-- `change history`: x -3.1, y -29, w -1.1, h +0.
-- `section · RUN IN`: x +2, y -28, w -4, h +1.
-- `start`: x +2, y -25, w -4, h -1.
-- `section · MY NOTES`: x +2, y -24, w -4, h +7.
-- `notes field`: x +2, y -22, w -4, h +5.
-- `section · SOURCES`: x +2, y -15, w -4, h +2.
+- `task · next step`: x +2, y -2, w -4, h -9.
+- `section · WHY`: x +2, y +6, w -4, h +2.
+- `section · SUGGESTED PROMPT`: x +2, y +10, w -4, h -42.
+- `change history`: x -3.1, y -31, w -1.1, h +0.
+- `section · RUN IN`: x +2, y -30, w -4, h +1.
+- `start`: x +2, y -27, w -4, h -1.
+- `section · MY NOTES`: x +2, y -26, w -4, h +7.
+- `notes field`: x +2, y -24, w -4, h +5.
+- `section · SOURCES`: x +2, y -17, w -4, h +2.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 6` (read with `use_figma`, T2 346:5683, T3 346:5911, T4 346:6144), so it ends 28 px under its last section. The build now pads the task the same way: 6 at the top (the Back row's margin is 6, not 12, so the task bar stays 40 under the row's top) and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). `task · next step` is h -9: the padding adds 38 px to it, and the prompt section is still 42 px shorter than Figma's (below).
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 29 px shorter (d-102),

@@ -26,12 +26,18 @@ import { PinnedAction } from '../blocks/PinnedAction.tsx'
 import { draftProps, type InboxDrafts, type InboxQuestion } from '../types.ts'
 
 const grow = css({ flex: '1' })
-const waitTitle = css({ textStyle: 'label' })
+// D2 346:772, T3, M5: the title is Geist Medium 13 (`labelSm`, 17 tall in Figma, 16 here), so the card is 56 high,
+// Figma's 55 on the 4 px grid; `label` (20 px lines) made it 60.
+const waitTitle = css({ textStyle: 'labelSm' })
 const mono = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
-// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides, 8 at the top and 28 at the bottom
+// (28 takes 32, d-072). Its sections
 // are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
-const phoneTask = css({ px: '4', pt: '8' })
+const phoneTask = css({ px: '4', pt: '8', pb: '32' })
+// T2 346:5683, T3 346:5911, T4 346:6144: the tablet's task frame pads its content 6 at the top and 28 at the bottom (Auto
+// Layout, hug). 28 has no spacing token; it is halfway between 24 and 32, so it takes 32 (d-072: a tie takes the larger).
+const tabletTask = css({ pt: '6', pb: '32' })
 
 export type QuestionDetailProps = {
   detail: InboxQuestion
@@ -50,7 +56,7 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
   const item = (
     <Stack
       gap={phone ? '20' : '24'}
-      className={phone ? phoneTask : undefined}
+      className={phone ? phoneTask : layout === 'tablet' ? tabletTask : undefined}
       data-figma={layout === 'desktop' ? undefined : 'task · question'}
     >
       <DetailHead head={detail} snooze={snooze} barActions={!phone} />

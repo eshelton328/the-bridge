@@ -31,6 +31,10 @@ const removed = css({ color: 'status.danger.fg' })
 // so the kind tile lines up under the group's chevron (16) and the age ends 16 from the screen's edge. The row
 // takes the 6 px difference outside the list's padding (LIBRARY_GAPS.md: List row padding on the phone).
 const phoneRow = css({ mx: '-6' })
+// M22 402:7553, D18, T21: Figma puts each line of a row 4 under the one above. A compact `ListRow` puts its lines 2
+// apart, because its 16 px text lines are taller than Figma's 14 and 17; a 20 px pill does not grow, so its line takes
+// the other 2, and a New row is 80 high, Figma's 81 on the 4 px grid.
+const pillLine = css({ pt: '2' })
 
 const outcomes = {
   done: { className: finished, icon: <CheckIcon size="12" /> },
@@ -101,7 +105,7 @@ function Lines({ row }: { row: InboxRowView }) {
   }
   if (row.pill !== undefined)
     return (
-      <Inline gap="6" align="center">
+      <Inline gap="6" align="center" className={pillLine}>
         <InboxStatus pill={row.pill} />
       </Inline>
     )

@@ -17,13 +17,13 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `task · next step`: x +2, y +4, w -4, h -9.
-- `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -2.
-- `section · RUN IN`: x +2, y +8, w -4, h +1.
-- `start`: x +2, y +11, w -4, h -1.
-- `section · MY NOTES`: x +2, y +12, w -4, h +7.
-- `notes field`: x +2, y +14, w -4, h +5.
-- `section · SOURCES`: x +2, y +21, w -4, h +2.
+- `task · next step`: x +2, y -2, w -4, h +27.
+- `section · SUGGESTED PROMPT`: x +2, y +6, w -4, h -2.
+- `section · RUN IN`: x +2, y +6, w -4, h +1.
+- `start`: x +2, y +9, w -4, h -1.
+- `section · MY NOTES`: x +2, y +10, w -4, h +7.
+- `notes field`: x +2, y +12, w -4, h +5.
+- `section · SOURCES`: x +2, y +19, w -4, h +2.
 - `346:7179`: x -6, y -5, w +12, h +6.
 - `sheet actions`: x -6, y -1, w +12, h +1.
 - `button · Edit prompt`: x -6, y -1, w +6, h +1.
@@ -31,6 +31,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 6` (read with `use_figma`, T2 346:5683, T3 346:5911, T4 346:6144), so it ends 28 px under its last section. The build now pads the task the same way: 6 at the top (the Back row's margin is 6, not 12, so the task bar stays 40 under the row's top) and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). `task · next step` h +27 is 4 px from the 32 against Figma's 28; the rest is the content's own excess: the sections are 24 apart against Figma's 22 (d-072), and the section labels and text lines are on the 4 px grid (16 against Figma's 14 and 17, d-100). Before, the missing padding hid that excess.
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 29 px shorter (d-102),

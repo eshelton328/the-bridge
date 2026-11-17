@@ -9,7 +9,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 ## Checks
 
 - Text: pass (30 strings checked; 3 Figma strings under exceptions.json).
-- Position: 4 of 17 layers pass (`task bar`, `sheet actions`, `button · Edit prompt`, `button · Copy`).
+- Position: 7 of 17 layers pass (`nav`, `task bar`, `title block`, `button · Change`, `sheet actions`, `button · Edit prompt`, `button · Copy`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -18,22 +18,20 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `nav`: x +0, y +0, w +0, h -8.
-- `task · next step`: x +0, y +2, w +0, h +138.
-- `title block`: x +0, y +6, w +0, h +5.
-- `section · WHY`: x +0, y +13, w +0, h +2.
-- `section · SUGGESTED PROMPT`: x +0, y +17, w +0, h -2.
-- `section · RUN IN`: x +0, y +17, w +0, h -21.
-- `button · Change`: x +0, y +5.5, w -2, h +4.
-- `section · MY NOTES`: the frame has no layer "section · MY NOTES".
-- `notes field`: the frame has no layer "notes field".
-- `section · SOURCES`: x +0, y +127, w +0, h +2.
+- `task · next step`: x +0, y +0, w +0, h +166.
+- `section · WHY`: x +0, y +7, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +0, y +11, w +0, h -2.
+- `section · RUN IN`: x +0, y +11, w +0, h -21.
+- `section · MY NOTES`: noLayer, the frame has no layer "section · MY NOTES".
+- `notes field`: noLayer, the frame has no layer "notes field".
+- `section · SOURCES`: x +0, y +121, w +0, h +2.
 - `sticky action`: x +0, y -54, w +0, h -23.
-- `tab bar`: the frame has no layer "tab bar".
+- `tab bar`: noLayer, the frame has no layer "tab bar".
 - `346:10794`: x +0, y -10, w +0, h +11.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 8` (read with `use_figma`, M2 346:9246, M5 346:9866), so it ends 28 px under its last section. The build now pads the task the same way: 8 at the top, as before, and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). The padding makes `task · next step` 32 px taller (h +166); the other reasons for its height are below.
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 38 px shorter (d-102),

@@ -21,6 +21,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Deviations
 
+- **New rows (step 13).** Figma puts each line of a row 4 under the one above (402:7553, itemSpacing 4), and its New row has a 1 px border in its layout: 1 + 10 + 17 + 4 + 14 + 4 + 20 + 10 + 1 = 81. A compact `ListRow` puts its lines 2 apart, because its 16 px text lines are taller than Figma's 14 and 17; the 20 px pill does not grow, so `InboxRow` gives the pill line the other 2. Each New row is 80 high (Figma's 81 on the 4 px grid), and `group · SNOOZED` passes.
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 38 px shorter (d-102),

@@ -9,7 +9,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 ## Checks
 
 - Text: pass (14 strings checked; 14 Figma strings under exceptions.json).
-- Position: 1 of 7 layers pass (`scrolled title`).
+- Position: 2 of 7 layers pass (`nav`, `scrolled title`).
 - Rules: pass.
 
 ## Failing layers
@@ -18,15 +18,15 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `nav`: x +0, y +0, w +0, h -8.
-- `task · next step`: x +0, y +0, w +0, h +24.
-- `section · SUGGESTED PROMPT`: x +0, y +1, w +0, h -14.
-- `section · RUN IN`: x +0, y -11, w +0, h -21.
-- `button · Change`: x +0, y -22.5, w -2, h +4.
-- `section · SOURCES`: x +0, y -187, w +0, h +2.
+- `task · next step`: x +0, y -2, w +0, h +56.
+- `section · SUGGESTED PROMPT`: x +0, y -1, w +0, h -14.
+- `section · RUN IN`: x +0, y -13, w +0, h -21.
+- `button · Change`: x +0, y -24.5, w -2, h +4.
+- `section · SOURCES`: x +0, y -189, w +0, h +2.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 8` (read with `use_figma`, M2 346:9246, M5 346:9866), so it ends 28 px under its last section. The build now pads the task the same way: 8 at the top, as before, and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). The padding makes `task · next step` 32 px taller (h +56); the other reasons for its height are below.
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 38 px shorter (d-102),

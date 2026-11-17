@@ -8,7 +8,7 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (34 strings checked; 2 Figma strings under exceptions.json).
-- Position: 3 of 13 layers pass (`task bar`, `sticky action`, `tab bar`).
+- Position: 6 of 13 layers pass (`nav`, `task bar`, `title block`, `button · Change`, `sticky action`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -17,19 +17,17 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
-- `nav`: x +0, y +0, w +0, h -8.
-- `task · next step`: x +0, y +2, w +0, h +59.
-- `title block`: x +0, y +6, w +0, h +5.
-- `section · WHY`: x +0, y +13, w +0, h +2.
-- `section · SUGGESTED PROMPT`: x +0, y +17, w +0, h -2.
-- `section · RUN IN`: x +0, y +17, w +0, h -21.
-- `button · Change`: x +0, y +5.5, w -2, h +4.
-- `section · MY NOTES`: x +0, y -2, w +0, h +7.
-- `notes field`: x +0, y +0, w +0, h +5.
-- `section · SOURCES`: x +0, y +127, w +0, h +2.
+- `task · next step`: x +0, y +0, w +0, h +87.
+- `section · WHY`: x +0, y +7, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +0, y +11, w +0, h -2.
+- `section · RUN IN`: x +0, y +11, w +0, h -21.
+- `section · MY NOTES`: x +0, y -8, w +0, h +7.
+- `notes field`: x +0, y -6, w +0, h +5.
+- `section · SOURCES`: x +0, y +121, w +0, h +2.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 8` (read with `use_figma`, M2 346:9246, M5 346:9866), so it ends 28 px under its last section. The build now pads the task the same way: 8 at the top, as before, and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). The padding makes `task · next step` 32 px taller (h +87); the other reasons for its height are below.
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 38 px shorter (d-102),

@@ -22,9 +22,13 @@ import { SourceList } from '../blocks/SourceList.tsx'
 import { type InboxDrafts, type InboxNextStep, type InboxUi } from '../types.ts'
 
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
-// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides, 8 at the top and 28 at the bottom
+// (28 takes 32, d-072). Its sections
 // are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
-const phoneTask = css({ px: '4', pt: '8' })
+const phoneTask = css({ px: '4', pt: '8', pb: '32' })
+// T2 346:5683, T3 346:5911, T4 346:6144: the tablet's task frame pads its content 6 at the top and 28 at the bottom (Auto
+// Layout, hug). 28 has no spacing token; it is halfway between 24 and 32, so it takes 32 (d-072: a tie takes the larger).
+const tabletTask = css({ pt: '6', pb: '32' })
 // M3 346:9434: the title on one line, cut with an ellipsis, over the prompt.
 const scrolledTitle = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0', display: 'grid' })
 // T4 346:6281: the run card 11 below the bar's top edge and 10 above the tab bar, 22 in (24, d-072), on the chrome.
@@ -138,7 +142,7 @@ export function NextStepDetail({
   const item = (
     <Stack
       gap={phone ? '20' : '24'}
-      className={phone ? phoneTask : undefined}
+      className={phone ? phoneTask : compact ? tabletTask : undefined}
       // The tablet names a started task's frame "task · running" (T4); the phone keeps "task · next step" (M10).
       data-figma={compact ? `task · ${pinned === undefined || phone ? 'next step' : 'running'}` : undefined}
     >
