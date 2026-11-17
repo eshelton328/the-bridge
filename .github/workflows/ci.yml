@@ -48,6 +48,7 @@ jobs:
       - uses: ./.github/actions/setup
         with:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
+          browser: "true"
       - run: pnpm check:agents-md
       - run: pnpm check:cycles
       - run: pnpm check:structure
