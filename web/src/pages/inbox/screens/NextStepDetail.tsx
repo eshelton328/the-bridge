@@ -2,8 +2,19 @@
 // Start button (or, once started, the chat it runs in), Erik's notes and
 // the sources. On a tablet or phone the item sits under Back, and a started
 // next step's run card stays at the bottom of the screen, above the tab bar
-// (T4 346:6281). Props only.
-import { Button, Container, Inline, MarkdownView, PlayIcon, Stack } from '@eshelton328/component-library-1701'
+// (T4 346:6281); on the phone Start does too (M2 346:9386). While Erik edits
+// the prompt on the phone, the keyboard covers the bottom of the screen: the
+// head and Why give way to the title on one line, so the prompt stays in
+// sight, and Start waits (M3). Props only.
+import {
+  Button,
+  Container,
+  Inline,
+  MarkdownView,
+  PlayIcon,
+  Stack,
+  TruncatedText,
+} from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
@@ -11,6 +22,7 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { type DiscussControl, DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { NotesBox } from '../blocks/NotesBox.tsx'
+import { PinnedAction } from '../blocks/PinnedAction.tsx'
 import { PromptSection } from '../blocks/PromptSection.tsx'
 import { RunCard } from '../blocks/RunCard.tsx'
 import { RunInCard } from '../blocks/RunInCard.tsx'
@@ -19,6 +31,10 @@ import { type InboxDrafts, type InboxNextStep, type InboxUi } from '../types.ts'
 
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const fill = css({ flex: '1' })
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top.
+const phoneTask = css({ px: '4', pt: '8' })
+// M3 346:9434: the title on one line, cut with an ellipsis, over the prompt.
+const scrolledTitle = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0', display: 'grid' })
 // T4 346:6281: the run card 11 below the bar's top edge and 10 above the tab bar, 22 in (24, d-072), on the chrome.
 const footer = css({
   position: 'sticky',
@@ -56,22 +72,31 @@ type LaunchProps = {
   launch: InboxNextStep['launch']
   pickerOpen: boolean
   onPickerOpenChange: (open: boolean) => void
+  layout: Viewport
 }
 
-function Launch({ launch, pickerOpen, onPickerOpenChange }: LaunchProps) {
+function Launch({ launch, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
   if (launch.stage === 'started') return <RunCard run={launch.run} />
   return (
     <>
       <DetailSection title="Run in">
-        <RunInCard runIn={launch.runIn} pickerOpen={pickerOpen} onPickerOpenChange={onPickerOpenChange} />
+        <RunInCard
+          runIn={launch.runIn}
+          pickerOpen={pickerOpen}
+          onPickerOpenChange={onPickerOpenChange}
+          layout={layout}
+        />
       </DetailSection>
-      <Inline gap="12" align="center" data-figma="start">
-        <Button variant="primary" size="lg">
-          <PlayIcon />
-          {launch.startLabel}
-        </Button>
-        <span className={hint}>{launch.startHint}</span>
-      </Inline>
+      {/* The phone pins Start above the tab bar (PinnedAction). */}
+      {layout === 'phone' ? null : (
+        <Inline gap="12" align="center" data-figma="start">
+          <Button variant="primary" size="lg">
+            <PlayIcon />
+            {launch.startLabel}
+          </Button>
+          <span className={hint}>{launch.startHint}</span>
+        </Inline>
+      )}
     </>
   )
 }
@@ -89,17 +114,36 @@ export function NextStepDetail({
   onUndoChange,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
+  const phone = layout === 'phone'
+  // On the phone the keyboard of the prompt editor covers the bottom of the screen (M3).
+  const keyboard = phone && ui.editingPrompt
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
+  const start = phone && !keyboard && detail.launch.stage === 'suggested' ? detail.launch.startLabel : undefined
   const column = (
-    <Container size={detailContainerSize(layout)} className={pinned === undefined ? undefined : fill}>
+    <Container
+      size={detailContainerSize(layout)}
+      className={pinned === undefined && start === undefined ? undefined : fill}
+    >
       {back}
-      <Stack gap="24" data-figma={compact ? `task · ${pinned === undefined ? 'next step' : 'running'}` : undefined}>
-        <DetailHead head={detail} snooze={snooze} discuss={discuss} />
-        <DetailSection title="Why">
-          <MarkdownView size="sm" padding="none">
-            <p>{detail.why}</p>
-          </MarkdownView>
-        </DetailSection>
+      <Stack
+        gap="24"
+        className={phone ? phoneTask : undefined}
+        data-figma={compact ? `task · ${pinned === undefined ? 'next step' : 'running'}` : undefined}
+      >
+        {keyboard ? (
+          <h1 className={scrolledTitle} data-figma="scrolled title">
+            <TruncatedText>{detail.title}</TruncatedText>
+          </h1>
+        ) : (
+          <>
+            <DetailHead head={detail} snooze={snooze} discuss={discuss} barActions={!phone} />
+            <DetailSection title="Why">
+              <MarkdownView size="sm" padding="none">
+                <p>{detail.why}</p>
+              </MarkdownView>
+            </DetailSection>
+          </>
+        )}
         <PromptSection
           prompt={detail.prompt}
           editing={ui.editingPrompt}
@@ -119,9 +163,10 @@ export function NextStepDetail({
             onPickerOpenChange={(pickerOpen) => {
               onUiChange?.({ pickerOpen })
             }}
+            layout={layout}
           />
         ) : null}
-        {detail.notes === null ? null : (
+        {detail.notes === null || keyboard ? null : (
           <DetailSection title="My notes">
             <NotesBox notes={detail.notes} drafts={drafts} />
           </DetailSection>
@@ -132,6 +177,13 @@ export function NextStepDetail({
       </Stack>
     </Container>
   )
+  if (start !== undefined)
+    return (
+      <>
+        {column}
+        <PinnedAction label={start} />
+      </>
+    )
   if (pinned === undefined) return column
   return (
     <>

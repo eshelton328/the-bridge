@@ -105,7 +105,7 @@ const InboxSearch = z.object({
   more: z.object({ text: z.string(), link: z.string() }),
 })
 
-/** The Snooze menu of the task bar: snooze times, then Mark done and Dismiss. */
+/** The Snooze menu of the task bar and the sheet a long-pressed row opens on the phone: snooze times, then Mark done and Dismiss. */
 const InboxSnoozeMenu = z.object({
   heading: z.string(),
   times: z.array(z.object({ value: z.string(), label: z.string(), time: z.string() })),
@@ -113,6 +113,7 @@ const InboxSnoozeMenu = z.object({
   done: z.string(),
   dismiss: z.string(),
 })
+export type InboxSnoozeMenu = z.infer<typeof InboxSnoozeMenu>
 
 /** A Filter menu section that narrows the list: its label and its checked values. */
 export type AppliedSection = { label: string; values: string[] }
@@ -134,7 +135,6 @@ const InboxDetailHead = z.object({
   tags: z.array(z.string()),
   /** Snooze and Dismiss in the task bar; a finished item has neither. */
   actions: z.boolean(),
-  snoozeMenu: InboxSnoozeMenu.optional(),
 })
 export type InboxDetailHead = z.infer<typeof InboxDetailHead>
 
@@ -151,7 +151,10 @@ const InboxRunChoice = z.object({
 const InboxRunIn = z.object({
   title: z.string(),
   badge: z.string(),
+  /** Where it runs, such as "the-bridge · Sonnet 5.5". */
   detail: z.string(),
+  /** The folders it can use, after the detail on the desktop and tablet; the phone leaves them out (M2). */
+  folders: z.string().optional(),
   /** The Change picker's choices, in sections; the first section has no label. */
   picker: z
     .object({
@@ -357,6 +360,7 @@ export const InboxData = z.object({
   /** The filter chips with their counts before filters, like `count`. */
   filters: z.array(InboxFilterChip),
   sortMenu: InboxSortMenu,
+  snoozeMenu: InboxSnoozeMenu,
   search: InboxSearch.optional(),
   filterMenu: InboxFilterMenu,
   /** The groups, newest first, before Erik's sort, search and filters (`InboxUi`). */
@@ -383,6 +387,8 @@ export const InboxUi = z.object({
   sortOpen: z.boolean(),
   /** The Snooze menu of the task bar is open. */
   snoozeOpen: z.boolean(),
+  /** The row whose actions sheet is open: a long-press on the phone (M6) opens it; `null` when none is. */
+  actionsFor: InboxItemId.nullable(),
   /** The whole prompt is open in its dialog. */
   promptOpen: z.boolean(),
   /** The discussion panel is open beside the task; the list hides. */
@@ -410,6 +416,12 @@ export const InboxUi = z.object({
   promptBeforeApply: z.string().nullable(),
 })
 export type InboxUi = z.infer<typeof InboxUi>
+
+/** Takes an item out of the list: snoozed until a time, or finished (marked done or dismissed). */
+export type InboxPutAway = (
+  id: InboxItemId,
+  to: { until: string } | { result: InboxUi['finished'][number]['result'] },
+) => void
 
 /** The schema of one Inbox state, for the state checks. */
 export const InboxState = z.object({ data: InboxData, ui: InboxUi })

@@ -89,7 +89,15 @@ export function PromptSection({
   // The suggestion keeps its own length after Reset; any other text is as long as the state's prompt.
   const long = current === suggested.text ? suggested.long : prompt.long
   const readMore = long ? (
-    <a className={more} href="#prompt">
+    <a
+      className={more}
+      href="#prompt"
+      onClick={(event) => {
+        // It opens the whole prompt read-only: a dialog, or a sheet on a tablet or phone (T8; M2's note).
+        event.preventDefault()
+        onOpenChange?.(true)
+      }}
+    >
       Read the whole prompt
       <ChevronRightIcon size="12" />
     </a>

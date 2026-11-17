@@ -7,7 +7,9 @@
 // the list fills the screen on the backdrop, with the page's large title.
 // The rows and counts come from listView (Erik's sort, search, filters and
 // snoozed items over the state's groups); the menus report through
-// onUiChange. Props only.
+// onUiChange. On the phone a long-press on a row opens its actions sheet
+// (M6), which snoozes, marks done or dismisses it; a state with
+// `ui.actionsFor` shows the sheet at any width. Props only.
 import {
   CheckIcon,
   Container,
@@ -23,7 +25,8 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
-import type { InboxData, InboxGroupId, InboxGroupView, InboxUi } from '../types.ts'
+import { RowActionsSheet } from '../blocks/RowActionsSheet.tsx'
+import type { InboxData, InboxGroupId, InboxGroupView, InboxPutAway, InboxUi } from '../types.ts'
 import { allChecks, listView } from './listView.ts'
 
 const pane = css({
@@ -63,11 +66,16 @@ function Rows({
   ui,
   query,
   onSelectItem,
+  onActions,
+  openable,
 }: {
   rows: InboxGroupView['rows']
   ui: InboxUi
   query: string | undefined
   onSelectItem: ((id: string) => void) | undefined
+  /** The row that opens: the item the state has a detail for. */
+  openable: string | undefined
+  onActions: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
 }) {
   return rows.map((row) => (
     <InboxRow
@@ -76,10 +84,17 @@ function Rows({
       selected={row.id === ui.selectedId}
       query={query}
       onSelect={
-        onSelectItem === undefined
+        onSelectItem === undefined || row.id !== openable
           ? undefined
           : () => {
               onSelectItem(row.id)
+            }
+      }
+      onActions={
+        onActions === undefined
+          ? undefined
+          : () => {
+              onActions(row.id)
             }
       }
     />
@@ -101,6 +116,8 @@ export type InboxListPaneProps = {
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
   /** The toast's action, such as Undo, was pressed. */
   onToastAction?: (() => void) | undefined
+  /** Snoozes a row, or marks it done or dismissed, from its actions sheet. */
+  onPutAway?: InboxPutAway | undefined
 }
 
 const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' : 's'}`
@@ -116,8 +133,15 @@ export function InboxListPane({
   onQueryChange,
   onUiChange,
   onToastAction,
+  onPutAway,
 }: InboxListPaneProps) {
   const desktop = layout === 'desktop'
+  const onActions =
+    layout === 'phone'
+      ? (id: InboxGroupView['rows'][number]['id']) => {
+          onUiChange?.({ actionsFor: id })
+        }
+      : undefined
   const q = query ?? data.search?.query ?? ''
   const view = listView(data, ui, q)
   const marked = q.trim() === '' ? undefined : q
@@ -172,6 +196,8 @@ export function InboxListPane({
         filterChecks={ui.filterChecks}
         filterOpen={ui.filterOpen}
         filterNote={`Showing ${String(view.preview.shown)} of ${String(view.preview.of)}`}
+        filterShown={view.preview.shown}
+        layout={layout}
         filterCount={applied.length}
         onFilterOpenChange={(filterOpen) => {
           // The menu opens on the filters that apply, and its boxes apply when it closes.
@@ -216,13 +242,27 @@ export function InboxListPane({
               />
             </div>
             {open && group.projects === undefined ? (
-              <Rows rows={group.rows} ui={ui} query={marked} onSelectItem={onSelectItem} />
+              <Rows
+                rows={group.rows}
+                ui={ui}
+                query={marked}
+                onSelectItem={onSelectItem}
+                onActions={onActions}
+                openable={data.detail?.id}
+              />
             ) : null}
             {open && group.projects !== undefined
               ? group.projects.map((p) => (
                   <Stack key={p.label} gap="2">
                     <GroupHeader variant="project" label={p.label} leading={<FolderIcon />} />
-                    <Rows rows={p.rows} ui={ui} query={marked} onSelectItem={onSelectItem} />
+                    <Rows
+                      rows={p.rows}
+                      ui={ui}
+                      query={marked}
+                      onSelectItem={onSelectItem}
+                      onActions={onActions}
+                      openable={data.detail?.id}
+                    />
                   </Stack>
                 ))
               : null}
@@ -260,11 +300,45 @@ export function InboxListPane({
       )}
     </section>
   )
-  if (!desktop) return <Container size={layout}>{list}</Container>
-  if (data.toast === undefined) return list
+  const acted = view.groups.flatMap((g) => g.rows).find((r) => r.id === ui.actionsFor)
+  // The Filter menu's first section names the kinds.
+  const kinds = data.filterMenu.sections[0]?.items ?? []
+  const actions =
+    acted === undefined ? null : (
+      <RowActionsSheet
+        row={acted}
+        kindLabel={kinds.find((k) => k.value === acted.kind)?.label ?? ''}
+        menu={data.snoozeMenu}
+        open
+        onOpenChange={(open) => {
+          if (!open) onUiChange?.({ actionsFor: null })
+        }}
+        onPick={(until) => {
+          onPutAway?.(acted.id, until === null ? { result: 'done' } : { until })
+        }}
+        onDismiss={() => {
+          onPutAway?.(acted.id, { result: 'dismissed' })
+        }}
+      />
+    )
+  if (!desktop)
+    return (
+      <Container size={layout}>
+        {list}
+        {actions}
+      </Container>
+    )
+  if (data.toast === undefined)
+    return (
+      <>
+        {list}
+        {actions}
+      </>
+    )
   return (
     <div className={frame} data-figma="inbox list">
       {list}
+      {actions}
     </div>
   )
 }

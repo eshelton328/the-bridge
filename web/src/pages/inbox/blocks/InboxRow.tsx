@@ -1,7 +1,9 @@
 // One Inbox item in the list: its kind tile, title, meta and age; what it
 // blocks, when a snoozed item returns, where a started item runs or how a
 // finished one ended; a pill such as New; and, for an approval, the answer
-// buttons. A search marks its query in the meta line. Props only.
+// buttons. A search marks its query in the meta line. With `onActions`, a
+// long-press (a touch held for half a second) or the context menu (a right
+// click, the menu key, Shift+F10) opens the row's actions (M6). Props only.
 import {
   Button,
   CheckIcon,
@@ -14,6 +16,7 @@ import {
   SnoozeIcon,
   TrashIcon,
 } from '@eshelton328/component-library-1701'
+import { type MouseEvent, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRowView } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
@@ -36,6 +39,47 @@ export type InboxRowProps = {
   onSelect?: (() => void) | undefined
   /** The search query, marked in the meta line. */
   query?: string | undefined
+  /** Opens the row's actions: a long-press or the context menu. */
+  onActions?: (() => void) | undefined
+}
+
+/** How long a touch is held before it opens the row's actions, in ms; iOS's own long-press is about this. */
+const longPress = 500
+
+function useLongPress(onActions: (() => void) | undefined) {
+  const timerRef = useRef<number | undefined>(undefined)
+  // A held touch that opened the actions ends in a click; it must not open the row as well.
+  const firedRef = useRef(false)
+  const clear = () => {
+    if (timerRef.current !== undefined) window.clearTimeout(timerRef.current)
+    timerRef.current = undefined
+  }
+  if (onActions === undefined) return {}
+  return {
+    onContextMenu: (event: MouseEvent) => {
+      event.preventDefault()
+      clear()
+      onActions()
+    },
+    onPointerDown: (event: { pointerType: string }) => {
+      firedRef.current = false
+      if (event.pointerType !== 'touch') return
+      clear()
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = undefined
+        firedRef.current = true
+        onActions()
+      }, longPress)
+    },
+    onPointerUp: clear,
+    onPointerCancel: clear,
+    onPointerLeave: clear,
+    onClickCapture: (event: MouseEvent) => {
+      if (!firedRef.current) return
+      firedRef.current = false
+      event.stopPropagation()
+    },
+  }
 }
 
 function Lines({ row }: { row: InboxRowView }) {
@@ -71,14 +115,15 @@ function Lines({ row }: { row: InboxRowView }) {
   )
 }
 
-export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
+export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRowProps) {
+  const press = useLongPress(onActions)
   const lines =
     row.outcome !== undefined ||
     row.running !== undefined ||
     row.snoozed !== undefined ||
     row.blocks !== null ||
     row.pill !== undefined
-  return (
+  const item = (
     <ListRow
       density="compact"
       title={row.title}
@@ -115,4 +160,6 @@ export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
       {lines ? <Lines row={row} /> : undefined}
     </ListRow>
   )
+  // Only a row with actions gets the wrapper, so the desktop and tablet lists keep their boxes.
+  return onActions === undefined ? item : <div {...press}>{item}</div>
 }

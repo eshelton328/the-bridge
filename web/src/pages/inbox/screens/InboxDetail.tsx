@@ -8,8 +8,8 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { BackToInbox } from '../blocks/BackToInbox.tsx'
-import type { DiscussControl } from '../blocks/DetailHead.tsx'
-import { type InboxDrafts, type InboxDetailView, type InboxUi } from '../types.ts'
+import { type DiscussControl, SnoozeActions } from '../blocks/DetailHead.tsx'
+import { type InboxDrafts, type InboxDetailView, type InboxSnoozeMenu, type InboxUi } from '../types.ts'
 import { NextStepDetail } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
@@ -21,6 +21,8 @@ const column = css({ flexShrink: '0', overflowY: 'auto' })
 export type InboxDetailProps = {
   detail: InboxDetailView
   ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
+  /** The Snooze menu's entries. */
+  snoozeMenu?: InboxSnoozeMenu | undefined
   /** The screen's layout; on a tablet or phone the item has Back. */
   layout?: Viewport | undefined
   /** Back on a tablet or phone. */
@@ -45,6 +47,7 @@ export type InboxDetailProps = {
 export function InboxDetail({
   detail,
   ui,
+  snoozeMenu,
   layout = 'desktop',
   onBack,
   onPromptOpenChange,
@@ -56,8 +59,8 @@ export function InboxDetail({
   onSnooze,
   onDismiss,
 }: InboxDetailProps) {
-  const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} />
   const snooze = {
+    menu: snoozeMenu,
     open: ui.snoozeOpen,
     onOpenChange: (snoozeOpen: boolean) => {
       onUiChange?.({ snoozeOpen })
@@ -65,6 +68,12 @@ export function InboxDetail({
     onPick: onSnooze,
     onDismiss,
   }
+  // The phone puts Snooze and Dismiss in the nav, as icons (M2); a finished item has neither.
+  const navActions =
+    layout === 'phone' && detail.kind !== 'running' && detail.actions ? (
+      <SnoozeActions snooze={snooze} iconOnly />
+    ) : undefined
+  const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} actions={navActions} />
   const item = (
     <>
       {detail.kind === 'next' ? (

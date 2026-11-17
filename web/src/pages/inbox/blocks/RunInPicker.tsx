@@ -3,23 +3,23 @@
 // starts with its agent's mark, or a plus for a chat elsewhere; a label
 // pill ("Recommended") sits beside the title and a status pill at the end.
 // Props only.
-import {
-  KindMark,
-  OptionList,
-  PlusIcon,
-  PopoverSection,
-  SearchField,
-  SearchIcon,
-} from '@eshelton328/component-library-1701'
+import { KindMark, OptionList, PlusIcon, SearchField, SearchIcon } from '@eshelton328/component-library-1701'
 import type { InboxRunIn } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
+import { MenuSection } from './MenuSection.tsx'
 
-export function RunInPicker({ picker }: { picker: NonNullable<InboxRunIn['picker']> }) {
+export type RunInPickerProps = {
+  picker: NonNullable<InboxRunIn['picker']>
+  /** The picker is the phone's sheet (M4), not a popover. */
+  sheet?: boolean | undefined
+}
+
+export function RunInPicker({ picker, sheet }: RunInPickerProps) {
   return (
     <>
       <SearchField size="md" label={picker.search} placeholder={picker.search} icon={<SearchIcon />} />
       {picker.sections.map((section) => (
-        <PopoverSection key={section.label} label={section.label}>
+        <MenuSection key={section.label} label={section.label} sheet={sheet}>
           <OptionList
             label={section.label}
             size="sm"
@@ -35,7 +35,7 @@ export function RunInPicker({ picker }: { picker: NonNullable<InboxRunIn['picker
               trailing: c.pill?.dot === true ? <InboxStatus pill={c.pill} /> : undefined,
             }))}
           />
-        </PopoverSection>
+        </MenuSection>
       ))}
     </>
   )

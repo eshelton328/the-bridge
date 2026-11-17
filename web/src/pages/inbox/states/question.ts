@@ -4,7 +4,7 @@
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'
-import { nextStep, snoozeMenu } from './nextStep.ts'
+import { nextStep } from './nextStep.ts'
 
 const asked = InboxItemId.parse('hono-rpc-or-fetch')
 
@@ -29,7 +29,6 @@ export const question = {
       ],
       tags: ['global/decision'],
       actions: true,
-      snoozeMenu,
       waiting: {
         agent: 'claude',
         title: 'hono server is waiting for this answer',

@@ -7,7 +7,6 @@
 // phone; what Erik does to its proposals changes the task and the list
 // (`discussionView`). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
-import type { InboxItemId } from '@bridge/shared'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -17,7 +16,7 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import { RemoveDialog } from '../blocks/RemoveDialog.tsx'
-import type { InboxDraftField, InboxDrafts, InboxData, InboxGroupId, InboxUi } from '../types.ts'
+import type { InboxDraftField, InboxDrafts, InboxData, InboxGroupId, InboxPutAway, InboxUi } from '../types.ts'
 import { DiscussionPage } from './DiscussionPage.tsx'
 import {
   type DiscussionEffect,
@@ -71,6 +70,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const remove = proposalOf(data, 'remove')
   // Only a chat hides the tab bar (T1 note): a started item's chat or a discussion fills the screen down to its reply box.
   const inChat = open?.kind === 'running' || discussPage !== undefined
+  // On the phone the prompt editor's keyboard covers the bottom of the screen, tab bar and all (M3).
+  const keyboard = layout === 'phone' && open?.kind === 'next' && ui.editingPrompt
   // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
   const shown = desktop ? data.detail : open
   const run = (effect: DiscussionEffect) => {
@@ -93,6 +94,22 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const closeDiscussion = () => {
     onUiChange?.({ discussOpen: false })
   }
+  // Snooze, Mark done or Dismiss takes the shown item out of the list, by the id the detail carries: after Back on a
+  // tablet and a resize to the desktop nothing is selected, but the desktop still shows the item. Mark done and
+  // Dismiss put it in Done, with how it ended. On a tablet or phone the list shows again. The desktop keeps showing
+  // the item, so Erik can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
+  // A row's actions sheet on the phone (M6) puts a row away the same way, and closes.
+  const putAway: InboxPutAway = (id, to) => {
+    const snoozed = ui.snoozed.filter((s) => s.id !== id)
+    const finished = ui.finished.filter((f) => f.id !== id)
+    const closed = { snoozeOpen: false, actionsFor: null }
+    onUiChange?.(
+      'until' in to
+        ? { ...closed, snoozed: [...snoozed, { id, until: to.until }], finished }
+        : { ...closed, snoozed, finished: [...finished, { id, result: to.result }] },
+    )
+    onBack?.()
+  }
   const list = (
     <InboxListPane
       data={data}
@@ -107,22 +124,9 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       onToastAction={() => {
         run(undoCreateEffect(data, ui))
       }}
+      onPutAway={putAway}
     />
   )
-  // Snooze, Mark done or Dismiss takes the shown item out of the list, by the id the detail carries: after Back on a
-  // tablet and a resize to the desktop nothing is selected, but the desktop still shows the item. Mark done and
-  // Dismiss put it in Done, with how it ended. On a tablet or phone the list shows again. The desktop keeps showing
-  // the item, so Erik can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
-  const putAway = (id: InboxItemId, to: { until: string } | { result: InboxUi['finished'][number]['result'] }) => {
-    const snoozed = ui.snoozed.filter((s) => s.id !== id)
-    const finished = ui.finished.filter((f) => f.id !== id)
-    onUiChange?.(
-      'until' in to
-        ? { snoozeOpen: false, snoozed: [...snoozed, { id, until: to.until }], finished }
-        : { snoozeOpen: false, snoozed, finished: [...finished, { id, result: to.result }] },
-    )
-    onBack?.()
-  }
   // The discussed task's place, from its row.
   const place = data.groups.flatMap((g) => g.rows).find((row) => row.id === data.detail?.id)?.meta ?? ''
   const detail =
@@ -140,6 +144,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       <InboxDetail
         detail={shown}
         ui={ui}
+        snoozeMenu={data.snoozeMenu}
         layout={layout}
         onBack={onBack}
         drafts={drafts}
@@ -178,7 +183,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         view={open === null ? 'list' : 'detail'}
         rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
         tabBar={
-          desktop || inChat ? undefined : (
+          desktop || inChat || keyboard ? undefined : (
             <AppTabBar selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} />
           )
         }
