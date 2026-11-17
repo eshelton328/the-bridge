@@ -88,3 +88,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
   textSize="xs"` (`labelXs`, Medium 12/16), as Figma's Medium 12
   (d-100). Change, Snooze and Dismiss are icons, and the pinned Start
   is `size="xl"` with the default label. The labels match.
+
+## Reference faults
+
+- **SOURCES (402:1882).** `frame.json` has the text layer "SOURCES" at
+  16,623 (49×14), in `section · SOURCES` (402:1880) at 16,623, 358×62.
+  That box is inside the Run in card (`run in`, 402:1863, 16,561 to 646).
+  `frame.png` draws the card there and no "SOURCES" label: MY NOTES
+  comes next under the card. The metadata and the picture of the same
+  frame do not agree, so the covered-text check (the-bridge #34) reports
+  this layer as covered, which Figma never shows. The build is not changed
+  for it, and the saved reference stays as it is: only a new
+  `get_metadata` and `get_screenshot` of the frame can correct it
+  (references/AGENTS.md). Found in step 12 of the fidelity loop
+  (2026-11-17).
