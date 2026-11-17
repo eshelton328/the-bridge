@@ -58,3 +58,15 @@ What still differs from Figma after round 2 of the fidelity loop
 - **Rules, Workflows and Hooks.** The frame shows only the Skills and
   Agents cards, so the state has no items for the other three kinds;
   their chips show Figma's counts (8, 2 and 1).
+
+## Second review
+
+- **Selected view.** The selected List item has a cyan outline and a
+  white label; Figma draws the selected fill with no border and a cyan
+  label and icon. The library's checked `ViewSwitch` item has
+  `border.selected` and `fg.default` (gap: View switch 38 px).
+- **Rail.** The rail items are 54 px high and 60 px apart against
+  Figma's 50 and 56, so Workspaces to More sit 4 to 20 px lower
+  (gap: Rail item height).
+- The reviewer read a comma after "Read from toolkit/ in the brain" in a
+  scaled image; the code and the text check have none.
