@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.ts"],
+      "project": ["scripts/**/*.ts", "*.{ts,js}"]
+    },
+    "web": {
+      "entry": ["src/routes/**/*.tsx"],
+      "project": ["src/**/*.{ts,tsx}", ".storybook/**/*.{ts,tsx}"],
+      "ignoreDependencies": ["@pandacss/preset-base"]
+    },
+    "shared": {
+      "project": ["src/**/*.ts"]
+    }
+  }
+}

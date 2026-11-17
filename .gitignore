@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dist-canvas/
+storybook-static/
+styled-system/
+coverage/
+test-results/
+playwright-report/
+.vitest-attachments/
+__screenshots__/
+.tanstack/
+*.tgz
+*.tsbuildinfo
+.DS_Store
+.claude/settings.local.json
+.vitest/
