@@ -6,6 +6,7 @@ import { artifactOpen } from './artifactOpen.ts'
 import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
 import { searchList } from './searchList.ts'
+import { sortOpen } from './sortOpen.ts'
 
 export const artifactsStates = {
   library,
@@ -13,4 +14,5 @@ export const artifactsStates = {
   filterOpen,
   searchList,
   addLink,
+  sortOpen,
 }

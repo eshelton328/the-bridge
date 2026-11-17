@@ -88,3 +88,16 @@ export const AddLink: Story = {
     await expect(page.getByRole('button', { name: 'Add artifact' })).toBeVisible()
   },
 }
+
+export const SortOpen: Story = {
+  name: 'D6: the Sort menu open over the library',
+  args: { data: artifactsStates.sortOpen.data, ui: artifactsStates.sortOpen.ui, viewport: 'desktop' },
+  play: async () => {
+    // The menu is a popover outside the story's root.
+    const page = within(document.body)
+    await expect(await page.findByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
+    await expect(page.getByRole('menuitemradio', { name: 'Oldest first' })).not.toBeChecked()
+    await expect(page.getByText('Least recently updated at the top')).toBeVisible()
+    await expect(page.getByText('Found since you last looked stays at the top.')).toBeVisible()
+  },
+}

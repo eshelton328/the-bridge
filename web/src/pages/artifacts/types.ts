@@ -118,6 +118,20 @@ export const ArtifactFilterMenu = z.object({
 })
 export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
 
+/**
+ * The Sort menu under the list tools (D6): a heading, one choice per sort with a line that says what it does, and a
+ * note under a rule. The short label each sort shows on the button is in `ArtifactsData.sorts`; the picked sort is
+ * `ArtifactsUi.sort`. Found since you last looked stays the first group in every sort.
+ */
+const ArtifactSortMenu = z.object({
+  /** Such as "Sort by"; the menu shows it in capitals and names its list with it. */
+  heading: z.string(),
+  options: z.array(z.object({ value: SortValue, label: z.string(), description: z.string() })),
+  /** Such as "Found since you last looked stays at the top." */
+  note: z.string(),
+})
+export type ArtifactSortMenu = z.infer<typeof ArtifactSortMenu>
+
 /** Where a search matched an artifact, in the order search reads them (D4). */
 const MatchPlace = z.enum(['title', 'description', 'link', 'project'])
 export type MatchPlace = z.infer<typeof MatchPlace>
@@ -178,6 +192,8 @@ export const ArtifactsData = z.object({
   open: ArtifactDetail.optional(),
   /** The Filter menu (D3); without it Filter opens nothing yet (D1, D2). */
   filterMenu: ArtifactFilterMenu.optional(),
+  /** The Sort menu (D6); without it Sort opens nothing yet (D1 to D5). */
+  sortMenu: ArtifactSortMenu.optional(),
   /** The search's match places and hint (D4); without it a search in the list view shows no places or hint. */
   search: ArtifactSearch.optional(),
   /** The Add a link dialog (D5); without it Add a link opens nothing yet (D1 to D4). */
@@ -200,6 +216,8 @@ export const ArtifactsUi = z.object({
   filterChecks: z.array(z.string()).optional(),
   /** Whether the list view's group of search matches is open (D4); open when not set. */
   matchesOpen: z.boolean().optional(),
+  /** The Sort menu is open (D6). */
+  sortOpen: z.boolean().optional(),
   /** The Add a link dialog is open (D5). */
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
