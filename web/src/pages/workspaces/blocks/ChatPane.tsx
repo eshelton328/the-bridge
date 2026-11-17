@@ -5,34 +5,46 @@
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
-// side. Props only.
-import { Composer, Inline, ModelChip, Stack } from '@eshelton328/component-library-1701'
+// side. The composer stays at the bottom of its pane and only the transcript
+// above it scrolls (d-107, `ScrollFrame`). Props only.
+import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type ReactNode, useRef } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { SkillPicker } from './SkillPicker.tsx'
 
+// The body is a size container, so a long draft can be held to half of it (`reply`).
 const body = css({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   flex: '1',
-  gap: '10',
   p: '12',
   minH: '[0]',
+  containerType: 'size',
 })
 // D2 105:868: the transcript and composer sit 22 in from the chat's sides and 16 from its top and bottom.
 const sizes = {
   pane: undefined,
-  full: css({ gap: '12', px: '24', py: '16' }),
+  full: css({ px: '24', py: '16' }),
   // D2 105:920: 17 in from the side chat's edges, 12 under its note.
-  side: css({ gap: '12', px: '16', pt: '12', pb: '16' }),
-  // D5 158:518: the side chat in a pane pads its parts itself and keeps them 10 apart.
-  inset: css({ gap: '10', px: '0', pt: '0', pb: '0' }),
+  side: css({ px: '16', pt: '12', pb: '16' }),
+  // D5 158:518: the side chat in a pane pads its parts itself.
+  inset: css({ px: '0', pt: '0', pb: '0' }),
 }
-// The transcript takes the room above the composer.
-const transcript = css({ flex: '1', minH: '[0]' })
+// The space between the entries, and between the transcript, `above` and the composer: 10 in a pane of the split
+// and the side chat in a pane (D1, D5), 12 in the chat alone and the side chat (D2).
+const gaps = {
+  pane: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
+  full: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
+  side: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
+  inset: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
+} satisfies Record<keyof typeof sizes, { body: string; footer: string }>
+const footer = css({ display: 'flex', flexDirection: 'column' })
+// A long draft grows the composer; past half the window, or half the pane in a short pane of the split, it scrolls
+// inside, so Send stays in reach (d-107).
+const reply = css({ maxH: '[min(50vh, 50cqh)]', overflowY: 'auto' })
 
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
@@ -105,39 +117,49 @@ export function ChatPane(props: ChatPaneProps) {
       }
     />
   )
+  const composerBox =
+    skills === undefined ? (
+      <div data-figma={figma.composer} className={reply}>
+        {box}
+      </div>
+    ) : (
+      <SkillPicker
+        label={skills.label}
+        skills={skills.items}
+        value={skills.value}
+        open={skills.open}
+        onOpenChange={(open) => {
+          // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
+          if (!open) onSkillsOpenChange?.(false)
+        }}
+        onListFocus={() => {
+          if (!typedRef.current) return
+          typedRef.current = false
+          areaRef.current?.querySelector('textarea')?.focus()
+        }}
+      >
+        {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
+            (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
+        <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label} className={reply}>
+          {box}
+        </div>
+      </SkillPicker>
+    )
   return (
     <div className={cx(body, sizes[size])}>
-      <Stack gap={size === 'pane' || size === 'inset' ? '10' : '12'} className={transcript}>
+      <ScrollFrame
+        bodyClassName={gaps[size].body}
+        footer={
+          <div className={cx(footer, gaps[size].footer)}>
+            {above}
+            {composerBox}
+          </div>
+        }
+      >
         {entries.map((entry, i) => (
           <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
         ))}
-      </Stack>
-      {above}
-      {skills === undefined ? (
-        <div data-figma={figma.composer}>{box}</div>
-      ) : (
-        <SkillPicker
-          label={skills.label}
-          skills={skills.items}
-          value={skills.value}
-          open={skills.open}
-          onOpenChange={(open) => {
-            // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
-            if (!open) onSkillsOpenChange?.(false)
-          }}
-          onListFocus={() => {
-            if (!typedRef.current) return
-            typedRef.current = false
-            areaRef.current?.querySelector('textarea')?.focus()
-          }}
-        >
-          {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
-              (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
-          <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label}>
-            {box}
-          </div>
-        </SkillPicker>
-      )}
+      </ScrollFrame>
       {overlay}
     </div>
   )

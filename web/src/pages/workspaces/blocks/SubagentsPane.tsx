@@ -1,7 +1,8 @@
 // The subagents panel beside the main chat (D3 105:1312): its title, the
 // count and Close, then a card for each subagent and subtask of the chat.
-// It takes the side slot, 420 wide (`sideWidth="wide"`). Props only.
-import { Button, CloseIcon, Inline, Stack } from '@eshelton328/component-library-1701'
+// It takes the side slot, 420 wide (`sideWidth="wide"`). The title row stays
+// at the top and only the cards scroll (d-107, `ScrollFrame`). Props only.
+import { Button, CloseIcon, Inline, ScrollFrame } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SubagentsPanel } from '../types.ts'
 import { SubagentCard } from './SubagentCard.tsx'
@@ -9,7 +10,6 @@ import { SubagentCard } from './SubagentCard.tsx'
 const panel = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '10',
   flex: '1',
   minH: '[0]',
   // D3 105:1313: the title row sits 17 from the top; the 24 px close button centres it 12 down.
@@ -19,8 +19,10 @@ const panel = css({
   borderLeftWidth: 'default',
   borderLeftStyle: 'solid',
   borderLeftColor: 'border.default',
-  overflowY: 'auto',
 })
+// The title row and the cards are 10 apart, and so are the cards.
+const titleRow = css({ pb: '10' })
+const cards = css({ gap: '10' })
 const heading = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0' })
 const count = css({ textStyle: 'mono', color: 'fg.subtle', flex: '1' })
 
@@ -37,14 +39,18 @@ export type SubagentsPaneProps = {
 export function SubagentsPane({ panel: data, open, onOpenChange, onClose, figma }: SubagentsPaneProps) {
   return (
     <aside data-figma={figma?.panel} aria-label={data.title} className={panel}>
-      <Inline gap="8" align="center">
-        <h2 className={heading}>{data.title}</h2>
-        <span className={count}>{data.items.length}</span>
-        <Button variant="text" size="xs" iconOnly aria-label={data.closeLabel} onClick={onClose}>
-          <CloseIcon size="16" />
-        </Button>
-      </Inline>
-      <Stack gap="10">
+      <ScrollFrame
+        bodyClassName={cards}
+        header={
+          <Inline gap="8" align="center" className={titleRow}>
+            <h2 className={heading}>{data.title}</h2>
+            <span className={count}>{data.items.length}</span>
+            <Button variant="text" size="xs" iconOnly aria-label={data.closeLabel} onClick={onClose}>
+              <CloseIcon size="16" />
+            </Button>
+          </Inline>
+        }
+      >
         {data.items.map((item) => (
           <SubagentCard
             key={item.id}
@@ -57,7 +63,7 @@ export function SubagentsPane({ panel: data, open, onOpenChange, onClose, figma 
             }
           />
         ))}
-      </Stack>
+      </ScrollFrame>
     </aside>
   )
 }
