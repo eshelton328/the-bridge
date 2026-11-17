@@ -51,8 +51,13 @@ const copy = css({
 })
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
-// node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626).
-const titleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '427:270', 'rules/skills.md': '427:626' }
+// node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
+// writing-reviewer in D7 (433:524).
+const titleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '427:270',
+  'rules/skills.md': '427:626',
+  'agents/writing-reviewer.md': '433:524',
+}
 
 // D3 500:8143: the kind badge starts with the kind's icon.
 const kindIcons = {

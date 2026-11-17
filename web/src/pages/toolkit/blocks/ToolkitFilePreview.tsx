@@ -32,6 +32,8 @@ const bar = css({
   color: 'fg.muted',
 })
 const name = css({ textStyle: 'mono', color: 'fg.default' })
+// D7 433:567: text after the name, such as the file's length and what it is, in mono.
+const fileMeta = css({ textStyle: 'mono', color: 'fg.muted' })
 const readOnly = css({ display: 'inline-flex', alignItems: 'center', gap: '8', ms: 'auto', textStyle: 'small' })
 // D3 427:290: the file references sit on one line, two spaces apart.
 const refs = css({ display: 'flex', flexWrap: 'wrap', columnGap: '16' })
@@ -68,15 +70,18 @@ const blockKey = (block: ToolkitMarkdownBlock) =>
 export type ToolkitFilePreviewProps = {
   /** The file's name, such as "SKILL.md". */
   file: string
+  /** Text after the name, such as "137 lines · the prompt" (D7 433:567); none when not set. */
+  meta?: string | undefined
   blocks: readonly ToolkitMarkdownBlock[]
 }
 
-export function ToolkitFilePreview({ file, blocks }: ToolkitFilePreviewProps) {
+export function ToolkitFilePreview({ file, meta, blocks }: ToolkitFilePreviewProps) {
   return (
     <section aria-label={file} className={box} data-figma="file preview">
       <div className={bar} data-figma="preview bar">
         <FileIcon size="16" />
         <span className={name}>{file}</span>
+        {meta === undefined ? null : <span className={fileMeta}>{meta}</span>}
         <span className={readOnly}>
           <LockIcon size="12" />
           Read-only

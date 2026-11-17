@@ -91,6 +91,8 @@ export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
                   ))}
                 </span>
                 {fileLine.count === undefined ? null : <span className={count}>{fileLine.count}</span>}
+                {/* D7 433:630: a file's length after its name. */}
+                {fileLine.meta === undefined ? null : <span className={count}>{fileLine.meta}</span>}
               </li>
             ))}
           </ul>

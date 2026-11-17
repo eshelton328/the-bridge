@@ -102,3 +102,22 @@ export const RuleOpen: Story = {
     await expect(canvas.getByRole('heading', { name: /Hooks/ })).toBeInTheDocument()
   },
 }
+
+export const AgentOpen: Story = {
+  name: 'D7: an agent open beside the list',
+  args: { data: toolkitStates.agentOpen.data, ui: toolkitStates.agentOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writing-reviewer' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/agents/writing-reviewer.md')).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'How it runs' })
+    await expect(within(runs).getByText('opus')).toBeVisible()
+    await expect(within(runs).getByText('codex_effort; default model')).toBeVisible()
+    await expect(within(runs).getByText('Bash, Read, Grep, Glob')).toBeVisible()
+    await expect(within(item).getByText('137 lines · the prompt')).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 1, name: 'Prompt' })).toBeVisible()
+    // The agent's row is the open one, and the Skills group is closed.
+    await expect(canvas.getByRole('button', { name: 'writing-reviewer', current: true })).toBeVisible()
+    await expect(canvas.queryByText('skills/writer/')).toBeNull()
+  },
+}

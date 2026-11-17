@@ -75,6 +75,8 @@ const ToolkitFileLine = z.object({
   names: z.array(z.string()).min(1),
   /** The number of files in a folder. */
   count: z.number().int().nonnegative().optional(),
+  /** Text after a file's name, such as "137 lines" (D7 433:630). */
+  meta: z.string().optional(),
 })
 
 /**
@@ -91,6 +93,18 @@ export const ToolkitMarkdownBlock = z.discriminatedUnion('type', [
 ])
 export type ToolkitMarkdownBlock = z.infer<typeof ToolkitMarkdownBlock>
 
+/**
+ * One card of an agent's How it runs section (D7 `fact · Claude` 433:529): its icon and label, the value, and a caption
+ * in mono under it, such as Claude, opus and "model". The icon names what the card is about: the model (Claude, Codex),
+ * the tools, or the agent's own context.
+ */
+const ToolkitFact = z.object({
+  icon: z.enum(['model', 'tools', 'context']),
+  label: z.string(),
+  value: z.string(),
+  caption: z.string(),
+})
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -98,7 +112,7 @@ const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: ToolkitKind })
 
 /**
- * An open item (D3, a rule in D4): what the page shows beside the list for one item. Its kind, name and link counts come from
+ * An open item (D3, a rule in D4, an agent in D7): what the page shows beside the list for one item. Its kind, name and link counts come from
  * the list's `ToolkitItemView` with the same path.
  */
 export const ToolkitItemDetailView = z.object({
@@ -115,9 +129,17 @@ export const ToolkitItemDetailView = z.object({
    * condition, such as "a file under toolkit/skills/** or skills/** changes". None for an item that is not a rule.
    */
   loads: z.object({ label: z.string(), when: z.string() }).optional(),
+  /**
+   * How an agent runs, from its frontmatter (D7 `kind section · agent` 433:526): the section's label ("How it runs")
+   * and its cards, all the same size. None for an item that is not an agent.
+   */
+  runs: z.object({ label: z.string(), facts: z.array(ToolkitFact).min(1) }).optional(),
   tabs: z.array(ToolkitItemTab).min(1),
-  /** The item's main file, rendered read-only: its name and its blocks. */
-  preview: z.object({ file: z.string(), blocks: z.array(ToolkitMarkdownBlock) }),
+  /**
+   * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
+   * prompt"), and its blocks.
+   */
+  preview: z.object({ file: z.string(), meta: z.string().optional(), blocks: z.array(ToolkitMarkdownBlock) }),
   /**
    * The heading of the items that use this one, such as "Used in workflows", and those items. None when the side
    * column does not show it, as for the rule in D4.
