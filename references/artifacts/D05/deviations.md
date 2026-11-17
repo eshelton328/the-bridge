@@ -2,20 +2,20 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D05`, 2026-11-17, against the installed
-library 1.0.0-beta.15), each with its reason. The library gaps are in
+library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. The library behind the dialog
 is D01's, so its deviations are D01's.
 
 ## Checks
 
-- Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"), as D01. Nothing is missing and every string is visible.
+- Text: passes, as D01: the view switch draws its icons alone
+  (`ViewSwitch iconOnly`, library #121). Every string is visible.
   `Toolkit` is an `extra` exception, and the four card descriptions that
   Figma cuts with an ellipsis are `missing` exceptions (`exceptions.json`),
   as D01's.
-- Position: 6 of 31 layers pass (`header`, `found status`,
-  `button · Add a link`, `list tools`,
-  `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`). Twenty-five
+- Position: 7 of 31 layers pass (`header`, `found status`,
+  `button · Add a link`, `list tools`, `view · Grid or List`,
+  `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`). Twenty-four
   fail; each is listed below.
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as D01's. The link and title inputs
@@ -71,15 +71,11 @@ is D01's, so its deviations are D01's.
 
 ## Deviations: the library behind it (as D01)
 
-- **View switch.** `view · Grid or List` x -66.9, w +66.9: the switch
-  shows "Grid" and "List" beside its icons (the text check's extra `Grid`
-  and `List`) and is 135 px wide against 68. Library gap "Icon-only view
-  switch".
-- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
-  w +8.4, `button · Filter` x -42.4, w +4.4: the wider view switch takes
-  67 px of the search's width, and Sort and Filter pad their sides more
-  than Figma's 11 px. Library gaps "Icon-only view switch" and "Sort and
-  Filter button widths".
+- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
+  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
+  their sides more than Figma's 11 px, and the search and the space
+  before the view switch share the free width equally where Figma gives
+  the search 22 px more. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
   8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
 - **Cards.** `artifact card · Skill eval pass rates`,

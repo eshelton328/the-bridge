@@ -33,6 +33,8 @@ export function SortMenu({ menu, sort, sortLabel, open, onOpenChange, onSortChan
       heading={menu.heading}
       // Figma's menu is 280 wide (403:8881), the library's width for a menu whose choices have a description.
       width="sort"
+      // Figma's choices are 50 high with an 11 px description and the note on one line, 8 under Sort (403:8881).
+      density="compact"
       data-figma={open ? 'menu · Sort' : undefined}
       open={open}
       onOpenChange={onOpenChange}

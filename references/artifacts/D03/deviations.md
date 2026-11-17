@@ -2,54 +2,50 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D03`, 2026-11-17, against the installed
-library 1.0.0-beta.15), each with its reason. The library gaps are in
+library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"), as D01. Nothing is missing. `Toolkit` is an `extra` exception,
+- Text: passes, as D01: the view switch draws its icons alone
+  (`ViewSwitch iconOnly`, library #121). `Toolkit` is an `extra` exception,
   and the four descriptions that Figma cuts with an ellipsis are `missing`
   exceptions (`exceptions.json`).
-- Position: 6 of 37 layers pass (`header`, `found status`,
-  `button · Add a link`, `list tools`,
+- Position: 7 of 37 layers pass (`header`, `found status`,
+  `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as in D01.
 
 ## Deviations
 
-- **Filter menu place.** `menu · Filter` x +77.5. Figma opens the menu
+- **Filter menu place.** `menu · Filter` x +111.5. Figma opens the menu
   where the search ends, 120 px before the Filter button's start; the
-  `Popover` opens at the button's start (`placement="bottom-start"`), so
-  the menu sits about 77 px further right and covers the third card more
+  `Popover` opens at the button's start (`placement="bottom-start"`), and
+  Filter sits 9 px left of Figma's (see "Search, Sort and Filter"), so
+  the menu sits 111.5 px further right and covers the third card more
   than the second. Library gap "Filter menu placement".
-- **Filter menu rows.** `menu · Filter` h +46, and every row:
+- **Filter menu rows.** `menu · Filter` h +38, and every row:
   `check · Claude artifacts`, `check · Codex sites`, `check · ncc-1701`,
   `check · omni`, `check · skill-evals`, `check · omni-brain`,
   `check · Not in a project`, `check · Artifact hook`,
   `check · Codex session log`, `check · Added by hand`, `check · Today`
-  and `check · This week`, each x +73.5 (the menu's place, above) and
-  w +8, and from `check · ncc-1701` on y +6 growing to +41. The
+  and `check · This week`, each x +107.5 (the menu's place, above) and
+  w +8, and from `check · omni` on y +6 growing to +33. The
   `Checkbox` rows are 32 high and 34 apart against Figma's 29 (28 for a
   mono label) and 31 or 30, so each row sits a little lower than the one
-  before it and the menu is 590 high against 544. `Popover` pads 8
+  before it and the menu is 582 high against 544. `Popover` pads 8
   against Figma's 12, so the rows are 302 wide against 294 and start 4 px
-  nearer the menu's edge. `button · Show 7` x +75.8, y +42: the footer
+  nearer the menu's edge. `button · Show 7` x +109.8, y +34: the footer
   follows the rows down. Library gap "Filter menu rows and inset".
 - **Source marks.** The Claude artifacts and Codex sites rows have no
   Claude or Codex mark between the box and the label: `Checkbox` takes
   only a text label. Library gap "Checkbox leading icon".
-- **View switch.** `view · Grid or List` x -66.9, w +66.9, as D01: the
-  switch shows "Grid" and "List" beside its icons (the text check's extra
-  `Grid` and `List`) and is 135 px wide against 68. Library gap
-  "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
-  w +8.4, `button · Filter` x -42.4, w +4.4. The wider view switch takes
-  67 px of the search's width, so Sort and Filter sit further left; Sort
-  and Filter (with its dot) pad their sides more than Figma's 11 px.
-  Library gaps "Icon-only view switch" and "Sort and Filter button
-  widths".
+- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
+  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
+  their sides more than Figma's 11 px, and the search and the space
+  before the view switch share the free width equally where Figma gives
+  the search 22 px more. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
   8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
 - **Card heights.** Every card is 5.2 px shorter than Figma's 286:

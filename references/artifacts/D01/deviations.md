@@ -2,17 +2,18 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D01`, 2026-11-17, against the installed
-library 1.0.0-beta.15), each with its reason. The library gaps are in
+library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"). Nothing is missing. `Toolkit` is an `extra` exception, and the
+- Text: passes. Nothing is missing and nothing extra shows: the view
+  switch draws its icons alone (`ViewSwitch iconOnly`, library #121).
+  `Toolkit` is an `extra` exception, and the
   four descriptions that Figma cuts with an ellipsis are `missing`
   exceptions (`exceptions.json`).
-- Position: 6 of 23 layers pass (`header`, `found status`,
-  `button · Add a link`, `list tools`,
+- Position: 7 of 23 layers pass (`header`, `found status`,
+  `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions: Figma draws the third card row past the
@@ -20,20 +21,16 @@ library 1.0.0-beta.15), each with its reason. The library gaps are in
 
 ## Deviations
 
-- **View switch.** `view · Grid or List` x -66.9, w +66.9. Figma's switch
-  is two icon-only segments, 68 px wide; `ViewSwitch` always shows its
-  labels, so the render shows "Grid" and "List" beside the icons (the
-  text check's extra `Grid` and `List`), and the switch is 135 px wide.
-  It draws the picked view in `tone="accent"` (cyan icon, no border), as
-  Figma does. Library gap "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
-  w +8.4, `button · Filter` x -42.4, w +4.4. The search and the space
-  before the view switch share the row's free width, as Figma's layers
-  do (402:15398, 402:15418); the wider view switch takes 67 px of it, so
-  the search is 51 px narrower and Sort and Filter sit further left.
-  Sort and Filter are wider because `Button textSize="sm"` pads its sides
-  more than Figma's 11 px. Library gaps "Icon-only view switch" and "Sort
-  and Filter button widths".
+- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
+  w +8.4, `button · Filter` x -9, w +4.4. The search and the space before
+  the view switch share the row's free width, as Figma's layers do
+  (402:15398, 402:15418). Sort and Filter are 12.8 px wider than Figma's
+  because `Button textSize="sm"` pads its sides more than Figma's 11 px,
+  which takes 6.4 px from each share. Figma also gives the search 22 px
+  more than the space (565.5 against 543.5), and no token gives an uneven
+  share, so the equal shares make the search 11 px narrower still. Sort
+  sits 17.4 px and Filter 9 px left of Figma's. Library gap "Sort and
+  Filter button widths".
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   puts the chips 6 apart with 8 px sides; Figma has 5 apart and 9 px
   sides. Library gap "Compact chip spacing".

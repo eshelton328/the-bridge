@@ -2,17 +2,18 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D04`, 2026-11-17, against the installed
-library 1.0.0-beta.15), each with its reason. The library gaps are in
+library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"), as D01. Nothing is missing and every string is visible. Each
+- Text: passes, as D01: the view switch draws its icons alone
+  (`ViewSwitch iconOnly`, library #121). Every string is visible. Each
   "eval" mark counts in its title, description or link. `Toolkit` is an
   `extra` exception (`exceptions.json`).
-- Position: 5 of 15 layers pass (`header`, `found status`,
-  `button · Add a link`, `list tools`, `group · matches`). Ten fail;
+- Position: 6 of 15 layers pass (`header`, `found status`,
+  `button · Add a link`, `list tools`, `view · Grid or List`,
+  `group · matches`). Nine fail;
   each is listed below.
 - Rules: pass.
 
@@ -42,15 +43,11 @@ library 1.0.0-beta.15), each with its reason. The library gaps are in
   `Badge variant="tag"`: a box with the small radius, 6 px sides and
   20 px high, against Figma's round pill with 8 px sides, 21 high. Library
   gap "Match place chip".
-- **View switch.** `view · Grid or List` x -66.9, w +66.9, as D01: the
-  switch shows "Grid" and "List" beside its icons (the text check's extra
-  `Grid` and `List`) and is 135 px wide against 68. List is selected, as
-  Figma's. Library gap "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
-  w +8.4, `button · Filter` x -42.4, w +4.4, as D01: the wider view switch
-  takes 67 px of the search's width, so Sort and Filter sit further left,
-  and both pad their sides more than Figma's 11 px. Library gaps "Icon-only
-  view switch" and "Sort and Filter button widths".
+- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
+  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
+  their sides more than Figma's 11 px, and the search and the space
+  before the view switch share the free width equally where Figma gives
+  the search 22 px more. Library gap "Sort and Filter button widths".
 - **Search clear button.** The story focuses the search field, so it
   shows Figma's cyan focus border. The × that clears the search
   (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
