@@ -1,0 +1,34 @@
+{
+  "missing": [
+    {
+      "text": "42%",
+      "layers": ["158:698", "158:855"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\" (\"42\" then \"%\"), so the text check does not find the one string; the render shows \"42%\" after the segments in the bridge themes row and in the chat header (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "23%",
+      "layers": ["158:717"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"23%\" after the segments in the drift check row (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "18%",
+      "layers": ["158:808"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"18%\" after the segments in the release notes row (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "78%",
+      "layers": ["158:1044"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"78%\" in full in the dragged hono server chat over the drop zone (LIBRARY_GAPS.md: ContextMeter percentage). The same text in the sidebar row (158:760) is clipped and stays checked."
+    }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    }
+  ]
+}
