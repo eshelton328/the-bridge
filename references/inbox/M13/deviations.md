@@ -7,14 +7,15 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (64 strings checked; 2 Figma strings under exceptions.json).
+- Text: pass (61 strings checked; 5 Figma strings under exceptions.json).
 - Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 38 px
-shorter, below Figma's status bar, and adds 38 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 38 px
+shorter, below Figma's status bar (d-102), and the position check adds
+38 to each render y (d-101).
 
 - `inbox list`: x +0, y +0, w +0, h +25.
 - `group · NEXT STEPS`: x +0, y +16, w +0, h +4.
@@ -25,8 +26,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 38 px shorter and adds
-  38 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 38 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 38 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
@@ -72,6 +74,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
   (cyan), as on the tablet (T9); Figma dims it under the scrim.
 - **Running row.** As in M11, its chat line and Working pill lie under
   the tab bar in Figma and in the render (the exceptions say why).
+- **Running row under the sheet.** The checks render 806 px high
+  (d-102). The Running row lies under the Sort sheet in Figma and in the
+  render (the exceptions say why).
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13. Library gap: Button label
   size.

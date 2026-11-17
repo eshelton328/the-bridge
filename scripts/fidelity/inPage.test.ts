@@ -1,7 +1,11 @@
 // Tests for the pure helpers of inPage.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { collectPageScript, fieldText, fullyVisible, isPortalRoot } from './inPage.ts'
+import { chromium } from 'playwright'
+import { renderViewport } from './checkPosition.ts'
+import { checkText } from './checkText.ts'
+import { statusBarReason, type Layer } from './figmaMetadata.ts'
+import { collectPageScript, fieldText, fullyVisible, isPortalRoot, type PageMeasure } from './inPage.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
 const viewport = edges(0, 0, 1280, 800)
@@ -85,4 +89,62 @@ void test('a checkbox, radio, hidden or password value is not field text; a text
   assert.equal(fieldText(field('INPUT', 'text', '  Find   a task ')), 'Find a task')
   assert.equal(fieldText(field('INPUT', 'search', '', 'Search…')), 'Search…')
   assert.equal(fieldText(field('TEXTAREA', 'textarea', 'A note')), 'A note')
+})
+
+// fidelity.ts renders a frame in renderViewport's size and measures every
+// text run in it. A phone frame (390 × 844) with Figma's 38 px status bar
+// renders at 390 × 806 (d-102), so a row in the bottom 38 px of the full
+// frame is off screen, as on a device, and the text check says so.
+const textLayer = (id: string, text: string, y: number, path = ''): Layer => ({
+  id,
+  name: text,
+  type: 'text',
+  text,
+  x: 16,
+  y,
+  w: 200,
+  h: 20,
+  path,
+})
+const phone = {
+  w: 390,
+  h: 844,
+  layers: [
+    { id: '2:1', name: 'Frame', type: 'frame', x: 0, y: 0, w: 390, h: 38, path: '' },
+    { ...textLayer('2:2', '9:41', 12, 'Frame'), w: 40, h: 16 },
+    textLayer('2:3', 'Inbox', 50),
+    textLayer('2:4', 'Running row title', 810),
+  ],
+  exclude: [{ id: '2:2', text: '9:41', reason: statusBarReason }],
+}
+// The row sits 812 px down the page: on screen at 844 px, under the fold at 806.
+const page = `<body style="margin:0"><div id="storybook-root"><div style="position:relative;height:100vh">
+<p style="position:absolute;top:12px;left:16px;margin:0;font:16px/20px sans-serif">Inbox</p>
+<p style="position:absolute;top:812px;left:16px;margin:0;font:16px/20px sans-serif">Running row title</p>
+</div></div></body>`
+
+async function measureIn(viewport: { w: number; h: number }): Promise<PageMeasure> {
+  const browser = await chromium.launch()
+  try {
+    const tab = await browser.newPage({ viewport: { width: viewport.w, height: viewport.h } })
+    await tab.setContent(page)
+    return await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+  } finally {
+    await browser.close()
+  }
+}
+
+void test('text in the bottom status-bar band of a phone frame counts as not shown (d-102)', async () => {
+  const viewport = renderViewport(phone)
+  assert.deepEqual(viewport, { w: 390, h: 806, statusBar: 38 })
+  const none = { missing: [], extra: [] }
+  const below = checkText(phone, none, await measureIn(viewport))
+  assert.deepEqual(below.notVisible, [{ id: '2:4', text: 'Running row title' }])
+  // At the full 844 px the same row was counted as shown.
+  assert.deepEqual(checkText(phone, none, await measureIn(phone)).notVisible, [])
+})
+
+void test('a desktop frame without a status bar renders at its full size', () => {
+  const desktop = { w: 1512, h: 982, layers: [textLayer('1:1', 'Inbox', 20)], exclude: [] }
+  assert.deepEqual(renderViewport(desktop), { w: 1512, h: 982, statusBar: 0 })
 })

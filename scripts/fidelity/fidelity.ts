@@ -4,7 +4,7 @@
 // size, runs the text, position and rule checks against
 // references/<page>/<frameId>/, and writes reports/fidelity/<page>/:
 //   <frameId>.json            the three results
-//   <frameId>.render.png      the render (below the status bar on a tablet or phone)
+//   <frameId>.render.png      the render the checks measured (below the status bar on a tablet or phone)
 //   <frameId>.sideBySide.png  Figma left, render right, for the reviewer
 // With no frame ids it checks every frame that a state file lists.
 // Exits 1 when any check fails. Flags: --skip-build reuses
@@ -14,7 +14,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { chromium, type Browser, type BrowserContext, type Page } from 'playwright'
-import { checkPosition, statusBarHeight } from './checkPosition.ts'
+import { checkPosition, renderViewport } from './checkPosition.ts'
 import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
@@ -101,21 +101,16 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   const story = storyForState(page, state, indexJson)
   if (story === undefined) throw new Error(`No story renders ${page}States.${state}; run pnpm check:states`)
 
-  // Text and rules measure the page in the frame's full size. On a tablet
-  // or phone the position check measures it again below Figma's status bar,
-  // which the app does not draw (d-089, d-101): in a viewport the bar's
-  // height shorter, whose render the side-by-side draws that much lower.
-  const statusBar = statusBarHeight(ref)
+  // All three checks measure one render. On a tablet or phone it is below
+  // Figma's status bar, which the app does not draw (d-089, d-102): a
+  // viewport the bar's height shorter, whose render the side-by-side draws
+  // that much lower. A desktop frame renders at its full size.
+  const viewport = renderViewport(ref)
+  const { statusBar } = viewport
   const url = `${origin}/iframe.html?id=${story}&viewMode=story`
   const errors: string[] = []
-  let shown = await openStory(b, url, ref.w, ref.h, errors)
+  const shown = await openStory(b, url, viewport.w, viewport.h, errors)
   const measured = await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
-  let figmaBoxes = measured.figmaBoxes
-  if (statusBar > 0) {
-    await shown.context.close()
-    shown = await openStory(b, url, ref.w, ref.h - statusBar, errors)
-    figmaBoxes = (await shown.tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))).figmaBoxes
-  }
   const renderPng = join(outDir, `${frameId}.render.png`)
   await shown.tab.screenshot({ path: renderPng })
 
@@ -125,7 +120,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   await shown.context.close()
 
   const text = checkText(ref, exceptions, measured)
-  const position = checkPosition(ref, exceptions, figmaBoxes, tolerance ?? ref.tolerance)
+  const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance)
   const rules = checkRules(ref, exceptions, measured)
   const ok = text.ok && position.ok && rules.ok && errors.length === 0
   const report = {
@@ -134,8 +129,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
     node: ref.node,
     state: `${page}/${state}`,
     story,
-    viewport: { w: ref.w, h: ref.h },
-    positionViewport: { w: ref.w, h: ref.h - statusBar },
+    viewport: { w: viewport.w, h: viewport.h },
     ok,
     pageErrors: errors,
     text,

@@ -7,14 +7,15 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (35 strings checked, 1 excepted in `exceptions.json`).
+- Text: pass (34 strings checked; 2 Figma strings under exceptions.json).
 - Position: 3 of 13 layers pass (`task bar`, `sticky action`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 38 px
-shorter, below Figma's status bar, and adds 38 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 38 px
+shorter, below Figma's status bar (d-102), and the position check adds
+38 to each render y (d-101).
 
 - `nav`: x +0, y +0, w +0, h -8.
 - `task · next step`: x +0, y +2, w +0, h +59.
@@ -31,8 +32,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 38 px shorter and adds
-  38 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 38 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 38 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
@@ -78,6 +80,10 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
   action` passes); the bar is opaque.
   Start starts the task: its run card takes Start's place, and Reply
   here opens its chat (`InboxRoute.test.tsx`).
+- **Hidden Sources.** The checks render 806 px high (d-102). Figma keeps
+  a SOURCES section at y 623 that it does not draw (frame.png shows Run
+  in and My notes there); the render keeps Sources below My notes, under
+  the pinned Start (the exception says why).
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.

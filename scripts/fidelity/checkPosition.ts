@@ -69,6 +69,21 @@ export function statusBarHeight(ref: Pick<FrameRef, 'layers' | 'exclude'>): numb
 }
 
 /**
+ * The viewport every check renders a frame in: the frame's width by its
+ * height less Figma's status bar, which the app does not draw (d-089), so
+ * the text, position and rule checks see the screen a device shows below
+ * its bar (d-102). A desktop frame has no bar and keeps its full size.
+ */
+export function renderViewport(ref: Pick<FrameRef, 'w' | 'h' | 'layers' | 'exclude'>): {
+  w: number
+  h: number
+  statusBar: number
+} {
+  const statusBar = statusBarHeight(ref)
+  return { w: ref.w, h: ref.h - statusBar, statusBar }
+}
+
+/**
  * `boxes` are measured in a viewport the status bar's height shorter than
  * the frame (fidelity.ts), so each y moves down by that height.
  */

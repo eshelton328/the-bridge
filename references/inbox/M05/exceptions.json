@@ -4,6 +4,11 @@
       "text": "Keep the client in packages/api so omni can import it later.",
       "layers": ["346:9937"],
       "reason": "Figma draws the note (346:9937, y 765 to 799) under the pinned answer bar and the tab bar (346:9938 starts at y 767), so frame.png does not show it. The render puts it in the same place: the page scrolls to it."
+    },
+    {
+      "text": "NOTE TO THE CHAT · OPTIONAL",
+      "layers": ["346:9935"],
+      "reason": "The note's label (346:9935, y 730 to 744) lies under the pinned Answer bar (sticky action 346:9979, y 696 to 767), so Figma does not show it; the render pins the bar over it the same way and the page scrolls to it."
     }
   ],
   "rules": [

@@ -13,8 +13,9 @@ library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 29 px
-shorter, below Figma's status bar, and adds 29 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 29 px
+shorter, below Figma's status bar (d-102), and the position check adds
+29 to each render y (d-101).
 
 - `task · next step`: x +2, y +4, w -4, h -9.
 - `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -2.
@@ -28,8 +29,9 @@ shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 29 px shorter and adds
-  29 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 29 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 29 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 29 px
   lower, under a blank band where Figma has the bar. Library gap:
   Top and bottom safe areas on the tablet.

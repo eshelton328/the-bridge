@@ -9,6 +9,21 @@
       "text": "Working",
       "layers": ["346:11761"],
       "reason": "Figma draws the Running row's Working pill under the tab bar too: layer 346:11761 sits at y 757, and the tab bar starts at y 767, so frame.png shows part of it. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "text": "Write the tickets for increment one",
+      "layers": ["346:11751"],
+      "reason": "The Running row's title (346:11751, y 734 to 751) lies under the Sort sheet (346:11805, y 476 to 844), so Figma does not show it; the render's sheet covers it too."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-28",
+      "layers": ["346:11752"],
+      "reason": "The Running row's subtitle (346:11752, y 755 to 769) lies under the Sort sheet (346:11805, y 476 to 844), so Figma does not show it; the render's sheet covers it too."
+    },
+    {
+      "text": "2h",
+      "layers": ["346:11758"],
+      "reason": "The Running row's age (346:11758, y 734 to 748) lies under the Sort sheet (346:11805, y 476 to 844), so Figma does not show it; the render's sheet covers it too."
     }
   ],
   "rules": [

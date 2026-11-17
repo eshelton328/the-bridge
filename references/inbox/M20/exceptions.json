@@ -9,6 +9,11 @@
       "text": "f-005 the-bridge",
       "layers": ["402:2385"],
       "reason": "Layer 402:2385 is the detail of a source in the SOURCES section (402:2375, y 623), which sits under the pinned Start (402:2435) where frame.png does not show it. The render keeps Sources below My notes, where the page scrolls, as in M2. The same text in the visible chip is then not checked either, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions)."
+    },
+    {
+      "text": "SOURCES",
+      "layers": ["402:2377"],
+      "reason": "The SOURCES header (402:2377, y 623 to 637) is in a section (402:2375) that Figma does not draw: frame.png shows the Run in card there. The render keeps Sources below My notes, where the page scrolls under the pinned Start."
     }
   ],
   "rules": [

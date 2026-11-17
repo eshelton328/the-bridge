@@ -7,14 +7,15 @@ against the installed library 1.0.0-beta.5, which has #104 to #106), each with i
 
 ## Checks
 
-- Text: pass.
+- Text: pass (67 strings checked; 0 Figma strings under exceptions.json).
 - Position: 5 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
-- Rules: pass.
+- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (0 other findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 29 px
-shorter, below Figma's status bar, and adds 29 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 29 px
+shorter, below Figma's status bar (d-102), and the position check adds
+29 to each render y (d-101).
 
 - `group · NEXT STEPS`: x +2, y +18, w -4, h +4.
 - `group · SNOOZED`: x +2, y +40, w -4, h +4.
@@ -24,8 +25,9 @@ shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 29 px shorter and adds
-  29 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 29 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 29 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 29 px
   lower, under a blank band where Figma has the bar. Library gap:
   Top and bottom safe areas on the tablet.
@@ -55,6 +57,11 @@ shorter, below Figma's status bar, and adds 29 to each render y (d-101).
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
   bar.
+- **List 12 px too tall.** The checks render 1129 px high, the screen
+  below the status bar (d-102). The taller rows and group headers make
+  the list 12 px taller than the screen above the tab bar, so it scrolls
+  (`hiddenOverflow` on `main.app-shell__detail`) where Figma's fits. The
+  rules check fails on it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
 - **Button labels.** Newest and Filter take `Button textSize="sm"`
   (Medium 13, #105), as Figma draws them. The other labels are 14 px
   (`label`), where Figma sets small buttons in Medium 12 (no token,

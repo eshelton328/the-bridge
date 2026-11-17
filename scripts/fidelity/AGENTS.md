@@ -12,7 +12,7 @@ The Figma references the checks read are in
 | `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks                                                                            |
 | `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have; a `missing` exception skips only the layers it names                       |
 | `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px), measured below Figma's status bar on a tablet or phone                  |
-| `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills the frame's height, no stretched pill                                                 |
+| `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills its viewport's height, no stretched pill                                              |
 | `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs) |
 | `sideBySide.ts`      | Draws the side-by-side PNG (Figma left, render right) in a new page, so no popover of the story leaks into it                                                      |
 | `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                                                                                          |
@@ -101,12 +101,14 @@ the `exclude` list of `frame.json`, which `buildReferences.ts` writes.
 
 The app draws no status bar (d-089). On a frame with one (tablet 29 px,
 phone 38 px; the top-level layer at y 0 that holds the excluded
-status-bar text), `pnpm fidelity` measures the text and rules in the
-frame's full size, then renders the page again in a viewport the bar's
-height shorter for the position check, which adds that height to each
-render y (d-101). That render is `<frameId>.render.png`, and the
-side-by-side draws it that much lower, under a blank band where Figma
-has the bar. Desktop frames have no status bar and render once.
+status-bar text), `pnpm fidelity` renders the page once, in a viewport
+the bar's height shorter (`renderViewport` in `checkPosition.ts`), and
+all three checks measure that render (d-102): text below its bottom edge
+is not shown, the full-height rule wants that height, and the position
+check adds the bar's height to each render y (d-101). That render is
+`<frameId>.render.png`, and the side-by-side draws it that much lower,
+under a blank band where Figma has the bar. Desktop frames have no status
+bar and render at their full size.
 
 ## Rules
 
