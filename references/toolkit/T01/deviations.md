@@ -73,3 +73,8 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
 - **Workflows and Hooks.** The frame shows only the Skills, Agents and
   Rules rows, so the state has no items for the other two kinds; their
   chips show Figma's counts (2 and 1).
+
+## Second review
+
+- **Selected view.** The selected List item has a light outline; Figma
+  draws only the selected fill (gap: View switch 38 px, P3).
