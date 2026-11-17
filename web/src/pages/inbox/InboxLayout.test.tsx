@@ -38,6 +38,20 @@ describe('the Inbox screen by width', () => {
     await expect.element(tabBar()).not.toBeInTheDocument()
   })
 
+  it("draws the open task's row selected beside it at the desktop width, even with nothing selected (d-101)", async () => {
+    await page.viewport(1512, 982)
+    // T1's state: Back on a tablet left nothing selected; at the desktop width the task still shows beside the list.
+    const { data, ui } = inboxStates.list
+    view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)
+    await expect
+      .element(page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' }))
+      .toBeVisible()
+    // ListRow marks the selected row with aria-current: only the open task's row has it.
+    const selected = [...document.querySelectorAll('[aria-current="true"]')].map((el) => el.textContent)
+    expect(selected).toHaveLength(1)
+    expect(selected[0]).toContain('Write the tickets for increment one')
+  })
+
   it('shows the open item alone, under Back and over the tab bar, at the tablet width', async () => {
     await page.viewport(756, 1158)
     const { data, ui } = inboxStates.nextStep
