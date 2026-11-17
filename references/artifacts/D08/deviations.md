@@ -59,10 +59,11 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   Figma's heights and colours, as in D07. Library gaps "Artifact title
   size", "Thumbnail colour" and "Artifact preview frame".
 - **Buttons of the proposal.** Discard drops the proposal from the
-  discussion. Apply only sets `ui.discussProposal` to `applied`: the
-  artifact after Apply is D09's state, which a later run builds, so the
-  render does not change yet. Edit first puts the two lines the proposal
-  adds in the reply box, for Erik to change and send; no frame designs
+  discussion. Apply sets `ui.discussProposal` to `applied`, which shows
+  D09: the artifact's pill says Updated, its bar "updated just now from
+  the discussion" and its chip "updated just now", the context meter 49%,
+  and the proposal its applied form with no buttons. Edit first puts
+  the two lines the proposal adds in the reply box, for Erik to change and send; no frame designs
   an editor for an artifact change. Open in workspace still has no
   action (no workspace route).
 - **Discussion blocks.** The Inbox page does not export its
