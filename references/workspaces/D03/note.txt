@@ -1,0 +1,1 @@
+New chat takes an optional name, which becomes a random one such as quiet-nebula when left blank (R44), then what the chat runs in, its workspace and its model (R2, R4, R9). The subagents panel lists each subagent and subtask with its transcript and a Stop button (R14, R25). Whether managing a subagent means more than stopping it is open question 2.

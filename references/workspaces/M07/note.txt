@@ -1,0 +1,1 @@
+Name the chat or leave it blank for a random name (R44), pick what it runs in, the workspace, folders and model, then write the first message (R2, R4, R9, R12, R13, R45). Start chat sits at the bottom, within thumb reach, with a summary of the choices above it.

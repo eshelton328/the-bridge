@@ -91,6 +91,26 @@ void test('excludes the text of a layer named keyboard', () => {
   )
 })
 
+void test('excludes the label of a keyboard drawn as a plain box', () => {
+  const box = `<frame id="6:1" name="T4 · Composing" x="0" y="0" width="756" height="1158">
+    <frame id="6:2" name="Frame" x="0" y="858" width="756" height="300">
+      <text id="6:3" name="Keyboard" x="344" y="140" width="58" height="16" />
+    </frame>
+    <frame id="6:4" name="Frame" x="0" y="0" width="756" height="300">
+      <frame id="6:5" name="Frame" x="0" y="0" width="100" height="40" />
+      <text id="6:6" name="Keyboard" x="4" y="4" width="58" height="16" />
+    </frame>
+    <frame id="6:7" name="Frame" x="0" y="400" width="756" height="40">
+      <text id="6:8" name="Keyboard" x="4" y="4" width="58" height="16" />
+    </frame>
+  </frame>`
+  const ref = buildFrameRef(parseMetadata(box), 'KEY', 'test')
+  assert.deepEqual(
+    ref.exclude.map((e) => e.id),
+    ['6:3'],
+  )
+})
+
 void test("takes a renamed text layer's characters from the characters map", () => {
   const renamed = `<frame id="5:1" name="D1 · Library" x="0" y="0" width="1512" height="982">
     <text id="5:2" name="title" x="4" y="1" width="244" height="20" />
@@ -115,6 +135,12 @@ void test('frame codes and ids', () => {
   assert.equal(frameCode('note·D1 · Inbox'), null)
   assert.equal(frameIdOf('D1'), 'D01')
   assert.equal(normaliseFrameId('d1'), 'D01')
+  assert.equal(frameCode('D2b · Chat actions menu'), 'D2b')
+  assert.equal(frameIdOf('D2b'), 'D02b')
+  assert.equal(frameIdOf('T12'), 'T12')
+  assert.equal(normaliseFrameId('d2B'), 'D02b')
+  assert.equal(normaliseFrameId('D02b'), 'D02b')
+  assert.throws(() => frameIdOf('D2B'))
   assert.equal(normaliseFrameId('T03'), 'T03')
   assert.equal(normaliseFrameId('M12'), 'M12')
 })

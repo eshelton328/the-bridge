@@ -1,0 +1,709 @@
+{
+  "frameId": "M19",
+  "code": "M19",
+  "name": "M19 · Forked chat",
+  "node": "422:309",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "422:332",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "422:333",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "422:334",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 79,
+      "path": ""
+    },
+    {
+      "id": "422:335",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 42,
+      "w": 358,
+      "h": 37,
+      "path": "Frame"
+    },
+    {
+      "id": "422:336",
+      "name": "icon/back",
+      "type": "frame",
+      "x": 16,
+      "y": 50.5,
+      "w": 20,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:338",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 44,
+      "y": 50.5,
+      "w": 20,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:340",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 42,
+      "w": 154,
+      "h": 37,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:341",
+      "name": "bridge themes · fork",
+      "type": "text",
+      "x": 72,
+      "y": 42,
+      "w": 154,
+      "h": 21,
+      "path": "Frame > Frame > Frame",
+      "text": "bridge themes · fork"
+    },
+    {
+      "id": "422:342",
+      "name": "omni-brain · forked",
+      "type": "text",
+      "x": 72,
+      "y": 65,
+      "w": 126,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "omni-brain · forked"
+    },
+    {
+      "id": "422:343",
+      "name": "spacer",
+      "type": "frame",
+      "x": 234,
+      "y": 60,
+      "w": 60,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:409",
+      "name": "Frame",
+      "type": "frame",
+      "x": 302,
+      "y": 50.5,
+      "w": 46,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:410",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 310,
+      "y": 57.5,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:411",
+      "name": "Idle",
+      "type": "text",
+      "x": 321,
+      "y": 53.5,
+      "w": 19,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Idle"
+    },
+    {
+      "id": "422:347",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 356,
+      "y": 51.5,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:351",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 87,
+      "w": 220,
+      "h": 22,
+      "path": "Frame"
+    },
+    {
+      "id": "422:352",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 87,
+      "w": 83,
+      "h": 22,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:353",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 25,
+      "y": 92,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:355",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 43,
+      "y": 91,
+      "w": 47,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "422:356",
+      "name": "Frame",
+      "type": "frame",
+      "x": 107,
+      "y": 91,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "451:2191",
+      "name": "segments",
+      "type": "frame",
+      "x": 107,
+      "y": 94,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "451:2192",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 107,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2193",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 113,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2194",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 119,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2195",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 125,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2196",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 131,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2197",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 137,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2198",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 143,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2199",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 149,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2200",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 155,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:2201",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 161,
+      "y": 94,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "422:359",
+      "name": "42%",
+      "type": "text",
+      "x": 170,
+      "y": 91,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "42%"
+    },
+    {
+      "id": "422:360",
+      "name": "context",
+      "type": "text",
+      "x": 198,
+      "y": 91,
+      "w": 38,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "context"
+    },
+    {
+      "id": "422:361",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 117,
+      "w": 390,
+      "h": 1,
+      "path": ""
+    },
+    {
+      "id": "422:362",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 118,
+      "w": 390,
+      "h": 705,
+      "path": ""
+    },
+    {
+      "id": "422:363",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 132,
+      "w": 358,
+      "h": 58,
+      "path": "Frame"
+    },
+    {
+      "id": "422:364",
+      "name": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.",
+      "type": "text",
+      "x": 28,
+      "y": 142,
+      "w": 334,
+      "h": 38,
+      "path": "Frame > Frame",
+      "text": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat."
+    },
+    {
+      "id": "422:365",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 202,
+      "w": 279,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "422:366",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 16,
+      "y": 207,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:367",
+      "name": "Read f-005-the-bridge/requirements.md",
+      "type": "text",
+      "x": 28,
+      "y": 202,
+      "w": 267,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Read f-005-the-bridge/requirements.md"
+    },
+    {
+      "id": "422:368",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 230,
+      "w": 358,
+      "h": 107,
+      "path": "Frame"
+    },
+    {
+      "id": "422:369",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 230,
+      "w": 60,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:370",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 16,
+      "y": 231.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:372",
+      "name": "Claude",
+      "type": "text",
+      "x": 35,
+      "y": 230,
+      "w": 41,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Claude"
+    },
+    {
+      "id": "422:373",
+      "name": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop.",
+      "type": "text",
+      "x": 16,
+      "y": 252,
+      "w": 358,
+      "h": 57,
+      "path": "Frame > Frame",
+      "text": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop."
+    },
+    {
+      "id": "422:374",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 315,
+      "w": 63,
+      "h": 22,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:375",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 315,
+      "w": 63,
+      "h": 22,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:376",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 25,
+      "y": 320,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "422:379",
+      "name": "Copy",
+      "type": "text",
+      "x": 43,
+      "y": 319,
+      "w": 27,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Copy"
+    },
+    {
+      "id": "422:412",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 349,
+      "w": 342,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "422:413",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 16,
+      "y": 354,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:414",
+      "name": "Forked from bridge themes here",
+      "type": "text",
+      "x": 28,
+      "y": 349,
+      "w": 330,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Forked from bridge themes here"
+    },
+    {
+      "id": "422:380",
+      "name": "spacer",
+      "type": "frame",
+      "x": 16,
+      "y": 377,
+      "w": 1,
+      "h": 321,
+      "path": "Frame"
+    },
+    {
+      "id": "422:381",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 710,
+      "w": 358,
+      "h": 105,
+      "path": "Frame"
+    },
+    {
+      "id": "422:382",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 721,
+      "w": 140,
+      "h": 22,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:383",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 36,
+      "y": 726,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:385",
+      "name": "requirements.md",
+      "type": "text",
+      "x": 54,
+      "y": 725,
+      "w": 87,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "requirements.md"
+    },
+    {
+      "id": "422:386",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 147,
+      "y": 726.5,
+      "w": 11,
+      "h": 11,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:389",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 751,
+      "w": 143,
+      "h": 17,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:390",
+      "name": "Message, or / for a skill",
+      "type": "text",
+      "x": 27,
+      "y": 751,
+      "w": 143,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "Message, or / for a skill"
+    },
+    {
+      "id": "422:391",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 776,
+      "w": 336,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "422:392",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 776,
+      "w": 28,
+      "h": 28,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:393",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 34,
+      "y": 783,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "422:395",
+      "name": "spacer",
+      "type": "frame",
+      "x": 61,
+      "y": 789.5,
+      "w": 270,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:400",
+      "name": "Frame",
+      "type": "frame",
+      "x": 337,
+      "y": 777,
+      "w": 26,
+      "h": 26,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "422:401",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 343,
+      "y": 783,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "422:404",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "422:405",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "422:333",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

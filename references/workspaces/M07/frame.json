@@ -1,0 +1,806 @@
+{
+  "frameId": "M07",
+  "code": "M7",
+  "name": "M7 · New chat",
+  "node": "105:3248",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "105:3271",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "105:3272",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "105:3273",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 39,
+      "path": ""
+    },
+    {
+      "id": "105:3274",
+      "name": "Cancel",
+      "type": "text",
+      "x": 16,
+      "y": 44.5,
+      "w": 49,
+      "h": 20,
+      "path": "Frame",
+      "text": "Cancel"
+    },
+    {
+      "id": "105:3275",
+      "name": "spacer",
+      "type": "frame",
+      "x": 73,
+      "y": 54,
+      "w": 76,
+      "h": 1,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3276",
+      "name": "New chat",
+      "type": "text",
+      "x": 157,
+      "y": 44,
+      "w": 73,
+      "h": 21,
+      "path": "Frame",
+      "text": "New chat"
+    },
+    {
+      "id": "105:3279",
+      "name": "spacer",
+      "type": "frame",
+      "x": 238,
+      "y": 54,
+      "w": 76,
+      "h": 1,
+      "path": "Frame"
+    },
+    {
+      "id": "147:7",
+      "name": "Frame",
+      "type": "frame",
+      "x": 322,
+      "y": 49.5,
+      "w": 52,
+      "h": 10,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3282",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 77,
+      "w": 390,
+      "h": 664,
+      "path": ""
+    },
+    {
+      "id": "114:11",
+      "name": "field · Name",
+      "type": "frame",
+      "x": 16,
+      "y": 81,
+      "w": 358,
+      "h": 63,
+      "path": "Frame"
+    },
+    {
+      "id": "114:12",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 81,
+      "w": 90,
+      "h": 13,
+      "path": "Frame > field · Name"
+    },
+    {
+      "id": "114:13",
+      "name": "NAME · OPTIONAL",
+      "type": "text",
+      "x": 16,
+      "y": 81,
+      "w": 90,
+      "h": 13,
+      "path": "Frame > field · Name > Frame",
+      "text": "NAME · OPTIONAL"
+    },
+    {
+      "id": "114:16",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 102,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > field · Name"
+    },
+    {
+      "id": "114:17",
+      "name": "quiet-nebula",
+      "type": "text",
+      "x": 29,
+      "y": 114,
+      "w": 84,
+      "h": 18,
+      "path": "Frame > field · Name > Frame",
+      "text": "quiet-nebula"
+    },
+    {
+      "id": "114:18",
+      "name": "Frame",
+      "type": "frame",
+      "x": 121,
+      "y": 122.5,
+      "w": 133,
+      "h": 1,
+      "path": "Frame > field · Name > Frame"
+    },
+    {
+      "id": "114:19",
+      "name": "random if blank",
+      "type": "text",
+      "x": 262,
+      "y": 116,
+      "w": 99,
+      "h": 14,
+      "path": "Frame > field · Name > Frame",
+      "text": "random if blank"
+    },
+    {
+      "id": "105:3304",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 162,
+      "w": 358,
+      "h": 159,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3305",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 162,
+      "w": 42,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3306",
+      "name": "RUNS IN",
+      "type": "text",
+      "x": 16,
+      "y": 162,
+      "w": 42,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "RUNS IN"
+    },
+    {
+      "id": "105:3283",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 183,
+      "w": 358,
+      "h": 138,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3284",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 183,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3285",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 29,
+      "y": 195,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3287",
+      "name": "Claude Code",
+      "type": "text",
+      "x": 57,
+      "y": 195,
+      "w": 84,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Claude Code"
+    },
+    {
+      "id": "105:3288",
+      "name": "spacer",
+      "type": "frame",
+      "x": 151,
+      "y": 203.5,
+      "w": 184,
+      "h": 1,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3289",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 345,
+      "y": 196,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3291",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 231,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3292",
+      "name": "kind · codex",
+      "type": "frame",
+      "x": 29,
+      "y": 243,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3296",
+      "name": "Codex",
+      "type": "text",
+      "x": 57,
+      "y": 243,
+      "w": 43,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Codex"
+    },
+    {
+      "id": "105:3297",
+      "name": "spacer",
+      "type": "frame",
+      "x": 110,
+      "y": 251.5,
+      "w": 251,
+      "h": 1,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3298",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 279,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3299",
+      "name": "kind · shell",
+      "type": "frame",
+      "x": 29,
+      "y": 291,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3302",
+      "name": "shell",
+      "type": "text",
+      "x": 57,
+      "y": 291,
+      "w": 32,
+      "h": 18,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "shell"
+    },
+    {
+      "id": "105:3303",
+      "name": "spacer",
+      "type": "frame",
+      "x": 99,
+      "y": 299.5,
+      "w": 262,
+      "h": 1,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3314",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 339,
+      "w": 358,
+      "h": 63,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3315",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 339,
+      "w": 54,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3316",
+      "name": "WORKSPACE",
+      "type": "text",
+      "x": 16,
+      "y": 339,
+      "w": 54,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "WORKSPACE"
+    },
+    {
+      "id": "105:3309",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 360,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3310",
+      "name": "the-bridge",
+      "type": "text",
+      "x": 29,
+      "y": 372,
+      "w": 70,
+      "h": 18,
+      "path": "Frame > Frame > Frame",
+      "text": "the-bridge"
+    },
+    {
+      "id": "105:3311",
+      "name": "spacer",
+      "type": "frame",
+      "x": 107,
+      "y": 380.5,
+      "w": 232,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3312",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 347,
+      "y": 374,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "128:24",
+      "name": "field · Folders",
+      "type": "frame",
+      "x": 16,
+      "y": 420,
+      "w": 358,
+      "h": 49,
+      "path": "Frame"
+    },
+    {
+      "id": "128:25",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 420,
+      "w": 42,
+      "h": 13,
+      "path": "Frame > field · Folders"
+    },
+    {
+      "id": "128:26",
+      "name": "FOLDERS",
+      "type": "text",
+      "x": 16,
+      "y": 420,
+      "w": 42,
+      "h": 13,
+      "path": "Frame > field · Folders > Frame",
+      "text": "FOLDERS"
+    },
+    {
+      "id": "128:29",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 439,
+      "w": 358,
+      "h": 30,
+      "path": "Frame > field · Folders"
+    },
+    {
+      "id": "128:30",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 439,
+      "w": 128,
+      "h": 30,
+      "path": "Frame > field · Folders > Frame"
+    },
+    {
+      "id": "128:31",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 27,
+      "y": 447.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > field · Folders > Frame > Frame"
+    },
+    {
+      "id": "128:33",
+      "name": "~/the-bridge",
+      "type": "text",
+      "x": 46,
+      "y": 446,
+      "w": 87,
+      "h": 16,
+      "path": "Frame > field · Folders > Frame > Frame",
+      "text": "~/the-bridge"
+    },
+    {
+      "id": "128:34",
+      "name": "Frame",
+      "type": "frame",
+      "x": 150,
+      "y": 439,
+      "w": 103,
+      "h": 30,
+      "path": "Frame > field · Folders > Frame"
+    },
+    {
+      "id": "128:35",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 161,
+      "y": 447.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > field · Folders > Frame > Frame"
+    },
+    {
+      "id": "128:37",
+      "name": "~/omni",
+      "type": "text",
+      "x": 180,
+      "y": 446,
+      "w": 44,
+      "h": 16,
+      "path": "Frame > field · Folders > Frame > Frame",
+      "text": "~/omni"
+    },
+    {
+      "id": "128:38",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 230,
+      "y": 448,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > field · Folders > Frame > Frame"
+    },
+    {
+      "id": "128:41",
+      "name": "Frame",
+      "type": "frame",
+      "x": 259,
+      "y": 440,
+      "w": 94,
+      "h": 28,
+      "path": "Frame > field · Folders > Frame"
+    },
+    {
+      "id": "128:42",
+      "name": "icon/plus",
+      "type": "frame",
+      "x": 270,
+      "y": 448,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > field · Folders > Frame > Frame"
+    },
+    {
+      "id": "128:45",
+      "name": "Add folder",
+      "type": "text",
+      "x": 288,
+      "y": 447,
+      "w": 54,
+      "h": 14,
+      "path": "Frame > field · Folders > Frame > Frame",
+      "text": "Add folder"
+    },
+    {
+      "id": "105:3322",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 487,
+      "w": 358,
+      "h": 63,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3323",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 487,
+      "w": 30,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3324",
+      "name": "MODEL",
+      "type": "text",
+      "x": 16,
+      "y": 487,
+      "w": 30,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "MODEL"
+    },
+    {
+      "id": "105:3317",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 508,
+      "w": 358,
+      "h": 42,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3318",
+      "name": "Sonnet 5.5 · high effort",
+      "type": "text",
+      "x": 29,
+      "y": 520,
+      "w": 149,
+      "h": 18,
+      "path": "Frame > Frame > Frame",
+      "text": "Sonnet 5.5 · high effort"
+    },
+    {
+      "id": "105:3319",
+      "name": "spacer",
+      "type": "frame",
+      "x": 186,
+      "y": 528.5,
+      "w": 153,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3320",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 347,
+      "y": 522,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3338",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 568,
+      "w": 358,
+      "h": 132,
+      "path": "Frame"
+    },
+    {
+      "id": "105:3339",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 568,
+      "w": 78,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3340",
+      "name": "FIRST MESSAGE",
+      "type": "text",
+      "x": 16,
+      "y": 568,
+      "w": 78,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "FIRST MESSAGE"
+    },
+    {
+      "id": "105:3327",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 589,
+      "w": 358,
+      "h": 111,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:3328",
+      "name": "What should it do? Type / for a skill.",
+      "type": "text",
+      "x": 29,
+      "y": 602,
+      "w": 212,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "What should it do? Type / for a skill."
+    },
+    {
+      "id": "105:3329",
+      "name": "Frame",
+      "type": "frame",
+      "x": 29,
+      "y": 659,
+      "w": 332,
+      "h": 28,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3330",
+      "name": "Frame",
+      "type": "frame",
+      "x": 29,
+      "y": 659,
+      "w": 28,
+      "h": 28,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:3331",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 36,
+      "y": 666,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "147:8",
+      "name": "start bar",
+      "type": "frame",
+      "x": 0,
+      "y": 741,
+      "w": 390,
+      "h": 82,
+      "path": ""
+    },
+    {
+      "id": "147:9",
+      "name": "Runs in the-bridge · Sonnet 5.5 · 2 folders",
+      "type": "text",
+      "x": 16,
+      "y": 749,
+      "w": 284,
+      "h": 14,
+      "path": "start bar",
+      "text": "Runs in the-bridge · Sonnet 5.5 · 2 folders"
+    },
+    {
+      "id": "147:10",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 771,
+      "w": 358,
+      "h": 48,
+      "path": "start bar"
+    },
+    {
+      "id": "147:11",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 149.5,
+      "y": 788,
+      "w": 14,
+      "h": 14,
+      "path": "start bar > Frame"
+    },
+    {
+      "id": "147:14",
+      "name": "Start chat",
+      "type": "text",
+      "x": 169.5,
+      "y": 785,
+      "w": 71,
+      "h": 20,
+      "path": "start bar > Frame",
+      "text": "Start chat"
+    },
+    {
+      "id": "105:3341",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "105:3342",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "105:3272",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

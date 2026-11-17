@@ -1,0 +1,1384 @@
+{
+  "frameId": "M10",
+  "code": "M10",
+  "name": "M10 · Chat, keyboard open",
+  "node": "147:21",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "147:44",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "147:45",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "147:46",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 46,
+      "path": ""
+    },
+    {
+      "id": "147:47",
+      "name": "icon/back",
+      "type": "frame",
+      "x": 16,
+      "y": 49,
+      "w": 20,
+      "h": 20,
+      "path": "Frame"
+    },
+    {
+      "id": "147:49",
+      "name": "icon/claude",
+      "type": "frame",
+      "x": 44,
+      "y": 50,
+      "w": 18,
+      "h": 18,
+      "path": "Frame"
+    },
+    {
+      "id": "147:51",
+      "name": "Frame",
+      "type": "frame",
+      "x": 70,
+      "y": 42,
+      "w": 156,
+      "h": 34,
+      "path": "Frame"
+    },
+    {
+      "id": "147:52",
+      "name": "bridge themes",
+      "type": "text",
+      "x": 70,
+      "y": 42,
+      "w": 104,
+      "h": 20,
+      "path": "Frame > Frame",
+      "text": "bridge themes"
+    },
+    {
+      "id": "147:53",
+      "name": "Opus 5.5 · 42% · 2 folders",
+      "type": "text",
+      "x": 70,
+      "y": 63,
+      "w": 156,
+      "h": 13,
+      "path": "Frame > Frame",
+      "text": "Opus 5.5 · 42% · 2 folders"
+    },
+    {
+      "id": "147:54",
+      "name": "spacer",
+      "type": "frame",
+      "x": 234,
+      "y": 58.5,
+      "w": 36,
+      "h": 1,
+      "path": "Frame"
+    },
+    {
+      "id": "147:55",
+      "name": "Frame",
+      "type": "frame",
+      "x": 278,
+      "y": 49,
+      "w": 70,
+      "h": 20,
+      "path": "Frame"
+    },
+    {
+      "id": "147:56",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 286,
+      "y": 56,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:57",
+      "name": "Working",
+      "type": "text",
+      "x": 297,
+      "y": 52,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "Working"
+    },
+    {
+      "id": "147:58",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 356,
+      "y": 50,
+      "w": 18,
+      "h": 18,
+      "path": "Frame"
+    },
+    {
+      "id": "147:62",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 84,
+      "w": 390,
+      "h": 1,
+      "path": ""
+    },
+    {
+      "id": "147:63",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 85,
+      "w": 390,
+      "h": 379,
+      "path": ""
+    },
+    {
+      "id": "148:84",
+      "name": "user msg",
+      "type": "frame",
+      "x": 16,
+      "y": 133,
+      "w": 358,
+      "h": 58,
+      "path": "Frame"
+    },
+    {
+      "id": "148:85",
+      "name": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.",
+      "type": "text",
+      "x": 28,
+      "y": 143,
+      "w": 334,
+      "h": 38,
+      "path": "Frame > user msg",
+      "text": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat."
+    },
+    {
+      "id": "147:64",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 203,
+      "w": 358,
+      "h": 79,
+      "path": "Frame"
+    },
+    {
+      "id": "147:65",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 203,
+      "w": 60,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:66",
+      "name": "icon/claude",
+      "type": "frame",
+      "x": 16,
+      "y": 204.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:68",
+      "name": "Claude",
+      "type": "text",
+      "x": 35,
+      "y": 203,
+      "w": 41,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Claude"
+    },
+    {
+      "id": "147:69",
+      "name": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop.",
+      "type": "text",
+      "x": 16,
+      "y": 225,
+      "w": 358,
+      "h": 57,
+      "path": "Frame > Frame",
+      "text": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop."
+    },
+    {
+      "id": "147:70",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 294,
+      "w": 358,
+      "h": 81,
+      "path": "Frame"
+    },
+    {
+      "id": "147:71",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 301,
+      "w": 344,
+      "h": 21,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:72",
+      "name": "SKILLS MATCHING /wri",
+      "type": "text",
+      "x": 31,
+      "y": 305,
+      "w": 120,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "SKILLS MATCHING /wri"
+    },
+    {
+      "id": "147:73",
+      "name": "spacer",
+      "type": "frame",
+      "x": 157,
+      "y": 311,
+      "w": 202,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:76",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 324,
+      "w": 344,
+      "h": 44,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:77",
+      "name": "/writer",
+      "type": "text",
+      "x": 31,
+      "y": 330,
+      "w": 51,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "/writer"
+    },
+    {
+      "id": "147:78",
+      "name": "Draft a doc from sources",
+      "type": "text",
+      "x": 31,
+      "y": 348,
+      "w": 125,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Draft a doc from sources"
+    },
+    {
+      "id": "147:79",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 387,
+      "w": 358,
+      "h": 69,
+      "path": "Frame"
+    },
+    {
+      "id": "147:80",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 396,
+      "w": 250.5,
+      "h": 17,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:81",
+      "name": "Turn the layout notes into a doc with /wri",
+      "type": "text",
+      "x": 27,
+      "y": 396,
+      "w": 249,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "Turn the layout notes into a doc with /wri"
+    },
+    {
+      "id": "147:82",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 276,
+      "y": 396.5,
+      "w": 1.5,
+      "h": 16,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:83",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 419,
+      "w": 336,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:84",
+      "name": "Frame",
+      "type": "frame",
+      "x": 27,
+      "y": 419,
+      "w": 28,
+      "h": 28,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:85",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 34,
+      "y": 426,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "147:87",
+      "name": "spacer",
+      "type": "frame",
+      "x": 61,
+      "y": 432.5,
+      "w": 203,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:88",
+      "name": "Frame",
+      "type": "frame",
+      "x": 270,
+      "y": 420,
+      "w": 61,
+      "h": 26,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:89",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 279,
+      "y": 427,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "147:91",
+      "name": "Stop",
+      "type": "text",
+      "x": 297,
+      "y": 426,
+      "w": 25,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "147:92",
+      "name": "Frame",
+      "type": "frame",
+      "x": 337,
+      "y": 420,
+      "w": 26,
+      "h": 26,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:93",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 343,
+      "y": 426,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "147:96",
+      "name": "keyboard space",
+      "type": "frame",
+      "x": 0,
+      "y": 464,
+      "w": 390,
+      "h": 380,
+      "path": ""
+    },
+    {
+      "id": "147:97",
+      "name": "keyboard (iOS, with Safari form bar)",
+      "type": "frame",
+      "x": 0,
+      "y": 464,
+      "w": 390,
+      "h": 380,
+      "path": ""
+    },
+    {
+      "id": "147:98",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 464,
+      "w": 390,
+      "h": 44,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:99",
+      "name": "icon/chevUp",
+      "type": "frame",
+      "x": 16,
+      "y": 476,
+      "w": 20,
+      "h": 20,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "147:101",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 52,
+      "y": 476,
+      "w": 20,
+      "h": 20,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "147:103",
+      "name": "Done",
+      "type": "text",
+      "x": 333,
+      "y": 476,
+      "w": 41,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "Done"
+    },
+    {
+      "id": "147:104",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 508,
+      "w": 390,
+      "h": 44,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:105",
+      "name": "\"wri\"",
+      "type": "text",
+      "x": 47,
+      "y": 520,
+      "w": 36,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "\"wri\""
+    },
+    {
+      "id": "147:106",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 130,
+      "y": 518,
+      "w": 1,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "147:107",
+      "name": "write",
+      "type": "text",
+      "x": 176,
+      "y": 520,
+      "w": 38,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "write"
+    },
+    {
+      "id": "147:108",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 260,
+      "y": 518,
+      "w": 1,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "147:109",
+      "name": "writer",
+      "type": "text",
+      "x": 303,
+      "y": 520,
+      "w": 44,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "writer"
+    },
+    {
+      "id": "147:110",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 3,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:111",
+      "name": "q",
+      "type": "text",
+      "x": 13,
+      "y": 569,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "q"
+    },
+    {
+      "id": "147:112",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 42,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:113",
+      "name": "w",
+      "type": "text",
+      "x": 50,
+      "y": 569,
+      "w": 17,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "w"
+    },
+    {
+      "id": "147:114",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 81,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:115",
+      "name": "e",
+      "type": "text",
+      "x": 91.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "e"
+    },
+    {
+      "id": "147:116",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 120,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:117",
+      "name": "r",
+      "type": "text",
+      "x": 132.5,
+      "y": 569,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "r"
+    },
+    {
+      "id": "147:118",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 159,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:119",
+      "name": "t",
+      "type": "text",
+      "x": 171.5,
+      "y": 569,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "t"
+    },
+    {
+      "id": "147:120",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 198,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:121",
+      "name": "y",
+      "type": "text",
+      "x": 208.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "y"
+    },
+    {
+      "id": "147:122",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 237,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:123",
+      "name": "u",
+      "type": "text",
+      "x": 247.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "u"
+    },
+    {
+      "id": "147:124",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 276,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:125",
+      "name": "i",
+      "type": "text",
+      "x": 290,
+      "y": 569,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "i"
+    },
+    {
+      "id": "147:126",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 315,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:127",
+      "name": "o",
+      "type": "text",
+      "x": 325.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "o"
+    },
+    {
+      "id": "147:128",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 354,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:129",
+      "name": "p",
+      "type": "text",
+      "x": 364,
+      "y": 569,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "p"
+    },
+    {
+      "id": "147:130",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 22.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:131",
+      "name": "a",
+      "type": "text",
+      "x": 33,
+      "y": 623,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "a"
+    },
+    {
+      "id": "147:132",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 61.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:133",
+      "name": "s",
+      "type": "text",
+      "x": 72.5,
+      "y": 623,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "s"
+    },
+    {
+      "id": "147:134",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 100.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:135",
+      "name": "d",
+      "type": "text",
+      "x": 110.5,
+      "y": 623,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "d"
+    },
+    {
+      "id": "147:136",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 139.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:137",
+      "name": "f",
+      "type": "text",
+      "x": 152,
+      "y": 623,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "f"
+    },
+    {
+      "id": "147:138",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 178.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:139",
+      "name": "g",
+      "type": "text",
+      "x": 188.5,
+      "y": 623,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "g"
+    },
+    {
+      "id": "147:140",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 217.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:141",
+      "name": "h",
+      "type": "text",
+      "x": 228,
+      "y": 623,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "h"
+    },
+    {
+      "id": "147:142",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 256.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:143",
+      "name": "j",
+      "type": "text",
+      "x": 270.5,
+      "y": 623,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "j"
+    },
+    {
+      "id": "147:144",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 295.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:145",
+      "name": "k",
+      "type": "text",
+      "x": 306.5,
+      "y": 623,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "k"
+    },
+    {
+      "id": "147:146",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 334.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:147",
+      "name": "l",
+      "type": "text",
+      "x": 348.5,
+      "y": 623,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "l"
+    },
+    {
+      "id": "147:148",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 4,
+      "y": 668,
+      "w": 42,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:149",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 344,
+      "y": 668,
+      "w": 42,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:150",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 61.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:151",
+      "name": "z",
+      "type": "text",
+      "x": 72.5,
+      "y": 677,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "z"
+    },
+    {
+      "id": "147:152",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 100.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:153",
+      "name": "x",
+      "type": "text",
+      "x": 111.5,
+      "y": 677,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "x"
+    },
+    {
+      "id": "147:154",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 139.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:155",
+      "name": "c",
+      "type": "text",
+      "x": 150,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "c"
+    },
+    {
+      "id": "147:156",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 178.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:157",
+      "name": "v",
+      "type": "text",
+      "x": 189,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "v"
+    },
+    {
+      "id": "147:158",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 217.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:159",
+      "name": "b",
+      "type": "text",
+      "x": 227.5,
+      "y": 677,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "b"
+    },
+    {
+      "id": "147:160",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 256.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:161",
+      "name": "n",
+      "type": "text",
+      "x": 267,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "n"
+    },
+    {
+      "id": "147:162",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 295.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:163",
+      "name": "m",
+      "type": "text",
+      "x": 303,
+      "y": 677,
+      "w": 18,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "m"
+    },
+    {
+      "id": "147:164",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 4,
+      "y": 722,
+      "w": 88,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:165",
+      "name": "123",
+      "type": "text",
+      "x": 34,
+      "y": 733,
+      "w": 28,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "123"
+    },
+    {
+      "id": "147:166",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 97,
+      "y": 722,
+      "w": 196,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:167",
+      "name": "space",
+      "type": "text",
+      "x": 172,
+      "y": 733,
+      "w": 46,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "space"
+    },
+    {
+      "id": "147:168",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 298,
+      "y": 722,
+      "w": 88,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "147:169",
+      "name": "return",
+      "type": "text",
+      "x": 319,
+      "y": 733,
+      "w": 46,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "return"
+    },
+    {
+      "id": "147:170",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 832,
+      "w": 134,
+      "h": 5,
+      "path": "keyboard (iOS, with Safari form bar)"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "147:45",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:103",
+      "text": "Done",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:105",
+      "text": "\"wri\"",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:107",
+      "text": "write",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:109",
+      "text": "writer",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:111",
+      "text": "q",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:113",
+      "text": "w",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:115",
+      "text": "e",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:117",
+      "text": "r",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:119",
+      "text": "t",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:121",
+      "text": "y",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:123",
+      "text": "u",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:125",
+      "text": "i",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:127",
+      "text": "o",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:129",
+      "text": "p",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:131",
+      "text": "a",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:133",
+      "text": "s",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:135",
+      "text": "d",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:137",
+      "text": "f",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:139",
+      "text": "g",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:141",
+      "text": "h",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:143",
+      "text": "j",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:145",
+      "text": "k",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:147",
+      "text": "l",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:151",
+      "text": "z",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:153",
+      "text": "x",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:155",
+      "text": "c",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:157",
+      "text": "v",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:159",
+      "text": "b",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:161",
+      "text": "n",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:163",
+      "text": "m",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:165",
+      "text": "123",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:167",
+      "text": "space",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "147:169",
+      "text": "return",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

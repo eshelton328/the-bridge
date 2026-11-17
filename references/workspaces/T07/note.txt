@@ -1,0 +1,1 @@
+Proposal. New chat opens the same form as the desktop (D3), centred over the chat: name, what it runs in, workspace, folders, model and a first message (R9, R44, R45). The workspace defaults to the current chat’s. Start chat opens the new chat.

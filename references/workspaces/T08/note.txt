@@ -1,0 +1,1 @@
+Proposal. As on the desktop (D15): copy the whole chat or only up to a message, with a default name. The copy waits for your next message (R10).

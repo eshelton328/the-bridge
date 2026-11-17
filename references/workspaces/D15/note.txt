@@ -1,0 +1,1 @@
+Proposal. Fork asks one question: copy the whole chat, or only up to a message that you pick next. The name defaults to “bridge themes · fork” and you can change it. Fork starts nothing; the copy waits for your next message (R10).

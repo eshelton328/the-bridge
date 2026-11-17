@@ -1,0 +1,1 @@
+Tapping a card on M6 opens its transcript: the task the chat gave it, its tool calls and its output, with Stop (R14). The back arrow and Subagents in the trail return to M6, and bridge themes returns to the main chat. The browser's own back gesture follows the same path.

@@ -1,0 +1,1 @@
+The keyboard and Safari’s own form bar (the arrows and Done) take about 380 of the 844 points. The header shrinks to one line, the newest messages stay in view, and the composer and skill list sit just above the form bar. The page sizes itself to the visible area that Safari reports, so the composer never hides behind the keyboard.

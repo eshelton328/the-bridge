@@ -1,0 +1,1 @@
+Subagents opens from the chat's ⋯ menu. Each card shows the agent, its state, time and tokens, with its transcript and Stop (R14). The subtask card has the chat's full context and returns its result to the chat (R25).

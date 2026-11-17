@@ -1,0 +1,1 @@
+Proposal. The workbench holds at most four panes, in any mix of rows and columns; at four, each pane is about 540 by 430 px. With four panes open, the edges do not split: the outline covers the whole pane and the dropped chat replaces its chat, which keeps running and stays in the sidebar. On an empty pane the line reads Open here.

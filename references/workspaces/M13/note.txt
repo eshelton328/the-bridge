@@ -1,0 +1,1 @@
+× on a workspace, or Close workspace in its actions (M14), asks before anything closes (R6). The dialog names the workspace and how many chats end with it; Close is red and Cancel is the easy target. Closing a single chat does not ask.

@@ -1,0 +1,1 @@
+After the empty pane closes, brain git takes the whole bottom row. Dragging the handle between two panes resizes them, and the pointer shows the split as a ratio; a double-click returns it to equal sizes. Proposal: a pane stops shrinking at 400 px wide or 240 px tall.

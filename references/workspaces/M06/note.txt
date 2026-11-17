@@ -1,0 +1,1 @@
+Each card shows a subagent’s state, time and tokens, with Stop (R14); tapping a card opens its full transcript (M12). The subtask has the chat’s full context and returns its result to the chat (R25).

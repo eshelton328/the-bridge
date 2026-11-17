@@ -109,21 +109,27 @@ function* walk(node: XmlNode): Generator<XmlNode> {
   for (const c of node.children) yield* walk(c)
 }
 
-/** "D1 · Inbox, a next step" -> "D1"; null when the name has no frame code. */
+/**
+ * "D1 · Inbox, a next step" -> "D1"; null when the name has no frame code.
+ * A lower-case letter after the number names a frame Figma put between two
+ * others ("D2b · Chat actions menu" -> "D2b").
+ */
 export function frameCode(name: string): string | null {
-  return /^([A-Z]\d+) · /.exec(name)?.[1] ?? null
+  return /^([A-Z]\d+[a-z]?) · /.exec(name)?.[1] ?? null
 }
 
-/** "D1" -> "D01": two digits, so folders sort in Figma order. */
+/** "D1" -> "D01", "D2b" -> "D02b": two digits, so folders sort in Figma order. */
 export function frameIdOf(code: string): string {
-  const m = /^([A-Z])(\d+)$/.exec(code)
+  const m = /^([A-Z])(\d+)([a-z]?)$/.exec(code)
   if (!m) throw new Error(`Not a frame code: ${code}`)
-  return `${m[1] ?? ''}${(m[2] ?? '').padStart(2, '0')}`
+  return `${m[1] ?? ''}${(m[2] ?? '').padStart(2, '0')}${m[3] ?? ''}`
 }
 
-/** Accepts "D1", "D01" or "d1" and returns "D01". */
+/** Accepts "D1", "D01", "d1" or "d2B" and returns "D01" or "D02b". */
 export function normaliseFrameId(id: string): string {
-  return frameIdOf(id.toUpperCase().replace(/^([A-Z])0*(\d)/, '$1$2'))
+  const m = /^([a-zA-Z])0*(\d+)([a-zA-Z]?)$/.exec(id.trim())
+  if (!m) throw new Error(`Not a frame code: ${id}`)
+  return frameIdOf(`${(m[1] ?? '').toUpperCase()}${m[2] ?? ''}${(m[3] ?? '').toLowerCase()}`)
 }
 
 const deviceOf = (code: string): FrameRef['device'] =>
@@ -147,6 +153,16 @@ const chromeRules: { test: (path: string[], text: string, top: XmlNode | undefin
   {
     test: (path) => path.some((p) => p === 'keyboard' || p.startsWith('keyboard (iOS')),
     reason: 'iOS keyboard (design-only chrome, d-089)',
+  },
+  {
+    // A keyboard drawn as a plain box: a top-level layer at least 200 px
+    // high that holds only text layers, labelled "Keyboard" (Workbench T4).
+    test: (_path, text, top) =>
+      text.trim().toLowerCase() === 'keyboard' &&
+      top !== undefined &&
+      top.h >= 200 &&
+      [...walk(top)].every((n) => n === top || n.tag === 'text'),
+    reason: 'iOS keyboard placeholder (design-only chrome, d-089)',
   },
 ]
 

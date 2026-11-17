@@ -1,0 +1,1 @@
+Proposal. Fork opens a sheet: a name and where the copy starts, the whole chat or up to a message you pick next (R10). Fork starts nothing.

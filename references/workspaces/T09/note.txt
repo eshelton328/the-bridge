@@ -1,0 +1,1 @@
+Proposal. The fork opens in place of the original and is Idle, so there is no Stop. Back returns to Workspaces, where the fork is listed under bridge themes with a fork mark, as on the desktop (D16).

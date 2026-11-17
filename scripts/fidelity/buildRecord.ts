@@ -15,7 +15,9 @@ const repoPath = z
 
 export const buildRecord = z.strictObject({
   /** `<page>/<frameId>`, such as `inbox/D13`. */
-  frame: z.string().regex(/^[a-z][a-zA-Z0-9]*\/[A-Z]\d{2}$/, 'must be <page>/<frameId>, such as inbox/D13'),
+  frame: z
+    .string()
+    .regex(/^[a-z][a-zA-Z0-9]*\/[A-Z]\d{2}[a-z]?$/, 'must be <page>/<frameId>, such as inbox/D13 or workspaces/D02b'),
   /** The worktree the agent built in, as an absolute path. */
   worktree: z.string().startsWith('/', 'must be an absolute path'),
   status: z.enum(['pass', 'deviations', 'blocked']),
@@ -144,12 +146,15 @@ export function gapRows(markdown: string): { part: string; frames: string }[] {
   return rows
 }
 
+// A suffix letter sorts a frame after its number: D02 < D02b < D03.
 const frameNumber = (id: string) => {
-  const m = /^([A-Z])0*(\d+)$/.exec(id.trim())
-  return m?.[1] === undefined || m[2] === undefined ? undefined : { letter: m[1], n: Number(m[2]) }
+  const m = /^([A-Z])0*(\d+)([a-z]?)$/.exec(id.trim())
+  if (m?.[1] === undefined || m[2] === undefined) return undefined
+  const suffix = m[3] ? m[3].charCodeAt(0) - 96 : 0
+  return { letter: m[1], n: Number(m[2]) * 100 + suffix }
 }
 
-/** True when a Frames cell such as "D01–D12", "D02–D05, D07" or "D08, D12" includes `frameId`. */
+/** True when a Frames cell such as "D01–D12", "D02–D05, D07", "D08, D12" or "D02b" includes `frameId`. */
 export function framesInclude(cell: string, frameId: string): boolean {
   const want = frameNumber(frameId)
   if (want === undefined) return false

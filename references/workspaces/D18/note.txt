@@ -1,0 +1,1 @@
+Proposal. The subtask’s chat is listed under bridge themes, like theme tokens, and shows Running. A line in the chat marks where it started, and Subagents in the ⋯ menu now counts 3 (R14). bridge themes stays open and keeps working.

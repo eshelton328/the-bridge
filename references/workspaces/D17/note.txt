@@ -1,0 +1,1 @@
+Proposal. Subtask asks what the subagent should do, and which model runs it. It takes the chat’s full context and returns its result to this chat (R25). The chat keeps working while the subtask runs.

@@ -1,0 +1,1 @@
+Proposal. The name in the header becomes a field (R6). Tapping outside saves; × inside the field undoes the change and closes it, as in the list (T1).

@@ -1,0 +1,1 @@
+Proposal. Move to workspace opens the list of workspaces beside the menu, with New workspace… at the end (R8). Dragging the chat in the sidebar does the same (D2).

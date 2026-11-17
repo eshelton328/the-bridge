@@ -1,0 +1,1 @@
+Dragging a chat from the sidebar onto the open chat splits the view: drop on an edge to open it beside, above or below that chat, or in the middle to replace it. Dropping on a workspace heading still moves the chat there (D2, R8). The panes then behave as in D1 (R19).

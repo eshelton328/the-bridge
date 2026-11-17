@@ -1,0 +1,1 @@
+Proposal. The header names the new workspace, and a toast confirms the move with Undo for a few seconds. The chat keeps running.

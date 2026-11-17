@@ -1,0 +1,480 @@
+{
+  "frameId": "M12",
+  "code": "M12",
+  "name": "M12 · Subagent transcript",
+  "node": "147:314",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "147:337",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "147:338",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "147:339",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 26,
+      "path": ""
+    },
+    {
+      "id": "147:340",
+      "name": "icon/back",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 18,
+      "h": 18,
+      "path": "Frame"
+    },
+    {
+      "id": "147:342",
+      "name": "bridge themes",
+      "type": "text",
+      "x": 34,
+      "y": 42.5,
+      "w": 88,
+      "h": 17,
+      "path": "Frame",
+      "text": "bridge themes"
+    },
+    {
+      "id": "147:343",
+      "name": "›",
+      "type": "text",
+      "x": 126,
+      "y": 42.5,
+      "w": 5,
+      "h": 17,
+      "path": "Frame",
+      "text": "›"
+    },
+    {
+      "id": "147:344",
+      "name": "Subagents",
+      "type": "text",
+      "x": 135,
+      "y": 42.5,
+      "w": 66,
+      "h": 17,
+      "path": "Frame",
+      "text": "Subagents"
+    },
+    {
+      "id": "147:345",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 64,
+      "w": 390,
+      "h": 101,
+      "path": ""
+    },
+    {
+      "id": "147:346",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 70,
+      "w": 358,
+      "h": 29,
+      "path": "Frame"
+    },
+    {
+      "id": "147:347",
+      "name": "icon/sparkle",
+      "type": "frame",
+      "x": 16,
+      "y": 75.5,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:349",
+      "name": "Layout notes",
+      "type": "text",
+      "x": 42,
+      "y": 70,
+      "w": 137,
+      "h": 29,
+      "path": "Frame > Frame",
+      "text": "Layout notes"
+    },
+    {
+      "id": "147:350",
+      "name": "spacer",
+      "type": "frame",
+      "x": 187,
+      "y": 84,
+      "w": 109,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:351",
+      "name": "Frame",
+      "type": "frame",
+      "x": 304,
+      "y": 74.5,
+      "w": 70,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:352",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 312,
+      "y": 81.5,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:353",
+      "name": "Running",
+      "type": "text",
+      "x": 323,
+      "y": 77.5,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Running"
+    },
+    {
+      "id": "147:354",
+      "name": "writer agent · 0:34 · 11k tokens",
+      "type": "text",
+      "x": 16,
+      "y": 105,
+      "w": 212,
+      "h": 14,
+      "path": "Frame",
+      "text": "writer agent · 0:34 · 11k tokens"
+    },
+    {
+      "id": "147:355",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 125,
+      "w": 67,
+      "h": 30,
+      "path": "Frame"
+    },
+    {
+      "id": "147:356",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 125,
+      "w": 67,
+      "h": 30,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:357",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 27,
+      "y": 134,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:359",
+      "name": "Stop",
+      "type": "text",
+      "x": 45,
+      "y": 132,
+      "w": 27,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "147:366",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 165,
+      "w": 390,
+      "h": 1,
+      "path": ""
+    },
+    {
+      "id": "147:367",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 166,
+      "w": 390,
+      "h": 657,
+      "path": ""
+    },
+    {
+      "id": "147:368",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 178,
+      "w": 358,
+      "h": 79,
+      "path": "Frame"
+    },
+    {
+      "id": "147:369",
+      "name": "TASK FROM BRIDGE THEMES",
+      "type": "text",
+      "x": 27,
+      "y": 189,
+      "w": 138,
+      "h": 13,
+      "path": "Frame > Frame",
+      "text": "TASK FROM BRIDGE THEMES"
+    },
+    {
+      "id": "147:370",
+      "name": "Write layout notes for the three directions, one section each, from the requirements and pages list.",
+      "type": "text",
+      "x": 27,
+      "y": 208,
+      "w": 336,
+      "h": 38,
+      "path": "Frame > Frame",
+      "text": "Write layout notes for the three directions, one section each, from the requirements and pages list."
+    },
+    {
+      "id": "147:371",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 269,
+      "w": 300,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "147:372",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 16,
+      "y": 274,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:373",
+      "name": "Read captures/the-bridge-requirements.md",
+      "type": "text",
+      "x": 28,
+      "y": 269,
+      "w": 288,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Read captures/the-bridge-requirements.md"
+    },
+    {
+      "id": "147:374",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 297,
+      "w": 228,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "147:375",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 16,
+      "y": 302,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:376",
+      "name": "Read f-005-the-bridge/pages.md",
+      "type": "text",
+      "x": 28,
+      "y": 297,
+      "w": 216,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Read f-005-the-bridge/pages.md"
+    },
+    {
+      "id": "147:377",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 325,
+      "w": 358,
+      "h": 79,
+      "path": "Frame"
+    },
+    {
+      "id": "147:378",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 325,
+      "w": 54,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:379",
+      "name": "icon/claude",
+      "type": "frame",
+      "x": 16,
+      "y": 326.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "147:381",
+      "name": "writer",
+      "type": "text",
+      "x": 35,
+      "y": 325,
+      "w": 35,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "writer"
+    },
+    {
+      "id": "147:382",
+      "name": "Helm puts every area on one home; Star map shows agents as a sky; Workbench tiles chats in split panes. Writing each section now.",
+      "type": "text",
+      "x": 16,
+      "y": 347,
+      "w": 358,
+      "h": 57,
+      "path": "Frame > Frame",
+      "text": "Helm puts every area on one home; Star map shows agents as a sky; Workbench tiles chats in split panes. Writing each section now."
+    },
+    {
+      "id": "147:383",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 416,
+      "w": 178,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "147:384",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 16,
+      "y": 421,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "147:385",
+      "name": "Writing layout-notes.md",
+      "type": "text",
+      "x": 28,
+      "y": 416,
+      "w": 166,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Writing layout-notes.md"
+    },
+    {
+      "id": "147:386",
+      "name": "spacer",
+      "type": "frame",
+      "x": 16,
+      "y": 444,
+      "w": 1,
+      "h": 299,
+      "path": "Frame"
+    },
+    {
+      "id": "147:387",
+      "name": "Frame",
+      "type": "frame",
+      "x": 16,
+      "y": 755,
+      "w": 358,
+      "h": 56,
+      "path": "Frame"
+    },
+    {
+      "id": "147:388",
+      "name": "Read-only: the result returns to bridge themes when it finishes.",
+      "type": "text",
+      "x": 29,
+      "y": 766,
+      "w": 332,
+      "h": 34,
+      "path": "Frame > Frame",
+      "text": "Read-only: the result returns to bridge themes when it finishes."
+    },
+    {
+      "id": "147:389",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "147:390",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "147:338",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}
