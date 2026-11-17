@@ -6,7 +6,7 @@
 /** The part of `navigator.clipboard` this needs; undefined when the page has none. */
 export type ClipboardWriter = Pick<Clipboard, 'writeText'> | undefined
 
-export function pageClipboard(): ClipboardWriter {
+function pageClipboard(): ClipboardWriter {
   return 'clipboard' in navigator ? navigator.clipboard : undefined
 }
 
