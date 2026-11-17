@@ -23,7 +23,8 @@ export function ToolkitPage() {
       viewport="desktop"
       onNavigate={(page) => {
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'inbox' || page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+        if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
+          void navigate({ to: `/${page}` })
       }}
       onUiChange={(change) => {
         setChanged({ of: state.ui, ui: { ...own, ...change } })
