@@ -128,7 +128,9 @@ export function LibraryTools({
         <>
           <span className={grow} />
           <span data-figma="view · Grid or List">
+            {/* Figma draws the picked view's icon cyan on the selected fill, with no border (402:15421). */}
             <ViewSwitch
+              tone="accent"
               label="View"
               value={view}
               onValueChange={(value) => {
