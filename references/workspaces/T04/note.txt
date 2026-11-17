@@ -1,0 +1,1 @@
+Typing / lists skills (R13); attachments show above the message (R12); Stop cancels the running prompt (R15).

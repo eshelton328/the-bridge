@@ -1,0 +1,1 @@
+Proposal. The outline belongs to the pane under the pointer, so a drop splits only that pane. Here brain git is dropped near the bottom edge of drift check, and bridge themes keeps its full height.

@@ -1,0 +1,1 @@
+The menu button in the chat header opens every action on this chat: rename, fork, side chat, subtask, subagents, folders and move to another workspace (R8, R10, R11, R14, R25, R45). A new chat starts from the workspace list (M1), not from a chat.

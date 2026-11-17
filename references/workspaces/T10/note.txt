@@ -1,0 +1,1 @@
+Proposal. As on the desktop (D17): what the subtask should do and its model. It gets the chat’s full context and returns its result here (R25).

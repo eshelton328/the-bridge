@@ -1,0 +1,1 @@
+Proposal. Rename turns the name in the header into a field (R6). Tapping outside saves; × inside the field undoes the change and closes it, as in M2.

@@ -1,0 +1,1 @@
+With several panes open, a side chat opens inside the pane it belongs to, over that chat’s right side, so it is clear which chat it sits beside. The other panes keep running. Open as its own pane moves the side chat into a pane of its own; Esc or × closes it (R11, R19).

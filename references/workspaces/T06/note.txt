@@ -1,0 +1,1 @@
+The iPad mini has no split panes and no drop targets (R19, R46). A chat always fills the screen: tapping a chat in Workspaces (T1) opens it here, and the back button returns to the list. Dragging a chat onto the open chat does nothing on the iPad mini.

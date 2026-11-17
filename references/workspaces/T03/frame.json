@@ -1,0 +1,667 @@
+{
+  "frameId": "T03",
+  "code": "T3",
+  "name": "T3 · Subagents",
+  "node": "105:1959",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "105:2018",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "105:2019",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "105:2020",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 102,
+      "path": ""
+    },
+    {
+      "id": "105:2021",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 41,
+      "w": 117,
+      "h": 18,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2022",
+      "name": "icon/back",
+      "type": "frame",
+      "x": 22,
+      "y": 41,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2024",
+      "name": "bridge themes",
+      "type": "text",
+      "x": 44,
+      "y": 41,
+      "w": 95,
+      "h": 18,
+      "path": "Frame > Frame",
+      "text": "bridge themes"
+    },
+    {
+      "id": "105:2025",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 65,
+      "w": 145,
+      "h": 36,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2026",
+      "name": "Subagents",
+      "type": "text",
+      "x": 22,
+      "y": 65,
+      "w": 145,
+      "h": 36,
+      "path": "Frame > Frame",
+      "text": "Subagents"
+    },
+    {
+      "id": "105:2029",
+      "name": "3 · 2 running · started from bridge themes",
+      "type": "text",
+      "x": 22,
+      "y": 107,
+      "w": 303,
+      "h": 16,
+      "path": "Frame",
+      "text": "3 · 2 running · started from bridge themes"
+    },
+    {
+      "id": "105:2030",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 131,
+      "w": 756,
+      "h": 1006,
+      "path": ""
+    },
+    {
+      "id": "105:2031",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 139,
+      "w": 712,
+      "h": 96,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2032",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 152,
+      "w": 686,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2033",
+      "name": "icon/sparkle",
+      "type": "frame",
+      "x": 35,
+      "y": 154.5,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2035",
+      "name": "Map requirements",
+      "type": "text",
+      "x": 58,
+      "y": 153,
+      "w": 122,
+      "h": 18,
+      "path": "Frame > Frame > Frame",
+      "text": "Map requirements"
+    },
+    {
+      "id": "105:2036",
+      "name": "spacer",
+      "type": "frame",
+      "x": 188,
+      "y": 161.5,
+      "w": 471,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2037",
+      "name": "Frame",
+      "type": "frame",
+      "x": 667,
+      "y": 152,
+      "w": 54,
+      "h": 20,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2038",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 675,
+      "y": 159,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2039",
+      "name": "Done",
+      "type": "text",
+      "x": 686,
+      "y": 155,
+      "w": 27,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Done"
+    },
+    {
+      "id": "105:2040",
+      "name": "Explore agent · 0:41 · 18k tokens",
+      "type": "text",
+      "x": 35,
+      "y": 178,
+      "w": 218,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "Explore agent · 0:41 · 18k tokens"
+    },
+    {
+      "id": "105:2041",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 198,
+      "w": 70,
+      "h": 24,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2042",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 198,
+      "w": 70,
+      "h": 24,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2043",
+      "name": "Transcript",
+      "type": "text",
+      "x": 44,
+      "y": 203,
+      "w": 52,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Transcript"
+    },
+    {
+      "id": "105:2044",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 247,
+      "w": 712,
+      "h": 172,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2045",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 260,
+      "w": 686,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2046",
+      "name": "icon/sparkle",
+      "type": "frame",
+      "x": 35,
+      "y": 262.5,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2048",
+      "name": "Layout notes",
+      "type": "text",
+      "x": 58,
+      "y": 261,
+      "w": 88,
+      "h": 18,
+      "path": "Frame > Frame > Frame",
+      "text": "Layout notes"
+    },
+    {
+      "id": "105:2049",
+      "name": "spacer",
+      "type": "frame",
+      "x": 154,
+      "y": 269.5,
+      "w": 489,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2050",
+      "name": "Frame",
+      "type": "frame",
+      "x": 651,
+      "y": 260,
+      "w": 70,
+      "h": 20,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2051",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 659,
+      "y": 267,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2052",
+      "name": "Running",
+      "type": "text",
+      "x": 670,
+      "y": 263,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Running"
+    },
+    {
+      "id": "105:2053",
+      "name": "writer agent · 0:34 · 11k tokens",
+      "type": "text",
+      "x": 35,
+      "y": 286,
+      "w": 212,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "writer agent · 0:34 · 11k tokens"
+    },
+    {
+      "id": "105:2054",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 306,
+      "w": 686,
+      "h": 70,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2055",
+      "name": "› Read captures/the-bridge-requirements.md",
+      "type": "text",
+      "x": 45,
+      "y": 316,
+      "w": 278,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "› Read captures/the-bridge-requirements.md"
+    },
+    {
+      "id": "105:2056",
+      "name": "› Read f-005-the-bridge/pages.md",
+      "type": "text",
+      "x": 45,
+      "y": 334,
+      "w": 212,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "› Read f-005-the-bridge/pages.md"
+    },
+    {
+      "id": "105:2057",
+      "name": "› Writing layout-notes.md",
+      "type": "text",
+      "x": 45,
+      "y": 352,
+      "w": 165,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "› Writing layout-notes.md"
+    },
+    {
+      "id": "105:2058",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 382,
+      "w": 161,
+      "h": 24,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2059",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 382,
+      "w": 95,
+      "h": 24,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2060",
+      "name": "Hide transcript",
+      "type": "text",
+      "x": 44,
+      "y": 387,
+      "w": 77,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Hide transcript"
+    },
+    {
+      "id": "105:2061",
+      "name": "Frame",
+      "type": "frame",
+      "x": 136,
+      "y": 382,
+      "w": 60,
+      "h": 24,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2062",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 145,
+      "y": 388.5,
+      "w": 11,
+      "h": 11,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2064",
+      "name": "Stop",
+      "type": "text",
+      "x": 162,
+      "y": 387,
+      "w": 25,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "105:2067",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 431,
+      "w": 712,
+      "h": 119,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2068",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 444,
+      "w": 686,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2069",
+      "name": "icon/sparkle",
+      "type": "frame",
+      "x": 35,
+      "y": 446.5,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2071",
+      "name": "Subtask: theme tokens",
+      "type": "text",
+      "x": 58,
+      "y": 445,
+      "w": 156,
+      "h": 18,
+      "path": "Frame > Frame > Frame",
+      "text": "Subtask: theme tokens"
+    },
+    {
+      "id": "105:2072",
+      "name": "spacer",
+      "type": "frame",
+      "x": 222,
+      "y": 453.5,
+      "w": 421,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2073",
+      "name": "Frame",
+      "type": "frame",
+      "x": 651,
+      "y": 444,
+      "w": 70,
+      "h": 20,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2074",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 659,
+      "y": 451,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2075",
+      "name": "Running",
+      "type": "text",
+      "x": 670,
+      "y": 447,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Running"
+    },
+    {
+      "id": "105:2076",
+      "name": "subtask · full chat context · 1:12 · 26k tokens",
+      "type": "text",
+      "x": 35,
+      "y": 470,
+      "w": 310,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "subtask · full chat context · 1:12 · 26k tokens"
+    },
+    {
+      "id": "105:2077",
+      "name": "Started from this chat with its full context; returns its result here.",
+      "type": "text",
+      "x": 35,
+      "y": 490,
+      "w": 686,
+      "h": 17,
+      "path": "Frame > Frame",
+      "text": "Started from this chat with its full context; returns its result here."
+    },
+    {
+      "id": "105:2078",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 513,
+      "w": 136,
+      "h": 24,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2079",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 513,
+      "w": 70,
+      "h": 24,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2080",
+      "name": "Transcript",
+      "type": "text",
+      "x": 44,
+      "y": 518,
+      "w": 52,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Transcript"
+    },
+    {
+      "id": "105:2081",
+      "name": "Frame",
+      "type": "frame",
+      "x": 111,
+      "y": 513,
+      "w": 60,
+      "h": 24,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2082",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 120,
+      "y": 519.5,
+      "w": 11,
+      "h": 11,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2084",
+      "name": "Stop",
+      "type": "text",
+      "x": 137,
+      "y": 518,
+      "w": 25,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "105:2087",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 562,
+      "w": 129,
+      "h": 30,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2088",
+      "name": "icon/sparkle",
+      "type": "frame",
+      "x": 33,
+      "y": 570,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2090",
+      "name": "Start a subtask",
+      "type": "text",
+      "x": 53,
+      "y": 569,
+      "w": 87,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Start a subtask"
+    },
+    {
+      "id": "105:2091",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1137,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "105:2092",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1145,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "105:2019",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

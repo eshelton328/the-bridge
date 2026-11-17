@@ -1,0 +1,1 @@
+Proposal. Opening a chat from the sidebar shows it in the workbench, filling the panes area. The sidebar stays open beside it, so any other chat can be dragged from the sidebar into the panes.

@@ -1,0 +1,1 @@
+Holding a chat for about half a second lifts it and opens the same actions as its ⋯ button, with Rename first. A finger that moves cancels the hold, so scrolling never opens it. The page turns off Safari’s text selection and callout on rows so the hold reaches the page.

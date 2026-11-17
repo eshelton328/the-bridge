@@ -1,0 +1,1 @@
+Vertical and horizontal splits combine: bridge themes on the left at full height, drift check and brain git stacked on the right. Each gap has its own resize handle.

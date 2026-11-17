@@ -1,0 +1,1 @@
+Typing a name: the form scrolls under a fixed header, and Start chat rides just above the keyboard so the chat can start without closing it. The rest of the form (workspace, folders, model, first message) is a scroll away.

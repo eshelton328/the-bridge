@@ -1,0 +1,1 @@
+Proposal. After a workspace is picked in the sheet (M4), the sheet closes, the header names the new workspace, and a toast offers Undo for a few seconds (R8).

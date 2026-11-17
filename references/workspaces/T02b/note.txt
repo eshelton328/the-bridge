@@ -1,0 +1,1 @@
+The ⋯ beside the chat’s state opens every chat action as a menu below it, the same list as the desktop (D2b): New chat (R9), Fork (R10), Side chat (R11), Subtask (R25), Subagents (R14), Folders (R45), Move to workspace (R8) and Rename chat (R6).

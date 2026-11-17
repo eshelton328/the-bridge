@@ -1,0 +1,1 @@
+No drag and no split panes on the phone (R19, R46). Tapping a chat opens it full screen.

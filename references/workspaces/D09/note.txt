@@ -1,0 +1,1 @@
+Dropping on the right splits the pane vertically: drift check opens beside bridge themes and both panes start at half the width. The handle in the gap between them resizes the panes (D14).

@@ -1,0 +1,1 @@
+Proposal. A line marks where the subtask started, and the chat keeps working. Subagents in the ⋯ menu now counts 3 (R14), and Workspaces lists layout notes under bridge themes (D18).

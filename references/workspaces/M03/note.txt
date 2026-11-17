@@ -1,0 +1,1 @@
+The header shows kind, state, model and context use (R2–R5). The composer takes attachments (R12), / lists skills (R13) and Stop cancels the prompt (R15). Copy sits under each response (R16).

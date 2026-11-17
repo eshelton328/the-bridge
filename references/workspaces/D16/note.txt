@@ -1,0 +1,1 @@
+Proposal. The fork opens at once and is listed under its original with a fork mark. It is Idle, so the composer has no Stop. A line in the chat says where it was forked. The original, bridge themes, keeps working.

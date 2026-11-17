@@ -1,0 +1,1020 @@
+{
+  "frameId": "T08",
+  "code": "T8",
+  "name": "T8 · Fork a chat",
+  "node": "420:413",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "420:472",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "420:473",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "420:474",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 89,
+      "path": ""
+    },
+    {
+      "id": "420:475",
+      "name": "Frame",
+      "type": "frame",
+      "x": 18,
+      "y": 41,
+      "w": 720,
+      "h": 37,
+      "path": "Frame"
+    },
+    {
+      "id": "420:476",
+      "name": "icon/back",
+      "type": "frame",
+      "x": 18,
+      "y": 49.5,
+      "w": 20,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:478",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 46,
+      "y": 49.5,
+      "w": 20,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:480",
+      "name": "Frame",
+      "type": "frame",
+      "x": 74,
+      "y": 41,
+      "w": 111,
+      "h": 37,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:481",
+      "name": "bridge themes",
+      "type": "text",
+      "x": 74,
+      "y": 41,
+      "w": 111,
+      "h": 21,
+      "path": "Frame > Frame > Frame",
+      "text": "bridge themes"
+    },
+    {
+      "id": "420:482",
+      "name": "omni-brain",
+      "type": "text",
+      "x": 74,
+      "y": 64,
+      "w": 66,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "omni-brain"
+    },
+    {
+      "id": "420:483",
+      "name": "spacer",
+      "type": "frame",
+      "x": 193,
+      "y": 59,
+      "w": 441,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:484",
+      "name": "Frame",
+      "type": "frame",
+      "x": 642,
+      "y": 49.5,
+      "w": 70,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:485",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 650,
+      "y": 56.5,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:486",
+      "name": "Working",
+      "type": "text",
+      "x": 661,
+      "y": 52.5,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Working"
+    },
+    {
+      "id": "420:487",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 720,
+      "y": 50.5,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:491",
+      "name": "Frame",
+      "type": "frame",
+      "x": 18,
+      "y": 86,
+      "w": 220,
+      "h": 22,
+      "path": "Frame"
+    },
+    {
+      "id": "420:492",
+      "name": "Frame",
+      "type": "frame",
+      "x": 18,
+      "y": 86,
+      "w": 83,
+      "h": 22,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:493",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 27,
+      "y": 91,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:495",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 45,
+      "y": 90,
+      "w": 47,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "420:496",
+      "name": "Frame",
+      "type": "frame",
+      "x": 109,
+      "y": 90,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "451:1674",
+      "name": "segments",
+      "type": "frame",
+      "x": 109,
+      "y": 93,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1675",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 109,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1676",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 115,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1677",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 121,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1678",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 127,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1679",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 133,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1680",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 139,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1681",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 145,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1682",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 151,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1683",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 157,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1684",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 163,
+      "y": 93,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "420:499",
+      "name": "42%",
+      "type": "text",
+      "x": 172,
+      "y": 90,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "42%"
+    },
+    {
+      "id": "420:500",
+      "name": "context",
+      "type": "text",
+      "x": 200,
+      "y": 90,
+      "w": 38,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "context"
+    },
+    {
+      "id": "420:501",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 118,
+      "w": 756,
+      "h": 1,
+      "path": ""
+    },
+    {
+      "id": "420:502",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 119,
+      "w": 756,
+      "h": 1039,
+      "path": ""
+    },
+    {
+      "id": "420:503",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 135,
+      "w": 712,
+      "h": 39,
+      "path": "Frame"
+    },
+    {
+      "id": "420:504",
+      "name": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.",
+      "type": "text",
+      "x": 34,
+      "y": 145,
+      "w": 688,
+      "h": 19,
+      "path": "Frame > Frame",
+      "text": "Brainstorm layouts for the-bridge that go beyond a sidebar and a chat."
+    },
+    {
+      "id": "420:505",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 188,
+      "w": 279,
+      "h": 16,
+      "path": "Frame"
+    },
+    {
+      "id": "420:506",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 22,
+      "y": 193,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:507",
+      "name": "Read f-005-the-bridge/requirements.md",
+      "type": "text",
+      "x": 34,
+      "y": 188,
+      "w": 267,
+      "h": 16,
+      "path": "Frame > Frame",
+      "text": "Read f-005-the-bridge/requirements.md"
+    },
+    {
+      "id": "420:508",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 218,
+      "w": 712,
+      "h": 88,
+      "path": "Frame"
+    },
+    {
+      "id": "420:509",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 218,
+      "w": 60,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:510",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 22,
+      "y": 219.5,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:512",
+      "name": "Claude",
+      "type": "text",
+      "x": 41,
+      "y": 218,
+      "w": 41,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Claude"
+    },
+    {
+      "id": "420:513",
+      "name": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop.",
+      "type": "text",
+      "x": 22,
+      "y": 240,
+      "w": 712,
+      "h": 38,
+      "path": "Frame > Frame",
+      "text": "Three directions: a tiled home, a star map of agents, and a split-pane workbench. The workbench suits long sessions on the desktop."
+    },
+    {
+      "id": "420:514",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 284,
+      "w": 63,
+      "h": 22,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:515",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 284,
+      "w": 63,
+      "h": 22,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:516",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 31,
+      "y": 289,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "420:519",
+      "name": "Copy",
+      "type": "text",
+      "x": 49,
+      "y": 288,
+      "w": 27,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Copy"
+    },
+    {
+      "id": "420:520",
+      "name": "Frame",
+      "type": "frame",
+      "x": 24,
+      "y": 1050,
+      "w": 708,
+      "h": 75,
+      "path": ""
+    },
+    {
+      "id": "420:521",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 1061,
+      "w": 143,
+      "h": 17,
+      "path": "Frame"
+    },
+    {
+      "id": "420:522",
+      "name": "Message, or / for a skill",
+      "type": "text",
+      "x": 35,
+      "y": 1061,
+      "w": 143,
+      "h": 17,
+      "path": "Frame > Frame",
+      "text": "Message, or / for a skill"
+    },
+    {
+      "id": "420:523",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 1086,
+      "w": 686,
+      "h": 28,
+      "path": "Frame"
+    },
+    {
+      "id": "420:524",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 1086,
+      "w": 28,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:525",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 42,
+      "y": 1093,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:527",
+      "name": "Frame",
+      "type": "frame",
+      "x": 69,
+      "y": 1088,
+      "w": 83,
+      "h": 24,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:528",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 78,
+      "y": 1094,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:530",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 96,
+      "y": 1093,
+      "w": 47,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "420:531",
+      "name": "spacer",
+      "type": "frame",
+      "x": 158,
+      "y": 1099.5,
+      "w": 464,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:532",
+      "name": "Frame",
+      "type": "frame",
+      "x": 628,
+      "y": 1087,
+      "w": 61,
+      "h": 26,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:533",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 637,
+      "y": 1094,
+      "w": 12,
+      "h": 12,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:535",
+      "name": "Stop",
+      "type": "text",
+      "x": 655,
+      "y": 1093,
+      "w": 25,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "420:536",
+      "name": "Frame",
+      "type": "frame",
+      "x": 695,
+      "y": 1087,
+      "w": 26,
+      "h": 26,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:537",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 701,
+      "y": 1093,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:543",
+      "name": "scrim",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 1158,
+      "path": ""
+    },
+    {
+      "id": "420:544",
+      "name": "Frame",
+      "type": "frame",
+      "x": 108,
+      "y": 430.5,
+      "w": 540,
+      "h": 297,
+      "path": ""
+    },
+    {
+      "id": "420:545",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 453.5,
+      "w": 494,
+      "h": 26,
+      "path": "Frame"
+    },
+    {
+      "id": "420:546",
+      "name": "Fork bridge themes",
+      "type": "text",
+      "x": 131,
+      "y": 453.5,
+      "w": 187,
+      "h": 26,
+      "path": "Frame > Frame",
+      "text": "Fork bridge themes"
+    },
+    {
+      "id": "420:547",
+      "name": "spacer",
+      "type": "frame",
+      "x": 326,
+      "y": 466,
+      "w": 273,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:548",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 607,
+      "y": 457.5,
+      "w": 18,
+      "h": 18,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:551",
+      "name": "field · Name",
+      "type": "frame",
+      "x": 131,
+      "y": 495.5,
+      "w": 494,
+      "h": 58,
+      "path": "Frame"
+    },
+    {
+      "id": "420:552",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 495.5,
+      "w": 24,
+      "h": 13,
+      "path": "Frame > field · Name"
+    },
+    {
+      "id": "420:553",
+      "name": "NAME",
+      "type": "text",
+      "x": 131,
+      "y": 495.5,
+      "w": 24,
+      "h": 13,
+      "path": "Frame > field · Name > Frame",
+      "text": "NAME"
+    },
+    {
+      "id": "420:554",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 516.5,
+      "w": 494,
+      "h": 37,
+      "path": "Frame > field · Name"
+    },
+    {
+      "id": "420:555",
+      "name": "bridge themes · fork",
+      "type": "text",
+      "x": 144,
+      "y": 526.5,
+      "w": 122,
+      "h": 17,
+      "path": "Frame > field · Name > Frame",
+      "text": "bridge themes · fork"
+    },
+    {
+      "id": "420:556",
+      "name": "Frame",
+      "type": "frame",
+      "x": 274,
+      "y": 534.5,
+      "w": 178,
+      "h": 1,
+      "path": "Frame > field · Name > Frame"
+    },
+    {
+      "id": "420:557",
+      "name": "you can rename it later",
+      "type": "text",
+      "x": 460,
+      "y": 528,
+      "w": 152,
+      "h": 14,
+      "path": "Frame > field · Name > Frame",
+      "text": "you can rename it later"
+    },
+    {
+      "id": "420:558",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 569.5,
+      "w": 494,
+      "h": 58,
+      "path": "Frame"
+    },
+    {
+      "id": "420:559",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 569.5,
+      "w": 60,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:560",
+      "name": "START FROM",
+      "type": "text",
+      "x": 131,
+      "y": 569.5,
+      "w": 60,
+      "h": 13,
+      "path": "Frame > Frame > Frame",
+      "text": "START FROM"
+    },
+    {
+      "id": "420:561",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 588.5,
+      "w": 494,
+      "h": 39,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:562",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 588.5,
+      "w": 244,
+      "h": 39,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:563",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 164.83333587646484,
+      "y": 600,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "420:565",
+      "name": "Whole chat",
+      "type": "text",
+      "x": 218.5,
+      "y": 599.5,
+      "w": 69,
+      "h": 17,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Whole chat"
+    },
+    {
+      "id": "420:566",
+      "name": "Frame",
+      "type": "frame",
+      "x": 381,
+      "y": 588.5,
+      "w": 244,
+      "h": 39,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:567",
+      "name": "kind · codex",
+      "type": "frame",
+      "x": 394.3333282470703,
+      "y": 600,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "420:571",
+      "name": "Up to a message…",
+      "type": "text",
+      "x": 448,
+      "y": 599.5,
+      "w": 110,
+      "h": 17,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Up to a message…"
+    },
+    {
+      "id": "420:572",
+      "name": "Frame",
+      "type": "frame",
+      "x": 464.33331298828125,
+      "y": 588.5,
+      "w": 160.66665649414062,
+      "h": 39,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:573",
+      "name": "kind · shell",
+      "type": "frame",
+      "x": 517.6666450500488,
+      "y": 600,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "420:576",
+      "name": "shell",
+      "type": "text",
+      "x": 541.6666412353516,
+      "y": 599.5,
+      "w": 30,
+      "h": 17,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "shell"
+    },
+    {
+      "id": "420:632",
+      "name": "The fork copies the messages and the context. The original keeps running.",
+      "type": "text",
+      "x": 131,
+      "y": 643.5,
+      "w": 494,
+      "h": 15,
+      "path": "Frame",
+      "text": "The fork copies the messages and the context. The original keeps running."
+    },
+    {
+      "id": "420:623",
+      "name": "Frame",
+      "type": "frame",
+      "x": 131,
+      "y": 674.5,
+      "w": 494,
+      "h": 30,
+      "path": "Frame"
+    },
+    {
+      "id": "420:624",
+      "name": "spacer",
+      "type": "frame",
+      "x": 131,
+      "y": 689,
+      "w": 350,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:625",
+      "name": "Frame",
+      "type": "frame",
+      "x": 489,
+      "y": 674.5,
+      "w": 62,
+      "h": 30,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:626",
+      "name": "Cancel",
+      "type": "text",
+      "x": 500,
+      "y": 681.5,
+      "w": 40,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Cancel"
+    },
+    {
+      "id": "420:627",
+      "name": "Frame",
+      "type": "frame",
+      "x": 559,
+      "y": 675.5,
+      "w": 66,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "420:628",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 569,
+      "y": 682.5,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "420:631",
+      "name": "Fork",
+      "type": "text",
+      "x": 589,
+      "y": 681.5,
+      "w": 26,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Fork"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "420:473",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

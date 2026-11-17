@@ -1,0 +1,1 @@
+The ⋯ on a workspace opens actions for the workspace, not a chat: start a chat in it (R9), rename it, or close it (R6). Closing asks first (M13). A chat’s ⋯ opens the chat actions in M9.

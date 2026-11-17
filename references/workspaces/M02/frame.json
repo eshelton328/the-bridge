@@ -1,0 +1,1810 @@
+{
+  "frameId": "M02",
+  "code": "M2",
+  "name": "M2 · Edit workspaces",
+  "node": "105:2479",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "105:2502",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "105:2503",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "105:2504",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "105:2505",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 44,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2506",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 16,
+      "y": 42,
+      "w": 166,
+      "h": 36,
+      "path": "Frame > Frame",
+      "text": "Workspaces"
+    },
+    {
+      "id": "105:2507",
+      "name": "spacer",
+      "type": "frame",
+      "x": 188,
+      "y": 59.5,
+      "w": 88,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2508",
+      "name": "Frame",
+      "type": "frame",
+      "x": 282,
+      "y": 46,
+      "w": 50,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2509",
+      "name": "Done",
+      "type": "text",
+      "x": 292,
+      "y": 52,
+      "w": 30,
+      "h": 16,
+      "path": "Frame > Frame > Frame",
+      "text": "Done"
+    },
+    {
+      "id": "105:2510",
+      "name": "button · new (disabled in edit mode)",
+      "type": "frame",
+      "x": 338,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2511",
+      "name": "icon/plus",
+      "type": "frame",
+      "x": 349,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame > button · new (disabled in edit mode)"
+    },
+    {
+      "id": "105:2516",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 366,
+      "h": 29,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2517",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 16,
+      "y": 98.5,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2524",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 36,
+      "y": 99,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2526",
+      "name": "OMNI-BRAIN",
+      "type": "text",
+      "x": 55,
+      "y": 98.5,
+      "w": 66,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "OMNI-BRAIN"
+    },
+    {
+      "id": "105:2527",
+      "name": "3",
+      "type": "text",
+      "x": 127,
+      "y": 98.5,
+      "w": 7,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "3"
+    },
+    {
+      "id": "105:2528",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 140,
+      "y": 102.5,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2529",
+      "name": "spacer",
+      "type": "frame",
+      "x": 152,
+      "y": 105,
+      "w": 199,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2530",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 357,
+      "y": 98,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2535",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 123,
+      "w": 366,
+      "h": 58,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2536",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 145,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2543",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 42,
+      "y": 144,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2545",
+      "name": "Frame",
+      "type": "frame",
+      "x": 64,
+      "y": 131,
+      "w": 304,
+      "h": 42,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "146:37",
+      "name": "rename field · chat",
+      "type": "frame",
+      "x": 64,
+      "y": 131,
+      "w": 304,
+      "h": 25,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "146:38",
+      "name": "theme explorations",
+      "type": "text",
+      "x": 71,
+      "y": 135,
+      "w": 118,
+      "h": 17,
+      "path": "Frame > Frame > Frame > rename field · chat",
+      "text": "theme explorations"
+    },
+    {
+      "id": "146:39",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 189,
+      "y": 136,
+      "w": 1.5,
+      "h": 15,
+      "path": "Frame > Frame > Frame > rename field · chat"
+    },
+    {
+      "id": "199:2",
+      "name": "spacer",
+      "type": "frame",
+      "x": 190.5,
+      "y": 143,
+      "w": 155.5,
+      "h": 1,
+      "path": "Frame > Frame > Frame > rename field · chat"
+    },
+    {
+      "id": "187:2",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 346,
+      "y": 136,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame > Frame > rename field · chat"
+    },
+    {
+      "id": "105:2547",
+      "name": "Frame",
+      "type": "frame",
+      "x": 64,
+      "y": 159,
+      "w": 142,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2548",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 64,
+      "y": 159,
+      "w": 53,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "105:2549",
+      "name": "Frame",
+      "type": "frame",
+      "x": 123,
+      "y": 159,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1806",
+      "name": "segments",
+      "type": "frame",
+      "x": 123,
+      "y": 162,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1807",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 123,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1808",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 129,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1809",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 135,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1810",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 141,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1811",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 147,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1812",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 153,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1813",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 159,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1814",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 165,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1815",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 171,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1816",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 177,
+      "y": 162,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "105:2552",
+      "name": "42%",
+      "type": "text",
+      "x": 186,
+      "y": 159,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame > Frame",
+      "text": "42%"
+    },
+    {
+      "id": "105:2556",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 185,
+      "w": 366,
+      "h": 50,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2557",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 203,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2564",
+      "name": "kind · codex",
+      "type": "frame",
+      "x": 46,
+      "y": 202,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2568",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 193,
+      "w": 296,
+      "h": 34,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2569",
+      "name": "drift check",
+      "type": "text",
+      "x": 72,
+      "y": 193,
+      "w": 67,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "drift check"
+    },
+    {
+      "id": "105:2570",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 213,
+      "w": 136,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2571",
+      "name": "GPT-5.5",
+      "type": "text",
+      "x": 72,
+      "y": 213,
+      "w": 47,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "GPT-5.5"
+    },
+    {
+      "id": "105:2572",
+      "name": "Frame",
+      "type": "frame",
+      "x": 125,
+      "y": 213,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1817",
+      "name": "segments",
+      "type": "frame",
+      "x": 125,
+      "y": 216,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1818",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 125,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1819",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 131,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1820",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 137,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1821",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 143,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1822",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 149,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1823",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 155,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1824",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 161,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1825",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 167,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1826",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 173,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1827",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 179,
+      "y": 216,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "105:2575",
+      "name": "23%",
+      "type": "text",
+      "x": 188,
+      "y": 213,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame > Frame",
+      "text": "23%"
+    },
+    {
+      "id": "105:2586",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 239,
+      "w": 366,
+      "h": 50,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2587",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 257,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2594",
+      "name": "kind · shell",
+      "type": "frame",
+      "x": 46,
+      "y": 256,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2597",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 247,
+      "w": 240,
+      "h": 34,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2598",
+      "name": "brain git",
+      "type": "text",
+      "x": 72,
+      "y": 247,
+      "w": 50,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "brain git"
+    },
+    {
+      "id": "105:2599",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 267,
+      "w": 73,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2600",
+      "name": "shell · zsh",
+      "type": "text",
+      "x": 72,
+      "y": 267,
+      "w": 73,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "shell · zsh"
+    },
+    {
+      "id": "105:2601",
+      "name": "Frame",
+      "type": "frame",
+      "x": 322,
+      "y": 254,
+      "w": 46,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2602",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 330,
+      "y": 261,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2603",
+      "name": "Idle",
+      "type": "text",
+      "x": 341,
+      "y": 257,
+      "w": 19,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Idle"
+    },
+    {
+      "id": "105:2604",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 293,
+      "w": 366,
+      "h": 39,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2605",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 16,
+      "y": 306.5,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2612",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 36,
+      "y": 307,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2614",
+      "name": "Frame",
+      "type": "frame",
+      "x": 55,
+      "y": 301,
+      "w": 317,
+      "h": 25,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2615",
+      "name": "the-bridge",
+      "type": "text",
+      "x": 62,
+      "y": 305,
+      "w": 65,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "the-bridge"
+    },
+    {
+      "id": "105:2616",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 127,
+      "y": 306,
+      "w": 1.5,
+      "h": 15,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "199:3",
+      "name": "spacer",
+      "type": "frame",
+      "x": 128.5,
+      "y": 313,
+      "w": 221.5,
+      "h": 1,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2619",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 350,
+      "y": 306,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2624",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 336,
+      "w": 366,
+      "h": 50,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2625",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 354,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2632",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 46,
+      "y": 353,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2634",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 344,
+      "w": 204,
+      "h": 34,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2635",
+      "name": "hono server",
+      "type": "text",
+      "x": 72,
+      "y": 344,
+      "w": 72,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "hono server"
+    },
+    {
+      "id": "105:2636",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 364,
+      "w": 155,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2637",
+      "name": "Sonnet 5.5",
+      "type": "text",
+      "x": 72,
+      "y": 364,
+      "w": 66,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "Sonnet 5.5"
+    },
+    {
+      "id": "105:2638",
+      "name": "Frame",
+      "type": "frame",
+      "x": 144,
+      "y": 364,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1828",
+      "name": "segments",
+      "type": "frame",
+      "x": 144,
+      "y": 367,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1829",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 144,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1830",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 150,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1831",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 156,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1832",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 162,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1833",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 168,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1834",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 174,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1835",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 180,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1836",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 186,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1837",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 192,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1838",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 198,
+      "y": 367,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "105:2641",
+      "name": "78%",
+      "type": "text",
+      "x": 207,
+      "y": 364,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame > Frame",
+      "text": "78%"
+    },
+    {
+      "id": "105:2642",
+      "name": "Frame",
+      "type": "frame",
+      "x": 286,
+      "y": 351,
+      "w": 82,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2643",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 294,
+      "y": 358,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2644",
+      "name": "Needs you",
+      "type": "text",
+      "x": 305,
+      "y": 354,
+      "w": 55,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Needs you"
+    },
+    {
+      "id": "105:2645",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 390,
+      "w": 366,
+      "h": 50,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2646",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 408,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2653",
+      "name": "kind · shell",
+      "type": "frame",
+      "x": 46,
+      "y": 407,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2656",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 398,
+      "w": 216,
+      "h": 34,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2657",
+      "name": "dev server",
+      "type": "text",
+      "x": 72,
+      "y": 398,
+      "w": 64,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "dev server"
+    },
+    {
+      "id": "105:2658",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 418,
+      "w": 106,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2659",
+      "name": "shell · pnpm dev",
+      "type": "text",
+      "x": 72,
+      "y": 418,
+      "w": 106,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "shell · pnpm dev"
+    },
+    {
+      "id": "105:2660",
+      "name": "Frame",
+      "type": "frame",
+      "x": 298,
+      "y": 405,
+      "w": 70,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2661",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 306,
+      "y": 412,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2662",
+      "name": "Running",
+      "type": "text",
+      "x": 317,
+      "y": 408,
+      "w": 43,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Running"
+    },
+    {
+      "id": "105:2663",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 444,
+      "w": 366,
+      "h": 29,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2664",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 16,
+      "y": 452.5,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2671",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 36,
+      "y": 453,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2673",
+      "name": "OMNI",
+      "type": "text",
+      "x": 55,
+      "y": 452.5,
+      "w": 27,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "OMNI"
+    },
+    {
+      "id": "105:2674",
+      "name": "1",
+      "type": "text",
+      "x": 88,
+      "y": 452.5,
+      "w": 7,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "1"
+    },
+    {
+      "id": "105:2675",
+      "name": "spacer",
+      "type": "frame",
+      "x": 101,
+      "y": 459,
+      "w": 250,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2676",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 357,
+      "y": 452,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2679",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 477,
+      "w": 366,
+      "h": 50,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2680",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 22,
+      "y": 495,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2687",
+      "name": "kind · codex",
+      "type": "frame",
+      "x": 46,
+      "y": 494,
+      "w": 16,
+      "h": 16,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2691",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 485,
+      "w": 232,
+      "h": 34,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2692",
+      "name": "release notes",
+      "type": "text",
+      "x": 72,
+      "y": 485,
+      "w": 83,
+      "h": 17,
+      "path": "Frame > Frame > Frame",
+      "text": "release notes"
+    },
+    {
+      "id": "105:2693",
+      "name": "Frame",
+      "type": "frame",
+      "x": 72,
+      "y": 505,
+      "w": 136,
+      "h": 14,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2694",
+      "name": "GPT-5.5",
+      "type": "text",
+      "x": 72,
+      "y": 505,
+      "w": 47,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame",
+      "text": "GPT-5.5"
+    },
+    {
+      "id": "105:2695",
+      "name": "Frame",
+      "type": "frame",
+      "x": 125,
+      "y": 505,
+      "w": 83,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1839",
+      "name": "segments",
+      "type": "frame",
+      "x": 125,
+      "y": 508,
+      "w": 58,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "451:1840",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 125,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1841",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 131,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1842",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 137,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1843",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 143,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1844",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 149,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1845",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 155,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1846",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 161,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1847",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 167,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1848",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 173,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "451:1849",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 179,
+      "y": 508,
+      "w": 4,
+      "h": 8,
+      "path": "Frame > Frame > Frame > Frame > Frame > segments"
+    },
+    {
+      "id": "105:2698",
+      "name": "18%",
+      "type": "text",
+      "x": 188,
+      "y": 505,
+      "w": 20,
+      "h": 14,
+      "path": "Frame > Frame > Frame > Frame > Frame",
+      "text": "18%"
+    },
+    {
+      "id": "105:2699",
+      "name": "Frame",
+      "type": "frame",
+      "x": 314,
+      "y": 492,
+      "w": 54,
+      "h": 20,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2700",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 322,
+      "y": 499,
+      "w": 6,
+      "h": 6,
+      "path": "Frame > Frame > Frame"
+    },
+    {
+      "id": "105:2701",
+      "name": "Done",
+      "type": "text",
+      "x": 333,
+      "y": 495,
+      "w": 27,
+      "h": 14,
+      "path": "Frame > Frame > Frame",
+      "text": "Done"
+    },
+    {
+      "id": "105:2702",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 531,
+      "w": 366,
+      "h": 29,
+      "path": "Frame"
+    },
+    {
+      "id": "105:2703",
+      "name": "icon/grip",
+      "type": "frame",
+      "x": 16,
+      "y": 539.5,
+      "w": 14,
+      "h": 14,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2710",
+      "name": "icon/chev",
+      "type": "frame",
+      "x": 36,
+      "y": 540,
+      "w": 13,
+      "h": 13,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2712",
+      "name": "SKILL-EVALS",
+      "type": "text",
+      "x": 55,
+      "y": 539.5,
+      "w": 73,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "SKILL-EVALS"
+    },
+    {
+      "id": "105:2713",
+      "name": "1",
+      "type": "text",
+      "x": 134,
+      "y": 539.5,
+      "w": 7,
+      "h": 14,
+      "path": "Frame > Frame",
+      "text": "1"
+    },
+    {
+      "id": "105:2714",
+      "name": "spacer",
+      "type": "frame",
+      "x": 147,
+      "y": 546,
+      "w": 204,
+      "h": 1,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "105:2715",
+      "name": "icon/x",
+      "type": "frame",
+      "x": 357,
+      "y": 539,
+      "w": 15,
+      "h": 15,
+      "path": "Frame > Frame"
+    },
+    {
+      "id": "252:41",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "252:42",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "252:43",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "252:44",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "252:47",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "252:48",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "252:49",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "252:50",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "252:54",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "252:55",
+      "name": "3",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "3"
+    },
+    {
+      "id": "252:56",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "252:57",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "252:58",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "252:59",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "252:65",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "252:66",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "252:67",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "252:68",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "252:71",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "252:72",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "252:73",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "252:74",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "252:79",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "105:2718",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "105:2719",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "105:2503",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

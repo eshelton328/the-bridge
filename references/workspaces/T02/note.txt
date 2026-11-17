@@ -1,0 +1,1 @@
+The header shows what the chat runs in, its state, model and context use (R2–R5). The ⋯ beside the state holds every chat action (R8–R11, R14, R25); Copy sits under each response (R16). The side chat opens as a sheet over the chat and never enters it (R11).

@@ -1,0 +1,1 @@
+Proposal. Rename chat turns the name in the header into a field (R6). Clicking outside the field or pressing Enter saves; × inside it, or Esc, undoes the change and closes it. This is the same rule as renaming in the list (M2, T1).

@@ -1,0 +1,1 @@
+The side chat is a sheet over the main chat and never enters it (R11).

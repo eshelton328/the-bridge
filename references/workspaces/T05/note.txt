@@ -1,0 +1,1 @@
+The folders control opens a sheet with the chat's folders and the picker below them (R45). The sheet looks the same for a Claude Code or a Codex chat.
