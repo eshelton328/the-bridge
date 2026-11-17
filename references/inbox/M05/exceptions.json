@@ -1,0 +1,15 @@
+{
+  "missing": [
+    {
+      "text": "Keep the client in packages/api so omni can import it later.",
+      "reason": "Figma draws the note (346:9937, y 765 to 799) under the pinned answer bar and the tab bar (346:9938 starts at y 767), so frame.png does not show it. The render puts it in the same place: the page scrolls to it."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The question page scrolls on the phone: Figma draws the note to the chat (346:9934) under the pinned answer bar and the tab bar, and the render scrolls the detail under them the same way."
+    }
+  ]
+}

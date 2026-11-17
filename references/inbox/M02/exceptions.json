@@ -1,0 +1,24 @@
+{
+  "missing": [
+    {
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "reason": "Figma cuts the prompt too: the text layer 346:9299 is 210 high inside the 128 px prompt box 346:9298, under the fade 346:9300, and the note says a long prompt stops at a fixed height with a fade. The render's Clamp cuts it after five lines; Read the whole prompt opens it in full."
+    },
+    {
+      "text": "f-005 the-bridge",
+      "reason": "Layer 346:9336 is the detail of a source in the hidden SOURCES section (346:9326 sits at y 623, over RUN IN, and frame.png does not show it). The render keeps Sources below My notes, where the page scrolls. The same text in the visible chip (346:9264) is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The task page scrolls on the phone: the note says My notes sits below Run in and the page scrolls to it, and Figma cuts My notes under the pinned Start (346:9386). The render scrolls the detail under the pinned Start the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "reason": "The cut prompt Figma draws (346:9299 is 210 high in the 128 px box 346:9298, with the fade 346:9300); see the prompt's missing entry."
+    }
+  ]
+}
