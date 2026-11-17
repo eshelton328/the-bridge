@@ -9,7 +9,7 @@ import {
   Popover,
   SearchField,
   SearchIcon,
-  SortIcon,
+  SortDescIcon,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxFilterMenu } from '../types.ts'
@@ -38,7 +38,7 @@ export function ListTools({ sort, filterMenu, filterOpen }: ListToolsProps) {
         <SearchField label="Search the inbox" placeholder="Search the inbox" icon={<SearchIcon />} />
       </div>
       <Button>
-        <SortIcon />
+        <SortDescIcon />
         {sort}
         <ChevronDownIcon size="12" />
       </Button>
@@ -48,6 +48,7 @@ export function ListTools({ sort, filterMenu, filterOpen }: ListToolsProps) {
         <Popover
           trigger={filter}
           width="filter"
+          data-figma="filter popover"
           label="Filter the inbox"
           open={filterOpen}
           note={filterMenu.note}

@@ -30,6 +30,7 @@ export const filterOpen = {
       sections: [
         {
           label: 'Kind',
+          mono: false,
           items: [
             { value: 'approval', label: 'Approval', count: 1, checked: true },
             { value: 'question', label: 'Question', count: 1, checked: true },
@@ -40,10 +41,12 @@ export const filterOpen = {
         },
         {
           label: 'Project',
+          mono: true,
           items: [item('ncc-1701', 5, true), item('omni-brain', 1, true), item('skill-evals', 1, false)],
         },
         {
           label: 'Tags · global',
+          mono: true,
           items: [
             item('global/decision', 1, false),
             item('global/planning', 1, false),
@@ -52,6 +55,7 @@ export const filterOpen = {
         },
         {
           label: 'Tags · project ncc-1701',
+          mono: true,
           items: [item('project/ncc-1701/the-bridge', 2, false), item('project/ncc-1701/design', 1, false)],
         },
       ],

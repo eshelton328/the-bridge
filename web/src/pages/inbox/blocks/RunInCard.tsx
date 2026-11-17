@@ -53,6 +53,8 @@ export function RunInCard({ runIn, pickerOpen }: RunInCardProps) {
             width="picker"
             note={runIn.picker.note}
             placement="bottom-end"
+            flip={false}
+            data-figma="run in picker"
           >
             <RunInPicker picker={runIn.picker} />
           </Popover>

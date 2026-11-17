@@ -16,13 +16,14 @@ import { InboxStatus } from './InboxStatus.tsx'
 
 export function RunInPicker({ picker }: { picker: NonNullable<InboxRunIn['picker']> }) {
   return (
-    <div data-figma="run in picker">
+    <>
       <SearchField size="md" label={picker.search} placeholder={picker.search} icon={<SearchIcon />} />
       {picker.sections.map((section) => (
         <PopoverSection key={section.label} label={section.label}>
           <OptionList
             label={section.label}
             descriptionStyle="mono"
+            selectedFill
             value={section.choices.some((c) => c.value === picker.selected) ? picker.selected : null}
             items={section.choices.map((c) => ({
               value: c.value,
@@ -35,6 +36,6 @@ export function RunInPicker({ picker }: { picker: NonNullable<InboxRunIn['picker
           />
         </PopoverSection>
       ))}
-    </div>
+    </>
   )
 }

@@ -57,6 +57,8 @@ const InboxFilterMenu = z.object({
   sections: z.array(
     z.object({
       label: z.string(),
+      /** The labels are names from the brain (projects, tags), set in mono; kinds are words, in sans. */
+      mono: z.boolean(),
       items: z.array(z.object({ value: z.string(), label: z.string(), count: z.number(), checked: z.boolean() })),
     }),
   ),

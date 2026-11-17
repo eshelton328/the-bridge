@@ -8,7 +8,7 @@ const count = css({ textStyle: 'mono', color: 'fg.subtle' })
 
 export function FilterMenu({ menu }: { menu: InboxFilterMenu }) {
   return (
-    <div data-figma="filter popover">
+    <>
       {menu.sections.map((section) => (
         <PopoverSection key={section.label} label={section.label}>
           {section.items.map((item) => (
@@ -17,11 +17,12 @@ export function FilterMenu({ menu }: { menu: InboxFilterMenu }) {
               label={item.label}
               value={item.value}
               checked={item.checked}
+              labelStyle={section.mono ? 'mono' : 'text'}
               trailing={<span className={count}>{item.count}</span>}
             />
           ))}
         </PopoverSection>
       ))}
-    </div>
+    </>
   )
 }
