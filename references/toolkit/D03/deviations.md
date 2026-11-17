@@ -80,3 +80,17 @@ The other seven frames give the same results as before D03.
   Rail item height). The rail has no `data-figma` in this frame.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D4, D7 to D9).
+
+## Second review
+
+- **All chip.** The render draws All as the selected chip, because the
+  filter is All; Figma D3 draws no chip selected, where D1 and T1 draw
+  All selected. The app keeps one rule for every frame: the chip of the
+  current filter is selected.
+- **Preview line breaks.** The narrower preview (554 against 560 px)
+  breaks the intro paragraph one word earlier on each line (gap: Item
+  overview columns).
+- **Skill evals chevron.** It sits level with the title, about 10 px
+  above the box's centre (gap: Toolkit row (pane)).
+- **Search and list 4 px lower.** The kind chip row is 36 px high
+  against 32 (gap: Kind chip row).
