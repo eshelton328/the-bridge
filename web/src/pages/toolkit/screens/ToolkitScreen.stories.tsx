@@ -145,3 +145,25 @@ export const HookOpen: Story = {
     await expect(canvas.queryByText('skills/writer/')).toBeNull()
   },
 }
+
+export const WorkflowOpen: Story = {
+  name: 'D8: a workflow open beside the list, with its steps by phase',
+  args: { data: toolkitStates.workflowOpen.data, ui: toolkitStates.workflowOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skill-eval-round' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/workflows/skill-eval-round.md')).toBeVisible()
+    const flow = within(item).getByRole('region', { name: 'Steps · from the Mermaid flow in the file' })
+    await expect(within(flow).getByRole('heading', { name: 'Grade · in parallel' })).toBeVisible()
+    await expect(within(flow).getByRole('heading', { name: 'Pre-registered?' })).toBeVisible()
+    await expect(within(flow).getByRole('heading', { name: 'Owner decides' })).toBeVisible()
+    await expect(within(flow).getByText('hides which runs had the skill')).toBeVisible()
+    await expect(within(flow).getByText('new failure')).toBeVisible()
+    await expect(within(flow).getByRole('button', { name: 'Open full page' })).toBeVisible()
+    await expect(within(flow).getByRole('button', { name: 'eval-grader' })).toBeVisible()
+    await expect(within(item).getByText('Gates in amber; G1 and G6 run after step 1.')).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 2, name: 'Purpose and trigger' })).toBeVisible()
+    // The workflow's row is the open one.
+    await expect(canvas.getByRole('button', { name: 'skill-eval-round', current: true })).toBeVisible()
+  },
+}

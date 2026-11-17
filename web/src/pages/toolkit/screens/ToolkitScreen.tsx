@@ -163,6 +163,11 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         onShowOnMap={() => {
           onUiChange(showOnMap(open.item.path))
         }}
+        onOpenFullPage={() => {
+          // D13 shows the steps on a page of their own; until it is built the item stays as it is.
+          onUiChange({ flowFullPage: true })
+        }}
+        onOpenItem={openPath}
       />
     )
   return (

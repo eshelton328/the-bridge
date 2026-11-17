@@ -1,0 +1,21 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["433:810"],
+      "reason": "Figma cuts the kind chip row at the list pane's right edge (484): the Workflows chip (433:808, x 433 to 552) shows its dot and the first letter of its label, and its count 2 (433:811) lies past the edge. The render scrolls the chip row sideways inside the pane the same way (FilterChips), so the label and count are in the DOM and come into view when the row scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["433:811"],
+      "reason": "The Workflows chip's count (433:811, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways: Figma's chip row (433:792) runs past the list pane's right edge, cut after the Workflows chip's dot (433:808, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    }
+  ]
+}

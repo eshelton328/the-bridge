@@ -10,6 +10,7 @@ import { toolkitMap } from './toolkitMap.ts'
 import { toolkitMapTablet } from './toolkitMapTablet.ts'
 import { agentOpen } from './agentOpen.ts'
 import { hookOpen } from './hookOpen.ts'
+import { workflowOpen } from './workflowOpen.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -21,4 +22,5 @@ export const toolkitStates = {
   ruleOpen,
   agentOpen,
   hookOpen,
+  workflowOpen,
 }

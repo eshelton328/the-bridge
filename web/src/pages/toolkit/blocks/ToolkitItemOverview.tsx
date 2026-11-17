@@ -4,13 +4,15 @@
 // and, beside it, what uses the item, its files and the link to its evals
 // (`ToolkitItemSide`). An agent (D7) shows how it runs (`ToolkitAgentRuns`)
 // between the description and the columns, and a hook (D9) when it runs, with
-// its script as code in the preview. Props only.
+// its script as code in the preview. A workflow (D8) shows its steps by phase
+// (`ToolkitWorkflowFlow`) in the same place. Props only.
 import { ClockIcon, Panel } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView, ToolkitKind } from '../types.ts'
 import { ToolkitAgentRuns } from './ToolkitAgentRuns.tsx'
 import { ToolkitFilePreview } from './ToolkitFilePreview.tsx'
 import { ToolkitItemSide } from './ToolkitItemSide.tsx'
+import { ToolkitWorkflowFlow } from './ToolkitWorkflowFlow.tsx'
 
 // D3: the description (427:271) is 16 under the tabs and 16 over the columns (427:272); in D4 the box that says
 // when the rule loads (427:628) sits between them, 16 from each, and in D7 how the agent runs (433:526).
@@ -36,6 +38,7 @@ const descriptionLayers: Readonly<Record<string, string>> = {
   'rules/skills.md': '427:627',
   'agents/writing-reviewer.md': '433:525',
   'hooks/commit-msg': '433:1537',
+  'workflows/skill-eval-round.md': '433:1033',
 }
 // D3 427:272: the preview (560) and the side (364) are 24 apart. No size token has either width, so the columns
 // share the row 3 to 2 (LIBRARY_GAPS.md, Item overview columns).
@@ -46,9 +49,19 @@ export type ToolkitItemOverviewProps = {
   /** The open item's kind: a hook's facts are drawn as D9 draws them. */
   kind?: ToolkitKind | undefined
   onTabChange?: ((tab: string) => void) | undefined
+  /** Opens a workflow's steps on a page of their own (D8 Open full page, D13). */
+  onOpenFullPage?: (() => void) | undefined
+  /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
+  onOpenItem?: ((path: string) => void) | undefined
 }
 
-export function ToolkitItemOverview({ detail, kind, onTabChange }: ToolkitItemOverviewProps) {
+export function ToolkitItemOverview({
+  detail,
+  kind,
+  onTabChange,
+  onOpenFullPage,
+  onOpenItem,
+}: ToolkitItemOverviewProps) {
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   return (
     <div className={overview}>
@@ -70,6 +83,9 @@ export function ToolkitItemOverview({ detail, kind, onTabChange }: ToolkitItemOv
       )}
       {detail.runs === undefined ? null : (
         <ToolkitAgentRuns runs={detail.runs} kind={kind === 'hook' ? 'hook' : 'agent'} />
+      )}
+      {detail.flow === undefined ? null : (
+        <ToolkitWorkflowFlow flow={detail.flow} onOpenFullPage={onOpenFullPage} onOpenItem={onOpenItem} />
       )}
       <div className={columns} data-figma="columns">
         <ToolkitFilePreview
