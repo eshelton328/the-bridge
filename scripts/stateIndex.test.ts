@@ -42,3 +42,37 @@ void test('pnpm new state refuses a key the index has and an index without the s
   assert.throws(() => addStateToIndex(toolkit, 'toolkit', 'moreDrawer'), /has the key moreDrawer already/)
   assert.throws(() => addStateToIndex(toolkit, 'inbox', 'list'), /no "export const inboxStates = \{" object/)
 })
+
+void test('pnpm new state adds its import after a last import that spans several lines', () => {
+  const source = `import { list } from './list.ts'
+import {
+  filterOpen,
+  // The open filter menu.
+  filterOpenTablet,
+} from './filterOpen.ts'
+
+export const inboxStates = {
+  list,
+  filterOpen,
+  filterOpenTablet,
+}
+`
+  assert.equal(
+    addStateToIndex(source, 'inbox', 'sortOpen'),
+    `import { list } from './list.ts'
+import {
+  filterOpen,
+  // The open filter menu.
+  filterOpenTablet,
+} from './filterOpen.ts'
+import { sortOpen } from './sortOpen.ts'
+
+export const inboxStates = {
+  list,
+  filterOpen,
+  filterOpenTablet,
+  sortOpen,
+}
+`,
+  )
+})

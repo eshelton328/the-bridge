@@ -17,7 +17,9 @@ export function addStateToIndex(source: string, page: string, id: string): strin
   const withKey = `${source.slice(0, closing)}  ${id},\n${source.slice(closing)}`
 
   const line = `import { ${id} } from './${id}.ts'\n`
-  const imports = [...withKey.matchAll(/^import [^\n]*\n/gm)]
+  // A whole import declaration, which may span several lines: from `import`
+  // to its module string and the rest of that line.
+  const imports = [...withKey.matchAll(/^import\b[^'"]*['"][^'"\n]*['"][^\n]*\n/gm)]
   const last = imports.at(-1)
   const at = last === undefined ? object.index : last.index + last[0].length
   return `${withKey.slice(0, at)}${line}${withKey.slice(at)}`
