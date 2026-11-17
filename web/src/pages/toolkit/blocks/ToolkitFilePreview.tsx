@@ -5,6 +5,7 @@
 // icon in the bar and its lines with their numbers in the library's
 // CodeLines. Props only.
 import { CodeIcon, CodeLines, FileIcon, LockIcon, MarkdownView, ScrollFrame } from '@eshelton328/component-library-1701'
+import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView, ToolkitMarkdownBlock } from '../types.ts'
 
@@ -45,8 +46,26 @@ const readOnly = css({ display: 'inline-flex', alignItems: 'center', gap: '8', m
 const codeWidth = css({ w: '[max-content]', minW: '[100%]' })
 // D3 427:290: the file references sit on one line, two spaces apart.
 const refs = css({ display: 'flex', flexWrap: 'wrap', columnGap: '16' })
+// M2 487:161: on the phone the references run as one line of code, two spaces apart, and wrap after a "/" too.
+const refsText = css({ whiteSpace: 'pre-wrap' })
 
-function Block({ block }: { block: ToolkitMarkdownBlock }) {
+/** A path that may wrap after each "/", as Figma wraps references/ticket.md (M2 487:161). */
+function Breakable({ path }: { path: string }) {
+  const parts = path.split('/')
+  return parts.map((part, i) => (
+    // The parts of one path are in order and never move, so the index keys them.
+    <Fragment key={`${String(i)}:${part}`}>
+      {part}
+      {i < parts.length - 1 ? (
+        <>
+          /<wbr />
+        </>
+      ) : null}
+    </Fragment>
+  ))
+}
+
+function Block({ block, wrapRefs }: { block: ToolkitMarkdownBlock; wrapRefs: boolean }) {
   switch (block.type) {
     case 'title':
       return <h1>{block.text}</h1>
@@ -61,6 +80,19 @@ function Block({ block }: { block: ToolkitMarkdownBlock }) {
         </pre>
       )
     case 'code':
+      if (wrapRefs)
+        return (
+          <p className={refsText}>
+            <code>
+              {block.items.map((item, i) => (
+                <Fragment key={item}>
+                  {i > 0 ? '  ' : null}
+                  <Breakable path={item} />
+                </Fragment>
+              ))}
+            </code>
+          </p>
+        )
       return (
         <p className={refs}>
           {block.items.map((item) => (
@@ -83,9 +115,11 @@ export type ToolkitFilePreviewProps = {
   blocks: readonly ToolkitMarkdownBlock[]
   /** The file's first lines as code, each split into its syntax colours (D9 433:1583); the blocks when not set. */
   code?: Code | undefined
+  /** Lets the file references wrap as one line of text, as on the phone (M2); a row of separate paths when not set. */
+  wrapRefs?: boolean | undefined
 }
 
-export function ToolkitFilePreview({ file, meta, blocks, code }: ToolkitFilePreviewProps) {
+export function ToolkitFilePreview({ file, meta, blocks, code, wrapRefs = false }: ToolkitFilePreviewProps) {
   return (
     <section aria-label={file} className={box} data-figma="file preview">
       <div className={bar} data-figma="preview bar">
@@ -102,7 +136,7 @@ export function ToolkitFilePreview({ file, meta, blocks, code }: ToolkitFilePrev
         <div data-figma="rendered markdown">
           <MarkdownView>
             {blocks.map((block) => (
-              <Block key={blockKey(block)} block={block} />
+              <Block key={blockKey(block)} block={block} wrapRefs={wrapRefs} />
             ))}
           </MarkdownView>
         </div>

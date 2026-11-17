@@ -5,8 +5,8 @@
 // (`ToolkitItemSide`). An agent (D7) shows how it runs (`ToolkitAgentRuns`)
 // between the description and the columns, and a hook (D9) when it runs, with
 // its script as code in the preview. A workflow (D8) shows its steps by phase
-// (`ToolkitWorkflowFlow`) in the same place. On a tablet (T3) the side comes
-// under the file, full width. Props only.
+// (`ToolkitWorkflowFlow`) in the same place. On a tablet or phone (T3, M2) the
+// side comes under the file, full width. Props only.
 import { ClockIcon, Panel } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -19,6 +19,9 @@ import { ToolkitWorkflowFlow } from './ToolkitWorkflowFlow.tsx'
 // D3: the description (427:271) is 16 under the tabs and 16 over the columns (427:272); in D4 the box that says
 // when the rule loads (427:628) sits between them, 16 from each, and in D7 how the agent runs (433:526).
 const overview = css({ display: 'flex', flexDirection: 'column', gap: '16' })
+// M2: on the phone the description (487:142) is 12 over the columns (487:143), and the side (487:162) 16 under the
+// file preview, which ends 1 px under the columns' foot; 12 apart keeps each within 3 px of Figma's.
+const phoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' })
 const description = css({ textStyle: 'body', color: 'fg.muted' })
 // D4 427:628: a box with the needs-you border and tint, as wide as its line: the clock icon, "Loads when" in the
 // needs-you colour and the condition in mono, 10 apart. The Panel pads it 12 above and below, where Figma has 10
@@ -44,6 +47,13 @@ const descriptionLayers: Readonly<Record<string, string>> = {
 }
 // T3: the description of writer on a tablet (487:78).
 const pageDescriptionLayers: Readonly<Record<string, string>> = { 'skills/writer/': '487:78' }
+// M2: the description of writer on the phone (487:142).
+const phoneDescriptionLayers: Readonly<Record<string, string>> = { 'skills/writer/': '487:142' }
+const descriptionLayersOf = {
+  desktop: descriptionLayers,
+  tablet: pageDescriptionLayers,
+  phone: phoneDescriptionLayers,
+}
 // D3 427:272: the preview (560) and the side (364) are 24 apart. No size token has either width, so the columns
 // share the row 3 to 2 (LIBRARY_GAPS.md, Item overview columns).
 const columns = css({ display: 'grid', gridTemplateColumns: '[3fr 2fr]', columnGap: '24', alignItems: 'start' })
@@ -73,10 +83,12 @@ export function ToolkitItemOverview({
 }: ToolkitItemOverviewProps) {
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   const desktop = layout === 'desktop'
-  const sideColumn = side ? <ToolkitItemSide detail={detail} onTabChange={onTabChange} /> : null
+  const sideColumn = side ? (
+    <ToolkitItemSide detail={detail} onTabChange={onTabChange} compact={layout === 'phone'} />
+  ) : null
   return (
-    <div className={overview}>
-      <p className={description} data-figma={(desktop ? descriptionLayers : pageDescriptionLayers)[detail.path]}>
+    <div className={layout === 'phone' ? phoneOverview : overview}>
+      <p className={description} data-figma={descriptionLayersOf[layout][detail.path]}>
         {detail.description}
       </p>
       {detail.loads === undefined ? null : (
@@ -104,6 +116,7 @@ export function ToolkitItemOverview({
           meta={detail.preview.meta}
           blocks={detail.preview.blocks}
           code={detail.preview.code}
+          wrapRefs={layout === 'phone'}
         />
         {desktop ? sideColumn : null}
       </div>

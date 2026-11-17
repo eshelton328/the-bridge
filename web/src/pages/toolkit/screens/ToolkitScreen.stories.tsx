@@ -182,3 +182,19 @@ export const SkillOpenTablet: Story = {
     await expect(within(item).getByText('5 cases · open the Evals tab')).toBeVisible()
   },
 }
+
+export const SkillOpenPhone: Story = {
+  name: 'M2: a skill open on the phone, in place of the list',
+  args: { data: toolkitStates.skillOpenPhone.data, ui: toolkitStates.skillOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back, with icon buttons. The play
+  // test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the phone's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writer' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'SKILL.md' })).toBeVisible()
+  },
+}

@@ -1,11 +1,13 @@
 // An open item's path row (D3 457:45): the path badge, whose copy button
-// copies the path, then when the item changed in mono. Props only.
+// copies the path, then when the item changed in mono. On the phone (M2
+// 457:188) the row holds only the badge, and when it changed moves to the
+// meta row (`ToolkitItemChanged`). Props only.
 import { CopyIcon, FileIcon, FolderIcon, PathBadge } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 
 // D3 457:45: the path badge, then when it changed in mono, 10 apart.
 const pathRow = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '10' })
-const changedText = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap' })
 // D3 457:50: the copy icon is a bare 12 px icon inside the badge; the library's smallest button is 24 high.
 const copy = css({
   display: 'inline-flex',
@@ -25,11 +27,13 @@ export type ToolkitItemPathProps = {
   changed: string
   /** Called with the path when its copy button is pressed. */
   onCopyPath?: ((path: string) => void) | undefined
+  /** The row's Figma layer: `path row` (D3, T3); `null` on the phone (M2), whose badge has no row around it. */
+  layer?: string | null | undefined
 }
 
-export function ToolkitItemPath({ location, changed, onCopyPath }: ToolkitItemPathProps) {
+export function ToolkitItemPath({ location, changed, onCopyPath, layer = 'path row' }: ToolkitItemPathProps) {
   return (
-    <div className={pathRow} data-figma="path row">
+    <div className={pathRow} data-figma={layer ?? undefined}>
       <div data-figma="path badge">
         <PathBadge
           path={location}
@@ -49,7 +53,7 @@ export function ToolkitItemPath({ location, changed, onCopyPath }: ToolkitItemPa
           }
         />
       </div>
-      {changed === '' ? null : <span className={changedText}>{changed}</span>}
+      <ToolkitItemChanged changed={changed} />
     </div>
   )
 }
