@@ -32,6 +32,8 @@ const fill = css({ flex: '1' })
 const frame = css({ flex: '1', minH: '[0]' })
 // The started task and the chat, 16 apart, as the stack around them was.
 const bodyGap = css({ gap: '16' })
+// A long reply grows the reply box; past half the window it scrolls inside, so Send stays in reach.
+const reply = css({ maxH: '[50vh]', overflowY: 'auto' })
 // The reply box is an unnamed layer: 346:6416 in T5, 346:10886 in M8.
 const replyLayer = { desktop: undefined, tablet: '346:6416', phone: '346:10886' } as const satisfies Record<
   Viewport,
@@ -138,7 +140,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
         bodyClassName={bodyGap}
         header={layout === 'desktop' ? undefined : <CompactNav onBack={onBack} />}
         footer={
-          <div data-figma={replyLayer[layout]}>
+          <div className={reply} data-figma={replyLayer[layout]}>
             <Composer
               label="Reply"
               placeholder={detail.reply}

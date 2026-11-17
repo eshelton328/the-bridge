@@ -1164,3 +1164,52 @@ describe('the sticky bars (d-107)', () => {
       await view.unmount()
     })
 })
+
+describe('a long draft (d-107)', () => {
+  for (const c of [
+    {
+      name: 'the discussion panel on the desktop (D15)',
+      state: 'changeProposed',
+      w: 1512,
+      h: 982,
+      layer: 'composer · discussion',
+    },
+    { name: 'the started task on the desktop (D5)', state: 'running', w: 1512, h: 982, layer: undefined },
+    {
+      name: 'the discussion page on the phone (M19)',
+      state: 'changeProposedPage',
+      w: 390,
+      h: 844,
+      layer: 'composer · discussion',
+    },
+  ] as const)
+    it(`keeps Send in reach of the wheel when the reply box holds 70 lines: ${c.name}`, async () => {
+      await page.viewport(c.w, c.h)
+      const view = await renderInbox(c.state).rendered
+      onTestFinished(view.unmount)
+      await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+      const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+      if (!(root instanceof HTMLElement)) throw new Error('no root')
+      root.style.height = '100%'
+      const field = root.querySelector(c.layer === undefined ? 'textarea' : `[data-figma="${c.layer}"] textarea`)
+      if (!(field instanceof HTMLTextAreaElement)) throw new Error('no reply box')
+      await userEvent.fill(field, Array.from({ length: 70 }, (_, i) => `line ${String(i + 1)}`).join('\n'))
+      // The box grows to its text a frame or more after the input: let the layout settle before measuring.
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      // The element around the Composer: the reply layer, which caps the box.
+      const box = field.closest('.composer__root')?.parentElement ?? field
+      // The reply box stays inside the window; past its cap it scrolls, and scrolled to its end Send is in view.
+      expect(box.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight)
+      expect(box.getBoundingClientRect().top).toBeGreaterThanOrEqual(0)
+      box.scrollTop = box.scrollHeight
+      const send = [...box.querySelectorAll('button')].at(-1)
+      if (send === undefined) throw new Error('no Send')
+      await expect
+        .poll(
+          () =>
+            send.getBoundingClientRect().bottom <= Math.min(window.innerHeight, box.getBoundingClientRect().bottom) + 1,
+        )
+        .toBe(true)
+      expect(send.getBoundingClientRect().top).toBeGreaterThanOrEqual(box.getBoundingClientRect().top)
+    })
+})
