@@ -107,9 +107,11 @@ export function checkText(
   // same string need two, so one DOM string cannot stand for a heading and
   // a list row at once. Longest strings claim first, so a long string takes
   // its run before a shorter string inside it. A run that another element
-  // covers in the render counts only for a layer that Figma covers too
-  // (such layers try the covered runs first, and claim after the others of
-  // their length).
+  // covers in the render counts only for a layer that Figma covers too.
+  // Such a layer claims covered runs first, then covered and open runs,
+  // covered fragments first; it takes an open run that is the whole text of
+  // a layer still to claim only when enough such runs are left for those
+  // layers, so it never takes another layer's only open occurrence.
   const figmaCovered = coveredInFigma(ref.layers)
   const pool = page.visibleTexts.map((v) => collapse(v.text))
   const covered = page.visibleTexts.map((v) => v.covered)
@@ -121,13 +123,20 @@ export function checkText(
     (a, b) => b.text.length - a.text.length || Number(figmaCovered.has(a.id)) - Number(figmaCovered.has(b.id)),
   )
   const unseen = new Map<(typeof needed)[number], boolean>()
-  for (const t of order) {
-    const seen = figmaCovered.has(t.id)
-      ? claimRun(t.text, pool, under) || claimRun(t.text, pool, any)
-      : claimRun(t.text, pool, open)
+  order.forEach((t, i) => {
+    let seen: boolean
+    if (figmaCovered.has(t.id)) {
+      const waiting = order.slice(i + 1).filter((w) => !figmaCovered.has(w.id))
+      const spare = (j: number) => {
+        const v = pool[j] ?? ''
+        const wanted = waiting.filter((w) => w.text === v).length
+        return wanted === 0 || pool.filter((p, k) => p === v && open(k)).length > wanted
+      }
+      seen = claimRun(t.text, pool, under) || claimRun(t.text, pool, (j) => under(j) || spare(j), under)
+    } else seen = claimRun(t.text, pool, open)
     // Not seen; say so when the render has it under another element.
     if (!seen) unseen.set(t, claimRun(t.text, [...pool], any))
-  }
+  })
   const notVisible = needed.flatMap((t) => {
     const covered = unseen.get(t)
     if (covered === undefined) return []
@@ -160,12 +169,18 @@ const claimed = '\u0000'
 
 /**
  * Finds one unclaimed occurrence of `s` in the visible runs that `usable`
- * accepts (by index) and claims it, so no other Figma layer can use it: a
+ * accepts (by index), among equal fragments the `preferred` ones first, and
+ * claims it, so no other Figma layer can use it: a
  * short string must be a whole run, a long one may be part of a run or
  * split over several runs (each part of it, the rest punctuation). Returns
  * false when no occurrence is left.
  */
-function claimRun(s: string, pool: string[], usable: (j: number) => boolean): boolean {
+function claimRun(
+  s: string,
+  pool: string[],
+  usable: (j: number) => boolean,
+  preferred: (j: number) => boolean = () => false,
+): boolean {
   if (s.length <= shortLength) {
     const i = pool.findIndex((v, j) => v === s && usable(j))
     if (i >= 0) pool[i] = claimed
@@ -181,7 +196,7 @@ function claimRun(s: string, pool: string[], usable: (j: number) => boolean): bo
   const parts = pool
     .map((v, j) => ({ v, j }))
     .filter(({ v, j }) => usable(j) && v.length > 0 && !v.includes(claimed) && s.includes(v))
-    .sort((a, b) => b.v.length - a.v.length)
+    .sort((a, b) => b.v.length - a.v.length || Number(preferred(b.j)) - Number(preferred(a.j)))
   for (const { v, j } of parts)
     if (rest.includes(v)) {
       rest = rest.replace(v, ' ')

@@ -196,3 +196,28 @@ void test('only a later layer that is not an ancestor or descendant covers a tex
   assert.deepEqual([...coveredInFigma([at('0', 'backdrop', 'rounded-rectangle', ''), ...layers])], [])
   assert.deepEqual([...coveredInFigma([...layers, at('8', 'menu', 'frame', '', 400)])], [])
 })
+
+void test('a covered string that needs open fragments never takes the only open occurrence another layer needs', () => {
+  // The covered prompt can use the open "Read the plan." and either
+  // "Write the tickets."; the uncovered layer can use only the open one.
+  const prompt = layer('t', 'Read the plan. Write the tickets.', 40)
+  const tickets = layer('w', 'Write the tickets.', 200)
+  const runs = [run('Write the tickets.'), run('Read the plan.'), run('Write the tickets.', true)]
+  const measure = page(['Write the tickets.', 'Read the plan.', 'Write the tickets.'], { visibleTexts: runs })
+  const r = checkText(ref([prompt, menu(0), tickets]), none, measure)
+  assert.deepEqual([r.ok, r.notVisible], [true, []])
+})
+
+void test('a covered long string claims its open runs before a shorter string inside them', () => {
+  // Inbox D01: the prompt under its fade, split into open runs, and the
+  // source link "increment-1.md", which is also inside the prompt's runs.
+  const prompt = layer('t', 'Read f-005-the-bridge/increment-1.md and write one ticket.', 40)
+  const link = layer('l', 'increment-1.md', 300)
+  const runs = [run('Read f-005-the-bridge/'), run('increment-1.md and write one ticket.'), run('increment-1.md')]
+  const measure = page(
+    runs.map((r) => r.text),
+    { visibleTexts: runs },
+  )
+  const r = checkText(ref([prompt, menu(0), link]), none, measure)
+  assert.deepEqual([r.ok, r.notVisible], [true, []])
+})
