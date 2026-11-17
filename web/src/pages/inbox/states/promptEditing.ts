@@ -17,7 +17,7 @@ export const promptEditing = {
       ...base,
       prompt: {
         text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.',
-        suggested: base.prompt.text,
+        suggested: { text: base.prompt.text, long: base.prompt.long },
         long: false,
         state: 'suggested',
       },

@@ -281,6 +281,14 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Write one ticket per screen.')).not.toBeInTheDocument()
   })
 
+  it('ends the long suggestion that Reset brings back with Read the whole prompt', async () => {
+    await tablet('promptEditingPage')
+    await page.getByRole('button', { name: 'Reset' }).click()
+    await page.getByRole('button', { name: 'Done' }).click()
+    await expect.element(page.getByText('Edited')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('link', { name: 'Read the whole prompt' })).toBeVisible()
+  })
+
   it('opens and closes the Run in picker with Change', async () => {
     await tablet('taskPage')
     const picker = () => page.getByRole('dialog', { name: 'Run in' })

@@ -80,10 +80,12 @@ export function PromptSection({
   onEditingChange,
 }: PromptSectionProps) {
   // The prompt as Erik left it; it counts as edited while it differs from the suggestion, which Reset brings back.
-  const suggested = prompt.suggested ?? prompt.text
+  const suggested = prompt.suggested ?? { text: prompt.text, long: prompt.long }
   const current = drafts?.values.prompt ?? prompt.text
-  const edited = current !== suggested
-  const readMore = prompt.long ? (
+  const edited = current !== suggested.text
+  // The suggestion keeps its own length after Reset; any other text is as long as the state's prompt.
+  const long = current === suggested.text ? suggested.long : prompt.long
+  const readMore = long ? (
     <a className={more} href="#prompt">
       Read the whole prompt
       <ChevronRightIcon size="12" />
@@ -102,7 +104,7 @@ export function PromptSection({
               size="sm"
               disabled={!edited}
               onClick={() => {
-                drafts?.onChange('prompt', suggested)
+                drafts?.onChange('prompt', suggested.text)
               }}
             >
               <ResetIcon />

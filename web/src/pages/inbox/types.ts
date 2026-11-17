@@ -185,11 +185,13 @@ const InboxNextStep = InboxDetailHead.extend({
    * `suggested` has Reset and Edit; `sent` (started) and `notRun` (removed
    * before it ran) are read-only. `change` is the line under a prompt that
    * a discussion changed, with Undo. `suggested` is the prompt as it was
-   * suggested when `text` is Erik's edit of it; Reset brings it back.
+   * suggested, and whether it is long, when `text` is Erik's edit of it;
+   * Reset brings it back. `long` is about `text`: it ends with "Read the
+   * whole prompt".
    */
   prompt: z.object({
     text: z.string(),
-    suggested: z.string().optional(),
+    suggested: z.object({ text: z.string(), long: z.boolean() }).optional(),
     long: z.boolean(),
     state: z.enum(['suggested', 'sent', 'notRun']),
     change: z.object({ line: z.string(), undo: z.string() }).optional(),
