@@ -52,16 +52,18 @@ export type RunningDetailProps = {
   onBack?: (() => void) | undefined
   /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** View task on the desktop: closes a chat that Reply here opened and shows its task again. */
+  onViewTask?: (() => void) | undefined
 }
 
-function DesktopHeader({ detail }: { detail: InboxRunning }) {
+function DesktopHeader({ detail, onViewTask }: { detail: InboxRunning; onViewTask: (() => void) | undefined }) {
   return (
     <div data-figma="started task">
       <Panel>
         <Stack gap="6">
           <Inline gap="10" align="center">
             <h1 className={title}>{detail.title}</h1>
-            <Button size="sm">
+            <Button size="sm" onClick={onViewTask}>
               View task
               <ChevronRightIcon />
             </Button>
@@ -118,12 +120,12 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
   )
 }
 
-export function RunningDetail({ detail, layout = 'desktop', onBack, drafts }: RunningDetailProps) {
+export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onViewTask }: RunningDetailProps) {
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
         {layout === 'desktop' ? (
-          <DesktopHeader detail={detail} />
+          <DesktopHeader detail={detail} onViewTask={onViewTask} />
         ) : (
           <CompactHeader detail={detail} onBack={onBack} phone={layout === 'phone'} />
         )}

@@ -83,6 +83,23 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 
+  it('returns from the chat that Reply here opens to the task, with View task or the task row, on the desktop', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('runningTask').rendered
+    const reply = () => page.getByRole('textbox', { name: 'Reply' })
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(reply()).toBeVisible()
+    await page.getByRole('button', { name: 'View task' }).click()
+    await expect.element(reply()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(reply()).toBeVisible()
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(reply()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await view.unmount()
+  })
+
   it("shows the state's query in the search field after the state changes", async () => {
     const { router, rendered } = renderInbox('nextStep')
     const view = await rendered

@@ -27,6 +27,8 @@ export type InboxDetailProps = {
   layout?: Viewport | undefined
   /** Back on a tablet or phone. */
   onBack?: (() => void) | undefined
+  /** View task in a started task's chat on the desktop; see `RunningDetail`. */
+  onViewTask?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
   /** The task has a discussion: Discuss shows in its task bar; see `DetailHead`. */
   discuss?: DiscussControl | undefined
@@ -50,6 +52,7 @@ export function InboxDetail({
   snoozeMenu,
   layout = 'desktop',
   onBack,
+  onViewTask,
   onPromptOpenChange,
   discuss,
   onUndoChange,
@@ -94,7 +97,7 @@ export function InboxDetail({
         <QuestionDetail detail={detail} layout={layout} back={back} drafts={drafts} snooze={snooze} />
       ) : null}
       {detail.kind === 'running' ? (
-        <RunningDetail detail={detail} layout={layout} onBack={onBack} drafts={drafts} />
+        <RunningDetail detail={detail} layout={layout} onBack={onBack} drafts={drafts} onViewTask={onViewTask} />
       ) : null}
     </>
   )
