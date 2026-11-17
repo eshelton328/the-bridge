@@ -1,10 +1,14 @@
 // A toolkit file rendered read-only (Figma `file preview`, D3 427:273): a
 // bar with the file's name and Read-only, over the file's blocks in the
 // library's MarkdownView. The view parses no Markdown; the state gives the
-// blocks. Props only.
-import { FileIcon, LockIcon, MarkdownView } from '@eshelton328/component-library-1701'
+// blocks. A file shown as code (a hook's script, D9 433:1572) shows the code
+// icon in the bar and its lines with their numbers in the library's
+// CodeLines. Props only.
+import { CodeIcon, CodeLines, FileIcon, LockIcon, MarkdownView, ScrollFrame } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { ToolkitMarkdownBlock } from '../types.ts'
+import type { ToolkitItemDetailView, ToolkitMarkdownBlock } from '../types.ts'
+
+type Code = NonNullable<ToolkitItemDetailView['preview']['code']>
 
 // D3 427:273: a bordered box with a bar (427:274, 37 high) over the rendered file. The library has no file preview
 // frame (LIBRARY_GAPS.md, File preview), so the box and the bar are drawn here with the Panel's tokens.
@@ -32,7 +36,13 @@ const bar = css({
   color: 'fg.muted',
 })
 const name = css({ textStyle: 'mono', color: 'fg.default' })
+// D7 433:567: text after the name, such as the file's length and what it is, in mono.
+const fileMeta = css({ textStyle: 'mono', color: 'fg.muted' })
 const readOnly = css({ display: 'inline-flex', alignItems: 'center', gap: '8', ms: 'auto', textStyle: 'small' })
+// D9 433:1583: a line longer than the box runs past its edge (line 4, 433:1595). The code keeps its full width, so
+// CodeLines itself does not scroll (its scroller takes no keyboard focus); the ScrollFrame body around it scrolls the
+// code sideways and takes the focus (d-107).
+const codeWidth = css({ w: '[max-content]', minW: '[100%]' })
 // D3 427:290: the file references sit on one line, two spaces apart.
 const refs = css({ display: 'flex', flexWrap: 'wrap', columnGap: '16' })
 
@@ -68,27 +78,44 @@ const blockKey = (block: ToolkitMarkdownBlock) =>
 export type ToolkitFilePreviewProps = {
   /** The file's name, such as "SKILL.md". */
   file: string
+  /** Text after the name, such as "137 lines · the prompt" (D7 433:567); none when not set. */
+  meta?: string | undefined
   blocks: readonly ToolkitMarkdownBlock[]
+  /** The file's first lines as code, each split into its syntax colours (D9 433:1583); the blocks when not set. */
+  code?: Code | undefined
 }
 
-export function ToolkitFilePreview({ file, blocks }: ToolkitFilePreviewProps) {
+export function ToolkitFilePreview({ file, meta, blocks, code }: ToolkitFilePreviewProps) {
   return (
     <section aria-label={file} className={box} data-figma="file preview">
       <div className={bar} data-figma="preview bar">
-        <FileIcon size="16" />
+        {/* D9 433:1574: a file shown as code has icon/code in the bar. */}
+        {code === undefined ? <FileIcon size="16" /> : <CodeIcon size="16" />}
         <span className={name}>{file}</span>
+        {meta === undefined ? null : <span className={fileMeta}>{meta}</span>}
         <span className={readOnly}>
           <LockIcon size="12" />
           Read-only
         </span>
       </div>
-      <div data-figma="rendered markdown">
-        <MarkdownView>
-          {blocks.map((block) => (
-            <Block key={blockKey(block)} block={block} />
-          ))}
-        </MarkdownView>
-      </div>
+      {code === undefined ? (
+        <div data-figma="rendered markdown">
+          <MarkdownView>
+            {blocks.map((block) => (
+              <Block key={blockKey(block)} block={block} />
+            ))}
+          </MarkdownView>
+        </div>
+      ) : (
+        // D9 433:1583: the lines 19 apart, numbered, the comments green.
+        <div data-figma="code">
+          <ScrollFrame>
+            <div className={codeWidth}>
+              <CodeLines lines={code.map((line) => line.map((piece) => piece.text).join(''))} segments={code} />
+            </div>
+          </ScrollFrame>
+        </div>
+      )}
     </section>
   )
 }

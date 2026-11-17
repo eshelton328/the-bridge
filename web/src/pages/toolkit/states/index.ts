@@ -8,6 +8,8 @@ import { toolkitList } from './toolkitList.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
 import { toolkitMap } from './toolkitMap.ts'
 import { toolkitMapTablet } from './toolkitMapTablet.ts'
+import { agentOpen } from './agentOpen.ts'
+import { hookOpen } from './hookOpen.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -17,4 +19,6 @@ export const toolkitStates = {
   toolkitMapTablet,
   skillOpen,
   ruleOpen,
+  agentOpen,
+  hookOpen,
 }

@@ -102,3 +102,46 @@ export const RuleOpen: Story = {
     await expect(canvas.getByRole('heading', { name: /Hooks/ })).toBeInTheDocument()
   },
 }
+
+export const AgentOpen: Story = {
+  name: 'D7: an agent open beside the list',
+  args: { data: toolkitStates.agentOpen.data, ui: toolkitStates.agentOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writing-reviewer' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/agents/writing-reviewer.md')).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'How it runs' })
+    await expect(within(runs).getByText('opus')).toBeVisible()
+    await expect(within(runs).getByText('codex_effort; default model')).toBeVisible()
+    await expect(within(runs).getByText('Bash, Read, Grep, Glob')).toBeVisible()
+    await expect(within(item).getByText('137 lines · the prompt')).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 1, name: 'Prompt' })).toBeVisible()
+    // The agent's row is the open one, and the Skills group is closed.
+    await expect(canvas.getByRole('button', { name: 'writing-reviewer', current: true })).toBeVisible()
+    await expect(canvas.queryByText('skills/writer/')).toBeNull()
+  },
+}
+
+export const HookOpen: Story = {
+  name: 'D9: a hook open beside the list',
+  args: { data: toolkitStates.hookOpen.data, ui: toolkitStates.hookOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'commit-msg' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/hooks/commit-msg')).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'When it runs' })
+    await expect(within(runs).getByText('git runs it on every commit')).toBeVisible()
+    await expect(within(runs).getByText('Enabled')).toBeVisible()
+    await expect(within(runs).getByText('core.hooksPath = toolkit/hooks, set by link.sh')).toBeVisible()
+    await expect(within(runs).getByText('test-commit-msg')).toBeVisible()
+    // The preview is code, not markdown: the script's lines, with no rendered title.
+    await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
+    await expect(within(item).getByText('#!/usr/bin/env bash')).toBeVisible()
+    await expect(within(item).getByText('MAX=72')).toBeVisible()
+    await expect(within(item).queryByRole('heading', { level: 1 })).toBeNull()
+    await expect(within(item).getByText('97 lines')).toBeVisible()
+    // The hook's row is the open one, and the list shows no Skills group.
+    await expect(canvas.getByRole('button', { name: 'commit-msg', current: true })).toBeInTheDocument()
+    await expect(canvas.queryByText('skills/writer/')).toBeNull()
+  },
+}

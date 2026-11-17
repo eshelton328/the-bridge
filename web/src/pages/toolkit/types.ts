@@ -69,12 +69,17 @@ export type ToolkitMapView = z.infer<typeof ToolkitMapView>
 
 /** One line of an open item's file summary (D3 `file · …`): a file, a folder with its count, or a folder's files. */
 const ToolkitFileLine = z.object({
-  /** A file or a folder; a folder's line shows its file count after the name. */
-  type: z.enum(['file', 'folder']),
+  /**
+   * A file, a folder, or a file shown as code, such as a hook's script (D9 `file · commit-msg` 433:1633, with
+   * icon/code); a folder's line shows its file count after the name.
+   */
+  type: z.enum(['file', 'folder', 'code']),
   /** The names on the line: one file or folder, or several files of a folder side by side, such as "chat.md". */
   names: z.array(z.string()).min(1),
   /** The number of files in a folder. */
   count: z.number().int().nonnegative().optional(),
+  /** Text after a file's name, such as "137 lines" (D7 433:630). */
+  meta: z.string().optional(),
 })
 
 /**
@@ -91,6 +96,31 @@ export const ToolkitMarkdownBlock = z.discriminatedUnion('type', [
 ])
 export type ToolkitMarkdownBlock = z.infer<typeof ToolkitMarkdownBlock>
 
+/**
+ * One card of an agent's How it runs section (D7 `fact · Claude` 433:529) or a hook's When it runs section (D9
+ * `fact · Event` 433:1541): its icon and label, the value, and a caption under it, such as Claude, opus and "model".
+ * The icon names what the card is about: for an agent the model (Claude, Codex), the tools or its own context; for a
+ * hook the git event, whether it is on, the rule it enforces and its test.
+ */
+const ToolkitFact = z.object({
+  icon: z.enum(['model', 'tools', 'context', 'event', 'state', 'rule', 'test']),
+  label: z.string(),
+  value: z.string(),
+  caption: z.string(),
+  /**
+   * Whether the value is a state that is on or off, such as a hook's "Enabled" (D9 `badge · Enabled · icon` 479:21):
+   * the value is then drawn as a badge, on in the done colour with a check. None for a card that shows its value as
+   * text.
+   */
+  status: z.enum(['on', 'off']).optional(),
+})
+
+/** One piece of a line of code in the preview (D9 433:1586), with the kind that picks its syntax colour. */
+const ToolkitCodeSegment = z.object({
+  text: z.string(),
+  kind: z.enum(['keyword', 'string', 'comment', 'number', 'function']).optional(),
+})
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -98,7 +128,7 @@ const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: ToolkitKind })
 
 /**
- * An open item (D3, a rule in D4): what the page shows beside the list for one item. Its kind, name and link counts come from
+ * An open item (D3, a rule in D4, an agent in D7, a hook in D9): what the page shows beside the list for one item. Its kind, name and link counts come from
  * the list's `ToolkitItemView` with the same path.
  */
 export const ToolkitItemDetailView = z.object({
@@ -115,9 +145,24 @@ export const ToolkitItemDetailView = z.object({
    * condition, such as "a file under toolkit/skills/** or skills/** changes". None for an item that is not a rule.
    */
   loads: z.object({ label: z.string(), when: z.string() }).optional(),
+  /**
+   * How an agent runs, from its frontmatter (D7 `kind section · agent` 433:526), or when a hook runs (D9
+   * `kind section · hook` 433:1538): the section's label ("How it runs", "When it runs") and its cards, all the same
+   * size. None for an item that is not an agent or a hook.
+   */
+  runs: z.object({ label: z.string(), facts: z.array(ToolkitFact).min(1) }).optional(),
   tabs: z.array(ToolkitItemTab).min(1),
-  /** The item's main file, rendered read-only: its name and its blocks. */
-  preview: z.object({ file: z.string(), blocks: z.array(ToolkitMarkdownBlock) }),
+  /**
+   * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
+   * prompt"), and its blocks. A file shown as code (a hook's script, D9 `code` 433:1583) has `code` instead: its
+   * first lines, each split into its syntax colours, with the line numbers beside them; its `blocks` are then empty.
+   */
+  preview: z.object({
+    file: z.string(),
+    meta: z.string().optional(),
+    blocks: z.array(ToolkitMarkdownBlock),
+    code: z.array(z.array(ToolkitCodeSegment)).optional(),
+  }),
   /**
    * The heading of the items that use this one, such as "Used in workflows", and those items. None when the side
    * column does not show it, as for the rule in D4.
