@@ -101,6 +101,8 @@ export function RunInCard({ runIn, pickerOpen, onPickerOpenChange, layout = 'des
             open={pickerOpen}
             onOpenChange={onPickerOpenChange}
             width="picker"
+            // Figma fills the picker with #17213a (D3 346:1234): `surface.raised`.
+            surface="raised"
             note={runIn.picker.note}
             placement="bottom-end"
             flip={false}

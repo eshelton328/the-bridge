@@ -223,6 +223,8 @@ export function ListTools({
         <Popover
           trigger={filter}
           width="filter"
+          // Figma fills the Filter menu with #17213a (D4 346:1737): `surface.raised`.
+          surface="raised"
           data-figma={filterOpen ? 'filter popover' : undefined}
           label="Filter the inbox"
           open={filterOpen}

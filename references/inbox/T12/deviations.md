@@ -2,7 +2,7 @@
 
 What still differs from Figma T12 · Edit the prompt, choose where it runs (the prompt in its editor and the Run in picker open on the task page, `promptEditingPage`, D3 `promptEditing` with T2's notes), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.9, #110 and #111), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -60,14 +60,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
   prompt (346:8169); `exceptions.json` excepts that string, and the
   story checks the editor's text.
 - **Run in picker.** As in D03: `OptionList size="sm"` rows in the
-  picker make it 5 px taller (`run in picker` h +5, 9 before beta.5's
-  20 px pills), within the
-  library's own row and group heights; it opens under Change
-  (`placement="bottom-end"`), 4 px to the left of Figma's (`run in
-  picker` x -4). Change now has Figma's Medium 12 label, and the offset
-  did not move with it. Its search field sets the text and
+  picker make it 5 px taller (`run in picker` h +5, 9 before beta.5's 20
+  px pills), within the library's own row and group heights; it opens
+  under Change (`placement="bottom-end"`), 4 px to the left of Figma's
+  (`run in picker` x -4). Change now has Figma's Medium 12 label, and
+  the offset did not move with it. Its search field sets the text and
   placeholder in `bodySm` (13 px, `SearchField textSize="sm"`), as
-  Figma's 13 px placeholder.
+  Figma's 13 px placeholder. Since beta.9 it is `Popover
+  surface="raised"`: an opaque `surface.raised` fill (#17213a), as Figma
+  fills it (D3 346:1234), so the page no longer shows through it.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
@@ -75,6 +76,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12,
   and Start takes `textSize="smStrong"` (`labelSmStrong`, SemiBold
   13/16), Figma's SemiBold 13 (d-100). The labels match Figma's.
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) gives the
+  Run in picker an opaque fill: `Popover surface="raised"`
+  (`surface.raised`, #17213a, Figma's; was `surface.overlay`, alpha
+  0.98). No layer of this frame moved.
 
 ## Second review
 
@@ -83,7 +88,7 @@ blind to how it was built (2026-11-17). Each finding, fixed or with why
 it stays:
 
 - The prompt editor not focused (F1, P1): fixed. The story focuses the editor after its checks, as Erik sees it while he edits, and checks that the Run in picker stays open; the render shows `TextArea`'s focused border (`border.focus`). Playwright hides the caret. The review saw Figma's focused border heavier than the library's 1 px one. Library gap: Styles that differ from Figma.
-- The picker's search placeholder "Search workspaces and chats" and its footer note larger and lighter (F2): stays. `SearchField` drew the placeholder in `body` (14) against Figma's 13 (fixed by beta.5: `SearchField textSize="sm"` sets it in `bodySm`, 13 px); its colour stays `fg.subtle` by d-055; the note is the popover's `small` note in `fg.muted`, the role Figma's #4a5675 has on `surface.overlay` (library gap: Styles that differ from Figma).
+- The picker's search placeholder "Search workspaces and chats" and its footer note larger and lighter (F2): stays. `SearchField` drew the placeholder in `body` (14) against Figma's 13 (fixed by beta.5: `SearchField textSize="sm"` sets it in `bodySm`, 13 px); its colour stays `fg.subtle` by d-055; the note is the popover's `small` note in `fg.muted`; Figma's #4a5675 is `fg.subtle`'s role, and `fg.subtle` is not for `surface.raised`, the picker's fill since beta.9 (d-055; library gap: Styles that differ from Figma).
 - Black shapes and a stray text line over the Figma side: a defect of the side-by-side picture, not of the reference or the render. See below.
 
 ## Side-by-side image

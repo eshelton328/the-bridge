@@ -2,7 +2,7 @@
 
 What still differs from Figma M21 · Proposed new tasks (`tasksProposedPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.8, which adds #109), each with its reason. The library gaps are in
+1.0.0-beta.8, which adds #109; updated on 2026-11-17 with library 1.0.0-beta.9, #110 and #111), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -23,7 +23,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `discussion`: x +0, y +27, w +0, h -126.
 - `message · you`: x +0, y +13, w +0, h +1.
 - `message · discussion`: x +0, y +14, w +0, h +2.
-- `proposal · CREATE 3 TASKS`: x +0, y +16, w +0, h +18.
+- `proposal · CREATE 3 TASKS`: x +0, y +16, w +0, h +2.
 - `composer · discussion`: x +0, y -6, w +0, h +3.
 
 ## Deviations
@@ -85,11 +85,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **New tasks.** As in T20: each box is `Checkbox size="compact"` with
   the meta line as its `description` (library #109, beta.8): the title
   in `bodySm` (13/20), the meta in `monoSm` aligned with it, and the box
-  52 px high, as Figma's 402:7278 box. "Also remove this task" keeps a
-  32 px row for touch against Figma's 16, and the action row is about
-  2 px taller, so the block is 18 px taller (`proposal · CREATE 3 TASKS`
-  h +18; was h +60 with 66 px boxes). The task card above it puts the
-  block 16 px lower (`proposal · CREATE 3 TASKS` y +16).
+  52 px high, as Figma's 402:7278 box. "Also remove this task" is
+  `Checkbox size="sm" tone="discuss" labelTone="muted" inline`: a 16 px
+  row, as Figma's, with the label in `small` (12/16) in `fg.muted`
+  (#8a97b8, Figma's grey) and a 24 px press area (library beta.9; was a
+  32 px row in `fg.default`). The block's height is now within the
+  tolerance (`proposal · CREATE 3 TASKS` h +2; was h +18 with the 32 px
+  row, h +60 with 66 px boxes). The task card above it puts the block 16
+  px lower (`proposal · CREATE 3 TASKS` y +16).
 - **Page fits.** The checks render 806 px high, the screen below the
   status bar (d-102). With the 52 px new-task boxes (beta.8) the page
   fits that screen, so nothing scrolls and the rules check passes; with
@@ -106,10 +109,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   16 px, as Figma's (402:7278 is 16 × 16), and the label 13 px
   (`size="compact"`, `bodySm`), as Figma's.
 - **Button labels.** The proposal's Create 3 tasks and Discard are
-  `ProposalBlock`'s own `size="sm"` buttons in `label` (Medium 14), which
-  take no `textSize`; Figma sets them in Medium 12, so they are a little
-  wider. `Composer`'s send is larger than Figma's 26 × 26. Library gap:
-  Button label size.
+  `ProposalBlock`'s own `size="sm"` buttons in `labelXs` (Medium 12/16),
+  as Figma sets them (library beta.9). `Composer`'s send is larger than
+  Figma's 26 × 26. Library gap: Button label size.
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `discussion` x +0, y +27, w +0, h -100 (was
   x +0, y +27, w +0, h -96); `message · discussion` x +0, y +14, w +0,
@@ -131,3 +133,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   at Figma's 52 px (`Checkbox size="compact"` with `description`; was
   66): the page now fits the screen, so the rules check passes and the
   reply box sits at the bottom.
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) draws
+  `ProposalBlock`'s own buttons (Create 3 tasks, Discard) in `labelXs`
+  (Medium 12/16), as Figma's (was `label`, Medium 14/20), and puts "Also
+  remove this task" on a 16 px `inline` row in `fg.muted` (was 32 px,
+  `fg.default`). This moves one layer: `proposal · CREATE 3 TASKS` x +0,
+  y +16, w +0, h +2 (was x +0, y +16, w +0, h +18). No other layer
+  moved.

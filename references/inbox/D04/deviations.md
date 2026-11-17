@@ -6,7 +6,8 @@ library 1.0.0-beta.4, which has #97 to #103), each with its reason. The library 
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`; the checks and offsets below are from that run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.9 (#110, #111);
+the checks and offsets below are from the beta.9 run.
 
 ## Checks
 
@@ -51,15 +52,17 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Detail inset.** The column starts at x 524 instead of 520: the
   library's `Container size="detail"` pads 40 px where Figma has 36
   (d-072 tie). Within the 4 px tolerance.
-- **Filter menu.** 300 px wide (`Popover width="filter"`) with the counts
-  in `Checkbox trailing`. The rows are `Checkbox size="sm"` (beta.4,
-  #103): kind labels in `small` (12/16) and counts in `monoSm`, as Figma
-  346:1745 and 346:1747. Rows are still 34 px apart against 30 (the
-  library row's padding and its 16 px box against Figma's 14), so the menu
-  is 62 px taller (`filter popover` h +62). The project and tag labels are mono
-  (`Checkbox labelStyle="mono"`, #98). The `filter popover` key now sits
-  on the popover's box (#98); the box starts 6 px lower than Figma's
-  (y +6).
+- **Filter menu.** 300 px wide (`Popover width="filter"`) with the
+  counts in `Checkbox trailing`. The rows are `Checkbox size="sm"`
+  (beta.4, #103): kind labels in `small` (12/16) and counts in `monoSm`,
+  as Figma 346:1745 and 346:1747. Rows are still 34 px apart against 30
+  (the library row's padding and its 16 px box against Figma's 14), so
+  the menu is 62 px taller (`filter popover` h +62). The project and tag
+  labels are mono (`Checkbox labelStyle="mono"`, #98). The `filter
+  popover` key now sits on the popover's box (#98); the box starts 6 px
+  lower than Figma's (y +6). Since beta.9 it is `Popover
+  surface="raised"`: an opaque `surface.raised` fill (#17213a), as Figma
+  fills it (346:1737), so the list no longer shows through it.
 - **Section offsets.** WHY starts 6 px lower and the sections after it
   10 to 12 px lower (SOURCES y +12; RUN IN y +8), from the title block,
   the run card and the gaps. Round 3 had 28 to 40: WHY no longer wraps.
@@ -79,6 +82,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +0, y +26, w +1, h +4). The cause is #108's compact `ListRow` (56
   px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
   34).
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) gives the
+  Filter menu an opaque fill: `Popover surface="raised"`
+  (`surface.raised`, #17213a, Figma's; was `surface.overlay`, alpha
+  0.98). No layer of this frame moved.
 
 ## Second review
 
@@ -119,5 +126,6 @@ For D04 it also found:
 - The menu is 62 px taller (rows 34 px apart against 30) and its counts
   sit 9 px further right and are brighter: the `Checkbox` row height.
   The label and count sizes are fixed with `size="sm"` (beta.4).
-- The list shows faintly through the menu: `surface.overlay` has alpha
-  0.98 (library style).
+- The list showed faintly through the menu (`surface.overlay`, alpha
+  0.98): fixed by beta.9. The menu is `Popover surface="raised"`, an
+  opaque #17213a fill, as Figma's (346:1737).

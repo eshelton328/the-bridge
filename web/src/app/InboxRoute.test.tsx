@@ -601,7 +601,12 @@ describe('the Inbox list tools and task bar', () => {
 
     it('removes this task too when Also remove this task is checked', async () => {
       await tablet('tasksProposedPage')
-      await page.getByText('Also remove this task').click()
+      // The inline row's 24 px press area covers its box and label, so the click goes to the row (its `label`).
+      const label = page.getByText('Also remove this task')
+      await expect.element(label).toBeVisible()
+      const row = label.element().closest('label')
+      expect(row).not.toBeNull()
+      if (row !== null) await userEvent.click(row)
       await page.getByRole('button', { name: 'Create 3 tasks' }).click()
       await expect.element(page.getByText('Write the App frame tickets')).toBeVisible()
       await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()

@@ -6,7 +6,8 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`; the checks and offsets below are from that run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.9 (#110, #111);
+the checks and offsets below are from the beta.9 run.
 
 ## Checks
 
@@ -53,14 +54,17 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Run in picker.** It opens below Change (`placement="bottom-end"`,
   `flip={false}`, #98) and no longer scrolls: the smaller prompt editor
   moved the detail up (RUN IN and `start` now within tolerance, round 5
-  `start` y +32), so the picker starts 2.5 px lower than Figma's
-  (`run in picker` y +2.5, round 5 y +26.5), and its rows use
-  `OptionList size="sm"` (#102): `labelSm` titles and `monoSm` meta, as
-  Figma's 17 and 14 px text boxes are. It is still 5 px taller
-  (`run in picker` h +5, round 5 h +12; beta.5's 20 px pills took 4
-  off), within the library's own row and group heights; this round did
-  not measure which rows add it. The note and the last row are in full
-  view. The `run in picker` key sits on the popover's box (#98).
+  `start` y +32), so the picker starts 2.5 px lower than Figma's (`run
+  in picker` y +2.5, round 5 y +26.5), and its rows use `OptionList
+  size="sm"` (#102): `labelSm` titles and `monoSm` meta, as Figma's 17
+  and 14 px text boxes are. It is still 5 px taller (`run in picker` h
+  +5, round 5 h +12; beta.5's 20 px pills took 4 off), within the
+  library's own row and group heights; this round did not measure which
+  rows add it. The note and the last row are in full view. The `run in
+  picker` key sits on the popover's box (#98). Since beta.9 it is
+  `Popover surface="raised"`: an opaque `surface.raised` fill (#17213a),
+  as Figma fills it (346:1234), so the detail no longer shows through
+  it.
 - **Prompt line break.** Figma breaks the editor's first line after
   "toolkit/" (346:1188); the render breaks it before
   "toolkit/rules/linear.md". The read-only prompt puts a `<wbr>` after
@@ -89,6 +93,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   (was x +0, y +29, w +1, h +4). The cause is #108's compact `ListRow`
   (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
   Figma 34).
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) gives the
+  Run in picker an opaque fill: `Popover surface="raised"`
+  (`surface.raised`, #17213a, Figma's; was `surface.overlay`, alpha
+  0.98). No layer of this frame moved.
 
 ## Second review
 

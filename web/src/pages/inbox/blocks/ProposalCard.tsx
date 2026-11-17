@@ -70,9 +70,13 @@ function Body({ proposal, onCheck, created }: BodyProps) {
               />
             </div>
           ))}
-          {/* Figma sets "Also remove this task" in 12/16 (T20 402:11889): `size="sm"`. */}
+          {/* Figma sets "Also remove this task" in 12/16 in fg.muted on a 16 px row (T20 402:11889): `size="sm"`,
+              `labelTone="muted"` and `inline`. */}
           <Checkbox
             size="sm"
+            tone="discuss"
+            labelTone="muted"
+            inline
             label={proposal.alsoRemove.label}
             checked={proposal.alsoRemove.checked}
             disabled={created}
