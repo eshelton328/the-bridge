@@ -20,7 +20,15 @@ each file of a page folder is for.
   `AppTabBar` from this page; a difference goes in `deviations.md`.
   With an artifact open (`data.open`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
-  `detail` (`ArtifactDetail`); a tablet or phone frame of it comes later.
+  `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
+  `screens/ArtifactPage.tsx`, over the tab bar: the shared `DetailFrame`
+  with `ArtifactTopBar` (Back, Discuss, and Copy link and Remove as icons)
+  in its header, so the Back bar stays at the top and only the page under
+  it scrolls (d-107), then `ArtifactTitleBlock` with `ArtifactStatus`
+  (New and who found it) over the title, a framed `Thumbnail
+  shape="wide"`, Open artifact the full width, the link and `MadeIn`,
+  20 apart. Back sets `ui.artifactClosed` and the library shows (T1). The
+  tablet's discussion (T4) and a phone frame of the artifact come later.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
   as the Inbox's task and discussion (D14); Discuss toggles it. The
@@ -29,7 +37,9 @@ each file of a page folder is for.
   header stays at the top and its reply box, at most half the window high,
   at the bottom, while only the messages between them scroll (d-107).
   `app/ArtifactsStickyBars.test.tsx` scrolls D7 to D9 and checks both
-  bars stay in view, and that a long draft keeps Send in reach.
+  bars stay in view, and that a long draft keeps Send in reach; it also
+  scrolls T2's page and checks the Back bar and the tab bar stay put,
+  and that Back shows the library.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
@@ -126,7 +136,8 @@ each file of a page folder is for.
   Open in workspace buttons; it also holds what Apply shows, so its Apply
   shows D9) and D9 `changeApplied` (D8's data after Apply) and T1
   `libraryTablet` (D1's data on the tablet: "Search artifacts", two
-  shorter Earlier descriptions, and only Earlier's two cards in the frame). `library` stays first in `states/index.ts`: the app
+  shorter Earlier descriptions, and only Earlier's two cards in the frame) and T2
+  `artifactTablet` (T1's data with D2's open artifact, no discussion yet). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -139,8 +150,8 @@ each file of a page folder is for.
   open artifact's `discussion`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
-  open Add a link dialog and its picked source, the open Sort menu, and
-  the open discussion, its draft, the sent messages and what Erik did to
+  open Add a link dialog and its picked source, the open Sort menu,
+  whether Back closed the open artifact (T2), and the open discussion, its draft, the sent messages and what Erik did to
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
