@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the side chat in
 split panes (`pnpm fidelity workspaces`, 2026-11-17, after the move to
-the library's 1.0.0-beta.15), each with its reason. The
+the library's 1.0.0-beta.16; measured on 1.0.0-beta.18), each with its reason. The
 library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is D01's four panes with no menu or skill list open, and the side
 chat of bridge themes drawn inside that pane, over the chat's right side
@@ -14,10 +14,13 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   158:282, `78%` 158:390, `64%` 158:404) pass without an exception:
   `ContextMeter` draws each as one text node. `Artifacts` and `Toolkit` on
   the rail are excepted as on D01 to D04 (d-105).
-- Position: 8 of 20 layers pass (`nav rail`, `158:119`, `158:186`,
+- Position: 8 of 21 layers pass (`nav rail`, `158:119`, `158:186`,
   `158:219`, `158:326`, `158:271`, `158:313`, `158:357`). `158:168`,
   `158:224`, `158:239`, `158:518`, `158:530`, `158:531`, `158:533`,
-  `open as pane`, `158:545`, `158:347`, `158:300` and `158:378` fail.
+  `open as pane`, `158:545`, `158:347`, `158:300`, `158:380` and
+  `158:394` fail. The empty pane's list (158:378) is not measured:
+  `EmptyPane` takes no `data-figma` (Empty pane rows); its two rows
+  (158:380, 158:394) are.
 - Rules: pass.
 
 ## Deviations
@@ -57,10 +60,15 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   w -14, h +38: `Composer` always draws two rows, the text over the button
   row (78 px), where Figma draws one 40 px row with the placeholder and a
   22 px send button. It has no attach button, as Figma's has none.
-- **Shell pane (Terminal output).** No block cursor after the prompt "$",
-  as on D01.
-- **Empty pane.** `158:378` y -14.5, h +27: the OPEN IN THIS PANE rows are
-  56 px `ListRow`s (Figma 50), as on D01.
+- **Shell pane.** `TerminalLines` draws the block cursor after the
+  prompt "$", as Figma does; the terminal ends 5 px higher (`158:347`
+  h -5), as on D01.
+- **Empty pane (Empty pane rows).** `158:380` y -5.5, h +6 and `158:394`
+  h +6: the OPEN IN THIS PANE rows are `ListRow density="compact"`,
+  56 px against Figma's 50, as on D01.
+- **Sticky composer (d-107).** Only the transcript of each chat pane and
+  of the side chat scrolls; the headers and composers stay in view. The
+  frame shows the top of the scroll, so this changes no pixel here.
 - **Approval buttons.** Deny is `variant="secondaryDanger"`: red text on
   the raised fill with a border, as Figma draws it beside Always allow.
 - **Bridge themes under the side chat.** The chat's user bubble, reply

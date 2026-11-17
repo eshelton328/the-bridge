@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the folders control,
 its list and the folder picker (`pnpm fidelity workspaces`, 2026-11-17,
-against the library's 1.0.0-beta.15), each with its reason. The library gaps are in
+against the library's 1.0.0-beta.15; measured on 1.0.0-beta.18), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D03's sidebar
 layout with drift check (omni-brain, Codex) in the middle, the folder
 list open over the transcript and the folder picker in the side slot
@@ -10,16 +10,15 @@ list open over the transcript and the folder picker in the side slot
 
 ## Checks
 
-- Text: fails on one string, `78%` (128:223): the hono server row's meta
-  is cut 2 px short (see `hiddenOverflow` below). The other percentages
-  (`42%`, `23%`, `18%` and the chat header's `23%`) pass without an
+- Text: pass. The percentages (`78%`, `42%`, `23%`, `18%` and the chat
+  header's `23%`) pass without an
   exception: `ContextMeter` draws each as one text node. `Artifacts` and
   `Toolkit` (rail, d-105) are excepted as on D01 to D03.
 - Position: 16 of 35 layers pass. `128:272`, `128:273`, `128:304`,
   `128:306`, `137:2`, `137:9`, `128:330`, `128:342`, `128:349`,
   `128:355`, `128:361`, `128:367`, `128:374`, `128:381`, `128:388`,
   `128:400`, `128:410`, `128:416` and `128:424` fail.
-- Rules: `hiddenOverflow` on the hono server row's meta line (128:213).
+- Rules: pass.
 
 ## Deviations
 
@@ -63,10 +62,6 @@ list open over the transcript and the folder picker in the side slot
   paperclip.
 - **Main chat.** `128:306` h +6: the reply wraps in body text (14/20), as
   on D02 and D03. The composer has no cyan border; Figma draws it focused.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 128:213: the hono server row's meta ("Sonnet 5.5" and "78%") is
-  152 px in a 150 px column beside its `Needs you` pill, so the end of
-  "78%" is cut 2 px, as on D02 to D03.
 - **Group headers (Sidebar group header).** Figma's headers in D04 have no
   count and no needs-you dot, and the build leaves them out
   (`sidebar.counts: false`), and no drag handle (`sidebar.grip: false`).

@@ -3,10 +3,10 @@
 // where the chat would open (an edge: beside, above or below; the middle:
 // in its place), with the split icon, what the drop does, a line and the
 // hint on where to drop, and the dragged chat under them where the pointer
-// holds it (158:1034). The library has no drop zone or drag preview
-// (LIBRARY_GAPS.md): the box is a dashed `border.active` outline on the
-// faint accent tint, and the chat is its sidebar row. Props only.
-import { SplitIcon } from '@eshelton328/component-library-1701'
+// holds it (158:1034). The library has no drop zone (LIBRARY_GAPS.md): the
+// box is a dashed `border.active` outline on the faint accent tint. The
+// dragged chat is its sidebar row in the library's `DragPreview`. Props only.
+import { DragPreview, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { DropEdge, SidebarChat } from '../types.ts'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
@@ -55,9 +55,9 @@ const hints = css({
   borderStyle: 'solid',
   borderColor: 'border.default',
 })
-// The dragged chat (158:1034, 310 wide) on the opaque overlay surface, where the pointer holds it: Figma puts it
-// 111 under the hint; 40 is the largest spacing token (d-100), and 320 the nearest width token.
-const preview = css({ mt: '40', w: 'shell.popover', bg: 'surface.overlay', borderRadius: 'lg' })
+// The dragged chat (158:1034, 310 wide), where the pointer holds it: Figma puts it 111 under the hint; 40 is the
+// largest spacing token (d-100), and 320 the nearest width token.
+const preview = css({ mt: '40', w: 'shell.popover' })
 
 export type PaneDropZoneProps = {
   /** Where the chat would land. */
@@ -84,8 +84,10 @@ export function PaneDropZone({ edge, chat, title: heading, text: line, hint }: P
         </p>
       </div>
       <div className={half}>
-        <div className={preview} aria-hidden="true">
-          <SidebarChatRow chat={chat} figma="158:1034" dragged />
+        <div className={preview}>
+          <DragPreview>
+            <SidebarChatRow chat={chat} figma="158:1034" />
+          </DragPreview>
         </div>
       </div>
     </div>

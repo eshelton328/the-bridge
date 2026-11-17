@@ -1,8 +1,8 @@
 # D01 deviations
 
 What still differs from Figma after moving the Workbench onto the library's
-1.0.0-beta.15 (`pnpm fidelity workspaces`, 2026-11-17), each with its
-reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+1.0.0-beta.16, measured on 1.0.0-beta.18 (`pnpm fidelity workspaces`,
+2026-11-17), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
 
@@ -13,11 +13,13 @@ reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   context percentages pass without an exception: `ContextMeter` draws
   each as one text node. Artifacts and Toolkit on the rail are excepted
   as on the Inbox frames (d-105).
-- Position: 9 of 16 layers pass (`nav rail`, `158:2`, `105:177`,
+- Position: 9 of 17 layers pass (`nav rail`, `158:2`, `105:177`,
   `105:210`, `105:316`, `105:262`, `105:304`, `105:347`, `105:421`);
-  `150:2`, `105:215`, `105:230`, `105:337`, `105:291`, `105:368` and
-  `105:406` fail. Move to workspace's list (105:473) is no longer
-  measured (Submenu data attributes).
+  `150:2`, `105:215`, `105:230`, `105:337`, `105:291`, `105:370`,
+  `105:384` and `105:406` fail. Move to workspace's list (105:473) and
+  the empty pane's list (105:368) are not measured, as their library
+  parts take no `data-figma` (Submenu data attributes, Empty pane rows);
+  the list's two rows (105:370, 105:384) are.
 - Rules: pass.
 
 ## Deviations
@@ -48,27 +50,32 @@ reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   move action's `submenu`: 200 wide, to the right of the row at its top,
   with the-bridge highlighted, as in Figma. Its box takes no
   `data-figma`, so the position check does not measure it.
-- **Skill list (Skill picker).** `105:406` y -32.5, w +80, h +29: the
-  popover is 240 wide (`width="sm"`, the narrowest; Figma 160), and its
-  `OptionList` rows are 50 px against Figma's 44, so the box is 202 high
-  against 173. It opens 4 px above the composer (Figma 10), which is
-  7 px taller than Figma's, so its top is at y 159 and covers the Read
-  f-005-the-bridge/requirements.md line (Figma y 151.5 to 167.5, clear of
-  the list). No library prop makes the rows or the box smaller, so the
-  line stays covered. The names are in `labelSm` (sans), not mono, the
-  chosen /writer has a check that Figma does not draw, and the SKILLS
-  label has no rule after it.
-- **Shell pane (Terminal output).** The lines are mono text in the status
-  colours (amber, red, green), as Figma's; there is no block cursor after
-  the prompt "$". The terminal takes the keyboard focus (`role="log"`).
-- **Empty pane.** `105:368` y -14.5, h +27: the OPEN IN THIS PANE rows are
-  `ListRow`s, 56 px against Figma's 50, so the list is taller and the
-  centred block starts higher. The start buttons are 28 px (`size="sm"`,
-  Figma 30) with 16 px kind marks (`KindMark size="16"`, Figma 14). The
-  title is `paneTitle` and the line `bodySm`; the dashed outline is
-  `border.default` (d-100: Figma's colour has no other token). The list is
-  380 wide through `shell.popoverPicker` (380, Figma's value, reused by
-  d-100). A context of 75 or more draws the meter in amber, as Figma
-  draws 78% (the limit is a pick by d-100).
+- **Skill list (Skill picker).** `105:406` y -78.5, h +75: the popover is
+  160 wide, as Figma's (`width="xs"`), and its rows show each /name in
+  mono, the highlighted /writer filled with no check (`OptionList
+  labelStyle="mono" check={false}`), as in Figma. The popover pads 10 and
+  each row 10, so the text column is about 118 px against Figma's 130,
+  and each description (`small`, 12; Figma 11) wraps to two lines. The
+  box is 248 high against 173, so its top is at y 113 and it still
+  covers the Read f-005-the-bridge/requirements.md line (Figma y 151.5
+  to 167.5, clear of the list): the text check reports it `covered`
+  (measured on 1.0.0-beta.18; at 240 wide the box was 202 high, its top
+  at y 159). No library prop makes the descriptions fit one line. The
+  SKILLS label has no rule after it.
+- **Shell pane.** `105:337` h -5: the terminal ends 5 px higher than
+  Figma's. `TerminalLines` draws the lines in mono in the git colours
+  and the block cursor after the prompt "$", as Figma does; the
+  `ScrollFrame` around it takes the keyboard focus.
+- **Empty pane (Empty pane rows).** `EmptyPane` draws the dashed box,
+  the title, the line, the start buttons and the OPEN IN THIS PANE list.
+  `105:370` y -5.5, h +6 and `105:384` h +6: the rows are
+  `ListRow density="compact"` (Figma's 13 px title and mono meta), 56 px
+  against Figma's 50. The start buttons are 28 px (`size="sm"`, Figma
+  30) with 16 px kind marks (`KindMark size="16"`, Figma 14). A context
+  of 75 or more draws the meter in amber, as Figma draws 78% (the limit
+  is a pick by d-100).
+- **Sticky composer (d-107).** Only the transcript of each chat pane
+  scrolls; the pane header and the composer stay in view. The frame
+  shows the top of the scroll, so this changes no pixel here.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.

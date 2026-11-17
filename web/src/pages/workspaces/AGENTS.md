@@ -30,17 +30,21 @@ first: it says what each file of a page folder is for.
   Maximise and the menu), `PaneMenu` (fork, side chat, subtask, Move to
   workspace with its list as the action's `submenu`, rename, close;
   compact rows, and the highlighted row and workspace from the state),
-  `ChatPane` (the transcript and the composer; only a message that starts
-  with "/" opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
-  `SkillPicker` (the skills after "/"), `ShellPane` (terminal lines) and
-  `EmptyPane` (start a chat, or open one of the workspace). D2 adds
+  `ChatPane` (the transcript in a `ScrollFrame` body and the composer in
+  its footer; only a message that starts with "/" opens the skill list,
+  and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
+  `SkillPicker` (the skills after "/": `Popover width="xs"` and a mono
+  `OptionList` with no check), `ShellPane` (the library's `TerminalLines`
+  in a `ScrollFrame`) and `EmptyPane` (the library's `EmptyPane`: start a
+  chat, or open one of the workspace). D2 adds
   `WorkspaceSidebar` (the title, the toggle, + and the groups; only a
   chat with a pane in `data.panes` can be selected),
   `SidebarGroup` (a workspace's header and chats, the drop target and the
-  dragged chat), `SidebarChatRow`, `MainChat` (the chat alone: `ChatHead`
+  dragged chat in the library's `DragPreview`), `SidebarChatRow`, `MainChat` (the chat alone: `ChatHead`
   over `ChatPane size="full"`) and `SideChatPanel`. D2b adds
   `ChatActionsMenu` (the `PaneMenu` behind the chat header's ⋯). D3 adds
-  `SubagentsPane` (the title, the count, Close and the cards),
+  `SubagentsPane` (the title, the count and Close in a `ScrollFrame`
+  header over the cards),
   `SubagentCard` (one subagent with its transcript and Stop),
   `NewChatDialog` (the New chat form in `Dialog size="lg"`), `FormField`
   (a field's capital label and hint over its control) and `SelectField`
@@ -50,11 +54,19 @@ first: it says what each file of a page folder is for.
   D5 adds `placement="pane"` to `SideChatPanel` (the side chat over its
   pane's chat, with Open as its own pane), which `ChatPane` draws as its
   `overlay`. D6 adds `PaneDropZone` (the drop zone over the part of the
-  chat alone where a dragged chat would open, with the dragged chat), which
+  chat alone where a dragged chat would open, with the dragged chat in
+  `DragPreview`), which
   `MainChat` draws as its `overlay`. D7 adds `WorkspaceTabs` (the
   `Workbench` with New chat, the sidebar toggle, which shows the
   sidebar again, when the sidebar is hidden, `WorkbenchPanes` and the status bar), which both layouts use.
   Later frames add to these blocks.
+- Sticky bars (d-107): a composer stays at the bottom and a header at the
+  top of its pane, the chat alone, the side chat and the subagents panel,
+  and only the content between them scrolls. `ChatPane` and
+  `SubagentsPane` do it with the library's `ScrollFrame`; a long draft
+  stops at `min(50vh, 50cqh)` (half the window, or half the pane: each
+  `PaneFrame` is a size container) and scrolls inside. `app/WorkspacesStickyBars.test.tsx`
+  scrolls each and checks that the bars stay in view.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
   D3's sidebar), D5 `sideChatInPane` (from `workbench`), D6 `dragIntoPane`
@@ -68,7 +80,9 @@ first: it says what each file of a page folder is for.
   which the sidebar blocks put on `data-figma`, D2's when not set; for D3
   the subagents panel, the New chat form and the sidebar's `grip`; for D4 the folders, the
   folder picker, the sidebar's `counts` and `chatActions`; for D5 the side
-  chat's `pane` and `openAsPane`, and the split's layers in `layers`; for
+  chat's `pane` and `openAsPane`, and the split's layers in `layers`
+  (`emptyRows`: the empty pane's rows, as `EmptyPane` takes no
+  `data-figma`); for
   D6 the drop zone's text, `paneDrop`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;

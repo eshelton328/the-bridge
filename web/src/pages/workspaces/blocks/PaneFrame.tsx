@@ -7,8 +7,16 @@ import { css } from '../../../../styled-system/css/index.js'
 import { PaneSlot } from '../../../errors/PaneSlot.tsx'
 import type { PaneHead } from '../types.ts'
 
-// The split's panel is a flex column; the pane fills it.
-const slot = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]', minH: '[0]' })
+// The split's panel is a flex column; the pane fills it. The pane is a size container, so a chat's long draft
+// stops at half the pane (`ChatPane`); the split sets its size, so the containment changes no layout.
+const slot = css({
+  display: 'flex',
+  flexDirection: 'column',
+  flex: '1',
+  minW: '[0]',
+  minH: '[0]',
+  containerType: 'size',
+})
 
 export type PaneFrameProps = {
   head: PaneHead

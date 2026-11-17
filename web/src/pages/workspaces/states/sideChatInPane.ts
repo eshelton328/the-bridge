@@ -39,7 +39,7 @@ export const sideChatInPane = {
         { composer: '158:313', entries: [undefined, '158:300'] },
       ],
       shell: '158:347',
-      emptyList: '158:378',
+      emptyRows: ['158:380', '158:394'],
       sideChat: '158:518',
       sideNote: '158:530',
       sideComposer: '158:545',

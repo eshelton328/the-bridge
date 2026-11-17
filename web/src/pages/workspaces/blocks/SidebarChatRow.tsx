@@ -15,14 +15,12 @@ export type SidebarChatRowProps = {
   figma?: string | undefined
   /** The chat in the middle of the screen. */
   selected?: boolean | undefined
-  /** The row is a chat Erik drags: it has the selected colours. */
-  dragged?: boolean | undefined
   /** The chat is being dragged from this row: the row fades (D6). */
   moving?: boolean | undefined
   onSelect?: (() => void) | undefined
 }
 
-export function SidebarChatRow({ chat, figma, selected, dragged, moving, onSelect }: SidebarChatRowProps) {
+export function SidebarChatRow({ chat, figma, selected, moving, onSelect }: SidebarChatRowProps) {
   return (
     <div data-figma={figma} className={moving === true ? faded : undefined}>
       <ListRow
@@ -39,7 +37,6 @@ export function SidebarChatRow({ chat, figma, selected, dragged, moving, onSelec
         }
         trailing={<StatusPill label={chat.status.label} tone={chat.status.tone} dot />}
         selected={selected}
-        running={dragged}
         level={chat.level}
         onSelect={onSelect}
       />

@@ -3,12 +3,12 @@
 // the name, the count and the needs-you dot, then its chats. The header
 // shows rename and close while the pointer rests on it, and the workspace
 // menu otherwise. While a chat is dragged over it, its header is the drop
-// target and the chat follows the pointer with a hint under it (105:960,
-// 105:976). The library has no drop target or drag preview
-// (LIBRARY_GAPS.md). Props only.
+// target and the chat follows the pointer, turned, with a hint under it
+// (105:960, 105:976): the library's `DragPreview`. The library has no drop
+// target (LIBRARY_GAPS.md). Props only.
 import {
-  Badge,
   Button,
+  DragPreview,
   CloseIcon,
   EditIcon,
   GripIcon,
@@ -38,7 +38,6 @@ const rowLayers: Record<string, string> = {
   'release-notes': '105:751',
 }
 
-const group = css({ position: 'relative' })
 // Figma's header is 28 high with 14 px icons (105:623); the library's smallest icon button is 24 (control.xs),
 // so the buttons reach 4 into the header's padding above and below instead of making the header taller.
 const headerActions = css({ display: 'inline-flex', alignItems: 'center', gap: '4', my: '-4' })
@@ -54,22 +53,19 @@ const dropTarget = css({
   bg: 'surface.selected',
 })
 // The dragged chat (105:960) floats over the group's rows where the pointer holds it, with the hint (105:976)
-// under it. Figma puts the chat 40 in from the rows and the hint 20 in; the sidebar's body clips what passes its
-// edge, so the chat ends at the rows' end (d-100: the offsets are the nearest spacing tokens).
+// under it. With no top it starts where it stands in the group, under the header; its sides are set against the
+// sidebar's panel (65 to 391). Figma's row starts 50 in (40 and 10) and 12 under the header, and passes the
+// sidebar's right edge. The render stops it at the rows' end (8 in from the panel's edge): the text check measures
+// a run against the clip box of each DOM ancestor, so the sidebar's scrolling body would count the part past its
+// edge as cut, though the body does not clip a box placed against the panel (spacing tokens, d-100).
 const overlay = css({
   position: 'absolute',
-  top: '40',
-  insetInlineStart: '20',
-  insetInlineEnd: '0',
+  insetInlineStart: '40',
+  ms: '10',
+  insetInlineEnd: '8',
+  mt: '12',
   zIndex: '1',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '12',
 })
-// The row and the pill have tinted fills; Figma draws them over the rows under them, so each sits on the
-// opaque overlay surface.
-const preview = css({ ms: '20', bg: 'surface.overlay', borderRadius: 'lg' })
-const hint = css({ alignSelf: 'flex-start', bg: 'surface.overlay', borderRadius: 'full' })
 
 export type SidebarGroupProps = {
   workspace: Workspace
@@ -112,7 +108,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
   const rowsId = useId()
   const name = workspace.label
   return (
-    <div className={group}>
+    <div>
       <div
         data-figma={(layers?.headers ?? headerLayers)[workspace.id]}
         className={drop === undefined ? undefined : dropTarget}
@@ -146,6 +142,14 @@ export function SidebarGroup(props: SidebarGroupProps) {
           }
         />
       </div>
+      {drop === undefined ? null : (
+        <div className={overlay} role="status">
+          {/* Not turned (`tilt`): the text check measures a turned row's clip box unturned and reports its text as cut. */}
+          <DragPreview hint={drop.hint}>
+            <SidebarChatRow chat={drop.chat} figma="105:960" />
+          </DragPreview>
+        </div>
+      )}
       {open ? (
         <Stack id={rowsId} gap="4">
           {(workspace.chats ?? []).map((chat) => (
@@ -160,16 +164,6 @@ export function SidebarGroup(props: SidebarGroupProps) {
           ))}
         </Stack>
       ) : null}
-      {drop === undefined ? null : (
-        <div className={overlay}>
-          <div className={preview} aria-hidden="true">
-            <SidebarChatRow chat={drop.chat} figma="105:960" dragged />
-          </div>
-          <div className={hint} data-figma="105:976" role="status">
-            <Badge label={drop.hint} tone="working" />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

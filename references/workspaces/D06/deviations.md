@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the drop zone
 (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.15), each with its reason. The library gaps are
+1.0.0-beta.18), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D02b's
 without the open menu and the side chat: hono server is dragged from the
 sidebar onto bridge themes, its row fades, and the right half of the chat
@@ -10,28 +10,24 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 
 ## Checks
 
-- Text: fails on `78%` (158:1044). `ContextMeter` draws each percentage
-  as one text node, so `26%`, `42%`, `23%` and `18%` pass. Figma has `78%`
-  twice, in the hono server row (158:760) and the dragged chat (158:1044).
-  The dragged chat shows it in full, but the hono server row's `78%` is
-  cut by 2 px (`hiddenOverflow` below; LIBRARY_GAPS.md row "Sidebar chat
-  row"), and the check wants one visible run per layer, so it reports one
-  `78%` as not visible. The fix is in the library; there is no exception
-  for it. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
+- Text: pass. `ContextMeter` draws each percentage as one text node, so
+  `26%`, `42%`, `23%` and `18%` pass, and both of Figma's `78%`, in the
+  hono server row (158:760) and the dragged chat (158:1044), show in
+  full. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
   to D05.
 - Position: 20 of 24 layers pass; `158:919`, `158:934`, `158:1048` and
   `158:1034` fail.
-- Rules: `hiddenOverflow` on the hono server row's meta line (158:750).
+- Rules: pass.
 
 ## Deviations
 
-- **Dragged chat in the drop zone (Drop zone).** `158:1034` x +36,
-  y -72, w +10: Figma draws the chat where the pointer holds it, 111 under
+- **Dragged chat in the drop zone (Drop zone).** `158:1034` x +37,
+  y -71, w +8: Figma draws the chat where the pointer holds it, 111 under
   the hint and 75 in from the zone's left edge. The largest spacing token
   is 40, so the chat sits 40 under the hint, centred in the zone (d-100).
   It is 320 wide (`shell.popover`, the nearest width token to Figma's 310).
-  Its border is the row's running border, less bright than Figma's cyan
-  border, and it has no shadow.
+  It is `DragPreview` around the chat's row: a cyan border and a shadow,
+  as Figma draws it.
 - **Hint box (Drop zone).** `158:1048` x +13, w -27: the hint is one text
   layer in Figma with wider gaps around the "·"; the render draws the same
   string in `monoSm` with single spaces, so the box is 431 wide against
@@ -51,10 +47,6 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
   same `fg.muted`.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 158:750: the hono server row's meta ("Sonnet 5.5" and "78%") is
-  152 px in a 150 px column beside its `Needs you` pill, so the end of
-  "78%" is cut 2 px, as on D02 to D04.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box, as on D02b. They are drawn in `fg.muted`,
