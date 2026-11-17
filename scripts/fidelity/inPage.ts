@@ -154,10 +154,14 @@ export function collectPage(rootSelector: string): PageMeasure {
   for (const el of roots.flatMap((r) => [r, ...r.querySelectorAll('*')])) {
     if (!(el instanceof HTMLElement) || !shown(el)) continue
     const s = getComputedStyle(el)
-    const hidden = (v: string) => v === 'hidden' || v === 'clip'
+    // A scroll box counts too: with overlay scroll bars (macOS, headless
+    // Chromium) nothing shows that its content goes on, so the viewer sees
+    // the text cut off, as in a popover held to the space beside its trigger.
+    const hidden = (v: string) => v === 'hidden' || v === 'clip' || v === 'auto' || v === 'scroll'
     const text = collapse(el.textContent)
-    // 1. Text cut off by an element that hides its overflow. A box of 1 px
-    // or less is the screen-reader-only pattern, which hides text on purpose.
+    // 1. Text cut off by an element that hides or scrolls its overflow. A box
+    // of 1 px or less is the screen-reader-only pattern, which hides text on
+    // purpose.
     const srOnly = el.clientWidth <= 1 || el.clientHeight <= 1
     if (text !== '' && !srOnly && !hasTooltip(el)) {
       if (hidden(s.overflowX) && el.scrollWidth > el.clientWidth + 1)
