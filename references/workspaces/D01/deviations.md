@@ -1,8 +1,8 @@
 # D01 deviations
 
 What still differs from Figma after moving the Workbench onto the library's
-1.0.0-beta.16 (`pnpm fidelity workspaces`, 2026-11-17), each with its
-reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+1.0.0-beta.16, measured on 1.0.0-beta.18 (`pnpm fidelity workspaces`,
+2026-11-17), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
 
@@ -50,16 +50,16 @@ reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   move action's `submenu`: 200 wide, to the right of the row at its top,
   with the-bridge highlighted, as in Figma. Its box takes no
   `data-figma`, so the position check does not measure it.
-- **Skill list (Skill picker).** `105:406` y -80.5, h +77: the popover is
+- **Skill list (Skill picker).** `105:406` y -78.5, h +75: the popover is
   160 wide, as Figma's (`width="xs"`), and its rows show each /name in
   mono, the highlighted /writer filled with no check (`OptionList
   labelStyle="mono" check={false}`), as in Figma. The popover pads 10 and
   each row 10, so the text column is about 118 px against Figma's 130,
   and each description (`small`, 12; Figma 11) wraps to two lines. The
-  box is 250 high against 173, so its top is at y 111 and it still
+  box is 248 high against 173, so its top is at y 113 and it still
   covers the Read f-005-the-bridge/requirements.md line (Figma y 151.5
   to 167.5, clear of the list): the text check reports it `covered`
-  (measured on 1.0.0-beta.16; at 240 wide the box was 202 high, its top
+  (measured on 1.0.0-beta.18; at 240 wide the box was 202 high, its top
   at y 159). No library prop makes the descriptions fit one line. The
   SKILLS label has no rule after it.
 - **Shell pane.** `105:337` h -5: the terminal ends 5 px higher than

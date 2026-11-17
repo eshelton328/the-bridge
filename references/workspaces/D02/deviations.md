@@ -2,14 +2,14 @@
 
 What still differs from Figma after the first build of Workspaces and side
 chat (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.16), each with its reason. The library gaps are
+1.0.0-beta.18), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on two percentages and two rail labels.
-  - `78%` (105:715) and `23%` (105:972): both metas are cut in the render
-    (see `hiddenOverflow` below). The other percentages (`42%`, `23%`,
+- Text: fails on one percentage and two rail labels.
+  - `23%` (105:972): the dragged row's meta is cut in the render (see
+    `hiddenOverflow` below). The other percentages (`78%`, `42%`, `23%`,
     `18%`, `26%`) pass: `ContextMeter` draws each as one text node.
   - `Artifacts` and `Toolkit` (extra): the shared `AppRail` adds them before
     More (d-105), as on D01, where they are excepted. D02 has no
@@ -17,16 +17,11 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 - Position: 22 of 27 layers pass; `105:960`, `105:874`, `105:889`,
   `105:933` and `105:935` fail. The drop hint (105:976) is not measured:
   `DragPreview` takes no `data-figma` (Drag preview).
-- Rules: `hiddenOverflow` on two row meta lines (hono server 105:705 and
-  the dragged row 105:960).
+- Rules: `hiddenOverflow` on one row meta line (the dragged row
+  105:960).
 
 ## Deviations
 
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 105:705: the hono server row's meta ("Sonnet 5.5" and "78%") is
-  152 px in a 150 px column beside its `Needs you` pill, so the end of
-  "78%" is cut 2 px. The rows are `ListRow density="compact"`, 50 px as in
-  Figma.
 - **Dragged chat (Drag preview).** `105:960` w -26.3, h -15.1: the chat
   is `DragPreview` (cyan border and shadow) around its row, not turned.
   Figma turns it about 3° and lets it pass the sidebar's right edge. The
@@ -34,7 +29,7 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   each run against the clip box of every DOM ancestor, so with `tilt` or
   past the sidebar's scrolling body it reports the row's text as cut,
   though nothing cuts it on screen. So the row is straight and ends at
-  the rows' end (266 wide). Its meta is 132 px in 110, so "23%" is cut
+  the rows' end (266 wide). Its meta is 132 px in 112, so "23%" is cut
   off (`hiddenOverflow`). It starts 50 in and 12 under the group header,
   Figma's place, in spacing tokens (40 and 10, 12; d-100).
 - **Drop hint (Drag preview).** The hint is `DragPreview`'s pill: cyan

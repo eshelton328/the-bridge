@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of one chat in the
 workbench (`pnpm fidelity workspaces`, 2026-11-17, after the move to the
-library's 1.0.0-beta.15; the same on 1.0.0-beta.16), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+library's 1.0.0-beta.15; measured on 1.0.0-beta.18), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 The screen is D02b's sidebar with no menu open, beside the library's
 `Workbench` in place of the chat alone (`ui.workbench`): the workspace tabs
 with New chat, one pane (bridge themes, D01's chat with requirements.md
@@ -11,14 +11,13 @@ sidebar has the toggle, so the tab bar has none.
 
 ## Checks
 
-- Text: fails on one percentage, `78%` (402:258): the hono server row's
-  meta is cut 2 px short (see `hiddenOverflow` below). The other
-  percentages (`26%`, `42%`, `23%`, `18%`) pass without an exception:
+- Text: pass. The percentages (`78%`, `26%`, `42%`, `23%`, `18%`) pass
+  without an exception:
   `ContextMeter` draws each as one text node. `Artifacts` and `Toolkit`
   (rail, d-105) are excepted as on D01 to D06.
 - Position: 15 of 20 layers pass; `402:471`, `402:485`, `402:510`,
   `402:515` and `402:528` fail.
-- Rules: `hiddenOverflow` on the hono server row's meta line (402:248).
+- Rules: pass.
 
 ## Deviations
 
@@ -42,10 +41,6 @@ sidebar has the toggle, so the tab bar has none.
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
   same `fg.muted`.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 402:248: the hono server row's meta ("Sonnet 5.5" and "78%") is
-  152 px in a 150 px column beside its `Needs you` pill, so the end of
-  "78%" is cut 2 px, as on D02 to D06.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box, as on D02b. They are drawn in `fg.muted`,

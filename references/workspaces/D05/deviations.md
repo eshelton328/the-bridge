@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the side chat in
 split panes (`pnpm fidelity workspaces`, 2026-11-17, after the move to
-the library's 1.0.0-beta.16), each with its reason. The
+the library's 1.0.0-beta.16; measured on 1.0.0-beta.18), each with its reason. The
 library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is D01's four panes with no menu or skill list open, and the side
 chat of bridge themes drawn inside that pane, over the chat's right side
