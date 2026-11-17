@@ -2,56 +2,39 @@
 
 What still differs from Figma after round 1 of the fidelity loop
 (`pnpm fidelity artifacts D06`, 2026-11-17, against the installed
-library 1.0.0-beta.15), each with its reason. The library gaps are in
+library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"), as D01, and on four strings the open Sort menu covers, which
-  Figma does not cover: `40m` (403:8594), `ncc-1701` (403:8726), `Claude`
-  (403:8753) and `·` (403:8754), all `notVisible` with `covered` (see
-  "Sort menu place and height"). Nothing is missing. `Toolkit` is an `extra` exception,
-  and the four descriptions that Figma cuts with an ellipsis are `missing`
-  exceptions (`exceptions.json`), as in D01 and D03.
-- Position: 6 of 24 layers pass (`header`, `found status`,
-  `button · Add a link`, `list tools`,
+- Text: passes. Nothing is missing or extra: the view switch draws its
+  icons alone (`ViewSwitch iconOnly`, library #121). The open Sort menu
+  covers no card text: `40m` (403:8594), `ncc-1701` (403:8726), `Claude`
+  (403:8753) and `·` (403:8754) are visible with no exception (see "Sort
+  menu place"). `Toolkit` is an `extra` exception, and the four
+  descriptions that Figma cuts with an ellipsis are `missing` exceptions
+  (`exceptions.json`), as in D01 and D03.
+- Position: 7 of 24 layers pass (`header`, `found status`,
+  `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as in D01.
 
 ## Deviations
 
-- **Sort menu place and height.** `menu · Sort` x -50.5, h +40. The menu
-  opens at the Sort button's start, as Figma's, but the button sits 50.9 px
-  further left (see "Search, Sort and Filter"), so the menu does too. It
-  opens 4 under the button against Figma's 8 (y -4, inside the tolerance).
-  Its choices are 56 px rows against Figma's 50, and it draws the
-  descriptions and the note in `small` (12/16) against Figma's Regular 11
-  on 14 px lines, so "Found since you last looked stays at the top." wraps
-  to two lines in the 280 px menu: the menu is 323 high against 283. The
-  Inbox's Sort menu (D09) has the same rows. Library gap "Sort menu rows
-  and note".
-  The extra height covers the cards' meta lines: the menu ends at y 469
-  against Figma's 433, and the meta lines start at y 454, so the covered
-  text check reports `40m`, `ncc-1701`, `Claude` and `·`. Placing the
-  menu at Figma's x would not uncover them: `40m` (x 743) and the Inbox
-  task lifecycle card's meta line (from x 820) lie under Figma's menu
-  width too, and `RadioMenu placement` has only `bottom-start` (Figma's
-  and the one used), `bottom-end`, `top-start` and `top-end`, with no
-  offset. No exception covers them; they go when the library gap
-  closes. Library #116's compact density is a `Menu` prop only: a
-  `Menu` row has no description line and no check, and `RadioMenu`
-  takes no `density`, so the menu keeps its 56 px rows.
-- **View switch.** `view · Grid or List` x -66.9, w +66.9, as D01: the
-  switch shows "Grid" and "List" beside its icons (the text check's extra
-  `Grid` and `List`) and is 135 px wide against 68. Library gap
-  "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
-  w +8.4, `button · Filter` x -42.4, w +4.4. The wider view switch takes
-  67 px of the search's width, so Sort and Filter sit further left; Sort
-  and Filter pad their sides more than Figma's 11 px. Library gaps
-  "Icon-only view switch" and "Sort and Filter button widths".
+- **Sort menu place.** `menu · Sort` x -17.5. The menu opens at the
+  Sort button's start, as Figma's, and Sort sits 17.4 px left of Figma's
+  (see "Search, Sort and Filter"), so the menu does too. `RadioMenu
+  density="compact"` (library #121) draws it 280 × 283 at y 150, 8 under
+  Sort, as Figma's (403:8881): its choices are 48 high and 4 apart with
+  the descriptions and the note in `smallXs` (Regular 11/16), and the
+  note fits one line. The menu ends at y 433, above the cards' meta lines
+  (y 454), so it covers none of their text.
+- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
+  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
+  their sides more than Figma's 11 px, and the search and the space
+  before the view switch share the free width equally where Figma gives
+  the search 22 px more. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
   8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
 - **Card heights.** Every card is 5.2 px shorter than Figma's 286:
@@ -92,12 +75,8 @@ library 1.0.0-beta.15), each with its reason. The library gaps are in
 
 ## Values picked (d-100)
 
-Each value with no token is recorded for the library in
-`LIBRARY_GAPS.md` and drawn with the library's part until it lands: the
-Sort menu rows 48 high (Figma's 50 on the 4 px grid; drawn 56 by
-`RadioMenu`), the menu 8 under the button (Figma's, spacing `8`; drawn 4)
-and a sans text style of 11/16 for the choices' descriptions and the note
-(Figma's 11 px type, its 14 px line on the 4 px grid; drawn in `small`
-12/16). The menu takes `RadioMenu width="sort"` (280, Figma's) with the
-heading "Sort by" in capitals and the note under a line, as the Inbox's
-Sort menu, and Sort is `pressed` while it is open (Figma's cyan border).
+The menu takes `RadioMenu width="sort"` (280, Figma's) and
+`density="compact"` with the heading "Sort by" in capitals and the note
+under a line, as the Inbox's Sort menu, and Sort is `pressed` while it is
+open (Figma's cyan border). The compact rows are 48 high, Figma's 50 on
+the 4 px grid.
