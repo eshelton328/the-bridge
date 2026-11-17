@@ -42,7 +42,7 @@ export function InboxScreen({
             onSelectItem={onSelectItem}
           />
         }
-        detail={data.detail === null ? undefined : <InboxDetail detail={data.detail} />}
+        detail={data.detail === null ? undefined : <InboxDetail detail={data.detail} ui={ui} />}
       />
     </Backdrop>
   )

@@ -3,8 +3,12 @@ import { board, type Board } from '../lib/board.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'inbox/nextStep'
+export type BoardId = 'inbox/filterOpen' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/question' | 'inbox/running'
 
 export const boards: readonly Board[] = [
+  board(inboxPage, 'filterOpen'),
   board(inboxPage, 'nextStep'),
+  board(inboxPage, 'promptEditing'),
+  board(inboxPage, 'question'),
+  board(inboxPage, 'running'),
 ]
