@@ -3,6 +3,7 @@
 // is filed in (Figma's project menu, LIBRARY_GAPS.md) and when it was
 // updated. Props only.
 import { FolderIcon, Inline, KindMark, MetaChip, RefreshIcon, Stack } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDetail } from '../types.ts'
 
@@ -14,11 +15,15 @@ const description = css({ textStyle: 'body', color: 'fg.muted', m: '0' })
 
 export type ArtifactTitleBlockProps = {
   artifact: Pick<ArtifactDetail, 'title' | 'description' | 'source' | 'sourceLabel' | 'project' | 'updated'>
+  /** The status line over the title, as the tablet draws it (T2 405:427); the desktop has it in the artifact bar. */
+  status?: ReactNode
 }
 
-export function ArtifactTitleBlock({ artifact }: ArtifactTitleBlockProps) {
+export function ArtifactTitleBlock({ artifact, status }: ArtifactTitleBlockProps) {
   return (
-    <Stack gap="6" data-figma="title block">
+    // T2 puts its rows 10 apart (405:426); D2 6.
+    <Stack gap={status === undefined ? '6' : '10'} data-figma="title block">
+      {status}
       <h2 className={title}>{artifact.title}</h2>
       <p className={description}>{artifact.description}</p>
       <Inline gap="6" align="center" wrap className={chips} data-figma="chips">

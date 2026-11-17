@@ -301,6 +301,8 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
+  /** Back closed the open artifact on a tablet (T2), and the library shows (T1). */
+  artifactClosed: z.boolean().optional(),
   /** The open artifact's discussion is open beside it, and the library list closes (D7). */
   discussOpen: z.boolean().optional(),
   /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */
