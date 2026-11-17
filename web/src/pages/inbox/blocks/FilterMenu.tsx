@@ -6,7 +6,10 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { InboxFilterMenu } from '../types.ts'
 import { MenuSection } from './MenuSection.tsx'
 
-const count = css({ textStyle: 'monoSm', color: 'fg.subtle' })
+// The popover is `surface.raised`, where text is `fg.muted` or brighter (fg.subtle is 4.39:1 there, below WCAG AA);
+// the phone's sheet keeps Figma's dimmer `fg.subtle`.
+const count = css({ textStyle: 'monoSm', color: 'fg.muted' })
+const sheetCount = css({ textStyle: 'monoSm', color: 'fg.subtle' })
 // Figma insets each row 8 at both sides (D4 346:1740, T14 346:8879: the box 8 in from the row), so the boxes line up
 // with the section labels, which the popover insets 8, and the counts end 8 before the row's end.
 const row = css({ px: '8' })
@@ -37,7 +40,7 @@ export function FilterMenu({ menu, checks, onChecksChange, sheet }: FilterMenuPr
                   onChecksChange?.(checked ? [...others, item.value] : others)
                 }}
                 labelStyle={section.mono ? 'mono' : 'text'}
-                trailing={<span className={count}>{item.count}</span>}
+                trailing={<span className={sheet ? sheetCount : count}>{item.count}</span>}
               />
             </div>
           ))}

@@ -6,7 +6,8 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`; the checks and offsets below are from that run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.9 (#110, #111);
+the checks and offsets below are from the beta.9 run.
 
 ## Checks
 
@@ -49,9 +50,8 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Proposal block.** The library's `ProposalBlock` with `ProposalDiff`,
   `ProposalSection` or checkboxes. Figma draws a spark icon before the
   eyebrow; the block has no icon slot (library gap). Its buttons are
-  `sm`, as Figma's, but their labels are the default `label` (Medium
-  14) where Figma's are Medium 12: `ProposalBlock`'s buttons take no
-  `textSize` (LIBRARY_GAPS.md, row "Button label size").
+  `sm` with `labelXs` labels (Medium 12/16), as Figma's (library
+  beta.9).
 - **Proposed update.** `ProposalBlock tone="update"` with the diff, Apply
   (primary, check), Discard and Edit first (pencil). It starts 46 px
   lower because the message and the reply above it wrap (see Messages).
@@ -74,7 +74,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   and Edit in the prompt section and Change in the run card are
   `textSize="xs"` (`labelXs`, Medium 12/16), and Start is
   `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
-  Only the proposal's buttons still differ (see Proposal block).
+  The proposal's buttons are Medium 12 too (see Proposal block).
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -92,6 +92,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +0, y +46, w +0, h +6 (was x +0, y +50, w +0, h +6). The cause is
   the discussion reply's author name in `labelXsStrong` (SemiBold
   12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) draws
+  `ProposalBlock`'s own buttons (Apply, Discard, Edit first) in
+  `labelXs` (Medium 12/16), as Figma's (was `label`, Medium 14/20). No
+  layer of this frame moved.
 
 ## Second review
 

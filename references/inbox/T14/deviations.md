@@ -2,7 +2,7 @@
 
 What still differs from Figma T14 · Filter (the Filter menu open over the list, `filterList`, T1 `list` with skill-evals cleared in the menu), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.8, #109, and no layer of this frame moved), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.8, #109, and 1.0.0-beta.9, #110 and #111, and no layer of this frame moved), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -46,7 +46,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Filter menu.** As in D04: the `Checkbox size="sm"` rows are 34 px
   against Figma's 30 (4 px grid), so the popover is 62 px taller
   (`filter popover` h +62). Its boxes apply when it closes, so the list
-  still shows the skill-evals next step, as Figma draws it.
+  still shows the skill-evals next step, as Figma draws it. Since beta.9
+  it is `Popover surface="raised"`: an opaque `surface.raised` fill
+  (#17213a), as Figma fills it (D4 346:1737), so the list no longer
+  shows through it.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
@@ -63,6 +66,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (was x +2, y +31, w -4, h +4). The cause is #108's compact `ListRow`
   (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
   Figma 34).
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) gives the
+  Filter menu an opaque fill: `Popover surface="raised"`
+  (`surface.raised`, #17213a, Figma's; was `surface.overlay`, alpha
+  0.98). No layer of this frame moved. On `surface.raised`, `fg.subtle`
+  is 4.39:1, below WCAG AA (d-055), so the counts are `fg.muted`
+  (#8a97b8), brighter than Figma's #4a5675.
 
 ## Second review
 
@@ -71,7 +80,7 @@ blind to how it was built (2026-11-17). Each finding, fixed or with why
 it stays:
 
 - The Filter menu's checkbox rows inset about 9 px against Figma's 16, and the counts about 12 px from the right against 20 (F1): fixed. Figma insets each row 8 inside the popover's 9 px padding (346:8879: the box at x 451, the count ending at 717 in a row ending at 725); `FilterMenu` now pads each row 8 (`px: '8'`), so the boxes line up with the section labels and the counts end 8 before the row. `Checkbox` has no inset of its own; D04 gets the same fix.
-- "Showing 6 of 7" a little larger and lighter (F2): stays. It is the popover's `small` note in `fg.muted`, against Figma's 11 px (346:8972, a 14 px box; `small` is 12) in #4a5675, which `fg.subtle` has but which is not for `surface.overlay` (d-055). Library gaps: Small sans text for row lines, Styles that differ from Figma.
+- "Showing 6 of 7" a little larger and lighter (F2): stays. It is the popover's `small` note in `fg.muted`, against Figma's 11 px (346:8972, a 14 px box; `small` is 12) in #4a5675, `fg.subtle`'s role; `fg.subtle` is not for `surface.raised`, the menu's fill since beta.9 (d-055). Library gaps: Small sans text for row lines, Styles that differ from Figma.
 - Black shapes, unstyled text and a white "Clear" box over the Figma side: a defect of the side-by-side picture, not of the reference or the render. See below.
 
 ## Side-by-side image

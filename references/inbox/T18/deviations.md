@@ -2,7 +2,7 @@
 
 What still differs from Figma T18 · A proposed update (`changeProposedPage`, D15 on the discussion page), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.9, #110 and #111), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -87,10 +87,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Discard takes the proposal out, Edit first opens the prompt editor
   with the change filled in, and Undo takes the change back.
   `InboxRoute.test.tsx` checks each at 756 px.
-- **Button labels.** Apply, Discard and Edit first are `ProposalBlock`'s own
-  `size="sm"` buttons in `label` (Medium 14) and take no `textSize`;
-  Figma sets them in Medium 12, so they are a little wider. Library
-  gap: Button label size.
+- **Button labels.** Apply, Discard and Edit first are `ProposalBlock`'s
+  own `size="sm"` buttons in `labelXs` (Medium 12/16), as Figma sets
+  them (library beta.9).
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108), with this branch's app changes, move these layers: `message · discussion` x +2, y +17, w +148,
   h -18 (was x +2, y +17, w +148, h -14); `proposal · UPDATE THIS
@@ -103,6 +102,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   148 px wider than Figma's 560 px column and wraps to fewer lines, see
   Discussion column), and the Figma-matching author line
   takes 4 px more off it.
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) draws
+  `ProposalBlock`'s own buttons (Apply, Discard, Edit first) in
+  `labelXs` (Medium 12/16), as Figma's (was `label`, Medium 14/20). No
+  layer of this frame moved.
 
 ## Second review, round 2
 

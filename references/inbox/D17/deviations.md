@@ -6,8 +6,8 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.8 (#109);
-the checks and offsets below are from the beta.8 run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.8 (#109) and 1.0.0-beta.9 (#110, #111);
+the checks and offsets below are from the beta.9 run.
 
 ## Checks
 
@@ -29,7 +29,7 @@ Render minus Figma, in px.
 - `model and context`: x +0, y -2, w +9.6, h +4.
 - `discussion`: x +0, y +4, w +0, h -7.
 - `message · discussion`: x +0, y +5, w -1, h +21.
-- `proposal · CREATE 3 TASKS`: x +0, y +26, w +0, h +18.
+- `proposal · CREATE 3 TASKS`: x +0, y +26, w +0, h +2.
 
 ## Deviations
 
@@ -65,24 +65,24 @@ Render minus Figma, in px.
   so it can wrap where Figma's does not (`message · discussion` h +21).
 - **Proposal block.** The library's `ProposalBlock` with `ProposalDiff`,
   `ProposalSection` or checkboxes. Figma draws a spark icon before the
-  eyebrow; the block has no icon slot (library gap). Its buttons
-  (Create 3 tasks, Discard) are `sm`, as Figma's, but their labels are
-  the default `label` (Medium 14) where Figma's are Medium 12:
-  `ProposalBlock`'s buttons take no `textSize` (LIBRARY_GAPS.md, row
-  "Button label size").
+  eyebrow; the block has no icon slot (library gap). Its buttons (Create
+  3 tasks, Discard) are `sm` with `labelXs` labels (Medium 12/16), as
+  Figma's (library beta.9).
 - **New tasks.** Each task is a bordered box (`border.default`, radius
   `lg`, 6 by 10 padding) with `Checkbox size="compact"`: the title in
   `bodySm` (13/20) and the meta line as its `description` in `monoSm`
-  (11/16), aligned with the title (library #109, beta.8). Each box is
-  52 px high, as Figma's 403:2435 (`InboxLayout.test.tsx` measures
-  it); Figma's title and meta boxes are 17 and 14 high, the library's
-  lines 20 and 16 (4 px grid), with 6 px padding against Figma's 9.
-  "Also remove this task" is a `size="sm"` `Checkbox`, whose row is
-  32 px high for touch against Figma's 16 (403:2459), and the action
-  row is about 2 px taller, so the block is 18 px taller
-  (`proposal · CREATE 3 TASKS` h +18; was h +60 with 66 px boxes). A checked box is
-  `Checkbox tone="discuss"` (violet, `accent.discuss`, #9e8fff), as
-  Figma's. Create 3 tasks counts the checked tasks.
+  (11/16), aligned with the title (library #109, beta.8). Each box is 52
+  px high, as Figma's 403:2435 (`InboxLayout.test.tsx` measures it);
+  Figma's title and meta boxes are 17 and 14 high, the library's lines
+  20 and 16 (4 px grid), with 6 px padding against Figma's 9. "Also
+  remove this task" is `Checkbox size="sm" tone="discuss"
+  labelTone="muted" inline`: a 16 px row, as Figma's 403:2459, with the
+  label in `small` (12/16) in `fg.muted` (#8a97b8, Figma's grey) and a
+  24 px press area (library beta.9; was a 32 px row in `fg.default`).
+  The block's height is now within the tolerance (`proposal · CREATE 3
+  TASKS` h +2; was h +18 with the 32 px row, h +60 with 66 px boxes). A
+  checked box is `Checkbox tone="discuss"` (violet, `accent.discuss`,
+  #9e8fff), as Figma's. Create 3 tasks counts the checked tasks.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
   px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
@@ -102,7 +102,7 @@ Render minus Figma, in px.
   and Edit in the prompt section and Change in the run card are
   `textSize="xs"` (`labelXs`, Medium 12/16), and Start is
   `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), as Figma's.
-  Only the proposal's buttons still differ (see Proposal block).
+  The proposal's buttons are Medium 12 too (see Proposal block).
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
@@ -124,6 +124,12 @@ Render minus Figma, in px.
   layer: `proposal · CREATE 3 TASKS` x +0, y +26, w +0, h +18 (was x
   +0, y +26, w +0, h +60). The cause is the new-task boxes at Figma's
   52 px (`Checkbox size="compact"` with `description`; was 66).
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) draws
+  `ProposalBlock`'s own buttons (Create 3 tasks, Discard) in `labelXs`
+  (Medium 12/16), as Figma's (was `label`, Medium 14/20), and puts "Also
+  remove this task" on a 16 px `inline` row in `fg.muted` (was 32 px,
+  `fg.default`). This moves one layer: `proposal · CREATE 3 TASKS` x +0,
+  y +26, w +0, h +2 (was x +0, y +26, w +0, h +18).
 
 ## Second review
 

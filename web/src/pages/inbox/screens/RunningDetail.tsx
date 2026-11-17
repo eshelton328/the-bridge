@@ -67,7 +67,8 @@ function DesktopHeader({ detail, onViewTask }: { detail: InboxRunning; onViewTas
               View task
               <ChevronRightIcon />
             </Button>
-            <OpenInWorkspaces size="sm" label="Open in Workspaces" />
+            {/* Figma sets the header's Open in Workspaces in Medium 12 (D5 346:2239). */}
+            <OpenInWorkspaces size="sm" textSize="xs" label="Open in Workspaces" />
           </Inline>
           <Inline gap="6" align="center">
             <KindMark kind={detail.agent} size="16" />

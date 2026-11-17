@@ -68,8 +68,8 @@ export function RunCard({ run, onOpen, onRestore }: RunCardProps) {
             {onRestore === undefined ? (
               <OpenInWorkspaces size="lg" textSize="sm" label={run.openElsewhere} />
             ) : (
-              // Figma draws Restore with Open in Workspaces' icon (D21 403:4278).
-              <Button size="lg" onClick={onRestore}>
+              // Figma draws Restore with Open in Workspaces' icon (D21 403:4278), in Medium 13 (403:4282).
+              <Button size="lg" textSize="sm" onClick={onRestore}>
                 <ExternalLinkIcon />
                 {run.openElsewhere}
               </Button>

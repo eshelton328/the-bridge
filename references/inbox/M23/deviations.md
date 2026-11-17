@@ -2,7 +2,7 @@
 
 What still differs from Figma M23 · Proposed removal (`removalProposedPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
+1.0.0-beta.7, which adds #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.9, #110 and #111), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -87,13 +87,16 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Behaviour.** Remove… opens the confirm sheet (M24), Keep it takes
   the proposal out.
 - **Button labels.** The proposal's Remove… and Keep it are
-  `ProposalBlock`'s own `size="sm"` buttons in `label` (Medium 14), which
-  take no `textSize`; Figma sets them in Medium 12, so they are a little
-  wider. `Composer`'s send is larger than Figma's 26 × 26. Library gap:
-  Button label size.
+  `ProposalBlock`'s own `size="sm"` buttons in `labelXs` (Medium 12/16),
+  as Figma sets them (library beta.9). `Composer`'s send is larger than
+  Figma's 26 × 26. Library gap: Button label size.
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `message · discussion` x +0, y +16, w +0, h
   +2 (was x +0, y +16, w +0, h +6); `proposal · REMOVE THIS TASK` x
   +0, y +18, w +0, h +6 (was x +0, y +22, w +0, h +6). The cause is
   the discussion reply's author name in `labelXsStrong` (SemiBold
   12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.
+- **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) draws
+  `ProposalBlock`'s own buttons (Remove…, Keep it) in `labelXs` (Medium
+  12/16), as Figma's (was `label`, Medium 14/20). No layer of this frame
+  moved.
