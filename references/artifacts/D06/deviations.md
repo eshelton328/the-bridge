@@ -8,7 +8,10 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 ## Checks
 
 - Text: fails on two extra strings, `Grid` and `List` (see "View
-  switch"), as D01. Nothing is missing. `Toolkit` is an `extra` exception,
+  switch"), as D01, and on four strings the open Sort menu covers, which
+  Figma does not cover: `40m` (403:8594), `ncc-1701` (403:8726), `Claude`
+  (403:8753) and `·` (403:8754), all `notVisible` with `covered` (see
+  "Sort menu place and height"). Nothing is missing. `Toolkit` is an `extra` exception,
   and the four descriptions that Figma cuts with an ellipsis are `missing`
   exceptions (`exceptions.json`), as in D01 and D03.
 - Position: 6 of 24 layers pass (`header`, `found status`,
@@ -29,6 +32,15 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   to two lines in the 280 px menu: the menu is 323 high against 283. The
   Inbox's Sort menu (D09) has the same rows. Library gap "Sort menu rows
   and note".
+  The extra height covers the cards' meta lines: the menu ends at y 469
+  against Figma's 433, and the meta lines start at y 454, so the covered
+  text check reports `40m`, `ncc-1701`, `Claude` and `·`. Placing the
+  menu at Figma's x would not uncover them: `40m` (x 743) and the Inbox
+  task lifecycle card's meta line (from x 820) lie under Figma's menu
+  width too, and `RadioMenu placement` has only `bottom-start` (Figma's
+  and the one used), `bottom-end`, `top-start` and `top-end`, with no
+  offset. No exception covers them; they go when the library gap
+  closes.
 - **View switch.** `view · Grid or List` x -70.9, w +70.9, as D01: the
   switch shows "Grid" and "List" beside its icons (the text check's extra
   `Grid` and `List`) and is 139 px wide against 68. Library gap
@@ -59,7 +71,10 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 - **New badge, page title, thumbnails and card marks.** As D01: New sits
   8 px after the card title, not at the end of the row; "Artifacts" is
   20 px type against about 24; the Agent factory doc and the readme
-  cold-reader chart are cyan and violet, not green and amber; the meta
+  cold-reader chart are cyan and violet, not green and amber, the Type
+  safety doc's title bar is cyan, not violet, and the chart bars are a
+  brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
+  prop); the meta
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".

@@ -31,7 +31,15 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   the library's `Thumbnail kind="chart"`, a fixed sample chart in the
   library's colours, and no chart of the library draws a reference
   line, so the render shows the same bars as D08 and no median line or
-  label. Library gaps "Artifact preview frame" and "Thumbnail colour".
+  label. A line and label laid over the thumbnail cannot be placed from
+  tokens: the line's place (161.4 below the thumbnail's top, the label
+  20 above it, both ending 60 from the thumbnail's end) is a point on
+  the library drawing's own axis, no spacing token is 60, 141 or 161,
+  and matching the drawing would copy its internal geometry as raw
+  values. The window dots (about 10 px against 5, 452:3602 to
+  452:3604) and the axis inset (96 against 60, 452:3615) are the
+  library's, as in D07. Library gaps "Chart reference line", "Artifact
+  preview frame" and "Thumbnail colour".
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
   `discussion panel` x +8, w -8, as in D07 and D08: the artifact keeps
   `Container size="detail"` (828) against Figma's 820 pane, so the panel
@@ -51,7 +59,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 - **Discussion area.** `discussion` h -7, as in D08: `Composer` is a few
   px taller than Figma's 75 px reply box. It has no clip button (library
   gap "Attach in the discussion reply box") and no caret or violet focus
-  border (library gap "Composer focus").
+  border (library gap "Composer focus"); as in D07, its placeholder is a
+  little brighter than Figma's (452:3694; library gap "Composer placeholder
+  colour").
 - **Messages.** Erik's message is `Message from="user"`, 14/20 against
   Figma's 13/19, so the reply starts lower (`message · discussion` y
   +5), as in D08. Library gap "Message author icon and small text".

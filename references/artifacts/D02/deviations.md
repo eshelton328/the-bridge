@@ -35,8 +35,14 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   4 px further right (below). Library gaps "Project chip menu" and
   "Detail column inset".
 - **Row thumbnails.** The list's previews are 44 × 27.5 against Figma's
-  64 × 40, so each row's text starts about 18 px further left. Library
-  gap "List row thumbnail".
+  64 × 40, so each row's text starts about 18 px further left. The rows
+  pass the same kind as D1's cards (the-bridge theme ideas, Panda tokens
+  playground and Logo options `grid`, Hono server spike `ui`), but Figma
+  draws its row previews for their size: the grid as six outlined cells
+  with wide rounded corners (403:274), the ui as a window with a side bar
+  and short lines (403:220). `Thumbnail shape="compact"` scales the
+  card's drawing down, so the grid's cells touch and read as rectangles
+  and the ui reads as a list of lines. Library gap "List row thumbnail".
 - **Row height and age.** Each row is 62 high against Figma's 58, and its
   age sits on the title line, not centred down the row. Each row after
   the first starts 2 up, so the rows keep Figma's 60 px pitch and the
@@ -52,9 +58,13 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   column inset".
 - **Preview.** The chart's bars are the library's `Thumbnail kind="chart"`
   drawing, not Figma's heights and colours, and the frame around it is
-  built from tokens. Library gaps "Thumbnail colour" and "Artifact
-  preview frame". The readme cold-reader row's chart is cyan and violet,
-  not amber ("Thumbnail colour").
+  built from tokens. The window bar's dots are about 10 px and 18 apart
+  against Figma's 5 and 9 (403:485 to 403:487), and the chart's axis is
+  about 557 wide, 96 in from each side, against Figma's 628 and 60
+  (403:498): `Thumbnail` draws both inside its SVG and scales them with
+  the banner. Library gaps "Thumbnail colour" and "Artifact preview
+  frame". The readme cold-reader row's chart is cyan and violet, not
+  amber ("Thumbnail colour").
 - **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
   against Figma's about 24 px. Library gap "Desktop page title size".
 - **Buttons with no screen yet.** Add a link, Discuss, Copy link,

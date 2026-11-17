@@ -43,7 +43,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   button, as the Inbox's: no file flow is designed and `Composer` draws
   its attach button only with an action (library gap "Attach in the
   discussion reply box"). It shows no caret or violet focus border,
-  which Figma draws (library gap "Composer focus").
+  which Figma draws (library gap "Composer focus"), and its placeholder
+  is a little brighter than Figma's dim grey (452:2454): `Composer` takes
+  no tone for it (library gap "Composer placeholder colour").
 - **Empty state place.** `empty state` y +211, h -119, `it can` y +98,
   `suggestions` y +100. Figma puts the empty state 120 px under the top
   of the discussion area (its tile at y 264); no spacing token is larger
@@ -60,8 +62,10 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   (`accent.discuss`).
 - **Artifact column.** The title is 28 px type (`heading`) against about
   26, the preview's bars are the library's chart drawing in its colours,
-  not Figma's heights and colours, and the column starts 4 px further
-  right, as in D2. Library gaps "Artifact title size", "Thumbnail
+  not Figma's heights and colours, its window dots are about 10 px and
+  18 apart against 5 and 9 (452:2374 to 452:2376) and its axis about 557
+  wide, 96 in from each side, against 628 and 60 (452:2387), and the
+  column starts 4 px further right, as in D2. Library gaps "Artifact title size", "Thumbnail
   colour", "Artifact preview frame" and "Detail column inset".
 - **Discussion blocks.** The Inbox page does not export its
   `DiscussionPanel`, so the Artifacts page has its own `DiscussionPanel`

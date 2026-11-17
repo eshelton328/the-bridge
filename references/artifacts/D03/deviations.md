@@ -71,7 +71,10 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 - **New badge, page title, thumbnails and card marks.** As D01: New sits
   8 px after the card title, not at the end of the row; "Artifacts" is
   20 px type against about 24; the Agent factory doc and the readme
-  cold-reader chart are cyan and violet, not green and amber; the meta
+  cold-reader chart are cyan and violet, not green and amber, the Type
+  safety doc's title bar is cyan, not violet, and the chart bars are a
+  brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
+  prop); the meta
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".

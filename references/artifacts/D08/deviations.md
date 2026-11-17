@@ -41,7 +41,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 - **Discussion area.** `discussion` h -7, as in D07: `Composer` is a few
   px taller than Figma's 75 px reply box. It has no clip button (library
   gap "Attach in the discussion reply box") and no caret or violet focus
-  border (library gap "Composer focus").
+  border (library gap "Composer focus"); as in D07, its placeholder is a
+  little brighter than Figma's (452:3072; library gap "Composer placeholder
+  colour").
 - **Messages.** Erik's message is `Message from="user"`, whose text is
   14/20 against Figma's 13/19, so its box is a few px taller and the
   reply starts lower (`message · discussion` y +5). The reply is composed
@@ -56,7 +58,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   icon and diff rows".
 - **Artifact column.** The title is 28 px type against about 26, and the
   preview's bars are the library's chart drawing in its colours, not
-  Figma's heights and colours, as in D07. Library gaps "Artifact title
+  Figma's heights and colours, and its window dots and axis inset are the
+  library's (about 10 px dots, an axis 96 in from each side, against
+  Figma's 5 px and 60, 452:2984 to 452:2986, 452:2997), as in D07. Library gaps "Artifact title
   size", "Thumbnail colour" and "Artifact preview frame".
 - **Buttons of the proposal.** Discard drops the proposal from the
   discussion. Apply sets `ui.discussProposal` to `applied`, which shows

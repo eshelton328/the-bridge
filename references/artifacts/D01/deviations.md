@@ -58,9 +58,11 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   against Figma's text box of 29 px, about 24 px type, so the title and
   count are smaller. Library gap "Desktop page title size".
 - **Thumbnail colours.** The Agent factory doc's title bar is cyan, not
-  Figma's green, and the readme cold-reader chart is cyan and violet, not
-  amber. `Thumbnail` draws one colour set per kind. Library gap
-  "Thumbnail colour".
+  Figma's green; the Type safety in agentic systems doc's title bar is
+  cyan, not violet (402:15716); the readme cold-reader chart is cyan and
+  violet, not amber; and the chart bars are a brighter cyan than Figma's
+  muted teal-cyan. `Thumbnail` draws one colour set per kind and takes no
+  colour or tone prop. Library gap "Thumbnail colour".
 - **Card kind mark.** The Claude and Codex marks in the meta line are
   12 px against Figma's 14. Library gap "Card kind mark size".
 - **Rail.** The shared rail (`AppRail`, not changed here: another chat
