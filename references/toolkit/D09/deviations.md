@@ -99,7 +99,8 @@ apart as Figma's), which fits D9 better than beta.16's `TerminalLines`
 - **Description width.** The description is 948 px wide, the content
   width, against Figma's 940 (`433:1537` y -2 w +8): Figma's text box
   ends at its longest line, and the render's paragraph fills its column.
-  The two lines break at the same word.
+  The 8 px move "is" to the end of line 1, where Figma starts line 2
+  with it. No size token has 940.
 - **All chip.** The render draws All as the selected chip, because the
   filter is All; Figma D9 draws no chip selected, as D3, D4 and D7 do.
   The app keeps one rule for every frame: the chip of the current filter
@@ -112,3 +113,8 @@ apart as Figma's), which fits D9 better than beta.16's `TerminalLines`
   The three pass the position check.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames.
+
+## Second review
+
+- **Description break.** Line 1 ends "whether the type is", where
+  Figma's ends "whether the type"; see Description width.
