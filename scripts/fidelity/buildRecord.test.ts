@@ -146,6 +146,10 @@ void test('deviations.md must name every failing layer, rule and text', () => {
 })
 
 void test('a failing result needs deviations, and blocked needs a reason', () => {
+  has(
+    checkRecord(record({ sideBySide: null }), repo()),
+    /sideBySide must be reports\/fidelity\/inbox\/D13\.sideBySide\.png/,
+  )
   has(checkRecord(record({ status: 'pass' }), repo()), /status is pass but the fidelity result is not ok/)
   has(checkRecord(record({ deviations: [], deviationsFile: null }), repo()), /list each remaining difference/)
   has(checkRecord(record({ status: 'blocked', blocked: null }), repo()), /say why in `blocked`/)

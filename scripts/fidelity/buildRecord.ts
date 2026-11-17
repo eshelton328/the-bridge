@@ -198,6 +198,8 @@ export function checkRecord(record: BuildRecord, repo: RepoView): string[] {
     if (record.fidelity === null) err(`status is ${record.status}: \`fidelity\` needs the last pnpm fidelity result`)
     if (record.state === null) err(`status is ${record.status}: \`state\` needs the state file`)
   }
+  if (record.fidelity !== null && record.sideBySide === null)
+    err(`sideBySide must be ${canonical.sideBySide}: the caller hands it to fidelity-reviewer`)
   if (record.status === 'pass' && record.fidelity?.ok === false)
     err('status is pass but the fidelity result is not ok: use deviations')
   if (record.status === 'deviations' && record.deviations.length === 0)
