@@ -12,25 +12,12 @@ catalogPrune: true
 registries:
   "@eshelton328": https://npm.pkg.github.com
 
-# TODO(library 1.0.0-beta.1): delete this override and set the catalog
-# entry above to 1.0.0-beta.1, the first version on GitHub Packages.
-# Until then the library comes from the sibling clone,
-# projects/ncc-1701/component-library-1701, which is two folders up from a
-# worktree in the-bridge-worktrees/. Build it there first with
-# `pnpm build:lib`, then run `pnpm install` here. A catalog entry cannot
-# use the file: protocol (pnpm 11), so the path lives here. See
-# web/AGENTS.md.
-overrides:
-  "@eshelton328/component-library-1701": file:../../component-library-1701
-
 allowBuilds:
   "@parcel/watcher": true
   esbuild: true
 
 catalog:
-  # The library's version. It is not published yet, so the override below
-  # installs it from the sibling clone instead.
-  "@eshelton328/component-library-1701": 0.0.0-development
+  "@eshelton328/component-library-1701": 1.0.0-beta.1
   "@fontsource-variable/geist": 5.3.0
   "@fontsource-variable/geist-mono": 5.3.0
   react: 19.3.1
@@ -71,3 +58,6 @@ catalog:
   globals: 17.14.0
   knip: 6.45.1
   "@biomejs/biome": 2.6.8
+
+minimumReleaseAgeExclude:
+  - "@eshelton328/component-library-1701@1.0.0-beta.1"

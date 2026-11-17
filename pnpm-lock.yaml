@@ -9,6 +9,9 @@ catalogs:
     '@biomejs/biome':
       specifier: 2.6.8
       version: 2.6.8
+    '@eshelton328/component-library-1701':
+      specifier: 1.0.0-beta.1
+      version: 1.0.0-beta.1
     '@eslint-community/eslint-plugin-eslint-comments':
       specifier: 4.8.1
       version: 4.8.1
@@ -127,9 +130,6 @@ catalogs:
       specifier: 5.1.0
       version: 5.1.0
 
-overrides:
-  '@eshelton328/component-library-1701': file:../../component-library-1701
-
 importers:
 
   .:
@@ -220,8 +220,8 @@ importers:
         specifier: workspace:*
         version: link:../shared
       '@eshelton328/component-library-1701':
-        specifier: file:../../../component-library-1701
-        version: file:../../component-library-1701(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+        specifier: 'catalog:'
+        version: 1.0.0-beta.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@fontsource-variable/geist':
         specifier: 'catalog:'
         version: 5.3.0
@@ -668,8 +668,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@eshelton328/component-library-1701@file:../../component-library-1701':
-    resolution: {directory: ../../component-library-1701, type: directory}
+  '@eshelton328/component-library-1701@1.0.0-beta.1':
+    resolution: {integrity: sha512-71UdnmGRoYwVPxRdX2+bj0ZU2lvi8/38UCp0JPtnxGuGeUn1bogjWEjWyN+LJH9Dz7FIxlxS5PqlJvxB8+Q8zg==, tarball: https://npm.pkg.github.com/download/@eshelton328/component-library-1701/1.0.0-beta.1/bfa921c2000604e2a805de4dadcf5d9ceb948136}
     engines: {node: '>=24'}
     peerDependencies:
       react: ^19.0.0
@@ -4050,7 +4050,7 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@eshelton328/component-library-1701@file:../../component-library-1701(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
+  '@eshelton328/component-library-1701@1.0.0-beta.1(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@ark-ui/react': 5.40.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@fontsource-variable/geist': 5.3.0

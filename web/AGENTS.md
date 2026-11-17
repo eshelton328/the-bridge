@@ -17,14 +17,12 @@ Storybook and the canvas bundle. Styles come from the component library
 
 ## The library dependency
 
-> **TODO (library 1.0.0-beta.1):** the library is not published yet, so
-> `pnpm-workspace.yaml` overrides it with the sibling clone
-> (`file:../../component-library-1701`, a path that holds for a worktree
-> in `the-bridge-worktrees/`). Build the clone first (`pnpm build:lib`
-> there). After you rebuild it, run `pnpm install --force` and delete
-> `node_modules/.vite`, `web/node_modules/.vite` and
-> `node_modules/.cache/storybook`, or Vite serves the old build. When `1.0.0-beta.1` is on GitHub Packages, remove the override,
-> set the catalog entry to `1.0.0-beta.1` and run `pnpm install`.
+The library is `@eshelton328/component-library-1701` from GitHub Packages,
+pinned in the catalog of `pnpm-workspace.yaml`. A local install needs a
+token with `read:packages` for `//npm.pkg.github.com/` in `~/.npmrc` or
+`~/.config/pnpm/auth.ini`; CI uses the workflow's `GITHUB_TOKEN`. After a
+version change, delete `node_modules/.vite`, `web/node_modules/.vite` and
+`node_modules/.cache/storybook`, or Vite serves the old build.
 
 ## Commands
 

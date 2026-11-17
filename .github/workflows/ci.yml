@@ -1,9 +1,5 @@
 name: ci
 
-# TODO (library 1.0.0-beta.1): install fails here until the component
-# library is on GitHub Packages and pnpm-workspace.yaml no longer
-# overrides it with the sibling clone. See web/AGENTS.md.
-
 on:
   pull_request:
     types: [opened, synchronize, reopened, edited]
@@ -27,7 +23,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
         with:
-          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm codegen
       - run: pnpm check:routes
       - run: pnpm check:registry
@@ -39,7 +35,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
         with:
-          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm codegen
       - run: pnpm lint
       - run: pnpm format:check
@@ -51,7 +47,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
         with:
-          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm check:agents-md
       - run: pnpm check:cycles
       - run: pnpm check:structure
@@ -65,7 +61,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
         with:
-          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
           browser: "true"
       - run: pnpm codegen
       - run: pnpm test
@@ -76,7 +72,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
         with:
-          packages-token: ${{ secrets.PACKAGES_TOKEN }}
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm codegen
       - run: pnpm build
       - run: pnpm build:canvas
