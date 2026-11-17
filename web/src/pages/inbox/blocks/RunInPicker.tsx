@@ -17,7 +17,7 @@ export type RunInPickerProps = {
 export function RunInPicker({ picker, sheet }: RunInPickerProps) {
   return (
     <>
-      <SearchField size="md" label={picker.search} placeholder={picker.search} icon={<SearchIcon />} />
+      <SearchField size="md" textSize="sm" label={picker.search} placeholder={picker.search} icon={<SearchIcon />} />
       {picker.sections.map((section) => (
         <MenuSection key={section.label} label={section.label} sheet={sheet}>
           <OptionList

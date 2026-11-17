@@ -1,8 +1,8 @@
 # T23 deviations
 
 What still differs from Figma T23 · Confirm the removal (`removeConfirmPage`, T22 with the confirm dialog), after the last
-fidelity run (`pnpm fidelity inbox T23`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
+against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -90,8 +90,10 @@ status bar.
   +20, h +19). Keep it shows a focus ring, as in D20: the dialog gives
   the safe action the first focus. Remove task takes the task out of
   the list and shows the list (`InboxRoute.test.tsx`).
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
+- **Button labels.** The dialog's Keep it takes `Button textSize="sm"`
+  (Medium 13, #105), as Figma's (402:12546). The other labels are 14 px
+  (`label`): Figma sets the small buttons in Medium 12 and Remove task
+  in SemiBold 13, which no token has (d-050), so those buttons are a
   little wider. Library gap: Button label size.
 
 ## Second review, round 2

@@ -1,8 +1,8 @@
 # T17 deviations
 
 What still differs from Figma T17 · Discussion, before the first message (`discussionPage`, D14's discussion as a page), after the last
-fidelity run (`pnpm fidelity inbox T17`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
+against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks

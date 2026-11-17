@@ -13,7 +13,7 @@
     },
     {
       "rule": "hiddenOverflow",
-      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "selector": "div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div > div.clamp",
       "reason": "The cut prompt Figma draws (402:1853 is 210 high in the 128 px box 402:1852, with the fade 402:1854); see the prompt's missing entry."
     }
   ]

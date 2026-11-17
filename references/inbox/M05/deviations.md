@@ -2,7 +2,8 @@
 
 What still differs from Figma M5 · A question that blocks a chat (the question on the phone, `questionPhone`), after the last
 fidelity run (`pnpm fidelity inbox M05`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -17,12 +18,12 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · question`: x +0, y -36, w +0, h +8; 38 px removed: y +2.
+- `task · question`: x +0, y -36, w +0, h +4; 38 px removed: y +2.
 - `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
 - `title block`: x +0, y -32, w +0, h +6; 38 px removed: y +6.
 - `blocking`: x +0, y -24, w +0, h +9; 38 px removed: y +14.
 - `section · CONTEXT`: x +0, y -13, w +0, h +2; 38 px removed: y +25.
-- `section · CHOOSE ONE`: x +0, y -9, w +0, h +7; 38 px removed: y +29.
+- `section · CHOOSE ONE`: x +0, y -9, w +0, h +3; 38 px removed: y +29.
 
 ## Deviations
 
@@ -57,15 +58,17 @@ status bar.
   needs-you tint waits on Erik (d-050). The button says Open on
   the phone, Open chat on the desktop and tablet, as Figma does. Library
   gap: Panel and text field padding.
-- **Options.** The option cards are a little taller (`section · CHOOSE
-  ONE` h +7): the Recommended pill is 24 px against 20. Library gap:
-  Pill height.
+- **Options.** The Recommended pill is 20 px high, as Figma's
+  (`Badge size="sm"`, #106), so the option cards are within 3 px of
+  Figma's (`section · CHOOSE ONE` h +3; h +7 with the 24 px pill).
 - **Answer.** Pinned above the tab bar, full width, without its hint,
   as Figma draws it (`sticky action` passes). The bar is opaque, as
   Figma's: the chrome over the canvas, so the options and the note that
   scroll under it do not show through. The note to the chat lies under
   it (`section · NOTE TO THE CHAT · OPTIONAL` passes); the page scrolls
   to it.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13. Library gap: Button label
-  size.
+- **Button labels.** Button labels are 14 px (`label`) here;
+  Figma sets small buttons in Medium 12 or 13, which no text style has
+  (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the
+  labels Figma sets in Medium 13 (Newest, Filter and the dialog's Keep
+  it on the desktop and tablet). Library gap: Button label size.

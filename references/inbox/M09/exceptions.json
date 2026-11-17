@@ -43,7 +43,7 @@
     },
     {
       "rule": "hiddenOverflow",
-      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "selector": "div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div > div.clamp",
       "reason": "The cut prompt Figma draws on the page (346:10737 is 210 high in its 128 px box); see the prompt's missing entry."
     }
   ]

@@ -90,7 +90,7 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
               value: o.value,
               label: o.label,
               description: o.description,
-              badge: o.recommended ? <Badge variant="pill" tone="working" label="Recommended" /> : undefined,
+              badge: o.recommended ? <Badge variant="pill" size="sm" tone="working" label="Recommended" /> : undefined,
             }))}
           />
         </DetailSection>

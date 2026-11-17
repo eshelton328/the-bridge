@@ -132,7 +132,7 @@ export function PromptSection({
     <DetailSection
       title={titles[prompt.state]}
       figma="section · SUGGESTED PROMPT"
-      meta={edited ? <Badge variant="pill" tone="needsYou" label="Edited" /> : undefined}
+      meta={edited ? <Badge variant="pill" size="sm" tone="needsYou" label="Edited" /> : undefined}
       actions={
         prompt.state !== 'suggested' ? undefined : (
           <>
@@ -176,9 +176,13 @@ export function PromptSection({
       ) : (
         <Stack gap="8">
           <Panel>
-            <Clamp lines={5} fade>
-              <span className={text}>{breakAfterSlashes(current)}</span>
-            </Clamp>
+            {/* `Clamp` takes its parent's text style and cuts at five of its lines. The style sits on a block: on an
+                inline span the 13 px text in the panel's 14 px line makes 21 px lines, and the cut hides the fifth. */}
+            <div className={text}>
+              <Clamp lines={5} fade>
+                {breakAfterSlashes(current)}
+              </Clamp>
+            </div>
           </Panel>
           {/* The phone puts the change line under Read the whole prompt (M20 402:2440), 8 below it. */}
           {changeLine !== null && layout === 'phone' ? (

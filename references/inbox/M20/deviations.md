@@ -1,8 +1,8 @@
 # M20 deviations
 
 What still differs from Figma M20 · The task after Apply (`changeAppliedPage`), after the last
-fidelity run (`pnpm fidelity inbox M20`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
+1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -17,17 +17,17 @@ Render minus Figma, in px; "38 px removed" is the y offset without the
 status bar.
 
 - `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +66; 38 px removed: y +2.
+- `task · next step`: x +0, y -36, w +0, h +57; 38 px removed: y +2.
 - `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
 - `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
 - `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h +1; 38 px removed: y +17.
-- `change history`: x +0, y -18, w +75, h -2; 38 px removed: y +20.
-- `section · RUN IN`: x +0, y -18, w +0, h -17; 38 px removed: y +20.
-- `button · Change`: x +0, y -27.5, w -2, h +4; 38 px removed: y +10.5.
-- `section · MY NOTES`: x +0, y -33, w +0, h +7; anchored to the bottom, no status bar offset.
-- `notes field`: x +0, y -31, w +0, h +5; anchored to the bottom, no status bar offset.
-- `section · SOURCES`: x +0, y +122, w +0, h +2; 38 px removed: y +160.
+- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -4; 38 px removed: y +17.
+- `change history`: x +0, y -23, w +75, h -2; 38 px removed: y +15.
+- `section · RUN IN`: x +0, y -23, w +0, h -21; 38 px removed: y +15.
+- `button · Change`: x +0, y -34.5, w -2, h +4; 38 px removed: y +3.5.
+- `section · MY NOTES`: x +0, y -42, w +0, h +7; anchored to the bottom, no status bar offset.
+- `notes field`: x +0, y -40, w +0, h +5; anchored to the bottom, no status bar offset.
+- `section · SOURCES`: x +0, y +113, w +0, h +2; 38 px removed: y +151.
 
 ## Deviations
 
@@ -47,15 +47,28 @@ status bar.
   32 px buttons against Figma's 40 px row); the sections 20 apart
   against Figma's 18 and the 20/28 title against 22 px (d-072; Library
   gaps: Small text in the detail, 22 px title); the Run in card with
-  Recommended beside its title, 17 px shorter (`section · RUN IN` h -17)
-  and Change 28 × 28 (`button · Change`; Library gaps: Small icon button,
-  Pill height); Reset faded whole while disabled (Library gap: Disabled
-  button style); the prompt cut by `Clamp` with an ellipsis (Library
-  gap: Prompt fade without an ellipsis); My notes and Sources below the
+  Recommended beside its title, 21 px shorter (`section · RUN IN` h -21)
+  and Change 28 × 28 (`button · Change`; Library gap: Small icon button);
+  the prompt cut by `Clamp` at five lines and faded, with no "…" (#104);
+  My notes and Sources below the
   fold, where the page scrolls under the pinned Start (`section · MY
   NOTES`, `notes field`, `section · SOURCES`), and the task frame running
   on under Start (`task · next step` h). The exceptions say why the cut
   prompt and the scrolled page pass.
+- **Offsets beta.5 exposed.** Two changes that match Figma move the
+  layers below the prompt up and show offsets the old sizes hid. The
+  Recommended pill is 20 px (`Badge size="sm"`, as Figma's), not 24, so
+  the Run in card is 4 px shorter: it was already shorter than Figma's,
+  and the pill's extra 4 px hid part of that (`section · RUN IN` h -17 to
+  -21). The prompt is five 20 px `bodySm` lines: the faded `Clamp` now
+  cuts by height, so the prompt's text style moved from an inline span
+  (its 13 px text in the panel's 14 px line made 21 px lines) onto a
+  block. Figma's lines are 21, which no token has; the prompt box is
+  now within tolerance (`section · SUGGESTED PROMPT` h +1 to -4). Together
+  the layers below move up 5 to 9 px: `change history` y -18 to -23, `section · RUN IN` y -18 to -23, `button · Change` y -27.5 to -34.5, `section · MY NOTES` y -33 to -42, `notes field` y -31 to -40, and `task · next step` is 9 px shorter (h +66 to +57); `section · SOURCES` comes 9 px closer (y +122 to +113).
+- **Disabled Reset.** Reset keeps its fill and `border.default` border
+  while disabled, with only its label and icon in `fg.muted`, as Figma
+  draws it (#105).
 - **Discuss in the nav.** On the phone Discuss sits in the nav before
   Snooze and Dismiss, as Figma draws it (402:1945); it is the library
   `Button` at its default size, 32 high. Figma draws it in violet with a

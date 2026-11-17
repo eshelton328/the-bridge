@@ -2,7 +2,8 @@
 
 What still differs from Figma M12 · Done (`doneList`), after the last
 fidelity run (`pnpm fidelity inbox M12`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
+the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -45,8 +46,11 @@ status bar.
   40 px high against Figma's 44 (`header` h -4) and the tools row 40
   against 44 (`list tools` h -4); the chip row's box is 34 against
   Figma's 30 (`filter · chips` h +4), so it and `group · TODAY` start
-  4 px higher. Library gaps: Search field and chip count text,
-  Breakpoint tokens.
+  4 px higher. The search field's text and placeholder
+  are 13 px (`SearchField textSize="sm"`, `bodySm`, #106), as Figma's. An idle
+  chip's count is `fg.subtle` (#7986a6, #106) against Figma's #4a5675,
+  which stays out by d-099 because it fails WCAG AA (d-055).
+  Library gap: Breakpoint tokens.
 - **Rows and chips on the phone.** As in M01: the rows are pulled 6 px
   out of the list's padding so the kind tiles line up under the group
   chevrons (Library gap: List row padding on the phone), and each chip

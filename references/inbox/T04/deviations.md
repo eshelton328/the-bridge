@@ -1,8 +1,8 @@
 # T04 deviations
 
 What still differs from Figma T4 · Running, on the task page (the started task on its own page, `runningTaskPage`), after the last
-fidelity run (`pnpm fidelity inbox T04`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
+library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -17,13 +17,13 @@ Render minus Figma, in px; "29 px removed" is the y offset without the
 status bar.
 
 - `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · running`: x +2, y -25, w -4, h -8; 29 px removed: y +4.
+- `task · running`: x +2, y -25, w -4, h -13; 29 px removed: y +4.
 - `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
 - `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
 - `section · WHY`: x +2, y -25, w -4, h +2; 29 px removed: y +4.
-- `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h +3; 29 px removed: y +8.
-- `section · MY NOTES`: x +2, y -16, w -4, h +7; 29 px removed: y +13.
-- `section · SOURCES`: x +2, y -7, w -4, h +2; 29 px removed: y +22.
+- `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h -2; 29 px removed: y +8.
+- `section · MY NOTES`: x +2, y -21, w -4, h +7; 29 px removed: y +8.
+- `section · SOURCES`: x +2, y -12, w -4, h +2; 29 px removed: y +17.
 
 ## Deviations
 
@@ -43,6 +43,16 @@ status bar.
   (library gap: 22 px title). `BackRow` is 28 px high against Figma's
   32 (`nav · back` h -4); 12 px under it puts the task bar 40 px below
   the row's top against Figma's 42.
+- **Offset that beta.5 exposed.** The sent prompt is now five 20 px
+  `bodySm` lines (100 px) where it was 105: the faded `Clamp` cuts by
+  height (#104), so the prompt's text style moved from an inline span,
+  whose 13 px text in the panel's 14 px line made 21 px lines, onto a
+  block. Figma's lines are 21, which no token has. The prompt section is
+  now within the tolerance (h +3 to -2) and the task 5 px shorter
+  (`task · running` h -8 to -13), so MY NOTES and SOURCES move up 5 px
+  and further from Figma's y (`section · MY NOTES` y -16 to -21,
+  `section · SOURCES` y -7 to -12): the existing status bar and section
+  spacing offsets, no longer hidden by the taller prompt.
 - **Run card.** The run card stays at the bottom of the screen above
   the tab bar, on the chrome with a top border (`running`, `running card`
   pass).
@@ -53,10 +63,10 @@ status bar.
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
   Tablet tab bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
-  Newest, Filter and the row actions are a little wider. Library gap:
-  Button label size.
+- **Button labels.** Snooze, Dismiss and the run card's buttons keep
+  the 14 px `label`; Figma sets them in Medium 12, which no text style
+  has (d-050), so they are a little wider. Library gap: Button label
+  size.
 
 ## Second review
 
@@ -66,7 +76,8 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 - The SENT PROMPT card's fifth line is not faded: stays. `Clamp` fades
   only a text it cuts, and the prompt's five lines hold all of it (the sheet in
   T8 shows the same whole text); Figma fades its fifth line anyway. The
-  same holds in D01 to D21.
+  same holds in D01 to D21. (Since beta.5 a cut prompt fades with no
+  ellipsis, #104.)
 - MY NOTES card about 9 px taller: fixed in part. The note and its
   author now sit 24 px apart (Figma 25) instead of following the
   panel's 8 px gap under a 20 px line; the section is 7 px taller
@@ -81,7 +92,8 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
 
 `section · SOURCES` failed only by moving up: the MY NOTES card is 4 px
-shorter, and the status bar's -29 no longer cancels the layout's +26.
+shorter, and the status bar's -29 no longer cancels the layout's +26;
+beta.5's 5 px shorter prompt moved it up again (y -12).
 
 ## Disabled controls
 
@@ -89,5 +101,7 @@ shorter, and the status bar's -29 no longer cancels the layout's +26.
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
-  where Figma draws it enabled.
+  a press (`InboxRoute.test.tsx`). Since beta.5 (#105) a disabled
+  `secondary` Button keeps its fill and border and draws its label and
+  icon in `fg.muted`, where Figma draws it enabled with a brighter
+  label.

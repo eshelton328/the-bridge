@@ -1,8 +1,8 @@
 # M22 deviations
 
 What still differs from Figma M22 · The new tasks in the inbox (`tasksCreatedPhone`), after the last
-fidelity run (`pnpm fidelity inbox M22`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
+1.0.0-beta.5, which adds #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -44,8 +44,11 @@ status bar.
 - **Header, chips and tools.** As in M01: `PageHeader size="phone"` is
   40 px high against Figma's 44 (`header` h -4) and the tools row 40
   against 44 (`list tools` h -4); the chip row's box is 34 against
-  Figma's 30 (`filter · chips` h +4). Library gaps: Search field and
-  chip count text, Breakpoint tokens.
+  Figma's 30 (`filter · chips` h +4). Library gap: Breakpoint tokens.
+  The search field's text and placeholder are 13 px
+  (`SearchField textSize="sm"`, `bodySm`), and an idle chip's count is
+  `fg.subtle` (#7986a6, beta.5); Figma's #4a5675 stays out by d-099,
+  because it fails WCAG AA (d-055).
 - **Rows and chips on the phone.** As in M01: the rows are pulled 6 px
   out of the list's padding so the kind tiles line up under the group
   chevrons (Library gap: List row padding on the phone), and each chip

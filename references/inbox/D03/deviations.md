@@ -5,13 +5,16 @@ What still differs from Figma after round 6 of the fidelity loop
 library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
+Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) by
+`pnpm fidelity inbox`; the checks and offsets below are from that run.
+
 ## Checks
 
 - Text: pass. The text check of main 3546ac7 (#3) skips the values of
   radio, checkbox, hidden and password inputs, so the option ids inside
   `OptionList` rows no longer count as visible text.
   One exception in `exceptions.json` (the "|" Figma draws as the editor's caret).
-- Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 10 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`, `section · RUN IN`, `start`).
 - Rules: pass. The `hiddenOverflow` on `[data-figma="run in picker"]` of round 5 is gone: the picker no longer scrolls (below).
 
 ## Deviations
@@ -45,14 +48,15 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   (d-072 tie). Within the 4 px tolerance.
 - **Run in picker.** It opens below Change (`placement="bottom-end"`,
   `flip={false}`, #98) and no longer scrolls: the smaller prompt editor
-  moved the detail up (RUN IN now within tolerance in y, `start` y +12,
-  round 5 y +32), so the picker starts 6.5 px lower than Figma's
-  (`run in picker` y +6.5, round 5 y +26.5), and its rows use
+  moved the detail up (RUN IN and `start` now within tolerance, round 5
+  `start` y +32), so the picker starts 2.5 px lower than Figma's
+  (`run in picker` y +2.5, round 5 y +26.5), and its rows use
   `OptionList size="sm"` (#102): `labelSm` titles and `monoSm` meta, as
-  Figma's 17 and 14 px text boxes are. It is still 9 px taller
-  (`run in picker` h +9, round 5 h +12), within the library's own row
-  and group heights; this round did not measure which rows add it. The
-  note and the last row are in full view. The `run in picker` key sits on the popover's box (#98).
+  Figma's 17 and 14 px text boxes are. It is still 5 px taller
+  (`run in picker` h +5, round 5 h +12; beta.5's 20 px pills took 4
+  off), within the library's own row and group heights; this round did
+  not measure which rows add it. The note and the last row are in full
+  view. The `run in picker` key sits on the popover's box (#98).
 - **Prompt line break.** Figma breaks the editor's first line after
   "toolkit/" (346:1188); the render breaks it before
   "toolkit/rules/linear.md". The read-only prompt puts a `<wbr>` after
@@ -67,6 +71,14 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 - **Prompt editor.** The editor is not shown focused, so its border is
   the field border, not cyan. A story cannot focus a field without a
   user action.
+- **Beta.5 (2026-11-17).** The new library parts move these layers:
+  `run in picker` x +2, y +2.5, h +5 (was x +2, y +4.5, h +9);
+  `section · RUN IN` within tolerance (was x +4, y +1, h +5);
+  `section · SOURCES` x +4, y +5, h +2 (was x +4, y +9, h +2); `start`
+  within tolerance (was x +4, y +8, h -1). The cause is the 20 px pills
+  (`Badge size="sm"`, as Figma's): the Edited pill in the prompt header,
+  the Recommended pill in the Run in card and the pills in the picker's
+  rows (beta.4 drew them 24 px high).
 
 ## Second review
 
@@ -94,7 +106,11 @@ notes. What it found in every frame, and why it stays:
   chip counts, the pane count, timestamps, meta lines and section labels
   are brighter, and the rail labels sit 4 to 12 px lower: library styles
   (`SearchField`, `Button`, `FilterChips`, `PageHeader`, the rail) and
-  their colour tokens. The app sets none of these values.
+  their colour tokens. The app sets none of these values. (Fixed in part
+  by beta.5: Newest or Sort and Filter take Medium 13 labels and the
+  search field 13 px text, as Figma's, and the idle chip counts are
+  `fg.subtle`, still brighter than Figma's #4a5675, which d-099 keeps
+  out because it fails WCAG AA, d-055.)
 - The NCC chip's tint is fainter than Figma's (`MetaChip tone="issue"`):
   library style.
 - The detail column is 4 px to the right: the 40 px inset above.

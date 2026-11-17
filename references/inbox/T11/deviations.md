@@ -1,8 +1,9 @@
 # T11 deviations
 
 What still differs from Figma T11 · Sorted by project (the list sorted by project, `sortedList`, the list of D11 `sortedByProject`), after the last
-fidelity run (`pnpm fidelity inbox T11`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
+library 1.0.0-beta.5, which has #104 to #106; no layer moved), each
+with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -49,9 +50,18 @@ status bar.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Sort (here "Project") and Filter use
+  `Button textSize="sm"` (Medium 13), as Figma's Newest and Filter
+  (beta.5, #105). The row actions and other
+  small buttons keep the 14 px `label`; Figma sets them in Medium 12,
+  which no text style has (d-050), so they are a little wider. Library
+  gap: Button label size.
+- **Search field and chip counts.** The search field sets its text and
+  placeholder in `bodySm` (13 px, `SearchField textSize="sm"`), as
+  Figma's. The placeholder stays `fg.subtle` #7986a6 against Figma's
+  #4a5675 by d-055. Idle filter chip counts are `fg.subtle` (#7986a6,
+  #106); Figma's #4a5675 stays out by d-099, because it fails WCAG AA
+  (d-055).
 
 ## Second review
 
@@ -59,5 +69,5 @@ A separate agent compared the side-by-side picture with the render,
 blind to how it was built (2026-11-17). Each finding, fixed or with why
 it stays:
 
-- The search icon and placeholder lighter and about 1 px larger (F1, F3), and the chip counts as bright as their labels (F2): stays. Library gap: Search field and chip count text.
+- The search icon and placeholder lighter and about 1 px larger (F1, F3), and the chip counts as bright as their labels (F2): stays. Library gap: Search field and chip count text. (Beta.5 sets the placeholder at 13 px, `SearchField textSize="sm"`, and idle counts in `fg.subtle`; Figma's #4a5675 stays out by d-055 and d-099.)
 - The chip row 2 px closer to the title (F4): stays. The header is 40 px high (`PageHeader size="phone"`, a 40 px line) against Figma's 42 (`header` h -2), so the chips start 2 px higher (`filter · chips` y -2 once the status bar is removed). No token gives 42 (4 px grid, d-072). Library gap: Styles that differ from Figma.

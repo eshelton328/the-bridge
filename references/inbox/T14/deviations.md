@@ -1,8 +1,8 @@
 # T14 deviations
 
 What still differs from Figma T14 · Filter (the Filter menu open over the list, `filterList`, T1 `list` with skill-evals cleared in the menu), after the last
-fidelity run (`pnpm fidelity inbox T14`, 2026-11-17, library
-1.0.0-beta.4), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
+against the installed library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -41,6 +41,10 @@ status bar.
   headers 38 against 34 (4 px grid, d-072), so each later group starts
   lower and the list is taller (`inbox list` h). Library gap: Small text
   in the detail.
+- **Search field and chip counts.** The search field's text and
+  placeholder are 13 px (`SearchField textSize="sm"`, `bodySm`, #106),
+  as Figma's (346:8703). Idle chip counts are `fg.subtle` (#7986a6, #106);
+  Figma's #4a5675 stays out by d-099, because it fails WCAG AA (d-055).
 - **Filter menu.** As in D04: the `Checkbox size="sm"` rows are 34 px
   against Figma's 30 (4 px grid), so the popover is 62 px taller
   (`filter popover` h +62). Its boxes apply when it closes, so the list
@@ -48,9 +52,11 @@ status bar.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
-- **Button labels.** Button labels are 14 px (`label`) at every size;
-  Figma sets small buttons in Medium 12 or 13, so the buttons are a
-  little wider. Library gap: Button label size.
+- **Button labels.** Newest and Filter take `Button textSize="sm"`
+  (Medium 13, #105), as Figma draws them. The other labels are 14 px
+  (`label`), where Figma sets small buttons in Medium 12 (no token,
+  d-050), so those buttons are a little wider. Library gap: Button
+  label size.
 
 ## Second review
 
