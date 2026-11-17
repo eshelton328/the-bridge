@@ -3,8 +3,10 @@
 The Inbox: items that need Erik, next steps and snoozed items, and the
 detail of the selected item. Figma frames `D*` on the Main page.
 
-- `InboxPage.tsx`: reads the loader's state, `?filter=` and the open
-  groups from `inboxStore.ts`, and passes them to `InboxScreen`.
+- `InboxPage.tsx`: reads the loader's state, `?filter=`, and from
+  `inboxStore.ts` the open groups and, for the shown `?state=`, whether
+  Erik closed the prompt dialog and the search text he typed; it passes
+  them to `InboxScreen` with the setters.
 - `screens/InboxScreen.tsx`: the app shell with the rail, the list pane
   (`InboxListPane`) and the detail (`InboxDetail`). `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or

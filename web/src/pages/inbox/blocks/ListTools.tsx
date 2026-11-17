@@ -27,7 +27,9 @@ export type ListToolsProps = {
   sortActive: boolean
   sortMenu: InboxSortMenu | undefined
   sortOpen: boolean
+  /** The text in the search field; the field shows it and reports each change. */
   query: string | undefined
+  onQueryChange?: ((query: string) => void) | undefined
   filterMenu: InboxFilterMenu | undefined
   filterOpen: boolean
 }
@@ -66,7 +68,16 @@ function SortButton({
   )
 }
 
-export function ListTools({ sort, sortActive, sortMenu, sortOpen, query, filterMenu, filterOpen }: ListToolsProps) {
+export function ListTools({
+  sort,
+  sortActive,
+  sortMenu,
+  sortOpen,
+  query,
+  onQueryChange,
+  filterMenu,
+  filterOpen,
+}: ListToolsProps) {
   const filter = (
     <Button pressed={filterOpen ? true : undefined}>
       <FilterIcon />
@@ -80,7 +91,8 @@ export function ListTools({ sort, sortActive, sortMenu, sortOpen, query, filterM
           label="Search the inbox"
           placeholder="Search the inbox"
           icon={<SearchIcon />}
-          defaultValue={query}
+          value={query ?? ''}
+          onValueChange={onQueryChange}
           clearIcon={<CloseCircleIcon />}
           clearSize="16"
           clearLabel="Clear the search"

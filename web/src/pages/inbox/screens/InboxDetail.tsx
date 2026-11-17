@@ -12,12 +12,15 @@ const pane = css({ display: 'flex', flexDirection: 'column', flex: '1' })
 export type InboxDetailProps = {
   detail: InboxDetailView
   ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
+  onPromptOpenChange?: ((open: boolean) => void) | undefined
 }
 
-export function InboxDetail({ detail, ui }: InboxDetailProps) {
+export function InboxDetail({ detail, ui, onPromptOpenChange }: InboxDetailProps) {
   return (
     <article className={pane} data-figma="task pane">
-      {detail.kind === 'next' ? <NextStepDetail detail={detail} ui={ui} /> : null}
+      {detail.kind === 'next' ? (
+        <NextStepDetail detail={detail} ui={ui} onPromptOpenChange={onPromptOpenChange} />
+      ) : null}
       {detail.kind === 'question' ? <QuestionDetail detail={detail} /> : null}
       {detail.kind === 'running' ? <RunningDetail detail={detail} /> : null}
     </article>

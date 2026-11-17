@@ -10,14 +10,17 @@ export type PromptDialogProps = {
   title: string
   text: string
   open: boolean
+  /** Called with false when Done, Escape or a click outside closes the dialog. */
+  onOpenChange?: ((open: boolean) => void) | undefined
 }
 
-export function PromptDialog({ title, text: prompt, open }: PromptDialogProps) {
+export function PromptDialog({ title, text: prompt, open, onOpenChange }: PromptDialogProps) {
   return (
     <Dialog
       size="wide"
       title={title}
       open={open}
+      onOpenChange={onOpenChange}
       data-figma="dialog · Suggested prompt"
       headerAction={
         <DialogClose>

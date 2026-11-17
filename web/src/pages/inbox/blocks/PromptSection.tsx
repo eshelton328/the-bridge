@@ -36,9 +36,10 @@ export type PromptSectionProps = {
   editing: boolean
   /** The whole prompt is open in its dialog. */
   open: boolean
+  onOpenChange?: ((open: boolean) => void) | undefined
 }
 
-export function PromptSection({ prompt, editing, open }: PromptSectionProps) {
+export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSectionProps) {
   return (
     <DetailSection
       title={prompt.sent ? 'Sent prompt' : 'Suggested prompt'}
@@ -77,7 +78,7 @@ export function PromptSection({ prompt, editing, open }: PromptSectionProps) {
               <ChevronRightIcon size="12" />
             </a>
           ) : null}
-          <PromptDialog title="Suggested prompt" text={prompt.text} open={open} />
+          <PromptDialog title="Suggested prompt" text={prompt.text} open={open} onOpenChange={onOpenChange} />
         </Stack>
       )}
     </DetailSection>

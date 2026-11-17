@@ -57,9 +57,20 @@ export type InboxListPaneProps = {
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
   onSelectItem?: ((id: string) => void) | undefined
+  /** The text Erik typed in the search field; without it the field shows the state's query. */
+  query?: string | undefined
+  onQueryChange?: ((query: string) => void) | undefined
 }
 
-export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onSelectItem }: InboxListPaneProps) {
+export function InboxListPane({
+  data,
+  ui,
+  onFilterChange,
+  onGroupOpenChange,
+  onSelectItem,
+  query,
+  onQueryChange,
+}: InboxListPaneProps) {
   return (
     <section aria-label="Inbox list" className={pane} data-figma="inbox list">
       <div className={header} data-figma="header">
@@ -83,7 +94,8 @@ export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onS
         sortActive={data.sortActive}
         sortMenu={data.sortMenu}
         sortOpen={ui.sortOpen}
-        query={data.search?.query}
+        query={query ?? data.search?.query}
+        onQueryChange={onQueryChange}
         filterMenu={data.filterMenu}
         filterOpen={ui.filterOpen}
       />

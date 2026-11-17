@@ -18,6 +18,7 @@ const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 export type NextStepDetailProps = {
   detail: InboxNextStep
   ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
+  onPromptOpenChange?: ((open: boolean) => void) | undefined
 }
 
 function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; pickerOpen: boolean }) {
@@ -38,7 +39,7 @@ function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; picke
   )
 }
 
-export function NextStepDetail({ detail, ui }: NextStepDetailProps) {
+export function NextStepDetail({ detail, ui, onPromptOpenChange }: NextStepDetailProps) {
   return (
     <Container size="detail">
       <Stack gap="24">
@@ -46,7 +47,12 @@ export function NextStepDetail({ detail, ui }: NextStepDetailProps) {
         <DetailSection title="Why">
           <p className={why}>{detail.why}</p>
         </DetailSection>
-        <PromptSection prompt={detail.prompt} editing={ui.editingPrompt} open={ui.promptOpen} />
+        <PromptSection
+          prompt={detail.prompt}
+          editing={ui.editingPrompt}
+          open={ui.promptOpen}
+          onOpenChange={onPromptOpenChange}
+        />
         <Launch launch={detail.launch} pickerOpen={ui.pickerOpen} />
         {detail.notes === null ? null : (
           <DetailSection title="My notes">

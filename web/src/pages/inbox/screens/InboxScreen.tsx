@@ -16,6 +16,10 @@ export type InboxScreenProps = {
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
   onSelectItem?: ((id: string) => void) | undefined
+  onPromptOpenChange?: ((open: boolean) => void) | undefined
+  /** The text Erik typed in the search field; without it the field shows the state's query. */
+  query?: string | undefined
+  onQueryChange?: ((query: string) => void) | undefined
 }
 
 export function InboxScreen({
@@ -26,6 +30,9 @@ export function InboxScreen({
   onFilterChange,
   onGroupOpenChange,
   onSelectItem,
+  onPromptOpenChange,
+  query,
+  onQueryChange,
 }: InboxScreenProps) {
   return (
     <Backdrop size={viewport}>
@@ -40,9 +47,15 @@ export function InboxScreen({
             onFilterChange={onFilterChange}
             onGroupOpenChange={onGroupOpenChange}
             onSelectItem={onSelectItem}
+            query={query}
+            onQueryChange={onQueryChange}
           />
         }
-        detail={data.detail === null ? undefined : <InboxDetail detail={data.detail} ui={ui} />}
+        detail={
+          data.detail === null ? undefined : (
+            <InboxDetail detail={data.detail} ui={ui} onPromptOpenChange={onPromptOpenChange} />
+          )
+        }
       />
     </Backdrop>
   )
