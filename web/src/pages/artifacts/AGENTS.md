@@ -21,6 +21,9 @@ each file of a page folder is for.
   With an artifact open (`data.open`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
   `detail` (`ArtifactDetail`); a tablet or phone frame of it comes later.
+  With its discussion open (`ui.discussOpen`, D7) the list closes, the
+  artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
+  as the Inbox's task and discussion (D14); Discuss toggles it.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). In
@@ -35,7 +38,7 @@ each file of a page folder is for.
   without the view switch and a `RowGroup` per group.
   `screens/ArtifactDetail.tsx`: the open artifact in a `Container
   size="detail"`: `ArtifactBar`, `ArtifactTitleBlock`, `ArtifactPreview`
-  and `MadeIn`, 20 apart.
+  and `MadeIn`, 20 apart, and an optional `side` beside it (D7).
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search
   (title, description, link and project) and leaves out a group with none;
@@ -77,14 +80,22 @@ each file of a page folder is for.
   carry no finder or update data yet, so the grid does not narrow. For
   D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
   width="sort"` with the heading, a description per sort and the note,
-  as the Inbox's Sort menu; picking a sort closes it).
+  as the Inbox's Sort menu; picking a sort closes it). For D7:
+  `DiscussionPanel` (the header with Open in workspace and Close,
+  `ModelChip`, `ContextMeter`, the guard, the empty state or the sent
+  messages, and `Composer`, whose draft is `ui.discussDraft`) and
+  `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
+  fill the reply box). They are built from the same library parts as the
+  Inbox's discussion blocks, which the Inbox page does not export.
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
   "eval" searched: the chips count the matches, and Earlier gains the
   Writer cross-family round, whose link holds its match) and D5 `addLink`
   (D1's data with the Add a link dialog open, Codex site picked) and D6
-  `sortOpen` (D1's data with the four sorts and the Sort menu open). `library` stays first in `states/index.ts`: the app
+  `sortOpen` (D1's data with the four sorts and the Sort menu open) and
+  D7 `discussOpen` (D2's data with its discussion open; `artifactOpen`
+  holds the discussion, so D2's Discuss opens it). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -93,10 +104,12 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, `filterMenu`, `addLinkForm` and `sortMenu`) and `ArtifactsUi` (chip,
+  `ArtifactDetail`, `filterMenu`, `addLinkForm`, `sortMenu` and the
+  open artifact's `discussion`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
-  open Add a link dialog and its picked source, and the open Sort menu), each
+  open Add a link dialog and its picked source, the open Sort menu, and
+  the open discussion, its draft and the sent messages), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
