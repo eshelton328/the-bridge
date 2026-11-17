@@ -3,6 +3,7 @@
 // state the app shows without `?state=`.
 import { addLink } from './addLink.ts'
 import { artifactOpen } from './artifactOpen.ts'
+import { discussOpen } from './discussOpen.ts'
 import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
 import { searchList } from './searchList.ts'
@@ -15,4 +16,5 @@ export const artifactsStates = {
   searchList,
   addLink,
   sortOpen,
+  discussOpen,
 }

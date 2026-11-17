@@ -174,6 +174,31 @@ export const AddLinkForm = z.object({
 })
 export type AddLinkForm = z.infer<typeof AddLinkForm>
 
+/**
+ * The discussion of the open artifact (D7), beside it: the header with Open in workspace, the model and how much
+ * context it uses, what it may do, and before the first message the empty state and its suggested questions. A
+ * proposal (D7 note): it continues the chat that made the artifact.
+ */
+const ArtifactDiscussion = z.object({
+  title: z.string(),
+  /** Such as "Open in workspace": opens the chat in its workspace with the full history. */
+  openInWorkspace: z.string(),
+  model: z.string(),
+  /** The share of the context window in use, 0 to 100. */
+  context: z.number().min(0).max(100),
+  contextLabel: z.string(),
+  guard: z.string(),
+  empty: z.object({
+    title: z.string(),
+    text: z.string(),
+    canLabel: z.string(),
+    can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
+    suggestions: z.array(z.string()),
+  }),
+  placeholder: z.string(),
+})
+export type ArtifactDiscussion = z.infer<typeof ArtifactDiscussion>
+
 export const ArtifactsData = z.object({
   title: z.string(),
   /** The number of artifacts in the library, after the title. */
@@ -198,6 +223,8 @@ export const ArtifactsData = z.object({
   search: ArtifactSearch.optional(),
   /** The Add a link dialog (D5); without it Add a link opens nothing yet (D1 to D4). */
   addLinkForm: AddLinkForm.optional(),
+  /** The open artifact's discussion (D7), which Discuss opens; without it Discuss opens nothing. */
+  discussion: ArtifactDiscussion.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -222,6 +249,12 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
+  /** The open artifact's discussion is open beside it, and the library list closes (D7). */
+  discussOpen: z.boolean().optional(),
+  /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */
+  discussDraft: z.string().optional(),
+  /** The messages Erik sent in the discussion, in order; nothing answers them in this mock-up. */
+  discussSent: z.array(z.string()).optional(),
 })
 export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 

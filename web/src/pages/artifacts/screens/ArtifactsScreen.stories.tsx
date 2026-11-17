@@ -101,3 +101,16 @@ export const SortOpen: Story = {
     await expect(page.getByText('Found since you last looked stays at the top.')).toBeVisible()
   },
 }
+
+export const DiscussOpen: Story = {
+  name: 'D7: the open artifact’s discussion beside it',
+  args: { data: artifactsStates.discussOpen.data, ui: artifactsStates.discussOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Discuss this artifact' })).toBeVisible()
+    await expect(canvas.getByText('Talk this artifact through')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Sort the bars by pass rate' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toHaveAttribute('aria-pressed', 'true')
+    // The library list closes while the discussion is open.
+    await expect(canvas.queryByText('Skill eval pass rates', { selector: '.list-row__title' })).toBeNull()
+  },
+}
