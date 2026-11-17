@@ -4,10 +4,12 @@
 // come from libraryView (the chip and the search over the state's groups).
 // The List view (D4) shows them as rows (LibraryRows). During a search the
 // count says how many of the library's artifacts show, such as "3 of 24".
+// With `data.addLinkForm` Add a link opens the Add a link dialog (D5).
 // Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { AddLinkDialog } from '../blocks/AddLinkDialog.tsx'
 import { CardGroup } from '../blocks/CardGroup.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
@@ -45,8 +47,30 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
         count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
-        onAddLink={onAddLink}
+        onAddLink={
+          data.addLinkForm === undefined
+            ? onAddLink
+            : () => {
+                onUiChange?.({ addLinkOpen: true })
+              }
+        }
       />
+      {data.addLinkForm === undefined ? null : (
+        <AddLinkDialog
+          form={data.addLinkForm}
+          open={ui.addLinkOpen ?? false}
+          source={ui.addLinkSource ?? 'claude'}
+          onOpenChange={(addLinkOpen) => {
+            onUiChange?.({ addLinkOpen })
+          }}
+          onSourceChange={(addLinkSource) => {
+            onUiChange?.({ addLinkSource })
+          }}
+          onSubmit={() => {
+            onUiChange?.({ addLinkOpen: false })
+          }}
+        />
+      )}
       <div className={chips} data-figma="filter · chips">
         <FilterChips
           label="Filter by source"
