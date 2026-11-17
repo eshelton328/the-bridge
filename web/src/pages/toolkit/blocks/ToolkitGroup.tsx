@@ -2,7 +2,9 @@
 // the group header with the count, which opens and closes the group, and
 // the cards in a grid, four across on the desktop, two on a tablet and one
 // on a phone. A tablet shows each item as a card row (T1 428:58), 8 px
-// apart; a phone as a list row (M1 429:96), 10 px apart. Props only.
+// apart; a phone as a list row (M1 429:96), 10 px apart. Beside an open item
+// (`pane`, D3 427:94) the rows are one column, 10 px apart, and the open
+// item's row is selected. A click on a card or row opens its item. Props only.
 import { GroupHeader, Grid } from '@eshelton328/component-library-1701'
 import { useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -15,20 +17,27 @@ import { ToolkitRow } from './ToolkitRow.tsx'
 // (12 above, 8 below); the sidebar variant (8 above, 6 below) is 30, the nearest the library has.
 const header = css({ alignSelf: 'flex-start' })
 
-const columns = { desktop: '4', tablet: '2', phone: '1' } as const
-// T1 428:58: the rows are 8 apart, across and down; M1 429:96: 10 apart.
-const gaps = { desktop: '16', tablet: '8', phone: '10' } as const
+const columns = { desktop: '4', tablet: '2', phone: '1', pane: '1' } as const
+// T1 428:58: the rows are 8 apart, across and down; M1 429:96 and D3 427:94: 10 apart.
+const gaps = { desktop: '16', tablet: '8', phone: '10', pane: '10' } as const
+
+/** The list beside an open item (D3) lays its groups out as one column of rows, as the phone does. */
+type ToolkitGroupLayout = Viewport | 'pane'
 
 export type ToolkitGroupProps = {
   group: ToolkitGroupView
   open: boolean
   onOpenChange: (open: boolean) => void
-  layout: Viewport
+  layout: ToolkitGroupLayout
+  /** The path of the open item; its row is selected. */
+  selected?: string | null | undefined
+  /** Called with an item's path when its card or row is clicked. */
+  onOpen?: ((path: string) => void) | undefined
   /** Names more than one shown card has; those cards get no Figma layer name. */
   sharedNames: ReadonlySet<string>
 }
 
-export function ToolkitGroup({ group, open, onOpenChange, layout, sharedNames }: ToolkitGroupProps) {
+export function ToolkitGroup({ group, open, onOpenChange, layout, selected, onOpen, sharedNames }: ToolkitGroupProps) {
   const contentId = useId()
   return (
     <>
@@ -49,10 +58,23 @@ export function ToolkitGroup({ group, open, onOpenChange, layout, sharedNames }:
             const figma = sharedNames.has(item.name)
               ? undefined
               : `toolkit ${layout === 'desktop' ? 'card' : 'row'} · ${item.name}`
-            return layout === 'phone' ? (
-              <ToolkitRow key={item.path} item={item} figma={figma} />
+            const select =
+              onOpen === undefined
+                ? undefined
+                : () => {
+                    onOpen(item.path)
+                  }
+            return layout === 'phone' || layout === 'pane' ? (
+              <ToolkitRow
+                key={item.path}
+                item={item}
+                figma={figma}
+                size={layout}
+                selected={item.path === selected}
+                onSelect={select}
+              />
             ) : (
-              <ToolkitCard key={item.path} item={item} compact={layout !== 'desktop'} figma={figma} />
+              <ToolkitCard key={item.path} item={item} compact={layout !== 'desktop'} figma={figma} onSelect={select} />
             )
           })}
         </Grid>

@@ -19,9 +19,11 @@ export type ToolkitCardProps = {
   figma?: string | undefined
   /** The tablet and phone row: no description, and the link counts beside the name. */
   compact?: boolean | undefined
+  /** Called when the card is clicked, to open its item; the card is not interactive without it. */
+  onSelect?: (() => void) | undefined
 }
 
-export function ToolkitCard({ item, figma, compact = false }: ToolkitCardProps) {
+export function ToolkitCard({ item, figma, compact = false, onSelect }: ToolkitCardProps) {
   if (compact) {
     return (
       <div data-figma={figma}>
@@ -29,6 +31,7 @@ export function ToolkitCard({ item, figma, compact = false }: ToolkitCardProps) 
           title={item.name}
           leading={<KindTile kind={item.kind} size="sm" />}
           subtitle={item.path}
+          onSelect={onSelect}
           badge={<span className={counts}>{`→${String(item.linksTo)} ←${String(item.linkedFrom)}`}</span>}
         />
       </div>
@@ -41,6 +44,7 @@ export function ToolkitCard({ item, figma, compact = false }: ToolkitCardProps) 
         leading={<KindTile kind={item.kind} size="lg" />}
         subtitle={item.path}
         description={item.description}
+        onSelect={onSelect}
         meta={
           <>
             <span>{`→ ${String(item.linksTo)}`}</span>
