@@ -142,7 +142,7 @@ const chromeRules: { test: (path: string[], text: string, top: XmlNode | undefin
     reason: statusBarReason,
   },
   {
-    test: (path) => path.some((p) => p.startsWith('keyboard (iOS')),
+    test: (path) => path.some((p) => p === 'keyboard' || p.startsWith('keyboard (iOS')),
     reason: 'iOS keyboard (design-only chrome, d-089)',
   },
 ]

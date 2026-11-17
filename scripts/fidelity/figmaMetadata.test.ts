@@ -75,6 +75,22 @@ void test('leaves out a hidden layer and its children', () => {
   assert.deepEqual(ref.skipped, { hidden: 1 })
 })
 
+void test('excludes the text of a layer named keyboard', () => {
+  const keys = `<frame id="4:1" name="M5 · Search" x="0" y="0" width="390" height="844">
+    <frame id="4:2" name="keyboard" x="0" y="553" width="390" height="291">
+      <frame id="4:3" name="row" x="0" y="8" width="390" height="42">
+        <text id="4:4" name="q" x="4" y="10" width="10" height="20" />
+      </frame>
+    </frame>
+    <text id="4:5" name="keyboard shortcuts" x="4" y="100" width="100" height="20" />
+  </frame>`
+  const ref = buildFrameRef(parseMetadata(keys), 'KEY', 'test')
+  assert.deepEqual(
+    ref.exclude.map((e) => e.id),
+    ['4:4'],
+  )
+})
+
 void test('finds note frames by the name of the frame they annotate', () => {
   assert.equal(findNotes(parseMetadata(xml)).get('M3 · Edit the prompt'), 'Edit opens the keyboard.')
 })
