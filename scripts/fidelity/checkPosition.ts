@@ -41,6 +41,9 @@ export function checkPosition(
   boxes: readonly FigmaBox[],
   tolerance = ref.tolerance,
 ): PositionResult {
+  // NaN or a negative tolerance would pass or fail every box unseen.
+  if (!Number.isFinite(tolerance) || tolerance < 0)
+    throw new Error(`The position tolerance must be a finite number of px, 0 or more; got ${String(tolerance)}`)
   const allowed = new Set(exceptions.position.map((p) => p.layer))
   const diffs: PositionDiff[] = []
   const passed: string[] = []

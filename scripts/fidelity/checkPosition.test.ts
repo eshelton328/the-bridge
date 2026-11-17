@@ -62,3 +62,8 @@ void test('an exception skips the key', () => {
   const r = checkPosition(ref, { position: [{ layer: 'inbox list', reason: 'gap' }] }, [box('inbox list', 0, 0, 1, 1)])
   assert.deepEqual([r.ok, r.excepted], [true, ['inbox list']])
 })
+
+void test('a tolerance that is not a finite number of px, 0 or more, is an error', () => {
+  for (const t of [Number.NaN, -1, Infinity])
+    assert.throws(() => checkPosition(ref, none, [box('1:1', 64, 0, 420, 982)], t), /tolerance/)
+})

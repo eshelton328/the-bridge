@@ -19,7 +19,15 @@ import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
 import { collectPage } from './inPage.ts'
-import { frameDir, readExceptions, readFrameRef, referencesDir, repoRoot, reportsDir } from './references.ts'
+import {
+  frameDir,
+  parseTolerance,
+  readExceptions,
+  readFrameRef,
+  referencesDir,
+  repoRoot,
+  reportsDir,
+} from './references.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState } from './storyServer.ts'
 
 const { values, positionals } = parseArgs({
@@ -32,7 +40,13 @@ if (page === undefined || !existsSync(join(referencesDir, page))) {
   console.error(`Pages with references: ${existsSync(referencesDir) ? readdirSync(referencesDir).join(', ') : 'none'}`)
   process.exit(2)
 }
-const tolerance = values.tolerance === undefined ? undefined : Number(values.tolerance)
+let tolerance: number | undefined
+try {
+  tolerance = values.tolerance === undefined ? undefined : parseTolerance(values.tolerance, '--tolerance')
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error))
+  process.exit(2)
+}
 
 const allFrames = readdirSync(join(referencesDir, page)).filter((d) =>
   existsSync(join(frameDir(page, d), 'frame.json')),
