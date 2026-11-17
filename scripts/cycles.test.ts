@@ -5,7 +5,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import ts from 'typescript'
-import { findCycles, importGraph, runtimeImports, sourceFiles } from './cyclesLib.ts'
+import { checkRepo, findCycles, importGraph, runtimeImports, sourceFiles } from './cyclesLib.ts'
 
 void test('reads static imports, re-exports and dynamic imports', () => {
   const text =
@@ -149,5 +149,22 @@ void test('an exclusion applies only to its own glob call (Codex review of #13)'
     ])
   } finally {
     rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+void test('resolves a root-relative glob from web/, the Vite root', () => {
+  const repo = mkdtempSync(join(tmpdir(), 'cycles-repo-'))
+  try {
+    mkdirSync(join(repo, 'web', 'src'), { recursive: true })
+    mkdirSync(join(repo, 'shared', 'src'), { recursive: true })
+    writeFileSync(join(repo, 'web', 'tsconfig.json'), '{}')
+    writeFileSync(
+      join(repo, 'web', 'src', 'a.ts'),
+      "import.meta.glob('/src/b.ts', { eager: true })\nexport const a = 1",
+    )
+    writeFileSync(join(repo, 'web', 'src', 'b.ts'), "import { a } from './a'\nexport const b = a")
+    assert.deepEqual(checkRepo(repo).cycles, [['web/src/a.ts', 'web/src/b.ts']])
+  } finally {
+    rmSync(repo, { recursive: true, force: true })
   }
 })

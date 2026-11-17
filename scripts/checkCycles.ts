@@ -6,25 +6,11 @@
 // do not count, because TypeScript erases them. A dynamic import or a glob
 // that the check cannot follow fails it too.
 //   node scripts/checkCycles.ts
-import { join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import ts from 'typescript'
-import { findCycles, importGraph, sourceFiles } from './cyclesLib.ts'
+import { checkRepo } from './cyclesLib.ts'
 
-const root = fileURLToPath(new URL('..', import.meta.url))
-const config = ts.getParsedCommandLineOfConfigFile(
-  join(root, 'web', 'tsconfig.json'),
-  {},
-  { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => undefined },
-)
-const files = [...sourceFiles(join(root, 'web', 'src')), ...sourceFiles(join(root, 'shared', 'src'))]
-const { graph, unsupported } = importGraph(files, config?.options ?? {}, root)
-const cycles = findCycles(graph).map((c) => c.map((f) => relative(root, f)))
-const edges = [...graph.values()].reduce((n, t) => n + t.length, 0)
-const ok = cycles.length === 0 && unsupported.length === 0
-console.log(
-  JSON.stringify({ ok, files: graph.size, edges, cycles, unsupported: unsupported.map((u) => relative(root, u)) }),
-)
+const { ok, files, edges, cycles, unsupported } = checkRepo(fileURLToPath(new URL('..', import.meta.url)))
+console.log(JSON.stringify({ ok, files, edges, cycles, unsupported }))
 if (cycles.length)
   console.error('Break each cycle: move the shared code into a file that both import, or pass it in as a prop.')
 if (unsupported.length)

@@ -2,7 +2,7 @@
 // read the runtime imports of a file, build the import graph of a folder,
 // and find the cycles in it (brain decision d-071).
 import { globSync, readdirSync, readFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import ts from 'typescript'
 
 /**
@@ -187,4 +187,33 @@ export function findCycles(graph: ReadonlyMap<string, readonly string[]>): strin
   }
   for (const v of graph.keys()) if (!index.has(v)) connect(v)
   return cycles.sort((a, b) => (a[0] ?? '').localeCompare(b[0] ?? ''))
+}
+
+/**
+ * Checks web/src and shared/src of the repository at repoRoot. A glob that
+ * starts with `/` is resolved from web/, the Vite root, as Vite does.
+ */
+export function checkRepo(repoRoot: string): {
+  ok: boolean
+  files: number
+  edges: number
+  cycles: string[][]
+  unsupported: string[]
+} {
+  const config = ts.getParsedCommandLineOfConfigFile(
+    join(repoRoot, 'web', 'tsconfig.json'),
+    {},
+    { ...ts.sys, onUnRecoverableConfigFileDiagnostic: () => undefined },
+  )
+  const files = [...sourceFiles(join(repoRoot, 'web', 'src')), ...sourceFiles(join(repoRoot, 'shared', 'src'))]
+  const { graph, unsupported } = importGraph(files, config?.options ?? {}, join(repoRoot, 'web'))
+  const cycles = findCycles(graph).map((c) => c.map((f) => relative(repoRoot, f)))
+  const edges = [...graph.values()].reduce((n, t) => n + t.length, 0)
+  return {
+    ok: cycles.length === 0 && unsupported.length === 0,
+    files: graph.size,
+    edges,
+    cycles,
+    unsupported: unsupported.map((u) => relative(repoRoot, u)),
+  }
 }
