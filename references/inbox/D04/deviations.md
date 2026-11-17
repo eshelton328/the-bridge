@@ -7,12 +7,9 @@ library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library 
 
 ## Checks
 
-- Text: fail, from the check, not the render. "approval", "question", "action" and "next" are the `value`s
-  of the hidden checkbox inputs inside the library's `Checkbox` rows (Ark keeps the
-  option id there). A browser never draws a radio or checkbox value, but
-  the stricter text check of main reads every input's value as visible
-  text. No exception was added: the check needs to skip checkbox, radio
-  and hidden inputs (a fix for Erik, see the report of this round).
+- Text: pass. The text check of main 3546ac7 (#3) skips the values of
+  radio, checkbox, hidden and password inputs, so the option ids inside
+  `Checkbox` rows no longer count as visible text.
   The hidden "Run the readme" row is excepted in `exceptions.json`.
 - Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.

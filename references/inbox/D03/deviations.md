@@ -7,13 +7,9 @@ library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library 
 
 ## Checks
 
-- Text: fail, from the check, not the render. "new-claude", "new-codex", "new-elsewhere", "hono-server",
-  "bridge-themes" and "drift-check" are the `value`s
-  of the hidden radio inputs inside the library's `OptionList` rows (Ark keeps the
-  option id there). A browser never draws a radio or checkbox value, but
-  the stricter text check of main reads every input's value as visible
-  text. No exception was added: the check needs to skip checkbox, radio
-  and hidden inputs (a fix for Erik, see the report of this round).
+- Text: pass. The text check of main 3546ac7 (#3) skips the values of
+  radio, checkbox, hidden and password inputs, so the option ids inside
+  `OptionList` rows no longer count as visible text.
   One exception in `exceptions.json` (the "|" Figma draws as the editor's caret).
 - Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: fail. `hiddenOverflow` on `[data-figma="run in picker"]`: the Run in picker scrolls and its last row and note are cut off (below).
