@@ -70,7 +70,11 @@ first: it says what each file of a page folder is for.
   needs no new block either: the drop zone is an overlay of the one pane
   that `ui.paneDrag.pane` names, so a drop splits only that pane (here
   `edge: 'bottom'`, the lower half of drift check), and the other panes
-  keep their size. Later frames add to these blocks.
+  keep their size. D11 needs no new block: `WorkbenchPanes` gives three
+  panes to `SplitPanes`, which puts the first on the left at the full
+  height and the second over the third on the right, with one handle
+  between the columns and one between the right column's rows. Later
+  frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -84,7 +88,8 @@ first: it says what each file of a page folder is for.
   (from `chatActions`), D7 `chatInWorkbench` (from `chatActions`, with
   D1's bridge themes pane), D8 `dragOverPane` (from `chatInWorkbench`),
   D9 `twoPanes` (from `chatInWorkbench`, with D1's drift check pane),
-  D10 `dragBelowPane` (from `twoPanes`, with D8's drag over a pane).
+  D10 `dragBelowPane` (from `twoPanes`, with D8's drag over a pane),
+  D11 `threePanes` (from `twoPanes`, with D1's brain git shell pane).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

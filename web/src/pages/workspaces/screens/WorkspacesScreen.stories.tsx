@@ -181,3 +181,17 @@ export const DragBelowPane: Story = {
     await expect(zone).not.toHaveTextContent('bridge themes')
   },
 }
+
+export const ThreePanes: Story = {
+  name: 'D11: three panes, bridge themes on the left and two stacked on the right',
+  args: { data: workspacesStates.threePanes.data, ui: workspacesStates.threePanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 3 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'brain git' })).toBeVisible()
+    // Each gap has its own handle: one between the columns, one between the right column's rows.
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
+  },
+}
