@@ -26,6 +26,8 @@ const full = css({ w: 'shell.detail' })
 
 export type ArtifactDetailProps = {
   artifact: Artifact
+  /** The bar's pill, such as "New" or, after Apply, "Updated" (D9); none without it. */
+  badge?: string | undefined
   /** Discuss was pressed; without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
   /** Beside the artifact, such as its open discussion (D7); Discuss is pressed while it shows. */
@@ -37,11 +39,11 @@ export type ArtifactDetailProps = {
   madeInLayer?: string | undefined
 }
 
-export function ArtifactDetail({ artifact, onDiscuss, side, madeInLayer }: ArtifactDetailProps) {
+export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }: ArtifactDetailProps) {
   const content = (
     <Container size="detail" gap="20" className={side === undefined ? undefined : full}>
       <ArtifactBar
-        isNew={artifact.isNew}
+        badge={badge}
         found={artifact.found}
         discussOpen={side === undefined ? undefined : true}
         onDiscuss={onDiscuss}

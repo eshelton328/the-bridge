@@ -3,7 +3,8 @@
 // the library beside it (Figma D1), or, with an artifact open, the library
 // as a list and the artifact beside it (D2), or with its discussion open
 // the artifact and the discussion, the list closed (D7), and in it a
-// proposed change with Apply, Discard and Edit first (D8); on a tablet or phone the
+// proposed change with Apply, Discard and Edit first (D8), which Apply
+// turns into the applied artifact and proposal (D9); on a tablet or phone the
 // library over the tab bar. A state file's data and ui are its props; the callbacks are
 // optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -15,7 +16,7 @@ import type { ArtifactsData, ArtifactsUi } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { ArtifactDetail } from './ArtifactDetail.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
-import { discussionEntries, proposalEffect } from './discussionView.ts'
+import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 
 export type ArtifactsScreenProps = {
@@ -34,8 +35,10 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
       {(layout) => {
         // D2: the desktop opens an artifact beside the list. A tablet or phone frame of it comes later.
         const open = layout === 'desktop' ? data.open : undefined
+        // D9: after Apply the artifact shows Updated and the proposal its applied form.
+        const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
         // D7: Discuss opens the artifact's discussion beside it, and the list closes.
-        const discussion = open === undefined ? undefined : data.discussion
+        const discussion = view?.discussion
         const discussing = discussion !== undefined && ui.discussOpen === true
         const sent = ui.discussSent ?? []
         return (
@@ -64,11 +67,12 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 )
               }
               detail={
-                open === undefined ? (
+                open === undefined || view === undefined ? (
                   <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
                 ) : (
                   <ArtifactDetail
-                    artifact={open}
+                    artifact={view.artifact}
+                    badge={view.badge}
                     onDiscuss={
                       discussion === undefined
                         ? undefined
@@ -83,6 +87,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                           discussion={discussion}
                           draft={ui.discussDraft}
                           entries={discussionEntries(discussion, ui)}
+                          applied={view.applied}
                           onAct={(act) => {
                             onUiChange?.(proposalEffect(discussion, act))
                           }}

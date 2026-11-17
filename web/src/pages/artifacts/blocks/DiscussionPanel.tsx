@@ -2,7 +2,7 @@
 // "discussion panel", D7 452:2410): the header with Open in workspace and
 // Close, the model and how much context it uses, what it may do, the empty
 // state or the entries (D8: Erik's question, the reply and the proposed
-// change, then the messages he sent), and the reply box. Built from the same
+// change, applied in D9, then the messages he sent), and the reply box. Built from the same
 // library parts as the Inbox's DiscussionPanel (D14), which the Inbox page
 // does not export. The reply box has no attach button, as the Inbox's: no
 // file flow is designed. Props only.
@@ -59,6 +59,8 @@ export type DiscussionPanelProps = {
   draft?: string | undefined
   /** What the discussion shows; with none, the empty state. */
   entries?: readonly ArtifactDiscussionEntry[] | undefined
+  /** Erik applied the proposal (D9): it shows its applied form. */
+  applied?: ArtifactProposalProps['applied']
   /** A button of the proposal was pressed. */
   onAct?: ArtifactProposalProps['onAct']
   onDraftChange?: ((text: string) => void) | undefined
@@ -71,6 +73,7 @@ export function DiscussionPanel({
   discussion,
   draft = '',
   entries = [],
+  applied,
   onAct,
   onDraftChange,
   onSend,
@@ -115,7 +118,7 @@ export function DiscussionPanel({
         ) : (
           <Stack gap="12">
             {entries.map((entry, i) => (
-              <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} onAct={onAct} />
+              <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} applied={applied} onAct={onAct} />
             ))}
           </Stack>
         )}

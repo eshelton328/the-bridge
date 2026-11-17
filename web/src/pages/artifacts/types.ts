@@ -91,6 +91,20 @@ export const ArtifactDetail = z.object({
   /** The artifact's address without the scheme, as the preview's footer shows it. */
   link: z.string(),
   madeIn: ArtifactMadeIn,
+  /**
+   * How the artifact shows after Erik applies its discussion's proposal (D9): Apply republishes it to the same link,
+   * so the link and the library entry stay; the bar's pill and line and the updated chip change.
+   */
+  applied: z
+    .object({
+      /** The bar's pill, such as "Updated". */
+      badge: z.string(),
+      /** The bar's line, such as "updated just now from the discussion". */
+      found: z.string(),
+      /** The updated chip, such as "updated just now". */
+      updated: z.string(),
+    })
+    .optional(),
 })
 export type ArtifactDetail = z.infer<typeof ArtifactDetail>
 
@@ -186,6 +200,11 @@ const ArtifactProposal = z.object({
   label: z.string(),
   section: z.string(),
   lines: z.array(ArtifactDiffLine),
+  /**
+   * The block after Apply (D9), as the Inbox's applied update (Inbox D16): its eyebrow, such as "Applied · Updated
+   * this artifact", the line under the lines it put in, and how much of the context window the discussion uses then.
+   */
+  apply: z.object({ label: z.string(), note: z.string(), context: z.number().min(0).max(100) }).optional(),
 })
 export type ArtifactProposal = z.infer<typeof ArtifactProposal>
 
@@ -289,8 +308,8 @@ export const ArtifactsUi = z.object({
   /** The messages Erik sent in the discussion, in order; nothing answers them in this mock-up. */
   discussSent: z.array(z.string()).optional(),
   /**
-   * What Erik did to the discussion's proposal (D8): Discard drops it; Apply is recorded here and the applied artifact
-   * comes with D9.
+   * What Erik did to the discussion's proposal (D8): Discard drops it; Apply shows the artifact Updated and the
+   * proposal in its applied form (D9).
    */
   discussProposal: ProposalDecision.optional(),
 })
