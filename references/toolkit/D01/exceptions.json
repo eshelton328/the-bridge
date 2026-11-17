@@ -1,0 +1,86 @@
+{
+  "missing": [
+    {
+      "text": "Writes and audits the AGENTS.md context file in each folder",
+      "layers": ["425:85"],
+      "reason": "Figma cuts the agents-md card description too: layer 425:85 is one 17 px line, 302 wide, and frame.png ends it at \"in each…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Rewrites a task into a more ambitious prompt before work starts",
+      "layers": ["425:99"],
+      "reason": "Figma cuts the ambitious card description too: layer 425:99 is one 17 px line, 302 wide, and frame.png ends it at \"before…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Grades prose for AI-writing tells with Jev, then rewrites it",
+      "layers": ["425:113"],
+      "reason": "Figma cuts the audit-slop card description too: layer 425:113 is one 17 px line, 302 wide, and frame.png ends it at \"then rewrite…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Creates, repairs and renders Mermaid diagrams, then gets a review",
+      "layers": ["425:142"],
+      "reason": "Figma cuts the mermaid-diagrams card description too: layer 425:142 is one 17 px line, 302 wide, and frame.png ends it at \"then…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Writes and checks READMEs, then runs the quick start in a sandbox",
+      "layers": ["425:184"],
+      "reason": "Figma cuts the readme card description too: layer 425:184 is one 17 px line, 302 wide, and frame.png ends it at \"the quick star…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Sources every claim, fits the form, then lints and reviews a draft",
+      "layers": ["425:199"],
+      "reason": "Figma cuts the writer card description too: layer 425:199 is one 17 px line, 302 wide, and frame.png ends it at \"lints and revie…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Writes held-out eval cases from a skill name and description",
+      "layers": ["425:235"],
+      "reason": "Figma cuts the eval-case-writer card description too: layer 425:235 is one 17 px line, 302 wide, and frame.png ends it at \"name and desc…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    },
+    {
+      "text": "Grades eval runs blind, with quoted evidence for each verdict",
+      "layers": ["425:250"],
+      "reason": "Figma cuts the eval-grader card description too: layer 425:250 is one 17 px line, 302 wide, and frame.png ends it at \"evidence for each…\". The render keeps it on one line and cuts it with an ellipsis at the card width (Card description, TruncatedText); the whole text is in the DOM and in its tooltip."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · agents-md\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the agents-md card description (layer 425:85, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · ambitious\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the ambitious card description (layer 425:99, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · audit-slop\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the audit-slop card description (layer 425:113, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · mermaid-diagrams\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the mermaid-diagrams card description (layer 425:142, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · readme\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the readme card description (layer 425:184, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div:nth-of-type(9) > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the writer card description (layer 425:199, see its missing entry): the line is cut at the card width, and the tooltip shows it in full. The skill writer card has no data-figma: the agent writer shares its layer name (toolkit card · writer), so the selector counts it among the Skills grid cells."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · eval-case-writer\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the eval-case-writer card description (layer 425:235, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit card · eval-grader\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
+      "reason": "The ellipsis Figma draws on the eval-grader card description (layer 425:250, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    }
+  ]
+}
