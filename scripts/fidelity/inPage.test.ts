@@ -1,7 +1,7 @@
 // Tests for the pure helpers of inPage.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { collectPageScript, fullyVisible, isPortalRoot } from './inPage.ts'
+import { collectPageScript, fieldText, fullyVisible, isPortalRoot } from './inPage.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
 const viewport = edges(0, 0, 1280, 800)
@@ -57,9 +57,30 @@ void test('any portal content in body counts, Storybook chrome does not', () => 
   assert.equal(isPortalRoot(el('SCRIPT')), false)
 })
 
-void test('the page script calls collectPage with both helpers', () => {
+void test('the page script calls collectPage with its helpers', () => {
   const script = collectPageScript('#storybook-root')
   assert.match(script, /^\(function collectPage\(/)
   assert.match(script, /fullyVisible: function fullyVisible\(/)
   assert.match(script, /isPortalRoot: function isPortalRoot\(/)
+  assert.match(script, /fieldText: function fieldText\(/)
+})
+
+void test('a checkbox, radio, hidden or password value is not field text; a text value is', () => {
+  const field = (tagName: string, type: string, value: string, placeholder = '') => ({
+    tagName,
+    type,
+    value,
+    placeholder,
+  })
+  // A visually hidden radio or checkbox carries a form value, not text a viewer reads.
+  assert.equal(fieldText(field('INPUT', 'radio', 'hono-rpc')), '')
+  assert.equal(fieldText(field('INPUT', 'checkbox', 'on')), '')
+  assert.equal(fieldText(field('INPUT', 'hidden', 'csrf-token')), '')
+  assert.equal(fieldText(field('INPUT', 'password', 'hunter2')), '')
+  // A password field still shows its placeholder.
+  assert.equal(fieldText(field('INPUT', 'password', '', 'Password')), 'Password')
+  // Text inputs and text areas keep their value, then their placeholder.
+  assert.equal(fieldText(field('INPUT', 'text', '  Find   a task ')), 'Find a task')
+  assert.equal(fieldText(field('INPUT', 'search', '', 'Search…')), 'Search…')
+  assert.equal(fieldText(field('TEXTAREA', 'textarea', 'A note')), 'A note')
 })
