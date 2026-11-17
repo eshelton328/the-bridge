@@ -85,6 +85,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       run(proposalEffect(data, ui, kind, act, desktop, drafts.values.prompt))
     },
     onCheck: (label, checked) => {
+      // The boxes of created tasks say what was created; only Undo in the toast takes them back.
+      if (ui.proposals.create === 'applied') return
       onUiChange?.({ proposalChecks: { ...ui.proposalChecks, [label]: checked } })
     },
   }

@@ -389,6 +389,18 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(picker()).not.toBeInTheDocument()
   })
 
+  it('keeps the created tasks when the desktop discussion opens again after Create', async () => {
+    await page.viewport(1512, 982)
+    view = await renderInbox('tasksProposed').rendered
+    await page.getByRole('button', { name: 'Create 3 tasks' }).click()
+    await page.getByRole('button', { name: 'Discuss' }).click()
+    const box = page.getByRole('checkbox', { name: 'Write the Workbench tickets' })
+    await expect.element(box).toBeChecked()
+    await expect.element(box).toBeDisabled()
+    await page.getByRole('button', { name: 'Close the discussion' }).click()
+    await expect.element(page.getByText('Created 3 tasks from a discussion')).toBeVisible()
+  })
+
   describe('the discussion on the tablet', () => {
     const tabBar = () => page.getByRole('button', { name: 'Home' })
     const title = () => page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })

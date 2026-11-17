@@ -46,7 +46,10 @@ export type ProposalControl = {
 /** The Figma layer name: "proposal · " and what the label proposes, in capitals. */
 const layerName = (label: string) => `proposal · ${(label.split(' · ')[1] ?? label).toUpperCase()}`
 
-function Body({ proposal, onCheck }: { proposal: InboxProposal; onCheck: ProposalControl['onCheck'] }) {
+/** The new tasks' boxes; after Create they show what was created and no longer change. */
+type BodyProps = { proposal: InboxProposal; onCheck: ProposalControl['onCheck']; created: boolean }
+
+function Body({ proposal, onCheck, created }: BodyProps) {
   switch (proposal.kind) {
     case 'update':
       return <ProposalDiff label={proposal.section} lines={proposal.lines} />
@@ -58,6 +61,7 @@ function Body({ proposal, onCheck }: { proposal: InboxProposal; onCheck: Proposa
               <Checkbox
                 label={t.title}
                 checked={t.checked}
+                disabled={created}
                 onCheckedChange={(checked) => {
                   onCheck?.(t.title, checked)
                 }}
@@ -70,6 +74,7 @@ function Body({ proposal, onCheck }: { proposal: InboxProposal; onCheck: Proposa
             size="sm"
             label={proposal.alsoRemove.label}
             checked={proposal.alsoRemove.checked}
+            disabled={created}
             onCheckedChange={(checked) => {
               onCheck?.(proposal.alsoRemove.label, checked)
             }}
@@ -132,7 +137,7 @@ export function ProposalCard({ proposal, control }: ProposalCardProps) {
           control?.onAct?.(proposal.kind, a)
         })}
       >
-        <Body proposal={proposal} onCheck={control?.onCheck} />
+        <Body proposal={proposal} onCheck={control?.onCheck} created={control?.decisions.create === 'applied'} />
       </ProposalBlock>
     </div>
   )
