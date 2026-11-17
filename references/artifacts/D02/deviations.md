@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 1 of the fidelity loop
 (`pnpm fidelity artifacts D02`, 2026-11-17, against the installed
-library 1.0.0-beta.8), each with its reason. The library gaps are in
+library 1.0.0-beta.15), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks

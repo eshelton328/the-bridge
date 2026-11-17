@@ -2,7 +2,7 @@
 
 What still differs from Figma after the fidelity loop
 (`pnpm fidelity artifacts D08`, 2026-11-17, against the installed
-library 1.0.0-beta.10, the version this branch pins), each with its
+library 1.0.0-beta.15, the version this branch pins), each with its
 reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -75,10 +75,10 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   own `ArtifactProposal` and `DiscussionEntry`, built from the same
   library parts (`ProposalBlock`, `ProposalDiff`, `Message`,
   `BubbleIcon`). Nothing moved into `web/src/blocks/`.
-- **Rail.** The shared rail (`AppRail`, not changed here) has a Toolkit
-  item after Artifacts (d-105), which this frame does not draw, so More
-  sits one item lower, and its items are 54 high and 60 apart against
-  Figma's 50 and 56. Library gap "Rail item height".
+- **Rail.** The shared rail (`AppRail`, not changed here: another chat
+  holds the navigation) has a Toolkit item after Artifacts (d-105), which
+  this frame does not draw, so More sits one item lower. Its items are
+  50 high and 56 apart, as Figma's (library #115).
 
 ## Values picked (d-100)
 

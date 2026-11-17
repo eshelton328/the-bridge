@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D03`, 2026-11-17, against the installed
-library 1.0.0-beta.8), each with its reason. The library gaps are in
+library 1.0.0-beta.15), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -19,34 +19,34 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 
 ## Deviations
 
-- **Filter menu place.** `menu · Filter` x +75.5. Figma opens the menu
+- **Filter menu place.** `menu · Filter` x +77.5. Figma opens the menu
   where the search ends, 120 px before the Filter button's start; the
   `Popover` opens at the button's start (`placement="bottom-start"`), so
-  the menu sits about 75 px further right and covers the third card more
+  the menu sits about 77 px further right and covers the third card more
   than the second. Library gap "Filter menu placement".
 - **Filter menu rows.** `menu · Filter` h +46, and every row:
   `check · Claude artifacts`, `check · Codex sites`, `check · ncc-1701`,
   `check · omni`, `check · skill-evals`, `check · omni-brain`,
   `check · Not in a project`, `check · Artifact hook`,
   `check · Codex session log`, `check · Added by hand`, `check · Today`
-  and `check · This week`, each x +71.5 (the menu's place, above) and
+  and `check · This week`, each x +73.5 (the menu's place, above) and
   w +8, and from `check · ncc-1701` on y +6 growing to +41. The
   `Checkbox` rows are 32 high and 34 apart against Figma's 29 (28 for a
   mono label) and 31 or 30, so each row sits a little lower than the one
   before it and the menu is 590 high against 544. `Popover` pads 8
   against Figma's 12, so the rows are 302 wide against 294 and start 4 px
-  nearer the menu's edge. `button · Show 7` x +73.8, y +42: the footer
+  nearer the menu's edge. `button · Show 7` x +75.8, y +42: the footer
   follows the rows down. Library gap "Filter menu rows and inset".
 - **Source marks.** The Claude artifacts and Codex sites rows have no
   Claude or Codex mark between the box and the label: `Checkbox` takes
   only a text label. Library gap "Checkbox leading icon".
-- **View switch.** `view · Grid or List` x -70.9, w +70.9, as D01: the
+- **View switch.** `view · Grid or List` x -66.9, w +66.9, as D01: the
   switch shows "Grid" and "List" beside its icons (the text check's extra
-  `Grid` and `List`) and is 139 px wide against 68. Library gap
+  `Grid` and `List`) and is 135 px wide against 68. Library gap
   "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -52.9, `button · Sort` x -52.9,
-  w +8.4, `button · Filter` x -44.4, w +4.4. The wider view switch takes
-  71 px of the search's width, so Sort and Filter sit further left; Sort
+- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
+  w +8.4, `button · Filter` x -42.4, w +4.4. The wider view switch takes
+  67 px of the search's width, so Sort and Filter sit further left; Sort
   and Filter (with its dot) pad their sides more than Figma's 11 px.
   Library gaps "Icon-only view switch" and "Sort and Filter button
   widths".
@@ -78,11 +78,10 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".
-- **Rail.** The rail's items are 60 px apart against Figma's 56, so each
-  item after Inbox sits lower, and the shared rail (`AppRail`, not
-  changed here: another chat holds the navigation) has a Toolkit item
-  after Artifacts (d-105), which this frame does not draw, so More sits
-  one item lower still. Library gap "Rail item height".
+- **Rail.** The shared rail (`AppRail`, not changed here: another chat
+  holds the navigation) has a Toolkit item after Artifacts (d-105), which
+  this frame does not draw, so More sits one item lower. Its items are
+  50 high and 56 apart, as Figma's (library #115).
 - **Show.** Show 7 closes the menu. The cards carry no finder or update
   data yet, so the grid does not narrow to the seven artifacts; the note
   and the Show count are the state's text.

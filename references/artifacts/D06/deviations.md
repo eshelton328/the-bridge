@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 1 of the fidelity loop
 (`pnpm fidelity artifacts D06`, 2026-11-17, against the installed
-library 1.0.0-beta.8), each with its reason. The library gaps are in
+library 1.0.0-beta.15), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -22,8 +22,8 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 
 ## Deviations
 
-- **Sort menu place and height.** `menu · Sort` x -52.5, h +40. The menu
-  opens at the Sort button's start, as Figma's, but the button sits 52.9 px
+- **Sort menu place and height.** `menu · Sort` x -50.5, h +40. The menu
+  opens at the Sort button's start, as Figma's, but the button sits 50.9 px
   further left (see "Search, Sort and Filter"), so the menu does too. It
   opens 4 under the button against Figma's 8 (y -4, inside the tolerance).
   Its choices are 56 px rows against Figma's 50, and it draws the
@@ -40,14 +40,16 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   width too, and `RadioMenu placement` has only `bottom-start` (Figma's
   and the one used), `bottom-end`, `top-start` and `top-end`, with no
   offset. No exception covers them; they go when the library gap
-  closes.
-- **View switch.** `view · Grid or List` x -70.9, w +70.9, as D01: the
+  closes. Library #116's compact density is a `Menu` prop only: a
+  `Menu` row has no description line and no check, and `RadioMenu`
+  takes no `density`, so the menu keeps its 56 px rows.
+- **View switch.** `view · Grid or List` x -66.9, w +66.9, as D01: the
   switch shows "Grid" and "List" beside its icons (the text check's extra
-  `Grid` and `List`) and is 139 px wide against 68. Library gap
+  `Grid` and `List`) and is 135 px wide against 68. Library gap
   "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -52.9, `button · Sort` x -52.9,
-  w +8.4, `button · Filter` x -44.4, w +4.4. The wider view switch takes
-  71 px of the search's width, so Sort and Filter sit further left; Sort
+- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
+  w +8.4, `button · Filter` x -42.4, w +4.4. The wider view switch takes
+  67 px of the search's width, so Sort and Filter sit further left; Sort
   and Filter pad their sides more than Figma's 11 px. Library gaps
   "Icon-only view switch" and "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
@@ -78,11 +80,10 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".
-- **Rail.** The rail's items are 60 px apart against Figma's 56, so each
-  item after Inbox sits lower, and the shared rail (`AppRail`, not
-  changed here: another chat holds the navigation) has a Toolkit item
-  after Artifacts (d-105), which this frame does not draw, so More sits
-  one item lower still. Library gap "Rail item height".
+- **Rail.** The shared rail (`AppRail`, not changed here: another chat
+  holds the navigation) has a Toolkit item after Artifacts (d-105), which
+  this frame does not draw, so More sits one item lower. Its items are
+  50 high and 56 apart, as Figma's (library #115).
 - **Sorting.** Picking a sort closes the menu and orders the cards inside
   each group (`sortCards` in `libraryView.ts`); the groups keep their
   order, so Found since you last looked stays at the top, as the frame's

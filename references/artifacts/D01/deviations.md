@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D01`, 2026-11-17, against the installed
-library 1.0.0-beta.8), each with its reason. The library gaps are in
+library 1.0.0-beta.15), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -20,16 +20,17 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 
 ## Deviations
 
-- **View switch.** `view · Grid or List` x -70.9, w +70.9. Figma's switch
+- **View switch.** `view · Grid or List` x -66.9, w +66.9. Figma's switch
   is two icon-only segments, 68 px wide; `ViewSwitch` always shows its
   labels, so the render shows "Grid" and "List" beside the icons (the
-  text check's extra `Grid` and `List`), and the switch is 139 px wide.
-  Library gap "Icon-only view switch".
-- **Search, Sort and Filter.** `search` w -52.9, `button · Sort` x -52.9,
-  w +8.4, `button · Filter` x -44.4, w +4.4. The search and the space
+  text check's extra `Grid` and `List`), and the switch is 135 px wide.
+  It draws the picked view in `tone="accent"` (cyan icon, no border), as
+  Figma does. Library gap "Icon-only view switch".
+- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
+  w +8.4, `button · Filter` x -42.4, w +4.4. The search and the space
   before the view switch share the row's free width, as Figma's layers
-  do (402:15398, 402:15418); the wider view switch takes 71 px of it, so
-  the search is 53 px narrower and Sort and Filter sit further left.
+  do (402:15398, 402:15418); the wider view switch takes 67 px of it, so
+  the search is 51 px narrower and Sort and Filter sit further left.
   Sort and Filter are wider because `Button textSize="sm"` pads its sides
   more than Figma's 11 px. Library gaps "Icon-only view switch" and "Sort
   and Filter button widths".

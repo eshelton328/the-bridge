@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D05`, 2026-11-17, against the installed
-library 1.0.0-beta.8), each with its reason. The library gaps are in
+library 1.0.0-beta.15), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. The library behind the dialog
 is D01's, so its deviations are D01's.
 
@@ -71,13 +71,13 @@ is D01's, so its deviations are D01's.
 
 ## Deviations: the library behind it (as D01)
 
-- **View switch.** `view · Grid or List` x -70.9, w +70.9: the switch
+- **View switch.** `view · Grid or List` x -66.9, w +66.9: the switch
   shows "Grid" and "List" beside its icons (the text check's extra `Grid`
-  and `List`) and is 139 px wide against 68. Library gap "Icon-only view
+  and `List`) and is 135 px wide against 68. Library gap "Icon-only view
   switch".
-- **Search, Sort and Filter.** `search` w -52.9, `button · Sort` x -52.9,
-  w +8.4, `button · Filter` x -44.4, w +4.4: the wider view switch takes
-  71 px of the search's width, and Sort and Filter pad their sides more
+- **Search, Sort and Filter.** `search` w -50.9, `button · Sort` x -50.9,
+  w +8.4, `button · Filter` x -42.4, w +4.4: the wider view switch takes
+  67 px of the search's width, and Sort and Filter pad their sides more
   than Figma's 11 px. Library gaps "Icon-only view switch" and "Sort and
   Filter button widths".
 - **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
@@ -103,10 +103,10 @@ is D01's, so its deviations are D01's.
   "Thumbnail colour".
 - **Page title.** "Artifacts" is 20 px type against Figma's about 24 px.
   Library gap "Desktop page title size".
-- **Rail.** The rail's items are 60 px apart against Figma's 56, and the
-  shared rail (`AppRail`, not changed here) has a Toolkit item after
-  Artifacts (d-105), which this frame does not draw. Library gap "Rail
-  item height".
+- **Rail.** The shared rail (`AppRail`, not changed here: another chat
+  holds the navigation) has a Toolkit item after Artifacts (d-105), which
+  this frame does not draw, so More sits one item lower. Its items are
+  50 high and 56 apart, as Figma's (library #115).
 
 ## Values picked (d-100)
 
