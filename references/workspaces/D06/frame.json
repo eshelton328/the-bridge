@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "204:4",
@@ -2717,7 +2717,7 @@
       "w": 436,
       "h": 14,
       "path": "drop zone · right > drop hints",
-      "text": "edge: split beside, above or below · middle: replace this chat"
+      "text": "edge: split beside, above or below   ·   middle: replace this chat"
     },
     {
       "id": "158:1034",

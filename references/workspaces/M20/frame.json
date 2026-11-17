@@ -911,17 +911,6 @@
       "path": "Frame > Frame > Frame > Frame > Frame"
     },
     {
-      "id": "422:598",
-      "name": "/",
-      "type": "text",
-      "x": 64,
-      "y": 686.5,
-      "w": 8,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "/"
-    },
-    {
       "id": "422:608",
       "name": "Gets this chat’s full context. Returns its result here.",
       "type": "text",
@@ -982,6 +971,7 @@
     }
   ],
   "skipped": {
-    "star": 22
+    "star": 22,
+    "hidden": 1
   }
 }

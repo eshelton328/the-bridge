@@ -133,17 +133,6 @@
       "path": "Frame > Frame > Frame > rename field · chat"
     },
     {
-      "id": "420:1566",
-      "name": "bridge themes",
-      "type": "text",
-      "x": 74,
-      "y": 68,
-      "w": 111,
-      "h": 21,
-      "path": "Frame > Frame > Frame",
-      "text": "bridge themes"
-    },
-    {
       "id": "420:1567",
       "name": "omni-brain",
       "type": "text",
@@ -715,6 +704,7 @@
     }
   ],
   "skipped": {
-    "star": 58
+    "star": 58,
+    "hidden": 1
   }
 }

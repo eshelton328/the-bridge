@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "417:813",
@@ -2862,17 +2862,6 @@
       "path": "Frame > Frame > Frame > Frame > Frame"
     },
     {
-      "id": "417:1104",
-      "name": "/",
-      "type": "text",
-      "x": 556,
-      "y": 534,
-      "w": 8,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "/"
-    },
-    {
       "id": "417:1114",
       "name": "Gets this chat’s full context. Returns its result here.",
       "type": "text",
@@ -2958,6 +2947,7 @@
   ],
   "exclude": [],
   "skipped": {
-    "star": 99
+    "star": 99,
+    "hidden": 1
   }
 }

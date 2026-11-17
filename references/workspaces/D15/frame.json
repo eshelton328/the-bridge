@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "417:92",
@@ -2832,16 +2832,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "417:324",
-      "name": "kind · claude",
-      "type": "frame",
-      "x": 542.8333358764648,
-      "y": 512,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "417:326",
       "name": "Whole chat",
       "type": "text",
@@ -2863,16 +2853,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "417:328",
-      "name": "kind · codex",
-      "type": "frame",
-      "x": 772.3333282470703,
-      "y": 512,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "417:332",
       "name": "Up to a message…",
       "type": "text",
@@ -2882,37 +2862,6 @@
       "h": 17,
       "path": "Frame > Frame > Frame > Frame",
       "text": "Up to a message…"
-    },
-    {
-      "id": "417:333",
-      "name": "Frame",
-      "type": "frame",
-      "x": 842.3333129882812,
-      "y": 500.5,
-      "w": 160.66665649414062,
-      "h": 39,
-      "path": "Frame > Frame > Frame"
-    },
-    {
-      "id": "417:334",
-      "name": "kind · shell",
-      "type": "frame",
-      "x": 895.6666450500488,
-      "y": 512,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
-      "id": "417:337",
-      "name": "shell",
-      "type": "text",
-      "x": 919.6666412353516,
-      "y": 511.5,
-      "w": 30,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "shell"
     },
     {
       "id": "417:393",
@@ -3000,6 +2949,7 @@
   ],
   "exclude": [],
   "skipped": {
-    "star": 99
+    "star": 99,
+    "hidden": 3
   }
 }

@@ -841,16 +841,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "420:563",
-      "name": "kind · claude",
-      "type": "frame",
-      "x": 164.83333587646484,
-      "y": 600,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "420:565",
       "name": "Whole chat",
       "type": "text",
@@ -872,16 +862,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "420:567",
-      "name": "kind · codex",
-      "type": "frame",
-      "x": 394.3333282470703,
-      "y": 600,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "420:571",
       "name": "Up to a message…",
       "type": "text",
@@ -891,37 +871,6 @@
       "h": 17,
       "path": "Frame > Frame > Frame > Frame",
       "text": "Up to a message…"
-    },
-    {
-      "id": "420:572",
-      "name": "Frame",
-      "type": "frame",
-      "x": 464.33331298828125,
-      "y": 588.5,
-      "w": 160.66665649414062,
-      "h": 39,
-      "path": "Frame > Frame > Frame"
-    },
-    {
-      "id": "420:573",
-      "name": "kind · shell",
-      "type": "frame",
-      "x": 517.6666450500488,
-      "y": 600,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
-      "id": "420:576",
-      "name": "shell",
-      "type": "text",
-      "x": 541.6666412353516,
-      "y": 599.5,
-      "w": 30,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "shell"
     },
     {
       "id": "420:632",
@@ -1015,6 +964,7 @@
     }
   ],
   "skipped": {
-    "star": 58
+    "star": 58,
+    "hidden": 3
   }
 }

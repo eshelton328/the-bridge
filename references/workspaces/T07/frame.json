@@ -1294,17 +1294,6 @@
       "path": "Frame > Frame > Frame > Frame > Frame"
     },
     {
-      "id": "420:400",
-      "name": "/",
-      "type": "text",
-      "x": 178,
-      "y": 780,
-      "w": 8,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "/"
-    },
-    {
       "id": "420:401",
       "name": "Frame",
       "type": "frame",
@@ -1385,6 +1374,7 @@
     }
   ],
   "skipped": {
-    "star": 58
+    "star": 58,
+    "hidden": 1
   }
 }

@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "402:4497",
@@ -3146,7 +3146,7 @@
       "w": 238,
       "h": 16,
       "path": "workbench > panes > split > split > pane · B > Frame",
-      "text": "3 candidate pairs, 1 stale link"
+      "text": "  3 candidate pairs, 1 stale link"
     },
     {
       "id": "402:4894",
@@ -3538,7 +3538,7 @@
       "w": 87,
       "h": 16,
       "path": "workbench > panes > split > split > pane · C > Frame",
-      "text": "M AGENTS.md"
+      "text": " M AGENTS.md"
     },
     {
       "id": "402:4944",
@@ -3549,7 +3549,7 @@
       "w": 281,
       "h": 16,
       "path": "workbench > panes > split > split > pane · C > Frame",
-      "text": "M projects/ncc-1701/captures/README.md"
+      "text": " M projects/ncc-1701/captures/README.md"
     },
     {
       "id": "402:4945",
@@ -3560,7 +3560,7 @@
       "w": 195,
       "h": 16,
       "path": "workbench > panes > split > split > pane · C > Frame",
-      "text": "D projects/omni/ROADMAP.md"
+      "text": " D projects/omni/ROADMAP.md"
     },
     {
       "id": "402:4946",

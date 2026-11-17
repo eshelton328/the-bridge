@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "402:1332",
@@ -3136,7 +3136,7 @@
       "w": 238,
       "h": 16,
       "path": "workbench > panes > split > pane · B > Frame",
-      "text": "3 candidate pairs, 1 stale link"
+      "text": "  3 candidate pairs, 1 stale link"
     },
     {
       "id": "402:1728",

@@ -819,17 +819,6 @@
       "path": "Frame > field · Name > Frame"
     },
     {
-      "id": "422:230",
-      "name": "random if blank",
-      "type": "text",
-      "x": 399,
-      "y": 607.5,
-      "w": 99,
-      "h": 14,
-      "path": "Frame > field · Name > Frame",
-      "text": "random if blank"
-    },
-    {
       "id": "422:231",
       "name": "Frame",
       "type": "frame",
@@ -881,16 +870,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "422:236",
-      "name": "kind · claude",
-      "type": "frame",
-      "x": 50.833335876464844,
-      "y": 679.5,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "422:238",
       "name": "Whole chat",
       "type": "text",
@@ -912,16 +891,6 @@
       "path": "Frame > Frame > Frame"
     },
     {
-      "id": "422:240",
-      "name": "kind · codex",
-      "type": "frame",
-      "x": 211.3333282470703,
-      "y": 679.5,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
       "id": "422:244",
       "name": "Up to a message…",
       "type": "text",
@@ -931,37 +900,6 @@
       "h": 17,
       "path": "Frame > Frame > Frame > Frame",
       "text": "Up to a message…"
-    },
-    {
-      "id": "422:245",
-      "name": "Frame",
-      "type": "frame",
-      "x": 350.33331298828125,
-      "y": 668,
-      "w": 160.66665649414062,
-      "h": 39,
-      "path": "Frame > Frame > Frame"
-    },
-    {
-      "id": "422:246",
-      "name": "kind · shell",
-      "type": "frame",
-      "x": 403.6666450500488,
-      "y": 679.5,
-      "w": 16,
-      "h": 16,
-      "path": "Frame > Frame > Frame > Frame"
-    },
-    {
-      "id": "422:249",
-      "name": "shell",
-      "type": "text",
-      "x": 427.66664123535156,
-      "y": 679,
-      "w": 30,
-      "h": 17,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "shell"
     },
     {
       "id": "422:305",
@@ -1024,6 +962,7 @@
     }
   ],
   "skipped": {
-    "star": 22
+    "star": 22,
+    "hidden": 4
   }
 }

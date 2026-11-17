@@ -651,7 +651,7 @@
       "w": 13,
       "h": 16,
       "path": "Frame > nested subtask chat",
-      "text": "nested"
+      "text": "↳"
     },
     {
       "id": "417:2230",
@@ -2063,17 +2063,6 @@
       "path": "Frame > Frame > Frame > Frame > rename field · chat"
     },
     {
-      "id": "417:2371",
-      "name": "bridge themes",
-      "type": "text",
-      "x": 440,
-      "y": 39,
-      "w": 111,
-      "h": 21,
-      "path": "Frame > Frame > Frame > Frame",
-      "text": "bridge themes"
-    },
-    {
       "id": "417:2372",
       "name": "omni-brain",
       "type": "text",
@@ -2700,6 +2689,7 @@
   ],
   "exclude": [],
   "skipped": {
-    "star": 99
+    "star": 99,
+    "hidden": 1
   }
 }

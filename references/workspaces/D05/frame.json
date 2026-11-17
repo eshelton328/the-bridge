@@ -1440,7 +1440,7 @@
       "w": 238,
       "h": 16,
       "path": "main > Frame > Frame > Frame > Frame",
-      "text": "3 candidate pairs, 1 stale link"
+      "text": "  3 candidate pairs, 1 stale link"
     },
     {
       "id": "158:300",
@@ -1832,7 +1832,7 @@
       "w": 87,
       "h": 16,
       "path": "main > Frame > Frame > Frame > Frame",
-      "text": "M AGENTS.md"
+      "text": " M AGENTS.md"
     },
     {
       "id": "158:350",
@@ -1843,7 +1843,7 @@
       "w": 281,
       "h": 16,
       "path": "main > Frame > Frame > Frame > Frame",
-      "text": "M projects/ncc-1701/captures/README.md"
+      "text": " M projects/ncc-1701/captures/README.md"
     },
     {
       "id": "158:351",
@@ -1854,7 +1854,7 @@
       "w": 195,
       "h": 16,
       "path": "main > Frame > Frame > Frame > Frame",
-      "text": "D projects/omni/ROADMAP.md"
+      "text": " D projects/omni/ROADMAP.md"
     },
     {
       "id": "158:352",
