@@ -68,3 +68,9 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
+
+## Second review, round 2
+
+A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
+
+- Reset looks disabled where Figma shows it enabled (P1): checked against the frames, and the rule stays. Figma draws Reset the same way in T2, T16 and T19 (and D1, D14 to D16): the label and icon in #8a97b8 (`fg.muted`) where Edit's are #e6ecff, with the same `border.default` border. So Figma dims Reset here too: after Apply, Undo on the change line takes the discussion's change back, and Reset stays for Erik's own edits, as in T2. The difference the review saw is the dim style: a disabled `Button` fades the whole button, border included, where Figma dims only the label and icon. `InboxRoute.test.tsx` checks that Reset is disabled in T19 after Apply, with Undo shown and no Edited pill. Library gap: Styles that differ from Figma.

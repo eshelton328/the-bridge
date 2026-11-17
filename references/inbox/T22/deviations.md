@@ -82,3 +82,12 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
+
+## Second review, round 2
+
+A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
+
+- Reply box not focused (P1): checked, it is. The play test focuses the reply box and asserts `toHaveFocus`, and the capture shows the focused border: the reply box's top edge is #3a819d (`border.selected` over the fill) against #24314f unfocused. Figma's focused border is #6863b0, so the render's focus reads as a faint cyan line. Library gap: Composer focus.
+- Remove… with a neutral fill and grey border (P2): fixed. It is `Button variant="dangerSoft"` now: the danger tint fill and the danger border, as Figma draws it (402:12385). The library notes its label falls under 4.5:1 in light mode only; the-bridge is dark. D19 and D20 share the block and change with it.
+- "Discussion" author label larger and lighter (P2): recorded. Figma sets it in SemiBold 12/16; no text style is 12 px SemiBold, so it stays `label` (Medium 14). Library gap: Message author icon and small text.
+- Model chip chevron thin and grey (P3): recorded. `ModelChip` draws its chevron in `fg.muted` and has no prop for Figma's heavier #e6ecff one. Library gap: Styles that differ from Figma.

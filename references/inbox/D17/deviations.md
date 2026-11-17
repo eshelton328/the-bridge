@@ -47,7 +47,7 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 - **New tasks.** Each task is a bordered box (`border.default`, radius
   `lg`, 8 by 10 padding) with a `Checkbox` and the meta line under the
   title; in a `Panel` each box was 12 px taller (round 1). The `Checkbox` label is `body`
-  (14/20) where Figma's title is 13/17, and "Also remove this task" is a
+  (14/20) where Figma's title is 13/17, and "Also remove this task" is a `size="sm"`
   `Checkbox` too, so the block is 60 px taller
   (`proposal · CREATE 3 TASKS` h +60). Create 3 tasks counts the checked
   tasks.

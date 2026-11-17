@@ -51,3 +51,10 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
+
+## Second review, round 2
+
+A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
+
+- Chip counts lighter, search placeholder lighter and about 1 px larger (P3): already recorded. Library gap: Search field and chip count text.
+- Square corners where Figma's frame is rounded (P4): device chrome, which belongs to the canvas (d-089).

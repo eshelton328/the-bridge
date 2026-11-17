@@ -87,3 +87,13 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
+
+## Second review, round 2
+
+A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
+
+- Reply box not focused (P1): checked, it is. The play test focuses the reply box and asserts `toHaveFocus`, and the capture shows the focused border: the reply box's top edge is #3a819d (`border.selected` over the fill) against #24314f unfocused. Figma's focused border is #6863b0, so the render's focus reads as a faint cyan line. Library gap: Composer focus.
+- New-task rows taller than Figma's (P2): recorded. Figma's box is 52 high (402:11865: 9 padding, the title 17, the meta 14); `Checkbox` keeps a `control.md` (32) row for the touch target, so each box is 66. Library gap: Message author icon and small text.
+- "Discussion" author label larger and lighter (P2): recorded. Figma sets it in SemiBold 12/16; no text style is 12 px SemiBold, so it stays `label` (Medium 14). Library gap: Message author icon and small text.
+- "Also remove this task" near-white against Figma's grey (P2): fixed in part. It is `Checkbox size="sm"` now, Figma's 12/16; Figma's label is #8a97b8 and `Checkbox` draws every label in `fg.default`. Library gap: Message author icon and small text.
+- Model chip chevron thin and grey (P3): recorded. `ModelChip` draws its chevron in `fg.muted` and has no prop for Figma's heavier #e6ecff one. Library gap: Styles that differ from Figma.

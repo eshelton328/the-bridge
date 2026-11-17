@@ -64,8 +64,9 @@ status bar.
   reply box; `AppShell` keeps it only on the phone, so the reply box
   sits 20 px lower (`composer · discussion` y +20, anchored to the
   bottom, no status bar offset) and the `discussion` area is shorter.
-  The story focuses the composer, as Figma draws it with a caret; the
-  focused border is cyan, not Figma's lighter grey. Library gaps: Top and
+  Figma draws the reply box focused behind the dialog, with a caret;
+  the modal dialog holds the focus, so the reply box is not focused
+  here. Library gaps: Top and
   bottom safe areas on the tablet, Composer focus.
 - **Context meter value.** `exceptions.json` excepts the meter's
   percentage: `ContextMeter` draws the number and the % sign as two text
@@ -87,3 +88,11 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
+
+## Second review, round 2
+
+A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
+
+- Reply box not focused (P1): stays. Figma draws the reply box focused behind the confirm dialog; the dialog is modal and holds the focus (Keep it shows the focus ring, as in D20), so the reply box cannot have it. The deviation above that said the story focuses the reply box was wrong and is corrected. Library gap: Composer focus.
+- REASON box outlined and dark (P2): recorded. Figma fills the reason box #151e34 with a `border.default` border (402:12541); `Panel` is `surface.pane` with the glass blur (#0f1626 in the dialog), and no fill token is #151e34. Library gap: Styles that differ from Figma.
+- Model chip chevron thin and grey (P3): recorded. `ModelChip` draws its chevron in `fg.muted` and has no prop for Figma's heavier #e6ecff one. Library gap: Styles that differ from Figma.
