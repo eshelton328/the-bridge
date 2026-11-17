@@ -127,7 +127,7 @@ export const nextStep = {
         text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.',
         edited: false,
         long: true,
-        sent: false,
+        state: 'suggested',
       },
       launch: {
         stage: 'suggested',
@@ -160,5 +160,7 @@ export const nextStep = {
     sortOpen: false,
     snoozeOpen: false,
     promptOpen: false,
+    discussOpen: false,
+    removeOpen: false,
   },
 } satisfies ScreenState<InboxData, InboxUi>

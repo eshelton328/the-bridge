@@ -18,7 +18,7 @@ export const runningTask = {
       ...base,
       status: { tone: 'working', label: 'Running' },
       origin: 'started 3m ago',
-      prompt: { ...base.prompt, sent: true },
+      prompt: { ...base.prompt, state: 'sent' },
       launch: {
         stage: 'started',
         run: {

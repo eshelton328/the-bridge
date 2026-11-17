@@ -1,7 +1,8 @@
 // The row under the filter chips: search, Sort and Filter. Sort opens the
 // Sort menu and Filter the Filter menu when the state has one; a sort or
-// filter that applies, or an open menu, shows its button pressed. A search
-// shows its query in the field. Props only.
+// filter that applies, or an open menu, shows its button pressed, and
+// Filter shows how many filters apply. A search shows its query in the
+// field. Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -32,6 +33,8 @@ export type ListToolsProps = {
   onQueryChange?: ((query: string) => void) | undefined
   filterMenu: InboxFilterMenu | undefined
   filterOpen: boolean
+  /** How many filters apply; Filter then shows the number and is pressed. */
+  filterCount?: number | undefined
 }
 
 function SortButton({
@@ -77,11 +80,12 @@ export function ListTools({
   onQueryChange,
   filterMenu,
   filterOpen,
+  filterCount = 0,
 }: ListToolsProps) {
   const filter = (
-    <Button pressed={filterOpen ? true : undefined}>
+    <Button pressed={filterOpen || filterCount > 0 ? true : undefined}>
       <FilterIcon />
-      Filter
+      {filterCount > 0 ? `Filter · ${String(filterCount)}` : 'Filter'}
     </Button>
   )
   return (

@@ -35,8 +35,13 @@ export const InboxRowView = z.object({
   snoozed: z.object({ line: z.string(), age: z.string() }).optional(),
   /** A started item: the chat it runs in and what it does, and its status. */
   running: z.object({ agent: InboxAgent, line: z.string(), status: InboxPill }).optional(),
-  /** A finished item: how it ended, such as "Allowed once". A dismissed item shows a cross and dim text. */
-  outcome: z.object({ line: z.string(), dismissed: z.boolean() }).optional(),
+  /**
+   * A finished item: how it ended, such as "Allowed once". A dismissed item
+   * shows a cross and dim text; a removed one a bin and red text.
+   */
+  outcome: z.object({ line: z.string(), result: z.enum(['done', 'dismissed', 'removed']) }).optional(),
+  /** A pill under the meta line, such as "New" on a task a discussion just created. */
+  pill: InboxPill.optional(),
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
@@ -94,6 +99,17 @@ const InboxSnoozeMenu = z.object({
   done: z.string(),
   dismiss: z.string(),
 })
+
+/** Filters that apply, under the list tools: a label, its values (each with a remove button) and Clear. */
+const InboxAppliedFilters = z.object({
+  label: z.string(),
+  values: z.array(z.string()),
+  /** The line under the list, such as "1 task hidden by filters". */
+  hidden: z.string(),
+})
+
+/** A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. */
+const InboxToast = z.object({ text: z.string(), action: z.string() })
 
 const InboxMetaChip = z.object({ label: z.string(), icon: InboxChipIcon, issue: z.boolean() })
 
@@ -159,8 +175,18 @@ const InboxLaunch = z.discriminatedUnion('stage', [
 const InboxNextStep = InboxDetailHead.extend({
   kind: z.literal('next'),
   why: z.string(),
-  /** A sent prompt is read-only: it has no Reset or Edit. */
-  prompt: z.object({ text: z.string(), edited: z.boolean(), long: z.boolean(), sent: z.boolean() }),
+  /**
+   * `suggested` has Reset and Edit; `sent` (started) and `notRun` (removed
+   * before it ran) are read-only. `change` is the line under a prompt that
+   * a discussion changed, with Undo.
+   */
+  prompt: z.object({
+    text: z.string(),
+    edited: z.boolean(),
+    long: z.boolean(),
+    state: z.enum(['suggested', 'sent', 'notRun']),
+    change: z.object({ line: z.string(), undo: z.string() }).optional(),
+  }),
   launch: InboxLaunch,
   notes: z.object({ text: z.string(), by: z.string(), add: z.string() }).nullable(),
   sources: z.array(z.object({ label: z.string(), detail: z.string() })),
@@ -202,6 +228,78 @@ const InboxRunning = z.object({
 })
 export type InboxRunning = z.infer<typeof InboxRunning>
 
+/** One line of a proposed change: taken out or put in. */
+const InboxDiffLine = z.object({ change: z.enum(['removed', 'added']), text: z.string() })
+
+/**
+ * A change the discussion proposes, by kind: an update of the task (with
+ * its diff, proposed or applied), new tasks (each with a checkbox), or the
+ * removal of the task (with its reason and the confirm dialog's text).
+ * `label` is the block's eyebrow, such as "Proposed · Update this task".
+ */
+const InboxProposal = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('update'),
+    label: z.string(),
+    section: z.string(),
+    lines: z.array(InboxDiffLine),
+    /** After Apply: the line that says so; the block then offers Undo. */
+    applied: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal('create'),
+    label: z.string(),
+    tasks: z.array(z.object({ title: z.string(), meta: z.string(), checked: z.boolean() })),
+    alsoRemove: z.object({ label: z.string(), checked: z.boolean() }),
+  }),
+  z.object({
+    kind: z.literal('remove'),
+    label: z.string(),
+    title: z.string(),
+    reasonLabel: z.string(),
+    reason: z.string(),
+    note: z.string(),
+    /** The confirm dialog: its title, the meta line and what happens. */
+    confirm: z.object({ title: z.string(), meta: z.string(), text: z.string() }),
+  }),
+])
+export type InboxProposal = z.infer<typeof InboxProposal>
+
+/** One entry of a discussion: an event line, Erik's message, the discussion's reply or a proposal. */
+const InboxDiscussionEntry = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('event'), text: z.string() }),
+  z.object({ type: z.literal('user'), text: z.string() }),
+  z.object({ type: z.literal('reply'), name: z.string(), text: z.string() }),
+  z.object({ type: z.literal('proposal'), proposal: InboxProposal }),
+])
+export type InboxDiscussionEntry = z.infer<typeof InboxDiscussionEntry>
+
+/**
+ * A discussion of the open task, beside it: its model and context, what it
+ * may do, the entries, and the reply box. With no entries it shows `empty`:
+ * what it can do and suggested questions.
+ */
+const InboxDiscussion = z.object({
+  title: z.string(),
+  model: z.string(),
+  /** The share of the context window in use, 0 to 100. */
+  context: z.number().min(0).max(100),
+  contextLabel: z.string(),
+  guard: z.string(),
+  entries: z.array(InboxDiscussionEntry),
+  empty: z
+    .object({
+      title: z.string(),
+      text: z.string(),
+      canLabel: z.string(),
+      can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
+      suggestions: z.array(z.string()),
+    })
+    .optional(),
+  placeholder: z.string(),
+})
+export type InboxDiscussion = z.infer<typeof InboxDiscussion>
+
 export const InboxDetailView = z.discriminatedUnion('kind', [InboxNextStep, InboxQuestion, InboxRunning])
 export type InboxDetailView = z.infer<typeof InboxDetailView>
 
@@ -217,8 +315,12 @@ export const InboxData = z.object({
   sortMenu: InboxSortMenu.optional(),
   search: InboxSearch.optional(),
   filterMenu: InboxFilterMenu.optional(),
+  applied: InboxAppliedFilters.optional(),
   groups: z.array(InboxGroupView),
   detail: InboxDetailView.nullable(),
+  /** The open task's discussion; the task bar then shows Discuss. */
+  discussion: InboxDiscussion.optional(),
+  toast: InboxToast.optional(),
 })
 export type InboxData = z.infer<typeof InboxData>
 
@@ -239,6 +341,10 @@ export const InboxUi = z.object({
   snoozeOpen: z.boolean(),
   /** The whole prompt is open in its dialog. */
   promptOpen: z.boolean(),
+  /** The discussion panel is open beside the task; the list hides. */
+  discussOpen: z.boolean(),
+  /** The dialog that confirms a proposed removal is open. */
+  removeOpen: z.boolean(),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 
