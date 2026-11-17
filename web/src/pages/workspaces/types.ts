@@ -325,6 +325,11 @@ const PaneDrop = z.object({
   hint: z.string().optional(),
   /** `false`: no split icon over the title (D8). */
   icon: z.boolean().optional(),
+  /**
+   * Over a pane, where the dragged chat sits in the room under the text: a third of the way down (the default, D8,
+   * D10) or at its end, where the pointer is near the pane's bottom (D12).
+   */
+  preview: z.enum(['third', 'end']).optional(),
 })
 export type PaneDrop = z.infer<typeof PaneDrop>
 

@@ -195,3 +195,16 @@ export const ThreePanes: Story = {
     await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
   },
 }
+
+export const FourPanes: Story = {
+  name: 'D12: four panes, the most, and a chat dragged over one replaces it',
+  args: { data: workspacesStates.fourPanes.data, ui: workspacesStates.fourPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 4 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'brain git' })).toBeVisible()
+    await expect(canvas.getByText('Empty pane')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Replace drift check with hono server')
+    await expect(zone).toHaveTextContent('Four panes is the most. drift check keeps running in the sidebar.')
+  },
+}

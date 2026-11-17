@@ -1,5 +1,6 @@
 // The drop zone while Erik drags a chat from the sidebar: over the chat shown
-// alone (D6 158:1025) or over a pane of the workbench (D8 402:1112). A dashed
+// alone (D6 158:1025) or over a pane of the workbench (D8 402:1112; D12 402:5000,
+// the whole pane, where the chat would replace it). A dashed
 // cyan box over the part of the chat or pane where the chat would open (an
 // edge: beside, above or below; the middle: in its place), with the split
 // icon unless the drop turns it off, what the drop does, a line and, when
@@ -29,6 +30,9 @@ const zone = css({
   borderColor: 'border.active',
   bg: 'accent.faint',
 })
+// A drop in the middle of a pane replaces its chat (D12 402:4865 under 402:5000): Figma dims the whole pane, header
+// included, under the zone. `overlay.scrim`, the library's dimming fill, covers the pane under the zone (d-100).
+const scrim = css({ position: 'absolute', inset: '0', zIndex: '1', pointerEvents: 'none', bg: 'overlay.scrim' })
 // Over the chat alone the zone sits 12 in from the chat's edges (158:1025 is 12 from its top, right and bottom); over
 // a pane, 4 in from the pane's (402:1112). Both start 4 past the middle (D6 957 in a chat from 394 to 1512, D8 957
 // in a pane from 404 to 1502).
@@ -79,10 +83,14 @@ const hints = css({
 // is the largest spacing token (d-100), and it is centred and 320 wide (shell.popover, nearest to 310). Over a pane
 // (402:1126) it is a third of the way down the room under the text (115 of about 350 left over), so that room is
 // split 1 : 2 around it with no length, and it sits 20 in from the zone's end (Figma 26) and is 300 wide
-// (shell.popoverFilter, nearest to its 289 before its 3° turn) (d-100).
+// (shell.popoverFilter, nearest to its 289 before its 3° turn) (d-100). With `drop.preview: 'end'` (D12 402:5014) it
+// sits at the end of that room, 4 above the zone's bottom edge, which puts its middle where Figma's turned box has
+// its middle, and at the zone's right end; it is 320 wide (shell.popover), as hono server's meta and Needs you do
+// not fit in 300 (d-100).
 const preview = {
   chat: css({ mt: '40', w: 'shell.popover' }),
   pane: css({ w: 'shell.popoverFilter', alignSelf: 'flex-end', me: '20' }),
+  end: css({ w: 'shell.popover', alignSelf: 'flex-end', mb: '4' }),
 }
 const above = css({ flex: '1' })
 const below = css({ flex: '[2]' })
@@ -105,32 +113,36 @@ export type PaneDropZoneProps = {
 export function PaneDropZone({ edge, chat, target, drop, placement = 'chat', figma }: PaneDropZoneProps) {
   const fill = (s: string) => s.replace('{chat}', chat.title).replace('{target}', target)
   const layers = figma ?? { zone: '158:1025', preview: '158:1034', hint: '158:1048' }
+  const end = placement === 'pane' && drop.preview === 'end'
   return (
-    <div data-figma={layers.zone} role="status" className={cx(zone, edges[placement][edge])}>
-      <div className={half} />
-      <div className={middle}>
-        {drop.icon === false ? null : (
-          <span className={icon} aria-hidden="true">
-            <SplitIcon size="24" />
-          </span>
-        )}
-        <p className={title}>{fill(drop.title)}</p>
-        <p className={text}>{fill(drop.text)}</p>
-        {drop.hint === undefined ? null : (
-          <p className={hints} data-figma={layers.hint}>
-            {drop.hint}
-          </p>
-        )}
-      </div>
-      <div className={half}>
-        {placement === 'pane' ? <div className={above} /> : null}
-        <div className={preview[placement]}>
-          <DragPreview>
-            <SidebarChatRow chat={chat} figma={layers.preview} />
-          </DragPreview>
+    <>
+      {placement === 'pane' && edge === 'middle' ? <div className={scrim} /> : null}
+      <div data-figma={layers.zone} role="status" className={cx(zone, edges[placement][edge])}>
+        <div className={half} />
+        <div className={middle}>
+          {drop.icon === false ? null : (
+            <span className={icon} aria-hidden="true">
+              <SplitIcon size="24" />
+            </span>
+          )}
+          <p className={title}>{fill(drop.title)}</p>
+          <p className={text}>{fill(drop.text)}</p>
+          {drop.hint === undefined ? null : (
+            <p className={hints} data-figma={layers.hint}>
+              {drop.hint}
+            </p>
+          )}
         </div>
-        {placement === 'pane' ? <div className={below} /> : null}
+        <div className={half}>
+          {placement === 'pane' ? <div className={above} /> : null}
+          <div className={preview[end ? 'end' : placement]}>
+            <DragPreview>
+              <SidebarChatRow chat={chat} figma={layers.preview} />
+            </DragPreview>
+          </div>
+          {placement === 'pane' && !end ? <div className={below} /> : null}
+        </div>
       </div>
-    </div>
+    </>
   )
 }

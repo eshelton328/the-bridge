@@ -73,8 +73,13 @@ first: it says what each file of a page folder is for.
   keep their size. D11 needs no new block: `WorkbenchPanes` gives three
   panes to `SplitPanes`, which puts the first on the left at the full
   height and the second over the third on the right, with one handle
-  between the columns and one between the right column's rows. Later
-  frames add to these blocks.
+  between the columns and one between the right column's rows. D12 gives
+  four panes to `SplitPanes` (the fourth under the first) and adds two
+  things to `PaneDropZone`: over a pane, `edge: 'middle'` (a drop that
+  replaces the pane's chat) dims the whole pane under the zone with
+  `overlay.scrim`, and `data.paneDrop.preview: 'end'` puts the dragged
+  chat at the end of the room under the text. Later frames add to these
+  blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -89,7 +94,9 @@ first: it says what each file of a page folder is for.
   D1's bridge themes pane), D8 `dragOverPane` (from `chatInWorkbench`),
   D9 `twoPanes` (from `chatInWorkbench`, with D1's drift check pane),
   D10 `dragBelowPane` (from `twoPanes`, with D8's drag over a pane),
-  D11 `threePanes` (from `twoPanes`, with D1's brain git shell pane).
+  D11 `threePanes` (from `twoPanes`, with D1's brain git shell pane),
+  D12 `fourPanes` (from `threePanes`, with D1's four panes and D10's drag
+  over a pane).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -103,7 +110,8 @@ first: it says what each file of a page folder is for.
   (`emptyRows`: the empty pane's rows, as `EmptyPane` takes no
   `data-figma`); for
   D6 the drop zone's text, `paneDrop`, and for D8 its optional `hint` and
-  `icon` and the zone's layers in `layers.dropZone`) and
+  `icon` and the zone's layers in `layers.dropZone`, for D12 its
+  `preview`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
