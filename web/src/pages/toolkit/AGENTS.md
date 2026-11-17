@@ -58,7 +58,10 @@ what each file of a page folder is for.
   data) the item replaces the list in the shared `DetailFrame` (d-107):
   the back row (Back to Toolkit, Discuss and Show on map) stays at the
   top, the item scrolls under it, and the Overview puts the side under
-  the file (`src/app/ToolkitStickyBack.test.tsx`). A rule (D4, `ruleOpen`,
+  the file (`src/app/ToolkitStickyBack.test.tsx`). On the phone (M2,
+  `skillOpenPhone`, D3's data) Discuss and Show on map are icon buttons,
+  and when the item changed (`ToolkitItemChanged`) moves from the path
+  row to the kind badge's row. A rule (D4, `ruleOpen`,
   which adds the Workflows and Hooks groups) adds `loads` to its details,
   shown as the Overview's load box, and has no side column: `usedIn` and
   `files` are optional. An agent (D7, `agentOpen`, T1's list with only
@@ -84,6 +87,6 @@ what each file of a page folder is for.
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T7, T17 to T19, M2, M19 to M22) fill `details` and
+  (T7, T17 to T19, M19 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
