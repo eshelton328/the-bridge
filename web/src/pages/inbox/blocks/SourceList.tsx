@@ -8,7 +8,8 @@ const link = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '6',
-  textStyle: 'body',
+  // Figma 403:1901: Geist Regular 12.
+  textStyle: 'small',
   color: 'fg.accent',
   textDecoration: 'none',
   _hover: { textDecoration: 'underline' },

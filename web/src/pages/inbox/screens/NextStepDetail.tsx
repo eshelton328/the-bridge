@@ -18,6 +18,8 @@ export type NextStepDetailProps = {
   detail: InboxNextStep
   ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
   onPromptOpenChange?: ((open: boolean) => void) | undefined
+  /** The task has a discussion; see `DetailHead`. */
+  discuss?: { open: boolean } | undefined
 }
 
 function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; pickerOpen: boolean }) {
@@ -38,11 +40,11 @@ function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; picke
   )
 }
 
-export function NextStepDetail({ detail, ui, onPromptOpenChange }: NextStepDetailProps) {
+export function NextStepDetail({ detail, ui, onPromptOpenChange, discuss }: NextStepDetailProps) {
   return (
     <Container size="detail">
       <Stack gap="24">
-        <DetailHead head={detail} snoozeOpen={ui.snoozeOpen} />
+        <DetailHead head={detail} snoozeOpen={ui.snoozeOpen} discuss={discuss} />
         <DetailSection title="Why">
           <MarkdownView size="sm" padding="none">
             <p>{detail.why}</p>

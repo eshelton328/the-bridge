@@ -3,7 +3,13 @@
 // and the store and passes everything to the props-only screen.
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect } from 'react'
-import { useInboxActions, useInboxGroupsOpen, useInboxPromptOpen, useInboxQuery } from './inboxStore.ts'
+import {
+  useInboxActions,
+  useInboxGroupsOpen,
+  useInboxPromptOpen,
+  useInboxQuery,
+  useInboxRemoveOpen,
+} from './inboxStore.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 
 const route = getRouteApi('/inbox')
@@ -14,8 +20,9 @@ export function InboxPage() {
   const navigate = route.useNavigate()
   const groupsOpen = useInboxGroupsOpen()
   const promptOpen = useInboxPromptOpen(search.state)
+  const removeOpen = useInboxRemoveOpen(search.state)
   const query = useInboxQuery(search.state)
-  const { setGroupOpen, setPromptOpen, setQuery, showState } = useInboxActions()
+  const { setGroupOpen, setPromptOpen, setRemoveOpen, setQuery, showState } = useInboxActions()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
@@ -24,6 +31,7 @@ export function InboxPage() {
     filter: search.filter ?? state.ui.filter,
     groupsOpen: { ...state.ui.groupsOpen, ...groupsOpen },
     promptOpen: promptOpen ?? state.ui.promptOpen,
+    removeOpen: removeOpen ?? state.ui.removeOpen,
   }
   return (
     <InboxScreen
@@ -34,6 +42,9 @@ export function InboxPage() {
       onGroupOpenChange={setGroupOpen}
       onPromptOpenChange={(open) => {
         setPromptOpen(search.state, open)
+      }}
+      onRemoveOpenChange={(open) => {
+        setRemoveOpen(search.state, open)
       }}
       onQueryChange={(next) => {
         setQuery(search.state, next)

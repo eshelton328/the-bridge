@@ -47,7 +47,7 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 - **Pick a date and time.** Has its `CalendarIcon` (#101), aligned with
   the other rows.
 - **Section offsets.** WHY starts 6 px lower and the sections after it
-  10 to 49 px lower (SOURCES y +49), from the title block, the notes box
+  10 to 49 px lower (SOURCES y +45), from the title block, the notes box
   and the gaps. Round 3 had 30 to 64: WHY no longer wraps.
 
 ## Second review

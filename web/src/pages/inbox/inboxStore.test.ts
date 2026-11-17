@@ -23,14 +23,34 @@ describe('inboxStore edits', () => {
     const { setPromptOpen, setQuery } = inboxStore.getState().actions
     setPromptOpen('promptRead', false)
     setQuery('promptRead', 'f-0')
-    expect(inboxStore.getState().edits).toEqual({ state: 'promptRead', promptOpen: false, query: 'f-0' })
+    expect(inboxStore.getState().edits).toEqual({
+      state: 'promptRead',
+      promptOpen: false,
+      removeOpen: undefined,
+      query: 'f-0',
+    })
   })
 
   it('drops the edits of the last state when another state changes', () => {
     const { setPromptOpen, setQuery } = inboxStore.getState().actions
     setPromptOpen('promptRead', false)
     setQuery('search', 'f-005 x')
-    expect(inboxStore.getState().edits).toEqual({ state: 'search', promptOpen: undefined, query: 'f-005 x' })
+    expect(inboxStore.getState().edits).toEqual({
+      state: 'search',
+      promptOpen: undefined,
+      removeOpen: undefined,
+      query: 'f-005 x',
+    })
+  })
+})
+
+describe('inboxStore remove dialog', () => {
+  it('records the remove dialog closed for one state only', () => {
+    const { setRemoveOpen, showState } = inboxStore.getState().actions
+    setRemoveOpen('removeConfirm', false)
+    expect(inboxStore.getState().edits.removeOpen).toBe(false)
+    showState('nextStep')
+    expect(inboxStore.getState().edits.removeOpen).toBeUndefined()
   })
 })
 
@@ -41,6 +61,11 @@ describe('inboxStore showState', () => {
     showState('search')
     expect(inboxStore.getState().edits.query).toBe('f-006')
     showState('nextStep')
-    expect(inboxStore.getState().edits).toEqual({ state: 'nextStep', promptOpen: undefined, query: undefined })
+    expect(inboxStore.getState().edits).toEqual({
+      state: 'nextStep',
+      promptOpen: undefined,
+      removeOpen: undefined,
+      query: undefined,
+    })
   })
 })

@@ -1,7 +1,9 @@
 // The prompt of a next step: suggested and read-only with Reset and Edit,
 // or in its editor with Reset and Done, an "Edited" pill once changed and a
-// hint under it. A sent prompt has no buttons. A long prompt ends with
-// "Read the whole prompt", which opens it in a dialog. Props only.
+// hint under it. A sent prompt, or one removed before it ran, has no
+// buttons. A long prompt ends with "Read the whole prompt", which opens it
+// in a dialog; a prompt a discussion changed has a line with Undo beside
+// it. Props only.
 import {
   Badge,
   Button,
@@ -9,11 +11,14 @@ import {
   ChevronRightIcon,
   Clamp,
   EditIcon,
+  Inline,
   Panel,
   ResetIcon,
   Stack,
   TextArea,
+  UndoIcon,
 } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
@@ -21,15 +26,33 @@ import { PromptDialog } from './PromptDialog.tsx'
 
 const text = css({ textStyle: 'bodySm', color: 'fg.default' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
+const change = css({ display: 'inline-flex', alignItems: 'center', gap: '6', textStyle: 'monoSm', color: 'fg.muted' })
+// Figma 403:1858 and 403:1980: Geist Medium 12, the `small` size at the label weight.
+const undo = css({ textStyle: 'small', fontWeight: 'text.label', color: 'fg.accent', textDecoration: 'none' })
+const titles = { suggested: 'Suggested prompt', sent: 'Sent prompt', notRun: 'Prompt · not run' } as const
 const more = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '4',
   alignSelf: 'flex-start',
-  textStyle: 'label',
+  textStyle: 'small',
+  fontWeight: 'text.label',
   color: 'fg.accent',
   textDecoration: 'none',
 })
+
+// Figma breaks a line after a slash ("following toolkit/" | "rules/linear.md", 403:1855); a browser keeps a path
+// whole. A <wbr> after each slash gives the browser the same break, so the lines wrap where Figma's do.
+function breakAfterSlashes(text: string) {
+  const out: ReactNode[] = []
+  let start = 0
+  for (let slash = text.indexOf('/'); slash !== -1; slash = text.indexOf('/', start)) {
+    out.push(text.slice(start, slash + 1), <wbr key={`wbr-${String(slash)}`} />)
+    start = slash + 1
+  }
+  out.push(text.slice(start))
+  return out
+}
 
 export type PromptSectionProps = {
   prompt: InboxNextStep['prompt']
@@ -40,13 +63,19 @@ export type PromptSectionProps = {
 }
 
 export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSectionProps) {
+  const readMore = prompt.long ? (
+    <a className={more} href="#prompt">
+      Read the whole prompt
+      <ChevronRightIcon size="12" />
+    </a>
+  ) : null
   return (
     <DetailSection
-      title={prompt.sent ? 'Sent prompt' : 'Suggested prompt'}
+      title={titles[prompt.state]}
       figma="section · SUGGESTED PROMPT"
       meta={prompt.edited ? <Badge variant="pill" tone="needsYou" label="Edited" /> : undefined}
       actions={
-        prompt.sent ? undefined : (
+        prompt.state !== 'suggested' ? undefined : (
           <>
             <Button size="sm">
               <ResetIcon />
@@ -69,15 +98,23 @@ export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSec
         <Stack gap="8">
           <Panel>
             <Clamp lines={5} fade>
-              <span className={text}>{prompt.text}</span>
+              <span className={text}>{breakAfterSlashes(prompt.text)}</span>
             </Clamp>
           </Panel>
-          {prompt.long ? (
-            <a className={more} href="#prompt">
-              Read the whole prompt
-              <ChevronRightIcon size="12" />
-            </a>
-          ) : null}
+          {prompt.change === undefined ? (
+            readMore
+          ) : (
+            <Inline gap="16" align="center">
+              {readMore}
+              <span className={change} data-figma="change history">
+                <UndoIcon size="12" />
+                {prompt.change.line}
+                <a className={undo} href="#undo">
+                  {prompt.change.undo}
+                </a>
+              </span>
+            </Inline>
+          )}
           <PromptDialog title="Suggested prompt" text={prompt.text} open={open} onOpenChange={onOpenChange} />
         </Stack>
       )}

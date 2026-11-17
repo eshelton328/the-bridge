@@ -14,6 +14,14 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+// Figma draws the discussion's composer focused (D14 to D19: a caret and the lighter border), the state Erik
+// sees after opening the discussion. The story puts the focus there; the screen's props do not hold focus.
+async function focusComposer(canvas: { getByRole: (role: 'textbox', options: { name: string }) => HTMLElement }) {
+  const composer = canvas.getByRole('textbox', { name: 'Ask about this task' })
+  composer.focus()
+  await expect(composer).toHaveFocus()
+}
+
 export const NextStep: Story = {
   name: 'D1: a next step',
   args: { data: inboxStates.nextStep.data, ui: inboxStates.nextStep.ui, viewport: 'desktop' },
@@ -149,5 +157,110 @@ export const SnoozeOpen: Story = {
     const menu = await within(document.body).findByRole('menu')
     await expect(within(menu).getByRole('menuitem', { name: /This evening/ })).toBeVisible()
     await expect(within(menu).getByRole('menuitem', { name: 'Dismiss with a reason…' })).toBeVisible()
+  },
+}
+
+export const Filtered: Story = {
+  name: 'D13: filtered',
+  args: { data: inboxStates.filtered.data, ui: inboxStates.filtered.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Filter · 1' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByRole('button', { name: 'Remove omni-brain' })).toBeVisible()
+    await expect(canvas.getByText('1 task hidden by filters')).toBeVisible()
+    await expect(canvas.queryByText('Run the readme cross-family round x2')).toBeNull()
+  },
+}
+
+export const DiscussOpen: Story = {
+  name: 'D14: discuss, beside the task',
+  args: { data: inboxStates.discussOpen.data, ui: inboxStates.discussOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.queryByRole('region', { name: 'Inbox list' })).toBeNull()
+    await expect(canvas.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
+    await expect(canvas.getByRole('meter', { name: 'Context used' })).toHaveAttribute('aria-valuenow', '6')
+    await focusComposer(canvas)
+  },
+}
+
+export const ChangeProposed: Story = {
+  name: 'D15: a proposed update',
+  args: { data: inboxStates.changeProposed.data, ui: inboxStates.changeProposed.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const proposal = canvas.getByRole('group', { name: 'Proposed · Update this task' })
+    await expect(within(proposal).getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(within(proposal).getByRole('button', { name: 'Edit first' })).toBeVisible()
+    await expect(canvas.queryByRole('heading', { name: 'Talk this task through' })).toBeNull()
+    await focusComposer(canvas)
+  },
+}
+
+export const ChangeApplied: Story = {
+  name: 'D16: the task after Apply',
+  args: { data: inboxStates.changeApplied.data, ui: inboxStates.changeApplied.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Changed in a discussion · just now')).toBeVisible()
+    await expect(canvas.getByText('Applied just now. The task shows the new prompt.')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Undo' })).toBeVisible()
+    await focusComposer(canvas)
+  },
+}
+
+export const TasksProposed: Story = {
+  name: 'D17: proposed new tasks',
+  args: { data: inboxStates.tasksProposed.data, ui: inboxStates.tasksProposed.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('checkbox', { name: 'Write the Inbox tickets' })).toBeChecked()
+    await expect(canvas.getByRole('checkbox', { name: 'Also remove this task' })).not.toBeChecked()
+    await expect(canvas.getByRole('button', { name: 'Create 3 tasks' })).toBeVisible()
+    await focusComposer(canvas)
+  },
+}
+
+export const TasksCreated: Story = {
+  name: 'D18: the new tasks in the inbox',
+  args: { data: inboxStates.tasksCreated.data, ui: inboxStates.tasksCreated.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Write the App frame tickets')).toBeVisible()
+    await expect(canvas.getAllByText('New')).toHaveLength(3)
+    await expect(canvas.getByText('Created 3 tasks from a discussion')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Discuss' })).toBeNull()
+  },
+}
+
+export const RemovalProposed: Story = {
+  name: 'D19: proposed removal',
+  args: { data: inboxStates.removalProposed.data, ui: inboxStates.removalProposed.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const proposal = canvas.getByRole('group', { name: 'Proposed · Remove this task' })
+    await expect(within(proposal).getByRole('button', { name: 'Remove…' })).toBeVisible()
+    await expect(
+      within(proposal).getByText('It moves to Done as Removed. You can restore it from there.'),
+    ).toBeVisible()
+    await expect(canvas.getByText('Created 3 tasks · Workbench, Inbox, App frame')).toBeVisible()
+    await focusComposer(canvas)
+  },
+}
+
+export const RemoveConfirm: Story = {
+  name: 'D20: confirm the removal',
+  args: { data: inboxStates.removeConfirm.data, ui: inboxStates.removeConfirm.ui, viewport: 'desktop' },
+  play: async () => {
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = await within(document.body).findByRole('alertdialog', { name: 'Remove this task?' })
+    await expect(within(dialog).getByText('ncc-1701 · f-005 · NCC-28 · Next step')).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Remove task' })).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Keep it' })).toBeVisible()
+  },
+}
+
+export const Removed: Story = {
+  name: 'D21: removed, in Done',
+  args: { data: inboxStates.removed.data, ui: inboxStates.removed.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Removed in a discussion · split into 3')).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Prompt · not run' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Open discussion' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Restore' })).toBeVisible()
   },
 }

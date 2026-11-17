@@ -1,8 +1,8 @@
 # D04 deviations
 
-What still differs from Figma after round 6 of the fidelity loop
+What still differs from Figma after round 7 of the fidelity loop
 (`pnpm fidelity inbox D04`, 2026-11-16, against the installed
-library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
+library 1.0.0-beta.4, which has #97 to #103), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -41,9 +41,11 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   library's `Container size="detail"` pads 40 px where Figma has 36
   (d-072 tie). Within the 4 px tolerance.
 - **Filter menu.** 300 px wide (`Popover width="filter"`) with the counts
-  in `Checkbox trailing`. Rows are 34 px apart against 30 (the `label`
-  line height and the 16 px box against Figma's 14), so the menu is 62 px
-  taller (`filter popover` h +62). The project and tag labels are mono
+  in `Checkbox trailing`. The rows are `Checkbox size="sm"` (beta.4,
+  #103): kind labels in `small` (12/16) and counts in `monoSm`, as Figma
+  346:1745 and 346:1747. Rows are still 34 px apart against 30 (the
+  library row's padding and its 16 px box against Figma's 14), so the menu
+  is 62 px taller (`filter popover` h +62). The project and tag labels are mono
   (`Checkbox labelStyle="mono"`, #98). The `filter popover` key now sits
   on the popover's box (#98); the box starts 6 px lower than Figma's
   (y +6).
@@ -55,7 +57,7 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 
 Rounds 4 to 6 had no new second review: round 4 changed only the row
 and body text sizes, round 5 only put in the #101 parts and round 6
-only the #102 small sizes; the checks
+only the #102 small sizes, and round 7 the #103 small `Checkbox`; the checks
 above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
@@ -82,7 +84,7 @@ For D04 it also found:
 - Project and tag labels in sans, not mono: fixed in round 3
   (`labelStyle="mono"`).
 - The menu is 62 px taller (rows 34 px apart against 30) and its counts
-  sit 9 px further right and are brighter: the `Checkbox` size and type
-  sizes.
+  sit 9 px further right and are brighter: the `Checkbox` row height.
+  The label and count sizes are fixed with `size="sm"` (beta.4).
 - The list shows faintly through the menu: `surface.overlay` has alpha
   0.98 (library style).

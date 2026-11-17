@@ -38,7 +38,7 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
   library's `Container size="detail"` pads 40 px where Figma has 36
   (d-072 tie). Within the 4 px tolerance.
 - **Section offsets.** WHY starts 6 px lower and the sections after it 10
-  to 49 px lower (SOURCES y +49), from the title block, the run card, the
+  to 49 px lower (SOURCES y +45), from the title block, the run card, the
   notes box and the section gaps above. Round 3 had 30 to 64: WHY no
   longer wraps.
 - **Prompt fade.** The prompt sits in `Clamp lines={5} fade`. In the

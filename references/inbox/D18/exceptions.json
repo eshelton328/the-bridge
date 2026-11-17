@@ -1,0 +1,19 @@
+{
+  "missing": [
+    {
+      "text": "SNOOZED",
+      "reason": "Layer 403:2777 (y 930) is the SNOOZED group header, which the toast 403:2943 (y 928 to 966) covers in frame.png. In the render the list ends at the toast's bottom edge (y 966), and the header (y 954 to 992, 38 px lower because of the taller library rows, List row heights in deviations.md) sits behind the toast and below that edge, so it is out of sight in both."
+    },
+    {
+      "text": "1",
+      "reason": "Layer 403:2778 (y 930) is the count of the SNOOZED group header, which the toast 403:2943 covers in frame.png; in the render it is behind the toast and below the list's bottom edge, as SNOOZED is."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"inbox list\"] > section",
+      "reason": "Figma's list (403:2620) runs on under the toast, and its last group header is out of sight there. The render's scrolling list ends at the toast's bottom edge (y 966), and the toast sticks to the list's bottom as its last child, so at rest nothing shows under the toast, as in Figma. The list scrolls 66 px (scrollHeight 1032, clientHeight 966): its rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), and the toast's own height is in the scroll area so that a user can scroll the collapsed SNOOZED header clear of the toast (Codex review of #9)."
+    }
+  ]
+}

@@ -1,7 +1,10 @@
 // The top of an item's detail: the task bar (status, where it came from,
-// Snooze and Dismiss) and the title block (title, meta chips and tags).
-// Snooze opens the Snooze menu when the state has one. Props only.
+// Discuss when the task has a discussion, Snooze and Dismiss) and the title
+// block (title, meta chips and tags). Snooze opens the Snooze menu when the
+// state has one; Discuss shows pressed while the discussion is open. Props
+// only.
 import {
+  BubbleIcon,
   Button,
   CalendarIcon,
   CheckIcon,
@@ -69,14 +72,23 @@ export type DetailHeadProps = {
   head: InboxDetailHead
   /** The Snooze menu is open. */
   snoozeOpen?: boolean | undefined
+  /** The task has a discussion: the task bar shows Discuss, pressed while the discussion is open. */
+  discuss?: { open: boolean } | undefined
 }
 
-export function DetailHead({ head, snoozeOpen = false }: DetailHeadProps) {
+export function DetailHead({ head, snoozeOpen = false, discuss }: DetailHeadProps) {
   return (
     <>
       <Inline gap="8" align="center" data-figma="task bar">
         <StatusPill tone={head.status.tone} label={head.status.label} dot />
         <span className={origin}>{head.origin}</span>
+        {discuss === undefined ? null : (
+          // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
+          <Button pressed={discuss.open}>
+            <BubbleIcon />
+            Discuss
+          </Button>
+        )}
         {head.actions ? (
           <>
             <SnoozeButton head={head} open={snoozeOpen} />
@@ -96,7 +108,7 @@ export function DetailHead({ head, snoozeOpen = false }: DetailHeadProps) {
               size="sm"
               label={c.label}
               icon={chipIcons[c.icon]}
-              tone={c.issue ? 'issue' : undefined}
+              tone={c.issue ? 'issue' : 'muted'}
             />
           ))}
         </Inline>

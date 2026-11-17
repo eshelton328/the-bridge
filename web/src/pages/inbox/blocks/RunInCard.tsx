@@ -15,7 +15,8 @@ import type { InboxRunIn } from '../types.ts'
 import { RunInPicker } from './RunInPicker.tsx'
 
 const grow = css({ flex: '1' })
-const title = css({ textStyle: 'label' })
+// Figma 403:1870: Geist Medium 13.
+const title = css({ textStyle: 'labelSm' })
 const detail = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
 export type RunInCardProps = {

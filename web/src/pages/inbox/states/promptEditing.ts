@@ -19,7 +19,7 @@ export const promptEditing = {
         text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.',
         edited: true,
         long: false,
-        sent: false,
+        state: 'suggested',
       },
       launch: {
         ...base.launch,
