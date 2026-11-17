@@ -23,7 +23,13 @@ each file of a page folder is for.
   `detail` (`ArtifactDetail`); a tablet or phone frame of it comes later.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
-  as the Inbox's task and discussion (D14); Discuss toggles it.
+  as the Inbox's task and discussion (D14); Discuss toggles it. The
+  artifact's column (the shared block `DetailFrame`) and the discussion
+  (the library `ScrollFrame`) each scroll on their own: the discussion's
+  header stays at the top and its reply box, at most half the window high,
+  at the bottom, while only the messages between them scroll (d-107).
+  `app/ArtifactsStickyBars.test.tsx` scrolls D7 to D9 and checks both
+  bars stay in view, and that a long draft keeps Send in reach.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). In
@@ -81,9 +87,10 @@ each file of a page folder is for.
   D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
   width="sort"` with the heading, a description per sort and the note,
   as the Inbox's Sort menu; picking a sort closes it). For D7:
-  `DiscussionPanel` (the header with Open in workspace and Close,
-  `ModelChip`, `ContextMeter`, the guard, the empty state or the sent
-  messages, and `Composer`, whose draft is `ui.discussDraft`) and
+  `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
+  state or the sent messages, and `Composer`, whose draft is
+  `ui.discussDraft`), `DiscussionHeader` (the title with Open in
+  workspace and Close, `ModelChip`, `ContextMeter` and the guard) and
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the
   Inbox's discussion blocks, which the Inbox page does not export.

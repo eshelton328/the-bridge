@@ -2,13 +2,15 @@
 // 403:448): the bar, the title block, the preview and where it was made,
 // 20 apart in the detail column (748 wide). With its discussion open (D7)
 // the list closes, the artifact keeps its column and the discussion takes
-// the rest of the pane, as the Inbox's task and discussion (D14). Copy
+// the rest of the pane, as the Inbox's task and discussion (D14); the
+// column and the discussion each scroll on their own (d-107). Copy
 // link, Remove, the project menu, Open artifact and Open in workspace
 // render as Figma draws them; their screens come with later frames. Props
 // only.
-import { Container } from '@eshelton328/component-library-1701'
+import { Container, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { ArtifactBar } from '../blocks/ArtifactBar.tsx'
 import { ArtifactPreview } from '../blocks/ArtifactPreview.tsx'
 import { ArtifactTitleBlock } from '../blocks/ArtifactTitleBlock.tsx'
@@ -17,11 +19,12 @@ import type { ArtifactDetail as Artifact } from '../types.ts'
 
 // The pane fills the shell's detail column, as Figma's 403:448 does.
 const pane = css({ flex: '1' })
-// D7: the artifact keeps its column and scrolls on its own; the side fills the rest.
-const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1' })
-const column = css({ flexShrink: '0', overflowY: 'auto' })
-// Beside a side the column shrinks to its content; the container keeps its full 748 (content-box, so 828 with its
-// 40 px sides), as the artifact pane beside the list does.
+// D7: the artifact keeps its column and the side fills the rest. Both fill the detail's height and no more, so the
+// column's DetailFrame and the side's ScrollFrame each scroll on their own (d-107), as the Inbox's task and discussion.
+const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1', minH: '[0]' })
+const column = css({ display: 'flex', flexDirection: 'column', flexShrink: '0', minH: '[0]' })
+// Beside a side the column shrinks to its content; the content keeps its full 748, so the detail Container is 828
+// with its 40 px sides, as the artifact pane beside the list.
 const full = css({ w: 'shell.detail' })
 
 export type ArtifactDetailProps = {
@@ -40,8 +43,8 @@ export type ArtifactDetailProps = {
 }
 
 export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }: ArtifactDetailProps) {
-  const content = (
-    <Container size="detail" gap="20" className={side === undefined ? undefined : full}>
+  const parts = (
+    <>
       <ArtifactBar
         badge={badge}
         found={artifact.found}
@@ -51,18 +54,24 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }
       <ArtifactTitleBlock artifact={artifact} />
       <ArtifactPreview artifact={artifact} />
       <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : madeInLayer} />
-    </Container>
+    </>
   )
   if (side === undefined)
     return (
       <div className={pane} data-figma="artifact pane">
-        {content}
+        <Container size="detail" gap="20">
+          {parts}
+        </Container>
       </div>
     )
   return (
     <div className={withSide}>
       <div className={column} data-figma="artifact pane">
-        {content}
+        <DetailFrame layout="desktop">
+          <Stack gap="20" className={full}>
+            {parts}
+          </Stack>
+        </DetailFrame>
       </div>
       {side}
     </div>
