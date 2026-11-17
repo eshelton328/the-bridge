@@ -160,6 +160,17 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 
+  it('closes the prompt editor when Start sends the prompt', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('nextStep').rendered
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toBeVisible()
+    await page.getByRole('button', { name: 'Start in the-bridge' }).click()
+    await expect.element(page.getByText('Running in quiet-nebula')).toBeVisible()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).not.toBeInTheDocument()
+    await view.unmount()
+  })
+
   it("opens the finished task's chat with Open chat in D7", async () => {
     await page.viewport(1512, 982)
     const view = await renderInbox('done').rendered

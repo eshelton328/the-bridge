@@ -201,6 +201,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
                   started: [...ui.started.filter((id) => id !== shown.id), shown.id],
                   // The started row moves to Running (`startView`), which opens to show it.
                   groupsOpen: { ...ui.groupsOpen, running: true },
+                  // Start sends the prompt: its editor closes, as the sent prompt cannot change.
+                  editingPrompt: false,
                 })
               }
             : undefined
