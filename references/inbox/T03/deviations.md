@@ -90,3 +90,12 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 - Back did not return to the list (caller's review). Fixed: Back closes
   the open item through the page store (`inboxStore` `setItemOpen`), so
   the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
+- **Beta.18 (2026-11-17, step 12).** `task · question` changes from a
+  pass to h -10. The waiting card is now 60 high (`Panel
+  variant="notice"`, library #122; Figma 55), 4 px less than before, and
+  the pill 2 px less. Figma's tablet task frames end 28 px under their
+  last child (T2, T4, T13 and this frame, 346:5911); the build's frame
+  ends at its last child, so T2, T4 and T13 already show h -11 to -15.
+  Before, the card's extra height hid that difference here. A 32 px
+  bottom pad (d-072) would make T2, T4 and T13 21 px too tall, so the
+  frame keeps no pad.

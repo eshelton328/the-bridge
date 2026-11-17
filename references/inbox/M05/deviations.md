@@ -73,3 +73,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   textSize="xs"` (`labelXs`, Medium 12/16), as Figma's Medium 12
   (d-100). Snooze and Dismiss are icons, and the pinned Answer is
   `size="xl"` with the default label. The labels match.
+- **Beta.18 (2026-11-17, step 12).** The answer bar covered "Something
+  else" (346:9932), which the covered-text check (the-bridge #34) found:
+  the content under the task bar was about 30 px lower than Figma's.
+  Four changes move it up. The phone nav is 40 high (4 around its 32 px
+  row, 2 under it; was 12 under). The StatusPill is 20 high (library
+  #122; was 22). The small MetaChip is 24 high (#122; was 26). The
+  waiting card is `Panel variant="notice"`, padded 10/12 (#122; was 64
+  high, now 60, Figma 55). The text check passes and `title block`
+  passes. `blocking` and the sections still start lower: the task gap
+  is 20 where Figma has 18 (d-072), and the line heights are on the 4 px
+  grid (d-100).

@@ -55,7 +55,8 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
     >
       <DetailHead head={detail} snooze={snooze} barActions={!phone} />
       <div data-figma="blocking">
-        <Panel tone="needsYou">
+        {/* D2 346:772, T3, M5 346:9897: a 55 px card padded 10/12; the section padding made it 64. */}
+        <Panel variant="notice" tone="needsYou">
           <Inline gap="10" align="center">
             <KindMark kind={detail.waiting.agent} size="16" />
             <div className={grow}>

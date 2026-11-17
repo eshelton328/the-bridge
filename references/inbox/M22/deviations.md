@@ -79,3 +79,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (was x -4, y +3, w +8, h +0). The cause is #108's compact `ListRow`
   (56 px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38;
   Figma 34).
+- **Beta.18 (2026-11-17, step 12).** `group · SNOOZED` changes from a
+  pass to y -6. The StatusPill is now Figma's 20 high (library #122; was
+  22), so each of the three created task rows with a "New" pill (402:7547,
+  402:7561, 402:7575, 81 high in Figma) is 2 px shorter. The old pill's
+  extra 2 px hid the grid line heights (d-100) of those rows.
