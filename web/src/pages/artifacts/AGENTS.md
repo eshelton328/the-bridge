@@ -1,7 +1,51 @@
 # Artifacts page
 
-The Artifacts page. Read [../AGENTS.md](../AGENTS.md) first: it says
-what each file of a page folder is for.
+The Artifacts library: every Claude artifact and Codex site in one grid,
+with what the library found since Erik last looked at the top, marked
+New. Figma frames `D*` (desktop), `T*` (tablet) and `M*` (phone) on the
+Artifacts page. Read [../AGENTS.md](../AGENTS.md) first: it says what
+each file of a page folder is for.
 
-- `ArtifactsPage.tsx` is the connected entry; `screens/` are props-only.
-- One state file per Figma Artifacts frame in `states/`, each with a story.
+- `ArtifactsPage.tsx`: reads the loader's state and keeps what Erik
+  changes in the shown `?state=` (the source chip, the search, the view
+  and the open groups) with `useState`; it passes them to
+  `ArtifactsScreen` with `onUiChange`. Rail picks go to the pages that
+  have a route. A later frame that needs the changes to outlive a visit
+  moves them to an `artifactsStore.ts` (`createAppStore`).
+- `screens/ArtifactsScreen.tsx`: the app shell, laid out by its width
+  (`ViewportFrame`): on the desktop the rail (`AppRail`, Artifacts
+  selected) and the library in the shell's `detail`, which scrolls; on a
+  tablet or phone the library over the tab bar (`AppTabBar`; the phone
+  selects More, which opens Artifacts, d-105). Do not change `AppRail` or
+  `AppTabBar` from this page; a difference goes in `deviations.md`.
+  A later frame with an artifact open beside the list (D2) puts the
+  library in the shell's `list` and the artifact in `detail`.
+- `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
+  source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
+  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1).
+  `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
+  this file) keeps each group's cards that pass the chip and the search
+  and leaves out a group with none; the chip and group counts stay the
+  state's, because the library holds more artifacts than the cards drawn.
+- `blocks/`: `LibraryHeader` (`PageHeader` with the count, `FoundStatus`
+  and Add a link), `FoundStatus` (the refresh mark and when the library
+  last checked its sources), `LibraryTools` (search, Sort, Filter and the
+  Grid or List `ViewSwitch`; the Sort and Filter menus come with D6 and
+  D3), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
+  columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
+  New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
+  source, project and age; `onOpen` makes it a button for D2).
+- `states/`: D1 `library`. It also holds what later states share: the
+  found and earlier cards (`foundCards`, `earlierCards`; export them when
+  a second state uses them, as knip allows no unused export), the chips
+  and the sorts. A state that opens a menu, searches or opens an
+  artifact starts from it and sets its `ui` or adds its data.
+- `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
+  the search placeholder, the sorts and the groups of `ArtifactCard`s,
+  each with its `preview` kind and `source`) and `ArtifactsUi` (chip,
+  sort, view, open groups and search text), each a Zod schema.
+- `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
+  library cannot draw yet, for the batched library PR.
+
+`/artifacts?state=library` shows a state in development; an unknown state
+is a not-found page.
