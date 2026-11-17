@@ -1,29 +1,42 @@
 # D04 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
-(`pnpm fidelity inbox D04`, 2026-11-16, library main 66a44c5), each with
+What still differs from Figma after round 4 of the fidelity loop
+(`pnpm fidelity inbox D04`, 2026-11-16, with the stricter checks of main
+e4da0c8, against a local build of library main 60170df: #97 to #99 are
+not in the installed 1.0.0-beta.1), each with
 its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: pass; the hidden "Run the readme" row is excepted in `exceptions.json`.
+- Text: fail, from the check, not the render. "approval", "question", "action" and "next" are the `value`s
+  of the hidden checkbox inputs inside the library's `Checkbox` rows (Ark keeps the
+  option id there). A browser never draws a radio or checkbox value, but
+  the stricter text check of main reads every input's value as visible
+  text. No exception was added: the check needs to skip checkbox, radio
+  and hidden inputs (a fix for Erik, see the report of this round).
+  The hidden "Run the readme" row is excepted in `exceptions.json`.
 - Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
-- **List row heights.** Rows are 62 px instead of 55 px: Figma's row
-  uses smaller text (17 px title, 14 px meta) than the library's `label`
-  and `mono` styles (Figma sets rows and body in 13 px and meta in 11;
-  the library's `label`, `body` and `mono` are 14 and 12, an open
-  decision for Erik). Line heights stay as the tokens set them (d-072), so
-  each group below Needs you starts lower (NEXT STEPS y +34, SNOOZED y +50).
+- **List row heights.** Rows use `ListRow density="compact"` (#99):
+  13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
+  11/16). A title and meta row is 58 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the library keeps line heights
+  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +26),
+  about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** Figma's body and mono text in the detail is narrower
-  than the library's `body` and `mono` styles, so lines wrap sooner:
-  WHY takes two lines. Each extra line moves the sections below it down.
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99), as
+  Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
+  prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
+  prompt's five lines hold all of it, so it does not fade where Figma
+  fades its fifth line.
+  The mono lines in the detail (the task bar, the chips, the run line)
+  stay in `mono` (12 px) against Figma's 11; this round changed only
+  the body text.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520: the
@@ -36,10 +49,16 @@ its reason. The library gaps are in
   (`Checkbox labelStyle="mono"`, #98). The `filter popover` key now sits
   on the popover's box (#98); the box starts 6 px lower than Figma's
   (y +6).
-- **Section offsets.** WHY starts 6 px lower and the sections after it 28
-  to 40 px lower, from the title block, the WHY wrap and the gaps.
+- **Section offsets.** WHY starts 6 px lower and the sections after it 10
+  to 22 px lower (SOURCES y +22), from the title block, the run card and
+  the gaps. Round 3 had 28 to 40: WHY no longer wraps.
 
 ## Second review
+
+Round 4 had no new second review: it changed only the row and body text
+sizes, and the checks above measure those. The findings below are from
+the earlier rounds; those about taller rows and wider detail text are
+now smaller (see "List row heights" and "Detail text").
 
 Round 2's review; round 3 changed only the parts below. Library main
 66a44c5 fixed two of its findings in every frame: Sort now shows

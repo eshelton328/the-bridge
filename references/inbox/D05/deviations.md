@@ -1,7 +1,9 @@
 # D05 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
-(`pnpm fidelity inbox D05`, 2026-11-16, library main 66a44c5), each with
+What still differs from Figma after round 4 of the fidelity loop
+(`pnpm fidelity inbox D05`, 2026-11-16, with the stricter checks of main
+e4da0c8, against a local build of library main 60170df: #97 to #99 are
+not in the installed 1.0.0-beta.1), each with
 its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -13,12 +15,12 @@ its reason. The library gaps are in
 
 ## Deviations
 
-- **List row heights.** Rows are 62 px instead of 55 px: Figma's row
-  uses smaller text (17 px title, 14 px meta) than the library's `label`
-  and `mono` styles (Figma sets rows and body in 13 px and meta in 11;
-  the library's `label`, `body` and `mono` are 14 and 12, an open
-  decision for Erik). Line heights stay as the tokens set them (d-072), so
-  each group below Needs you starts lower (NEXT STEPS y +34, SNOOZED y +52, RUNNING y +56).
+- **List row heights.** Rows use `ListRow density="compact"` (#99):
+  13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
+  11/16). A title and meta row is 58 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the library keeps line heights
+  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +28, RUNNING y +32),
+  about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
 - **Started task header.** 12 px taller (`started task` h +12): the mono
@@ -28,6 +30,11 @@ its reason. The library gaps are in
   size="detail"` pads 40 where Figma has 36, d-072 tie).
 
 ## Second review
+
+Round 4 had no new second review: it changed only the row and body text
+sizes, and the checks above measure those. The findings below are from
+the earlier rounds; those about taller rows and wider detail text are
+now smaller (see "List row heights" and "Detail text").
 
 Round 2's review; round 3 changed only the parts below. Library main
 66a44c5 fixed two of its findings in every frame: Sort now shows

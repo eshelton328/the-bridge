@@ -1,7 +1,9 @@
 # D09 deviations
 
-What still differs from Figma after round 1 of the fidelity loop
-(`pnpm fidelity inbox D09`, 2026-11-16, library main 66a44c5), each with
+What still differs from Figma after round 4 of the fidelity loop
+(`pnpm fidelity inbox D09`, 2026-11-16, with the stricter checks of main
+e4da0c8, against a local build of library main 60170df: #97 to #99 are
+not in the installed 1.0.0-beta.1), each with
 its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -13,27 +15,30 @@ its reason. The library gaps are in
 
 ## Deviations
 
-- **List row heights.** Rows are 62 px instead of 55 px: Figma's row
-  uses smaller text (17 px title, 14 px meta) than the library's `label`
-  and `mono` styles (Figma sets rows and body in 13 px and meta in 11;
-  the library's `label`, `body` and `mono` are 14 and 12, an open
-  decision for Erik). Line heights stay as the tokens set them (d-072),
-  so each group below the first starts lower (NEXT STEPS y +34, SNOOZED y +52, RUNNING y +56).
+- **List row heights.** Rows use `ListRow density="compact"` (#99):
+  13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
+  11/16). A title and meta row is 58 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the library keeps line heights
+  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +28, RUNNING y +32),
+  about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** The detail's body and mono lines are wider than
-  Figma's for the same type-size reason, so they wrap sooner: WHY takes
-  two lines (`section · WHY` h +22) and the prompt's five lines hold all
-  of it, so it does not fade where Figma fades its fifth line. Each
-  extra line moves the sections below it down.
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99), as
+  Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
+  prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
+  prompt's five lines hold all of it, so it does not fade where Figma
+  fades its fifth line (`section · SUGGESTED PROMPT` h +7).
+  The mono lines in the detail (the task bar, the chips, the run line)
+  stay in `mono` (12 px) against Figma's 11; this round changed only
+  the body text.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
 - **Run card.** `Panel` with the default border; Figma's card has a
-  cyan border and tint (library gap: accent card). It starts 34 to 38 px
-  lower, from the offsets above.
+  cyan border and tint (library gap: accent card). It starts 19 px
+  lower (round 3: 34), from the offsets above.
 - **Hidden Figma text.** Figma keeps the Reset and Edit buttons of the
   prompt header as hidden layers; `exceptions.json` excepts them with
   their node ids.
@@ -43,6 +48,11 @@ its reason. The library gaps are in
   is not position-checked.
 
 ## Second review
+
+Round 4 had no new second review: it changed only the row and body text
+sizes, and the checks above measure those. The findings below are from
+the earlier rounds; those about taller rows and wider detail text are
+now smaller (see "List row heights" and "Detail text").
 
 A separate agent compared `frame.png` with the render, without these
 notes. What it found in every frame, and why it stays:

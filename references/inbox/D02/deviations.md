@@ -1,29 +1,41 @@
 # D02 deviations
 
-What still differs from Figma after round 3 of the fidelity loop
-(`pnpm fidelity inbox D02`, 2026-11-16, library main 66a44c5), each with
+What still differs from Figma after round 4 of the fidelity loop
+(`pnpm fidelity inbox D02`, 2026-11-16, with the stricter checks of main
+e4da0c8, against a local build of library main 60170df: #97 to #99 are
+not in the installed 1.0.0-beta.1), each with
 its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: pass.
+- Text: fail, from the check, not the render. "hono-rpc", "plain-fetch" and "something-else" are the `value`s
+  of the hidden radio inputs inside the library's `OptionList` rows (Ark keeps the
+  option id there). A browser never draws a radio or checkbox value, but
+  the stricter text check of main reads every input's value as visible
+  text. No exception was added: the check needs to skip checkbox, radio
+  and hidden inputs (a fix for Erik, see the report of this round).
 - Position: 8 of 15 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
 
-- **List row heights.** Rows are 62 px instead of 55 px: Figma's row
-  uses smaller text (17 px title, 14 px meta) than the library's `label`
-  and `mono` styles (Figma sets rows and body in 13 px and meta in 11;
-  the library's `label`, `body` and `mono` are 14 and 12, an open
-  decision for Erik). Line heights stay as the tokens set them (d-072), so
-  each group below Needs you starts lower (NEXT STEPS y +32, SNOOZED y +57).
+- **List row heights.** Rows use `ListRow density="compact"` (#99):
+  13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
+  11/16). A title and meta row is 58 px against Figma's 55: Figma's
+  text boxes are 17 and 14 px high, and the library keeps line heights
+  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +16, SNOOZED y +29),
+  about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** Figma's body and mono text in the detail is narrower
-  than the library's `body` and `mono` styles, so lines wrap sooner:
-  the option cards are taller (`section · CHOOSE ONE` h +15). Each extra line moves the sections below it down.
+- **Detail text.** CONTEXT uses `bodySm` (13/20, #99), Figma's 13 px
+  body. The option cards are still taller (`section · CHOOSE ONE` h +15):
+  their descriptions are `OptionList` text in the library's 14 px
+  style, which the app cannot set. Each extra line moves the sections
+  below it down.
+  The mono lines in the detail (the task bar, the chips, the run line)
+  stay in `mono` (12 px) against Figma's 11; this round changed only
+  the body text.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520: the
@@ -35,6 +47,11 @@ its reason. The library gaps are in
   lower, from the waiting box, the card heights and the section gaps.
 
 ## Second review
+
+Round 4 had no new second review: it changed only the row and body text
+sizes, and the checks above measure those. The findings below are from
+the earlier rounds; those about taller rows and wider detail text are
+now smaller (see "List row heights" and "Detail text").
 
 Round 2's review; round 3 changed only the parts below. Library main
 66a44c5 fixed two of its findings in every frame: Sort now shows

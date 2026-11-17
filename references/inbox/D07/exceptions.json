@@ -5,6 +5,10 @@
       "reason": "Layer 346:3007 is a hidden button in the task bar: frame.png shows no Snooze or Dismiss for a finished task. get_metadata does not say a layer is hidden, so frame.json lists its text."
     },
     {
+      "text": "Dismiss",
+      "reason": "Layer 346:3012 is the hidden Dismiss button in the task bar, beside the hidden Snooze (346:3007): frame.png shows no Snooze or Dismiss for a finished task. The text check used to match it inside the row's \"Dismissed: already done by hand\"; since it matches each layer to its own text run, it needs this entry. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
       "text": "Reset",
       "reason": "Layer 346:3053 is a hidden button in the prompt header: frame.png shows no Reset beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
     },
