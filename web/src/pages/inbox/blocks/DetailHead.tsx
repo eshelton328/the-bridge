@@ -1,9 +1,10 @@
 // The top of an item's detail: the task bar (status, where it came from,
 // Discuss when the task has a discussion, Snooze and Dismiss) and the title
 // block (title, meta chips and tags). Snooze opens the Snooze menu when the
-// item has one and reports a snooze time or Mark done; "Pick a date and
-// time…" and "Dismiss with a reason…" lead to steps Figma does not draw
-// yet, so they only close the menu. Discuss shows pressed while the discussion is open. Props
+// item has one and reports a snooze time or Mark done; Dismiss in the task
+// bar reports itself. "Pick a date and time…" and "Dismiss with a
+// reason…" lead to steps Figma does not draw yet, so they only close the
+// menu. Discuss shows pressed while the discussion is open. Props
 // only.
 import {
   BubbleIcon,
@@ -30,11 +31,16 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDetailHead } from '../types.ts'
 
-/** The Snooze menu: whether it is open, and what Erik picks: a time to snooze the item until, or `null` for Mark done. */
+/**
+ * The task bar's Snooze menu and Dismiss: whether the menu is open, what
+ * Erik picks in it (a time to snooze the item until, or `null` for Mark
+ * done), and Dismiss.
+ */
 export type SnoozeControl = {
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   onPick?: ((until: string | null) => void) | undefined
+  onDismiss?: (() => void) | undefined
 }
 
 const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
@@ -108,7 +114,7 @@ export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHe
         {head.actions ? (
           <>
             <SnoozeButton head={head} snooze={snooze} />
-            <Button size="sm">
+            <Button size="sm" onClick={snooze.onDismiss}>
               <CloseIcon />
               Dismiss
             </Button>

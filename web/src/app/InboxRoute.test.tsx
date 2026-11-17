@@ -292,6 +292,30 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
   })
 
+  it('dismisses the open task with Dismiss and shows the list on the tablet', async () => {
+    await tablet('taskPage')
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()
+    // The header counts the tasks still to do: one fewer; Done holds one more.
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+    await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
+  })
+
+  it('dismisses the shown task with Dismiss on the desktop', async () => {
+    await page.viewport(1512, 982)
+    view = await renderInbox('nextStep').rendered
+    const list = page.getByRole('region', { name: 'Inbox list' })
+    const row = () => list.getByText('Write the tickets for increment one')
+    await expect.element(row()).toBeVisible()
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await expect.element(row()).not.toBeInTheDocument()
+    await expect.element(list.getByText('6 tasks')).toBeInTheDocument()
+    // Pressed again, the item stays out of the list and Done holds it once.
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
+  })
+
   it('keeps one Snoozed row when the desktop snoozes the shown task twice', async () => {
     await page.viewport(1512, 982)
     view = await renderInbox('nextStep').rendered

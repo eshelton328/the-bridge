@@ -1,7 +1,7 @@
 // The Inbox list as Erik sees it: a state's groups after what he did to
-// them (InboxUi): the items he snoozed or marked done taken out, the
+// them (InboxUi): the items he snoozed, marked done or dismissed taken out, the
 // filters that apply, the search and the sort. The counts drop by what the
-// filters and the Snooze menu take out; a search changes only the group
+// filters and the task bar take out; a search changes only the group
 // counts, as Figma D10 and T10 show. Pure functions, no React.
 import type { InboxItemId } from '@bridge/shared'
 import {
@@ -78,22 +78,47 @@ function byProject(rows: readonly InboxRowView[]): { label: string; rows: InboxR
   return labels.map((label) => ({ label, rows: rows.filter((row) => projectOf(row) === label) }))
 }
 
-/** Takes out the snoozed and done items, and puts the snoozed ones in Snoozed, until their time. */
-function putAway(groups: readonly InboxGroupView[], ui: Pick<InboxUi, 'snoozed' | 'done'>): InboxGroupView[] {
-  const gone = new Set<InboxItemId>([...ui.done, ...ui.snoozed.map((s) => s.id)])
+/** The outcome line of an item Erik finished from the task bar; the Done list shows it under the title. */
+const finishedLine = { done: 'Marked done', dismissed: 'Dismissed' } as const satisfies Record<
+  InboxUi['finished'][number]['result'],
+  string
+>
+
+/**
+ * The rows Erik finished from the task bar, with how each ended, newest
+ * first, as the Done list shows them.
+ */
+function finishedRows(groups: readonly InboxGroupView[], finished: InboxUi['finished']): InboxRowView[] {
+  const all = groups.flatMap((group) => group.rows)
+  return finished
+    .toReversed()
+    .flatMap(({ id, result }) =>
+      all.filter((row) => row.id === id).map((row) => ({ ...row, outcome: { line: finishedLine[result], result } })),
+    )
+}
+
+/**
+ * Takes out the snoozed and finished items, puts the snoozed ones in
+ * Snoozed, until their time, and the finished ones at the top of Today,
+ * when the state shows the Done list.
+ */
+function putAway(groups: readonly InboxGroupView[], ui: Pick<InboxUi, 'snoozed' | 'finished'>): InboxGroupView[] {
+  const gone = new Set<InboxItemId>([...ui.finished.map((f) => f.id), ...ui.snoozed.map((s) => s.id)])
   const all = groups.flatMap((group) => group.rows)
   const snoozedRows = ui.snoozed.flatMap(({ id, until }) =>
     all
       .filter((row) => row.id === id)
       .map((row) => ({ ...row, snoozed: { line: `Snoozed until ${until}`, age: `until ${until}` } })),
   )
+  const doneRows = finishedRows(groups, ui.finished)
   return groups.map((group) => {
     const rows = group.rows.filter((row) => !gone.has(row.id))
-    const added = group.id === 'snoozed' ? snoozedRows : []
+    const before = group.id === 'today' ? doneRows : []
+    const after = group.id === 'snoozed' ? snoozedRows : []
     return {
       ...group,
-      count: group.count - (group.rows.length - rows.length) + added.length,
-      rows: [...rows, ...added],
+      count: group.count - (group.rows.length - rows.length) + before.length + after.length,
+      rows: [...before, ...rows, ...after],
     }
   })
 }
@@ -135,6 +160,8 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const chipLess = (value: string): number => {
     const id = chipGroups[value]
     if (value === 'all') return removed + hidden
+    // Done gains the items Erik finished from the task bar.
+    if (value === 'done') return -finishedRows(data.groups, ui.finished).length
     return id === undefined ? 0 : less(data.groups, groups, keep, [id])
   }
   return {
