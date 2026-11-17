@@ -48,6 +48,13 @@ Inbox.
   renders the Inbox in its D1 state.
 - `pnpm new state filterOpen --page inbox --frame D4` adds a Figma state:
   its file, its story and its canvas board.
+- `pnpm fidelity inbox D01` compares the Inbox's D1 state with its Figma
+  frame. It builds Storybook, renders the state's story in Chromium at the
+  frame's size, and checks the text, the boxes of `data-figma` elements
+  and the layout rules against `references/inbox/D01/`. It writes a JSON
+  report and a Figma-beside-render PNG to `reports/fidelity/inbox/`, and
+  exits 1 when a check fails. Leave out the frame id to check every frame
+  that has a state file.
 
 ## Help
 
@@ -60,3 +67,4 @@ check prints what to fix. Agents start with [AGENTS.md](AGENTS.md).
 - [web/AGENTS.md](web/AGENTS.md): the app, the library dependency and the critical rules.
 - [web/src/AGENTS.md](web/src/AGENTS.md): the layers and what each may import.
 - [scripts/AGENTS.md](scripts/AGENTS.md): the generators, checks and `pnpm new`.
+- [scripts/fidelity/AGENTS.md](scripts/fidelity/AGENTS.md): how to run the fidelity loop for one frame.
