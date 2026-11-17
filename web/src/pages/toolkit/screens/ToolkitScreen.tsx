@@ -4,7 +4,8 @@
 // Toolkit from More (d-105). The list (Figma D1 425:9) is the header, the
 // kind chips, the search row and a group of cards per kind, narrowed by
 // the chip and the search (`listView`). The Map view (D2) shows the map
-// (`ToolkitMap`) under the same rows in place of the groups. A state file's data and ui are its
+// (`ToolkitMap`) under the same rows in place of the groups; on a tablet
+// (T2) under the chips, with no search row. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
 // without `onUiChange` the screen keeps Erik's changes itself.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
@@ -86,18 +87,22 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
           }}
         />
       </div>
-      <ToolkitListTools
-        query={ui.query}
-        layout={layout}
-        view={ui.view}
-        onQueryChange={(query) => {
-          onUiChange({ query })
-        }}
-      />
+      {/* T2 428:348: on a tablet the map comes straight under the chips, with no search. */}
+      {ui.view === 'map' && layout === 'tablet' ? null : (
+        <ToolkitListTools
+          query={ui.query}
+          layout={layout}
+          view={ui.view}
+          onQueryChange={(query) => {
+            onUiChange({ query })
+          }}
+        />
+      )}
       {ui.view === 'map' ? (
         <ToolkitMap
           map={data.map ?? { columns: [], nodes: [], links: [] }}
           selected={ui.mapSelected ?? null}
+          layout={layout}
           selectedItem={data.groups.flatMap((g) => g.items).find((item) => item.path === ui.mapSelected)}
           onSelect={(path) => {
             onUiChange({ mapSelected: path })

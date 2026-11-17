@@ -5,10 +5,12 @@ import { moreDrawer } from './moreDrawer.ts'
 import { toolkitList } from './toolkitList.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
 import { toolkitMap } from './toolkitMap.ts'
+import { toolkitMapTablet } from './toolkitMapTablet.ts'
 
 export const toolkitStates = {
   toolkitList,
   toolkitListTablet,
   moreDrawer,
   toolkitMap,
+  toolkitMapTablet,
 }
