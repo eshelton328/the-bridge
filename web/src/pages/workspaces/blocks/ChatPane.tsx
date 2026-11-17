@@ -1,11 +1,13 @@
 // A chat's body: the transcript, then the composer at the bottom, with the
-// skill list over it after "/" (D1 105:209). `size="pane"` is a pane of the
+// skill list over it after "/" (D1 105:209). Only what Erik types opens the
+// list: a message that starts with "/" opens it, and the focus stays in the
+// box. `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
 // side. Props only.
 import { Composer, Inline, ModelChip, Stack } from '@eshelton328/component-library-1701'
-import type { ReactNode } from 'react'
+import { type ReactNode, useRef } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
@@ -64,6 +66,15 @@ export function ChatPane(props: ChatPaneProps) {
     above,
     overlay,
   } = props
+  // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
+  const typedRef = useRef(false)
+  const areaRef = useRef<HTMLDivElement>(null)
+  const onValueChange = (text: string) => {
+    const open = text.startsWith('/')
+    if (skills === undefined || open === skills.open) return
+    typedRef.current = open
+    onSkillsOpenChange?.(open)
+  }
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -77,6 +88,7 @@ export function ChatPane(props: ChatPaneProps) {
       label={composer.placeholder}
       placeholder={composer.placeholder}
       defaultValue={composer.text}
+      onValueChange={onValueChange}
       running={composer.running}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
@@ -109,11 +121,19 @@ export function ChatPane(props: ChatPaneProps) {
           skills={skills.items}
           value={skills.value}
           open={skills.open}
-          onOpenChange={onSkillsOpenChange}
+          onOpenChange={(open) => {
+            // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
+            if (!open) onSkillsOpenChange?.(false)
+          }}
+          onListFocus={() => {
+            if (!typedRef.current) return
+            typedRef.current = false
+            areaRef.current?.querySelector('textarea')?.focus()
+          }}
         >
           {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
               (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
-          <div data-figma={figma.composer} role="combobox" aria-label={skills.label}>
+          <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label}>
             {box}
           </div>
         </SkillPicker>

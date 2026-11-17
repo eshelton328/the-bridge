@@ -30,7 +30,8 @@ first: it says what each file of a page folder is for.
   Maximise and the menu), `PaneMenu` (fork, side chat, subtask, Move to
   workspace with its list as the action's `submenu`, rename, close;
   compact rows, and the highlighted row and workspace from the state),
-  `ChatPane` (the transcript and the composer), `ChatEntryView` (one entry, by `type`),
+  `ChatPane` (the transcript and the composer; only a message that starts
+  with "/" opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
   `SkillPicker` (the skills after "/"), `ShellPane` (terminal lines) and
   `EmptyPane` (start a chat, or open one of the workspace). D2 adds
   `WorkspaceSidebar` (the title, the toggle, + and the groups),

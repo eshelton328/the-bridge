@@ -12,11 +12,22 @@ export type SkillPickerProps = {
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   onPick?: ((skill: string) => void) | undefined
+  /** The focus enters the list, as the popover moves it there when it opens. */
+  onListFocus?: (() => void) | undefined
   /** The composer the list opens over. */
   children: ReactElement
 }
 
-export function SkillPicker({ label, skills, value, open, onOpenChange, onPick, children }: SkillPickerProps) {
+export function SkillPicker({
+  label,
+  skills,
+  value,
+  open,
+  onOpenChange,
+  onPick,
+  onListFocus,
+  children,
+}: SkillPickerProps) {
   return (
     <Popover
       data-figma={open ? '105:406' : undefined}
@@ -29,14 +40,16 @@ export function SkillPicker({ label, skills, value, open, onOpenChange, onPick, 
       trigger={children}
     >
       <PopoverSection label={label}>
-        <OptionList
-          label={label}
-          size="sm"
-          selectedFill
-          value={value}
-          onItemSelect={onPick}
-          items={skills.map((s) => ({ value: s.name, label: s.name, description: s.description }))}
-        />
+        <div onFocus={onListFocus}>
+          <OptionList
+            label={label}
+            size="sm"
+            selectedFill
+            value={value}
+            onItemSelect={onPick}
+            items={skills.map((s) => ({ value: s.name, label: s.name, description: s.description }))}
+          />
+        </div>
       </PopoverSection>
     </Popover>
   )
