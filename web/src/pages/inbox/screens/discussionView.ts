@@ -213,7 +213,12 @@ export function proposalEffect(
   desktop: boolean,
   typed?: string,
 ): DiscussionEffect {
-  if (act === 'discard') return { ui: { proposals: decide(ui.proposals, kind, 'discarded') } }
+  if (act === 'discard') {
+    // Keep it on a removal already applied (Open discussion on a removed task) keeps the task: it leaves Done too.
+    const id = data.detail?.id
+    const kept = kind === 'remove' ? { finished: ui.finished.filter((f) => f.id !== id || f.result !== 'removed') } : {}
+    return { ui: { proposals: decide(ui.proposals, kind, 'discarded'), ...kept } }
+  }
   if (act === 'undo')
     return kind === 'update' ? undoUpdateEffect(ui) : { ui: { proposals: decide(ui.proposals, kind) } }
   if (kind === 'remove') return { ui: {}, removeOpen: true }

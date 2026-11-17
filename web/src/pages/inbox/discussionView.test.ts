@@ -90,6 +90,14 @@ describe('the discussion effects', () => {
     expect(discussionView(removed.data, restored).detail).toEqual(removed.data.detail)
   })
 
+  it('keeps a removed task with Keep it in its discussion: it leaves Done and its page shows it as it was', () => {
+    const view = discussionView(removed.data, removed.ui)
+    const kept = { ...removed.ui, ...proposalEffect(view, removed.ui, 'remove', 'discard', true).ui }
+    expect(kept.proposals).toEqual({ remove: 'discarded' })
+    expect(kept.finished).toEqual([])
+    expect(discussionView(removed.data, kept).detail).toEqual(removed.data.detail)
+  })
+
   it('adds the messages Erik sent after the entries', () => {
     const view = discussionView(tasksProposed.data, { ...tasksProposed.ui, sent: ['Keep the Inbox one.'] })
     expect(view.discussion?.entries.at(-1)).toEqual({ type: 'user', text: 'Keep the Inbox one.' })
