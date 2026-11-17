@@ -1,7 +1,8 @@
 // The open artifact's discussion, beside it on the desktop (Figma
 // "discussion panel", D7 452:2410): the header with Open in workspace and
 // Close, the model and how much context it uses, what it may do, the empty
-// state or the messages Erik sent, and the reply box. Built from the same
+// state or the entries (D8: Erik's question, the reply and the proposed
+// change, then the messages he sent), and the reply box. Built from the same
 // library parts as the Inbox's DiscussionPanel (D14), which the Inbox page
 // does not export. The reply box has no attach button, as the Inbox's: no
 // file flow is designed. Props only.
@@ -14,13 +15,14 @@ import {
   ContextMeter,
   Inline,
   LockIcon,
-  Message,
   ModelChip,
   Stack,
 } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import type { ArtifactDiscussion } from '../types.ts'
+import type { ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
+import type { ArtifactProposalProps } from './ArtifactProposal.tsx'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
+import { DiscussionEntry } from './DiscussionEntry.tsx'
 
 // Figma's panel is 628 wide, what is left beside the 820 px artifact pane. The pane here is Container
 // size="detail" (748 + 2 × 40), so the panel starts 8 px further right; its 12 px start padding keeps the content at
@@ -55,8 +57,10 @@ export type DiscussionPanelProps = {
   discussion: ArtifactDiscussion
   /** What Erik has typed in the reply box. */
   draft?: string | undefined
-  /** The messages Erik sent, after the empty state goes. */
-  sent?: readonly string[] | undefined
+  /** What the discussion shows; with none, the empty state. */
+  entries?: readonly ArtifactDiscussionEntry[] | undefined
+  /** A button of the proposal was pressed. */
+  onAct?: ArtifactProposalProps['onAct']
   onDraftChange?: ((text: string) => void) | undefined
   onSend?: ((text: string) => void) | undefined
   onOpenInWorkspace?: (() => void) | undefined
@@ -66,13 +70,14 @@ export type DiscussionPanelProps = {
 export function DiscussionPanel({
   discussion,
   draft = '',
-  sent = [],
+  entries = [],
+  onAct,
   onDraftChange,
   onSend,
   onOpenInWorkspace,
   onClose,
 }: DiscussionPanelProps) {
-  const empty = sent.length === 0
+  const empty = entries.length === 0
   return (
     <aside aria-label={discussion.title} className={panel} data-figma="discussion panel">
       <Inline gap="8" align="center" data-figma="header">
@@ -80,8 +85,8 @@ export function DiscussionPanel({
           <BubbleIcon size="16" />
         </span>
         <h2 className={heading}>{discussion.title}</h2>
-        {/* Two layers are named "button · Open in workspace" in D7; this is the header's. */}
-        <span data-figma="452:2464">
+        {/* Two layers are named "button · Open in workspace"; this is the header's. */}
+        <span data-figma={discussion.layers.header}>
           <Button onClick={onOpenInWorkspace}>
             <ChatIcon />
             {discussion.openInWorkspace}
@@ -109,10 +114,8 @@ export function DiscussionPanel({
           <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} />
         ) : (
           <Stack gap="12">
-            {sent.map((text, i) => (
-              <Message key={`${String(i)}:${text}`} from="user">
-                {text}
-              </Message>
+            {entries.map((entry, i) => (
+              <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} onAct={onAct} />
             ))}
           </Stack>
         )}

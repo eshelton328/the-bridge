@@ -30,9 +30,14 @@ export type ArtifactDetailProps = {
   onDiscuss?: (() => void) | undefined
   /** Beside the artifact, such as its open discussion (D7); Discuss is pressed while it shows. */
   side?: ReactNode
+  /**
+   * The node id of "Made in"'s Open in workspace while a side shows: the discussion's header has a layer of the same
+   * name (D7 452:2406, D8 452:3016).
+   */
+  madeInLayer?: string | undefined
 }
 
-export function ArtifactDetail({ artifact, onDiscuss, side }: ArtifactDetailProps) {
+export function ArtifactDetail({ artifact, onDiscuss, side, madeInLayer }: ArtifactDetailProps) {
   const content = (
     <Container size="detail" gap="20" className={side === undefined ? undefined : full}>
       <ArtifactBar
@@ -43,8 +48,7 @@ export function ArtifactDetail({ artifact, onDiscuss, side }: ArtifactDetailProp
       />
       <ArtifactTitleBlock artifact={artifact} />
       <ArtifactPreview artifact={artifact} />
-      {/* D7 has two layers named "button · Open in workspace"; 452:2406 is this one. */}
-      <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : '452:2406'} />
+      <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : madeInLayer} />
     </Container>
   )
   if (side === undefined)

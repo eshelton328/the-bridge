@@ -2,7 +2,8 @@
 // gets (ViewportFrame): on the desktop the rail with Artifacts selected and
 // the library beside it (Figma D1), or, with an artifact open, the library
 // as a list and the artifact beside it (D2), or with its discussion open
-// the artifact and the discussion, the list closed (D7); on a tablet or phone the
+// the artifact and the discussion, the list closed (D7), and in it a
+// proposed change with Apply, Discard and Edit first (D8); on a tablet or phone the
 // library over the tab bar. A state file's data and ui are its props; the callbacks are
 // optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -14,6 +15,7 @@ import type { ArtifactsData, ArtifactsUi } from '../types.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { ArtifactDetail } from './ArtifactDetail.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
+import { discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 
 export type ArtifactsScreenProps = {
@@ -74,12 +76,16 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                             onUiChange?.({ discussOpen: !discussing })
                           }
                     }
+                    madeInLayer={discussion?.layers.madeIn}
                     side={
                       discussing ? (
                         <DiscussionPanel
                           discussion={discussion}
                           draft={ui.discussDraft}
-                          sent={sent}
+                          entries={discussionEntries(discussion, ui)}
+                          onAct={(act) => {
+                            onUiChange?.(proposalEffect(discussion, act))
+                          }}
                           onDraftChange={
                             onUiChange === undefined
                               ? undefined
