@@ -63,8 +63,8 @@ status bar.
   as in Figma. Library gap: Filter chip padding on the phone.
 - **Chip row.** Figma's chip row runs past the list and scrolls
   sideways, the Done chip cut at the list's edge; the render does the
-  same (the `hiddenOverflow` exception says why), but draws no fade over
-  the cut. Library gap: Chip row fade.
+  same (the `hiddenOverflow` exception says why) and fades the
+  cut edge over 24 px against Figma's 36. Library gap: Chip row fade.
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square
   as in Figma (346:9036, 346:9041).
 - **Filter sheet.** `BottomSheet` titled Filter with Clear, the Filter

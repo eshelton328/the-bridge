@@ -51,8 +51,14 @@ status bar.
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as
-  Figma does, but draws no fade at the cut edge (the `hiddenOverflow`
-  exception says why). Library gap: Chip row fade.
+  Figma does (the `hiddenOverflow` exception says why). With Done
+  selected Figma scrolls All (346:11406) wholly off the left edge under
+  its fade. The render's chips pad 8 against 12, so the row (40 px narrower
+  than Figma's) overflows the list by less than All's width: scrolled to
+  its end it still shows about 24 px of All, its count "7" among them, under the library's 24 px fade
+  (the second review reads the "7"). No scroll position hides it; the
+  12 px chip padding would. Library gaps: Chip row fade, Filter chip
+  padding on the phone.
 - **Selected chip.** With Done selected, the chip row scrolls Done into
   view and All off to the left, as Figma draws it. `FilterChips` scrolls
   a chip into view only when it takes the focus, so `InboxListPane`

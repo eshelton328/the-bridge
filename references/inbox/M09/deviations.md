@@ -76,3 +76,6 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13. Library gap: Button label
   size.
+- **Prompt fade.** Behind the sheet the task's prompt ends with "…"
+  under its fade, where Figma fades it with no ellipsis (as M2). Library
+  gap: Prompt fade without an ellipsis.

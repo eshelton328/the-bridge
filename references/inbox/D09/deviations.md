@@ -81,3 +81,12 @@ For D09 it also found:
   list shows faintly through it (`surface.overlay`, alpha 0.98):
   library styles.
 - Choice text is smaller and the heading brighter: library styles.
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

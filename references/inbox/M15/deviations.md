@@ -53,7 +53,8 @@ status bar.
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as
-  Figma does, but draws no fade at the cut edge (the `hiddenOverflow`
+  Figma does, and fades the cut edge over 24 px
+  against Figma's 36 (the `hiddenOverflow`
   exception says why). Library gap: Chip row fade.
 - **Sorted by project.** On the phone a sort other than Newest first
   shows a line under the tools, "Sorted by project" and Reset, which

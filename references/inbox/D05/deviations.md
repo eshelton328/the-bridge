@@ -63,3 +63,19 @@ For D05 it also found:
 - The composer has no cyan focus border (a story cannot focus a field
   without a user action), its Stop icon is an outline square and its
   model chevron is thin: library styles.
+
+## Running row
+
+- **Running row.** The D6 note says a click on a task under Running
+  opens the task page (D6). D5 draws that row selected beside the chat,
+  and its state's detail is the chat, so on the desktop the row keeps the
+  chat. The tablet and phone lists (T6, M11) open the task page.
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

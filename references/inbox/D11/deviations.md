@@ -82,3 +82,12 @@ For D11 it also found:
 Before the review, the builder's look at the first side-by-side found
 an empty "omni-brain" heading under RUNNING; fixed: a project with no
 rows in a group gets no heading.
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

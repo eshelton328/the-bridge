@@ -83,3 +83,20 @@ For D10 it also found:
 - P2: the Running row is drawn selected: see "Selected row" above.
 - The Done hint sits closer to the last row: the selected row's
   border and the row heights.
+
+## Show it
+
+- **Show it.** The Done hint's link selects the Done chip, which lists
+  the match in Done: the search state holds that Done list (one finished
+  task, "Save the Inbox frames as references"), which no frame draws, and
+  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  `listView.test.ts`).
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

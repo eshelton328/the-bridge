@@ -53,16 +53,21 @@ status bar.
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as
-  Figma does, but draws no fade at the cut edge (the `hiddenOverflow`
+  Figma does, and fades the cut edge over 24 px
+  against Figma's 36 (the `hiddenOverflow`
   exception says why). Library gap: Chip row fade.
 - **Search.** The field shows "f-005" with its clear button, Sort and
   Filter beside it, the summary under the tools and the matches marked
   in cyan, in their groups. Figma draws the field focused with a caret
-  and the keyboard up (design-only chrome, d-089); the render's field is
-  not focused, so no keyboard covers the list, and the Done hint shows
-  under the Running row (`done hint` y +20 with the status bar removed).
+  and the keyboard up. The story focuses the field (`toHaveFocus`, the
+  T10 and M14 story), so the render shows its focused border; the
+  keyboard is design-only chrome (d-089), so none covers the list, and
+  the Done hint shows under the Running row (`done hint` y +20 with the
+  status bar removed).
   Figma's metadata gives the summary and the hint by their layer names;
   the exceptions say why.
-- **Show it.** The Done hint's link does nothing yet: the search state's
-  mock data holds no Done rows, and no frame draws the Done match it
-  would show (also on D10 and T10).
+- **Show it.** The Done hint's link selects the Done chip, which lists
+  the match in Done: the search state holds that Done list (one finished
+  task, "Save the Inbox frames as references"), which no frame draws, and
+  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  `listView.test.ts`).

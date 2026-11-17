@@ -53,7 +53,8 @@ status bar.
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as
-  Figma does, but draws no fade at the cut edge (the `hiddenOverflow`
+  Figma does, and fades the cut edge over 24 px
+  against Figma's 36 (the `hiddenOverflow`
   exception says why). Library gap: Chip row fade.
 - **Sort sheet.** The phone's Sort is a `BottomSheet` titled Sort with
   Done, the four choices as an `OptionList` with the check on Newest
@@ -62,7 +63,11 @@ status bar.
   Figma's choices are 58 px rows 2 apart; `OptionList` rows are 56 with
   no gap, so the sheet is a little shorter and starts lower. `BottomSheet`
   takes no `data-*` attribute, so the position check cannot measure the
-  sheet. Done shows the focus ring: the sheet focuses its first control.
+  sheet. Done is `Button variant="text" size="sm"`, plain cyan text as
+  Figma draws it, and the sheet opens with the focus on itself, so no
+  focus ring shows (`InboxRoute.test.tsx`). The header is about 3 px
+  taller than Figma's 40 (346:11808): "Sort" sits 39 below the sheet's
+  top against 36, "Newest first" 81 against 78.
   Library gaps: Sort sheet rows, Bottom sheet sections and data
   attribute.
 - **Sort button.** While the sheet is open the Sort icon shows pressed

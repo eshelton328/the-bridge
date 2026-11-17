@@ -65,7 +65,9 @@ status bar.
   gap: Disabled button style.
 - **Prompt.** `Clamp` cuts the prompt after five lines with an ellipsis
   and its fade; Figma cuts the text box at 128 px under a fade
-  (346:9300). The exception says why the cut text passes.
+  (346:9300) and draws no ellipsis. `Clamp fade` keeps `line-clamp`,
+  which draws the "…" in Chrome. The exception says why the cut text
+  passes. Library gap: Prompt fade without an ellipsis.
 - **Start.** Pinned above the tab bar, full width, as Figma draws it
   (`sticky action` passes); the hint "Opens the new chat and sends the
   prompt." is left out, as Figma does. The button is `size="xl"`. The

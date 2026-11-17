@@ -53,7 +53,8 @@ status bar.
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as
-  Figma does, but draws no fade at the cut edge (the `hiddenOverflow`
+  Figma does, and fades the cut edge over 24 px
+  against Figma's 36 (the `hiddenOverflow`
   exception says why). Library gap: Chip row fade.
 - **Running row.** The started task sits under Running at the bottom,
   as Figma draws it, with its chat line and Working pill; both lie
@@ -64,3 +65,6 @@ status bar.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13. Library gap: Button label
   size.
+- **Running row.** A tap on the task under Running opens its task page
+  (T4, M10), as the M10, T4 and D6 notes say, not the chat: the state's
+  detail is T4's (`InboxRoute.test.tsx`).
