@@ -1,10 +1,8 @@
 # D04 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D04`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D04`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -55,8 +53,9 @@ its reason. The library gaps are in
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 

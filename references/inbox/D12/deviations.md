@@ -1,16 +1,14 @@
 # D12 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D12`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D12`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass.
-- Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 8 of 17 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
@@ -37,20 +35,23 @@ its reason. The library gaps are in
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
 - **Snooze menu.** `Menu` with the heading, the times at the end of their
-  rows, a separator, Mark done and a danger Dismiss. It is 240 px wide
-  against Figma's 320 with 32 px rows against 44 (library gap: menu
-  widths and row height), and it takes no data attribute, so
-  `menu · Snooze or dismiss` is not position-checked.
-- **Pick a date and time.** No icon: the library has no calendar icon,
-  so the label starts 26 px further left than the others.
+  rows, a separator, Mark done and a danger Dismiss, 320 px wide with
+  44 px rows (`width="md"`, `size="lg"`, #101), as Figma's. It carries
+  `menu · Snooze or dismiss` and is 22 px taller (h +22), from the
+  library menu's own spacing. Its labels are in the
+  menu's own style, not Figma's Regular 15 (library gap: Regular 15 px
+  text).
+- **Pick a date and time.** Has its `CalendarIcon` (#101), aligned with
+  the other rows.
 - **Section offsets.** WHY starts 6 px lower and the sections after it
   10 to 49 px lower (SOURCES y +49), from the title block, the notes box
   and the gaps. Round 3 had 30 to 64: WHY no longer wraps.
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 
@@ -69,10 +70,10 @@ notes. What it found in every frame, and why it stays:
 
 For D12 it also found:
 
-- P2: no calendar icon, so "Pick a date and time…" is not aligned:
-  library gap.
-- P2: the menu is 80 px narrower with tighter rows, and the detail
-  shows faintly through it (`surface.overlay`, alpha 0.98): library
+- P2: no calendar icon, so "Pick a date and time…" is not aligned.
+  Fixed in round 5 with #101.
+- P2: the menu is 80 px narrower with tighter rows (fixed in round 5:
+  320 px, 44 px rows), and the detail shows faintly through it (`surface.overlay`, alpha 0.98): library
   styles. The menu therefore covers less of the title than in Figma.
 - The times are brighter: `fg.muted` (the menu recipe) against
   Figma's #4a5675.

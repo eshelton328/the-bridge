@@ -1,10 +1,8 @@
 # D11 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D11`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D11`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -19,7 +17,7 @@ its reason. The library gaps are in
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
   11/16). A title and meta row is 58 px against Figma's 55: Figma's
   text boxes are 17 and 14 px high, and the library keeps line heights
-  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +18, SNOOZED y +28, RUNNING y +32),
+  on the 4 px grid (d-072). Each group below the first starts lower (NEXT STEPS y +22, SNOOZED y +36, RUNNING y +40),
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
@@ -36,21 +34,24 @@ its reason. The library gaps are in
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
-- **Run card.** `Panel` with the default border; Figma's card has a
-  cyan border and tint (library gap: accent card). It starts 19 px
-  lower (round 3: 34), from the offsets above.
+- **Run card.** `Panel tone="accent"` (#101) gives it Figma's cyan
+  border and tint. It starts 19 px lower (round 3: 34), from the
+  offsets above.
 - **Hidden Figma text.** Figma keeps the Reset and Edit buttons of the
   prompt header as hidden layers; `exceptions.json` excepts them with
   their node ids.
-- **Project headings.** No library part draws them; the screen sets a
-  12 px `FolderIcon` and the name in `mono`, `fg.muted`, in an `Inline`
-  (library gap). They are not keyed: Figma has three headings named
+- **Project headings.** `GroupHeader variant="project"` (#101) with a
+  `FolderIcon`: the name in `monoSm`, `fg.muted`, as Figma's. Each is
+  26 px high against Figma's 24 (the library's padding on the 4 px
+  grid), so each group below adds 2 px per heading to the row offsets
+  above. They are not keyed: Figma has three headings named
   `project · ncc-1701`.
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 
@@ -69,8 +70,8 @@ notes. What it found in every frame, and why it stays:
 
 For D11 it also found:
 
-- Project headings slightly larger and brighter: `mono` and `fg.muted`
-  against Figma's 11 px.
+- Project headings slightly larger and brighter: `mono` against Figma's
+  11 px. Fixed in round 5 (`GroupHeader variant="project"`, `monoSm`).
 - The Project button and the search field differ in width: library
   styles (above).
 

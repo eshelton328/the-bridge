@@ -1,10 +1,8 @@
 # D07 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D07`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D07`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -39,17 +37,22 @@ its reason. The library gaps are in
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
-- **Result card.** `Panel` with the default border; Figma's card has a
-  cyan border and tint (library gap: accent card). It starts 23 px
-  lower (round 3: 38), from the offsets above.
+- **Result card.** `Panel` with the default border. Figma's result
+  card has a green border, and the library has no token for it (#101
+  left it out, d-050); `tone="accent"` would draw it cyan, as a running
+  card. It starts 23 px lower (round 3: 38), from the offsets above.
+- **Done rows.** `ListRow finished` (#101) draws the title of a done row
+  that is not selected in `fg.muted`, as Figma does. Figma also fades
+  the kind tile of such a row to 0.6; no token has that opacity.
 - **Hidden Figma text.** Figma keeps Snooze and Dismiss in the task bar
   and Reset and Edit in the prompt header as hidden layers; the render
   leaves them out, and `exceptions.json` excepts them.
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 

@@ -1,16 +1,14 @@
 # D09 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D09`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D09`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fail. "Sorting applies inside each group." is missing: `RadioMenu` has no footer (library gap). The hidden Reset and Edit and the heading Figma names "menu header" (frame.png: SORT BY) are excepted in `exceptions.json`.
-- Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Text: pass. The note "Sorting applies inside each group." is drawn (`RadioMenu note`, #101). The hidden Reset and Edit and the heading Figma names "menu header" (frame.png: SORT BY) are excepted in `exceptions.json`.
+- Position: 8 of 17 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
@@ -36,21 +34,25 @@ its reason. The library gaps are in
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
-- **Run card.** `Panel` with the default border; Figma's card has a
-  cyan border and tint (library gap: accent card). It starts 19 px
-  lower (round 3: 34), from the offsets above.
+- **Run card.** `Panel tone="accent"` (#101) gives it Figma's cyan
+  border and tint. It starts 19 px lower (round 3: 34), from the
+  offsets above.
 - **Hidden Figma text.** Figma keeps the Reset and Edit buttons of the
   prompt header as hidden layers; `exceptions.json` excepts them with
   their node ids.
-- **Sort menu.** `RadioMenu` with the heading and a description per
-  choice. It has no note at the end (library gap), it is 240 px wide
-  against Figma's 280, and it takes no data attribute, so `menu · Sort`
-  is not position-checked.
+- **Sort menu.** `RadioMenu` with the heading, a description per
+  choice and the note under a line, 280 px wide (`width="sort"`, #101),
+  as Figma's. It carries `menu · Sort` and is 24 px taller (h +24): its
+  rows are 56 px against Figma's 50, a library style. It starts 18 px
+  to the left (x -18) because it opens under the Newest button, which
+  sits further left than Figma's (the search field width, a library
+  style).
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 
@@ -70,8 +72,8 @@ notes. What it found in every frame, and why it stays:
 For D09 it also found:
 
 - P1: the note "Sorting applies inside each group." and its divider are
-  missing: library gap. No exception, because the render is wrong.
-- P2: the menu is 39 px narrower and stays inside the list pane, and
-  the list shows faintly through it (`surface.overlay`, alpha 0.98):
+  missing. Fixed in round 5 with #101.
+- P2: the menu is 39 px narrower (fixed in round 5: 280 px) and the
+  list shows faintly through it (`surface.overlay`, alpha 0.98):
   library styles.
 - Choice text is smaller and the heading brighter: library styles.

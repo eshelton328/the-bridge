@@ -1,16 +1,14 @@
 # D08 deviations
 
-What still differs from Figma after round 4 of the fidelity loop
-(`pnpm fidelity inbox D08`, 2026-11-16, with the stricter checks of main
-e4da0c8, against a local build of library main 60170df: #97 to #99 are
-not in the installed 1.0.0-beta.1), each with
-its reason. The library gaps are in
+What still differs from Figma after round 5 of the fidelity loop
+(`pnpm fidelity inbox D08`, 2026-11-16, against the installed
+library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass.
-- Position: 8 of 17 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 8 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
 - Rules: pass.
 
 ## Deviations
@@ -36,20 +34,22 @@ its reason. The library gaps are in
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.
-- **Prompt dialog.** `Dialog size="lg"` is 540 px wide against Figma's
-  720 (346:3543), so the prompt wraps to seven lines (`346:3548` x +94,
-  w -188). Done is a text button in the footer, not at the end of the
-  title row (library gap: wide dialog with a header action). Edit prompt
-  and Copy fill the width in a two-column `Grid`. `Dialog` takes no
-  data attribute, so the dialog box itself is not position-checked; the
-  prompt text carries the key.
-- **Focus.** Ark focuses the first button when the dialog opens, so
-  Edit prompt shows a focus ring; Figma shows none.
+- **Prompt dialog.** `Dialog size="wide"` (#101) is 720 px wide, as
+  Figma's 346:3543, with Done as a text button at the end of the title
+  row (`headerAction`). The dialog box carries `dialog · Suggested
+  prompt`. The prompt is in `body` (14/20) against Figma's Regular 15
+  with 23 px lines, which no text style has (library gap: Regular 15 px
+  text), so it is 38 px shorter (`346:3548` y +35.5, h -38) and the
+  dialog 51 px shorter (y +25.5, h -51).
+- **Focus.** Ark focuses the first control when the dialog opens, which
+  is now Done in the title row, so Done shows a focus ring; Figma shows
+  none.
 
 ## Second review
 
-Round 4 had no new second review: it changed only the row and body text
-sizes, and the checks above measure those. The findings below are from
+Rounds 4 and 5 had no new second review: round 4 changed only the row
+and body text sizes, and round 5 only put in the #101 parts; the checks
+above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").
 
@@ -69,8 +69,8 @@ notes. What it found in every frame, and why it stays:
 For D08 it also found:
 
 - P1: the dialog is 180 px narrower and taller, and Done sits under the
-  buttons, not in the title row: library gap (wide dialog with a header
-  action). Not fixed.
-- P2: Edit prompt has a focus ring (see Focus above).
+  buttons, not in the title row. Fixed in round 5 with #101 (above).
+- P2: Edit prompt has a focus ring (see Focus above; the ring is now on
+  Done).
 - The body is 14 px against Figma's 15 and the title larger: library
   type styles (`body`, `subtitle`).
