@@ -8,32 +8,28 @@ against the installed library 1.0.0-beta.5, which has #104 to #106), each with i
 ## Checks
 
 - Text: pass (85 strings).
-- Position: 2 of 9 layers pass (`group · SNOOZED`, `tab bar`).
+- Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `inbox list`: x +2, y -29, w -4, h +21; 29 px removed: y +0.
-- `header`: x +2, y -29, w -4, h -2; 29 px removed: y +0.
-- `filter · chips`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `list tools`: x +2, y -27, w -4, h -4; 29 px removed: y +2.
-- `group · NEEDS YOU`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `group · NEXT STEPS`: x +2, y -11, w -4, h +4; 29 px removed: y +18.
-- `filter popover`: x -2, y -31, w +0, h +62; 29 px removed: y -2.
+- `inbox list`: x +2, y +0, w -4, h +21.
+- `group · NEXT STEPS`: x +2, y +18, w -4, h +4.
+- `group · SNOOZED`: x +2, y +31, w -4, h +4.
+- `filter popover`: x -2, y -2, w +0, h +62.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in T01: `ListRow

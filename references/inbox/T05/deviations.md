@@ -14,32 +14,31 @@ with its reason. The library gaps are in
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav`: x +2, y -21, w -4, h -10; 29 px removed: y +8.
-- `button · Open in Workspaces`: x -8.8, y -25, w +6.8, h -2; 29 px removed: y +4.
-- `started task`: x +2, y -23, w -4, h +6; 29 px removed: y +6.
-- `chevron · open task`: x -6, y -20, w +0, h +0; 29 px removed: y +9.
-- `running in`: x +6, y -19, w -12, h +0; 29 px removed: y +10.
-- `346:6416`: x +2, y +20, w -4, h +3; anchored to the bottom, no status bar offset.
+- `nav`: x +2, y +8, w -4, h -10.
+- `button · Open in Workspaces`: x -8.8, y +4, w +6.8, h -2.
+- `started task`: x +2, y +6, w -4, h +6.
+- `chevron · open task`: x -6, y +9, w +0, h +0.
+- `running in`: x +6, y +10, w -12, h +0.
+- `346:6416`: x +2, y +20, w -4, h +3.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets below give the rest as "29 px removed". Library gap: Top and
-  bottom safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Chat header.** Back with Workspaces is `BackRow` (28 px) with a
   small button, against Figma's 38 px row 4 px under the status bar
-  (`nav` h -10, 8 px lower than Figma's after the status bar is
-  removed). The header `Panel` pads 16 against Figma's 12, so the
-  chevron is 6 px left (`chevron · open task` x -6) and the chat line
+  (`nav` y +8, h -10). The header `Panel` pads 16 against Figma's 12,
+  so the chevron is 6 px left (`chevron · open task` x -6) and the chat line
   6 px right (`running in` x +6, w -12). Workspaces is wider because of
   its 14 px label (`button · Open in Workspaces` x -8.8, w +6.8).
   Library gaps: Chat header on the tablet, Button label size.

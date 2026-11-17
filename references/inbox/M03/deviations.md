@@ -9,35 +9,32 @@ the installed library 1.0.0-beta.5, which has #104 to #106), each with its reaso
 ## Checks
 
 - Text: pass (14 strings checked; 14 Figma strings under exceptions.json).
-- Position: 0 of 7 layers pass (none).
+- Position: 1 of 7 layers pass (`scrolled title`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -38, w +0, h +24; 38 px removed: y +0.
-- `scrolled title`: x +0, y -38, w +0, h -1; 38 px removed: y +0.
-- `section · SUGGESTED PROMPT`: x +0, y -37, w +0, h -14; 38 px removed: y +1.
-- `section · RUN IN`: x +0, y -49, w +0, h -21; 38 px removed: y -11.
-- `button · Change`: x +0, y -60.5, w -2, h +4; 38 px removed: y -22.5.
-- `section · SOURCES`: x +0, y -225, w +0, h +2; 38 px removed: y -187.
+- `nav`: x +0, y +0, w +0, h -8.
+- `task · next step`: x +0, y +0, w +0, h +24.
+- `section · SUGGESTED PROMPT`: x +0, y +1, w +0, h -14.
+- `section · RUN IN`: x +0, y -11, w +0, h -21.
+- `button · Change`: x +0, y -22.5, w -2, h +4.
+- `section · SOURCES`: x +0, y -187, w +0, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **Keyboard.** Figma draws the iOS keyboard over the bottom of the
   screen (design chrome, d-089, excluded from the text check); the app
   draws none. While the editor is open on the phone the render hides
@@ -56,10 +53,10 @@ status bar.
 - **Spacing.** The scrolled title, the prompt and Run in are 20 apart
   against Figma's 18 (d-072: a tie takes the larger token), so the
   prompt starts 1 px lower than Figma's (`section · SUGGESTED PROMPT`
-  y +1 with the status bar removed). The editor is 14 px shorter, so
-  Run in starts 11 px higher (`section · RUN IN` y -11, `button ·
-  Change` y -22.5 with the status bar removed). With 24 px gaps Run in
-  started 3 px higher, but each gap was 6 px larger than Figma's.
+  y +1). The editor is 14 px shorter, so Run in starts 11 px higher
+  (`section · RUN IN` y -11, `button · Change` y -22.5). With 24 px
+  gaps Run in started 3 px higher, but each gap was 6 px larger than
+  Figma's.
 - **Run in card.** As in M2: the pill beside the title makes the card
   21 px shorter (`section · RUN IN` h -21), and Change is 28 × 28
   against 30 × 24 (`button · Change`). Library gap: Small icon button.

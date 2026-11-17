@@ -8,39 +8,36 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (35 strings checked, 1 excepted in `exceptions.json`).
-- Position: 2 of 13 layers pass (`sticky action`, `tab bar`).
+- Position: 3 of 13 layers pass (`task bar`, `sticky action`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +59; 38 px removed: y +2.
-- `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
-- `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
-- `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -2; 38 px removed: y +17.
-- `section · RUN IN`: x +0, y -21, w +0, h -21; 38 px removed: y +17.
-- `button · Change`: x +0, y -32.5, w -2, h +4; 38 px removed: y +5.5.
-- `section · MY NOTES`: x +0, y -40, w +0, h +7; anchored to the bottom, no status bar offset.
-- `notes field`: x +0, y -38, w +0, h +5; anchored to the bottom, no status bar offset.
-- `section · SOURCES`: x +0, y +89, w +0, h +2; 38 px removed: y +127.
+- `nav`: x +0, y +0, w +0, h -8.
+- `task · next step`: x +0, y +2, w +0, h +59.
+- `title block`: x +0, y +6, w +0, h +5.
+- `section · WHY`: x +0, y +13, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +0, y +17, w +0, h -2.
+- `section · RUN IN`: x +0, y +17, w +0, h -21.
+- `button · Change`: x +0, y +5.5, w -2, h +4.
+- `section · MY NOTES`: x +0, y -2, w +0, h +7.
+- `notes field`: x +0, y +0, w +0, h +5.
+- `section · SOURCES`: x +0, y +127, w +0, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **Same page as M2.** The task page is M2's (`taskPage`), so its
   differences are M2's, with the same causes: `nav` h -8 (`BackRow` and
   32 px buttons against Figma's 40 px row); the sections 20 apart
@@ -64,7 +61,10 @@ status bar.
   (its 13 px text in the panel's 14 px line made 21 px lines) onto a
   block. Figma's lines are 21, which no token has; the prompt box is
   now within tolerance (`section · SUGGESTED PROMPT` h +3 to -2). Together
-  the layers below move up 5 to 9 px: `section · RUN IN` y -16 to -21, `button · Change` y -25.5 to -32.5, `section · MY NOTES` y -31 to -40, `notes field` y -29 to -38, and `task · next step` is 9 px shorter (h +68 to +59); `section · SOURCES` comes 9 px closer (y +98 to +89).
+  the layers below move up 5 to 9 px, which leaves `section · RUN IN`
+  y +17, `button · Change` y +5.5, `section · MY NOTES` y -2 and
+  `notes field` y +0; `task · next step` is 9 px shorter (h +68 to
+  +59), and `section · SOURCES` comes 9 px closer (y +127).
 - **Disabled Reset.** Reset keeps its fill and `border.default` border
   while disabled, with only its label and icon in `fg.muted`, as Figma
   draws it (#105).

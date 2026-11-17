@@ -8,32 +8,29 @@ library 1.0.0-beta.5, which has #104 to #106), each with its reason. The library
 ## Checks
 
 - Text: pass.
-- Position: 2 of 10 layers pass (`answer`, `tab bar`).
+- Position: 5 of 10 layers pass (`nav · back`, `task · question`, `task bar`, `title block`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · question`: x +2, y -25, w -4, h -4; 29 px removed: y +4.
-- `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
-- `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `blocking`: x +2, y -25, w -4, h +9; 29 px removed: y +4.
-- `section · CONTEXT`: x +2, y -14, w -4, h +2; 29 px removed: y +15.
-- `section · CHOOSE ONE`: x +2, y -10, w -4, h +3; 29 px removed: y +19.
-- `section · NOTE TO THE CHAT · OPTIONAL`: x +2, y -5, w -4, h +3; 29 px removed: y +24.
+- `blocking`: x +2, y +4, w -4, h +9.
+- `section · CONTEXT`: x +2, y +15, w -4, h +2.
+- `section · CHOOSE ONE`: x +2, y +19, w -4, h +3.
+- `section · NOTE TO THE CHAT · OPTIONAL`: x +2, y +24, w -4, h +3.
+- `answer`: x +2, y +29, w -4, h -1.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets below give the rest as "29 px removed". Library gap: Top and
-  bottom safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in D01: sections are 24 px apart against
@@ -46,14 +43,13 @@ status bar.
 - **Waiting box.** `Panel tone="needsYou"` is 9 px taller than Figma's
   (`blocking` h +9) and its tint is lighter: the needs-you panel tint
   waits on Erik (d-050). Library gaps: Styles that differ from Figma.
-- **Offset that beta.5 exposed.** The Recommended pill in the selected
+- **What beta.5 changed.** The Recommended pill in the selected
   option card is now 20 px high, as Figma's (`Badge size="sm"`, 24
   before), so CHOOSE ONE is 3 px taller than Figma's instead of 7
   (`section · CHOOSE ONE` h +3) and the task 4 px shorter
-  (`task · question` h +0 to -4). The note section below moves up 4 px
-  and now fails (`section · NOTE TO THE CHAT · OPTIONAL` y -5; it passed
-  at y -1): the existing status bar and section spacing offsets, no
-  longer hidden by the taller pill.
+  (`task · question` h +0 to -4). The note section below moves up 4 px,
+  closer to Figma's y, and still sits lower by the section spacing
+  above (`section · NOTE TO THE CHAT · OPTIONAL` y +24).
 - **Tab bar.** `TabBar` spreads its five tabs over the full width
   (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
   x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:

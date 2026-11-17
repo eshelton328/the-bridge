@@ -8,38 +8,34 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (21 strings checked, 2 excepted in `exceptions.json`).
-- Position: 0 of 10 layers pass.
+- Position: 2 of 10 layers pass (`nav`, `chevron · open task`).
 - Rules: pass (1 finding under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `nav`: x +0, y -38, w +0, h -1; 38 px removed: y +0.
-- `task · discussing`: x +0, y -39, w +0, h +12; 38 px removed: y -1.
-- `chevron · open task`: x -4, y -36, w +0, h +0; 38 px removed: y +2.
-- `model and context`: x +4, y -35, w +9.6, h +4; 38 px removed: y +3.
-- `guard`: x +4, y -32, w -8, h +3; 38 px removed: y +6.
-- `discussion`: x +0, y -11, w +0, h -88; 38 px removed: y +27.
-- `message · you`: x +0, y -25, w +0, h +1; 38 px removed: y +13.
-- `message · discussion`: x +0, y -24, w +0, h +6; 38 px removed: y +14.
-- `proposal · CREATE 3 TASKS`: x +0, y -18, w +0, h +60; 38 px removed: y +20.
-- `composer · discussion`: x +0, y -6, w +0, h +3; anchored to the bottom, no status bar offset.
+- `task · discussing`: x +0, y -1, w +0, h +12.
+- `model and context`: x +4, y +3, w +9.6, h +4.
+- `guard`: x +4, y +6, w -8, h +3.
+- `discussion`: x +0, y +27, w +0, h -96.
+- `message · you`: x +0, y +13, w +0, h +1.
+- `message · discussion`: x +0, y +14, w +0, h +6.
+- `proposal · CREATE 3 TASKS`: x +0, y +20, w +0, h +60.
+- `composer · discussion`: x +0, y +24, w +0, h +3.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **Discussion page header.** As on the tablet (T17), but the phone
   puts the model and context in the task card, under the task's place,
   as Figma draws them (`model and context` 454:216), and the nav keeps
@@ -48,10 +44,8 @@ status bar.
   the group about 10 px wider and 4 px taller (`model and context` w,
   h). Library gap: Chat header on the tablet.
 - **Task card under the nav.** The card sits 8 under the nav, as
-  Figma draws it (was 16), so with the status bar removed it is within
-  1 px of Figma (`task · discussing` y). Every layer under it moved up
-  8 too, which makes its raw y offset 8 px larger: the fix exposes the
-  status bar offset that was there before; it adds no difference.
+  Figma draws it (was 16), so it is within 1 px of Figma
+  (`task · discussing` y -1). Every layer under it moved up 8 too.
 - **Task card.** A `Panel` with the title, cut on one line with an
   ellipsis as Figma cuts it (TruncatedText; the exception says why the
   cut title passes), the Next step pill, a chevron, the place, the model
@@ -61,8 +55,9 @@ status bar.
   task` x -4) and the guard 4 px right (`guard` x +4, w -8). Every
   entry under the card starts lower by what the card adds. Library gap:
   Chat header on the tablet.
-- **Reply box.** The reply box sits above the home indicator, as Figma
-  draws it (`composer · discussion` within 6 px). The story focuses the
+- **Reply box.** The reply box comes last, under the proposal, as Figma
+  draws it; in the check it sits 24 px lower (`composer · discussion`
+  y +24; Page fits says why). The story focuses the
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
@@ -91,10 +86,11 @@ status bar.
   gap: Message author icon and small text.
 - **Page fits.** The page used to be 8 px taller than the phone and
   scrolled (`hiddenOverflow` on `main.app-shell__detail`). With the card
-  8 under the nav, as Figma draws it, the page fits and nothing is
-  clipped. The reply box now sits at the bottom, 6 px higher than
-  Figma's and 3 px taller (`composer · discussion` y -6, h +3), as on
-  M18 and M24; it passed before only because the page scrolled.
+  8 under the nav, as Figma draws it, the page fits the 844 px frame.
+  The position check renders 38 px shorter (d-101), and there the page
+  is taller than the screen: the reply box follows the proposal, 24 px
+  lower than Figma's and 3 px taller (`composer · discussion` y +24,
+  h +3). On M18 and M24 it sits at the bottom, 6 px higher (y -6).
 - **Checked boxes.** The checked new-task boxes are cyan
   (`accent.default`); Figma fills them violet. `Checkbox` has no tone
   prop. Library gap: Proposal block icon and applied tone. The box is

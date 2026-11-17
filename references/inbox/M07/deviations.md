@@ -9,41 +9,35 @@ the installed library 1.0.0-beta.5, which has #104 to #106), each with its reaso
 ## Checks
 
 - Text: pass (84 strings checked).
-- Position: 1 of 9 layers pass (`tab bar`).
+- Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass (1 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `inbox list`: x +0, y -38, w +0, h +19; 38 px removed: y +0.
-- `header`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `filter · chips`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
-- `list tools`: x +0, y -38, w +0, h -4; 38 px removed: y +0.
-- `group · NEEDS YOU`: x +0, y -42, w +0, h +4; 38 px removed: y -4.
-- `group · NEXT STEPS`: x +0, y -22, w +0, h +4; 38 px removed: y +16.
-- `group · SNOOZED`: x +0, y -9, w +0, h +4; 38 px removed: y +29.
-- `filter popover`: x +0, y -58, w +0, h +60; 38 px removed: y -20.
+- `inbox list`: x +0, y +0, w +0, h +19.
+- `group · NEXT STEPS`: x +0, y +16, w +0, h +4.
+- `group · SNOOZED`: x +0, y +29, w +0, h +4.
+- `filter popover`: x +0, y -58, w +0, h +60.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **List rows and group headers.** As in D01 and T01: `ListRow
   density="compact"` rows are 58 px against Figma's 55 and group
   headers 38 against 34 (4 px grid, d-072), so each later group starts
-  lower (`group · NEXT STEPS` y +16, `group · SNOOZED` y +29 with the
-  status bar removed) and the list is taller (`inbox list` h +19).
+  lower (`group · NEXT STEPS` y +16, `group · SNOOZED` y +29) and the
+  list is taller (`inbox list` h +19).
   Library gap: Small text in the detail.
 - **Header, chips and tools.** `PageHeader size="phone"` is 40 px high
   against Figma's 44 (`header` h -4) and the tools row 40 against 44
@@ -78,7 +72,7 @@ status bar.
   boxes. The boxes are 32 px apart against Figma's 30 (as in D4 and
   T14) and the section labels are `GroupHeader`s, so the boxes run 60
   px taller (`filter popover` h +60) and the sheet starts higher
-  (`filter popover` y -20 with the status bar removed). Clear shows the
+  (`filter popover` y -58). Clear shows the
   focus ring: the sheet focuses its first control. Library gaps: Styles
   that differ from Figma, Bottom sheet sections and data attribute.
 - **Button labels.** Button labels are 14 px (`label`) here;

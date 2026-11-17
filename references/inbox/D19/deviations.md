@@ -10,7 +10,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.5 (#104 to #106) 
 
 ## Checks
 
-- Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` (one entry per string).
+- Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` by their layer ids (one entry per string, d-101), so the same text in the task pane is still checked.
 - Position: 6 of 18 layers pass (`task pane`, `task bar`, `title block`, `guard`, `event`, `composer · discussion`).
 - Rules: pass.
 

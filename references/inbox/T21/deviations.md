@@ -8,32 +8,27 @@ against the installed library 1.0.0-beta.5, which has #104 to #106), each with i
 ## Checks
 
 - Text: pass.
-- Position: 1 of 8 layers pass (`tab bar`).
+- Position: 5 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `header`: x +2, y -29, w -4, h -2; 29 px removed: y +0.
-- `filter · chips`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `list tools`: x +2, y -27, w -4, h -4; 29 px removed: y +2.
-- `group · NEEDS YOU`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `group · NEXT STEPS`: x +2, y -11, w -4, h +4; 29 px removed: y +18.
-- `group · SNOOZED`: x +2, y +11, w -4, h +4; 29 px removed: y +40.
-- `toast · created`: x -144, y -4, w +288, h +0; anchored to the bottom, no status bar offset.
+- `group · NEXT STEPS`: x +2, y +18, w -4, h +4.
+- `group · SNOOZED`: x +2, y +40, w -4, h +4.
+- `toast · created`: x -144, y +8, w +288, h +0.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in T01: `ListRow
@@ -49,9 +44,10 @@ status bar.
   gap: New list row.
 - **Toast.** `Toast` takes the list's width (708 px); Figma's is 420
   px and centred (`toast · created` x -144, w +288). It sticks to the
-  bottom of the list, which fills the screen above the tab bar, so it
-  sits 20 above the tab bar (the Container's padding) against Figma's
-  16 (`toast · created` y -4; it was -21, after the last group).
+  bottom of the list, which fills the screen above the tab bar. In the
+  position check's page, 29 px shorter (d-101), it sits 8 above the tab
+  bar against Figma's 16 (`toast · created` y +8); in the full 1158 px
+  page it sits 20 above it.
   Library gap: Toast width on the tablet. Undo takes the new tasks out,
   as on the phone (M22): the state names the rows it draws as created,
   and Undo clears its applied Create (`InboxRoute.test.tsx`).

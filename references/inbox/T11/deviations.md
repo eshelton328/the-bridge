@@ -9,33 +9,28 @@ with its reason. The library gaps are in
 ## Checks
 
 - Text: pass (62 strings).
-- Position: 1 of 9 layers pass (`tab bar`).
+- Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
 
-Render minus Figma, in px; "29 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 29 px
+shorter, below Figma's status bar, and adds 29 to each render y (d-101).
 
-- `inbox list`: x +2, y -29, w -4, h +37; 29 px removed: y +0.
-- `header`: x +2, y -29, w -4, h -2; 29 px removed: y +0.
-- `filter · chips`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `list tools`: x +2, y -27, w -4, h -4; 29 px removed: y +2.
-- `group · NEEDS YOU`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
-- `group · NEXT STEPS`: x +2, y -7, w -4, h +4; 29 px removed: y +22.
-- `group · SNOOZED`: x +2, y +7, w -4, h +4; 29 px removed: y +36.
-- `group · RUNNING`: x +2, y +11, w -4, h +4; 29 px removed: y +40.
+- `inbox list`: x +2, y +0, w -4, h +37.
+- `group · NEXT STEPS`: x +2, y +22, w -4, h +4.
+- `group · SNOOZED`: x +2, y +36, w -4, h +4.
+- `group · RUNNING`: x +2, y +40, w -4, h +4.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is about 29 px higher (`y -29`). The position check measures from
-  the frame's top, so these layers fail by the status bar alone; the
-  offsets above give the rest as "29 px removed". Measuring below the
-  status bar is an open request to Erik. Library gap: Top and bottom
-  safe areas on the tablet.
+  canvas). The position check renders the page 29 px shorter and adds
+  29 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 29 px
+  lower, under a blank band where Figma has the bar. Library gap:
+  Top and bottom safe areas on the tablet.
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **List rows and group headers.** As in T01: `ListRow
@@ -70,4 +65,4 @@ blind to how it was built (2026-11-17). Each finding, fixed or with why
 it stays:
 
 - The search icon and placeholder lighter and about 1 px larger (F1, F3), and the chip counts as bright as their labels (F2): stays. Library gap: Search field and chip count text. (Beta.5 sets the placeholder at 13 px, `SearchField textSize="sm"`, and idle counts in `fg.subtle`; Figma's #4a5675 stays out by d-055 and d-099.)
-- The chip row 2 px closer to the title (F4): stays. The header is 40 px high (`PageHeader size="phone"`, a 40 px line) against Figma's 42 (`header` h -2), so the chips start 2 px higher (`filter · chips` y -2 once the status bar is removed). No token gives 42 (4 px grid, d-072). Library gap: Styles that differ from Figma.
+- The chip row 2 px closer to the title (F4): stays. The header is 40 px high (`PageHeader size="phone"`, a 40 px line) against Figma's 42 (`header` h -2), so the chips start 2 px higher (`filter · chips` is within the tolerance). No token gives 42 (4 px grid, d-072). Library gap: Styles that differ from Figma.

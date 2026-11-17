@@ -9,51 +9,46 @@ the installed library 1.0.0-beta.5, which has #104 to #106), each with its reaso
 ## Checks
 
 - Text: pass (32 strings checked; 3 Figma strings under exceptions.json).
-- Position: 2 of 13 layers pass (`sticky action`, `tab bar`).
+- Position: 3 of 13 layers pass (`task bar`, `sticky action`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px; "38 px removed" is the y offset without the
-status bar.
+Render minus Figma, in px. The position check renders the page 38 px
+shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
-- `nav`: x +0, y -38, w +0, h -8; 38 px removed: y +0.
-- `task · next step`: x +0, y -36, w +0, h +59; 38 px removed: y +2.
-- `task bar`: x +0, y -36, w +0, h +2; 38 px removed: y +2.
-- `title block`: x +0, y -32, w +0, h +5; 38 px removed: y +6.
-- `section · WHY`: x +0, y -25, w +0, h +2; 38 px removed: y +13.
-- `section · SUGGESTED PROMPT`: x +0, y -21, w +0, h -2; 38 px removed: y +17.
-- `section · RUN IN`: x +0, y -21, w +0, h -21; 38 px removed: y +17.
-- `button · Change`: x +0, y -32.5, w -2, h +4; 38 px removed: y +5.5.
-- `section · MY NOTES`: x +0, y -40, w +0, h +7; 38 px removed: y -2.
-- `notes field`: x +0, y -38, w +0, h +5; 38 px removed: y +0.
-- `section · SOURCES`: x +0, y +89, w +0, h +2; 38 px removed: y +127.
+- `nav`: x +0, y +0, w +0, h -8.
+- `task · next step`: x +0, y +2, w +0, h +59.
+- `title block`: x +0, y +6, w +0, h +5.
+- `section · WHY`: x +0, y +13, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +0, y +17, w +0, h -2.
+- `section · RUN IN`: x +0, y +17, w +0, h -21.
+- `button · Change`: x +0, y +5.5, w -2, h +4.
+- `section · MY NOTES`: x +0, y -2, w +0, h +7.
+- `notes field`: x +0, y +0, w +0, h +5.
+- `section · SOURCES`: x +0, y +127, w +0, h +2.
 
 ## Deviations
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas), so the render starts at y 0 and every layer anchored to the
-  top is 38 px higher (`y -38`). The position check measures from the
-  frame's top, so no phone frame can pass it; the offsets above give
-  the rest as "38 px removed". The open request
-  `projects/ncc-1701/inbox/fidelity-status-bar-offset.md` in Erik's
-  brain asks how to measure it (it names the phone frames too).
-  Figma's home indicator (the bar at the bottom) and the frame's
+  canvas). The position check renders the page 38 px shorter and adds
+  38 to each render y (d-101), so a layer anchored to the top or to the
+  bottom compares true, and the side-by-side draws the render 38 px
+  lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap: Top and bottom safe areas on the phone.
+  neither. Library gap:
+  Top and bottom safe areas on the phone.
 - **Nav.** `BackRow` with Snooze and Dismiss as 32 px icon buttons is
   32 px high against Figma's 40 (`nav` h -8); 12 below it the task
-  starts 2 px lower than Figma's (`task · next step` y +2 with the
-  status bar removed).
+  starts 2 px lower than Figma's (`task · next step` y +2).
 - **Detail spacing.** Figma sets the phone's sections 18 apart; the
   render sets them 20 (d-072: 18 is as far from 16 as from 20, and a
   tie takes the larger token). The title is `title` (20/28) against
   Figma's 22 px and the prompt's lines are 20 px against 21, so each
   section starts a little lower than the one above it (`title block`
-  +6, `section · WHY` +13, `section · SUGGESTED PROMPT` +17 with the
-  status bar removed). Library gaps: Small text in the detail, 22 px
-  title.
+  +6, `section · WHY` +13, `section · SUGGESTED PROMPT` +17). Library
+  gaps: Small text in the detail, 22 px title.
 - **Run in card.** The render puts the Recommended pill beside the
   title, as on the desktop and tablet; Figma's phone card puts it on its
   own line under the detail (346:9316), so the card is 21 px shorter
@@ -91,8 +86,8 @@ status bar.
 - **My notes and Sources.** The page scrolls under Start, as the note
   says. My notes starts lower than Figma's by what the sections above
   add, less the 21 px the Run in card saves (`section · MY NOTES` y -2,
-  `notes field` y +0 with the status bar removed; y -40 and -38 as
-  measured, 9 px higher than before from the shorter prompt and pill). Figma
+  `notes field` y +0; 9 px higher than before from the shorter prompt
+  and pill). Figma
   keeps a hidden SOURCES section at y 623 (346:9326); the render has
   Sources after My notes, below the fold (`section · SOURCES` y +127).
 - **Task frame.** The task runs on under Start to the end of the page,
