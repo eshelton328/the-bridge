@@ -25,7 +25,7 @@ export function ArtifactsPage() {
       viewport="desktop"
       onNavigate={(page) => {
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'inbox' || page === 'toolkit') void navigate({ to: `/${page}` })
+        if (page === 'inbox' || page === 'workspaces' || page === 'toolkit') void navigate({ to: `/${page}` })
       }}
       onUiChange={(change) => {
         setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
