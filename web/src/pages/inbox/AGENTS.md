@@ -36,7 +36,12 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   editor is open the keyboard hides Start and the tab bar. The phone's
   Sort menu is a sheet too; an applied sort or filter puts a dot on its
   icon, a sort other than the first adds a line with Reset under the
-  tools, and the chip row scrolls the selected chip into view. Reply here
+  tools, and the chip row scrolls the selected chip into view. A
+  search's Done hint has Show it, which selects the Done chip; a state
+  with no Done days then lists its search's `done`. The Running row of
+  the list states (T6, M11) opens the task page (T4), as the notes say;
+  Open in Workspaces is disabled until the Workspaces page exists
+  (`OpenInWorkspaces`). Reply here
   on a started task's run card shows its chat (`ui.chatOpen`, the card's
   `chat`) in the task's place at every size; Back closes it. In the
   whole prompt's dialog or sheet, Edit prompt opens the editor and Copy
@@ -56,7 +61,8 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   `PinnedAction`, `RowActionsSheet`,
   `DetailHead` (with the Snooze menu), `DetailSection`, `PromptSection`
   and `PromptDialog` (a sheet on a tablet or phone), `RunInCard` and `RunInPicker`, `RunCard` (a started
-  next step's chat, or how a removed one ended), `NotesBox`,
+  next step's chat, or how a removed one ended) and `OpenInWorkspaces` (disabled
+  until the Workspaces page exists), `NotesBox`,
   `SourceList`, `ChatEntry`, `InboxStatus` (a pill), `AppliedFilters`
   (the filters that apply, under the tools), and the discussion:
   `DiscussionPanel`, `DiscussionThread` (its entries and reply box, which

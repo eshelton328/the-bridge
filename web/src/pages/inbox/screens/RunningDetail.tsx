@@ -10,7 +10,6 @@ import {
   ChevronRightIcon,
   Composer,
   Container,
-  ExternalLinkIcon,
   Inline,
   KindMark,
   ModelChip,
@@ -23,6 +22,7 @@ import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ChatEntry } from '../blocks/ChatEntry.tsx'
 import { InboxStatus } from '../blocks/InboxStatus.tsx'
+import { OpenInWorkspaces } from '../blocks/OpenInWorkspaces.tsx'
 import { draftProps, type InboxDrafts, type InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
@@ -65,10 +65,7 @@ function DesktopHeader({ detail }: { detail: InboxRunning }) {
               View task
               <ChevronRightIcon />
             </Button>
-            <Button size="sm">
-              <ExternalLinkIcon />
-              Open in Workspaces
-            </Button>
+            <OpenInWorkspaces size="sm" label="Open in Workspaces" />
           </Inline>
           <Inline gap="6" align="center">
             <KindMark kind={detail.agent} size="16" />
@@ -90,10 +87,7 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
     <>
       <div data-figma="nav">
         <BackRow label="Inbox" onBack={onBack}>
-          <Button size="sm" data-figma="button · Open in Workspaces">
-            <ExternalLinkIcon />
-            Workspaces
-          </Button>
+          <OpenInWorkspaces size="sm" label="Workspaces" figma="button · Open in Workspaces" />
         </BackRow>
       </div>
       <div data-figma="started task">

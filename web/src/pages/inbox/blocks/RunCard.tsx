@@ -1,11 +1,11 @@
 // A started next step's chat: where it runs or ran, its state, what it is
 // doing or what it did, and the two ways to open it. A removed next step
 // uses the same card for how it was removed. The primary button opens the
-// chat in the inbox when the card has one (Reply here, M10 to M8). Props only.
+// chat in the inbox when the card has one (Reply here, M10 to M8); the
+// other waits for the Workspaces page (`OpenInWorkspaces`). Props only.
 import {
   BubbleIcon,
   Button,
-  ExternalLinkIcon,
   Grid,
   Inline,
   KindMark,
@@ -16,6 +16,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRunCard } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
+import { OpenInWorkspaces } from './OpenInWorkspaces.tsx'
 
 const title = css({ textStyle: 'label', flex: '1' })
 // M10 346:11097: the meta stays on one line, cut with an ellipsis, on the phone's narrow card.
@@ -49,10 +50,7 @@ export function RunCard({ run, onOpen }: RunCardProps) {
               <BubbleIcon />
               {run.open}
             </Button>
-            <Button size="lg">
-              <ExternalLinkIcon />
-              {run.openElsewhere}
-            </Button>
+            <OpenInWorkspaces size="lg" label={run.openElsewhere} />
           </Grid>
         </Stack>
       </Panel>

@@ -1,8 +1,9 @@
 // The Inbox list pane: the header with the count, the filter chips, the
 // search row and the groups of rows; with the sort by project, a heading
 // per project in each group; with a search, a line that sums up the
-// results and a hint about matches in Done; with filters that apply, a row
-// of them under the tools and how many tasks they hide; and a toast that
+// results and a hint about matches in Done, whose Show it selects the Done
+// chip; with filters that apply, a row of them under the tools and how
+// many tasks they hide; and a toast that
 // sticks to the bottom of the list. On the tablet and phone (T1, T6, T7)
 // the list fills the screen on the backdrop, with the page's large title.
 // The rows and counts come from listView (Erik's sort, search, filters and
@@ -164,8 +165,8 @@ export function InboxListPane({
   const q = query ?? data.search?.query ?? ''
   const view = listView(data, ui, q)
   const marked = q.trim() === '' ? undefined : q
-  // The hint about matches in Done belongs to the state's own search.
-  const more = data.search?.query === q ? data.search.more : undefined
+  // The hint about matches in Done belongs to the state's own search; under the Done chip the matches show.
+  const more = data.search?.query === q && ui.filter !== 'done' ? data.search.more : undefined
   // While the Filter menu is open it shows the filters; the applied row, the count on Filter and the hidden line wait.
   const applied = ui.filterOpen ? [] : view.applied
   // The chip row scrolls sideways on the phone; the selected chip scrolls into view, as a tap on it does (M12).
@@ -315,7 +316,15 @@ export function InboxListPane({
       {more === undefined ? null : (
         <span className={summary} data-figma="done hint">
           {more.text}{' '}
-          <a className={showIt} href="#done">
+          <a
+            className={showIt}
+            href="#done"
+            onClick={(event) => {
+              // Show it selects the Done chip, which lists the matches in Done.
+              event.preventDefault()
+              onFilterChange?.('done')
+            }}
+          >
             {more.link}
           </a>
         </span>

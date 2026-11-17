@@ -81,6 +81,8 @@ export const Running: Story = {
     await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
     await expect(canvas.getByText('Wait for increment two.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Open in Workspaces' })).toBeVisible()
+    // The Workspaces page is not built, so Open in Workspaces is disabled and says why.
+    await expect(canvas.getByRole('button', { name: 'Open in Workspaces' })).toHaveAttribute('aria-disabled', 'true')
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }
@@ -358,7 +360,7 @@ export const SortList: Story = {
 }
 
 export const SearchList: Story = {
-  name: 'T10: search, the list',
+  name: 'T10, M14: search, the list',
   args: { data: inboxStates.searchList.data, ui: inboxStates.searchList.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')

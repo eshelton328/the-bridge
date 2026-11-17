@@ -225,6 +225,15 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Pick the header logo')).not.toBeInTheDocument()
   })
 
+  it("selects the Done chip with the search hint's Show it, which lists the match in Done", async () => {
+    await tablet('searchList')
+    await page.getByRole('link', { name: 'Show it' }).click()
+    await expect.element(page.getByRole('radio', { name: /^Done/ })).toBeChecked()
+    await expect.element(page.getByText('Save the Inbox frames as references')).toBeVisible()
+    await expect.element(page.getByText('1 result for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
+    await expect.element(page.getByText('Done has 1 more match.')).not.toBeInTheDocument()
+  })
+
   it('applies the Filter menu when it closes, and Clear under the tools removes the filter', async () => {
     await tablet('list')
     const readme = () => page.getByText('Run the readme cross-family round x2')
@@ -709,6 +718,35 @@ describe('the Inbox on the phone', () => {
     await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
     await expect.element(title()).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+  })
+
+  it('opens the task page, not the chat, from the row under Running', async () => {
+    await phone('runningList')
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(title()).toBeVisible()
+    await expect.element(page.getByRole('heading', { level: 2, name: 'Sent prompt' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).not.toBeInTheDocument()
+  })
+
+  it('keeps Open in Workspaces disabled, with the reason, until the Workspaces page exists', async () => {
+    await phone('runningTaskPage')
+    const open = page.getByRole('button', { name: 'Open in Workspaces' })
+    await expect.element(open).toHaveAttribute('aria-disabled', 'true')
+    await expect.element(open).toHaveAccessibleDescription('Workspaces is not built yet')
+    await open.click({ force: true })
+    await expect.element(title()).toBeVisible()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    const nav = page.getByRole('button', { name: 'Workspaces', exact: true }).first()
+    await expect.element(nav).toHaveAttribute('aria-disabled', 'true')
+    await expect.element(nav).toHaveAccessibleDescription('Workspaces is not built yet')
+  })
+
+  it('opens the Sort sheet with the focus on the sheet, not on Done', async () => {
+    await phone('list')
+    await page.getByRole('button', { name: 'Sort', exact: true }).click()
+    await expect.element(sheet('Sort')).toHaveFocus()
+    await expect.element(sheet('Sort').getByRole('button', { name: 'Done' })).not.toHaveFocus()
   })
 
   it('sorts in the Sort sheet, names the sort under the tools, and Reset brings back Newest first', async () => {

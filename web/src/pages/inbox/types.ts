@@ -103,10 +103,15 @@ const InboxSortMenu = z.object({
 })
 export type InboxSortMenu = z.infer<typeof InboxSortMenu>
 
-/** A search in the list: the query, and the hint about its matches in Done, which the list does not hold. */
+/**
+ * A search in the list: the query, and the hint about its matches in Done,
+ * which the list does not hold. The hint's link selects the Done chip, which
+ * shows `done`: the Done list of a state whose groups have no Done days.
+ */
 const InboxSearch = z.object({
   query: z.string(),
   more: z.object({ text: z.string(), link: z.string() }),
+  done: z.array(InboxGroupView),
 })
 
 /** The Snooze menu of the task bar and the sheet a long-pressed row opens on the phone: snooze times, then Mark done and Dismiss. */

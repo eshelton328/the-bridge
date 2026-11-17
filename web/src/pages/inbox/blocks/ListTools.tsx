@@ -18,6 +18,7 @@ import {
   SearchIcon,
   SortDescIcon,
 } from '@eshelton328/component-library-1701'
+import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { type InboxFilterMenu, type InboxSortMenu, SortValue } from '../types.ts'
@@ -73,6 +74,8 @@ type SortButtonProps = Pick<ListToolsProps, 'sortMenu' | 'sort' | 'sortOpen' | '
 function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, iconOnly }: SortButtonProps) {
   // The first choice is the default; another shows the button pressed (T11: picking Newest first again resets it).
   const active = sortMenu.options[0]?.value !== sort
+  // The phone's sheet opens with the focus on the sheet itself: Figma draws Done with no focus ring (M13 346:11811).
+  const noteRef = useRef<HTMLSpanElement>(null)
   const pick = (value: string) => {
     const picked = SortValue.safeParse(value)
     if (picked.success) onSortChange?.(picked.data)
@@ -89,9 +92,13 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
         }
         open={sortOpen}
         onOpenChange={onSortOpenChange}
+        initialFocus={() => noteRef.current?.closest<HTMLElement>('[role="dialog"]') ?? null}
         actions={
           <BottomSheetClose>
-            <Button variant="text">Done</Button>
+            {/* M13 346:11808: Figma's header row is 40 high around Done's 20 px label; `sm` keeps the row to 40. */}
+            <Button variant="text" size="sm">
+              Done
+            </Button>
           </BottomSheetClose>
         }
       >
@@ -101,7 +108,9 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
           onItemSelect={pick}
           items={sortMenu.options.map((o) => ({ value: o.value, label: o.label, description: o.description }))}
         />
-        <span className={sortNote}>{sortMenu.note}</span>
+        <span className={sortNote} ref={noteRef}>
+          {sortMenu.note}
+        </span>
       </BottomSheet>
     )
   // A menu keeps its box in the page while closed; it stands for its Figma layer only while open.

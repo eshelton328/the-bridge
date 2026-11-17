@@ -4,7 +4,7 @@ import { inboxStates } from './states/index.ts'
 import { allChecks, listView } from './screens/listView.ts'
 import type { InboxGroupView, InboxRowView, InboxUi } from './types.ts'
 
-const { list, runningList, filtered, filterList } = inboxStates
+const { list, runningList, filtered, filterList, searchList } = inboxStates
 const titles = (view: ReturnType<typeof listView>, group: string) =>
   view.groups.find((g) => g.id === group)?.rows.map((row) => row.title)
 const chip = (view: ReturnType<typeof listView>, value: string) => view.filters.find((c) => c.value === value)?.count
@@ -53,6 +53,13 @@ describe('listView search', () => {
     // A search changes the group counts only; the header and chips count the inbox.
     expect(view.count).toBe(7)
     expect(chip(view, 'needs')).toBe(4)
+  })
+
+  it("lists the search's Done match under the Done chip, as the hint's Show it promises", () => {
+    const view = listView(searchList.data, { ...searchList.ui, filter: 'done' }, 'f-005')
+    expect(view.groups.map((g) => g.id)).toEqual(['yesterday'])
+    expect(titles(view, 'yesterday')).toEqual(['Save the Inbox frames as references'])
+    expect(view.results).toBe(1)
   })
 
   it('matches a title', () => {
