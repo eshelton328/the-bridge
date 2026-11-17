@@ -23,6 +23,7 @@ async function showState(router: ReturnType<typeof renderInbox>['router'], state
 }
 
 const dialog = () => page.getByRole('dialog', { name: 'Suggested prompt' })
+const removeDialog = () => page.getByRole('alertdialog', { name: 'Remove this task?' })
 const searchbox = () => page.getByRole('searchbox', { name: 'Search the inbox' })
 
 afterEach(() => {
@@ -47,6 +48,26 @@ describe('the Inbox route', () => {
     await showState(router, 'nextStep')
     await showState(router, 'promptRead')
     await expect.element(dialog()).toBeVisible()
+    await view.unmount()
+  })
+
+  it('closes the remove dialog with Escape', async () => {
+    const { rendered } = renderInbox('removeConfirm')
+    const view = await rendered
+    await expect.element(removeDialog()).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+    await expect.element(removeDialog()).not.toBeInTheDocument()
+    await view.unmount()
+  })
+
+  it('closes the remove dialog with Keep it, and opens it again in a state that has it open', async () => {
+    const { router, rendered } = renderInbox('removeConfirm')
+    const view = await rendered
+    await removeDialog().getByRole('button', { name: 'Keep it' }).click()
+    await expect.element(removeDialog()).not.toBeInTheDocument()
+    await showState(router, 'removalProposed')
+    await showState(router, 'removeConfirm')
+    await expect.element(removeDialog()).toBeVisible()
     await view.unmount()
   })
 

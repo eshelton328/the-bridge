@@ -1,8 +1,8 @@
 // The Inbox page's view store: which groups Erik opened or closed, and
-// what he changed in the shown state: the prompt dialog closed and the
-// search text typed. Only InboxPage reads it; the screen gets the values
+// what he changed in the shown state: the prompt or remove dialog closed
+// and the search text typed. Only InboxPage reads it; the screen gets the values
 // as props. A state's own `ui` and `data` are the start, and this store
-// holds the changes. The prompt and search changes belong to the shown
+// holds the changes. The dialog and search changes belong to the shown
 // state (`?state=`) and are dropped when another state is shown, so each
 // state opens with its own dialog and query.
 import { createAppStore } from '../../state/createAppStore.ts'
@@ -14,6 +14,7 @@ export type InboxStateKey = string | undefined
 type InboxEdits = {
   state: InboxStateKey
   promptOpen: boolean | undefined
+  removeOpen: boolean | undefined
   query: string | undefined
 }
 
@@ -23,13 +24,19 @@ type InboxViewState = {
   actions: {
     setGroupOpen: (group: InboxGroupId, open: boolean) => void
     setPromptOpen: (state: InboxStateKey, open: boolean) => void
+    setRemoveOpen: (state: InboxStateKey, open: boolean) => void
     setQuery: (state: InboxStateKey, query: string) => void
     /** Drops the edits of the last state when another state is shown. */
     showState: (state: InboxStateKey) => void
   }
 }
 
-const noEdits = (state: InboxStateKey): InboxEdits => ({ state, promptOpen: undefined, query: undefined })
+const noEdits = (state: InboxStateKey): InboxEdits => ({
+  state,
+  promptOpen: undefined,
+  removeOpen: undefined,
+  query: undefined,
+})
 
 /** The edits of `state`: the stored ones when they belong to it, else none. */
 const editsOf = (edits: InboxEdits, state: InboxStateKey): InboxEdits =>
@@ -44,6 +51,9 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
     },
     setPromptOpen: (state, open) => {
       set((s) => ({ edits: { ...editsOf(s.edits, state), promptOpen: open } }), undefined, 'inbox/setPromptOpen')
+    },
+    setRemoveOpen: (state, open) => {
+      set((s) => ({ edits: { ...editsOf(s.edits, state), removeOpen: open } }), undefined, 'inbox/setRemoveOpen')
     },
     setQuery: (state, query) => {
       set((s) => ({ edits: { ...editsOf(s.edits, state), query } }), undefined, 'inbox/setQuery')
@@ -60,6 +70,10 @@ export const useInboxGroupsOpen = (): InboxViewState['groupsOpen'] => useInboxSt
 /** Whether Erik opened or closed the prompt dialog in `state`; undefined keeps the state's own. */
 export const useInboxPromptOpen = (state: InboxStateKey): boolean | undefined =>
   useInboxStore((s) => (s.edits.state === state ? s.edits.promptOpen : undefined))
+
+/** Whether Erik opened or closed the remove dialog in `state`; undefined keeps the state's own. */
+export const useInboxRemoveOpen = (state: InboxStateKey): boolean | undefined =>
+  useInboxStore((s) => (s.edits.state === state ? s.edits.removeOpen : undefined))
 
 /** The search text Erik typed in `state`; undefined keeps the state's own query. */
 export const useInboxQuery = (state: InboxStateKey): string | undefined =>
