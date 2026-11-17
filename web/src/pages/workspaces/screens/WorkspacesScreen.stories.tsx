@@ -168,3 +168,16 @@ export const TwoPanes: Story = {
     await expect(canvas.queryByRole('status')).toBeNull()
   },
 }
+
+export const DragBelowPane: Story = {
+  name: 'D10: a third chat dragged below one pane of two',
+  args: { data: workspacesStates.dragBelowPane.data, ui: workspacesStates.dragBelowPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 2 panes')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Open brain git below drift check')
+    await expect(zone).toHaveTextContent('splits drift check into two panes, one above the other')
+    // The zone is in drift check's pane alone, so bridge themes keeps its full height.
+    await expect(zone).not.toHaveTextContent('bridge themes')
+  },
+}

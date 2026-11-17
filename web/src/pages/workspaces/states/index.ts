@@ -11,6 +11,7 @@ import { subagents } from './subagents.ts'
 import { workbench } from './workbench.ts'
 import { dragOverPane } from './dragOverPane.ts'
 import { twoPanes } from './twoPanes.ts'
+import { dragBelowPane } from './dragBelowPane.ts'
 
 export const workspacesStates = {
   workbench,
@@ -23,4 +24,5 @@ export const workspacesStates = {
   chatInWorkbench,
   dragOverPane,
   twoPanes,
+  dragBelowPane,
 }
