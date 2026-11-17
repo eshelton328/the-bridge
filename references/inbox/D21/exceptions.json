@@ -1,0 +1,20 @@
+{
+  "missing": [
+    {
+      "text": "Snooze",
+      "reason": "Layer 403:4196 is a hidden button in the task bar: frame.png shows no Snooze or Dismiss for a removed task. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Dismiss",
+      "reason": "Layer 403:4202 is the hidden Dismiss button in the task bar, beside the hidden Snooze (403:4196): frame.png shows no Snooze or Dismiss for a removed task. The row's \"Dismissed: already done by hand\" holds the word, but the text check matches each layer to its own text run. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Reset",
+      "reason": "Layer 403:4242 is a hidden button in the prompt header: frame.png shows no Reset beside PROMPT · NOT RUN, because the prompt of a removed task is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Edit",
+      "reason": "Layer 403:4248 is a hidden button in the prompt header: frame.png shows no Edit beside PROMPT · NOT RUN, because the prompt of a removed task is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    }
+  ]
+}

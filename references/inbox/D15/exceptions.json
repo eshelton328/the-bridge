@@ -1,0 +1,180 @@
+{
+  "missing": [
+    {
+      "text": "7",
+      "reason": "Layers 403:1145, 403:1150 are in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "All",
+      "reason": "Layer 403:1149 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Needs you",
+      "reason": "Layer 403:1152 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "3",
+      "reason": "Layers 403:1156, 403:1260 are in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Running",
+      "reason": "Layer 403:1158 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "0",
+      "reason": "Layer 403:1159 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Done",
+      "reason": "Layer 403:1161 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Search the inbox",
+      "reason": "Layer 403:1169 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Newest",
+      "reason": "Layer 403:1175 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Filter",
+      "reason": "Layer 403:1183 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "NEEDS YOU",
+      "reason": "Layer 403:1188 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "drift check wants to run git mv",
+      "reason": "Layer 403:1198 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "omni-brain · drift check",
+      "reason": "Layer 403:1199 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Codex is waiting",
+      "reason": "Layer 403:1205 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Allow once",
+      "reason": "Layer 403:1208 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Deny",
+      "reason": "Layer 403:1210 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Open chat",
+      "reason": "Layer 403:1212 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "4m",
+      "reason": "Layer 403:1214 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Hono RPC client or plain fetch for the API?",
+      "reason": "Layer 403:1223 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-31",
+      "reason": "Layer 403:1224 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Blocks hono server",
+      "reason": "Layer 403:1230 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "12m",
+      "reason": "Layer 403:1232 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Pick the header logo",
+      "reason": "Layer 403:1240 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-36",
+      "reason": "Layer 403:1241 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "1h",
+      "reason": "Layer 403:1243 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Try the tablet layout on the iPad mini",
+      "reason": "Layer 403:1251 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "ncc-1701 · f-005",
+      "reason": "Layer 403:1252 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "3h",
+      "reason": "Layer 403:1254 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "NEXT STEPS",
+      "reason": "Layer 403:1259 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-28",
+      "reason": "Layer 403:1270 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "2h",
+      "reason": "Layer 403:1272 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Run the readme cross-family round x2",
+      "reason": "Layer 403:1280 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "skill-evals · readme",
+      "reason": "Layer 403:1281 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "5h",
+      "reason": "Layer 403:1283 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "Commit the brain: 34 changes",
+      "reason": "Layer 403:1291 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "ncc-1701 · brain",
+      "reason": "Layer 403:1292 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "1d",
+      "reason": "Layer 403:1294 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "SNOOZED",
+      "reason": "Layer 403:1299 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "1",
+      "reason": "Layer 403:1300 is in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text."
+    },
+    {
+      "text": "9%",
+      "reason": "Layer 454:38 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 9%."
+    },
+    {
+      "text": "Inbox",
+      "reason": "frame.json has this string in layer 403:1144, in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text. The text check wants a visible copy for each layer, so the covered copy needs this entry; an entry by text also takes any shown copy out of the check."
+    },
+    {
+      "text": "4",
+      "reason": "frame.json has this string in layers 403:1153, 403:1162, 403:1189, in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text. The text check wants a visible copy for each layer, so the covered copy needs this entry; an entry by text also takes any shown copy out of the check."
+    },
+    {
+      "text": "Next steps",
+      "reason": "frame.json has this string in layer 403:1155, in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text. The text check wants a visible copy for each layer, so the covered copy needs this entry; an entry by text also takes any shown copy out of the check."
+    },
+    {
+      "text": "Write the tickets for increment one",
+      "reason": "frame.json has this string in layer 403:1269, in the inbox list (403:1142), which the task pane (403:1301, x 64, 1448 wide) covers: frame.png does not show the list while the discussion is open, as the note says. get_metadata does not say a layer is covered, so frame.json lists its text. The text check wants a visible copy for each layer, so the covered copy needs this entry; an entry by text also takes any shown copy out of the check."
+    }
+  ]
+}

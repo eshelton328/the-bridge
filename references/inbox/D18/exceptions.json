@@ -1,0 +1,19 @@
+{
+  "missing": [
+    {
+      "text": "SNOOZED",
+      "reason": "Layer 403:2777 (y 930) is the SNOOZED group header, which the toast 403:2943 (y 928 to 966) covers in frame.png. In the render the list rows are taller (List row heights in deviations.md), so the header sits below the pane's bottom edge, also out of sight."
+    },
+    {
+      "text": "1",
+      "reason": "Layer 403:2778 (y 930) is the count of the SNOOZED group header, which the toast 403:2943 covers in frame.png; in the render it sits below the pane's bottom edge, as SNOOZED does."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"inbox list\"]",
+      "reason": "Figma's list (403:2620) runs to y 950, under the toast, and its last group header is out of sight. The render's rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), so the list is 10 px taller than the pane and the pane scrolls to the collapsed SNOOZED header. No task row is cut."
+    }
+  ]
+}
