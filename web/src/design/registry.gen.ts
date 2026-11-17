@@ -3,8 +3,19 @@ import { board, type Board } from '../lib/board.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'inbox/nextStep'
+export type BoardId = 'inbox/done' | 'inbox/filterOpen' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptRead' | 'inbox/question' | 'inbox/running' | 'inbox/runningTask' | 'inbox/search' | 'inbox/snoozeOpen' | 'inbox/sortOpen' | 'inbox/sortedByProject'
 
 export const boards: readonly Board[] = [
+  board(inboxPage, 'done'),
+  board(inboxPage, 'filterOpen'),
   board(inboxPage, 'nextStep'),
+  board(inboxPage, 'promptEditing'),
+  board(inboxPage, 'promptRead'),
+  board(inboxPage, 'question'),
+  board(inboxPage, 'running'),
+  board(inboxPage, 'runningTask'),
+  board(inboxPage, 'search'),
+  board(inboxPage, 'snoozeOpen'),
+  board(inboxPage, 'sortOpen'),
+  board(inboxPage, 'sortedByProject'),
 ]

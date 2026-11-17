@@ -2,7 +2,8 @@
 // the router and the page store. It merges the loaded state with the URL
 // and the store and passes everything to the props-only screen.
 import { getRouteApi } from '@tanstack/react-router'
-import { useInboxActions, useInboxGroupsOpen } from './inboxStore.ts'
+import { useEffect } from 'react'
+import { useInboxActions, useInboxGroupsOpen, useInboxPromptOpen, useInboxQuery } from './inboxStore.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 
 const route = getRouteApi('/inbox')
@@ -12,18 +13,31 @@ export function InboxPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const groupsOpen = useInboxGroupsOpen()
-  const { setGroupOpen } = useInboxActions()
+  const promptOpen = useInboxPromptOpen(search.state)
+  const query = useInboxQuery(search.state)
+  const { setGroupOpen, setPromptOpen, setQuery, showState } = useInboxActions()
+  useEffect(() => {
+    showState(search.state)
+  }, [showState, search.state])
   const ui = {
     ...state.ui,
     filter: search.filter ?? state.ui.filter,
     groupsOpen: { ...state.ui.groupsOpen, ...groupsOpen },
+    promptOpen: promptOpen ?? state.ui.promptOpen,
   }
   return (
     <InboxScreen
       data={state.data}
       ui={ui}
       viewport="desktop"
+      query={query}
       onGroupOpenChange={setGroupOpen}
+      onPromptOpenChange={(open) => {
+        setPromptOpen(search.state, open)
+      }}
+      onQueryChange={(next) => {
+        setQuery(search.state, next)
+      }}
       onFilterChange={(filter) => {
         void navigate({ search: (prev) => ({ ...prev, filter }) })
       }}

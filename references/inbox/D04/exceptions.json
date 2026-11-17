@@ -1,0 +1,16 @@
+{
+  "missing": [
+    {
+      "text": "Run the readme cross-family round x2",
+      "reason": "Row 346:1582 is a hidden layer under \"Commit the brain\" (frame.png does not show it): the skill-evals filter is off, so the list shows 6 of 7 tasks. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "skill-evals · readme",
+      "reason": "The meta line of the hidden row 346:1582; see \"Run the readme cross-family round x2\"."
+    },
+    {
+      "text": "5h",
+      "reason": "The age of the hidden row 346:1582; see \"Run the readme cross-family round x2\"."
+    }
+  ]
+}

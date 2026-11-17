@@ -1,0 +1,22 @@
+{
+  "missing": [
+    {
+      "text": "Reset",
+      "reason": "Layer 346:3939 is a hidden button in the prompt header: frame.png shows no Reset beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Edit",
+      "reason": "Layer 346:3944 is a hidden button in the prompt header: frame.png shows no Edit beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "menu header",
+      "reason": "get_metadata gives the layer name of text 346:4001 as its characters; frame.png shows the menu heading as SORT BY."
+    }
+  ],
+  "extra": [
+    {
+      "text": "SORT BY",
+      "reason": "The heading of the Sort menu as frame.png shows it (layer 346:4001, whose characters get_metadata gives as its name, \"menu header\")."
+    }
+  ]
+}
