@@ -22,9 +22,10 @@ const detail = css({ textStyle: 'monoSm', color: 'fg.muted' })
 export type RunInCardProps = {
   runIn: InboxRunIn
   pickerOpen: boolean
+  onPickerOpenChange?: ((open: boolean) => void) | undefined
 }
 
-export function RunInCard({ runIn, pickerOpen }: RunInCardProps) {
+export function RunInCard({ runIn, pickerOpen, onPickerOpenChange }: RunInCardProps) {
   const change = (
     <Button size="sm" pressed={pickerOpen ? true : undefined}>
       Change
@@ -53,11 +54,12 @@ export function RunInCard({ runIn, pickerOpen }: RunInCardProps) {
             trigger={change}
             label="Run in"
             open={pickerOpen}
+            onOpenChange={onPickerOpenChange}
             width="picker"
             note={runIn.picker.note}
             placement="bottom-end"
             flip={false}
-            data-figma="run in picker"
+            data-figma={pickerOpen ? 'run in picker' : undefined}
           >
             <RunInPicker picker={runIn.picker} />
           </Popover>

@@ -1,6 +1,7 @@
 // The prompt of a next step: suggested and read-only with Reset and Edit,
-// or in its editor with Reset and Done, an "Edited" pill once changed and a
-// hint under it. A sent prompt, or one removed before it ran, has no
+// or in its editor with Reset and Done, an "Edited" pill while it differs
+// from the suggestion and a hint under it. Edit and Done open and close the
+// editor; Reset brings back the suggested prompt. A sent prompt, or one removed before it ran, has no
 // buttons. A long prompt ends with "Read the whole prompt", which opens it
 // in a dialog; a prompt a discussion changed has a line with Undo beside
 // it. Props only.
@@ -65,9 +66,23 @@ export type PromptSectionProps = {
   layout?: Viewport | undefined
   /** Keeps the prompt Erik is editing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** Edit opens the editor and Done closes it. */
+  onEditingChange?: ((editing: boolean) => void) | undefined
 }
 
-export function PromptSection({ prompt, editing, open, onOpenChange, layout, drafts }: PromptSectionProps) {
+export function PromptSection({
+  prompt,
+  editing,
+  open,
+  onOpenChange,
+  layout,
+  drafts,
+  onEditingChange,
+}: PromptSectionProps) {
+  // The prompt as Erik left it; it counts as edited while it differs from the suggestion, which Reset brings back.
+  const suggested = prompt.suggested ?? prompt.text
+  const current = drafts?.values.prompt ?? prompt.text
+  const edited = current !== suggested
   const readMore = prompt.long ? (
     <a className={more} href="#prompt">
       Read the whole prompt
@@ -78,16 +93,27 @@ export function PromptSection({ prompt, editing, open, onOpenChange, layout, dra
     <DetailSection
       title={titles[prompt.state]}
       figma="section · SUGGESTED PROMPT"
-      meta={prompt.edited ? <Badge variant="pill" tone="needsYou" label="Edited" /> : undefined}
+      meta={edited ? <Badge variant="pill" tone="needsYou" label="Edited" /> : undefined}
       actions={
         prompt.state !== 'suggested' ? undefined : (
           <>
             {/* Reset brings back the suggested prompt, so it does nothing until Erik edits it (Figma D1 346:359, T2 346:5736). */}
-            <Button size="sm" disabled={!prompt.edited}>
+            <Button
+              size="sm"
+              disabled={!edited}
+              onClick={() => {
+                drafts?.onChange('prompt', suggested)
+              }}
+            >
               <ResetIcon />
               Reset
             </Button>
-            <Button size="sm">
+            <Button
+              size="sm"
+              onClick={() => {
+                onEditingChange?.(!editing)
+              }}
+            >
               {editing ? <CheckIcon /> : <EditIcon />}
               {editing ? 'Done' : 'Edit'}
             </Button>
@@ -111,7 +137,7 @@ export function PromptSection({ prompt, editing, open, onOpenChange, layout, dra
         <Stack gap="8">
           <Panel>
             <Clamp lines={5} fade>
-              <span className={text}>{breakAfterSlashes(prompt.text)}</span>
+              <span className={text}>{breakAfterSlashes(current)}</span>
             </Clamp>
           </Panel>
           {prompt.change === undefined ? (
@@ -130,7 +156,7 @@ export function PromptSection({ prompt, editing, open, onOpenChange, layout, dra
           )}
           <PromptDialog
             title="Suggested prompt"
-            text={prompt.text}
+            text={current}
             open={open}
             onOpenChange={onOpenChange}
             layout={layout}

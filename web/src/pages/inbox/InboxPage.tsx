@@ -10,6 +10,7 @@ import {
   useInboxPromptOpen,
   useInboxQuery,
   useInboxRemoveOpen,
+  useInboxUi,
 } from './inboxStore.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 
@@ -24,12 +25,14 @@ export function InboxPage() {
   const promptOpen = useInboxPromptOpen(search.state)
   const removeOpen = useInboxRemoveOpen(search.state)
   const query = useInboxQuery(search.state)
-  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, showState } = useInboxActions()
+  const changed = useInboxUi(search.state)
+  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, setUi, showState } = useInboxActions()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
   const ui = {
     ...state.ui,
+    ...changed,
     filter: search.filter ?? state.ui.filter,
     groupsOpen: { ...state.ui.groupsOpen, ...groupsOpen },
     // Back on a tablet or phone closes the open item and shows the list; the desktop always shows the item.
@@ -55,6 +58,9 @@ export function InboxPage() {
       }}
       onQueryChange={(next) => {
         setQuery(search.state, next)
+      }}
+      onUiChange={(change) => {
+        setUi(search.state, change)
       }}
       onFilterChange={(filter) => {
         void navigate({ search: (prev) => ({ ...prev, filter }) })

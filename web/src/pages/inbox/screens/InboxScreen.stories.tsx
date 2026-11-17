@@ -346,3 +346,77 @@ export const PromptSheet: Story = {
     await expect(within(sheet).getByRole('button', { name: 'Copy' })).toBeVisible()
   },
 }
+
+export const SortList: Story = {
+  name: 'T9: sort, the list',
+  args: { data: inboxStates.sortList.data, ui: inboxStates.sortList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    const menu = await within(document.body).findByRole('menu')
+    await expect(within(menu).getByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
+    await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
+  },
+}
+
+export const SearchList: Story = {
+  name: 'T10: search, the list',
+  args: { data: inboxStates.searchList.data, ui: inboxStates.searchList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')
+    await expect(canvas.getByText('4 results for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
+    await expect(canvas.queryByText('drift check wants to run git mv')).toBeNull()
+  },
+}
+
+export const SortedList: Story = {
+  name: 'T11: sorted by project, the list',
+  args: { data: inboxStates.sortedList.data, ui: inboxStates.sortedList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Project' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByText('skill-evals', { selector: '.group-header__label *' })).toBeVisible()
+  },
+}
+
+export const PromptEditingPage: Story = {
+  name: 'T12: edit the prompt, on the task page',
+  args: { data: inboxStates.promptEditingPage.data, ui: inboxStates.promptEditingPage.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('textbox', { name: 'Suggested prompt' })).toHaveValue(
+      inboxStates.promptEditingPage.data.detail.prompt.text,
+    )
+    await expect(canvas.getByPlaceholderText('Add a note for yourself…')).toBeVisible()
+    const picker = await within(document.body).findByRole('dialog', { name: 'Run in' })
+    await expect(within(picker).getByRole('radio', { name: /New Claude Code chat/ })).toBeChecked()
+  },
+}
+
+export const SnoozePage: Story = {
+  name: 'T13: snooze or dismiss, on the task page',
+  args: { data: inboxStates.snoozePage.data, ui: inboxStates.snoozePage.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    const menu = await within(document.body).findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: /Tomorrow morning/ })).toBeVisible()
+    await expect(canvas.getByPlaceholderText('Add a note for yourself…')).toBeVisible()
+  },
+}
+
+export const FilterList: Story = {
+  name: 'T14: filter, the list',
+  args: { data: inboxStates.filterList.data, ui: inboxStates.filterList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    const menu = await within(document.body).findByRole('dialog', { name: 'Filter the inbox' })
+    await expect(within(menu).getByRole('checkbox', { name: 'skill-evals' })).not.toBeChecked()
+    await expect(within(menu).getByText('Showing 6 of 7')).toBeVisible()
+    // The boxes apply when the menu closes: the skill-evals next step still shows.
+    await expect(canvas.getByText('Run the readme cross-family round x2')).toBeVisible()
+  },
+}
+
+export const FilteredList: Story = {
+  name: 'T15: filtered, the list',
+  args: { data: inboxStates.filteredList.data, ui: inboxStates.filteredList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Filter · 1' })).toBeVisible()
+    await expect(canvas.getByText('1 task hidden by filters')).toBeVisible()
+    await expect(canvas.queryByText('Run the readme cross-family round x2')).toBeNull()
+  },
+}

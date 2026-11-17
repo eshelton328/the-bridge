@@ -1,7 +1,9 @@
 // The top of an item's detail: the task bar (status, where it came from,
 // Discuss when the task has a discussion, Snooze and Dismiss) and the title
 // block (title, meta chips and tags). Snooze opens the Snooze menu when the
-// state has one; Discuss shows pressed while the discussion is open. Props
+// item has one and reports a snooze time or Mark done; "Pick a date and
+// time…" and "Dismiss with a reason…" lead to steps Figma does not draw
+// yet, so they only close the menu. Discuss shows pressed while the discussion is open. Props
 // only.
 import {
   BubbleIcon,
@@ -28,6 +30,13 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDetailHead } from '../types.ts'
 
+/** The Snooze menu: whether it is open, and what Erik picks: a time to snooze the item until, or `null` for Mark done. */
+export type SnoozeControl = {
+  open: boolean
+  onOpenChange?: ((open: boolean) => void) | undefined
+  onPick?: ((until: string | null) => void) | undefined
+}
+
 const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
 const title = css({ textStyle: 'title', m: '0' })
 
@@ -38,7 +47,8 @@ const chipIcons = {
   file: <FileIcon />,
 } as const satisfies Record<InboxDetailHead['chips'][number]['icon'], ReactNode>
 
-function SnoozeButton({ head, open }: { head: InboxDetailHead; open: boolean }) {
+function SnoozeButton({ head, snooze }: { head: InboxDetailHead; snooze: SnoozeControl }) {
+  const { open, onOpenChange, onPick } = snooze
   const button = (
     <Button size="sm" pressed={open ? true : undefined}>
       <SnoozeIcon />
@@ -58,10 +68,16 @@ function SnoozeButton({ head, open }: { head: InboxDetailHead; open: boolean }) 
     <Menu
       trigger={button}
       open={open}
+      onOpenChange={onOpenChange}
+      onSelect={(value) => {
+        const time = menu.times.find((t) => t.value === value)?.time
+        if (time !== undefined) onPick?.(time)
+        else if (value === 'done') onPick?.(null)
+      }}
       placement="bottom-end"
       width="md"
       size="lg"
-      data-figma="menu · Snooze or dismiss"
+      data-figma={open ? 'menu · Snooze or dismiss' : undefined}
       heading={menu.heading}
       items={items}
     />
@@ -70,13 +86,13 @@ function SnoozeButton({ head, open }: { head: InboxDetailHead; open: boolean }) 
 
 export type DetailHeadProps = {
   head: InboxDetailHead
-  /** The Snooze menu is open. */
-  snoozeOpen?: boolean | undefined
+  /** The Snooze menu; closed when not set. */
+  snooze?: SnoozeControl | undefined
   /** The task has a discussion: the task bar shows Discuss, pressed while the discussion is open. */
   discuss?: { open: boolean } | undefined
 }
 
-export function DetailHead({ head, snoozeOpen = false, discuss }: DetailHeadProps) {
+export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHeadProps) {
   return (
     <>
       <Inline gap="8" align="center" data-figma="task bar">
@@ -91,7 +107,7 @@ export function DetailHead({ head, snoozeOpen = false, discuss }: DetailHeadProp
         )}
         {head.actions ? (
           <>
-            <SnoozeButton head={head} open={snoozeOpen} />
+            <SnoozeButton head={head} snooze={snooze} />
             <Button size="sm">
               <CloseIcon />
               Dismiss

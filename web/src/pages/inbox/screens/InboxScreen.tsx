@@ -39,6 +39,12 @@ export type InboxScreenProps = {
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
   onRemoveOpenChange?: ((open: boolean) => void) | undefined
+  /**
+   * Reports what Erik changes in the view: a menu, the prompt editor or the
+   * Run in picker opened or closed, the sort, the filters, or an item
+   * snoozed or marked done. The caller merges it into `ui`.
+   */
+  onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
 }
 
 /** The removal the discussion proposes, if any: the confirm dialog's content. */
@@ -51,7 +57,7 @@ function removal(data: InboxData): Extract<InboxProposal, { kind: 'remove' }> | 
 type InboxLayoutProps = Omit<InboxScreenProps, 'viewport'> & { layout: Viewport; drafts: InboxDrafts }
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
-  const { data, ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange } = props
+  const { data, ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange } = props
   const { discussion } = data
   const desktop = layout === 'desktop'
   const discussing = desktop && discussion !== undefined && ui.discussOpen
@@ -69,8 +75,20 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       onSelectItem={onSelectItem}
       query={props.query}
       onQueryChange={props.onQueryChange}
+      onUiChange={onUiChange}
     />
   )
+  // Snooze or Mark done takes the open item out of the list; on a tablet or phone the list shows again.
+  const snooze = (until: string | null) => {
+    const id = ui.selectedId
+    if (id === null) return
+    onUiChange?.(
+      until === null
+        ? { snoozeOpen: false, done: [...ui.done, id] }
+        : { snoozeOpen: false, snoozed: [...ui.snoozed, { id, until }] },
+    )
+    onBack?.()
+  }
   // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
   const shown = desktop ? data.detail : open
   const detail =
@@ -82,6 +100,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onBack={onBack}
         drafts={drafts}
         onPromptOpenChange={onPromptOpenChange}
+        onUiChange={onUiChange}
+        onSnooze={snooze}
         discuss={discussion === undefined ? undefined : { open: discussing }}
         side={
           discussing ? (

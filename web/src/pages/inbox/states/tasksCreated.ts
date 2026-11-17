@@ -29,7 +29,6 @@ export const tasksCreated = {
   data: {
     ...nextStep.data,
     count: 10,
-    countLabel: '10 tasks',
     filters: [
       { value: 'all', label: 'All', count: 10 },
       { value: 'needs', label: 'Needs you', count: 4 },

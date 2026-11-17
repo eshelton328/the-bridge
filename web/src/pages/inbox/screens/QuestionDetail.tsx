@@ -19,7 +19,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { DetailHead } from '../blocks/DetailHead.tsx'
+import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { draftProps, type InboxDrafts, type InboxQuestion } from '../types.ts'
 
@@ -36,14 +36,16 @@ export type QuestionDetailProps = {
   back?: ReactNode
   /** Keeps the note Erik is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** The Snooze menu of the task bar. */
+  snooze?: SnoozeControl | undefined
 }
 
-export function QuestionDetail({ detail, layout = 'desktop', back, drafts }: QuestionDetailProps) {
+export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooze }: QuestionDetailProps) {
   return (
     <Container size={detailContainerSize(layout)}>
       {back}
       <Stack gap="24" data-figma={layout === 'desktop' ? undefined : 'task · question'}>
-        <DetailHead head={detail} />
+        <DetailHead head={detail} snooze={snooze} />
         <div data-figma="blocking">
           <Panel tone="needsYou">
             <Inline gap="10" align="center">
