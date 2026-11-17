@@ -70,3 +70,19 @@ export const ToolkitMapTablet: Story = {
     await expect(canvas.getByRole('button', { name: 'Open writer' })).toBeVisible()
   },
 }
+
+export const SkillOpen: Story = {
+  name: 'D3: a skill open beside the list',
+  args: { data: toolkitStates.skillOpen.data, ui: toolkitStates.skillOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writer' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('toolkit/skills/writer/')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Copy toolkit/skills/writer/' })).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 1, name: 'writer' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    // The skill writer's row in the list is the open one; the agent writer's is not.
+    await expect(canvas.getByRole('button', { name: 'writer', current: true })).toBeVisible()
+  },
+}
