@@ -11,6 +11,8 @@ import { toolkitMapTablet } from './toolkitMapTablet.ts'
 import { agentOpen } from './agentOpen.ts'
 import { hookOpen } from './hookOpen.ts'
 import { workflowOpen } from './workflowOpen.ts'
+import { skillOpenTablet } from './skillOpenTablet.ts'
+import { skillOpenPhone } from './skillOpenPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -23,4 +25,6 @@ export const toolkitStates = {
   agentOpen,
   hookOpen,
   workflowOpen,
+  skillOpenTablet,
+  skillOpenPhone,
 }

@@ -18,6 +18,11 @@ import type { ToolkitItemDetailView } from '../types.ts'
 // D3 427:291: the sections are 22 apart (457:206 ends at 301, files 427:351 starts at 323, evals 427:383 at 500);
 // no space token has 22, and the larger of 20 and 24 is taken.
 const side = css({ display: 'flex', flexDirection: 'column', gap: '24', minW: '[0]' })
+// M2 487:162: on the phone the files (487:165) start 22 under the end of Used in workflows (487:163) too, and their
+// first lines run 3 px lower than Figma's with 24; 20, the smaller, keeps every line within 2 px. The evals link
+// (487:197) is 22 under the files as well, where the file lines end 4 px higher, so it keeps the 24 (20 and 4 more).
+const sidePhone = css({ display: 'flex', flexDirection: 'column', gap: '20', minW: '[0]' })
+const evalsPhone = css({ mt: '4' })
 // D3 427:351: the file lines are 23 apart (346, 369, 392 …, each 17 high), the first 6 under the heading. The mono
 // line is 16 high, so the lines are 6 apart and 10 under the heading, which keeps each within 3 px of Figma's.
 const section = css({ display: 'flex', flexDirection: 'column', gap: '10', minW: '[0]' })
@@ -57,12 +62,14 @@ const lineIcons = {
 export type ToolkitItemSideProps = {
   detail: ToolkitItemDetailView
   onTabChange?: ((tab: string) => void) | undefined
+  /** The phone (M2) puts the sections 20 apart; the desktop and a tablet 24. */
+  compact?: boolean | undefined
 }
 
-export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
+export function ToolkitItemSide({ detail, onTabChange, compact = false }: ToolkitItemSideProps) {
   const { usedIn, files, evals } = detail
   return (
-    <div className={side} data-figma="side">
+    <div className={compact ? sidePhone : side} data-figma="side">
       {usedIn === undefined || usedIn.label === '' ? null : (
         <section aria-label={usedIn.label} className={section} data-figma="used in workflows">
           <h3 className={heading}>
@@ -105,7 +112,7 @@ export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
         </section>
       )}
       {evals === undefined ? null : (
-        <div className={evalsBox} data-figma="evals link">
+        <div className={compact ? cx(evalsBox, evalsPhone) : evalsBox} data-figma="evals link">
           <ListRow
             title={evals.title}
             meta={evals.caption}
