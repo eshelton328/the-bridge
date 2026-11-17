@@ -21,7 +21,8 @@ import { libraryView } from './libraryView.ts'
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
 const page = {
   desktop: css({ pt: '24', pb: '32', px: '32' }),
-  tablet: css({ pt: '12', pb: '20', px: '24' }),
+  // T1 405:105: the header starts 24 under the status bar and 22 in (24 on the 4 px grid, d-100); rows 10 apart.
+  tablet: css({ pt: '24', pb: '20', px: '24' }),
   phone: css({ pt: '4', pb: '12', px: '12' }),
 }
 // The chips take their own width (402:15384), not the row's. FilterChips pads its row 2 (for the focus ring);
@@ -42,12 +43,13 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
   return (
-    <Stack gap="12" className={page[layout]}>
+    <Stack gap={layout === 'tablet' ? '10' : '12'} className={page[layout]}>
       <LibraryHeader
         title={data.title}
         count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
+        layout={layout}
         onAddLink={
           data.addLinkForm === undefined
             ? onAddLink
@@ -113,6 +115,7 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
         onFilterApply={() => {
           onUiChange?.({ filterOpen: false })
         }}
+        size={layout === 'desktop' ? 'md' : 'lg'}
         view={ui.view}
         onViewChange={(view) => {
           onUiChange?.({ view })

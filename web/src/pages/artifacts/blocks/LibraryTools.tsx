@@ -2,7 +2,8 @@
 // Filter, and at the end the Grid or List switch. Sort names the sort on
 // the button. Beside an open artifact (D2) the row has no switch, and the
 // search takes the free width. With a Filter menu (D3) Filter opens it,
-// and with a Sort menu (D6) Sort opens it.
+// and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
+// controls are 36 high, 8 apart, and the search takes the free width.
 // Props only.
 import {
   Button,
@@ -49,6 +50,8 @@ export type LibraryToolsProps = {
   onFilterChecksChange?: ((checks: string[]) => void) | undefined
   /** Show in the Filter menu: applies the checked boxes. */
   onFilterApply?: (() => void) | undefined
+  /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
+  size?: 'md' | 'lg' | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
@@ -72,14 +75,17 @@ export function LibraryTools({
   onFilterOpenChange,
   onFilterChecksChange,
   onFilterApply,
+  size = 'md',
   view,
   onViewChange,
 }: LibraryToolsProps) {
+  const large = size === 'lg'
   return (
-    <Inline gap="6" align="center" data-figma="list tools">
+    <Inline gap={large ? '8' : '6'} align="center" data-figma="list tools">
       <div className={grow} data-figma="search">
         <SearchField
           label={placeholder}
+          size={size}
           textSize="sm"
           placeholder={placeholder}
           icon={<SearchIcon />}
@@ -91,7 +97,7 @@ export function LibraryTools({
       </div>
       {sortMenu === undefined ? (
         <span data-figma="button · Sort">
-          <Button textSize="sm" onClick={onSortClick}>
+          <Button size={size} textSize="sm" onClick={onSortClick}>
             <SortDescIcon />
             {sortLabel}
             <ChevronDownIcon size="12" />
@@ -109,7 +115,7 @@ export function LibraryTools({
       )}
       {filterMenu === undefined ? (
         <span data-figma="button · Filter">
-          <Button textSize="sm" onClick={onFilterClick}>
+          <Button size={size} textSize="sm" onClick={onFilterClick}>
             <FilterIcon />
             Filter
           </Button>
@@ -126,11 +132,13 @@ export function LibraryTools({
       )}
       {view === undefined ? null : (
         <>
-          <span className={grow} />
+          {/* T1 has no space before the switch: the search takes it (405:132). */}
+          {large ? null : <span className={grow} />}
           <span data-figma="view · Grid or List">
             {/* Figma draws two icon-only segments, the picked view's icon cyan on the selected fill, with no border (402:15421). */}
             <ViewSwitch
               tone="accent"
+              size={size}
               iconOnly
               label="View"
               value={view}
