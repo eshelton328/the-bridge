@@ -1,0 +1,5 @@
+/* The canvas bundle's own styles. Panda fills a file only when it declares
+   all five layers, so this one carries the library's reset, tokens and
+   recipes again beside the utilities the app's css() calls use. They match
+   the board's library bundle (ds/cl1701), so the copy changes nothing. */
+@layer reset, base, tokens, recipes, utilities;

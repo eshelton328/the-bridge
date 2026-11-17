@@ -1,0 +1,33 @@
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
+import { playwright } from '@vitest/browser-playwright'
+import { defineConfig } from 'vitest/config'
+
+// Each project names its Chromium instance, so the names stay unique.
+const browser = (name: string) => ({
+  enabled: true,
+  headless: true,
+  provider: playwright(),
+  instances: [{ browser: 'chromium' as const, name }],
+})
+
+// One config for the repository (d-080). `shared` runs in Node; `web` runs
+// web/src tests in Chromium; `storybook` runs every story's play test in
+// Chromium. Run one with `pnpm test --project=web`.
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        test: { name: 'shared', root: './shared', include: ['src/**/*.test.ts'], environment: 'node' },
+      },
+      {
+        extends: './web/vite.config.ts',
+        test: { name: 'web', root: './web', include: ['src/**/*.test.{ts,tsx}'], browser: browser('web') },
+      },
+      {
+        extends: './web/vite.config.ts',
+        plugins: [storybookTest({ configDir: './web/.storybook' })],
+        test: { name: 'storybook', root: './web', browser: browser('storybook') },
+      },
+    ],
+  },
+})

@@ -1,0 +1,4 @@
+/* A page fills the story frame, as it fills #root in the app. */
+#storybook-root {
+  height: 100dvh;
+}

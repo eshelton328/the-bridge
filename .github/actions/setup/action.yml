@@ -1,0 +1,28 @@
+name: setup
+description: Install pnpm, Node 24 and the locked dependencies, and optionally Chromium.
+inputs:
+  browser:
+    description: Install Chromium for the Vitest browser and story tests.
+    default: "false"
+  packages-token:
+    description: A token that can read the component library from GitHub Packages.
+    required: true
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+        cache: pnpm
+    # The library is a private package on GitHub Packages
+    # (pnpm-workspace.yaml routes @eshelton328 there).
+    - run: echo "//npm.pkg.github.com/:_authToken=${PACKAGES_TOKEN}" >> "$HOME/.npmrc"
+      shell: bash
+      env:
+        PACKAGES_TOKEN: ${{ inputs.packages-token }}
+    - run: pnpm install --frozen-lockfile
+      shell: bash
+    - if: inputs.browser == 'true'
+      run: pnpm exec playwright install --with-deps chromium
+      shell: bash
