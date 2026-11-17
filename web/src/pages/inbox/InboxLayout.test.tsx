@@ -132,4 +132,27 @@ describe('the Inbox screen by width', () => {
       .map((box) => box?.getBoundingClientRect().height)
     expect(boxes).toEqual([52, 52, 52])
   })
+
+  it("opens the More drawer from the phone tab bar's More, and Artifacts goes to its page (Toolkit M4)", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = inboxStates.list
+    const pages: string[] = []
+    view = await testRender(
+      <InboxScreen
+        data={data}
+        ui={ui}
+        viewport="phone"
+        onNavigate={(next) => {
+          pages.push(next)
+        }}
+      />,
+    )
+    await userEvent.click(page.getByRole('button', { name: 'More' }))
+    const drawer = page.getByRole('dialog', { name: 'More' })
+    await expect.element(drawer.getByText('Agents, skills, workflows, rules and hooks')).toBeVisible()
+    expect(pages).toEqual([])
+    await userEvent.click(drawer.getByRole('button', { name: /Artifacts/ }))
+    expect(pages).toEqual(['artifacts'])
+    await expect.element(drawer).not.toBeInTheDocument()
+  })
 })
