@@ -62,3 +62,12 @@ D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
   Figma groups them in the centre. The tab bar is the shared `AppTabBar`
   (d-105), as on T01, T02 and T03; its box passes the position check, and
   a change to it needs the app-frame lock.
+
+## Second review
+
+- **Selected tab.** Overview is white with a grey outline, where Figma's
+  is cyan with a cyan outline. `ItemTabs` has no accent tone yet; a
+  library PR adds one (gap: Item tab selected tone).
+- **Load box colour.** The reviewer saw a duller amber border on a
+  brownish fill. Figma's box has the needs-you border and tint too; the
+  tone differs with `Panel tone="needsYou"` (gap: Rule load box).
