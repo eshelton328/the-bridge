@@ -62,6 +62,9 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   attachment chip, the 20 px text line and the 28 px buttons of `Composer`
   are taller than Figma's, as in D01. The transcript and composer are 24
   in from the sides (Figma 22: the nearest spacing token).
+- **Attachment remove × (Composer attachment remove).** Figma's × on the
+  attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
+  same `fg.muted`.
 - **Side chat.** `105:933` h +21 and `105:935` y +22: "Can Panda CSS switch
   themes while the app runs?" wraps to two lines in the render. `Message`
   pads the bubble 12, as Figma does, but the line is 1 px wider than the

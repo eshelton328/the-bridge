@@ -52,6 +52,9 @@ is the drop zone (`ui.paneDrag`, edge `right`).
   `158:934` y -7, h +7: the attachment chip, the 20 px text line and the
   28 px buttons of `Composer` are taller than Figma's, as on D02 and D02b.
   The composer keeps the layout the earlier frames use (d-107).
+- **Attachment remove × (Composer attachment remove).** Figma's × on the
+  attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
+  same `fg.muted`.
 - **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
   on 204:2 (4 px) and 158:750 (6 px): the end of "26%" and "78%" is cut
   off, because the library's `ContextMeter` is about 5 px wider than

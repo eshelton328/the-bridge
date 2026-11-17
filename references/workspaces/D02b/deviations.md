@@ -45,6 +45,9 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
   Copy is 24 px (Figma 22), as on D01 and D02. `402:5403` y -7, h +7: the
   attachment chip, the 20 px text line and the 28 px buttons of `Composer`
   are taller than Figma's, as on D02.
+- **Attachment remove × (Composer attachment remove).** Figma's × on the
+  attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
+  same `fg.muted`.
 - **Side chat.** `402:5441` h +21 and `402:5443` y +22: "Can Panda CSS
   switch themes while the app runs?" wraps to two lines in the render; the
   line is 1 px wider than the bubble's 321 px, as on D02.

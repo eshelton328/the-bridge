@@ -31,6 +31,9 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   and the 28 px buttons of `Composer` are taller than Figma's 22, 17 and
   26. Figma draws the composer focused with a caret after "/"; the story
   does not focus it, as the open menu holds the focus.
+- **Attachment remove × (Composer attachment remove).** Figma's × on the
+  attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
+  same `fg.muted`.
 - **Sidebar toggle (Sidebar toggle).** `158:2` x +533.7: the toggle sits
   after New chat, at the end of the tabs, because `Workbench` has no slot
   before the tabs. It is 28 px (`Button size="sm"`) against Figma's 30.
