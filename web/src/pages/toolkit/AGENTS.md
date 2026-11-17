@@ -24,10 +24,13 @@ what each file of a page folder is for.
   description on a tablet), `ToolkitRow` (one item as a list row on
   the phone, M1) and `ToolkitMap` (the Map view, D2: the library
   `MapGraph`, each item placed by its column and row, with the legend and
-  the selected item's card). On the map the list tools show no Sort and
+  the selected item's card). `ToolkitListPane` is the list beside an
+  open item (D3): `ToolkitHeader`, `ToolkitListTools` and `ToolkitGroup`
+  take `layout="pane"`, and `ToolkitRow` takes `size="pane"`.
+  `ToolkitItem` is the open item. On the map the list tools show no Sort and
   their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
-- `types.ts`: the view models: items, groups, kind chips, the map, and the `ui`.
+- `types.ts`: the view models: items, groups, kind chips, the map, an open item's details, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
   the state it shows, or a state of its own when its data differs
@@ -41,6 +44,23 @@ what each file of a page folder is for.
   (M11) is the same state: the screen shows the header and the map, with
   no chips and no search; `ToolkitMap` draws the tablet's map in a window
   that scrolls sideways, the hint at its foot and the selected item's card
-  under the window. An open item (D3)
-  adds an item and its own screen.
+  under the window. An open item (D3, `skillOpen`) sets `ui.open` to the
+  item's path (and `ui.itemTab` for a tab other than the first) and adds
+  `data.details`: for each item, its path badge, when it changed, its
+  tabs, the blocks of its main file, what uses it, its files and its
+  evals. `screens/itemView.ts` (pure, tested in `itemView.test.ts`) finds
+  the open item; an item with no details opens with what the list
+  knows. On the desktop the list moves into the list pane
+  (`ToolkitListPane`) and `ToolkitItem` fills the rest, with its
+  Overview (`ToolkitItemOverview`, `ToolkitFilePreview`,
+  `ToolkitItemSide`); on a tablet or phone the item fills the screen
+  under a back row. A rule (D4, `ruleOpen`,
+  which adds the Workflows and Hooks groups) adds `loads` to its details,
+  shown as the Overview's load box, and has no side column: `usedIn` and
+  `files` are optional. A click on a card, a row or the map card's Open
+  opens an item through `onUiChange`; Show on map opens the map with the
+  item selected; the path badge's copy button calls `onCopyPath`, which
+  `ToolkitPage` writes to the clipboard. Later frames of the open item
+  (D7 to D9, T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
+  the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

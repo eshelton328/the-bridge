@@ -3,7 +3,8 @@
 // and the legend of the counts each card shows. A tablet or phone shows the
 // search alone, full width (T1 428:48); the phone adds the Read-only line
 // under it (M1 429:86). The Map view (D2 426:100) has no Sort, and its
-// legend says what a line on the map means. Props only.
+// legend says what a line on the map means. Beside an open item (`pane`, D3
+// 427:84) the row is the search alone, as on the phone. Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -37,28 +38,33 @@ const legend = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap',
 export type ToolkitListToolsProps = {
   query: string
   onQueryChange?: ((query: string) => void) | undefined
-  layout: Viewport
+  /** `pane` is the list beside an open item (D3). */
+  layout: Viewport | 'pane'
   /** The view under the row; the map has no Sort and its own legend. The list when not set. */
   view?: ToolkitView | undefined
 }
 
 export function ToolkitListTools({ query, onQueryChange, layout, view = 'list' }: ToolkitListToolsProps) {
   const map = view === 'map'
-  if (layout === 'phone') {
+  if (layout === 'phone' || layout === 'pane') {
+    const field = (
+      <div data-figma="search">
+        <SearchField
+          label="Search the toolkit"
+          placeholder="Search the toolkit"
+          size="lg"
+          icon={<SearchIcon />}
+          clearIcon={<CloseCircleIcon />}
+          clearLabel="Clear the search"
+          value={query}
+          onValueChange={onQueryChange}
+        />
+      </div>
+    )
+    if (layout === 'pane') return field
     return (
       <>
-        <div data-figma="search">
-          <SearchField
-            label="Search the toolkit"
-            placeholder="Search the toolkit"
-            size="lg"
-            icon={<SearchIcon />}
-            clearIcon={<CloseCircleIcon />}
-            clearLabel="Clear the search"
-            value={query}
-            onValueChange={onQueryChange}
-          />
-        </div>
+        {field}
         <p className={readOnly} data-figma="read-only line">
           <LockIcon size="12" />
           Read-only · from toolkit/ in the brain

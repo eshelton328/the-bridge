@@ -1,0 +1,64 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["427:82"],
+      "reason": "Figma cuts the kind chip row at the list pane's right edge (484): the Workflows chip (427:80, x 433 to 552) shows its dot and the first letter of its label, and its count 2 (427:83) lies past the edge. The render scrolls the chip row sideways inside the pane the same way (FilterChips), so the label and count are in the DOM and come into view when the row scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["427:83"],
+      "reason": "The Workflows chip's count (427:83, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    }
+  ],
+  "position": [
+    {
+      "layer": "group · RULES",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · commits-and-prs",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · diagrams",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · linear",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · readmes",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · releases",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · skills",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · ste100",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · writing",
+      "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own: Figma's list (427:54) runs on past the frame's bottom edge (the Agents rows end at writing-reviewer, 427:240, y 1222), beside the open item. The render scrolls the pane the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways: Figma's chip row (427:64) runs past the list pane's right edge, cut after the Workflows chip's dot (427:80, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    }
+  ]
+}

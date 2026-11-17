@@ -67,6 +67,77 @@ export const ToolkitMapView = z.object({
 })
 export type ToolkitMapView = z.infer<typeof ToolkitMapView>
 
+/** One line of an open item's file summary (D3 `file · …`): a file, a folder with its count, or a folder's files. */
+const ToolkitFileLine = z.object({
+  /** A file or a folder; a folder's line shows its file count after the name. */
+  type: z.enum(['file', 'folder']),
+  /** The names on the line: one file or folder, or several files of a folder side by side, such as "chat.md". */
+  names: z.array(z.string()).min(1),
+  /** The number of files in a folder. */
+  count: z.number().int().nonnegative().optional(),
+})
+
+/**
+ * One block of a file rendered read-only, such as a skill's SKILL.md (D3 `rendered markdown`): its title, a
+ * heading, a paragraph, or a line of file references in code.
+ */
+export const ToolkitMarkdownBlock = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('title'), text: z.string() }),
+  z.object({ type: z.literal('heading'), text: z.string() }),
+  z.object({ type: z.literal('paragraph'), text: z.string() }),
+  z.object({ type: z.literal('code'), items: z.array(z.string()).min(1) }),
+  /** A block of preformatted lines, such as a folder tree (D4 427:650); `text` keeps its line breaks. */
+  z.object({ type: z.literal('pre'), text: z.string() }),
+])
+export type ToolkitMarkdownBlock = z.infer<typeof ToolkitMarkdownBlock>
+
+/** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
+const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
+
+/** An item that uses the open item, such as a workflow that runs a skill. */
+const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: ToolkitKind })
+
+/**
+ * An open item (D3, a rule in D4): what the page shows beside the list for one item. Its kind, name and link counts come from
+ * the list's `ToolkitItemView` with the same path.
+ */
+export const ToolkitItemDetailView = z.object({
+  /** The item's path in toolkit/, as in `ToolkitItemView.path`. */
+  path: z.string(),
+  /** The path the badge shows and copies, such as "toolkit/skills/writer/". */
+  location: z.string(),
+  /** When the item last changed, such as "changed 6 days ago". */
+  changed: z.string(),
+  /** What the item is for, in full, over the Overview. */
+  description: z.string(),
+  /**
+   * When a rule loads (D4 `when it loads` 427:628), from its paths frontmatter: the label ("Loads when") and the
+   * condition, such as "a file under toolkit/skills/** or skills/** changes". None for an item that is not a rule.
+   */
+  loads: z.object({ label: z.string(), when: z.string() }).optional(),
+  tabs: z.array(ToolkitItemTab).min(1),
+  /** The item's main file, rendered read-only: its name and its blocks. */
+  preview: z.object({ file: z.string(), blocks: z.array(ToolkitMarkdownBlock) }),
+  /**
+   * The heading of the items that use this one, such as "Used in workflows", and those items. None when the side
+   * column does not show it, as for the rule in D4.
+   */
+  usedIn: z.object({ label: z.string(), items: z.array(ToolkitItemRef) }).optional(),
+  /** The item's files: how many, and the lines of the summary. None when the side column does not show them (D4). */
+  files: z.object({ count: z.number().int().nonnegative(), lines: z.array(ToolkitFileLine) }).optional(),
+  /** The link to the item's evals, with its caption, such as "5 cases · open the Evals tab"; none when not set. */
+  evals: z.object({ title: z.string(), caption: z.string(), tab: z.string() }).optional(),
+})
+export type ToolkitItemDetailView = z.infer<typeof ToolkitItemDetailView>
+
+/** The item open beside the list, as the screen shows it (screens/itemView.ts). */
+export type ToolkitOpenItem = {
+  item: ToolkitItemView
+  detail: ToolkitItemDetailView
+  /** The tab shown: `ui.itemTab` when the item has it, else its first tab. */
+  tab: string
+}
+
 export const ToolkitData = z.object({
   /** The number of items in toolkit/, after the title. */
   count: z.number().int().nonnegative(),
@@ -78,6 +149,8 @@ export const ToolkitData = z.object({
   groups: z.array(ToolkitGroupView),
   /** The map the Map view shows; without it the Map view shows an empty map. */
   map: ToolkitMapView.optional(),
+  /** What an open item shows (D3), by path; an item with no entry opens with what the list knows of it. */
+  details: z.array(ToolkitItemDetailView).optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 
@@ -98,6 +171,10 @@ export const ToolkitUi = z.object({
   moreOpen: z.boolean().optional(),
   /** The path of the item selected on the map (D2): its lines light up. None when not set. */
   mapSelected: z.string().nullable().optional(),
+  /** The path of the item open beside the list (D3); the list alone when not set or null. */
+  open: z.string().nullable().optional(),
+  /** The open item's tab, by value; its first tab when not set. */
+  itemTab: z.string().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

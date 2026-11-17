@@ -70,3 +70,35 @@ export const ToolkitMapTablet: Story = {
     await expect(canvas.getByRole('button', { name: 'Open writer' })).toBeVisible()
   },
 }
+
+export const SkillOpen: Story = {
+  name: 'D3: a skill open beside the list',
+  args: { data: toolkitStates.skillOpen.data, ui: toolkitStates.skillOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writer' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('toolkit/skills/writer/')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Copy toolkit/skills/writer/' })).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 1, name: 'writer' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    // The skill writer's row in the list is the open one; the agent writer's is not.
+    await expect(canvas.getByRole('button', { name: 'writer', current: true })).toBeVisible()
+  },
+}
+
+export const RuleOpen: Story = {
+  name: 'D4: a rule open beside the list',
+  args: { data: toolkitStates.ruleOpen.data, ui: toolkitStates.ruleOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skills' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/rules/skills.md')).toBeVisible()
+    await expect(within(item).getByText('Loads when')).toBeVisible()
+    await expect(within(item).getByText('a file under toolkit/skills/** or skills/** changes')).toBeVisible()
+    await expect(within(item).getByRole('heading', { level: 2, name: 'Layout' })).toBeVisible()
+    // The rule's row in the list is the open one; the list adds the Hooks group.
+    await expect(canvas.getByRole('button', { name: 'skills', current: true })).toBeInTheDocument()
+    await expect(canvas.getByRole('heading', { name: /Hooks/ })).toBeInTheDocument()
+  },
+}

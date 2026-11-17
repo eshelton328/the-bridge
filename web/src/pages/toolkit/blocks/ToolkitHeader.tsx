@@ -2,7 +2,9 @@
 // number of items, where the list is read from, the Read-only badge and
 // the List, Map and Activity switch. The tablet and phone leave out the
 // source line. The phone (M1 429:51) shows the three views as icon buttons
-// and puts Read-only under the search (ToolkitListTools). Props only.
+// and puts Read-only under the search (ToolkitListTools). Beside an open item
+// (`pane`, D3 427:55) the header is the title, the count and Read-only, with
+// no source and no views. Props only.
 import {
   Badge,
   Button,
@@ -29,11 +31,23 @@ export type ToolkitHeaderProps = {
   count: number
   view: ToolkitView
   onViewChange?: ((view: ToolkitView) => void) | undefined
-  layout: Viewport
+  /** `pane` is the list beside an open item (D3). */
+  layout: Viewport | 'pane'
 }
 
 export function ToolkitHeader({ count, view, onViewChange, layout }: ToolkitHeaderProps) {
   const desktop = layout === 'desktop'
+  if (layout === 'pane') {
+    return (
+      <div data-figma="header">
+        <PageHeader title="Toolkit" count={count} countLabel={`${String(count)} items`} size="page">
+          <div data-figma="read-only">
+            <Badge variant="quiet" label="Read-only" icon={<LockIcon size="12" />} />
+          </div>
+        </PageHeader>
+      </div>
+    )
+  }
   if (layout === 'phone') {
     return (
       <div data-figma="header">

@@ -1,9 +1,11 @@
 // The Toolkit page's connected entry: the only component of the page that
 // reads the router. It keeps what Erik changes in the shown state's view
-// (the view, the kind chip, the search, the groups he closed) until another
-// state loads, and passes everything to the props-only screen.
+// (the view, the kind chip, the search, the groups he closed, the open item)
+// until another state loads, and passes everything to the props-only screen.
+// The open item's copy button writes its path to the clipboard here.
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
+import { copyText } from '../../lib/copyText.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 
@@ -28,6 +30,10 @@ export function ToolkitPage() {
       }}
       onUiChange={(change) => {
         setChanged({ of: state.ui, ui: { ...own, ...change } })
+      }}
+      onCopyPath={(path) => {
+        // The badge's copy button; a page without clipboard access (an insecure origin) copies nothing.
+        copyText(path)
       }}
     />
   )

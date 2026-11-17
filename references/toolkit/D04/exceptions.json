@@ -1,0 +1,354 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["427:471"],
+      "reason": "Figma cuts the kind chip row at the list pane's right edge (484): the Workflows chip (427:469, x 433 to 552) shows its dot and the first letter of its label, and its count 2 (427:472) lies past the edge. The render scrolls the chip row sideways inside the pane the same way (FilterChips), so the label and count are in the DOM and come into view when the row scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["427:472"],
+      "reason": "The Workflows chip's count (427:472, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    },
+    {
+      "text": "RULES",
+      "layers": ["427:481"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "8",
+      "layers": ["427:482"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "commits-and-prs",
+      "layers": ["427:489"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/commits-and-prs.md",
+      "layers": ["427:490"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→1 ←5",
+      "layers": ["427:492"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/diagrams.md",
+      "layers": ["427:500"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "linear",
+      "layers": ["427:509"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/linear.md",
+      "layers": ["427:510"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "readmes",
+      "layers": ["427:519"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/readmes.md",
+      "layers": ["427:520"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→1 ←4",
+      "layers": ["427:522"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "releases",
+      "layers": ["427:529"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/releases.md",
+      "layers": ["427:530"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→0 ←0",
+      "layers": ["427:532"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "ste100",
+      "layers": ["427:549"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/ste100.md",
+      "layers": ["427:550"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "writing",
+      "layers": ["427:559"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/writing.md",
+      "layers": ["427:560"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→6 ←3",
+      "layers": ["427:562"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "WORKFLOWS",
+      "layers": ["427:566"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["427:567"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "skill-eval-cases",
+      "layers": ["427:575"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "workflows/skill-eval-cases.md",
+      "layers": ["427:576"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→3 ←1",
+      "layers": ["427:578"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "skill-eval-round",
+      "layers": ["427:586"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "workflows/skill-eval-round.md",
+      "layers": ["427:587"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "HOOKS",
+      "layers": ["427:593"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "1",
+      "layers": ["427:594"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "commit-msg",
+      "layers": ["427:601"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "hooks/commit-msg",
+      "layers": ["427:602"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "→1 ←1",
+      "layers": ["427:604"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    },
+    {
+      "text": "rules/skills.md",
+      "layers": ["427:540"],
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this list text lies below the frame's bottom edge in the render; it comes into view when the pane scrolls."
+    }
+  ],
+  "extra": [
+    {
+      "text": "SKILLS",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "agents-md",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/agents-md/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "→0 ←1",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "ambitious",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/ambitious/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "audit-slop",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/audit-slop/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "→1 ←2",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/eval-cases/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "→3 ←3",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "mermaid-diagrams",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/mermaid-diagrams/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "pr-description",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/pr-description/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "project-setup",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/project-setup/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/readme/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "skills/writer/",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "→7 ←4",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "AGENTS",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "diagram-reviewer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "agents/diagram-reviewer.md",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "eval-case-writer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "writer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    }
+  ],
+  "position": [
+    {
+      "layer": "group · SKILLS",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · agents-md",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · ambitious",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · audit-slop",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · eval-cases",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · mermaid-diagrams",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · pr-description",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · project-setup",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · readme",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "group · AGENTS",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · diagram-reviewer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · eval-case-writer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · eval-grader",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · pr-description-checker",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · readme-cold-reader",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    },
+    {
+      "layer": "toolkit row · writing-reviewer",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). The frame has no layer for the Skills and Agents groups; the render draws them at the pane's top."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own: Figma's list (427:443) shows the Rules, Workflows and Hooks groups scrolled past Skills and Agents, beside the open item. The render scrolls the pane the same way, from its top (d-107)."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways: Figma's chip row (427:453) runs past the list pane's right edge, cut after the Workflows chip's dot (427:469, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    }
+  ]
+}
