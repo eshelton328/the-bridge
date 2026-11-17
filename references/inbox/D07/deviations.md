@@ -82,3 +82,12 @@ For D07 it also found:
   finished (dimmed) `ListRow`.
 - "Dismissed: already done by hand" and the times are brighter: the
   `fg.subtle` token and the type sizes.
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row scrolls sideways on the phone: with Done selected, `chip · All` (346:11406) starts at x -39, off the left edge, under `fade · L` (346:11513), and Done ends at the list's edge. The render scrolls the row the same way, the selected chip into view; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

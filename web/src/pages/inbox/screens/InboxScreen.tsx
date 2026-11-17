@@ -62,7 +62,14 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const data = discussionView(props.data, ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
-  const open = ui.selectedId === null ? null : data.detail
+  // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
+  // closes the chat and shows the list; the task opens again from its row. On the desktop, View task in the chat's
+  // header or a click on the task's row closes the chat and shows the task.
+  const task = data.detail
+  const chat =
+    ui.chatOpen && task?.kind === 'next' && task.launch.stage === 'started' ? task.launch.run.chat : undefined
+  const item = chat ?? task
+  const open = ui.selectedId === null ? null : item
   const discussOpen = discussion !== undefined && ui.discussOpen
   // The desktop puts the discussion beside the task; a tablet or phone gives it the task's page (T17).
   const discussing = desktop && discussOpen
@@ -73,7 +80,18 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   // On the phone the prompt editor's keyboard covers the bottom of the screen, tab bar and all (M3).
   const keyboard = layout === 'phone' && open?.kind === 'next' && ui.editingPrompt
   // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
-  const shown = desktop ? data.detail : open
+  const shown = desktop ? item : open
+  const closeChat = () => {
+    onUiChange?.({ chatOpen: false })
+    onBack?.()
+  }
+  const selectItem =
+    onSelectItem === undefined
+      ? undefined
+      : (id: string) => {
+          if (ui.chatOpen) onUiChange?.({ chatOpen: false })
+          onSelectItem(id)
+        }
   const run = (effect: DiscussionEffect) => {
     if (effect.prompt !== undefined) drafts.onChange('prompt', effect.prompt)
     if (effect.removeOpen !== undefined) onRemoveOpenChange?.(effect.removeOpen)
@@ -117,7 +135,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       layout={layout}
       onFilterChange={props.onFilterChange}
       onGroupOpenChange={props.onGroupOpenChange}
-      onSelectItem={onSelectItem}
+      onSelectItem={selectItem}
       query={props.query}
       onQueryChange={props.onQueryChange}
       onUiChange={onUiChange}
@@ -146,7 +164,14 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         ui={ui}
         snoozeMenu={data.snoozeMenu}
         layout={layout}
-        onBack={onBack}
+        onBack={chat === undefined ? onBack : closeChat}
+        onViewTask={
+          chat === undefined
+            ? undefined
+            : () => {
+                onUiChange?.({ chatOpen: false })
+              }
+        }
         drafts={drafts}
         onPromptOpenChange={onPromptOpenChange}
         onUiChange={onUiChange}

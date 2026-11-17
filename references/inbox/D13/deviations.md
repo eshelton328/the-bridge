@@ -56,3 +56,12 @@ The blind second review of round 3 (`reports/fidelity/inbox/D13.sideBySide.png`,
 - Newest and Filter wider, Search narrower: recorded. Newest and Filter are `Button`s with 14 px labels against Figma's Medium 13 (403:1663, 403:1671), so they are wider and Search takes what is left (row "Button label size").
 - Tag chips larger and whiter: colour fixed. The chips are now `MetaChip tone="muted"` (Figma #8a97b8, `fg.muted`); the NCC chip keeps `tone="issue"`. Their widths match Figma's within 1 px (88.8, 141.6 and 75.6 against 88, 141 and 75); they are 26 px high against 24 because `monoSm` keeps a 16 px line on the 4 px grid (d-072).
 - MY NOTES text larger: fixed (see the sizes above).
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

@@ -1,0 +1,24 @@
+{
+  "missing": [
+    {
+      "text": "quiet-nebula · Creating 9 issues…",
+      "reason": "Figma draws the Running row's chat line under the tab bar too: layer 346:11296 sits at y 773, and the tab bar starts at y 767, so frame.png shows none of it. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "text": "Working",
+      "reason": "Figma draws the Running row's Working pill under the tab bar too: layer 346:11301 sits at y 757, and the tab bar starts at y 767, so frame.png shows part of it. The render scrolls the list under the tab bar the same way."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The list scrolls under the tab bar on the phone: Figma's `inbox list` (346:11134) is 769 high and runs past the tab bar at y 767, so its last rows sit under the bar. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row runs past the list too and scrolls sideways on the phone: `chip · Done` (346:11152) starts at x 363 and ends at 429, beyond the list's end at 378, under `fade · R`. The render clips the same row; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

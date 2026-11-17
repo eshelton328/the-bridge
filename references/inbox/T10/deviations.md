@@ -64,3 +64,11 @@ it stays:
 
 - The search field not focused (F1, P1): fixed. The story focuses the field after its checks (`searchbox` has focus), as Erik sees it while he types, so the render shows `SearchField`'s focused border (`border.focus`). Playwright hides the caret. Figma's focused field also tints its fill; `SearchField` changes only the border. Library gap: Styles that differ from Figma.
 - The clear icon brighter and larger than Figma's dim grey (F2): stays. `CloseCircleIcon` at `clearSize="16"` in the field's icon colour is the library's clear button (#101). Library gap: Search field and chip count text.
+
+## Show it
+
+- **Show it.** The Done hint's link selects the Done chip, which lists
+  the match in Done: the search state holds that Done list (one finished
+  task, "Save the Inbox frames as references"), which no frame draws, and
+  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  `listView.test.ts`).

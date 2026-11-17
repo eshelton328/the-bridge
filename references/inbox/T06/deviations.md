@@ -60,3 +60,9 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 - Filter chip counts as bright as their labels: stays. `FilterChips`
   draws counts in `fg.muted`; Figma draws them in #4a5675 (same library
   gap, the same in D01 to D21).
+
+## Running row
+
+- **Running row.** A tap on the task under Running opens its task page
+  (T4, M10), as the M10, T4 and D6 notes say, not the chat: the state's
+  detail is T4's (`InboxRoute.test.tsx`).

@@ -10,7 +10,6 @@ import {
   ChevronRightIcon,
   Composer,
   Container,
-  ExternalLinkIcon,
   Inline,
   KindMark,
   ModelChip,
@@ -23,6 +22,7 @@ import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ChatEntry } from '../blocks/ChatEntry.tsx'
 import { InboxStatus } from '../blocks/InboxStatus.tsx'
+import { OpenInWorkspaces } from '../blocks/OpenInWorkspaces.tsx'
 import { draftProps, type InboxDrafts, type InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
@@ -52,23 +52,22 @@ export type RunningDetailProps = {
   onBack?: (() => void) | undefined
   /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** View task on the desktop: closes a chat that Reply here opened and shows its task again. */
+  onViewTask?: (() => void) | undefined
 }
 
-function DesktopHeader({ detail }: { detail: InboxRunning }) {
+function DesktopHeader({ detail, onViewTask }: { detail: InboxRunning; onViewTask: (() => void) | undefined }) {
   return (
     <div data-figma="started task">
       <Panel>
         <Stack gap="6">
           <Inline gap="10" align="center">
             <h1 className={title}>{detail.title}</h1>
-            <Button size="sm">
+            <Button size="sm" onClick={onViewTask}>
               View task
               <ChevronRightIcon />
             </Button>
-            <Button size="sm">
-              <ExternalLinkIcon />
-              Open in Workspaces
-            </Button>
+            <OpenInWorkspaces size="sm" label="Open in Workspaces" />
           </Inline>
           <Inline gap="6" align="center">
             <KindMark kind={detail.agent} size="16" />
@@ -90,10 +89,7 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
     <>
       <div data-figma="nav">
         <BackRow label="Inbox" onBack={onBack}>
-          <Button size="sm" data-figma="button · Open in Workspaces">
-            <ExternalLinkIcon />
-            Workspaces
-          </Button>
+          <OpenInWorkspaces size="sm" label="Workspaces" figma="button · Open in Workspaces" />
         </BackRow>
       </div>
       <div data-figma="started task">
@@ -124,12 +120,12 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
   )
 }
 
-export function RunningDetail({ detail, layout = 'desktop', onBack, drafts }: RunningDetailProps) {
+export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onViewTask }: RunningDetailProps) {
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
         {layout === 'desktop' ? (
-          <DesktopHeader detail={detail} />
+          <DesktopHeader detail={detail} onViewTask={onViewTask} />
         ) : (
           <CompactHeader detail={detail} onBack={onBack} phone={layout === 'phone'} />
         )}

@@ -190,6 +190,16 @@ export function PromptSection({
             open={open}
             onOpenChange={onOpenChange}
             layout={layout}
+            onEdit={
+              prompt.state === 'suggested'
+                ? () => {
+                    // Edit prompt closes the sheet and opens the editor with the focus in it (M9 to M3).
+                    onOpenChange?.(false)
+                    focusEditorRef.current = true
+                    onEditingChange?.(true)
+                  }
+                : undefined
+            }
           />
         </Stack>
       )}

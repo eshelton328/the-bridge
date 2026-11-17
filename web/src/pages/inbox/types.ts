@@ -96,13 +96,22 @@ const InboxSortMenu = z.object({
   heading: z.string(),
   options: z.array(z.object({ value: SortValue, label: z.string(), description: z.string(), short: z.string() })),
   note: z.string(),
+  /** The phone's line under the tools while a sort other than the first applies: "Sorted by" and the sort (M15). */
+  applied: z.string(),
+  /** The link on that line that brings back the first sort. */
+  reset: z.string(),
 })
 export type InboxSortMenu = z.infer<typeof InboxSortMenu>
 
-/** A search in the list: the query, and the hint about its matches in Done, which the list does not hold. */
+/**
+ * A search in the list: the query, and the hint about its matches in Done,
+ * which the list does not hold. The hint's link selects the Done chip, which
+ * shows `done`: the Done list of a state whose groups have no Done days.
+ */
 const InboxSearch = z.object({
   query: z.string(),
   more: z.object({ text: z.string(), link: z.string() }),
+  done: z.array(InboxGroupView),
 })
 
 /** The Snooze menu of the task bar and the sheet a long-pressed row opens on the phone: snooze times, then Mark done and Dismiss. */
@@ -167,6 +176,34 @@ const InboxRunIn = z.object({
 })
 export type InboxRunIn = z.infer<typeof InboxRunIn>
 
+/** One entry of a running chat: a message or a tool line. */
+const InboxChatEntry = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('user'), text: z.string() }),
+  z.object({ type: z.literal('assistant'), agent: InboxAgent, name: z.string(), text: z.string() }),
+  z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), state: z.enum(['running', 'done']) }),
+])
+export type InboxChatEntry = z.infer<typeof InboxChatEntry>
+
+const InboxRunning = z.object({
+  kind: z.literal('running'),
+  /** The item's id, as in its row. */
+  id: InboxItemId,
+  title: z.string(),
+  agent: InboxAgent,
+  /**
+   * The header's meta: the task's place ("ncc-1701 · f-005 · NCC-28"), when
+   * it started ("started 3 min ago in") and the chat ("quiet-nebula ·
+   * the-bridge · Sonnet 5.5"). The desktop puts them on one line; the
+   * tablet shows the place, then the chat with its agent mark.
+   */
+  meta: z.object({ task: z.string(), started: z.string(), chat: z.string() }),
+  status: InboxPill,
+  chat: z.array(InboxChatEntry),
+  reply: z.string(),
+  model: z.string(),
+})
+export type InboxRunning = z.infer<typeof InboxRunning>
+
 /** A started next step: the chat it runs or ran in, its state and the two ways to open it. */
 const InboxRunCard = z.object({
   agent: InboxAgent,
@@ -177,6 +214,8 @@ const InboxRunCard = z.object({
   open: z.string(),
   /** The secondary button, such as "Open in Workspaces". */
   openElsewhere: z.string(),
+  /** The chat the primary button opens in the inbox (Reply here, M10 to M8); a card without it has no chat to open. */
+  chat: InboxRunning.optional(),
 })
 export type InboxRunCard = z.infer<typeof InboxRunCard>
 
@@ -231,34 +270,6 @@ const InboxQuestion = InboxDetailHead.extend({
   answerHint: z.string(),
 })
 export type InboxQuestion = z.infer<typeof InboxQuestion>
-
-/** One entry of a running chat: a message or a tool line. */
-const InboxChatEntry = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('user'), text: z.string() }),
-  z.object({ type: z.literal('assistant'), agent: InboxAgent, name: z.string(), text: z.string() }),
-  z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), state: z.enum(['running', 'done']) }),
-])
-export type InboxChatEntry = z.infer<typeof InboxChatEntry>
-
-const InboxRunning = z.object({
-  kind: z.literal('running'),
-  /** The item's id, as in its row. */
-  id: InboxItemId,
-  title: z.string(),
-  agent: InboxAgent,
-  /**
-   * The header's meta: the task's place ("ncc-1701 · f-005 · NCC-28"), when
-   * it started ("started 3 min ago in") and the chat ("quiet-nebula ·
-   * the-bridge · Sonnet 5.5"). The desktop puts them on one line; the
-   * tablet shows the place, then the chat with its agent mark.
-   */
-  meta: z.object({ task: z.string(), started: z.string(), chat: z.string() }),
-  status: InboxPill,
-  chat: z.array(InboxChatEntry),
-  reply: z.string(),
-  model: z.string(),
-})
-export type InboxRunning = z.infer<typeof InboxRunning>
 
 /** One line of a proposed change: taken out or put in. */
 const InboxDiffLine = z.object({ change: z.enum(['removed', 'added']), text: z.string() })
@@ -393,6 +404,8 @@ export const InboxUi = z.object({
   promptOpen: z.boolean(),
   /** The discussion panel is open beside the task; the list hides. */
   discussOpen: z.boolean(),
+  /** The started task's chat is open in place of the task: Reply here on its run card opens it, Back closes it. */
+  chatOpen: z.boolean(),
   /** The dialog that confirms a proposed removal is open. */
   removeOpen: z.boolean(),
   /** The Sort menu's choice. */

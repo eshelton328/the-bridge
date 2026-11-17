@@ -1,0 +1,28 @@
+{
+  "missing": [
+    {
+      "text": "SNOOZED",
+      "reason": "Figma draws the SNOOZED group header under the tab bar too: layer 346:12291 sits at y 790, and the tab bar starts at y 767, so frame.png shows none of it. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "text": "RUNNING",
+      "reason": "Figma draws the RUNNING group header under the tab bar too: layer 346:12297 sits at y 826, and the tab bar starts at y 767, so frame.png shows none of it. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "text": "1",
+      "reason": "The counts of SNOOZED (346:12292, y 790) and RUNNING (346:12298, y 826) lie under the tab bar, which starts at y 767, in Figma and in the render. The other \"1\" layers (the Running chip's count) are no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions); the render shows them (sideBySide)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The list scrolls under the tab bar on the phone: Figma's `inbox list` (346:12126) is 919 high and runs past the tab bar at y 767, so its last rows sit under the bar. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row runs past the list too and scrolls sideways on the phone: `chip · Done` starts at x 363, beyond the list's end at 378, under `fade · R`. The render clips the same row; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

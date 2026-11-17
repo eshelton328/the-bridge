@@ -58,3 +58,10 @@ status bar.
   reply box on the phone, so the box sits 6 px higher than Figma's and
   3 px taller (`346:10886` y -6, h +3). It is not focused: Figma draws a
   caret and a lighter border (library gap: Composer focus).
+- **Workspaces.** The nav's Workspaces button (`button · Open in
+  Workspaces`) is disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

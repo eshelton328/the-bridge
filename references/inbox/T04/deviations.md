@@ -82,3 +82,12 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 
 `section · SOURCES` failed only by moving up: the MY NOTES card is 4 px
 shorter, and the status bar's -29 no longer cancels the layout's +26.
+
+## Disabled controls
+
+- **Open in Workspaces.** Disabled: the Workspaces page is not built and
+  no Inbox frame draws where the button goes, so it waits for a design
+  (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
+  title "Workspaces is not built yet", keeps the focus and does nothing on
+  a press (`InboxRoute.test.tsx`); `Button`'s disabled style fades it,
+  where Figma draws it enabled.

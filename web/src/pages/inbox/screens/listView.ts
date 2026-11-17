@@ -131,11 +131,13 @@ const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
  * The groups the selected chip shows. Done shows only the Done list (All
  * means every open task, not Done; D7 and T7 notes), with the items Erik
  * finished from the task bar in Today, which it adds when the state has
- * none. The other chips show the state's groups.
+ * none. A state with no Done days shows its search's Done list (Show it,
+ * D10). The other chips show the state's groups.
  */
 function chipView(data: InboxData, groups: readonly InboxGroupView[], ui: InboxUi): readonly InboxGroupView[] {
   if (ui.filter !== 'done') return groups
-  const days = groups.filter((group) => doneDays.includes(group.id))
+  const own = groups.filter((group) => doneDays.includes(group.id))
+  const days = own.length === 0 ? (data.search?.done ?? []) : own
   const rows = finishedRows(data.groups, ui.finished)
   if (rows.length === 0 || days.some((group) => group.id === 'today')) return days
   return [{ id: 'today', label: 'Today', count: rows.length, dot: null, rows }, ...days]

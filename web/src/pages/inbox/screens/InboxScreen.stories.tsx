@@ -81,6 +81,8 @@ export const Running: Story = {
     await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
     await expect(canvas.getByText('Wait for increment two.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Open in Workspaces' })).toBeVisible()
+    // The Workspaces page is not built, so Open in Workspaces is disabled and says why.
+    await expect(canvas.getByRole('button', { name: 'Open in Workspaces' })).toHaveAttribute('aria-disabled', 'true')
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }

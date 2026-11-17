@@ -1,6 +1,7 @@
 // The whole prompt, read-only: in a dialog over the inbox on the desktop
-// (D8), in a sheet from the bottom on a tablet or phone (T8). Done closes
-// it, Edit prompt opens the editor and Copy copies the text. Props only.
+// (D8), in a sheet from the bottom on a tablet or phone (T8, M9). Done
+// closes it, Edit prompt closes it and opens the editor (a prompt that can
+// be edited only) and Copy copies the text. Props only.
 import {
   BottomSheet,
   BottomSheetClose,
@@ -22,6 +23,8 @@ const sheetHint = css({ textStyle: 'small', color: 'fg.subtle', py: '10' })
 // T8 346:7176 and 346:7179: the title and the text share one left edge. BottomSheet pads its header 4 more than its
 // content, so the content takes those 4 too.
 const sheetBody = css({ px: '4' })
+// The sheet's text is an unnamed layer: 346:7179 in T8, 346:10794 in M9.
+const sheetText = { tablet: '346:7179', phone: '346:10794' } as const
 
 export type PromptDialogProps = {
   title: string
@@ -31,16 +34,26 @@ export type PromptDialogProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   /** The screen's layout: a dialog on the desktop, a sheet on a tablet or phone. */
   layout?: Viewport | undefined
+  /** Edit prompt; without it (a sent prompt) the dialog has only Copy. */
+  onEdit?: (() => void) | undefined
 }
 
-function Actions() {
+function Actions({ prompt, onEdit, figma }: { prompt: string; onEdit: (() => void) | undefined; figma: boolean }) {
   return (
     <>
-      <Button size="xl" data-figma="button · Edit prompt">
-        <EditIcon />
-        Edit prompt
-      </Button>
-      <Button size="xl" data-figma="button · Copy">
+      {onEdit === undefined ? null : (
+        <Button size="xl" data-figma={figma ? 'button · Edit prompt' : undefined} onClick={onEdit}>
+          <EditIcon />
+          Edit prompt
+        </Button>
+      )}
+      <Button
+        size="xl"
+        data-figma={figma ? 'button · Copy' : undefined}
+        onClick={() => {
+          void navigator.clipboard.writeText(prompt)
+        }}
+      >
         <CopyIcon />
         Copy
       </Button>
@@ -48,7 +61,14 @@ function Actions() {
   )
 }
 
-export function PromptDialog({ title, text: prompt, open, onOpenChange, layout = 'desktop' }: PromptDialogProps) {
+export function PromptDialog({
+  title,
+  text: prompt,
+  open,
+  onOpenChange,
+  layout = 'desktop',
+  onEdit,
+}: PromptDialogProps) {
   if (layout !== 'desktop')
     return (
       <BottomSheet
@@ -62,13 +82,13 @@ export function PromptDialog({ title, text: prompt, open, onOpenChange, layout =
         }
       >
         <Stack gap="4" className={sheetBody}>
-          <p className={text} data-figma="346:7179">
+          <p className={text} data-figma={sheetText[layout]}>
             {prompt}
           </p>
           <span className={sheetHint}>Read only. Edit opens the prompt for changes.</span>
           <div data-figma="sheet actions">
             <Grid columns="2" gap="10">
-              <Actions />
+              <Actions prompt={prompt} onEdit={onEdit} figma />
             </Grid>
           </div>
         </Stack>
@@ -92,14 +112,7 @@ export function PromptDialog({ title, text: prompt, open, onOpenChange, layout =
       </p>
       <span className={hint}>Read only. Edit opens the prompt for changes.</span>
       <Grid columns="2" gap="10">
-        <Button size="xl">
-          <EditIcon />
-          Edit prompt
-        </Button>
-        <Button size="xl">
-          <CopyIcon />
-          Copy
-        </Button>
+        <Actions prompt={prompt} onEdit={onEdit} figma={false} />
       </Grid>
     </Dialog>
   )

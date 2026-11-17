@@ -1,0 +1,20 @@
+{
+  "missing": [
+    {
+      "text": "hidden count",
+      "reason": "get_metadata gives the layer name of text 359:252 as its characters; T15's frame.png shows the same line, \"1 task hidden by filters\", which M16 draws under the tab bar."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The list scrolls under the tab bar on the phone: Figma's `inbox list` (359:28) is 758 high and runs past the tab bar at y 767, so its last rows sit under the bar. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row runs past the list too and scrolls sideways on the phone: `chip · Done` starts at x 363, beyond the list's end at 378, under `fade · R`. The render clips the same row; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

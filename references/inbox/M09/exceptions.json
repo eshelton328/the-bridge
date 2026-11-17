@@ -1,0 +1,50 @@
+{
+  "missing": [
+    {
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "reason": "Figma cuts the prompt on the page: the text layer 346:10737 is 210 high inside its 128 px prompt box, under a fade, and the sheet covers the rest. The render's Clamp cuts it after five lines. The same text in the sheet (346:10794) is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions); the sheet shows it in full in the render (sideBySide)."
+    }
+  ],
+  "extra": [
+    {
+      "text": "MY NOTES",
+      "reason": "M2's My notes (346:9322) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Add a note for yourself…",
+      "reason": "M2's notes field (346:9324) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Home",
+      "reason": "M2's tab bar (346:9345) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "4",
+      "reason": "M2's tab bar (346:9345), the Inbox tab's badge sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Workspaces",
+      "reason": "M2's tab bar (346:9345) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Projects",
+      "reason": "M2's tab bar (346:9345) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "More",
+      "reason": "M2's tab bar (346:9345) sits under the prompt sheet: M9 is M2's task page with the sheet over it, and the sheet (346:10787) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The task page scrolls on the phone, as in M2 (the note there: the page scrolls to My notes); the sheet covers the rest of it."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "reason": "The cut prompt Figma draws on the page (346:10737 is 210 high in its 128 px box); see the prompt's missing entry."
+    }
+  ]
+}

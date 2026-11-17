@@ -83,6 +83,23 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 
+  it('returns from the chat that Reply here opens to the task, with View task or the task row, on the desktop', async () => {
+    await page.viewport(1512, 982)
+    const view = await renderInbox('runningTask').rendered
+    const reply = () => page.getByRole('textbox', { name: 'Reply' })
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(reply()).toBeVisible()
+    await page.getByRole('button', { name: 'View task' }).click()
+    await expect.element(reply()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(reply()).toBeVisible()
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(reply()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await view.unmount()
+  })
+
   it("shows the state's query in the search field after the state changes", async () => {
     const { router, rendered } = renderInbox('nextStep')
     const view = await rendered
@@ -223,6 +240,15 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('1 result for “commit” in titles, IDs, prompts and notes')).toBeVisible()
     await expect.element(page.getByText('Commit the brain: 34 changes')).toBeVisible()
     await expect.element(page.getByText('Pick the header logo')).not.toBeInTheDocument()
+  })
+
+  it("selects the Done chip with the search hint's Show it, which lists the match in Done", async () => {
+    await tablet('searchList')
+    await page.getByRole('link', { name: 'Show it' }).click()
+    await expect.element(page.getByRole('radio', { name: /^Done/ })).toBeChecked()
+    await expect.element(page.getByText('Save the Inbox frames as references')).toBeVisible()
+    await expect.element(page.getByText('1 result for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
+    await expect.element(page.getByText('Done has 1 more match.')).not.toBeInTheDocument()
   })
 
   it('applies the Filter menu when it closes, and Clear under the tools removes the filter', async () => {
@@ -665,6 +691,125 @@ describe('the Inbox on the phone', () => {
     await expect.element(sheet('Filter')).not.toBeInTheDocument()
     await expect.element(readme()).not.toBeInTheDocument()
     await expect.element(page.getByText('1 task hidden by filters')).toBeVisible()
+  })
+
+  it('closes the prompt sheet with Edit prompt and puts the focus in the editor', async () => {
+    await phone('promptSheet')
+    await dialog().getByRole('button', { name: 'Edit prompt' }).click()
+    await expect.element(dialog()).not.toBeInTheDocument()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
+  })
+
+  it('copies the whole prompt with Copy', async () => {
+    const copied: string[] = []
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = (text) => {
+      copied.push(text)
+      return Promise.resolve()
+    }
+    try {
+      await phone('promptSheet')
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      expect(copied).toHaveLength(1)
+      expect(copied[0]).toMatch(/^Read f-005-the-bridge\/increment-1\.md .* with the reason\.$/)
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
+  it('offers no Edit prompt for a sent prompt', async () => {
+    await phone('runningTaskPage')
+    await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+    await expect.element(dialog().getByRole('button', { name: 'Copy' })).toBeVisible()
+    expect(dialog().getByRole('button', { name: 'Edit prompt' }).elements()).toHaveLength(0)
+  })
+
+  it('opens the chat with Reply here, and Back shows the list, whose row opens the task again', async () => {
+    await phone('runningTaskPage')
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(title()).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+  })
+
+  it('opens the task page, not the chat, from the row under Running', async () => {
+    await phone('runningList')
+    await page.getByRole('button', { name: /^Write the tickets for increment one/ }).click()
+    await expect.element(title()).toBeVisible()
+    await expect.element(page.getByRole('heading', { level: 2, name: 'Sent prompt' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await expect.element(page.getByRole('textbox', { name: 'Reply' })).not.toBeInTheDocument()
+  })
+
+  it('keeps Open in Workspaces disabled, with the reason, until the Workspaces page exists', async () => {
+    await phone('runningTaskPage')
+    const open = page.getByRole('button', { name: 'Open in Workspaces' })
+    await expect.element(open).toHaveAttribute('aria-disabled', 'true')
+    await expect.element(open).toHaveAccessibleDescription('Workspaces is not built yet')
+    await open.click({ force: true })
+    await expect.element(title()).toBeVisible()
+    await page.getByRole('button', { name: 'Reply here' }).click()
+    const nav = page.getByRole('button', { name: 'Workspaces', exact: true }).first()
+    await expect.element(nav).toHaveAttribute('aria-disabled', 'true')
+    await expect.element(nav).toHaveAccessibleDescription('Workspaces is not built yet')
+  })
+
+  it('opens the Sort sheet with the focus on the sheet, not on Done', async () => {
+    await phone('list')
+    await page.getByRole('button', { name: 'Sort', exact: true }).click()
+    await expect.element(sheet('Sort')).toHaveFocus()
+    await expect.element(sheet('Sort').getByRole('button', { name: 'Done' })).not.toHaveFocus()
+  })
+
+  it('sorts in the Sort sheet, names the sort under the tools, and Reset brings back Newest first', async () => {
+    await phone('list')
+    const sort = () => page.getByRole('button', { name: 'Sort', exact: true })
+    await sort().click()
+    await sheet('Sort').getByText('Project', { exact: true }).click()
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by project')).toBeVisible()
+    await expect.element(sort()).toHaveAttribute('aria-pressed', 'true')
+    await page.getByRole('link', { name: 'Reset' }).click()
+    await expect.element(page.getByText('Sorted by project')).not.toBeInTheDocument()
+    await expect.element(sort()).not.toHaveAttribute('aria-pressed')
+  })
+
+  it('picks a sort in the Sort sheet from the keyboard', async () => {
+    await phone('list')
+    page.getByRole('button', { name: 'Sort', exact: true }).element().focus()
+    await userEvent.keyboard('{Enter}')
+    const kind = sheet('Sort').getByRole('radio', { name: /Kind/ })
+    await expect.element(kind).toBeVisible()
+    kind.element().focus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by kind')).toBeVisible()
+  })
+
+  it('moves the sort with an arrow key in the Sort sheet, and Done keeps it', async () => {
+    await phone('list')
+    await page.getByRole('button', { name: 'Sort', exact: true }).click()
+    sheet('Sort')
+      .getByRole('radio', { name: /Newest first/ })
+      .element()
+      .focus()
+    await userEvent.keyboard('{ArrowDown}')
+    await sheet('Sort').getByRole('button', { name: 'Done' }).click()
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by oldest first')).toBeVisible()
+  })
+
+  it('scrolls the selected Done chip into view', async () => {
+    await phone('doneList')
+    const chip = page.getByRole('radio', { name: 'Done 4' }).element()
+    const chips = page.getByRole('radiogroup', { name: 'Filter the inbox' }).element()
+    await expect.poll(() => box(chip).right).toBeLessThanOrEqual(box(chips).right)
+    expect(box(chip).left).toBeGreaterThanOrEqual(box(chips).left)
   })
 
   it('keeps the reply Erik types in the chat', async () => {
