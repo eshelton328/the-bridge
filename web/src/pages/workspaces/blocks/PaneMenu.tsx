@@ -28,6 +28,10 @@ import type { PaneAction, Workspace } from '../types.ts'
 // A menu row draws its icon in fg.muted; Figma draws the Subagents icon in the accent colour (D2b 402:5553).
 const accentIcon = css({ display: 'inline-flex', '& svg': { color: 'fg.accent' } })
 
+// Every Button variant draws the expanded border (border.active) while its menu is open; Figma draws the pane
+// header's ⋯ bare (D1 105:204), so the trigger keeps its border transparent (LIBRARY_GAPS.md: Bare menu trigger).
+const bareTrigger = css({ _expanded: { borderColor: 'transparent' } })
+
 const icons: Record<PaneAction['value'], ReactNode> = {
   newChat: <PlusIcon size="16" />,
   fork: <BranchIcon size="16" />,
@@ -115,7 +119,7 @@ export function PaneMenu(props: PaneMenuProps) {
       onHighlightChange={props.onHighlightChange}
       trigger={
         props.trigger ?? (
-          <Button variant="text" size="xs" iconOnly aria-label={`${title} actions`}>
+          <Button variant="text" size="xs" iconOnly aria-label={`${title} actions`} className={bareTrigger}>
             <MoreIcon size="16" />
           </Button>
         )
