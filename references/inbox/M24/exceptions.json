@@ -1,0 +1,19 @@
+{
+  "missing": [
+    {
+      "text": "9%",
+      "reason": "Layer 454:309 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 9%, as in T17 to T23."
+    },
+    {
+      "text": "Write the tickets for increment one",
+      "reason": "Figma cuts the task card's title on the phone: layer 402:7780 is one line, 230 wide, and frame.png ends it at \"increment o…\". The render keeps it on one line and cuts it with an ellipsis (TruncatedText). The proposal's struck-through title (the second layer with this text) shows in full; the check counts one visible occurrence for the two layers."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.panel__body > div.stack > div.inline:nth-of-type(1) > h1 > span.truncated-text",
+      "reason": "The task card's title cut on one line, as Figma cuts 402:7780; see its missing entry."
+    }
+  ]
+}
