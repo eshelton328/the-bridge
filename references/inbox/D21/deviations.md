@@ -71,8 +71,8 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109); no layer of
   this frame moved. `RunCard` sets its primary button, here Open chat,
   in `textSize="smStrong"` (SemiBold 13), as T4 sets Reply here in Figma
-  (346:6297); Restore keeps the default `label` (Medium 14), since its
-  type (403:4282, a 17 px text box) was not read from Figma.
+  (346:6297). Restore is `textSize="sm"` (Medium 13), the type read
+  from Figma (403:4282, d-106); no layer of this frame moved.
 
 ## Second review
 

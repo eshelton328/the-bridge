@@ -104,4 +104,5 @@ For D05 it also found:
   nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
   disabled secondary `Button` no longer fades: it keeps its fill and
   border and only its label and icon turn `fg.muted`, where Figma draws
-  it enabled.
+  it enabled. Its label is `textSize="xs"` (Medium 12), the type read
+  from Figma (346:2239, d-106); no layer of this frame moved.
