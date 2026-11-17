@@ -6,7 +6,9 @@ the installed library 1.0.0-beta.10), each with its reason. The library
 gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/toolkitMapTablet.ts`, T2's: M11 shows the
 same items, rows, links and headings, with writer selected. D01, T01,
-M01, M04, D02 and T02 give the same results as before M11.
+M01, M04, D02 and T02 give the same results as before M11. The numbers
+below are from the run with library 1.0.0-beta.15 and the prop that
+library #115 added for the view buttons, `Button pressedTone="accent"`.
 
 The map is the library's `MapGraph` with T2's 140 × 30 nodes, in a
 366 × 500 window (`map viewport`) that scrolls sideways. The hint is a
@@ -78,9 +80,9 @@ library's SVG, so they carry no `data-figma`.
   other (project-setup to agents-md) and 65.7 for six rows (gap: Map link
   bow).
 - **View buttons.** List, Map and Activity are the library's secondary
-  icon buttons with 16 px icons; Figma's selected Map button has a cyan
-  icon, where the pressed button keeps it white (gap: Phone view
-  buttons). Their boxes pass.
+  icon buttons. The pressed Map button has `pressedTone="accent"`, so
+  its icon is cyan as in Figma. The icons are 16 px against Figma's 17
+  (gap: Phone view buttons). Their boxes pass.
 - **Toolkit box.** Figma's `toolkit` layer (461:709) is the page's
   content box, 366 wide from x 12. The render's `toolkit` is the page
   with its 12 px sides, 390 wide from x 0 (`toolkit` x -12, w +24), as

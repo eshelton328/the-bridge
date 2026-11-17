@@ -3,7 +3,9 @@
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity toolkit D02`, 2026-11-17, against the installed library
 1.0.0-beta.10), each with its reason. The library gaps are in
-`web/src/pages/toolkit/LIBRARY_GAPS.md`.
+`web/src/pages/toolkit/LIBRARY_GAPS.md`. The numbers below are from
+the run with library 1.0.0-beta.15 and the props that library #115 added:
+`ViewSwitch tone="accent"` and `FilterChips padding="none"`.
 
 The map is the library's `MapGraph` with `MapLegend` and
 `MapSelectionCard`; the screen places each item by its column and row
@@ -15,27 +17,32 @@ check measures only the canvas, the legend and the card.
 
 - Text: pass. Every string of the map, the legend and the card is on
   screen.
-- Position: 7 of 11 layers pass (`toolkit`, `header`, `read-only`,
-  `list tools`, `counts legend`, `map canvas`, `legend`).
+- Position: 8 of 11 layers pass (`toolkit`, `header`, `read-only`,
+  `view · List, Map or Activity`, `list tools`, `counts legend`,
+  `map canvas`, `legend`).
 - Rules: pass.
 
 ## Deviations
 
-- **View switch.** List, Map and Activity are 244.5 px wide and 36 high
-  against Figma's 239 and 38, with 12 px icons against 15
-  (`view · List, Map or Activity` x -5.5, w +5.5 with library beta.15;
-  gap: View switch 38 px). The Read-only badge before it now passes. The selected item (Map) has a cyan outline and
-  a white label, where Figma draws the fill alone with a cyan label.
-- **Kind chips.** The chip row is 569.8 px wide against Figma's 580 and
-  36 high against 34 (`filter · chips` w -10.2 with library beta.15): `FilterChips` pads the
-  row 2 px and its labels are a little wider (gap: Kind chip row).
+- **View switch.** List, Map and Activity pass the position check, and
+  with `tone="accent"` the selected item (Map) has the selected fill with
+  no border and a cyan label and icon, as in Figma. The switch is still
+  36 px high against Figma's 38, with a 2 px inset against 4 and 16 px
+  icons against 15: no control token has 38 (gap: View switch 38 px).
+- **Kind chips.** The chip row is 565.8 px wide against Figma's 580 and
+  32 high against 34 (`filter · chips` w -14.2). With `padding="none"`
+  the row has no inset, as in Figma. The `md` chips are 32 px high with
+  10 px sides, where Figma's desktop chips are 34 high and each about
+  2 px wider. No control token has 34 (gap: Kind chip row). The search
+  under the row starts 4 px higher (within the tolerance).
 - **Search width.** The search is 692 px wide against Figma's 566
   (`search` w +126). No size token has 566, so the list view gives the
   search and Sort half the row; the map has no Sort, and the search
   takes all of that half (gap: Toolkit search width).
 - **Selection card.** The writer card is 320 px wide against Figma's
-  300, so its left edge is 21 px further left (`selection · writer`
-  x -21, w +20), and it ends 4 px higher (within the tolerance). Its
+  300, so its left edge is 21 px further left, and it starts 8 px higher
+  (`selection · writer` x -21, y -8, w +20). It is 172 px high against
+  169 and ends 5 px higher than Figma's. Its
   close button is a small bordered button where Figma draws a bare x,
   and the counts line has three spaces between `→ links to 7` and
   `← linked from 4` where Figma has five (gap: Map selection card).

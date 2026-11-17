@@ -6,7 +6,9 @@ library 1.0.0-beta.10), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/ruleOpen.ts`: T1's list with the Workflows
 and Hooks groups added, and the rule skills open beside it. D03 gives the
-same results as before D04.
+same results as before D04. The numbers below are from the run with
+library 1.0.0-beta.15 and `FilterChips padding="none"`, which library
+#115 added.
 
 ## Checks
 
@@ -33,18 +35,18 @@ same results as before D04.
   its header with the Skills group first, as in D3: no page builds its
   own sticky layout until the library's `ScrollFrame` arrives with the
   move to 1.0.0-beta.15 in bridge-inbox's PR (d-107). So the Rules,
-  Workflows and Hooks groups sit about 1236 px lower than Figma's and
+  Workflows and Hooks groups sit about 1232 px lower than Figma's and
   below the frame's bottom edge, and the Skills and Agents rows fill the
   pane in their place. With the taller rows (see Row height) each key is
-  off by more: `group · RULES` y +1236;
-  `toolkit row · commits-and-prs` y +1239 h +9;
-  `toolkit row · diagrams` y +1248 h +9; `toolkit row · linear` y +1257
-  h +9; `toolkit row · readmes` y +1266 h +9; `toolkit row · releases`
-  y +1275 h +9; `toolkit row · skills` y +1284 h +7;
-  `toolkit row · ste100` y +1291 h +9; `toolkit row · writing` y +1300
-  h +9; `group · WORKFLOWS` y +1309; `toolkit row · skill-eval-cases`
-  y +1312 h +9; `toolkit row · skill-eval-round` y +1321 h +9;
-  `group · HOOKS` y +1330; `toolkit row · commit-msg` y +1333 h +9.
+  off by more: `group · RULES` y +1232;
+  `toolkit row · commits-and-prs` y +1235 h +9;
+  `toolkit row · diagrams` y +1244 h +9; `toolkit row · linear` y +1253
+  h +9; `toolkit row · readmes` y +1262 h +9; `toolkit row · releases`
+  y +1271 h +9; `toolkit row · skills` y +1280 h +7;
+  `toolkit row · ste100` y +1287 h +9; `toolkit row · writing` y +1296
+  h +9; `group · WORKFLOWS` y +1305; `toolkit row · skill-eval-cases`
+  y +1308 h +9; `toolkit row · skill-eval-round` y +1317 h +9;
+  `group · HOOKS` y +1326; `toolkit row · commit-msg` y +1329 h +9.
 - **Row height.** Each list row is 62 px high against Figma's 53 (the
   open row is 62 against 55), and its counts sit level with the name,
   where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:

@@ -6,7 +6,9 @@ against the installed library 1.0.0-beta.10), each with its reason. The
 library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/skillOpen.ts`: the list has T1's data
 (writing-reviewer at →3 ←4, as in 427:249), with writer open beside it.
-The other seven frames give the same results as before D03.
+The other seven frames give the same results as before D03. The
+numbers below are from the run with library 1.0.0-beta.15 and
+`FilterChips padding="none"`, which library #115 added.
 
 ## Checks
 
@@ -32,17 +34,17 @@ The other seven frames give the same results as before D03.
 - **Row height.** Each list row is 62 px high against Figma's 53
   (`h +9` on every row key), and its counts sit level with the name,
   where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). The first row starts 7 px lower and each row
-  after it 9 px lower again: `toolkit row · agents-md` y +7;
-  `toolkit row · ambitious` y +16; `toolkit row · audit-slop` y +25;
-  `toolkit row · eval-cases` y +34; `toolkit row · mermaid-diagrams`
-  y +43; `toolkit row · pr-description` y +52;
-  `toolkit row · project-setup` y +61; `toolkit row · readme` y +70;
-  `group · AGENTS` y +86; `toolkit row · diagram-reviewer` y +89;
-  `toolkit row · eval-case-writer` y +98; `toolkit row · eval-grader`
-  y +107; `toolkit row · pr-description-checker` y +116;
-  `toolkit row · readme-cold-reader` y +125;
-  `toolkit row · writing-reviewer` y +143. The selected writer row and
+  Toolkit row (pane)). The first row starts 3 px lower (within the
+  tolerance) and each row after it 9 px lower again:
+  `toolkit row · ambitious` y +12; `toolkit row · audit-slop` y +21;
+  `toolkit row · eval-cases` y +30; `toolkit row · mermaid-diagrams`
+  y +39; `toolkit row · pr-description` y +48;
+  `toolkit row · project-setup` y +57; `toolkit row · readme` y +66;
+  `group · AGENTS` y +82; `toolkit row · diagram-reviewer` y +85;
+  `toolkit row · eval-case-writer` y +94; `toolkit row · eval-grader`
+  y +103; `toolkit row · pr-description-checker` y +112;
+  `toolkit row · readme-cold-reader` y +121;
+  `toolkit row · writing-reviewer` y +139. The selected writer row and
   the skill writer have no `data-figma`: the agent writer shares the
   layer name `toolkit row · writer`.
 - **Overview columns.** The preview is 554.4 px wide against Figma's 560
@@ -89,5 +91,3 @@ The other seven frames give the same results as before D03.
   overview columns).
 - **Skill evals chevron.** It sits level with the title, about 10 px
   above the box's centre (gap: Toolkit row (pane)).
-- **Search and list 4 px lower.** The kind chip row is 36 px high
-  against 32 (gap: Kind chip row).

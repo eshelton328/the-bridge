@@ -5,7 +5,10 @@ What still differs from Figma after round 3 of the fidelity loop
 1.0.0-beta.10), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/toolkitMapTablet.ts`: D2's map, with the
-first heading "Rules, hooks" and no "every session" on writing.
+first heading "Rules, hooks" and no "every session" on writing. The
+numbers below are from the run with library 1.0.0-beta.15 and the props
+that library #115 added: `ViewSwitch tone="accent"` and
+`FilterChips padding="none"`.
 
 The map is the library's `MapGraph` with 140 × 30 nodes and no legend,
 and the selected item is `MapSelectionCard` with no description. The
@@ -20,7 +23,9 @@ header, the chips, the canvas, the selection and the tab bar.
   where Figma shows it in full (see Node labels). Nine names that Figma
   also cuts with an ellipsis (428:421, 428:466, 428:487, 428:497,
   428:502, 428:507, 428:512, 428:523, 428:529) are in `exceptions.json`.
-- Position: 3 of 8 layers pass (`header`, `filter · chips`, `tab bar`).
+- Position: 6 of 8 layers pass (`header`, `read-only`,
+  `view · List, Map or Activity`, `filter · chips`, `map canvas`,
+  `tab bar`).
 - Rules: pass.
 
 ## Deviations
@@ -30,7 +35,7 @@ header, the chips, the canvas, the selection and the tab bar.
   writer and a bare x on one line. The render shows the library's card
   at the bottom right, 320 × 130: the title and a bordered close button,
   the counts under them, and a full-width Open writer button with a
-  chevron (`selection · writer` x +351, y -73, w -364, h +68; gap: Map
+  chevron (`selection · writer` x +351, y -77, w -364, h +68; gap: Map
   selection bar).
 - **Node labels.** The node's name has 96 px against Figma's 104, with a
   16 px kind icon against 13: `MapNode` pads 10 px and puts the name
@@ -43,18 +48,12 @@ header, the chips, the canvas, the selection and the tab bar.
   (`toolkit` x -22, y -12, w +44, h +12). The side is 24 px against
   Figma's 22: no space token has 22. For the same reason the map canvas
   is 708 px wide against 712 (within the tolerance).
-- **Map canvas.** The canvas starts 6 px lower (`map canvas` y +6): the
-  chip row above it is 36 px high against Figma's 32 (see Kind chips),
-  and the page's top is 2 px lower. Every node and line sits 6 px lower
-  with it.
-- **View switch.** List, Map and Activity are 232.5 px wide and 36 high
-  against Figma's 239 and 38, with 12 px icons against 15
-  (`view · List, Map or Activity` x -7.5, w +5.5 with library beta.15;
-  gap: View switch 38 px). The Read-only badge before it moves left
-  with it (`read-only` x -6.8). The selected item (Map) has a cyan outline and a
-  white label, where Figma draws the fill alone with a cyan label.
-- **Kind chips.** With library beta.15 the chip row passes the position
-  check; it is still 36 high against Figma's 32 (gap: Kind chip row).
+- **View switch.** List, Map and Activity and the Read-only badge
+  before them pass the position check, and with `tone="accent"` the
+  selected item (Map) has the selected fill with no border and a cyan
+  label and icon, as in Figma. The switch is still 36 px high against
+  Figma's 38, with a 2 px inset against 4 and 16 px icons against 15: no
+  control token has 38 (gap: View switch 38 px).
 - **Links in one column.** A link between two items of one column bows
   out 40 px for every length; Figma's tablet map bows 22.2 px for rows
   next to each other (project-setup to agents-md) and 65.7 for six rows,
