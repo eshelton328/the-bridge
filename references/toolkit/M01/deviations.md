@@ -72,3 +72,11 @@ D01 and T01 give the same results as before M01.
   no Hooks chip in the frame.
 - **Tab bar.** The shared `AppTabBar` (`device="phone"`, More selected,
   d-105). Its box passes the position check.
+
+## Second review
+
+- **Chips.** The kind chips are wider and further apart, so the Rules
+  chip ends about 16 px further right, and the Workflows chip is fully
+  off screen where Figma shows its left edge (gap: Kind chip row).
+- **Search.** The search field is about 34 px high against 39 (gap:
+  Phone search height).
