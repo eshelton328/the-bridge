@@ -37,7 +37,11 @@ jobs:
         with:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm codegen
+      # Type-aware ESLint over the whole workspace peaks near Node's default heap of about 2 GB, and ran out of
+      # it on 2026-11-17; 4 GB gives it room on the runner. Memory only: no rule or file changes.
       - run: pnpm lint
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
       - run: pnpm format:check
       - run: pnpm knip
 
