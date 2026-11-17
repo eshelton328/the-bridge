@@ -357,6 +357,21 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Write one ticket per screen.')).not.toBeInTheDocument()
   })
 
+  it('dims Reset while the prompt is the suggestion', async () => {
+    await tablet('taskPage')
+    await expect.element(page.getByRole('button', { name: 'Reset' })).toBeDisabled()
+  })
+
+  // Figma dims Reset after Apply as well (T19 402:11597, D16: the label in fg.muted, as T2's); Undo on the change
+  // line takes the discussion's change back, and Reset only Erik's own edits.
+  it('keeps Reset dim after a discussion changed the prompt, with Undo to take the change back', async () => {
+    await tablet('changeAppliedPage')
+    await expect.element(page.getByText('changed just now in a discussion')).toBeVisible()
+    await expect.element(page.getByRole('link', { name: 'Undo' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reset' })).toBeDisabled()
+    await expect.element(page.getByText('Edited')).not.toBeInTheDocument()
+  })
+
   it('ends the long suggestion that Reset brings back with Read the whole prompt', async () => {
     await tablet('promptEditingPage')
     await page.getByRole('button', { name: 'Reset' }).click()
@@ -372,5 +387,122 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(picker()).toBeVisible()
     await userEvent.keyboard('{Escape}')
     await expect.element(picker()).not.toBeInTheDocument()
+  })
+
+  it('keeps the created tasks when the desktop discussion opens again after Create', async () => {
+    await page.viewport(1512, 982)
+    view = await renderInbox('tasksProposed').rendered
+    await page.getByRole('button', { name: 'Create 3 tasks' }).click()
+    await page.getByRole('button', { name: 'Discuss' }).click()
+    const box = page.getByRole('checkbox', { name: 'Write the Workbench tickets' })
+    await expect.element(box).toBeChecked()
+    await expect.element(box).toBeDisabled()
+    await page.getByRole('button', { name: 'Close the discussion' }).click()
+    await expect.element(page.getByText('Created 3 tasks from a discussion')).toBeVisible()
+  })
+
+  describe('the discussion on the tablet', () => {
+    const tabBar = () => page.getByRole('button', { name: 'Home' })
+    const title = () => page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })
+
+    it('opens the discussion page with Discuss and returns to the task with Back', async () => {
+      await tablet('discussTask')
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await expect.element(page.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
+      await expect.element(tabBar()).not.toBeInTheDocument()
+      await page.getByRole('button', { name: 'Back to the task' }).click()
+      await expect.element(page.getByRole('heading', { name: 'Talk this task through' })).not.toBeInTheDocument()
+      await expect.element(page.getByRole('button', { name: 'Discuss' })).toBeVisible()
+      await expect.element(tabBar()).toBeVisible()
+    })
+
+    it('keeps an unsent reply after Back and Discuss', async () => {
+      await tablet('discussTask')
+      const reply = () => page.getByRole('textbox', { name: 'Ask about this task' })
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await reply().fill('Which frames are missing?')
+      await page.getByRole('button', { name: 'Back to the task' }).click()
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await expect.element(reply()).toHaveValue('Which frames are missing?')
+    })
+
+    it('applies a proposed update: the task shows the new prompt, and Undo takes it back', async () => {
+      await tablet('changeProposedPage')
+      await page.getByRole('button', { name: 'Apply' }).click()
+      await expect.element(page.getByText(/Changed in a discussion · just now/)).toBeVisible()
+      await expect.element(page.getByText('changed just now in a discussion')).toBeVisible()
+      await page.getByRole('link', { name: 'Undo' }).click()
+      await expect.element(page.getByText(/Changed in a discussion · just now/)).not.toBeInTheDocument()
+      await expect.element(page.getByText('suggested 2h ago by the planning run')).toBeVisible()
+    })
+
+    it('shows the proposed prompt after Apply over an edited prompt, and Undo brings the edit back', async () => {
+      await tablet('changeProposedPage')
+      await page.getByRole('button', { name: 'Back to the task' }).click()
+      await page.getByRole('button', { name: 'Edit' }).click()
+      await page.getByRole('textbox', { name: 'Suggested prompt' }).fill('Write the tickets my way.')
+      await page.getByRole('button', { name: 'Done' }).click()
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await page.getByRole('button', { name: 'Apply' }).click()
+      await expect.element(page.getByText(/Before writing, check that each frame exists/)).toBeVisible()
+      await expect.element(page.getByText('Write the tickets my way.')).not.toBeInTheDocument()
+      await page.getByRole('link', { name: 'Undo' }).click()
+      await expect.element(page.getByText('Write the tickets my way.')).toBeVisible()
+      await expect.element(page.getByText('Edited')).toBeVisible()
+    })
+
+    it('discards a proposed update', async () => {
+      await tablet('changeProposedPage')
+      await page.getByRole('button', { name: 'Discard' }).click()
+      await expect.element(page.getByRole('group', { name: 'Proposed · Update this task' })).not.toBeInTheDocument()
+      await expect.element(page.getByRole('button', { name: 'Back to the task' })).toBeVisible()
+    })
+
+    it('opens the prompt editor with the change filled in from Edit first', async () => {
+      await tablet('changeProposedPage')
+      await page.getByRole('button', { name: 'Edit first' }).click()
+      await expect
+        .element(page.getByRole('textbox', { name: 'Suggested prompt' }))
+        .toHaveDisplayValue(/to its Figma frame from pages\.md.*Before writing, check that each frame exists/)
+      await expect.element(page.getByText('Edited')).toBeVisible()
+    })
+
+    it('creates the checked tasks, shows them in the list with a toast, and Undo takes them out', async () => {
+      await tablet('tasksProposedPage')
+      await page.getByText('Write the Inbox tickets').click()
+      await page.getByRole('button', { name: 'Create 2 tasks' }).click()
+      await expect.element(page.getByText('Created 2 tasks from a discussion')).toBeVisible()
+      await expect.element(page.getByText('Write the Workbench tickets')).toBeVisible()
+      await expect.element(page.getByText('Write the Inbox tickets')).not.toBeInTheDocument()
+      await expect.element(page.getByText('Write the tickets for increment one')).toBeVisible()
+      await page.getByRole('button', { name: 'Undo' }).click()
+      await expect.element(page.getByText('Write the Workbench tickets')).not.toBeInTheDocument()
+      await expect.element(page.getByText('Created 2 tasks from a discussion')).not.toBeInTheDocument()
+    })
+
+    it('removes this task too when Also remove this task is checked', async () => {
+      await tablet('tasksProposedPage')
+      await page.getByText('Also remove this task').click()
+      await page.getByRole('button', { name: 'Create 3 tasks' }).click()
+      await expect.element(page.getByText('Write the App frame tickets')).toBeVisible()
+      await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()
+    })
+
+    it('removes the task after Remove… and Remove task, and shows the list', async () => {
+      await tablet('removalProposedPage')
+      await page.getByRole('button', { name: 'Remove…' }).click()
+      await removeDialog().getByRole('button', { name: 'Remove task' }).click()
+      await expect.element(removeDialog()).not.toBeInTheDocument()
+      await expect.element(searchbox()).toBeVisible()
+      await expect.element(title()).not.toBeInTheDocument()
+      await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()
+    })
+
+    it('keeps the task with Keep it', async () => {
+      await tablet('removalProposedPage')
+      await page.getByRole('button', { name: 'Keep it' }).click()
+      await expect.element(page.getByRole('group', { name: 'Proposed · Remove this task' })).not.toBeInTheDocument()
+      await expect.element(page.getByRole('button', { name: 'Back to the task' })).toBeVisible()
+    })
   })
 })

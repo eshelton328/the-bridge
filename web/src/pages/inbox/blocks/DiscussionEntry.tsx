@@ -3,7 +3,7 @@
 import { BubbleIcon, CheckIcon, Inline, Message, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDiscussionEntry } from '../types.ts'
-import { ProposalCard } from './ProposalCard.tsx'
+import { ProposalCard, type ProposalControl } from './ProposalCard.tsx'
 
 const event = css({ textStyle: 'monoSm', color: 'fg.muted', alignSelf: 'flex-start' })
 const name = css({ display: 'inline-flex', alignItems: 'center', gap: '6', textStyle: 'label', color: 'fg.default' })
@@ -13,10 +13,11 @@ const check = css({ display: 'inline-flex', color: 'status.done.fg' })
 
 export type DiscussionEntryProps = {
   entry: InboxDiscussionEntry
-  onRemove?: (() => void) | undefined
+  /** What Erik did to the proposals, and where his presses go. */
+  control?: ProposalControl | undefined
 }
 
-export function DiscussionEntry({ entry, onRemove }: DiscussionEntryProps) {
+export function DiscussionEntry({ entry, control }: DiscussionEntryProps) {
   switch (entry.type) {
     case 'event':
       return (
@@ -48,6 +49,6 @@ export function DiscussionEntry({ entry, onRemove }: DiscussionEntryProps) {
         </Stack>
       )
     case 'proposal':
-      return <ProposalCard proposal={entry.proposal} onRemove={onRemove} />
+      return <ProposalCard proposal={entry.proposal} control={control} />
   }
 }

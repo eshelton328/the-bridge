@@ -288,5 +288,8 @@ export const nextStep = {
     filters: noFilter,
     snoozed: [],
     finished: [],
+    proposals: {},
+    proposalChecks: {},
+    promptBeforeApply: null,
   },
 } satisfies ScreenState<InboxData, InboxUi>

@@ -4,7 +4,7 @@
 // editor; Reset brings back the suggested prompt. A sent prompt, or one removed before it ran, has no
 // buttons. A long prompt ends with "Read the whole prompt", which opens it
 // in a dialog; a prompt a discussion changed has a line with Undo beside
-// it. Props only.
+// it, which takes the change back. Props only.
 import {
   Badge,
   Button,
@@ -68,6 +68,8 @@ export type PromptSectionProps = {
   drafts?: InboxDrafts | undefined
   /** Edit opens the editor and Done closes it. */
   onEditingChange?: ((editing: boolean) => void) | undefined
+  /** Undo on the line under a prompt that a discussion changed. */
+  onUndoChange?: (() => void) | undefined
 }
 
 export function PromptSection({
@@ -78,6 +80,7 @@ export function PromptSection({
   layout,
   drafts,
   onEditingChange,
+  onUndoChange,
 }: PromptSectionProps) {
   // The prompt as Erik left it; it counts as edited while it differs from the suggestion, which Reset brings back.
   const suggested = prompt.suggested ?? { text: prompt.text, long: prompt.long }
@@ -150,7 +153,14 @@ export function PromptSection({
               <span className={change} data-figma="change history">
                 <UndoIcon size="12" />
                 {prompt.change.line}
-                <a className={undo} href="#undo">
+                <a
+                  className={undo}
+                  href="#undo"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    onUndoChange?.()
+                  }}
+                >
                   {prompt.change.undo}
                 </a>
               </span>

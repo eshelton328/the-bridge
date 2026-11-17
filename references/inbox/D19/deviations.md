@@ -48,7 +48,7 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   as Figma's (`event` passes).
 - **Proposed removal.** `ProposalBlock tone="remove"`: the struck-through
   title, the reason as `ProposalSection`, the note, Remove… as a
-  `secondaryDanger` button with a bin and Keep it. 13 px lower and 8 px
+  `dangerSoft` button with a bin (the danger tint and border, as Figma draws it) and Keep it. 13 px lower and 8 px
   taller, from the messages above and the library's spacing.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21 px

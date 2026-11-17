@@ -99,6 +99,8 @@ export type InboxListPaneProps = {
   onQueryChange?: ((query: string) => void) | undefined
   /** Reports what Erik changes in the list: the sort, the filters and their menus. */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
+  /** The toast's action, such as Undo, was pressed. */
+  onToastAction?: (() => void) | undefined
 }
 
 const plural = (n: number, word: string) => `${String(n)} ${word}${n === 1 ? '' : 's'}`
@@ -113,6 +115,7 @@ export function InboxListPane({
   query,
   onQueryChange,
   onUiChange,
+  onToastAction,
 }: InboxListPaneProps) {
   const desktop = layout === 'desktop'
   const q = query ?? data.search?.query ?? ''
@@ -244,7 +247,12 @@ export function InboxListPane({
           <Toast
             tone="discuss"
             icon={<CheckIcon size="12" />}
-            action={{ label: data.toast.action, onClick: () => undefined }}
+            action={{
+              label: data.toast.action,
+              onClick: () => {
+                onToastAction?.()
+              },
+            }}
           >
             {data.toast.text}
           </Toast>

@@ -3,13 +3,17 @@ import { board, type Board } from '../lib/board.ts'
 import { inboxPage } from '../pages/inbox/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'inbox/changeApplied' | 'inbox/changeProposed' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/removalProposed' | 'inbox/removeConfirm' | 'inbox/removed' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksProposed'
+export type BoardId = 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage'
 
 export const boards: readonly Board[] = [
   board(inboxPage, 'changeApplied'),
+  board(inboxPage, 'changeAppliedPage'),
   board(inboxPage, 'changeProposed'),
+  board(inboxPage, 'changeProposedPage'),
   board(inboxPage, 'chat'),
   board(inboxPage, 'discussOpen'),
+  board(inboxPage, 'discussTask'),
+  board(inboxPage, 'discussionPage'),
   board(inboxPage, 'done'),
   board(inboxPage, 'doneList'),
   board(inboxPage, 'filterList'),
@@ -24,8 +28,11 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'promptSheet'),
   board(inboxPage, 'question'),
   board(inboxPage, 'removalProposed'),
+  board(inboxPage, 'removalProposedPage'),
   board(inboxPage, 'removeConfirm'),
+  board(inboxPage, 'removeConfirmPage'),
   board(inboxPage, 'removed'),
+  board(inboxPage, 'removedList'),
   board(inboxPage, 'running'),
   board(inboxPage, 'runningList'),
   board(inboxPage, 'runningTask'),
@@ -40,5 +47,7 @@ export const boards: readonly Board[] = [
   board(inboxPage, 'sortedList'),
   board(inboxPage, 'taskPage'),
   board(inboxPage, 'tasksCreated'),
+  board(inboxPage, 'tasksCreatedList'),
   board(inboxPage, 'tasksProposed'),
+  board(inboxPage, 'tasksProposedPage'),
 ]

@@ -8,6 +8,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { BackToInbox } from '../blocks/BackToInbox.tsx'
+import type { DiscussControl } from '../blocks/DetailHead.tsx'
 import { type InboxDrafts, type InboxDetailView, type InboxUi } from '../types.ts'
 import { NextStepDetail } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
@@ -25,8 +26,10 @@ export type InboxDetailProps = {
   /** Back on a tablet or phone. */
   onBack?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
-  /** The task has a discussion: Discuss shows in its task bar, pressed while the discussion is open. */
-  discuss?: { open: boolean } | undefined
+  /** The task has a discussion: Discuss shows in its task bar; see `DetailHead`. */
+  discuss?: DiscussControl | undefined
+  /** Undo on the line under a prompt that a discussion changed. */
+  onUndoChange?: (() => void) | undefined
   /** Beside the item, such as the open discussion. */
   side?: ReactNode
   /** Keeps what Erik types in the item; see `InboxDrafts` in types.ts. */
@@ -46,6 +49,7 @@ export function InboxDetail({
   onBack,
   onPromptOpenChange,
   discuss,
+  onUndoChange,
   side,
   drafts,
   onUiChange,
@@ -71,6 +75,7 @@ export function InboxDetail({
           back={back}
           onPromptOpenChange={onPromptOpenChange}
           discuss={discuss}
+          onUndoChange={onUndoChange}
           drafts={drafts}
           snooze={snooze}
           onUiChange={onUiChange}

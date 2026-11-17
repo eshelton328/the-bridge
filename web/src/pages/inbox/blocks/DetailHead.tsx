@@ -4,7 +4,8 @@
 // item has one and reports a snooze time or Mark done; Dismiss in the task
 // bar reports itself. "Pick a date and time…" and "Dismiss with a
 // reason…" lead to steps Figma does not draw yet, so they only close the
-// menu. Discuss shows pressed while the discussion is open. Props
+// menu. Discuss opens and closes the discussion and shows pressed while
+// it is open. Props
 // only.
 import {
   BubbleIcon,
@@ -42,6 +43,9 @@ export type SnoozeControl = {
   onPick?: ((until: string | null) => void) | undefined
   onDismiss?: (() => void) | undefined
 }
+
+/** Discuss in the task bar: whether the discussion is open, and Discuss pressed to open or close it. */
+export type DiscussControl = { open: boolean; onOpenChange?: ((open: boolean) => void) | undefined }
 
 const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
 const title = css({ textStyle: 'title', m: '0' })
@@ -95,7 +99,7 @@ export type DetailHeadProps = {
   /** The Snooze menu; closed when not set. */
   snooze?: SnoozeControl | undefined
   /** The task has a discussion: the task bar shows Discuss, pressed while the discussion is open. */
-  discuss?: { open: boolean } | undefined
+  discuss?: DiscussControl | undefined
 }
 
 export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHeadProps) {
@@ -106,7 +110,12 @@ export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHe
         <span className={origin}>{head.origin}</span>
         {discuss === undefined ? null : (
           // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
-          <Button pressed={discuss.open}>
+          <Button
+            pressed={discuss.open}
+            onClick={() => {
+              discuss.onOpenChange?.(!discuss.open)
+            }}
+          >
             <BubbleIcon />
             Discuss
           </Button>
