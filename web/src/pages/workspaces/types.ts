@@ -137,6 +137,13 @@ export const SideChat = z.object({
   closeLabel: z.string(),
   entries: z.array(ChatEntry),
   composer: ComposerState,
+  /**
+   * The pane it belongs to, by id: with the split panes (D5 158:518) it opens inside that pane, over the chat's
+   * right side. Not set: it shows beside the chat shown alone (D2).
+   */
+  pane: z.string().optional(),
+  /** The label of the button that moves it into a pane of its own (D5 158:540); not set, no button. */
+  openAsPane: z.string().optional(),
 })
 export type SideChat = z.infer<typeof SideChat>
 
@@ -207,13 +214,29 @@ export const SidebarText = z.object({
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
+/** The Figma layers of a chat pane's composer and entries, for the fidelity checks. */
+const PaneChatLayers = z.object({
+  composer: z.string(),
+  /** The entries, in order; an entry with no layer has none. */
+  entries: z.array(z.string().optional()).optional(),
+})
 /**
- * The Figma layer ids of a sidebar frame's parts, for the fidelity checks (`data-figma`). Each frame has its own
- * ids; a block uses D2's for a part a state does not name.
+ * The Figma layer ids of a frame's parts, for the fidelity checks (`data-figma`). Each frame has its own ids; a
+ * block uses D1's (split panes) or D2's (sidebar) for a part a state does not name.
  */
 export const SidebarLayers = z.object({
   sidebar: z.string().optional(),
+  /** The sidebar toggle: Hide in the sidebar, Show in the tab bar. */
   toggle: z.string().optional(),
+  /** New chat in the tab bar (D1 150:2). */
+  newChat: z.string().optional(),
+  /** The split panes, by their place, clockwise from the top left (D1 105:177). */
+  panes: z.array(z.string()).optional(),
+  /** The chat panes of the split, in order. */
+  paneChats: z.array(PaneChatLayers).optional(),
+  /** The shell pane's terminal (D1 105:337) and the empty pane's list (D1 105:368). */
+  shell: z.string().optional(),
+  emptyList: z.string().optional(),
   newWorkspace: z.string().optional(),
   /** The group headers, by workspace id. */
   headers: z.record(z.string(), z.string()).optional(),
@@ -340,7 +363,7 @@ export const WorkspacesUi = z.object({
   hovered: z.string().nullable().optional(),
   /** A chat Erik drags onto another workspace. */
   drag: z.object({ chat: z.string(), over: z.string() }).nullable().optional(),
-  /** The side chat shows beside the main chat. */
+  /** The side chat shows beside the main chat, or inside its pane of the split (D5). */
   sideChatOpen: z.boolean().optional(),
   /** The subagents panel shows beside the main chat, in place of the side chat (D3). */
   subagentsOpen: z.boolean().optional(),

@@ -17,7 +17,9 @@ first: it says what each file of a page folder is for.
   420 wide, and `ui.newChatOpen` opens the New chat form over the screen.
   With `data.folders` (D4) the composer has the folders control, whose
   list `ui.foldersOpen` opens, and `ui.folderPickerOpen` puts the folder
-  picker in the side slot.
+  picker in the side slot. With the split panes, `ui.sideChatOpen` opens
+  `data.sideChat` inside the pane its `pane` names, over the chat's right
+  side (D5).
 - `blocks/`: `WorkbenchPanes` (the split, one to four panes clockwise
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
   header through `PaneSlot`: kind mark, title, model, context, status,
@@ -38,10 +40,12 @@ first: it says what each file of a page folder is for.
   (a closed choice: a `RadioMenu` behind a field-wide button). D4 adds
   `FoldersControl` (the folders control under the prompt box and its list)
   and `FolderPickerPane` (Add a folder: search, recent folders, browse).
-  Later frames add to these blocks.
+  D5 adds `placement="pane"` to `SideChatPanel` (the side chat over its
+  pane's chat, with Open as its own pane), which `ChatPane` draws as its
+  `overlay`. Later frames add to these blocks.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
-  D3's sidebar). Later states start from
+  D3's sidebar), D5 `sideChatInPane` (from `workbench`). Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
@@ -49,7 +53,8 @@ first: it says what each file of a page folder is for.
   side chat; for D2b the chat actions and the frame's Figma `layers`,
   which the sidebar blocks put on `data-figma`, D2's when not set; for D3
   the subagents panel and the New chat form; for D4 the folders, the
-  folder picker, the sidebar's `counts` and `chatActions`) and
+  folder picker, the sidebar's `counts` and `chatActions`; for D5 the side
+  chat's `pane` and `openAsPane`, and the split's layers in `layers`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list, the open skill list; for D2 the sidebar, closed groups, the
   hovered header, the drag and the side chat; for D3 the subagents panel

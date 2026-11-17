@@ -4,6 +4,7 @@
 import { chatActions } from './chatActions.ts'
 import { folders } from './folders.ts'
 import { sideChat } from './sideChat.ts'
+import { sideChatInPane } from './sideChatInPane.ts'
 import { subagents } from './subagents.ts'
 import { workbench } from './workbench.ts'
 
@@ -13,4 +14,5 @@ export const workspacesStates = {
   chatActions,
   subagents,
   folders,
+  sideChatInPane,
 }

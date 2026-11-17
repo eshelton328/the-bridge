@@ -97,3 +97,18 @@ export const Folders: Story = {
     await expect(await body.findByRole('button', { name: 'Remove ~/omni' })).toBeVisible()
   },
 }
+
+export const SideChatInPane: Story = {
+  name: 'D5: a side chat inside its pane of the split',
+  args: { data: workspacesStates.sideChatInPane.data, ui: workspacesStates.sideChatInPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const side = canvas.getByRole('complementary', { name: 'Side chat' })
+    await expect(side).toBeVisible()
+    await expect(within(side).getByText('Beside bridge themes only. The other panes keep running.')).toBeVisible()
+    await expect(within(side).getByText('Does Viewscreen need a light variant?')).toBeVisible()
+    await expect(within(side).getByRole('button', { name: 'Open as its own pane' })).toBeVisible()
+    // The other panes keep running beside it.
+    await expect(canvas.getByText('Codex wants to run a command')).toBeVisible()
+    await expect(canvas.queryByRole('menuitem', { name: /Move to workspace/ })).toBeNull()
+  },
+}

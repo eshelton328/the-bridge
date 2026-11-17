@@ -9,7 +9,8 @@
 // header (D2b). In place of the side chat the subagents panel can show,
 // and the New chat form can open over the screen (D3). The folders control
 // sits under the prompt box with its list open, and the folder picker takes
-// the side slot (D4).
+// the side slot (D4). With the split panes, a side chat opens inside its
+// pane (D5).
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -189,11 +190,16 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
                   size="sm"
                   iconOnly
                   aria-label={`New chat in ${current?.label ?? data.current}`}
-                  data-figma="150:2"
+                  data-figma={data.layers?.newChat ?? '150:2'}
                 >
                   <PlusIcon size="16" />
                 </Button>
-                <Button size="sm" iconOnly aria-label="Show the workspace sidebar" data-figma="158:2">
+                <Button
+                  size="sm"
+                  iconOnly
+                  aria-label="Show the workspace sidebar"
+                  data-figma={data.layers?.toggle ?? '158:2'}
+                >
                   <PanelIcon size="16" />
                 </Button>
               </>

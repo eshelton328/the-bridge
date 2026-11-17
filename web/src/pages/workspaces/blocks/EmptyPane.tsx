@@ -29,11 +29,14 @@ export type EmptyPaneProps = {
   start: readonly { kind: AgentKind; label: string }[]
   openLabel: string
   open: readonly OpenableChat[]
+  /** The Figma layers of the pane and of its list, for the fidelity checks; D1's when not set. */
+  figma?: { pane?: string | undefined; list?: string | undefined } | undefined
 }
 
-export function EmptyPane({ title: heading, text: description, start, openLabel, open }: EmptyPaneProps) {
+export function EmptyPane(props: EmptyPaneProps) {
+  const { title: heading, text: description, start, openLabel, open, figma } = props
   return (
-    <section data-figma="105:347" className={box} aria-label={heading}>
+    <section data-figma={figma?.pane ?? '105:347'} className={box} aria-label={heading}>
       <Stack gap="12" align="center">
         <h2 className={title}>{heading}</h2>
         <p className={text}>{description}</p>
@@ -45,7 +48,7 @@ export function EmptyPane({ title: heading, text: description, start, openLabel,
             </Button>
           ))}
         </Inline>
-        <Stack gap="2" className={list} data-figma="105:368">
+        <Stack gap="2" className={list} data-figma={figma?.list ?? '105:368'}>
           <span className={section}>{openLabel}</span>
           {open.map((chat) => (
             <ListRow

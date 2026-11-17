@@ -19,12 +19,14 @@ export type ShellPaneProps = {
   label: string
   lines: readonly ShellLine[]
   prompt: string
+  /** The Figma layer of the terminal, for the fidelity checks; D1's when not set. */
+  figma?: string | undefined
 }
 
-export function ShellPane({ label, lines, prompt }: ShellPaneProps) {
+export function ShellPane({ label, lines, prompt, figma = '105:337' }: ShellPaneProps) {
   return (
     // The terminal takes the focus, as a shell does, so a short pane that scrolls it can reach it by keyboard.
-    <Stack gap="4" className={body} data-figma="105:337" role="log" aria-label={label} tabIndex={0}>
+    <Stack gap="4" className={body} data-figma={figma} role="log" aria-label={label} tabIndex={0}>
       {lines.map((line) => (
         <span key={line.text} className={tones[line.tone]}>
           {line.text}

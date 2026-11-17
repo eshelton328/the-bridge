@@ -1,7 +1,9 @@
 // A chat's body: the transcript, then the composer at the bottom, with the
 // skill list over it after "/" (D1 105:209). `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
-// `size="side"` the side chat's body (D2 105:933 to 105:948). Props only.
+// `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
+// such as the side chat in a pane (D5 158:518), sits over the body's right
+// side. Props only.
 import { Composer, Inline, ModelChip, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -9,13 +11,23 @@ import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { SkillPicker } from './SkillPicker.tsx'
 
-const body = css({ display: 'flex', flexDirection: 'column', flex: '1', gap: '10', p: '12', minH: '[0]' })
+const body = css({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: '1',
+  gap: '10',
+  p: '12',
+  minH: '[0]',
+})
 // D2 105:868: the transcript and composer sit 22 in from the chat's sides and 16 from its top and bottom.
 const sizes = {
   pane: undefined,
   full: css({ gap: '12', px: '24', py: '16' }),
   // D2 105:920: 17 in from the side chat's edges, 12 under its note.
   side: css({ gap: '12', px: '16', pt: '12', pb: '16' }),
+  // D5 158:518: the side chat in a pane pads its parts itself and keeps them 10 apart.
+  inset: css({ gap: '10', px: '0', pt: '0', pb: '0' }),
 }
 // The transcript takes the room above the composer.
 const transcript = css({ flex: '1', minH: '[0]' })
@@ -31,10 +43,27 @@ export type ChatPaneProps = {
   size?: keyof typeof sizes | undefined
   /** The folders control, before the model in the composer's bottom row (D4 137:9). */
   folders?: ReactNode
+  /** `false`: the composer has no attach button, as the side chat in a pane draws it (D5 158:545). */
+  attach?: boolean | undefined
+  /** Drawn between the transcript and the composer, such as "Open as its own pane" (D5 158:540). */
+  above?: ReactNode
+  /** Drawn over the body, such as the side chat in a pane (D5 158:518); it places itself. */
+  overlay?: ReactNode
 }
 
 export function ChatPane(props: ChatPaneProps) {
-  const { figma, entries, composer, skills, onSkillsOpenChange, size = 'pane', folders } = props
+  const {
+    figma,
+    entries,
+    composer,
+    skills,
+    onSkillsOpenChange,
+    size = 'pane',
+    folders,
+    attach = true,
+    above,
+    overlay,
+  } = props
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -51,7 +80,7 @@ export function ChatPane(props: ChatPaneProps) {
       running={composer.running}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
-      onAttach={() => undefined}
+      onAttach={attach ? () => undefined : undefined}
       model={
         folders === undefined ? (
           chip
@@ -66,11 +95,12 @@ export function ChatPane(props: ChatPaneProps) {
   )
   return (
     <div className={cx(body, sizes[size])}>
-      <Stack gap={size === 'pane' ? '10' : '12'} className={transcript}>
+      <Stack gap={size === 'pane' || size === 'inset' ? '10' : '12'} className={transcript}>
         {entries.map((entry, i) => (
           <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
         ))}
       </Stack>
+      {above}
       {skills === undefined ? (
         <div data-figma={figma.composer}>{box}</div>
       ) : (
@@ -88,6 +118,7 @@ export function ChatPane(props: ChatPaneProps) {
           </div>
         </SkillPicker>
       )}
+      {overlay}
     </div>
   )
 }
