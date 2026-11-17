@@ -19,7 +19,9 @@ const placements = {
     borderLeftColor: 'border.default',
   }),
   // D5 158:518: 330 × 393, 4 in from the pane's body on the right, top and bottom, padded 15, its parts 10 apart.
+  // In a pane too short for its title, two lines of transcript and its composer, the panel scrolls (d-107).
   pane: css({
+    overflowY: 'auto',
     position: 'absolute',
     zIndex: '1',
     top: '4',

@@ -28,8 +28,9 @@ const sizes = {
   full: css({ px: '24', py: '16' }),
   // D2 105:920: 17 in from the side chat's edges, 12 under its note.
   side: css({ px: '16', pt: '12', pb: '16' }),
-  // D5 158:518: the side chat in a pane pads its parts itself.
-  inset: css({ px: '0', pt: '0', pb: '0' }),
+  // D5 158:518: the side chat in a pane pads its parts itself. It does not shrink below its content, so in a short
+  // pane its transcript keeps two lines and the side chat panel scrolls instead (d-107).
+  inset: css({ px: '0', pt: '0', pb: '0', minH: '[auto]' }),
 }
 // The space between the entries, and between the transcript, `above` and the composer: 10 in a pane of the split
 // and the side chat in a pane (D1, D5), 12 in the chat alone and the side chat (D2).
@@ -37,7 +38,9 @@ const gaps = {
   pane: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
   full: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   side: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
-  inset: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
+  // The side chat in a pane: its transcript keeps two 17 px lines (`control.lg`, 36, the nearest size token, d-100).
+  // `contain: size` keeps the transcript's own height out of the pane's minimum, so only those two lines count.
+  inset: { body: css({ gap: '10', minH: 'control.lg', contain: 'size' }), footer: css({ gap: '10', pt: '10' }) },
 } satisfies Record<keyof typeof sizes, { body: string; footer: string }>
 const footer = css({ display: 'flex', flexDirection: 'column' })
 // A long draft grows the composer; past half the window, or half the pane in a short pane of the split (`PaneFrame`

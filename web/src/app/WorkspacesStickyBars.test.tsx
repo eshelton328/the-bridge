@@ -221,10 +221,10 @@ describe('a short window in the Workbench (d-107)', () => {
         expect(box(body).bottom).toBeLessThanOrEqual(box(footer).top + 0.5)
         // No text the body shows lies under the footer, at the top of the transcript or at its end.
         for (const r of shownText(body)) expect(r.top).toBeLessThan(box(footer).top)
-        // A transcript at least one line high (20 px) scrolls to its last line. The side chat in a short pane (D5) may
-        // have less: its title, "Open as its own pane" and the two-row Composer fill it (LIBRARY_GAPS.md, Side chat in
-        // a pane), so its body is empty, never covered.
-        if (body.clientHeight >= 20 && body.scrollHeight > body.clientHeight + 1) {
+        // Each transcript keeps at least one line (20 px) and scrolls to its last line. The side chat in a short pane
+        // (D5) keeps two lines; its panel scrolls to show them with its composer.
+        expect(body.clientHeight).toBeGreaterThanOrEqual(20)
+        if (body.scrollHeight > body.clientHeight + 1) {
           body.scrollTop = body.scrollHeight
           await expect.poll(() => body.scrollTop > 0).toBe(true)
           // Scrolled to its end, the transcript's last text is in view, above the footer.
