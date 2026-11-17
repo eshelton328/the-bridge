@@ -6,19 +6,11 @@
 // the prompt on the phone, the keyboard covers the bottom of the screen: the
 // head and Why give way to the title on one line, so the prompt stays in
 // sight, and Start waits (M3). Props only.
-import {
-  Button,
-  Container,
-  Inline,
-  MarkdownView,
-  PlayIcon,
-  Stack,
-  TruncatedText,
-} from '@eshelton328/component-library-1701'
+import { Button, Inline, MarkdownView, PlayIcon, Stack, TruncatedText } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { DetailFrame } from '../blocks/DetailFrame.tsx'
 import { type DiscussControl, DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { NotesBox } from '../blocks/NotesBox.tsx'
@@ -30,7 +22,6 @@ import { SourceList } from '../blocks/SourceList.tsx'
 import { type InboxDrafts, type InboxNextStep, type InboxUi } from '../types.ts'
 
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
-const fill = css({ flex: '1' })
 // M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
 // are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
 const phoneTask = css({ px: '4', pt: '8' })
@@ -144,82 +135,73 @@ export function NextStepDetail({
         }
       : undefined)
   const onRestore = removed?.onRestore
-  const column = (
-    <Container
-      size={detailContainerSize(layout)}
-      className={pinned === undefined && start === undefined ? undefined : fill}
+  const item = (
+    <Stack
+      gap={phone ? '20' : '24'}
+      className={phone ? phoneTask : undefined}
+      // The tablet names a started task's frame "task · running" (T4); the phone keeps "task · next step" (M10).
+      data-figma={compact ? `task · ${pinned === undefined || phone ? 'next step' : 'running'}` : undefined}
     >
-      {back}
-      <Stack
-        gap={phone ? '20' : '24'}
-        className={phone ? phoneTask : undefined}
-        // The tablet names a started task's frame "task · running" (T4); the phone keeps "task · next step" (M10).
-        data-figma={compact ? `task · ${pinned === undefined || phone ? 'next step' : 'running'}` : undefined}
-      >
-        {keyboard ? (
-          <h1 className={scrolledTitle} data-figma="scrolled title">
-            <TruncatedText>{detail.title}</TruncatedText>
-          </h1>
-        ) : (
-          <>
-            <DetailHead head={detail} snooze={snooze} discuss={discuss} barActions={!phone} />
-            <DetailSection title="Why">
-              <MarkdownView size="sm" padding="none">
-                <p>{detail.why}</p>
-              </MarkdownView>
-            </DetailSection>
-          </>
-        )}
-        <PromptSection
-          prompt={detail.prompt}
-          editing={ui.editingPrompt}
-          open={ui.promptOpen}
-          onOpenChange={onPromptOpenChange}
-          layout={layout}
-          drafts={drafts}
-          onUndoChange={onUndoChange}
-          onEditingChange={(editingPrompt) => {
-            onUiChange?.({ editingPrompt })
-          }}
-        />
-        {pinned === undefined ? (
-          <Launch
-            launch={detail.launch}
-            onOpenChat={onOpenChat}
-            onRestore={onRestore}
-            onStart={onStart}
-            pickerOpen={ui.pickerOpen}
-            onPickerOpenChange={(pickerOpen) => {
-              onUiChange?.({ pickerOpen })
-            }}
-            layout={layout}
-          />
-        ) : null}
-        {detail.notes === null || keyboard ? null : (
-          <DetailSection title="My notes">
-            <NotesBox notes={detail.notes} drafts={drafts} />
+      {keyboard ? (
+        <h1 className={scrolledTitle} data-figma="scrolled title">
+          <TruncatedText>{detail.title}</TruncatedText>
+        </h1>
+      ) : (
+        <>
+          <DetailHead head={detail} snooze={snooze} discuss={discuss} barActions={!phone} />
+          <DetailSection title="Why">
+            <MarkdownView size="sm" padding="none">
+              <p>{detail.why}</p>
+            </MarkdownView>
           </DetailSection>
-        )}
-        <DetailSection title="Sources">
-          <SourceList sources={detail.sources} />
+        </>
+      )}
+      <PromptSection
+        prompt={detail.prompt}
+        editing={ui.editingPrompt}
+        open={ui.promptOpen}
+        onOpenChange={onPromptOpenChange}
+        layout={layout}
+        drafts={drafts}
+        onUndoChange={onUndoChange}
+        onEditingChange={(editingPrompt) => {
+          onUiChange?.({ editingPrompt })
+        }}
+      />
+      {pinned === undefined ? (
+        <Launch
+          launch={detail.launch}
+          onOpenChat={onOpenChat}
+          onRestore={onRestore}
+          onStart={onStart}
+          pickerOpen={ui.pickerOpen}
+          onPickerOpenChange={(pickerOpen) => {
+            onUiChange?.({ pickerOpen })
+          }}
+          layout={layout}
+        />
+      ) : null}
+      {detail.notes === null || keyboard ? null : (
+        <DetailSection title="My notes">
+          <NotesBox notes={detail.notes} drafts={drafts} />
         </DetailSection>
-      </Stack>
-    </Container>
+      )}
+      <DetailSection title="Sources">
+        <SourceList sources={detail.sources} />
+      </DetailSection>
+    </Stack>
   )
-  if (start !== undefined)
-    return (
-      <>
-        {column}
-        <PinnedAction label={start} onPress={onStart} />
-      </>
-    )
-  if (pinned === undefined) return column
-  return (
-    <>
-      {column}
+  const footerBar =
+    start !== undefined ? (
+      <PinnedAction label={start} onPress={onStart} />
+    ) : pinned === undefined ? undefined : (
       <div className={cx(footer, footerInset[layout])} data-figma="running">
         <RunCard run={pinned} onOpen={onOpenChat} onRestore={onRestore} />
       </div>
-    </>
+    )
+  return (
+    <DetailFrame layout={layout} back={back} footer={footerBar}>
+      {item}
+    </DetailFrame>
   )
 }

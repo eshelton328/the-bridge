@@ -14,7 +14,7 @@
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "selector": "div.app-shell__root > main.app-shell__detail > article > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
       "reason": "The task page scrolls on the phone: the note says My notes sits below Run in and the page scrolls to it, and Figma cuts My notes under the pinned Start (346:9386). The render scrolls the detail under the pinned Start the same way."
     },
     {

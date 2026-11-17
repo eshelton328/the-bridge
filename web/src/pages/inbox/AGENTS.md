@@ -71,7 +71,14 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   `discussionView.test.ts`) shows the launch's `start`, the run card of
   the chat D5 shows, whose Reply here opens that chat. D7's Open chat
   opens the finished chat.
-- `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
+- Every detail keeps its Back bar at the top and its reply box or pinned bar
+  at the bottom while only the content between them scrolls (d-107): the
+  library `ScrollFrame` in `RunningDetail` and `DiscussionThread`, and
+  `blocks/DetailFrame` (a pinned bar sticky at the end of the scrolling
+  item) in `NextStepDetail` and `QuestionDetail`. `InboxStickyBars.test.tsx`
+  (in `app/`) scrolls each and checks both bars stay in view, and that a
+  long draft keeps Send in reach.
+- `blocks/`: `BackToInbox` (Back on a tablet or phone), `DetailFrame`, `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
   `MenuSection` (a menu's labelled section, in a popover or a sheet),
   `PinnedAction`, `RowActionsSheet`,

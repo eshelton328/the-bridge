@@ -3,8 +3,10 @@
 // page share. A suggestion puts its question in the reply box. The reply box keeps what Erik types in `drafts`, so closing
 // and opening the discussion keeps it; send gives his message to `onSend`, which adds it to the discussion, and
 // empties the box. The box has no attach button: no file flow is designed, and `Composer` cannot draw its attach
-// button disabled (LIBRARY_GAPS.md, Waiting for a design). Props only.
-import { Composer, Stack } from '@eshelton328/component-library-1701'
+// button disabled (LIBRARY_GAPS.md, Waiting for a design). The reply box stays at the bottom and the `header` at the
+// top of the panel or page, and only the entries (and `before`) between them scroll (d-107). Props only.
+import { Composer, ScrollFrame, Stack } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { draftProps, type InboxDiscussion, type InboxDrafts } from '../types.ts'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
@@ -13,6 +15,10 @@ import type { ProposalControl } from './ProposalCard.tsx'
 
 const entries = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1' })
 const middle = css({ justifyContent: 'center' })
+// A long draft grows the reply box; past half the window it scrolls inside, so Send stays in reach (d-107).
+const reply = css({ maxH: '[50vh]', overflowY: 'auto' })
+// The space between the header, the content and the reply box, and between the content's parts.
+const bodyGap = { '8': css({ gap: '8' }), '12': css({ gap: '12' }) } as const
 
 export type DiscussionThreadProps = {
   discussion: InboxDiscussion
@@ -28,6 +34,12 @@ export type DiscussionThreadProps = {
   stacked?: boolean | undefined
   /** Erik sent a message from the reply box. */
   onSend?: ((text: string) => void) | undefined
+  /** Stays at the top while the entries scroll, such as the page's Back or the panel's title. */
+  header?: ReactNode
+  /** Scrolls above the entries, such as the page's task card. */
+  before?: ReactNode
+  /** The space between the header, the content and the reply box: 12 in the panel (D14), 8 on the page (T17). */
+  gap?: keyof typeof bodyGap | undefined
 }
 
 export function DiscussionThread({
@@ -38,10 +50,31 @@ export function DiscussionThread({
   drafts,
   stacked = false,
   onSend,
+  header,
+  before,
+  gap = '12',
 }: DiscussionThreadProps) {
   const empty = discussion.entries.length === 0 ? discussion.empty : undefined
   return (
-    <>
+    <ScrollFrame
+      gap={gap}
+      bodyClassName={bodyGap[gap]}
+      header={header}
+      footer={
+        <div className={reply} data-figma="composer · discussion">
+          <Composer
+            label={discussion.placeholder}
+            placeholder={discussion.placeholder}
+            {...draftProps(drafts, 'discussion')}
+            onSubmit={(text) => {
+              onSend?.(text)
+              drafts?.onChange('discussion', '')
+            }}
+          />
+        </div>
+      }
+    >
+      {before}
       <div
         className={cx(entries, centred && empty !== undefined ? middle : undefined, className)}
         data-figma="discussion"
@@ -61,17 +94,6 @@ export function DiscussionThread({
           ))}
         </Stack>
       </div>
-      <div data-figma="composer · discussion">
-        <Composer
-          label={discussion.placeholder}
-          placeholder={discussion.placeholder}
-          {...draftProps(drafts, 'discussion')}
-          onSubmit={(text) => {
-            onSend?.(text)
-            drafts?.onChange('discussion', '')
-          }}
-        />
-      </div>
-    </>
+    </ScrollFrame>
   )
 }

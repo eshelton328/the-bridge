@@ -2,7 +2,7 @@
 // Close, the model and how much context it uses, what it may do, the
 // entries (or, before the first message, the empty state) and the reply
 // box. Props only.
-import { BubbleIcon, Button, CloseIcon, Inline } from '@eshelton328/component-library-1701'
+import { BubbleIcon, Button, CloseIcon, Inline, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDiscussion, InboxDrafts } from '../types.ts'
 import { DiscussionGuard } from './DiscussionGuard.tsx'
@@ -16,8 +16,8 @@ import type { ProposalControl } from './ProposalCard.tsx'
 const panel = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12',
   flex: '1',
+  minH: '[0]',
   // A flex item keeps its content's width unless it clips.
   overflow: 'hidden',
   pt: '16',
@@ -48,18 +48,29 @@ export type DiscussionPanelProps = {
 export function DiscussionPanel({ discussion, control, onClose, drafts, onSend }: DiscussionPanelProps) {
   return (
     <aside aria-label={discussion.title} className={panel} data-figma="discussion panel">
-      <Inline gap="8" align="center">
-        <span className={bubble}>
-          <BubbleIcon size="16" />
-        </span>
-        <h2 className={heading}>{discussion.title}</h2>
-        <Button size="sm" iconOnly aria-label="Close the discussion" onClick={onClose}>
-          <CloseIcon />
-        </Button>
-      </Inline>
-      <ModelContext discussion={discussion} />
-      <DiscussionGuard text={discussion.guard} />
-      <DiscussionThread discussion={discussion} control={control} className={entries} drafts={drafts} onSend={onSend} />
+      {/* The title, the model and the guard stay at the top, the reply box at the bottom (d-107). */}
+      <DiscussionThread
+        discussion={discussion}
+        control={control}
+        className={entries}
+        drafts={drafts}
+        onSend={onSend}
+        header={
+          <Stack gap="12">
+            <Inline gap="8" align="center">
+              <span className={bubble}>
+                <BubbleIcon size="16" />
+              </span>
+              <h2 className={heading}>{discussion.title}</h2>
+              <Button size="sm" iconOnly aria-label="Close the discussion" onClick={onClose}>
+                <CloseIcon />
+              </Button>
+            </Inline>
+            <ModelContext discussion={discussion} />
+            <DiscussionGuard text={discussion.guard} />
+          </Stack>
+        }
+      />
     </aside>
   )
 }
