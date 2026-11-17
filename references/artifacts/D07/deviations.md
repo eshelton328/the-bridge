@@ -1,0 +1,89 @@
+# D07 deviations
+
+What still differs from Figma after the fidelity loop
+(`pnpm fidelity artifacts D07`, 2026-11-17, against the installed
+library 1.0.0-beta.10, the version this branch pins), each with its
+reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+
+## Checks
+
+- Text: passes. `Toolkit` is an `extra` exception and the context
+  meter's `46%` (454:328) a `missing` exception (`exceptions.json`): the
+  meter shows 46%, but `ContextMeter` draws the number and the % sign as
+  two text nodes, which the text check cannot match, as in Inbox D14.
+- Position: 17 of 28 layers pass, among them the artifact bar, title
+  block, preview, preview footer, Open artifact, "Made in", both Open in
+  workspace buttons (`452:2406`, `452:2464`), the panel's `header`,
+  `button · x`, `guard` and `composer · discussion`. Eleven fail; each is
+  listed below.
+- Rules: pass.
+
+## Deviations
+
+- **Artifact pane and discussion panel.** `artifact pane` w +8,
+  `discussion panel` x +8, w -8. The artifact keeps D2's `Container
+  size="detail"` (748 + 2 × 40 = 828) against Figma's 820 pane, so the
+  panel starts 8 px further right and is 620 wide against 628. No size
+  token is 628 or 820 and `AppShell` has no side column. The panel pads
+  12 at the start, so its content sits at Figma's x 905, as the Inbox's
+  panel. Library gaps "Discussion panel width" and "Detail column inset".
+- **Discuss.** `button · Discuss` x -4.2, w +4.8: `Button textSize="sm"`
+  pads its sides more than Figma's 11 px, as in D2. It is pressed while
+  the discussion is open, but cyan: Figma draws it violet. Library gaps
+  "Sort and Filter button widths" and "Discuss toggle".
+- **Project chip.** `chips` w -12.8, `project · File in a project` x +6,
+  w -16.8, `chip · updated 12m ago` x -10.8, as in D2: the project chip
+  is a read-only `MetaChip` with no chevron. Library gap "Project chip
+  menu".
+- **Model and context.** `model and context` w +10: `ModelChip` pads
+  its sides more than Figma's 83 px picker. Library gap "Model chip
+  width".
+- **Discussion area.** `discussion` h -7: the library's `Composer` is a
+  few px taller than Figma's 75 px reply box. The box has no clip
+  button, as the Inbox's: no file flow is designed and `Composer` draws
+  its attach button only with an action (library gap "Attach in the
+  discussion reply box"). It shows no caret or violet focus border,
+  which Figma draws (library gap "Composer focus").
+- **Empty state place.** `empty state` y +211, h -119, `it can` y +98,
+  `suggestions` y +100. Figma puts the empty state 120 px under the top
+  of the discussion area (its tile at y 264); no spacing token is larger
+  than 40, so the render centres it in the area, as the Inbox's D14,
+  about 100 px lower. The `empty state` box is Figma's frame with its
+  120 px top padding, so its y differs more. A ratio of two flex
+  spacers placed "It can" and the suggestions about 15 px low, but the style system types allow no
+  such flex value, so it was taken back. `suggestions` x -5.2,
+  w +10.5: the three `Button textSize="xs"` are wider than Figma's.
+  Library gap "Empty state with an icon tile".
+- **Empty state parts.** The tile is a round `surface.raised` disc of
+  44 px (`control.xl`) against Figma's 42, as the Inbox's. "It can" is a
+  `Panel` with its eyebrow title; the three icons are violet
+  (`accent.discuss`).
+- **Artifact column.** The title is 28 px type (`heading`) against about
+  26, the preview's bars are the library's chart drawing in its colours,
+  not Figma's heights and colours, and the column starts 4 px further
+  right, as in D2. Library gaps "Artifact title size", "Thumbnail
+  colour", "Artifact preview frame" and "Detail column inset".
+- **Discussion blocks.** The Inbox page does not export its
+  `DiscussionPanel`, so the Artifacts page has its own `DiscussionPanel`
+  and `DiscussionEmpty`, built from the same library parts (`ModelChip`,
+  `ContextMeter`, `LockIcon`, `Panel`, `Button`, `Message`,
+  `Composer`). Nothing moved into `web/src/blocks/`.
+- **Buttons with no screen yet.** Open in workspace in the header and in
+  "Made in" has no action (no workspace route); Copy link, Remove and
+  Open artifact are as in D2. Discuss toggles the discussion, Close
+  closes it, a suggestion fills the reply box and send shows the message
+  in place of the empty state; nothing answers it in this mock-up.
+- **Rail.** The shared rail (`AppRail`, not changed here) has a Toolkit
+  item after Artifacts (d-105), which this frame does not draw, so More
+  sits one item lower, and its items are 54 high and 60 apart against
+  Figma's 50 and 56. Library gap "Rail item height".
+
+## Values picked (d-100)
+
+Each value with no token is recorded in `LIBRARY_GAPS.md` and drawn with
+the nearest library part until it lands: the side width 628 (Figma's,
+on the 4 px grid; drawn 620), Discuss's pressed look in `accent.discuss`
+(the token of Figma's violet; drawn cyan), the empty state 120 px under
+the area's top (Figma's; drawn centred). The panel keeps the Inbox's
+paddings: 16 above and below, 12 at the start, 20 at the end, 12 between
+its rows, 6 above the discussion area.
