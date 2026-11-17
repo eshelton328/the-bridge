@@ -413,12 +413,12 @@ export type InboxUi = z.infer<typeof InboxUi>
 export const InboxState = z.object({ data: InboxData, ui: InboxUi })
 
 // The text Erik types in the open item: his note, his answer's note, the
-// prompt he edits and his reply. InboxScreen keeps it above the layout, so
+// prompt he edits, his reply and his reply in the task's discussion. InboxScreen keeps it above the layout, so
 // a width change that swaps the desktop and tablet layouts, and with them
 // the fields, keeps what he typed.
 
 /** A text field of the open item that keeps what Erik types. */
-export type InboxDraftField = 'note' | 'answer' | 'prompt' | 'reply'
+export type InboxDraftField = 'note' | 'answer' | 'prompt' | 'reply' | 'discussion'
 
 export type InboxDrafts = {
   values: Partial<Record<InboxDraftField, string>>

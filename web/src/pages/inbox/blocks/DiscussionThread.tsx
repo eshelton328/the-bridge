@@ -1,9 +1,10 @@
 // A discussion's entries (or, before the first message, the empty state)
 // and its reply box under them: the part the desktop panel and the tablet
-// page share. Props only.
+// page share. The reply box keeps what Erik types in `drafts`, so closing
+// and opening the discussion keeps it. Props only.
 import { Composer, Stack } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import type { InboxDiscussion } from '../types.ts'
+import { draftProps, type InboxDiscussion, type InboxDrafts } from '../types.ts'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
 import { DiscussionEntry } from './DiscussionEntry.tsx'
 import type { ProposalControl } from './ProposalCard.tsx'
@@ -19,9 +20,11 @@ export type DiscussionThreadProps = {
   className?: string | undefined
   /** The empty state sits in the middle of the column (the desktop panel, D14) rather than at its top (T17). */
   centred?: boolean | undefined
+  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
-export function DiscussionThread({ discussion, control, className, centred = true }: DiscussionThreadProps) {
+export function DiscussionThread({ discussion, control, className, centred = true, drafts }: DiscussionThreadProps) {
   const empty = discussion.entries.length === 0 ? discussion.empty : undefined
   return (
     <>
@@ -37,7 +40,12 @@ export function DiscussionThread({ discussion, control, className, centred = tru
         </Stack>
       </div>
       <div data-figma="composer · discussion">
-        <Composer label={discussion.placeholder} placeholder={discussion.placeholder} onAttach={() => undefined} />
+        <Composer
+          label={discussion.placeholder}
+          placeholder={discussion.placeholder}
+          onAttach={() => undefined}
+          {...draftProps(drafts, 'discussion')}
+        />
       </div>
     </>
   )

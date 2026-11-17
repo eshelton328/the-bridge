@@ -132,6 +132,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         layout={layout}
         onClose={closeDiscussion}
         control={control}
+        drafts={drafts}
       />
     ) : shown === null ? undefined : (
       <InboxDetail
@@ -163,7 +164,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         }
         side={
           discussing ? (
-            <DiscussionPanel discussion={discussion} control={control} onClose={closeDiscussion} />
+            <DiscussionPanel discussion={discussion} control={control} onClose={closeDiscussion} drafts={drafts} />
           ) : undefined
         }
       />

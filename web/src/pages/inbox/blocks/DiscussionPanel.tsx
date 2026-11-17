@@ -4,7 +4,7 @@
 // box. Props only.
 import { BubbleIcon, Button, CloseIcon, Inline } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { InboxDiscussion } from '../types.ts'
+import type { InboxDiscussion, InboxDrafts } from '../types.ts'
 import { DiscussionGuard } from './DiscussionGuard.tsx'
 import { DiscussionThread } from './DiscussionThread.tsx'
 import { ModelContext } from './ModelContext.tsx'
@@ -39,9 +39,11 @@ export type DiscussionPanelProps = {
   control?: ProposalControl | undefined
   /** Close was pressed. */
   onClose?: (() => void) | undefined
+  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
-export function DiscussionPanel({ discussion, control, onClose }: DiscussionPanelProps) {
+export function DiscussionPanel({ discussion, control, onClose, drafts }: DiscussionPanelProps) {
   return (
     <aside aria-label={discussion.title} className={panel} data-figma="discussion panel">
       <Inline gap="8" align="center">
@@ -55,7 +57,7 @@ export function DiscussionPanel({ discussion, control, onClose }: DiscussionPane
       </Inline>
       <ModelContext discussion={discussion} />
       <DiscussionGuard text={discussion.guard} />
-      <DiscussionThread discussion={discussion} control={control} className={entries} />
+      <DiscussionThread discussion={discussion} control={control} className={entries} drafts={drafts} />
     </aside>
   )
 }

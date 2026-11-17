@@ -404,6 +404,16 @@ describe('the Inbox list tools and task bar', () => {
       await expect.element(tabBar()).toBeVisible()
     })
 
+    it('keeps an unsent reply after Back and Discuss', async () => {
+      await tablet('discussTask')
+      const reply = () => page.getByRole('textbox', { name: 'Ask about this task' })
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await reply().fill('Which frames are missing?')
+      await page.getByRole('button', { name: 'Back to the task' }).click()
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await expect.element(reply()).toHaveValue('Which frames are missing?')
+    })
+
     it('applies a proposed update: the task shows the new prompt, and Undo takes it back', async () => {
       await tablet('changeProposedPage')
       await page.getByRole('button', { name: 'Apply' }).click()

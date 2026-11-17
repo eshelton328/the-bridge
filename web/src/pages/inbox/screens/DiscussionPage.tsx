@@ -20,7 +20,7 @@ import { DiscussionGuard } from '../blocks/DiscussionGuard.tsx'
 import { DiscussionThread } from '../blocks/DiscussionThread.tsx'
 import { ModelContext } from '../blocks/ModelContext.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
-import type { InboxDiscussion, InboxNextStep } from '../types.ts'
+import type { InboxDiscussion, InboxDrafts, InboxNextStep } from '../types.ts'
 
 const fill = css({ flex: '1' })
 const spacer = css({ flex: '1' })
@@ -41,9 +41,11 @@ export type DiscussionPageProps = {
   /** Back: the task page shows again. */
   onClose?: (() => void) | undefined
   control?: ProposalControl | undefined
+  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
-export function DiscussionPage({ discussion, task, place, layout, onClose, control }: DiscussionPageProps) {
+export function DiscussionPage({ discussion, task, place, layout, onClose, control, drafts }: DiscussionPageProps) {
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
@@ -69,7 +71,13 @@ export function DiscussionPage({ discussion, task, place, layout, onClose, contr
             </Stack>
           </Panel>
         </div>
-        <DiscussionThread discussion={discussion} control={control} centred={false} className={thread} />
+        <DiscussionThread
+          discussion={discussion}
+          control={control}
+          centred={false}
+          className={thread}
+          drafts={drafts}
+        />
       </Stack>
     </Container>
   )
