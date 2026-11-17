@@ -67,3 +67,13 @@ header, the chips, the canvas, the selection and the tab bar.
   not change the shared block.
 - **Open writer.** The bar's button has no action yet: the item page
   (D3) is a later frame.
+
+## Second review
+
+- **Link ends.** MapGraph draws a small dot where a link meets a node;
+  Figma has no end marker (gap: Map link ends).
+- **Dimmed nodes.** The items writer does not touch are brighter than
+  Figma's faint ones (gap: Map dimmed node).
+- **Status bar and corners (not real).** Figma's 9:41 status bar and the
+  rounded device corners are design-only chrome (d-089); the app draws
+  neither.
