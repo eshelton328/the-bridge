@@ -64,7 +64,7 @@ export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
           />
         </DetailSection>
         <DetailSection title={detail.noteLabel}>
-          <TextArea labelHidden label={detail.noteLabel} defaultValue={detail.note} rows={1} />
+          <TextArea labelHidden label={detail.noteLabel} defaultValue={detail.note} autoresize rows={1} />
         </DetailSection>
         <Inline gap="12" align="center" data-figma="answer">
           <Button variant="primary" size="lg">

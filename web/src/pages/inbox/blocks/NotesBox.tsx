@@ -12,7 +12,7 @@ export function NotesBox({ notes }: { notes: NonNullable<InboxNextStep['notes']>
     <Panel>
       <p className={text}>{notes.text}</p>
       <span className={by}>{notes.by}</span>
-      <TextArea variant="bare" labelHidden label="Add a note" placeholder={notes.add} rows={1} />
+      <TextArea variant="bare" labelHidden label="Add a note" placeholder={notes.add} autoresize rows={1} />
     </Panel>
   )
 }
