@@ -267,6 +267,31 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Write the tickets for increment one')).not.toBeInTheDocument()
   })
 
+  // After Back on the tablet nothing is selected, but the desktop shows the state's item: its actions act on it.
+  it('marks the shown task done on the desktop after Back on the tablet and a resize', async () => {
+    await tablet('taskPage')
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await page.viewport(1512, 982)
+    const list = page.getByRole('region', { name: 'Inbox list' })
+    const row = () => list.getByText('Write the tickets for increment one')
+    await expect.element(row()).toBeVisible()
+    await page.getByRole('button', { name: 'Snooze' }).click()
+    await page.getByRole('menuitem', { name: 'Mark done' }).click()
+    await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+    await expect.element(row()).not.toBeInTheDocument()
+  })
+
+  it('snoozes the shown question on the desktop after Back on the tablet and a resize', async () => {
+    await tablet('question')
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await page.viewport(1512, 982)
+    await expect.element(page.getByRole('heading', { level: 1, name: /Hono RPC client/ })).toBeVisible()
+    await page.getByRole('button', { name: 'Snooze' }).click()
+    await page.getByRole('menuitem', { name: /In 1 hour/ }).click()
+    await page.getByRole('button', { name: /Snoozed/ }).click()
+    await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
+  })
+
   it('edits the prompt with Edit and Done, and brings the suggestion back with Reset', async () => {
     await tablet('taskPage')
     const editor = () => page.getByRole('textbox', { name: 'Suggested prompt' })

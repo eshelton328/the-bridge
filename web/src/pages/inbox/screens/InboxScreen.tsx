@@ -4,6 +4,7 @@
 // full width, with Back on the item and the tab bar under both, except in a
 // chat (Figma T1 to T8). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
+import type { InboxItemId } from '@bridge/shared'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -78,10 +79,12 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       onUiChange={onUiChange}
     />
   )
-  // Snooze or Mark done takes the open item out of the list; on a tablet or phone the list shows again.
-  const snooze = (until: string | null) => {
-    const id = ui.selectedId
-    if (id === null) return
+  // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
+  const shown = desktop ? data.detail : open
+  // Snooze or Mark done takes the shown item out of the list, by the id the detail carries: after Back on a tablet
+  // and a resize to the desktop nothing is selected, but the desktop still shows the item. On a tablet or phone the
+  // list shows again.
+  const snooze = (id: InboxItemId, until: string | null) => {
     onUiChange?.(
       until === null
         ? { snoozeOpen: false, done: [...ui.done, id] }
@@ -89,8 +92,6 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     )
     onBack?.()
   }
-  // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
-  const shown = desktop ? data.detail : open
   const detail =
     shown === null ? undefined : (
       <InboxDetail
@@ -101,7 +102,9 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         drafts={drafts}
         onPromptOpenChange={onPromptOpenChange}
         onUiChange={onUiChange}
-        onSnooze={snooze}
+        onSnooze={(until) => {
+          snooze(shown.id, until)
+        }}
         discuss={discussion === undefined ? undefined : { open: discussing }}
         side={
           discussing ? (

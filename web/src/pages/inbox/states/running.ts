@@ -45,6 +45,7 @@ export const running = {
     ],
     detail: {
       kind: 'running',
+      id: nextStep.data.detail.id,
       title: 'Write the tickets for increment one',
       agent: 'claude',
       meta: {

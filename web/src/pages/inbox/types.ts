@@ -121,6 +121,8 @@ const InboxMetaChip = z.object({ label: z.string(), icon: InboxChipIcon, issue: 
 
 /** What every item's detail starts with: its status bar and its title block. */
 const InboxDetailHead = z.object({
+  /** The item's id, as in its row: Snooze and Mark done act on it, whatever the list selects. */
+  id: InboxItemId,
   status: z.object({ tone: InboxTone, label: z.string() }),
   /** The mono line beside the status, such as "suggested 2h ago by the planning run". */
   origin: z.string(),
@@ -234,6 +236,8 @@ export type InboxChatEntry = z.infer<typeof InboxChatEntry>
 
 const InboxRunning = z.object({
   kind: z.literal('running'),
+  /** The item's id, as in its row. */
+  id: InboxItemId,
   title: z.string(),
   agent: InboxAgent,
   /**

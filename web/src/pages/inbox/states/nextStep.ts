@@ -232,6 +232,7 @@ export const nextStep = {
     groups: [needsYou, nextSteps, snoozed],
     detail: {
       kind: 'next',
+      id: selected,
       status: { tone: 'working', label: 'Next step' },
       origin: 'suggested 2h ago by the planning run',
       title: 'Write the tickets for increment one',
