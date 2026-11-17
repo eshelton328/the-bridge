@@ -5,7 +5,17 @@ import { chromium } from 'playwright'
 import { renderViewport } from './checkPosition.ts'
 import { checkText } from './checkText.ts'
 import { statusBarReason, type Layer } from './figmaMetadata.ts'
-import { collectPageScript, fieldText, fullyVisible, isPortalRoot, scrollBars, type PageMeasure } from './inPage.ts'
+import {
+  collectPageScript,
+  coveredAt,
+  fieldText,
+  fullyVisible,
+  isPortalRoot,
+  paints,
+  samplePoints,
+  scrollBars,
+  type PageMeasure,
+} from './inPage.ts'
 
 const edges = (left: number, top: number, right: number, bottom: number) => ({ left, top, right, bottom })
 const viewport = edges(0, 0, 1280, 800)
@@ -68,6 +78,9 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /isPortalRoot: function isPortalRoot\(/)
   assert.match(script, /fieldText: function fieldText\(/)
   assert.match(script, /scrollBars: function scrollBars\(/)
+  assert.match(script, /samplePoints: function samplePoints\(/)
+  assert.match(script, /paints: function paints\(/)
+  assert.match(script, /coveredAt: function coveredAt\(/)
 })
 
 void test('a checkbox, radio, hidden or password value is not field text; a text value is', () => {
@@ -206,4 +219,97 @@ void test('in Chromium a padded input passes the scrollBar rule and a scrolling 
     (await rulesOf(list)).filter((r) => r.rule === 'scrollBar').map((r) => [r.selector, r.detail]),
     [['section', 'vertical: scrollHeight 400 > clientHeight 100, overflow-y auto']],
   )
+})
+
+// Covered text. Workbench D01: an open pane menu covered "…a chat." in the
+// render, and the text check passed.
+void test('a run is sampled at three points along the middle of each line it draws', () => {
+  assert.deepEqual(samplePoints([edges(0, 10, 100, 30), edges(5, 5, 5, 20)]), [
+    { x: 10, y: 20 },
+    { x: 50, y: 20 },
+    { x: 90, y: 20 },
+  ])
+})
+
+void test('an element paints when it has a background, an image or replaced content', () => {
+  const el = (backgroundColor: string, tagName = 'DIV', backgroundImage = 'none', backdropFilter = 'none') => ({
+    tagName,
+    backgroundColor,
+    backgroundImage,
+    backdropFilter,
+  })
+  assert.equal(paints(el('rgb(20, 22, 30)')), true)
+  assert.equal(paints(el('rgba(0, 0, 0, 0.5)')), true)
+  assert.equal(paints(el('rgba(0, 0, 0, 0)')), false)
+  assert.equal(paints(el('rgb(0 0 0 / 0)')), false)
+  assert.equal(paints(el('color(srgb 0.1 0.1 0.1 / 0.9)')), true)
+  assert.equal(paints(el('transparent')), false)
+  assert.equal(paints(el('rgba(0, 0, 0, 0)', 'svg')), true)
+  assert.equal(paints(el('rgba(0, 0, 0, 0)', 'DIV', 'linear-gradient(red, blue)')), true)
+  assert.equal(paints(el('rgba(0, 0, 0, 0)', 'DIV', 'none', 'blur(8px)')), true)
+})
+
+void test('a run is covered when an unrelated element that shows and paints is above it at a point', () => {
+  const own = { related: true, shown: true, paints: false }
+  const menu = { related: false, shown: true, paints: true }
+  const positioner = { related: false, shown: true, paints: false }
+  const invisible = { related: false, shown: false, paints: true }
+  assert.equal(coveredAt([[own]]), false)
+  assert.equal(coveredAt([[own], [menu, own]]), true)
+  assert.equal(coveredAt([[positioner, own]]), false)
+  assert.equal(coveredAt([[invisible, own]]), false)
+  assert.equal(coveredAt([[positioner, menu, own]]), true)
+  // Below the run's own element nothing counts; no element at all is not covered.
+  assert.equal(coveredAt([[own, menu], []]), false)
+})
+
+async function measureHtml(html: string, viewport = { w: 600, h: 400 }): Promise<PageMeasure> {
+  const browser = await chromium.launch()
+  try {
+    const tab = await browser.newPage({ viewport: { width: viewport.w, height: viewport.h } })
+    await tab.setContent(html)
+    return await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+  } finally {
+    await browser.close()
+  }
+}
+
+void test('in Chromium a run under an open menu is covered; under a transparent box or nothing it is not', async () => {
+  const measured = await measureHtml(`<body style="margin:0;font:16px/20px sans-serif">
+<div id="storybook-root"><div style="position:relative;height:100vh">
+<p style="position:absolute;top:20px;left:20px;margin:0">Start a chat.</p>
+<p style="position:absolute;top:80px;left:20px;margin:0">Under a positioner</p>
+<p style="position:absolute;top:140px;left:20px;margin:0;pointer-events:none">Not covered</p>
+<div style="position:absolute;top:60px;left:0;width:400px;height:60px"></div>
+</div></div>
+<div style="position:fixed;top:10px;left:60px;width:200px;height:40px;background:rgb(30,30,40)"><span>Rename</span></div>
+</body>`)
+  const covered = Object.fromEntries(measured.visibleTexts.map((v) => [v.text, v.covered]))
+  assert.deepEqual(covered, {
+    'Start a chat.': true,
+    'Under a positioner': false,
+    'Not covered': false,
+    Rename: false,
+  })
+  // The text check fails the covered run where Figma draws nothing over it.
+  const rename: Layer = { ...textLayer('3:4', 'Rename', 20), x: 70 }
+  const layers: Layer[] = [
+    { ...textLayer('3:1', 'Start a chat.', 20), x: 20 },
+    { ...textLayer('3:2', 'Under a positioner', 80), x: 20 },
+    { ...textLayer('3:3', 'Not covered', 140), x: 20 },
+  ]
+  const text = checkText(
+    { w: 600, h: 400, layers: [...layers, rename], exclude: [] },
+    { missing: [], extra: [] },
+    measured,
+  )
+  assert.deepEqual(text.notVisible, [{ id: '3:1', text: 'Start a chat.', covered: true }])
+  // With the menu in Figma too (a later layer over the text), it passes.
+  const menu: Layer = { id: '3:5', name: 'menu', type: 'frame', x: 60, y: 10, w: 200, h: 40, path: '' }
+  const both = checkText(
+    { w: 600, h: 400, layers: [...layers, menu, { ...rename, path: 'menu' }], exclude: [] },
+    { missing: [], extra: [] },
+    measured,
+  )
+  assert.deepEqual(both.notVisible, [])
 })

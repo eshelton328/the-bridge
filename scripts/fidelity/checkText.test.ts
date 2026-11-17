@@ -1,7 +1,7 @@
 // Tests for checkText.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { checkText, coveredBy } from './checkText.ts'
+import { checkText, coveredBy, coveredInFigma } from './checkText.ts'
 import type { Layer } from './figmaMetadata.ts'
 import type { PageMeasure } from './inPage.ts'
 
@@ -16,13 +16,13 @@ const layer = (id: string, text: string, y = 10): Layer => ({
   path: '',
   text,
 })
-const run = (text: string) => ({ text, x: 0, y: 0, w: 10, h: 10, selector: 'span' })
+const run = (text: string, covered = false) => ({ text, x: 0, y: 0, w: 10, h: 10, selector: 'span', covered })
 const page = (visible: string[], extra: Partial<PageMeasure> = {}) => ({
   textContent: visible.join(''),
   innerText: visible.join(' '),
   allTexts: visible,
   fieldTexts: [],
-  visibleTexts: visible.map(run),
+  visibleTexts: visible.map((v) => run(v)),
   ...extra,
 })
 const none = { missing: [], extra: [] }
@@ -124,4 +124,65 @@ void test('a missing exception skips only the layers it names; the same text in 
 void test('a missing exception that names a layer without its text is an error', () => {
   const exceptions = { missing: [{ text: 'Reset', layers: ['9'], reason: 'hidden button' }], extra: [] }
   assert.throws(() => checkText(ref([layer('1', 'Reset')]), exceptions, page([])), /names layer 9/)
+})
+
+// Workbench D01: an open pane menu covered "…a chat." in the render and the
+// text check passed. A run that another element covers is not visible,
+// unless Figma draws a layer over the same text layer too.
+const menu = (y: number): Layer => ({ id: 'm', name: 'menu', type: 'frame', x: 0, y, w: 200, h: 100, path: '' })
+const chatText = layer('t', '…a chat.', 40)
+
+void test('text covered in the render but not in Figma is not visible', () => {
+  const r = checkText(ref([chatText]), none, page(['…a chat.'], { visibleTexts: [run('…a chat.', true)] }))
+  assert.deepEqual(r.notVisible, [{ id: 't', text: '…a chat.', covered: true }])
+  assert.equal(r.ok, false)
+  // A menu that Figma draws elsewhere does not cover the text.
+  const apart = checkText(
+    ref([chatText, menu(300)]),
+    none,
+    page(['…a chat.'], { visibleTexts: [run('…a chat.', true)] }),
+  )
+  assert.equal(apart.ok, false)
+})
+
+void test('text covered in the render and in Figma passes', () => {
+  const r = checkText(ref([chatText, menu(0)]), none, page(['…a chat.'], { visibleTexts: [run('…a chat.', true)] }))
+  assert.deepEqual([r.ok, r.notVisible], [true, []])
+})
+
+void test('text that nothing covers in the render passes', () => {
+  assert.equal(checkText(ref([chatText]), none, page(['…a chat.'])).ok, true)
+  assert.equal(checkText(ref([chatText, menu(0)]), none, page(['…a chat.'])).ok, true)
+})
+
+void test('only a later layer that is not an ancestor or descendant covers a text layer in Figma', () => {
+  const at = (id: string, name: string, type: string, path: string, y = 0, h = 100): Layer => ({
+    id,
+    name,
+    type,
+    x: 0,
+    y,
+    w: 200,
+    h,
+    path,
+  })
+  const text: Layer = { ...layer('t', 'Ask'), path: 'pane > row' }
+  const layers = [
+    at('1', 'pane', 'frame', ''),
+    at('2', 'row', 'frame', 'pane'),
+    text,
+    at('3', 'note', 'text', 'pane'),
+    at('4', 'divider', 'line', 'pane'),
+  ]
+  // Its parent, its grandparent, a later text layer and a line do not cover it.
+  assert.deepEqual([...coveredInFigma(layers)], [])
+  // A later sibling of its parent, and a later layer inside one, do.
+  assert.deepEqual([...coveredInFigma([...layers, at('5', 'menu', 'frame', 'pane')])], ['t'])
+  assert.deepEqual(
+    [...coveredInFigma([...layers, at('6', 'popover', 'frame', ''), at('7', 'bg', 'rounded-rectangle', 'popover')])],
+    ['t'],
+  )
+  // An earlier layer is under it, and a later one that does not overlap it leaves it alone.
+  assert.deepEqual([...coveredInFigma([at('0', 'backdrop', 'rounded-rectangle', ''), ...layers])], [])
+  assert.deepEqual([...coveredInFigma([...layers, at('8', 'menu', 'frame', '', 400)])], [])
 })

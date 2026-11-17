@@ -6,7 +6,12 @@
 // and reach the page as collectPage's second argument (collectPageScript).
 
 export type Box = { x: number; y: number; w: number; h: number }
-type TextRun = Box & { text: string; selector: string }
+export type TextRun = Box & {
+  text: string
+  selector: string
+  /** Another element draws over part of the run in the render, such as an open menu (see coveredAt). */
+  covered: boolean
+}
 export type FigmaBox = Box & { key: string; selector: string }
 export type RuleFinding = { rule: string; selector: string; detail: string }
 /** A rectangle by its edges, in viewport coordinates; an edge may be infinite. */
@@ -64,6 +69,72 @@ export function fieldText(field: { tagName: string; type: string; value: string;
   return collapse(field.placeholder)
 }
 
+/**
+ * The points where coveredAt tests a text run: the middle of each line it
+ * draws, at a tenth, half and nine tenths of the line's width.
+ */
+export function samplePoints(rects: readonly Edges[]): { x: number; y: number }[] {
+  return rects
+    .filter((r) => r.right - r.left >= 1 && r.bottom - r.top >= 1)
+    .flatMap((r) => [0.1, 0.5, 0.9].map((f) => ({ x: r.left + (r.right - r.left) * f, y: (r.top + r.bottom) / 2 })))
+}
+
+/**
+ * True when an element draws something of its own over what lies beneath:
+ * a background colour that is not fully transparent, a background image,
+ * a backdrop filter, or replaced content (an image, SVG, canvas, video or
+ * frame). A transparent box, such as a positioner or a layout wrapper,
+ * lets the text under it show through.
+ */
+export function paints(el: {
+  tagName: string
+  backgroundColor: string
+  backgroundImage: string
+  backdropFilter: string
+}): boolean {
+  if (['IMG', 'SVG', 'CANVAS', 'VIDEO', 'IFRAME', 'OBJECT', 'EMBED'].includes(el.tagName.toUpperCase())) return true
+  if (el.backgroundImage !== 'none' && el.backgroundImage !== '') return true
+  if (el.backdropFilter !== 'none' && el.backdropFilter !== '') return true
+  const color = el.backgroundColor.trim()
+  if (color === '' || color === 'transparent') return false
+  const args = /\(([^)]*)\)/.exec(color)?.[1]
+  if (args === undefined) return true
+  // rgba(r, g, b, a), rgb(r g b / a), color(srgb r g b / a): the alpha is last.
+  const alpha = args.includes('/')
+    ? args.split('/').at(-1)
+    : args.split(',').length === 4
+      ? args.split(',').at(-1)
+      : '1'
+  const a = (alpha ?? '1').trim()
+  const value = a.endsWith('%') ? Number.parseFloat(a) / 100 : Number.parseFloat(a)
+  return Number.isNaN(value) || value > 0
+}
+
+/**
+ * One element at a sample point, from the top of the stack down: whether it
+ * holds the run or is one of its ancestors (`related`), whether it shows at
+ * all (`shown`: not opacity 0 or hidden) and whether it paints (see paints).
+ */
+export type Hit = { related: boolean; shown: boolean; paints: boolean }
+
+/**
+ * True when another element covers a text run at any of its sample points:
+ * going down the stack of elements at the point (elementsFromPoint), one
+ * that is outside the run's own element and its ancestors, shows and paints
+ * comes before the run's own element or an ancestor of it. A point with no
+ * element (outside the viewport) is not covered here; fullyVisible judges
+ * the viewport.
+ */
+export function coveredAt(stacks: readonly (readonly Hit[])[]): boolean {
+  return stacks.some((stack) => {
+    for (const hit of stack) {
+      if (hit.related) return false
+      if (hit.shown && hit.paints) return true
+    }
+    return false
+  })
+}
+
 /** What scrollBars reads from one element: its computed overflow and its sizes. */
 export type ScrollBox = {
   overflowX: string
@@ -109,11 +180,14 @@ type Helpers = {
   isPortalRoot: typeof isPortalRoot
   fieldText: typeof fieldText
   scrollBars: typeof scrollBars
+  samplePoints: typeof samplePoints
+  paints: typeof paints
+  coveredAt: typeof coveredAt
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
 }
 
 export type PageMeasure = {
@@ -125,7 +199,10 @@ export type PageMeasure = {
   allTexts: string[]
   /** Placeholders and values of inputs and text areas (see fieldText). */
   fieldTexts: string[]
-  /** Text runs that a viewer sees in full: inside the viewport and every clipping ancestor. */
+  /**
+   * Text runs inside the viewport and every clipping ancestor; `covered` marks
+   * the runs another element draws over in the render.
+   */
   visibleTexts: TextRun[]
   /** Elements with data-figma, with their boxes in page coordinates. */
   figmaBoxes: FigmaBox[]
@@ -221,6 +298,33 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
   const shown = (el: Element) => el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
 
   // ---- text ----
+  // A run is covered when another element paints over it (an open menu over
+  // a pane). Hit testing follows paint order, so for the test every element
+  // takes pointer events: an element with pointer-events none still paints.
+  const hitStyle = document.createElement('style')
+  hitStyle.textContent = '*, *::before, *::after { pointer-events: auto !important; }'
+  document.head.append(hitStyle)
+  const stackAt = (x: number, y: number, own: Element) => {
+    const hits: { related: boolean; shown: boolean; paints: boolean }[] = []
+    for (const t of document.elementsFromPoint(x, y)) {
+      const related = own.contains(t) || t.contains(own)
+      const ts = getComputedStyle(t)
+      hits.push({
+        related,
+        shown: shown(t),
+        paints: helpers.paints({
+          tagName: t.tagName,
+          backgroundColor: ts.backgroundColor,
+          backgroundImage: ts.backgroundImage,
+          backdropFilter: ts.backdropFilter,
+        }),
+      })
+      if (related) break
+    }
+    return hits
+  }
+  const coveredRun = (rects: readonly Edges[], own: Element) =>
+    helpers.coveredAt(helpers.samplePoints(rects).map((p) => stackAt(p.x, p.y, own)))
   const allTexts: string[] = []
   const visibleTexts: TextRun[] = []
   const textNodes: Node[] = []
@@ -241,7 +345,7 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     // Every line of the string must be in view: a sentence that a scroll box
     // or an ellipsis cuts is not visible, though part of it shows.
     if (!helpers.fullyVisible(rects, clipsOf(parent), viewport)) continue
-    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent) })
+    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent), covered: coveredRun(rects, parent) })
   }
   const fieldTexts: string[] = []
   for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {
@@ -250,9 +354,14 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     if (text === '') continue
     fieldTexts.push(text)
     const rect = f.getBoundingClientRect()
-    if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport))
-      visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f) })
+    if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport)) {
+      // A field's box holds more than its text (an icon over its padding), so
+      // only its middle is tested.
+      const covered = helpers.coveredAt([stackAt(rect.left + rect.width / 2, rect.top + rect.height / 2, f)])
+      visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f), covered })
+    }
   }
+  hitStyle.remove()
 
   // ---- data-figma boxes ----
   const figmaBoxes: FigmaBox[] = roots
