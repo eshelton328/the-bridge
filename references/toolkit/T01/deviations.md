@@ -5,7 +5,10 @@ What still differs from Figma after round 1 of the fidelity loop
 1.0.0-beta.8), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/toolkitListTablet.ts`: the D1 list plus the
-Rules group, with writing-reviewer at →3 as T1 shows it.
+Rules group, with writing-reviewer at →3 as T1 shows it. The numbers
+below are from the run with library 1.0.0-beta.15 and the props that
+library #115 added: `ViewSwitch tone="accent"` and
+`FilterChips padding="none"`.
 
 ## Checks
 
@@ -17,7 +20,8 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
   `rules/releases.md`, `skills`, `rules/skills.md` and `→1 ←0`. The
   ste100 and writing names and counts (428:288, 428:291, 428:298,
   428:301) lie under Figma's tab bar too; `exceptions.json` names them.
-- Position: 4 of 32 layers pass (`header`, `filter · chips`,
+- Position: 7 of 32 layers pass (`header`, `read-only`,
+  `view · List, Map or Activity`, `filter · chips`, `search`,
   `group · SKILLS`, `tab bar`).
 - Rules: pass. The `hiddenOverflow` finding on the scrolling detail
   (`main.app-shell__detail`) is in `exceptions.json`: Figma's list runs
@@ -27,21 +31,21 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
 
 - **Row height.** Each item is 72 px high against Figma's 59 (`h +13` on
   every row key). Figma's row has an 11 px inset; the library `Card` has
-  16 (gap: Toolkit row (tablet)). Each row of the grid starts 13 px lower
-  than the one before, and each group header 3 px lower again:
-  `toolkit row · agents-md` and `toolkit row · ambitious` y +7;
-  `toolkit row · audit-slop` and `toolkit row · eval-cases` y +20;
+  16 (gap: Toolkit row (tablet)). The first row starts 3 px lower
+  (within the tolerance). Each row of the grid after it starts 13 px
+  lower than the one before, and each group header 3 px lower again:
+  `toolkit row · audit-slop` and `toolkit row · eval-cases` y +16;
   `toolkit row · mermaid-diagrams` and `toolkit row · pr-description`
-  y +33; `toolkit row · project-setup` and `toolkit row · readme` y +46;
-  `group · AGENTS` y +72; `toolkit row · diagram-reviewer` and
-  `toolkit row · eval-case-writer` y +75; `toolkit row · eval-grader` and
-  `toolkit row · pr-description-checker` y +88;
-  `toolkit row · readme-cold-reader` y +101;
-  `toolkit row · writing-reviewer` y +114; `group · RULES` y +127;
-  `toolkit row · commits-and-prs` and `toolkit row · diagrams` y +130;
-  `toolkit row · linear` and `toolkit row · readmes` y +143;
-  `toolkit row · releases` and `toolkit row · skills` y +156;
-  `toolkit row · ste100` and `toolkit row · writing` y +169. Only the
+  y +29; `toolkit row · project-setup` and `toolkit row · readme` y +42;
+  `group · AGENTS` y +68; `toolkit row · diagram-reviewer` and
+  `toolkit row · eval-case-writer` y +71; `toolkit row · eval-grader` and
+  `toolkit row · pr-description-checker` y +84;
+  `toolkit row · readme-cold-reader` y +97;
+  `toolkit row · writing-reviewer` y +110; `group · RULES` y +123;
+  `toolkit row · commits-and-prs` and `toolkit row · diagrams` y +126;
+  `toolkit row · linear` and `toolkit row · readmes` y +139;
+  `toolkit row · releases` and `toolkit row · skills` y +152;
+  `toolkit row · ste100` and `toolkit row · writing` y +165. Only the
   commits-and-prs and diagrams names show above the tab bar; Figma shows
   three rows of Rules there.
 - **Counts place.** The counts (`→0 ←1`) follow the name in the row's
@@ -54,14 +58,13 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
   box, 712 wide from x 22, and it ends at the tab bar (h 1040). The
   render's `toolkit` is the scrolling list with its 24 px sides, 756 wide
   from x 0, and as high as all its rows (`toolkit` x -22, y -12, w +44,
-  h +306). The side is 24 px against Figma's 22: no space token has 22.
-- **View switch.** List, Map and Activity are 232.5 px wide and 36 high
-  against Figma's 239 and 38 (`view · List, Map or Activity` x -7.5,
-  w +5.5 with library beta.15; gap: View switch 38 px). The Read-only
-  badge before it moves left with it (`read-only` x -6.8).
-- **Kind chips.** With library beta.15 the chip row passes the position
-  check. It is still 36 high against Figma's 32 (gap: Kind chip row), so
-  the search below starts 6 px lower (`search` y +6).
+  h +302). The side is 24 px against Figma's 22: no space token has 22.
+- **View switch.** List, Map and Activity and the Read-only badge
+  before them pass the position check, and with `tone="accent"` the
+  selected List item has the selected fill with no border, as in Figma.
+  The switch is still 36 px high against Figma's 38, with a 2 px inset
+  against 4 and 16 px icons against 15: no control token has 38 (gap:
+  View switch 38 px).
 - **Group headers.** SKILLS, AGENTS and RULES are 30 px high against
   Figma's 27 (`GroupHeader variant="sidebar"`; gap: Toolkit group
   header).
@@ -73,8 +76,3 @@ Rules group, with writing-reviewer at →3 as T1 shows it.
 - **Workflows and Hooks.** The frame shows only the Skills, Agents and
   Rules rows, so the state has no items for the other two kinds; their
   chips show Figma's counts (2 and 1).
-
-## Second review
-
-- **Selected view.** The selected List item has a light outline; Figma
-  draws only the selected fill (gap: View switch 38 px, P3).

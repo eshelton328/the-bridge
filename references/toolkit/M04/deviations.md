@@ -7,7 +7,9 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/moreDrawer.ts`: M1's data
 (`toolkitListTablet`) with the drawer open. The drawer is the shared
 block `web/src/blocks/MoreDrawer.tsx`, on the library's `MoreDrawer`.
-D01, T01 and M01 give the same results as before M04.
+D01, T01 and M01 give the same results as before M04. The numbers below
+are from the run with library 1.0.0-beta.15 and the props that library
+#115 added: `Button pressedTone="accent"` and `FilterChips padding="none"`.
 
 Most of the failures come from one cause. Figma draws M4's drawer over
 the Artifacts list (`library`, 424:6653), but the state belongs to the
@@ -74,7 +76,7 @@ has all its text and is the same in both.
   `toolkit row · skills`, `toolkit row · ste100` and
   `toolkit row · writing`. Two keys match an Artifacts layer of the same
   name but a different part: `filter · chips` (w +96, the kind chips
-  against the four Artifacts chips) and `search` (y +8, w +84: the
+  against the four Artifacts chips) and `search` (w +84: the
   Toolkit search is full width under the chips, the Artifacts search
   shares its row with Sort and Filter).
 - **Selected item.** Toolkit, the page on screen, has the selected fill

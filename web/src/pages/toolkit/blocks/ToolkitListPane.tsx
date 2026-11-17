@@ -49,6 +49,7 @@ export function ToolkitListPane({ data, ui, groups, sharedNames, onUiChange }: T
       <ToolkitHeader count={data.count} view={ui.view} layout="pane" />
       <div className={chips} data-figma="filter · chips">
         <FilterChips
+          padding="none"
           label="Filter by kind"
           multiple={false}
           items={data.chips.map((c) => ({
