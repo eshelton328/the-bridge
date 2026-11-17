@@ -24,6 +24,8 @@ const panel = css({
   flex: '1',
   // The panel fills the detail's height and no more, so its ScrollFrame scrolls the discussion (d-107).
   minH: '[0]',
+  // The reply box measures its cap against the panel's own height (cqh).
+  containerType: 'size',
   // A flex item keeps its content's width unless it clips.
   overflow: 'hidden',
   pt: '16',
@@ -42,8 +44,9 @@ const middle = css({ justifyContent: 'center' })
 // The space between the header, the discussion and the reply box, as the panel's 12 before (D7).
 const bodyGap = css({ gap: '12' })
 // A long draft grows the reply box; past half the window it scrolls inside, so Send stays in reach (d-107), as the
-// Inbox's discussion.
-const reply = css({ maxH: '[50vh]', overflowY: 'auto' })
+// Inbox's discussion. In a short window it also stops at 30% of the panel, so the header and the box leave the
+// messages room to read.
+const reply = css({ maxH: '[min(50vh, 30cqh)]', overflowY: 'auto' })
 
 export type DiscussionPanelProps = {
   discussion: ArtifactDiscussion

@@ -118,4 +118,29 @@ describe('a long draft (d-107)', () => {
         .toBe(true)
       expect(send.getBoundingClientRect().top).toBeGreaterThanOrEqual(reply.getBoundingClientRect().top)
     })
+
+  for (const c of states)
+    it(`keeps the messages and all of Send in view in a short window: ${c.name}`, async () => {
+      // 1232 x 400: the header and a half-window reply box would leave the messages no height.
+      await page.viewport(1232, 400)
+      const { root } = await renderRoot(c.state)
+      await expect.poll(() => root.querySelector('[data-figma="composer · discussion"] textarea')).not.toBeNull()
+      const field = root.querySelector('[data-figma="composer · discussion"] textarea')
+      const panel = root.querySelector('[data-figma="discussion panel"]')
+      if (!(field instanceof HTMLTextAreaElement) || panel === null) throw new Error('no discussion')
+      await userEvent.fill(field, Array.from({ length: 70 }, (_, i) => `line ${String(i + 1)}`).join('\n'))
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      const messages = panel.querySelector<HTMLElement>('.scroll-frame__body')
+      if (messages === null) throw new Error('no messages')
+      // The messages keep at least a line of reading (a 20 px line, with room to spare).
+      expect(messages.clientHeight).toBeGreaterThanOrEqual(40)
+      const reply = field.closest('.composer__root')?.parentElement ?? field
+      reply.scrollTop = reply.scrollHeight
+      const send = [...reply.querySelectorAll('button')].at(-1)
+      if (send === undefined) throw new Error('no Send')
+      await expect
+        .poll(() => send.getBoundingClientRect().bottom <= Math.min(window.innerHeight, box(reply).bottom) + 1)
+        .toBe(true)
+      expect(send.getBoundingClientRect().top).toBeGreaterThanOrEqual(Math.max(0, box(reply).top))
+    })
 })
