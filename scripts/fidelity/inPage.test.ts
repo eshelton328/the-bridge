@@ -79,6 +79,8 @@ void test('a checkbox, radio, hidden or password value is not field text; a text
   assert.equal(fieldText(field('INPUT', 'password', 'hunter2')), '')
   // A password field still shows its placeholder.
   assert.equal(fieldText(field('INPUT', 'password', '', 'Password')), 'Password')
+  // A filled password field hides its placeholder.
+  assert.equal(fieldText(field('INPUT', 'password', 'hunter2', 'Password')), '')
   // Text inputs and text areas keep their value, then their placeholder.
   assert.equal(fieldText(field('INPUT', 'text', '  Find   a task ')), 'Find a task')
   assert.equal(fieldText(field('INPUT', 'search', '', 'Search…')), 'Search…')

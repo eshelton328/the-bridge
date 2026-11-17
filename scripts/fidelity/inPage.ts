@@ -51,15 +51,17 @@ export function isPortalRoot(el: {
  * The text a form field shows, whitespace collapsed: its value, else its
  * placeholder. The value of a checkbox, radio, hidden or password input is
  * not text a viewer reads (a form value such as "hono-rpc", or masked
- * characters), so only its placeholder counts.
+ * characters), so it gives no text; its placeholder counts only while it
+ * is empty.
  */
 export function fieldText(field: { tagName: string; type: string; value: string; placeholder: string }): string {
   const collapse = (s: string) => s.replace(/\s+/g, ' ').trim()
   const valueHidden =
     field.tagName.toUpperCase() === 'INPUT' &&
     ['checkbox', 'radio', 'hidden', 'password'].includes(field.type.toLowerCase())
-  const value = valueHidden ? '' : collapse(field.value)
-  return value || collapse(field.placeholder)
+  // The browser shows the placeholder only while the field is empty.
+  if (field.value !== '') return valueHidden ? '' : collapse(field.value)
+  return collapse(field.placeholder)
 }
 
 type Helpers = { fullyVisible: typeof fullyVisible; isPortalRoot: typeof isPortalRoot; fieldText: typeof fieldText }
