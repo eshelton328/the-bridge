@@ -117,6 +117,8 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     start: z.array(z.object({ kind: AgentKind, label: z.string() })),
     openLabel: z.string(),
     open: z.array(OpenableChat),
+    /** Close pane and its shortcut at the pane's top end (D13), which remove the pane; none when not set. */
+    close: z.object({ label: z.string(), shortcut: z.string() }).optional(),
   }),
 ])
 export type WorkbenchPane = z.infer<typeof WorkbenchPane>
@@ -242,6 +244,8 @@ export const SidebarLayers = z.object({
    */
   shell: z.string().optional(),
   emptyRows: z.array(z.string()).optional(),
+  /** The empty pane's Close pane button and its shortcut (D13 402:6502, 402:6504). */
+  emptyClose: z.object({ close: z.string(), shortcut: z.string() }).optional(),
   newWorkspace: z.string().optional(),
   /** The group headers, by workspace id. */
   headers: z.record(z.string(), z.string()).optional(),

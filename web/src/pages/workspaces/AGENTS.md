@@ -78,8 +78,10 @@ first: it says what each file of a page folder is for.
   things to `PaneDropZone`: over a pane, `edge: 'middle'` (a drop that
   replaces the pane's chat) dims the whole pane under the zone with
   `overlay.scrim`, and `data.paneDrop.preview: 'end'` puts the dragged
-  chat at the end of the room under the text. Later frames add to these
-  blocks.
+  chat at the end of the room under the text. D13 adds `close` to the
+  empty pane (Close pane and its shortcut at the pane's top end, 12 in);
+  the split keeps its four places, so the other panes stay where they
+  are. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -96,7 +98,8 @@ first: it says what each file of a page folder is for.
   D10 `dragBelowPane` (from `twoPanes`, with D8's drag over a pane),
   D11 `threePanes` (from `twoPanes`, with D1's brain git shell pane),
   D12 `fourPanes` (from `threePanes`, with D1's four panes and D10's drag
-  over a pane).
+  over a pane), D13 `emptiedPane` (D12's panes and status bar on
+  `threePanes`, without the drag, and Close pane on the empty pane).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -111,7 +114,8 @@ first: it says what each file of a page folder is for.
   `data-figma`); for
   D6 the drop zone's text, `paneDrop`, and for D8 its optional `hint` and
   `icon` and the zone's layers in `layers.dropZone`, for D12 its
-  `preview`) and
+  `preview`; for D13 the empty pane's `close` and its layers in
+  `layers.emptyClose`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

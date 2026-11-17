@@ -14,6 +14,7 @@ import { twoPanes } from './twoPanes.ts'
 import { dragBelowPane } from './dragBelowPane.ts'
 import { threePanes } from './threePanes.ts'
 import { fourPanes } from './fourPanes.ts'
+import { emptiedPane } from './emptiedPane.ts'
 
 export const workspacesStates = {
   workbench,
@@ -29,4 +30,5 @@ export const workspacesStates = {
   dragBelowPane,
   threePanes,
   fourPanes,
+  emptiedPane,
 }

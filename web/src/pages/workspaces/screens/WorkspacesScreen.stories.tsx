@@ -208,3 +208,15 @@ export const FourPanes: Story = {
     await expect(zone).toHaveTextContent('Four panes is the most. drift check keeps running in the sidebar.')
   },
 }
+
+export const EmptiedPane: Story = {
+  name: 'D13: an emptied pane keeps its place and offers Close pane',
+  args: { data: workspacesStates.emptiedPane.data, ui: workspacesStates.emptiedPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 4 panes')).toBeVisible()
+    await expect(canvas.getByText('Empty pane')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Close pane' })).toBeVisible()
+    await expect(canvas.getByText('Cmd+W', { selector: 'button' })).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+  },
+}
