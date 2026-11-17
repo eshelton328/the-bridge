@@ -58,6 +58,8 @@ const toast = css({ position: 'sticky', bottom: '0', mt: 'auto' })
 // The tablet list (T1 346:5415) sits on the backdrop, with no pane fill; the Container pads it.
 const compactPane = css({ display: 'flex', flexDirection: 'column', gap: '2' })
 const header = css({ py: '4' })
+// M1 346:9010: the phone's large title sits 4 in from the header's edge, over the group chevrons and the kind tiles.
+const phoneHeader = css({ px: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
 const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
 
@@ -158,7 +160,7 @@ export function InboxListPane({
       className={desktop ? pane : compactPane}
       data-figma={data.toast === undefined ? 'inbox list' : undefined}
     >
-      <div className={desktop ? header : undefined} data-figma="header">
+      <div className={desktop ? header : layout === 'phone' ? phoneHeader : undefined} data-figma="header">
         <PageHeader
           size={desktop ? 'pane' : 'phone'}
           title="Inbox"

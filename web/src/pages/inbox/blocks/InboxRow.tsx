@@ -26,6 +26,10 @@ const runs = css({ color: 'fg.accent' })
 const finished = css({ color: 'status.done.fg' })
 const dismissed = css({ color: 'fg.subtle' })
 const removed = css({ color: 'status.danger.fg' })
+// M1 346:9052: the phone's rows pad their content 4 at the sides, against `ListRow`'s 10 (with its 1 px border, 11),
+// so the kind tile lines up under the group's chevron (16) and the age ends 16 from the screen's edge. The row
+// takes the 6 px difference outside the list's padding (LIBRARY_GAPS.md: List row padding on the phone).
+const phoneRow = css({ mx: '-6' })
 
 const outcomes = {
   done: { className: finished, icon: <CheckIcon size="12" /> },
@@ -160,6 +164,12 @@ export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRow
       {lines ? <Lines row={row} /> : undefined}
     </ListRow>
   )
-  // Only a row with actions gets the wrapper, so the desktop and tablet lists keep their boxes.
-  return onActions === undefined ? item : <div {...press}>{item}</div>
+  // Only a row with actions (the phone's) gets the wrapper, so the desktop and tablet lists keep their boxes.
+  return onActions === undefined ? (
+    item
+  ) : (
+    <div className={phoneRow} {...press}>
+      {item}
+    </div>
+  )
 }
