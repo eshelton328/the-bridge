@@ -130,6 +130,36 @@ const ArtifactSearch = z.object({
   hint: z.string(),
 })
 
+/** A field of the Add a link dialog (D5): its label, its value and the line under it. */
+const AddLinkField = z.object({
+  label: z.string(),
+  value: z.string(),
+  hint: z.string(),
+})
+
+/**
+ * The Add a link dialog (D5), for an artifact the library did not find, such as a Codex site on its own domain: the
+ * link, the source it was read as, the title from the page's `<title>` and the project. Which source is picked and
+ * whether the dialog is open are `ArtifactsUi.addLinkSource` and `ArtifactsUi.addLinkOpen`.
+ */
+export const AddLinkForm = z.object({
+  title: z.string(),
+  description: z.string(),
+  link: AddLinkField,
+  source: z.object({
+    label: z.string(),
+    /** One choice per source, labelled as the dialog names it, such as "Codex site". */
+    options: z.array(z.object({ value: ArtifactSource, label: z.string() })),
+    hint: z.string(),
+  }),
+  name: AddLinkField,
+  /** The project, picked from a menu of `projects`; it may be left out. */
+  project: AddLinkField.extend({ projects: z.array(z.string()) }),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type AddLinkForm = z.infer<typeof AddLinkForm>
+
 export const ArtifactsData = z.object({
   title: z.string(),
   /** The number of artifacts in the library, after the title. */
@@ -150,6 +180,8 @@ export const ArtifactsData = z.object({
   filterMenu: ArtifactFilterMenu.optional(),
   /** The search's match places and hint (D4); without it a search in the list view shows no places or hint. */
   search: ArtifactSearch.optional(),
+  /** The Add a link dialog (D5); without it Add a link opens nothing yet (D1 to D4). */
+  addLinkForm: AddLinkForm.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -168,6 +200,10 @@ export const ArtifactsUi = z.object({
   filterChecks: z.array(z.string()).optional(),
   /** Whether the list view's group of search matches is open (D4); open when not set. */
   matchesOpen: z.boolean().optional(),
+  /** The Add a link dialog is open (D5). */
+  addLinkOpen: z.boolean().optional(),
+  /** The source the Add a link dialog has picked, read from the link (D5). */
+  addLinkSource: ArtifactSource.optional(),
 })
 export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 

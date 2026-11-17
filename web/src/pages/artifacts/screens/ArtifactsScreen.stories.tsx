@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, within } from 'storybook/test'
+import { expect, waitFor, within } from 'storybook/test'
 import { artifactsStates } from '../states/index.ts'
 import { ArtifactsScreen } from './ArtifactsScreen.tsx'
 
@@ -69,5 +69,22 @@ export const SearchList: Story = {
         'Search reads titles, descriptions, projects and links. Filters and the source chips still apply.',
       ),
     ).toBeVisible()
+  },
+}
+
+export const AddLink: Story = {
+  name: 'D5: the Add a link dialog over the library',
+  args: { data: artifactsStates.addLink.data, ui: artifactsStates.addLink.ui, viewport: 'desktop' },
+  play: async () => {
+    // The dialog is a portal outside the story's root.
+    const page = within(document.body)
+    await expect(await page.findByRole('dialog', { name: 'Add a link' })).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'Link' })).toHaveValue('https://panda-tokens.example.com/playground')
+    // The dialog moves the focus to the link once it has opened.
+    await waitFor(() => expect(page.getByRole('textbox', { name: 'Link' })).toHaveFocus())
+    await expect(page.getByRole('radio', { name: 'Codex site' })).toBeChecked()
+    await expect(page.getByRole('textbox', { name: 'Title' })).toHaveValue('Panda tokens playground')
+    await expect(page.getByText('Read from the page’s <title>.')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Add artifact' })).toBeVisible()
   },
 }

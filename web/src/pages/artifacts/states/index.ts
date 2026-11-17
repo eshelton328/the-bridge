@@ -1,6 +1,7 @@
 // Every Figma state of the Artifacts page, by id. scripts/genRegistry.ts reads the
 // file names in this folder; each must be a key here and a story. The first is the
 // state the app shows without `?state=`.
+import { addLink } from './addLink.ts'
 import { artifactOpen } from './artifactOpen.ts'
 import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
@@ -11,4 +12,5 @@ export const artifactsStates = {
   artifactOpen,
   filterOpen,
   searchList,
+  addLink,
 }
