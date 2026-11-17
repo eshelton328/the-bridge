@@ -112,3 +112,9 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   preview). The three pass the position check.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames.
+
+## Second review
+
+- **Gate fill.** The reviewer saw Pre-registered? and Owner decides filled
+  with an amber tint, where Figma draws only the amber border and title
+  on the card's own fill. Fixed: a gate now keeps the card's fill.
