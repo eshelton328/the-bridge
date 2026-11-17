@@ -31,7 +31,8 @@ const waitTitle = css({ textStyle: 'label' })
 const mono = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const fill = css({ flex: '1' })
-// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top.
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
+// are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
 const phoneTask = css({ px: '4', pt: '8' })
 
 export type QuestionDetailProps = {
@@ -52,7 +53,7 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
     <Container size={detailContainerSize(layout)} className={phone ? fill : undefined}>
       {back}
       <Stack
-        gap="24"
+        gap={phone ? '20' : '24'}
         className={phone ? phoneTask : undefined}
         data-figma={layout === 'desktop' ? undefined : 'task · question'}
       >

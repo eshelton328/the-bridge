@@ -31,7 +31,8 @@ import { type InboxDrafts, type InboxNextStep, type InboxUi } from '../types.ts'
 
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const fill = css({ flex: '1' })
-// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top.
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
+// are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
 const phoneTask = css({ px: '4', pt: '8' })
 // M3 346:9434: the title on one line, cut with an ellipsis, over the prompt.
 const scrolledTitle = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0', display: 'grid' })
@@ -42,7 +43,9 @@ const footer = css({
   pt: '10',
   pb: '10',
   px: '24',
-  bg: 'surface.chrome',
+  // Opaque, as PinnedAction: the chrome over the canvas, so the page that scrolls under it does not show through.
+  bg: 'bg.canvas',
+  backgroundImage: 'linear-gradient(token(colors.surface.chrome), token(colors.surface.chrome))',
   borderTopWidth: 'default',
   borderTopStyle: 'solid',
   borderTopColor: 'border.default',
@@ -126,7 +129,7 @@ export function NextStepDetail({
     >
       {back}
       <Stack
-        gap="24"
+        gap={phone ? '20' : '24'}
         className={phone ? phoneTask : undefined}
         data-figma={compact ? `task · ${pinned === undefined ? 'next step' : 'running'}` : undefined}
       >

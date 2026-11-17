@@ -49,7 +49,9 @@ export type SnoozeControl = {
 export type DiscussControl = { open: boolean; onOpenChange?: ((open: boolean) => void) | undefined }
 
 const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
-const title = css({ textStyle: 'title', m: '0' })
+// Panda's preflight balances the lines of every heading (`text-wrap: balance`), which broke M5's title after "or"
+// with half the line empty. Figma fills each line before it wraps, as `wrap` does.
+const title = css({ textStyle: 'title', m: '0', textWrap: 'wrap' })
 
 const chipIcons = {
   folder: <FolderIcon />,

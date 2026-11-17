@@ -99,7 +99,11 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
       <div data-figma="started task">
         <Panel>
           <Stack gap="4">
-            <Inline gap="8" align="center">
+            {/* Figma sets the title, the state and the chevron 8 apart in a row 340 wide (M8 346:10849); the header's
+                `Panel` pads 16 against Figma's 13, so the row is 332 here and the pill 2 px wider. On the phone the
+                gaps take 6, which gives the title back the 4 px it needs to show whole, as Figma draws it; a longer
+                title still ends with an ellipsis. */}
+            <Inline gap={phone ? '6' : '8'} align="center">
               <h1 className={phone ? phoneTitle : compactTitle}>
                 <TruncatedText>{detail.title}</TruncatedText>
               </h1>
@@ -129,7 +133,8 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts }: Ru
         ) : (
           <CompactHeader detail={detail} onBack={onBack} phone={layout === 'phone'} />
         )}
-        <Stack gap="16" className={layout === 'desktop' ? fill : chatCompact}>
+        {/* T5 and M8 set the chat's entries 12 apart (346:6393 to 346:6433, 346:10863 to 346:10882); D5 has 16. */}
+        <Stack gap={layout === 'desktop' ? '16' : '12'} className={layout === 'desktop' ? fill : chatCompact}>
           {detail.chat.map((entry, i) => (
             <ChatEntry key={`${String(i)}:${entry.type}`} entry={entry} />
           ))}
