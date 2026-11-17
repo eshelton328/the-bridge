@@ -83,12 +83,15 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const shown = desktop ? data.detail : open
   // Snooze or Mark done takes the shown item out of the list, by the id the detail carries: after Back on a tablet
   // and a resize to the desktop nothing is selected, but the desktop still shows the item. On a tablet or phone the
-  // list shows again.
+  // list shows again. The desktop keeps showing the item, so Erik can pick again: the last pick replaces the earlier
+  // one, and the item is never in the list twice.
   const snooze = (id: InboxItemId, until: string | null) => {
+    const snoozed = ui.snoozed.filter((s) => s.id !== id)
+    const done = ui.done.filter((d) => d !== id)
     onUiChange?.(
       until === null
-        ? { snoozeOpen: false, done: [...ui.done, id] }
-        : { snoozeOpen: false, snoozed: [...ui.snoozed, { id, until }] },
+        ? { snoozeOpen: false, snoozed, done: [...done, id] }
+        : { snoozeOpen: false, snoozed: [...snoozed, { id, until }], done },
     )
     onBack?.()
   }

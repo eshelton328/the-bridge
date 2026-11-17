@@ -292,6 +292,21 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
   })
 
+  it('keeps one Snoozed row when the desktop snoozes the shown task twice', async () => {
+    await page.viewport(1512, 982)
+    view = await renderInbox('nextStep').rendered
+    const snoozeForAnHour = async () => {
+      await page.getByRole('button', { name: 'Snooze' }).click()
+      await page.getByRole('menuitem', { name: /In 1 hour/ }).click()
+      await expect.element(page.getByRole('menu')).not.toBeInTheDocument()
+    }
+    await snoozeForAnHour()
+    await snoozeForAnHour()
+    await page.getByRole('button', { name: /Snoozed/ }).click()
+    await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
+    expect(page.getByText('Snoozed until 11:40').elements()).toHaveLength(1)
+  })
+
   it('edits the prompt with Edit and Done, and brings the suggestion back with Reset', async () => {
     await tablet('taskPage')
     const editor = () => page.getByRole('textbox', { name: 'Suggested prompt' })
