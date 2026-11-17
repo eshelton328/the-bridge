@@ -22,7 +22,7 @@ import type { InboxQuestion } from '../types.ts'
 const grow = css({ flex: '1' })
 const waitTitle = css({ textStyle: 'label' })
 const mono = css({ textStyle: 'mono', color: 'fg.muted' })
-const context = css({ textStyle: 'body', color: 'fg.muted', m: '0' })
+const context = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
 export function QuestionDetail({ detail }: { detail: InboxQuestion }) {

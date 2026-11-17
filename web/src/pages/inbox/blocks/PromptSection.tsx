@@ -19,7 +19,7 @@ import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
 import { PromptDialog } from './PromptDialog.tsx'
 
-const text = css({ textStyle: 'body', color: 'fg.default' })
+const text = css({ textStyle: 'bodySm', color: 'fg.default' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const more = css({
   display: 'inline-flex',

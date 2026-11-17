@@ -12,7 +12,7 @@ import { RunInCard } from '../blocks/RunInCard.tsx'
 import { SourceList } from '../blocks/SourceList.tsx'
 import type { InboxNextStep, InboxUi } from '../types.ts'
 
-const why = css({ textStyle: 'body', color: 'fg.muted', m: '0' })
+const why = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
 export type NextStepDetailProps = {

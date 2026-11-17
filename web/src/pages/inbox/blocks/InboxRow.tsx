@@ -60,6 +60,7 @@ export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
     row.outcome !== undefined || row.running !== undefined || row.snoozed !== undefined || row.blocks !== null
   return (
     <ListRow
+      density="compact"
       title={row.title}
       meta={query === undefined ? row.meta : <Highlight text={row.meta} query={query} />}
       leading={<KindTile kind={row.kind} />}
