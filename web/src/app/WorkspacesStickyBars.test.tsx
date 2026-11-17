@@ -159,3 +159,87 @@ describe('a long draft in the Workbench (d-107)', () => {
       expect(box(send).top).toBeGreaterThanOrEqual(box(reply).top)
     })
 })
+
+describe('a short window in the Workbench (d-107)', () => {
+  // A phone shows the desktop frames in a Storybook frame much shorter than 982 px. At 1512 × 600 the transcripts of
+  // D1 and D5 no longer fit their panes: each composer (and the side chat's "Open as its own pane") must stay below
+  // its transcript, never over it, and a transcript scrolls to its last entry.
+  type ShortCase = { name: string; state: string }
+  const cases: ShortCase[] = [
+    { name: 'the split (D1)', state: 'workbench' },
+    { name: 'the side chat in a pane (D5)', state: 'sideChatInPane' },
+  ]
+
+  /** The text boxes of the body's leaves that the body shows (not scrolled out or clipped away). */
+  const shownText = (body: HTMLElement) => {
+    const view = box(body)
+    const out: DOMRect[] = []
+    const walk = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
+    for (let node = walk.nextNode(); node !== null; node = walk.nextNode()) {
+      if ((node.textContent ?? '').trim() === '') continue
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      for (const r of range.getClientRects())
+        if (r.width > 0 && r.bottom > view.top + 1 && r.top < view.bottom - 1) out.push(r)
+    }
+    return out
+  }
+
+  /** The box of the body's last line of text. */
+  const lastText = (body: HTMLElement): DOMRect | null => {
+    let found: DOMRect | null = null
+    const walk = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
+    for (let node = walk.nextNode(); node !== null; node = walk.nextNode()) {
+      if ((node.textContent ?? '').trim() === '') continue
+      const range = document.createRange()
+      range.selectNodeContents(node)
+      const rects = [...range.getClientRects()].filter((r) => r.width > 0)
+      const end = rects.at(-1)
+      if (end !== undefined && (found === null || end.bottom >= found.bottom)) found = end
+    }
+    return found
+  }
+
+  for (const c of cases)
+    it(`keeps every transcript above its composer and lets it scroll: ${c.name}`, async () => {
+      await page.viewport(1512, 600)
+      const view = await renderWorkspaces(c.state)
+      onTestFinished(view.unmount)
+      const root = await appRoot()
+      await expect.poll(() => root.querySelectorAll('.scroll-frame__footer').length).toBeGreaterThan(0)
+      await document.fonts.ready
+      const frames = [...root.querySelectorAll('.scroll-frame__root')].filter(
+        (frame) => frame.querySelector(':scope > .scroll-frame__footer') !== null,
+      )
+      let scrolled = 0
+      for (const frame of frames) {
+        const body = frame.querySelector<HTMLElement>(':scope > .scroll-frame__body')
+        const footer = frame.querySelector(':scope > .scroll-frame__footer')
+        if (body === null || footer === null) throw new Error('no body or footer')
+        // The footer sits inside the window, and the body ends where the footer starts.
+        expect(box(footer).bottom).toBeLessThanOrEqual(window.innerHeight + 0.5)
+        expect(box(body).bottom).toBeLessThanOrEqual(box(footer).top + 0.5)
+        // No text the body shows lies under the footer, at the top of the transcript or at its end.
+        for (const r of shownText(body)) expect(r.top).toBeLessThan(box(footer).top)
+        // A transcript at least one line high (20 px) scrolls to its last line. The side chat in a short pane (D5) may
+        // have less: its title, "Open as its own pane" and the two-row Composer fill it (LIBRARY_GAPS.md, Side chat in
+        // a pane), so its body is empty, never covered.
+        if (body.clientHeight >= 20 && body.scrollHeight > body.clientHeight + 1) {
+          body.scrollTop = body.scrollHeight
+          await expect.poll(() => body.scrollTop > 0).toBe(true)
+          // Scrolled to its end, the transcript's last text is in view, above the footer.
+          const last = lastText(body)
+          if (last === null) throw new Error('no transcript text')
+          expect(last.bottom).toBeLessThanOrEqual(box(body).bottom + 1)
+          expect(last.bottom).toBeLessThanOrEqual(box(footer).top + 1)
+          for (const r of shownText(body)) expect(r.top).toBeLessThan(box(footer).top)
+          scrolled += 1
+        }
+      }
+      // At this height at least one transcript is taller than its pane, so the test sees a scroll.
+      expect(scrolled).toBeGreaterThan(0)
+      // The page and the panes do not scroll; only the transcripts.
+      expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+      for (const outer of root.querySelectorAll('.app-shell__detail, .pane__body')) expect(outer.scrollTop).toBe(0)
+    })
+})
