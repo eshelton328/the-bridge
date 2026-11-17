@@ -1,0 +1,1 @@
+Every item page has an Activity tab: how often the item ran, where, and which chats loaded it. Each chat opens as in D18. The counts for writer are real, from the session files on this Mac. For a rule, which has no tool call, Activity counts reads of its file (proposal).

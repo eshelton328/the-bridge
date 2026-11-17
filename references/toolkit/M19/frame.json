@@ -1,0 +1,862 @@
+{
+  "frameId": "M19",
+  "code": "M19",
+  "name": "M19 · A rule",
+  "node": "487:1219",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "487:1242",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "487:1243",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "487:1244",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "487:1245",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "487:1246",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1247",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "487:1248",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "487:1250",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "487:1251",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:5",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:6",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "487:1252",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "487:1253",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "487:1258",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 200,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1390",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 62,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:8481",
+      "name": "icon/rule",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "487:1394",
+      "name": "Rule",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 25,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Rule"
+    },
+    {
+      "id": "487:1263",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 82,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "487:1264",
+      "name": "skills",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 71,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "skills"
+    },
+    {
+      "id": "487:1395",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 220,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1396",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "487:1399",
+      "name": "toolkit/rules/skills.md",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 166,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/rules/skills.md"
+    },
+    {
+      "id": "487:1400",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 211,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "487:1272",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1273",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 84,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1274",
+      "name": "Overview",
+      "type": "text",
+      "x": 23,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "487:1275",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 100,
+      "y": 218,
+      "w": 105,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1276",
+      "name": "How it works",
+      "type": "text",
+      "x": 110,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "487:1277",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 209,
+      "y": 218,
+      "w": 51,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1278",
+      "name": "Files",
+      "type": "text",
+      "x": 219,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "487:1279",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1280",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "487:1281",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1282",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "487:1283",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1284",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "487:1403",
+      "name": "How every skill in the toolkit is built.",
+      "type": "text",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 60,
+      "path": "content > toolkit",
+      "text": "How every skill in the toolkit is built. A skill is a procedure an agent loads only when a task needs it, so it can carry depth that a context file cannot afford."
+    },
+    {
+      "id": "487:1404",
+      "name": "when it loads",
+      "type": "frame",
+      "x": 12,
+      "y": 333,
+      "w": 366,
+      "h": 56,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1405",
+      "name": "icon/clock",
+      "type": "frame",
+      "x": 27,
+      "y": 353,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > when it loads"
+    },
+    {
+      "id": "487:1408",
+      "name": "Loads when",
+      "type": "text",
+      "x": 53,
+      "y": 351,
+      "w": 79,
+      "h": 20,
+      "path": "content > toolkit > when it loads",
+      "text": "Loads when"
+    },
+    {
+      "id": "487:1409",
+      "name": "a file under toolkit/skills/** or skills",
+      "type": "text",
+      "x": 142,
+      "y": 344,
+      "w": 221,
+      "h": 34,
+      "path": "content > toolkit > when it loads",
+      "text": "a file under toolkit/skills/** or skills/** changes"
+    },
+    {
+      "id": "487:1410",
+      "name": "columns",
+      "type": "frame",
+      "x": 12,
+      "y": 401,
+      "w": 366,
+      "h": 344,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1411",
+      "name": "file preview",
+      "type": "frame",
+      "x": 12,
+      "y": 401,
+      "w": 366,
+      "h": 384,
+      "path": "content > toolkit > columns"
+    },
+    {
+      "id": "487:1412",
+      "name": "preview bar",
+      "type": "frame",
+      "x": 13,
+      "y": 402,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > columns > file preview"
+    },
+    {
+      "id": "487:1413",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 27,
+      "y": 413.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1416",
+      "name": "rules/skills.md",
+      "type": "text",
+      "x": 49,
+      "y": 412,
+      "w": 108,
+      "h": 17,
+      "path": "content > toolkit > columns > file preview > preview bar",
+      "text": "rules/skills.md"
+    },
+    {
+      "id": "487:1417",
+      "name": "spacer",
+      "type": "frame",
+      "x": 165,
+      "y": 420,
+      "w": 113,
+      "h": 1,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1418",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 286,
+      "y": 414.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1421",
+      "name": "Read-only",
+      "type": "text",
+      "x": 306,
+      "y": 412,
+      "w": 57,
+      "h": 17,
+      "path": "content > toolkit > columns > file preview > preview bar",
+      "text": "Read-only"
+    },
+    {
+      "id": "487:1422",
+      "name": "rendered markdown",
+      "type": "frame",
+      "x": 13,
+      "y": 439,
+      "w": 364,
+      "h": 345,
+      "path": "content > toolkit > columns > file preview"
+    },
+    {
+      "id": "487:1423",
+      "name": "Skills",
+      "type": "text",
+      "x": 35,
+      "y": 457,
+      "w": 320,
+      "h": 29,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "Skills"
+    },
+    {
+      "id": "487:1424",
+      "name": "The bar below exists because a skill run",
+      "type": "text",
+      "x": 35,
+      "y": 496,
+      "w": 320,
+      "h": 60,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "The bar below exists because a skill runs thousands of times on prompts nobody tested; what is not checked will drift."
+    },
+    {
+      "id": "487:1425",
+      "name": "Layout",
+      "type": "text",
+      "x": 35,
+      "y": 566,
+      "w": 320,
+      "h": 20,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "Layout"
+    },
+    {
+      "id": "487:1426",
+      "name": "<skill>/\n├── SKILL.md\n├── references/\n├─",
+      "type": "text",
+      "x": 35,
+      "y": 596,
+      "w": 320,
+      "h": 120,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "<skill>/\n├── SKILL.md\n├── references/\n├── scripts/\n├── assets/\n└── evals/"
+    },
+    {
+      "id": "487:1427",
+      "name": "Only SKILL.md is required, but a skill i",
+      "type": "text",
+      "x": 35,
+      "y": 726,
+      "w": 320,
+      "h": 40,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "Only SKILL.md is required, but a skill is not done until it has evals."
+    },
+    {
+      "id": "487:1428",
+      "name": "side",
+      "type": "frame",
+      "x": 12,
+      "y": 801,
+      "w": 366,
+      "h": 1,
+      "path": "content > toolkit > columns"
+    },
+    {
+      "id": "487:1349",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "487:1350",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1351",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "487:1352",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "487:1355",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "487:1356",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1357",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "487:1358",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "487:1362",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "487:1363",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "487:1364",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "487:1365",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1366",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "487:1367",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "487:1373",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "487:1374",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1375",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "487:1376",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "487:1379",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "487:1380",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1381",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "487:1382",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "487:1387",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "487:1388",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "487:1389",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "487:1243",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

@@ -1,0 +1,1 @@
+Activity on the iPad mini. All, Chats and Headless filter every count, chart and list by where the session started: Chats are sessions from the CLI or the desktop app (T11), Headless are claude -p and SDK runs (T12).

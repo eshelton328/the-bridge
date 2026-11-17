@@ -1,0 +1,1 @@
+Files as a tree, with each folder’s role. A file opens in M6.

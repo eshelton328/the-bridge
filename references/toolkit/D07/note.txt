@@ -1,0 +1,1 @@
+An agent’s own section shows how it runs, from its frontmatter: the Claude model, the Codex settings, its tools and its own context. The four cards have the same size. Used in workflows lists the workflows that run it; no workflow runs writing-reviewer.

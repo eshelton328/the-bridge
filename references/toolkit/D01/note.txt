@@ -1,0 +1,1 @@
+One read-only list of every agent, skill, workflow, rule and hook in toolkit/ (R35). The kind chips and search narrow it. Each card shows how many toolkit files it links to (→) and how many files link to it (←). The names, paths, file counts and links are real: Claude read them from toolkit/ on 2026-11-14. Toolkit has its own item on the rail after Artifacts; this is a proposal.

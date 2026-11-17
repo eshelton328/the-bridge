@@ -1,0 +1,1 @@
+A script opens in Explain: what it does, then each step in plain English with its line. Code shows the source (M6).

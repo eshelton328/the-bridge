@@ -1,0 +1,1 @@
+A rule has no eval cases, so the tab says so and lists the ledgers that test what the rule asks for.

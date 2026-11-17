@@ -1,0 +1,1 @@
+Explain is the default view of a script: an overview, then each step in plain English with a link to its lines. Code shows the source. Claude writes the explanation from the file and writes it again when the file changes (proposal). The steps and line numbers are real.

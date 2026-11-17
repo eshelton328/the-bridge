@@ -1,0 +1,1 @@
+Headless runs has the same sections as All, with only claude -p and SDK sessions. Its own list groups the sessions by the skill eval that started them; the bar is the share that loaded an item, and the skill chip opens its page. Counts are real; running now is sample data.

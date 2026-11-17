@@ -1,0 +1,1 @@
+The agent’s results from the writer ledger (D5): what it should fail and what it failed.

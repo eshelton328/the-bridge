@@ -1,0 +1,1 @@
+A workflow opens on its own page, without the list. The flow comes from the Mermaid flow and the steps table: gates in amber, steps 4 and 5 in parallel, and the loop back to skill-eval-cases. Select a step to see its input, output, model and failure handling. The rounds come from git log; live step status needs a run.json (proposal).

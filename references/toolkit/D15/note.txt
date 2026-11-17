@@ -1,0 +1,1 @@
+Chats has the same sections as All, with only chat sessions: running now, calls per day and most called. Its own list shows each chat with the items it used; an item opens its page, and the row opens the chat (D18). Counts, titles and items are real; running now is sample data.

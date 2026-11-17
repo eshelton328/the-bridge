@@ -1,0 +1,1 @@
+Toolkit moves out of Later in the More drawer and opens the page, after Artifacts. Brain and Workflows stay under Later.

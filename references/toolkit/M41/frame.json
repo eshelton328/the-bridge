@@ -1,0 +1,1160 @@
+{
+  "frameId": "M41",
+  "code": "M41",
+  "name": "M41 · How a hook works",
+  "node": "495:3545",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "495:3568",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "495:3569",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "495:3570",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "495:3571",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "495:3572",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3573",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "495:3574",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "495:3576",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "495:3577",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:57",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:58",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "495:3578",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "495:3579",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "495:3584",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 205,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3585",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 67,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:9020",
+      "name": "icon/hook",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "495:3589",
+      "name": "Hook",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 30,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Hook"
+    },
+    {
+      "id": "495:3590",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 87,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "495:3591",
+      "name": "commit-msg",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 169,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "commit-msg"
+    },
+    {
+      "id": "495:3592",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 227,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3593",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "495:3596",
+      "name": "toolkit/hooks/commit-msg",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 173,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/hooks/commit-msg"
+    },
+    {
+      "id": "495:3597",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 218,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "495:3747",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3748",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 218,
+      "w": 82,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3749",
+      "name": "Overview",
+      "type": "text",
+      "x": 22,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "495:3750",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 98,
+      "y": 217,
+      "w": 107,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3751",
+      "name": "How it works",
+      "type": "text",
+      "x": 109,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "495:3752",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 209,
+      "y": 218,
+      "w": 51,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3753",
+      "name": "Files",
+      "type": "text",
+      "x": 219,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "495:3754",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3755",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "495:3756",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3757",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "495:3758",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3759",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "495:3760",
+      "name": "trigger",
+      "type": "frame",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 48,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3761",
+      "name": "Loads when a task writes text that anoth",
+      "type": "text",
+      "x": 23,
+      "y": 268,
+      "w": 344,
+      "h": 34,
+      "path": "content > toolkit > trigger",
+      "text": "Runs on every git commit in the brain, because link.sh sets core.hooksPath to toolkit/hooks."
+    },
+    {
+      "id": "495:3762",
+      "name": "steps",
+      "type": "frame",
+      "x": 12,
+      "y": 321,
+      "w": 366,
+      "h": 415,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3763",
+      "name": "step 1",
+      "type": "frame",
+      "x": 12,
+      "y": 321,
+      "w": 366,
+      "h": 61,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3764",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 331,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 1"
+    },
+    {
+      "id": "495:3765",
+      "name": "1",
+      "type": "text",
+      "x": 33,
+      "y": 332,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 1 > num",
+      "text": "1"
+    },
+    {
+      "id": "495:3766",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 331,
+      "w": 306,
+      "h": 41,
+      "path": "content > toolkit > steps > step 1"
+    },
+    {
+      "id": "495:3767",
+      "name": "Read the message",
+      "type": "text",
+      "x": 59,
+      "y": 331,
+      "w": 122,
+      "h": 20,
+      "path": "content > toolkit > steps > step 1 > text",
+      "text": "Read the message"
+    },
+    {
+      "id": "495:3768",
+      "name": "Drop comment lines and all below the scissors line.",
+      "type": "text",
+      "x": 59,
+      "y": 355,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 1 > text",
+      "text": "Drop comment lines and all below the scissors line."
+    },
+    {
+      "id": "495:3769",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 382,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3770",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 383,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3772",
+      "name": "step 2",
+      "type": "frame",
+      "x": 12,
+      "y": 396,
+      "w": 366,
+      "h": 61,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3773",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 406,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 2"
+    },
+    {
+      "id": "495:3774",
+      "name": "2",
+      "type": "text",
+      "x": 33,
+      "y": 407,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 2 > num",
+      "text": "2"
+    },
+    {
+      "id": "495:3775",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 406,
+      "w": 306,
+      "h": 41,
+      "path": "content > toolkit > steps > step 2"
+    },
+    {
+      "id": "495:3776",
+      "name": "Skip merges",
+      "type": "text",
+      "x": 59,
+      "y": 406,
+      "w": 82,
+      "h": 20,
+      "path": "content > toolkit > steps > step 2 > text",
+      "text": "Skip merges"
+    },
+    {
+      "id": "495:3777",
+      "name": "Messages that git writes for merges and fixups pass.",
+      "type": "text",
+      "x": 59,
+      "y": 430,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 2 > text",
+      "text": "Messages that git writes for merges and fixups pass."
+    },
+    {
+      "id": "495:3789",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 457,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3790",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 458,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3792",
+      "name": "step 3",
+      "type": "frame",
+      "x": 12,
+      "y": 471,
+      "w": 366,
+      "h": 88,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3793",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 481,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 3"
+    },
+    {
+      "id": "495:3794",
+      "name": "3",
+      "type": "text",
+      "x": 33,
+      "y": 482,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > num",
+      "text": "3"
+    },
+    {
+      "id": "495:3795",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 481,
+      "w": 306,
+      "h": 68,
+      "path": "content > toolkit > steps > step 3"
+    },
+    {
+      "id": "495:3796",
+      "name": "Check the header",
+      "type": "text",
+      "x": 59,
+      "y": 481,
+      "w": 117,
+      "h": 20,
+      "path": "content > toolkit > steps > step 3 > text",
+      "text": "Check the header"
+    },
+    {
+      "id": "495:3797",
+      "name": "A source for each claim, read in this se",
+      "type": "text",
+      "x": 59,
+      "y": 505,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > text",
+      "text": "Type, scope, a lowercase verb, 72 characters at most."
+    },
+    {
+      "id": "495:3873",
+      "name": "uses",
+      "type": "frame",
+      "x": 59,
+      "y": 526,
+      "w": 306,
+      "h": 23,
+      "path": "content > toolkit > steps > step 3 > text"
+    },
+    {
+      "id": "495:3884",
+      "name": "uses · commits-and-prs",
+      "type": "frame",
+      "x": 59,
+      "y": 526,
+      "w": 138,
+      "h": 23,
+      "path": "content > toolkit > steps > step 3 > text > uses"
+    },
+    {
+      "id": "495:3885",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 66,
+      "y": 532,
+      "w": 11,
+      "h": 11,
+      "path": "content > toolkit > steps > step 3 > text > uses > uses · commits-and-prs"
+    },
+    {
+      "id": "495:3888",
+      "name": "commits-and-prs",
+      "type": "text",
+      "x": 82,
+      "y": 529,
+      "w": 108,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > text > uses > uses · commits-and-prs",
+      "text": "commits-and-prs"
+    },
+    {
+      "id": "495:3798",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 559,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3799",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 560,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3801",
+      "name": "step 4",
+      "type": "frame",
+      "x": 12,
+      "y": 573,
+      "w": 366,
+      "h": 61,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3802",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 583,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 4"
+    },
+    {
+      "id": "495:3803",
+      "name": "4",
+      "type": "text",
+      "x": 33,
+      "y": 584,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 4 > num",
+      "text": "4"
+    },
+    {
+      "id": "495:3804",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 583,
+      "w": 306,
+      "h": 41,
+      "path": "content > toolkit > steps > step 4"
+    },
+    {
+      "id": "495:3805",
+      "name": "Check the body",
+      "type": "text",
+      "x": 59,
+      "y": 583,
+      "w": 104,
+      "h": 20,
+      "path": "content > toolkit > steps > step 4 > text",
+      "text": "Check the body"
+    },
+    {
+      "id": "495:3806",
+      "name": "The first sentence gives the reader what",
+      "type": "text",
+      "x": 59,
+      "y": 607,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 4 > text",
+      "text": "Lines wrap at 72. Footers go last."
+    },
+    {
+      "id": "495:3807",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 634,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3808",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 635,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3810",
+      "name": "step 5",
+      "type": "frame",
+      "x": 12,
+      "y": 648,
+      "w": 366,
+      "h": 88,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3811",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 658,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 5"
+    },
+    {
+      "id": "495:3812",
+      "name": "5",
+      "type": "text",
+      "x": 33,
+      "y": 659,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 5 > num",
+      "text": "5"
+    },
+    {
+      "id": "495:3813",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 658,
+      "w": 306,
+      "h": 68,
+      "path": "content > toolkit > steps > step 5"
+    },
+    {
+      "id": "495:3814",
+      "name": "Pass or block",
+      "type": "text",
+      "x": 59,
+      "y": 658,
+      "w": 89,
+      "h": 20,
+      "path": "content > toolkit > steps > step 5 > text",
+      "text": "Pass or block"
+    },
+    {
+      "id": "495:3815",
+      "name": "Exit 0 commits. Exit 1 prints one line for each problem.",
+      "type": "text",
+      "x": 59,
+      "y": 682,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 5 > text",
+      "text": "Exit 0 commits. Exit 1 prints one line for each problem."
+    },
+    {
+      "id": "495:3889",
+      "name": "uses",
+      "type": "frame",
+      "x": 59,
+      "y": 703,
+      "w": 306,
+      "h": 23,
+      "path": "content > toolkit > steps > step 5 > text"
+    },
+    {
+      "id": "495:3900",
+      "name": "uses · git commit",
+      "type": "frame",
+      "x": 59,
+      "y": 703,
+      "w": 102,
+      "h": 23,
+      "path": "content > toolkit > steps > step 5 > text > uses"
+    },
+    {
+      "id": "495:3960",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 66,
+      "y": 709,
+      "w": 11,
+      "h": 11,
+      "path": "content > toolkit > steps > step 5 > text > uses > uses · git commit"
+    },
+    {
+      "id": "495:3904",
+      "name": "git commit",
+      "type": "text",
+      "x": 82,
+      "y": 706,
+      "w": 72,
+      "h": 17,
+      "path": "content > toolkit > steps > step 5 > text > uses > uses · git commit",
+      "text": "git commit"
+    },
+    {
+      "id": "495:3706",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "495:3707",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3708",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "495:3709",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "495:3712",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "495:3713",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3714",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "495:3715",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "495:3719",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "495:3720",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "495:3721",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "495:3722",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3723",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "495:3724",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "495:3730",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "495:3731",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3732",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "495:3733",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "495:3736",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "495:3737",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3738",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "495:3739",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "495:3744",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "495:3745",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "495:3746",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "495:3569",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

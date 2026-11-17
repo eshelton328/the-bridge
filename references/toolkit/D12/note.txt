@@ -1,0 +1,1 @@
+A run opens on the right. Each value says where it comes from, so the panel also shows what can be tracked. Open the session in Workbench opens the chat that ran it. Sample data.

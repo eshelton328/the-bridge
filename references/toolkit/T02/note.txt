@@ -1,0 +1,1 @@
+The same map, narrower. Long names are cut, and the selected item shows in a bar at the bottom of the map.

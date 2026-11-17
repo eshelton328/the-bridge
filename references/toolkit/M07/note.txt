@@ -1,0 +1,1 @@
+Discuss opens as a sheet, like the Workbench side chat on the phone (M5 there). Workbench moves the chat into a workspace. The messages are sample data.

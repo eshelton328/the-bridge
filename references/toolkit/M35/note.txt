@@ -1,0 +1,1 @@
+A rule is one file. The viewer shows its paths frontmatter.

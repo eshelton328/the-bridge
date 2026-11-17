@@ -1,0 +1,1 @@
+On the iPad mini, Discuss opens as a sheet, like the Workbench side chat on T2. Open in Workbench moves the chat into a workspace.

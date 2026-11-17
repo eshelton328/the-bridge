@@ -1,0 +1,1 @@
+The Links tab: what names writer and what writer names, each with its file and line. Show on map opens the toolkit map (D2) with writer selected, so the same links show among all the others.

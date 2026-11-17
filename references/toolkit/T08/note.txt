@@ -1,0 +1,1 @@
+The flow as a column of steps; steps 4 and 5 sit side by side. The selected step’s details are under the flow.
