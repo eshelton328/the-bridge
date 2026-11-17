@@ -45,7 +45,10 @@ const row = css({ w: '[100%]', justifyContent: 'flex-start' })
 // A text button draws its label in the accent colour; Figma's folder rows are plain text (fg.default).
 const plain = css({ color: 'fg.default' })
 const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign: 'start' })
-const name = css({ flex: '1', textAlign: 'start' })
+// The text button's label style is labelLg; Figma's listed folders are Regular 14 (body, D4 128:367).
+const name = css({ textStyle: 'body', flex: '1', textAlign: 'start' })
+// Figma's Close is the panel's grey (fg.muted, D4 128:338), not the text button's accent.
+const close = css({ color: 'fg.muted' })
 const rest = css({ flex: '1' })
 
 export type FolderPickerPaneProps = {
@@ -64,7 +67,7 @@ export function FolderPickerPane({ picker, picked, onPick, onClose }: FolderPick
           <FolderIcon size="16" />
         </span>
         <h2 className={heading}>{picker.title}</h2>
-        <Button variant="text" size="xs" iconOnly aria-label={picker.closeLabel} onClick={onClose}>
+        <Button variant="text" size="xs" iconOnly className={close} aria-label={picker.closeLabel} onClick={onClose}>
           <CloseIcon size="16" />
         </Button>
       </Inline>

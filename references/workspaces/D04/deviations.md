@@ -40,8 +40,9 @@ list open over the transcript and the folder picker in the side slot
   `128:388`): the panel is padded 16 against Figma's 19.
 - **Picker rows (Folder picker).** The rows are `Button`s 32 high against
   Figma's 33 (recent), 35 (the chosen ~/the-bridge) and 31 (browse); the
-  listed folders (Documents, omni, omni-brain, the-bridge) are in `label`
-  (Medium 14) against Regular 14, and the recent paths are `mono`. The
+  listed folders (Documents, omni, omni-brain, the-bridge) are in `body`
+  (Regular 14) as in Figma, and the recent paths are `mono`. Close is a
+  text button with an `fg.muted` class, Figma's grey. The
   folder icons are 16 px (Figma 15) and the title's is 16 (Figma 18).
 - **Search field (Folder picker).** `SearchField` draws "~/the-" in `body`
   (Geist 14) against Figma's Geist Mono, adds a clear × at the end, which
