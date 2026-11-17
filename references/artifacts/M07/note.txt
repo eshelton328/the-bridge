@@ -1,0 +1,1 @@
+File the artifact in a project, or remove it from the library, as today. Remove takes only the link out of the library.

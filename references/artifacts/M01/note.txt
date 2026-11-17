@@ -1,0 +1,1 @@
+On the phone the library is a list with small previews. It opens from the More drawer (M8), so More stays selected. The plus button adds a link by hand.

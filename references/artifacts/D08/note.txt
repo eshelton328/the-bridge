@@ -1,0 +1,1 @@
+A change shows as a proposal with what changes, as in the Inbox (D15). Nothing changes until Apply. Discard drops the proposal; Edit first opens it for changes.

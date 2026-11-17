@@ -1,0 +1,1 @@
+Apply republishes the artifact to the same link, so the link and the library entry stay. The artifact shows Updated, and the proposal shows what changed.

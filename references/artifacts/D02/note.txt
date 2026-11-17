@@ -1,0 +1,1 @@
+Selecting an artifact opens it beside the list, as the Inbox opens a task. Open artifact goes to the page. Copy link, Remove and the project menu do what today’s /artifacts page does. Made in names the chat that published the artifact, and Open in workspace opens that chat. Discuss opens the discussion (D7). Made in is a proposal and needs the chat kept with each artifact.

@@ -1,0 +1,1027 @@
+{
+  "frameId": "T02",
+  "code": "T2",
+  "name": "T2 · An artifact",
+  "node": "405:310",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "405:369",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "405:370",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "405:371",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 1052,
+      "path": ""
+    },
+    {
+      "id": "405:413",
+      "name": "artifact page",
+      "type": "frame",
+      "x": 22,
+      "y": 41,
+      "w": 712,
+      "h": 831,
+      "path": "content"
+    },
+    {
+      "id": "405:414",
+      "name": "top bar",
+      "type": "frame",
+      "x": 22,
+      "y": 49,
+      "w": 712,
+      "h": 36,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:415",
+      "name": "back · Artifacts",
+      "type": "frame",
+      "x": 22,
+      "y": 56.5,
+      "w": 89,
+      "h": 21,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "405:416",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 22,
+      "y": 57,
+      "w": 20,
+      "h": 20,
+      "path": "content > artifact page > top bar > back · Artifacts"
+    },
+    {
+      "id": "405:418",
+      "name": "Artifacts",
+      "type": "text",
+      "x": 46,
+      "y": 56.5,
+      "w": 65,
+      "h": 21,
+      "path": "content > artifact page > top bar > back · Artifacts",
+      "text": "Artifacts"
+    },
+    {
+      "id": "405:419",
+      "name": "spacer",
+      "type": "frame",
+      "x": 119,
+      "y": 66.5,
+      "w": 432,
+      "h": 1,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "452:4185",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 559,
+      "y": 52,
+      "w": 87,
+      "h": 30,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "452:4186",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 570,
+      "y": 60,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > top bar > button · Discuss"
+    },
+    {
+      "id": "452:4188",
+      "name": "Discuss",
+      "type": "text",
+      "x": 590,
+      "y": 59,
+      "w": 45,
+      "h": 16,
+      "path": "content > artifact page > top bar > button · Discuss",
+      "text": "Discuss"
+    },
+    {
+      "id": "405:420",
+      "name": "button · copy",
+      "type": "frame",
+      "x": 654,
+      "y": 49,
+      "w": 36,
+      "h": 36,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "405:421",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 664,
+      "y": 59,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact page > top bar > button · copy"
+    },
+    {
+      "id": "405:423",
+      "name": "button · trash",
+      "type": "frame",
+      "x": 698,
+      "y": 49,
+      "w": 36,
+      "h": 36,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "405:424",
+      "name": "icon/trash",
+      "type": "frame",
+      "x": 708,
+      "y": 59,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact page > top bar > button · trash"
+    },
+    {
+      "id": "405:426",
+      "name": "title block",
+      "type": "frame",
+      "x": 22,
+      "y": 103,
+      "w": 712,
+      "h": 142,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:427",
+      "name": "status",
+      "type": "frame",
+      "x": 22,
+      "y": 103,
+      "w": 311,
+      "h": 22,
+      "path": "content > artifact page > title block"
+    },
+    {
+      "id": "405:428",
+      "name": "pill · New",
+      "type": "frame",
+      "x": 22,
+      "y": 103,
+      "w": 58,
+      "h": 22,
+      "path": "content > artifact page > title block > status"
+    },
+    {
+      "id": "405:429",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 30,
+      "y": 108.5,
+      "w": 11,
+      "h": 11,
+      "path": "content > artifact page > title block > status > pill · New"
+    },
+    {
+      "id": "405:431",
+      "name": "New",
+      "type": "text",
+      "x": 46,
+      "y": 106,
+      "w": 26,
+      "h": 16,
+      "path": "content > artifact page > title block > status > pill · New",
+      "text": "New"
+    },
+    {
+      "id": "405:432",
+      "name": "found 12m ago by the Artifact hook",
+      "type": "text",
+      "x": 88,
+      "y": 105.5,
+      "w": 245,
+      "h": 17,
+      "path": "content > artifact page > title block > status",
+      "text": "found 12m ago by the Artifact hook"
+    },
+    {
+      "id": "405:433",
+      "name": "title",
+      "type": "text",
+      "x": 22,
+      "y": 135,
+      "w": 268,
+      "h": 41,
+      "path": "content > artifact page > title block",
+      "text": "title"
+    },
+    {
+      "id": "405:434",
+      "name": "description",
+      "type": "text",
+      "x": 22,
+      "y": 186,
+      "w": 712,
+      "h": 20,
+      "path": "content > artifact page > title block",
+      "text": "description"
+    },
+    {
+      "id": "405:435",
+      "name": "chips",
+      "type": "frame",
+      "x": 22,
+      "y": 216,
+      "w": 440,
+      "h": 29,
+      "path": "content > artifact page > title block"
+    },
+    {
+      "id": "405:438",
+      "name": "chip · Claude artifact",
+      "type": "frame",
+      "x": 22,
+      "y": 216,
+      "w": 146,
+      "h": 29,
+      "path": "content > artifact page > title block > chips"
+    },
+    {
+      "id": "405:436",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 32,
+      "y": 224.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > chip · Claude artifact"
+    },
+    {
+      "id": "405:439",
+      "name": "Claude artifact",
+      "type": "text",
+      "x": 50,
+      "y": 222,
+      "w": 108,
+      "h": 17,
+      "path": "content > artifact page > title block > chips > chip · Claude artifact",
+      "text": "Claude artifact"
+    },
+    {
+      "id": "405:440",
+      "name": "project · File in a project",
+      "type": "frame",
+      "x": 174,
+      "y": 216,
+      "w": 136,
+      "h": 29,
+      "path": "content > artifact page > title block > chips"
+    },
+    {
+      "id": "405:441",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 184,
+      "y": 224.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > project · File in a project"
+    },
+    {
+      "id": "405:443",
+      "name": "skill-evals",
+      "type": "text",
+      "x": 202,
+      "y": 222,
+      "w": 80,
+      "h": 17,
+      "path": "content > artifact page > title block > chips > project · File in a project",
+      "text": "skill-evals"
+    },
+    {
+      "id": "405:444",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 288,
+      "y": 224.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > project · File in a project"
+    },
+    {
+      "id": "405:446",
+      "name": "chip · updated 12m ago",
+      "type": "frame",
+      "x": 316,
+      "y": 216,
+      "w": 146,
+      "h": 29,
+      "path": "content > artifact page > title block > chips"
+    },
+    {
+      "id": "405:447",
+      "name": "icon/refresh",
+      "type": "frame",
+      "x": 326,
+      "y": 224.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > chip · updated 12m ago"
+    },
+    {
+      "id": "405:449",
+      "name": "updated 12m ago",
+      "type": "text",
+      "x": 344,
+      "y": 222,
+      "w": 108,
+      "h": 17,
+      "path": "content > artifact page > title block > chips > chip · updated 12m ago",
+      "text": "updated 12m ago"
+    },
+    {
+      "id": "405:450",
+      "name": "preview",
+      "type": "frame",
+      "x": 22,
+      "y": 263,
+      "w": 714,
+      "h": 402,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:451",
+      "name": "thumbnail · chart",
+      "type": "frame",
+      "x": 23,
+      "y": 264,
+      "w": 712,
+      "h": 400,
+      "path": "content > artifact page > preview"
+    },
+    {
+      "id": "405:452",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 23,
+      "y": 264,
+      "w": 712,
+      "h": 36,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:453",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 31,
+      "y": 280,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:454",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 40,
+      "y": 280,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:455",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 49,
+      "y": 280,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:456",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 80,
+      "y": 332,
+      "w": 239.1999969482422,
+      "h": 16,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:457",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 91.95999908447266,
+      "y": 528.4183654785156,
+      "w": 42.524444580078125,
+      "h": 95.58163452148438,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:458",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 158.40444946289062,
+      "y": 392.21217346191406,
+      "w": 42.524444580078125,
+      "h": 231.78782653808594,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:459",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 224.84889221191406,
+      "y": 532.3153076171875,
+      "w": 42.524444580078125,
+      "h": 91.68470764160156,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:460",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 291.2933349609375,
+      "y": 396.97547912597656,
+      "w": 42.524444580078125,
+      "h": 227.02452087402344,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:461",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 357.73779296875,
+      "y": 492.67640686035156,
+      "w": 42.524444580078125,
+      "h": 131.32359313964844,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:462",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 424.1822204589844,
+      "y": 411.9532775878906,
+      "w": 42.524444580078125,
+      "h": 212.04672241210938,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:463",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 490.6266784667969,
+      "y": 456.8971405029297,
+      "w": 42.524444580078125,
+      "h": 167.1028594970703,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:464",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 557.0711059570312,
+      "y": 436.15101623535156,
+      "w": 42.524444580078125,
+      "h": 187.84898376464844,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:465",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 623.5155639648438,
+      "y": 427.3533630371094,
+      "w": 42.524444580078125,
+      "h": 196.64663696289062,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:466",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 80,
+      "y": 624,
+      "w": 598,
+      "h": 1,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "405:467",
+      "name": "button · Open artifact",
+      "type": "frame",
+      "x": 22,
+      "y": 683,
+      "w": 712,
+      "h": 46,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:468",
+      "name": "Open artifact",
+      "type": "text",
+      "x": 323.5,
+      "y": 697,
+      "w": 89,
+      "h": 18,
+      "path": "content > artifact page > button · Open artifact",
+      "text": "Open artifact"
+    },
+    {
+      "id": "405:469",
+      "name": "icon/ext",
+      "type": "frame",
+      "x": 418.5,
+      "y": 699,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > button · Open artifact"
+    },
+    {
+      "id": "405:471",
+      "name": "link",
+      "type": "frame",
+      "x": 22,
+      "y": 747,
+      "w": 300,
+      "h": 17,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:472",
+      "name": "icon/link",
+      "type": "frame",
+      "x": 22,
+      "y": 749,
+      "w": 13,
+      "h": 13,
+      "path": "content > artifact page > link"
+    },
+    {
+      "id": "405:474",
+      "name": "claude.ai/artifact/8f3c2a91-skill-evals",
+      "type": "text",
+      "x": 41,
+      "y": 747,
+      "w": 281,
+      "h": 17,
+      "path": "content > artifact page > link",
+      "text": "claude.ai/artifact/8f3c2a91-skill-evals"
+    },
+    {
+      "id": "405:475",
+      "name": "section · MADE IN",
+      "type": "frame",
+      "x": 22,
+      "y": 782,
+      "w": 712,
+      "h": 90,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "405:476",
+      "name": "MADE IN",
+      "type": "text",
+      "x": 22,
+      "y": 782,
+      "w": 51,
+      "h": 17,
+      "path": "content > artifact page > section · MADE IN",
+      "text": "MADE IN"
+    },
+    {
+      "id": "405:477",
+      "name": "made in",
+      "type": "frame",
+      "x": 22,
+      "y": 807,
+      "w": 712,
+      "h": 65,
+      "path": "content > artifact page > section · MADE IN"
+    },
+    {
+      "id": "405:478",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 37,
+      "y": 831.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "405:480",
+      "name": "text",
+      "type": "frame",
+      "x": 65,
+      "y": 820,
+      "w": 303,
+      "h": 39,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "405:481",
+      "name": "Published from chat quiet-nebula",
+      "type": "text",
+      "x": 65,
+      "y": 820,
+      "w": 218,
+      "h": 20,
+      "path": "content > artifact page > section · MADE IN > made in > text",
+      "text": "Published from chat quiet-nebula"
+    },
+    {
+      "id": "405:482",
+      "name": "workspace skill-evals · Opus 5.5 · 12m a",
+      "type": "text",
+      "x": 65,
+      "y": 842,
+      "w": 303,
+      "h": 17,
+      "path": "content > artifact page > section · MADE IN > made in > text",
+      "text": "workspace skill-evals · Opus 5.5 · 12m a"
+    },
+    {
+      "id": "405:483",
+      "name": "spacer",
+      "type": "frame",
+      "x": 380,
+      "y": 839,
+      "w": 157,
+      "h": 1,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "405:484",
+      "name": "button · Open in workspace",
+      "type": "frame",
+      "x": 549,
+      "y": 823.5,
+      "w": 172,
+      "h": 32,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "405:485",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 562,
+      "y": 832.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > section · MADE IN > made in > button · Open in workspace"
+    },
+    {
+      "id": "405:487",
+      "name": "Open in workspace",
+      "type": "text",
+      "x": 582,
+      "y": 830.5,
+      "w": 126,
+      "h": 18,
+      "path": "content > artifact page > section · MADE IN > made in > button · Open in workspace",
+      "text": "Open in workspace"
+    },
+    {
+      "id": "405:372",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 1081,
+      "w": 756,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "405:373",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 150,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "405:374",
+      "name": "icon",
+      "type": "frame",
+      "x": 176,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "405:375",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 176,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "405:378",
+      "name": "Home",
+      "type": "text",
+      "x": 174,
+      "y": 1118,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "405:379",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 226,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "405:380",
+      "name": "icon",
+      "type": "frame",
+      "x": 252,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "405:381",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 252,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "405:385",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 266,
+      "y": 1087,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "405:386",
+      "name": "4",
+      "type": "text",
+      "x": 271,
+      "y": 1088,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "405:387",
+      "name": "Inbox",
+      "type": "text",
+      "x": 250.5,
+      "y": 1118,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "405:388",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 302,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "405:389",
+      "name": "icon",
+      "type": "frame",
+      "x": 328,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "405:390",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 328,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "405:396",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 311,
+      "y": 1118,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "405:397",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 378,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "405:398",
+      "name": "icon",
+      "type": "frame",
+      "x": 404,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "405:399",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 404,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "405:402",
+      "name": "Projects",
+      "type": "text",
+      "x": 396.5,
+      "y": 1118,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "414:976",
+      "name": "tab · Artifacts",
+      "type": "frame",
+      "x": 454,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "414:977",
+      "name": "icon",
+      "type": "frame",
+      "x": 480,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Artifacts"
+    },
+    {
+      "id": "414:982",
+      "name": "icon/artifacts",
+      "type": "frame",
+      "x": 481,
+      "y": 1092,
+      "w": 22,
+      "h": 22,
+      "path": "tab bar > tab · Artifacts > icon"
+    },
+    {
+      "id": "414:981",
+      "name": "Artifacts",
+      "type": "text",
+      "x": 471.5,
+      "y": 1118,
+      "w": 41,
+      "h": 13,
+      "path": "tab bar > tab · Artifacts",
+      "text": "Artifacts"
+    },
+    {
+      "id": "405:403",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 530,
+      "y": 1089,
+      "w": 76,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "405:404",
+      "name": "icon",
+      "type": "frame",
+      "x": 556,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "405:405",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 556,
+      "y": 1091,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "405:410",
+      "name": "More",
+      "type": "text",
+      "x": 556,
+      "y": 1118,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "405:411",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1158,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "405:412",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1166,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "405:370",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

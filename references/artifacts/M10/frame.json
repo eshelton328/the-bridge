@@ -1,0 +1,920 @@
+{
+  "frameId": "M10",
+  "code": "M10",
+  "name": "M10 · A proposed update",
+  "node": "452:4080",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "452:4103",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "452:4104",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "452:4105",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 785,
+      "path": ""
+    },
+    {
+      "id": "452:4106",
+      "name": "nav",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 40,
+      "path": "content"
+    },
+    {
+      "id": "452:4107",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 52,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4110",
+      "name": "Artifact",
+      "type": "text",
+      "x": 38,
+      "y": 51.5,
+      "w": 57,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Artifact"
+    },
+    {
+      "id": "452:4111",
+      "name": "spacer",
+      "type": "frame",
+      "x": 101,
+      "y": 61.5,
+      "w": 99,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4181",
+      "name": "button · Open in workspace",
+      "type": "frame",
+      "x": 206,
+      "y": 46,
+      "w": 172,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4182",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 219,
+      "y": 55,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > button · Open in workspace"
+    },
+    {
+      "id": "452:4184",
+      "name": "Open in workspace",
+      "type": "text",
+      "x": 239,
+      "y": 53,
+      "w": 126,
+      "h": 18,
+      "path": "content > nav > button · Open in workspace",
+      "text": "Open in workspace"
+    },
+    {
+      "id": "452:4112",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 295,
+      "y": 52,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4113",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 303,
+      "y": 59,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "452:4114",
+      "name": "Discussion",
+      "type": "text",
+      "x": 314,
+      "y": 55,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "452:4115",
+      "name": "artifact · discussing",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 366,
+      "h": 153,
+      "path": "content"
+    },
+    {
+      "id": "452:4116",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 101,
+      "w": 340,
+      "h": 20,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "452:4117",
+      "name": "Skill eval pass rates",
+      "type": "text",
+      "x": 25,
+      "y": 102,
+      "w": 257,
+      "h": 18,
+      "path": "content > artifact · discussing > Frame",
+      "text": "Skill eval pass rates"
+    },
+    {
+      "id": "452:4118",
+      "name": "pill · New",
+      "type": "frame",
+      "x": 290,
+      "y": 101,
+      "w": 51,
+      "h": 20,
+      "path": "content > artifact · discussing > Frame"
+    },
+    {
+      "id": "452:4119",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 298,
+      "y": 108,
+      "w": 6,
+      "h": 6,
+      "path": "content > artifact · discussing > Frame > pill · New"
+    },
+    {
+      "id": "452:4120",
+      "name": "New",
+      "type": "text",
+      "x": 309,
+      "y": 104,
+      "w": 24,
+      "h": 14,
+      "path": "content > artifact · discussing > Frame > pill · New",
+      "text": "New"
+    },
+    {
+      "id": "452:4121",
+      "name": "chevron · open artifact",
+      "type": "frame",
+      "x": 349,
+      "y": 103,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact · discussing > Frame"
+    },
+    {
+      "id": "452:4124",
+      "name": "Claude artifact · skill-evals · updated 12m ago",
+      "type": "text",
+      "x": 25,
+      "y": 126,
+      "w": 310,
+      "h": 14,
+      "path": "content > artifact · discussing",
+      "text": "Claude artifact · skill-evals · updated 12m ago"
+    },
+    {
+      "id": "454:427",
+      "name": "model and context",
+      "type": "frame",
+      "x": 25,
+      "y": 145,
+      "w": 220,
+      "h": 22,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "454:428",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 145,
+      "w": 83,
+      "h": 22,
+      "path": "content > artifact · discussing > model and context"
+    },
+    {
+      "id": "454:429",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 34,
+      "y": 150,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:431",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 52,
+      "y": 149,
+      "w": 47,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "454:432",
+      "name": "Frame",
+      "type": "frame",
+      "x": 116,
+      "y": 149,
+      "w": 83,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context"
+    },
+    {
+      "id": "454:433",
+      "name": "segments",
+      "type": "frame",
+      "x": 116,
+      "y": 152,
+      "w": 58,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:434",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 116,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:435",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 122,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:436",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:437",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 134,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:438",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 140,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:439",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 146,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:440",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 152,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:441",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 158,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:442",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 164,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:443",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 170,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:444",
+      "name": "48%",
+      "type": "text",
+      "x": 179,
+      "y": 149,
+      "w": 20,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context > Frame",
+      "text": "48%"
+    },
+    {
+      "id": "454:445",
+      "name": "context",
+      "type": "text",
+      "x": 207,
+      "y": 149,
+      "w": 38,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context",
+      "text": "context"
+    },
+    {
+      "id": "452:4125",
+      "name": "guard",
+      "type": "frame",
+      "x": 25,
+      "y": 172,
+      "w": 340,
+      "h": 60,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "452:4126",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 25,
+      "y": 172,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact · discussing > guard"
+    },
+    {
+      "id": "452:4129",
+      "name": "Continues chat quiet-nebula, which made this artifact. Changes the artifact only when you apply, and Apply republishes it to the same link.",
+      "type": "text",
+      "x": 43,
+      "y": 172,
+      "w": 322,
+      "h": 60,
+      "path": "content > artifact · discussing > guard",
+      "text": "Continues chat quiet-nebula, which made this artifact. Changes the artifact only when you apply, and Apply republishes it to the same link."
+    },
+    {
+      "id": "452:4130",
+      "name": "discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 251,
+      "w": 366,
+      "h": 560,
+      "path": "content"
+    },
+    {
+      "id": "452:4131",
+      "name": "message · you",
+      "type": "frame",
+      "x": 12,
+      "y": 265,
+      "w": 366,
+      "h": 58,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4132",
+      "name": "Add a dashed line at the median pass rate, and sort the bars from lowest to highest.",
+      "type": "text",
+      "x": 24,
+      "y": 275,
+      "w": 342,
+      "h": 38,
+      "path": "content > discussion > message · you",
+      "text": "Add a dashed line at the median pass rate, and sort the bars from lowest to highest."
+    },
+    {
+      "id": "452:4133",
+      "name": "message · discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 335,
+      "w": 366,
+      "h": 60,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4134",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 335,
+      "w": 82,
+      "h": 16,
+      "path": "content > discussion > message · discussion"
+    },
+    {
+      "id": "452:4135",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 12,
+      "y": 336.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > discussion > message · discussion > Frame"
+    },
+    {
+      "id": "452:4137",
+      "name": "Discussion",
+      "type": "text",
+      "x": 31,
+      "y": 335,
+      "w": 63,
+      "h": 16,
+      "path": "content > discussion > message · discussion > Frame",
+      "text": "Discussion"
+    },
+    {
+      "id": "452:4138",
+      "name": "The pass rates come from the method log, so I can do both. This changes the chart only. The title and description stay.",
+      "type": "text",
+      "x": 12,
+      "y": 357,
+      "w": 366,
+      "h": 38,
+      "path": "content > discussion > message · discussion",
+      "text": "The pass rates come from the method log, so I can do both. This changes the chart only. The title and description stay."
+    },
+    {
+      "id": "452:4139",
+      "name": "proposal · UPDATE THIS ARTIFACT",
+      "type": "frame",
+      "x": 12,
+      "y": 407,
+      "w": 366,
+      "h": 199,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4140",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 420,
+      "w": 340,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT"
+    },
+    {
+      "id": "452:4141",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 25,
+      "y": 421,
+      "w": 12,
+      "h": 12,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > Frame"
+    },
+    {
+      "id": "452:4143",
+      "name": "PROPOSED · UPDATE THIS ARTIFACT",
+      "type": "text",
+      "x": 43,
+      "y": 420,
+      "w": 205,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > Frame",
+      "text": "PROPOSED · UPDATE THIS ARTIFACT"
+    },
+    {
+      "id": "452:4144",
+      "name": "diff · CHART",
+      "type": "frame",
+      "x": 25,
+      "y": 446,
+      "w": 340,
+      "h": 107,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT"
+    },
+    {
+      "id": "452:4145",
+      "name": "CHART",
+      "type": "text",
+      "x": 25,
+      "y": 446,
+      "w": 33,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART",
+      "text": "CHART"
+    },
+    {
+      "id": "452:4146",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 464,
+      "w": 336,
+      "h": 27,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART"
+    },
+    {
+      "id": "452:4147",
+      "name": "−",
+      "type": "text",
+      "x": 33,
+      "y": 469,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "−"
+    },
+    {
+      "id": "452:4148",
+      "name": "Bars in the order of the method log",
+      "type": "text",
+      "x": 47,
+      "y": 469,
+      "w": 306,
+      "h": 17,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "Bars in the order of the method log"
+    },
+    {
+      "id": "452:4149",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 495,
+      "w": 336,
+      "h": 27,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART"
+    },
+    {
+      "id": "452:4150",
+      "name": "+",
+      "type": "text",
+      "x": 33,
+      "y": 500,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "+"
+    },
+    {
+      "id": "452:4151",
+      "name": "Bars sorted from the lowest pass rate to the highest",
+      "type": "text",
+      "x": 47,
+      "y": 500,
+      "w": 306,
+      "h": 17,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "Bars sorted from the lowest pass rate to the highest"
+    },
+    {
+      "id": "452:4152",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 526,
+      "w": 336,
+      "h": 27,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART"
+    },
+    {
+      "id": "452:4153",
+      "name": "+",
+      "type": "text",
+      "x": 33,
+      "y": 531,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "+"
+    },
+    {
+      "id": "452:4154",
+      "name": "A dashed line at the median pass rate, 71%",
+      "type": "text",
+      "x": 47,
+      "y": 531,
+      "w": 306,
+      "h": 17,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > diff · CHART > Frame",
+      "text": "A dashed line at the median pass rate, 71%"
+    },
+    {
+      "id": "452:4155",
+      "name": "actions",
+      "type": "frame",
+      "x": 25,
+      "y": 565,
+      "w": 340,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT"
+    },
+    {
+      "id": "452:4156",
+      "name": "button · Apply",
+      "type": "frame",
+      "x": 25,
+      "y": 566,
+      "w": 74,
+      "h": 26,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions"
+    },
+    {
+      "id": "452:4157",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 35,
+      "y": 572,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions > button · Apply"
+    },
+    {
+      "id": "452:4159",
+      "name": "Apply",
+      "type": "text",
+      "x": 55,
+      "y": 571,
+      "w": 34,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions > button · Apply",
+      "text": "Apply"
+    },
+    {
+      "id": "452:4160",
+      "name": "button · Discard",
+      "type": "frame",
+      "x": 107,
+      "y": 565,
+      "w": 65,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions"
+    },
+    {
+      "id": "452:4161",
+      "name": "Discard",
+      "type": "text",
+      "x": 118,
+      "y": 571,
+      "w": 43,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions > button · Discard",
+      "text": "Discard"
+    },
+    {
+      "id": "452:4162",
+      "name": "button · Edit first",
+      "type": "frame",
+      "x": 180,
+      "y": 565,
+      "w": 90,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions"
+    },
+    {
+      "id": "452:4163",
+      "name": "icon/edit",
+      "type": "frame",
+      "x": 191,
+      "y": 572,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions > button · Edit first"
+    },
+    {
+      "id": "452:4165",
+      "name": "Edit first",
+      "type": "text",
+      "x": 211,
+      "y": 571,
+      "w": 48,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS ARTIFACT > actions > button · Edit first",
+      "text": "Edit first"
+    },
+    {
+      "id": "452:4166",
+      "name": "spacer",
+      "type": "frame",
+      "x": 12,
+      "y": 618,
+      "w": 1,
+      "h": 96,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4167",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 726,
+      "w": 366,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4168",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 737,
+      "w": 138,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "452:4169",
+      "name": "Ask about this artifact",
+      "type": "text",
+      "x": 23,
+      "y": 737,
+      "w": 136,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about this artifact"
+    },
+    {
+      "id": "452:4170",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 159,
+      "y": 737,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4171",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 762,
+      "w": 344,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "452:4172",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 23,
+      "y": 762,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4173",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 30,
+      "y": 769,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "452:4175",
+      "name": "spacer",
+      "type": "frame",
+      "x": 59,
+      "y": 775.5,
+      "w": 274,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4176",
+      "name": "button · up",
+      "type": "frame",
+      "x": 341,
+      "y": 763,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4177",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 347,
+      "y": 769,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "452:4179",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "452:4180",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "452:4104",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

@@ -1,0 +1,1 @@
+One artifact. The ⋯ button and the project chip open File in a project (M7). Discuss opens the discussion (M9). Open in workspace, under Made in, opens the chat that made it.

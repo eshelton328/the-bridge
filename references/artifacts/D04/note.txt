@@ -1,0 +1,1 @@
+Search reads titles, descriptions, projects and links (R26). Each result says where the match is. The list view shows more of each artifact’s text than the grid.

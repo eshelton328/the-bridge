@@ -1,0 +1,846 @@
+{
+  "frameId": "M09",
+  "code": "M9",
+  "name": "M9 · Discuss the artifact",
+  "node": "452:3982",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "452:4005",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "452:4006",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "452:4007",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 785,
+      "path": ""
+    },
+    {
+      "id": "452:4008",
+      "name": "nav",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 40,
+      "path": "content"
+    },
+    {
+      "id": "452:4009",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 52,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4012",
+      "name": "Artifact",
+      "type": "text",
+      "x": 38,
+      "y": 51.5,
+      "w": 57,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Artifact"
+    },
+    {
+      "id": "452:4013",
+      "name": "spacer",
+      "type": "frame",
+      "x": 101,
+      "y": 61.5,
+      "w": 99,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4076",
+      "name": "button · Open in workspace",
+      "type": "frame",
+      "x": 206,
+      "y": 46,
+      "w": 172,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4077",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 219,
+      "y": 55,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > button · Open in workspace"
+    },
+    {
+      "id": "452:4079",
+      "name": "Open in workspace",
+      "type": "text",
+      "x": 239,
+      "y": 53,
+      "w": 126,
+      "h": 18,
+      "path": "content > nav > button · Open in workspace",
+      "text": "Open in workspace"
+    },
+    {
+      "id": "452:4014",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 295,
+      "y": 52,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "452:4015",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 303,
+      "y": 59,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "452:4016",
+      "name": "Discussion",
+      "type": "text",
+      "x": 314,
+      "y": 55,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "452:4017",
+      "name": "artifact · discussing",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 366,
+      "h": 153,
+      "path": "content"
+    },
+    {
+      "id": "452:4018",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 101,
+      "w": 340,
+      "h": 20,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "452:4019",
+      "name": "Skill eval pass rates",
+      "type": "text",
+      "x": 25,
+      "y": 102,
+      "w": 257,
+      "h": 18,
+      "path": "content > artifact · discussing > Frame",
+      "text": "Skill eval pass rates"
+    },
+    {
+      "id": "452:4020",
+      "name": "pill · New",
+      "type": "frame",
+      "x": 290,
+      "y": 101,
+      "w": 51,
+      "h": 20,
+      "path": "content > artifact · discussing > Frame"
+    },
+    {
+      "id": "452:4021",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 298,
+      "y": 108,
+      "w": 6,
+      "h": 6,
+      "path": "content > artifact · discussing > Frame > pill · New"
+    },
+    {
+      "id": "452:4022",
+      "name": "New",
+      "type": "text",
+      "x": 309,
+      "y": 104,
+      "w": 24,
+      "h": 14,
+      "path": "content > artifact · discussing > Frame > pill · New",
+      "text": "New"
+    },
+    {
+      "id": "452:4023",
+      "name": "chevron · open artifact",
+      "type": "frame",
+      "x": 349,
+      "y": 103,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact · discussing > Frame"
+    },
+    {
+      "id": "452:4026",
+      "name": "Claude artifact · skill-evals · updated 12m ago",
+      "type": "text",
+      "x": 25,
+      "y": 126,
+      "w": 310,
+      "h": 14,
+      "path": "content > artifact · discussing",
+      "text": "Claude artifact · skill-evals · updated 12m ago"
+    },
+    {
+      "id": "454:408",
+      "name": "model and context",
+      "type": "frame",
+      "x": 25,
+      "y": 145,
+      "w": 220,
+      "h": 22,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "454:409",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 145,
+      "w": 83,
+      "h": 22,
+      "path": "content > artifact · discussing > model and context"
+    },
+    {
+      "id": "454:410",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 34,
+      "y": 150,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:412",
+      "name": "Opus 5.5",
+      "type": "text",
+      "x": 52,
+      "y": 149,
+      "w": 47,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context > Frame",
+      "text": "Opus 5.5"
+    },
+    {
+      "id": "454:413",
+      "name": "Frame",
+      "type": "frame",
+      "x": 116,
+      "y": 149,
+      "w": 83,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context"
+    },
+    {
+      "id": "454:414",
+      "name": "segments",
+      "type": "frame",
+      "x": 116,
+      "y": 152,
+      "w": 58,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:415",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 116,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:416",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 122,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:417",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:418",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 134,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:419",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 140,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:420",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 146,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:421",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 152,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:422",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 158,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:423",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 164,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:424",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 170,
+      "y": 152,
+      "w": 4,
+      "h": 8,
+      "path": "content > artifact · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:425",
+      "name": "46%",
+      "type": "text",
+      "x": 179,
+      "y": 149,
+      "w": 20,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context > Frame",
+      "text": "46%"
+    },
+    {
+      "id": "454:426",
+      "name": "context",
+      "type": "text",
+      "x": 207,
+      "y": 149,
+      "w": 38,
+      "h": 14,
+      "path": "content > artifact · discussing > model and context",
+      "text": "context"
+    },
+    {
+      "id": "452:4027",
+      "name": "guard",
+      "type": "frame",
+      "x": 25,
+      "y": 172,
+      "w": 340,
+      "h": 60,
+      "path": "content > artifact · discussing"
+    },
+    {
+      "id": "452:4028",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 25,
+      "y": 172,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact · discussing > guard"
+    },
+    {
+      "id": "452:4031",
+      "name": "Continues chat quiet-nebula, which made this artifact. Changes the artifact only when you apply, and Apply republishes it to the same link.",
+      "type": "text",
+      "x": 43,
+      "y": 172,
+      "w": 322,
+      "h": 60,
+      "path": "content > artifact · discussing > guard",
+      "text": "Continues chat quiet-nebula, which made this artifact. Changes the artifact only when you apply, and Apply republishes it to the same link."
+    },
+    {
+      "id": "452:4032",
+      "name": "discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 251,
+      "w": 366,
+      "h": 560,
+      "path": "content"
+    },
+    {
+      "id": "452:4033",
+      "name": "empty state",
+      "type": "frame",
+      "x": 12,
+      "y": 265,
+      "w": 366,
+      "h": 177,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4034",
+      "name": "Frame",
+      "type": "frame",
+      "x": 174,
+      "y": 293,
+      "w": 42,
+      "h": 42,
+      "path": "content > discussion > empty state"
+    },
+    {
+      "id": "452:4035",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 184,
+      "y": 303,
+      "w": 22,
+      "h": 22,
+      "path": "content > discussion > empty state > Frame"
+    },
+    {
+      "id": "452:4037",
+      "name": "Talk this artifact through",
+      "type": "text",
+      "x": 94,
+      "y": 345,
+      "w": 202,
+      "h": 22,
+      "path": "content > discussion > empty state",
+      "text": "Talk this artifact through"
+    },
+    {
+      "id": "452:4038",
+      "name": "Ask about the artifact, its data or how it was made. When you ask for a change, it shows here as a proposal. Nothing changes until you apply it.",
+      "type": "text",
+      "x": 35,
+      "y": 377,
+      "w": 320,
+      "h": 57,
+      "path": "content > discussion > empty state",
+      "text": "Ask about the artifact, its data or how it was made. When you ask for a change, it shows here as a proposal. Nothing changes until you apply it."
+    },
+    {
+      "id": "452:4039",
+      "name": "it can",
+      "type": "frame",
+      "x": 12,
+      "y": 454,
+      "w": 366,
+      "h": 112,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4040",
+      "name": "IT CAN",
+      "type": "text",
+      "x": 25,
+      "y": 467,
+      "w": 40,
+      "h": 14,
+      "path": "content > discussion > it can",
+      "text": "IT CAN"
+    },
+    {
+      "id": "452:4041",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 489,
+      "w": 284,
+      "h": 16,
+      "path": "content > discussion > it can"
+    },
+    {
+      "id": "452:4042",
+      "name": "icon/edit",
+      "type": "frame",
+      "x": 25,
+      "y": 490,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > it can > Frame"
+    },
+    {
+      "id": "452:4044",
+      "name": "Update this artifact: its page, title or description",
+      "type": "text",
+      "x": 47,
+      "y": 489,
+      "w": 262,
+      "h": 16,
+      "path": "content > discussion > it can > Frame",
+      "text": "Update this artifact: its page, title or description"
+    },
+    {
+      "id": "452:4045",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 513,
+      "w": 170,
+      "h": 16,
+      "path": "content > discussion > it can"
+    },
+    {
+      "id": "452:4046",
+      "name": "icon/plus",
+      "type": "frame",
+      "x": 25,
+      "y": 514,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > it can > Frame"
+    },
+    {
+      "id": "452:4048",
+      "name": "Make a new artifact from it",
+      "type": "text",
+      "x": 47,
+      "y": 513,
+      "w": 148,
+      "h": 16,
+      "path": "content > discussion > it can > Frame",
+      "text": "Make a new artifact from it"
+    },
+    {
+      "id": "452:4049",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 537,
+      "w": 242,
+      "h": 16,
+      "path": "content > discussion > it can"
+    },
+    {
+      "id": "452:4050",
+      "name": "icon/trash",
+      "type": "frame",
+      "x": 25,
+      "y": 538,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > it can > Frame"
+    },
+    {
+      "id": "452:4052",
+      "name": "Remove it from the library, with a reason",
+      "type": "text",
+      "x": 47,
+      "y": 537,
+      "w": 220,
+      "h": 16,
+      "path": "content > discussion > it can > Frame",
+      "text": "Remove it from the library, with a reason"
+    },
+    {
+      "id": "452:4053",
+      "name": "suggestions",
+      "type": "frame",
+      "x": 12,
+      "y": 578,
+      "w": 366,
+      "h": 128,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4054",
+      "name": "TRY",
+      "type": "text",
+      "x": 12,
+      "y": 578,
+      "w": 20,
+      "h": 14,
+      "path": "content > discussion > suggestions",
+      "text": "TRY"
+    },
+    {
+      "id": "452:4055",
+      "name": "button · Add a median line",
+      "type": "frame",
+      "x": 12,
+      "y": 598,
+      "w": 366,
+      "h": 32,
+      "path": "content > discussion > suggestions"
+    },
+    {
+      "id": "452:4056",
+      "name": "Add a median line",
+      "type": "text",
+      "x": 25,
+      "y": 606,
+      "w": 100,
+      "h": 16,
+      "path": "content > discussion > suggestions > button · Add a median line",
+      "text": "Add a median line"
+    },
+    {
+      "id": "452:4057",
+      "name": "button · Sort the bars by pass rate",
+      "type": "frame",
+      "x": 12,
+      "y": 636,
+      "w": 366,
+      "h": 32,
+      "path": "content > discussion > suggestions"
+    },
+    {
+      "id": "452:4058",
+      "name": "Sort the bars by pass rate",
+      "type": "text",
+      "x": 25,
+      "y": 644,
+      "w": 145,
+      "h": 16,
+      "path": "content > discussion > suggestions > button · Sort the bars by pass rate",
+      "text": "Sort the bars by pass rate"
+    },
+    {
+      "id": "452:4059",
+      "name": "button · Why did readme drop?",
+      "type": "frame",
+      "x": 12,
+      "y": 674,
+      "w": 366,
+      "h": 32,
+      "path": "content > discussion > suggestions"
+    },
+    {
+      "id": "452:4060",
+      "name": "Why did readme drop?",
+      "type": "text",
+      "x": 25,
+      "y": 682,
+      "w": 126,
+      "h": 16,
+      "path": "content > discussion > suggestions > button · Why did readme drop?",
+      "text": "Why did readme drop?"
+    },
+    {
+      "id": "452:4061",
+      "name": "spacer",
+      "type": "frame",
+      "x": 12,
+      "y": 718,
+      "w": 1,
+      "h": 1,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4062",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 731,
+      "w": 366,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "452:4063",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 742,
+      "w": 138,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "452:4064",
+      "name": "Ask about this artifact",
+      "type": "text",
+      "x": 23,
+      "y": 742,
+      "w": 136,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about this artifact"
+    },
+    {
+      "id": "452:4065",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 159,
+      "y": 742,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4066",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 767,
+      "w": 344,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "452:4067",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 23,
+      "y": 767,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4068",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 30,
+      "y": 774,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "452:4070",
+      "name": "spacer",
+      "type": "frame",
+      "x": 59,
+      "y": 780.5,
+      "w": 274,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4071",
+      "name": "button · up",
+      "type": "frame",
+      "x": 341,
+      "y": 768,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "452:4072",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 347,
+      "y": 774,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "452:4074",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "452:4075",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "452:4006",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}
