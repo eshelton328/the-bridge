@@ -123,6 +123,23 @@ function putAway(groups: readonly InboxGroupView[], ui: Pick<InboxUi, 'snoozed' 
   })
 }
 
+/** The groups of the Done list: finished tasks by day. */
+const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
+
+/**
+ * The groups the selected chip shows. Done shows only the Done list (All
+ * means every open task, not Done; D7 and T7 notes), with the items Erik
+ * finished from the task bar in Today, which it adds when the state has
+ * none. The other chips show the state's groups.
+ */
+function chipView(data: InboxData, groups: readonly InboxGroupView[], ui: InboxUi): readonly InboxGroupView[] {
+  if (ui.filter !== 'done') return groups
+  const days = groups.filter((group) => doneDays.includes(group.id))
+  const rows = finishedRows(data.groups, ui.finished)
+  if (rows.length === 0 || days.some((group) => group.id === 'today')) return days
+  return [{ id: 'today', label: 'Today', count: rows.length, dot: null, rows }, ...days]
+}
+
 /** How many rows of the groups `ids` the state has and `after` does not show with `keep`. */
 function less(
   before: readonly InboxGroupView[],
@@ -144,7 +161,7 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const hidden = less(groups, groups, keep, counted)
   const drafted = appliedSections(data.filterMenu, ui.filterChecks)
   const searching = query.trim() !== ''
-  const shown = groups.flatMap((group) => {
+  const shown = chipView(data, groups, ui).flatMap((group) => {
     const rows = group.rows.filter((row) => keep(row) && matches(row, query))
     if (searching && rows.length === 0) return []
     const sorted = sortRows(rows, ui.sort)

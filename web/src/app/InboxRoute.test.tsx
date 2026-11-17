@@ -316,6 +316,18 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
   })
 
+  it('shows the dismissed task in Today under the Done chip, with how it ended', async () => {
+    await page.viewport(1512, 982)
+    view = await renderInbox('nextStep').rendered
+    const list = page.getByRole('region', { name: 'Inbox list' })
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await page.getByRole('radio', { name: 'Done 5' }).click()
+    await expect.element(list.getByText('Needs you')).not.toBeInTheDocument()
+    await list.getByRole('button', { name: /Today/ }).click()
+    await expect.element(list.getByText('Write the tickets for increment one')).toBeVisible()
+    await expect.element(list.getByText('Dismissed', { exact: true })).toBeVisible()
+  })
+
   it('keeps one Snoozed row when the desktop snoozes the shown task twice', async () => {
     await page.viewport(1512, 982)
     view = await renderInbox('nextStep').rendered

@@ -130,6 +130,17 @@ describe('listView snooze, done and dismiss', () => {
     expect(chip(view, 'done')).toBe(5)
   })
 
+  it('shows only the Done list under the Done chip, with a Today group for the finished items', () => {
+    const view = listView(
+      list.data,
+      { ...list.ui, filter: 'done', finished: [{ id: tickets, result: 'dismissed' }] },
+      '',
+    )
+    expect(view.groups.map((g) => [g.id, g.count])).toEqual([['today', 1]])
+    expect(view.groups[0]?.rows[0]?.outcome).toEqual({ line: 'Dismissed', result: 'dismissed' })
+    expect(listView(list.data, { ...list.ui, filter: 'done' }, '').groups).toEqual([])
+  })
+
   it('puts the finished items at the top of Today in the Done list, newest first, with how each ended', () => {
     const earlier: InboxRowView = {
       id: InboxItemId.parse('allowed-earlier'),
