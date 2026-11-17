@@ -32,6 +32,9 @@ const preview: Preview = {
     // An accessibility violation fails the story test.
     a11y: { test: 'error' },
     layout: 'fullscreen',
+    // Pages first, so Storybook opens on a screen, not on the error
+    // boundary demos (Errors/*), which crash on purpose.
+    options: { storySort: { order: ['Pages', '*', 'Errors'] } },
   },
 }
 
