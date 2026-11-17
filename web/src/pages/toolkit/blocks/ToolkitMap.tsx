@@ -5,8 +5,11 @@
 // right, and the legend of the kinds at the bottom left. The map does no
 // layout of its own: this block places each node by its column and row.
 // On a tablet (T2 428:348) the map is narrower, with smaller nodes and no
-// legend, and the selected item shows without its description. Props only.
-import { MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
+// legend, and the selected item shows without its description. On the phone
+// (M11 461:683) the map is a window onto the tablet's drawing that scrolls
+// sideways, with the hint at its foot, and the selected item's card comes
+// under the window. Props only.
+import { Badge, MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
@@ -20,6 +23,11 @@ import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
 // 428:402); the columns start 14 in and are 178 apart, the rows start 60 down and are 58 apart. A heading (428:349)
 // is 2 px right of its nodes and 24 down, so its capitals start at y 27. The tablet page is 24 px in (no space
 // token has Figma's 22), so the canvas is 708 wide and the drawing 706.
+// M11 461:683: the phone's window (map viewport 461:866) is 366 × 500 with a 1 px border, so 364 × 498 inside,
+// and the tablet's drawing (map canvas 461:867, 712 × 900) sits 6 px left of it and 8 px above. Its nodes start
+// 7 px in and 51 down (node · writing 461:921 at 20, 145), 178 and 58 apart; a heading (461:868) is 2 px right of
+// its nodes and 36 above them, so its capitals start at y 19. The drawing is 705 wide, to the right edge of the
+// last column; it is 498 high, the window's height, so the window scrolls sideways only (no size token has 500).
 const GEOMETRY = {
   desktop: {
     canvas: { width: 1382, height: 740 },
@@ -37,10 +45,21 @@ const GEOMETRY = {
     legend: false,
     description: false,
   },
+  phone: {
+    canvas: { width: 705, height: 498 },
+    nodes: { x: 7, y: 51, column: 178, row: 58 },
+    heading: { x: 9, y: 19 },
+    nodeSize: { width: 140, height: 30 },
+    legend: false,
+    description: false,
+  },
 }
 // The selection card names its item in an h3; this heading, for screen readers only, comes between it and the
 // page's h1. Figma draws no title over the map.
 const srOnly = css({ srOnly: true })
+// M11: the phone's window holds the hint over the map's bottom left corner.
+const mapWindow = css({ position: 'relative' })
+const hint = css({ position: 'absolute', left: '10', bottom: '10' })
 
 export type ToolkitMapProps = {
   map: ToolkitMapView
@@ -52,16 +71,44 @@ export type ToolkitMapProps = {
   onSelect?: ((path: string | null) => void) | undefined
   /** Called by the card's open button with the item's path. */
   onOpen?: ((path: string) => void) | undefined
-  /** The tablet's map is narrower, with no legend and no description on the selected item. The desktop's when not set. */
+  /**
+   * The tablet's map is narrower, with no legend and no description on the selected item; the phone's is a window
+   * onto it, with the card under the window. The desktop's when not set.
+   */
   layout?: Viewport | undefined
 }
 
 export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layout = 'desktop' }: ToolkitMapProps) {
-  const { canvas, nodes, heading, nodeSize, legend, description } =
-    GEOMETRY[layout === 'desktop' ? 'desktop' : 'tablet']
+  const { canvas, nodes, heading, nodeSize, legend, description } = GEOMETRY[layout]
+  const phone = layout === 'phone'
   const node = map.nodes.find((n) => n.path === selected)
-  return (
-    <div data-figma="map canvas">
+  const card =
+    node === undefined ? null : (
+      <div data-figma={`selection · ${node.name}`}>
+        <MapSelectionCard
+          name={node.name}
+          kind={node.kind}
+          // The card says what the item does as a sentence; the list's cards show the same text without the stop.
+          description={selectedItem === undefined || !description ? undefined : `${selectedItem.description}.`}
+          linksTo={selectedItem?.linksTo}
+          linkedFrom={selectedItem?.linkedFrom}
+          actionLabel={`Open ${node.name}`}
+          onAction={() => {
+            onOpen?.(node.path)
+          }}
+          onClose={() => {
+            onSelect?.(null)
+          }}
+        />
+      </div>
+    )
+  const legendSlot = legend ? (
+    <div data-figma="legend">
+      <MapLegend hint="Select an item to light its links" />
+    </div>
+  ) : null
+  const graph = (
+    <div className={phone ? mapWindow : undefined} data-figma={phone ? 'map viewport' : 'map canvas'}>
       <h2 className={srOnly}>Toolkit map</h2>
       <MapGraph
         label="Toolkit map"
@@ -80,35 +127,24 @@ export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layo
         edges={map.links}
         selectedId={selected}
         onSelect={onSelect}
-        legend={
-          legend ? (
-            <div data-figma="legend">
-              <MapLegend hint="Select an item to light its links" />
-            </div>
-          ) : null
-        }
-        card={
-          node === undefined ? null : (
-            <div data-figma={`selection · ${node.name}`}>
-              <MapSelectionCard
-                name={node.name}
-                kind={node.kind}
-                // The card says what the item does as a sentence; the list's cards show the same text without the stop.
-                description={selectedItem === undefined || !description ? undefined : `${selectedItem.description}.`}
-                linksTo={selectedItem?.linksTo}
-                linkedFrom={selectedItem?.linkedFrom}
-                actionLabel={`Open ${node.name}`}
-                onAction={() => {
-                  onOpen?.(node.path)
-                }}
-                onClose={() => {
-                  onSelect?.(null)
-                }}
-              />
-            </div>
-          )
-        }
+        legend={legendSlot}
+        card={phone ? null : card}
       />
+      {phone ? (
+        // M11 461:1257: the hint is a pill 10 px in from the window's left and bottom edges; the MapGraph legend
+        // slot sits 24 px in, so the pill goes over the map here.
+        <div className={hint} data-figma="hint">
+          <Badge variant="quiet" label="Pinch to zoom · drag to move" />
+        </div>
+      ) : null}
     </div>
+  )
+  if (!phone) return graph
+  // M11: the card (selection · writer 461:1259) comes under the window, 10 px below it, as the page's next row.
+  return (
+    <>
+      {graph}
+      {card}
+    </>
   )
 }

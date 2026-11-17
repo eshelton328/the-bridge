@@ -5,7 +5,8 @@
 // kind chips, the search row and a group of cards per kind, narrowed by
 // the chip and the search (`listView`). The Map view (D2) shows the map
 // (`ToolkitMap`) under the same rows in place of the groups; on a tablet
-// (T2) under the chips, with no search row. A state file's data and ui are its
+// (T2) under the chips, with no search row; on the phone (M11) straight under
+// the header, with no chips and no search. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
 // without `onUiChange` the screen keeps Erik's changes itself.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
@@ -53,6 +54,10 @@ type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & 
 function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayoutProps) {
   const desktop = layout === 'desktop'
   const view = listView(data, ui)
+  const map = ui.view === 'map'
+  // M11 461:709: the phone's map comes straight under the header; T2 428:348: the tablet's under the chips.
+  const showChips = !(map && layout === 'phone')
+  const showTools = !map || desktop
   const setGroupOpen = (kind: ToolkitKind, open: boolean) => {
     onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: open } })
   }
@@ -70,25 +75,26 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
           onUiChange({ view: next })
         }}
       />
-      <div className={chips} data-figma="filter · chips">
-        <FilterChips
-          label="Filter by kind"
-          multiple={false}
-          items={data.chips.map((c) => ({
-            value: c.value,
-            label: c.label,
-            count: c.count,
-            kind: c.value === 'all' ? undefined : c.value,
-          }))}
-          value={[ui.filter]}
-          onValueChange={(value) => {
-            const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
-            if (parsed.success) onUiChange({ filter: parsed.data })
-          }}
-        />
-      </div>
-      {/* T2 428:348: on a tablet the map comes straight under the chips, with no search. */}
-      {ui.view === 'map' && layout === 'tablet' ? null : (
+      {showChips ? (
+        <div className={chips} data-figma="filter · chips">
+          <FilterChips
+            label="Filter by kind"
+            multiple={false}
+            items={data.chips.map((c) => ({
+              value: c.value,
+              label: c.label,
+              count: c.count,
+              kind: c.value === 'all' ? undefined : c.value,
+            }))}
+            value={[ui.filter]}
+            onValueChange={(value) => {
+              const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
+              if (parsed.success) onUiChange({ filter: parsed.data })
+            }}
+          />
+        </div>
+      ) : null}
+      {showTools ? (
         <ToolkitListTools
           query={ui.query}
           layout={layout}
@@ -97,7 +103,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
             onUiChange({ query })
           }}
         />
-      )}
+      ) : null}
       {ui.view === 'map' ? (
         <ToolkitMap
           map={data.map ?? { columns: [], nodes: [], links: [] }}
