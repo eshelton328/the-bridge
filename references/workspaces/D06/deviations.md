@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the drop zone
 (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.15), each with its reason. The library gaps are
+1.0.0-beta.16), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D02b's
 without the open menu and the side chat: hono server is dragged from the
 sidebar onto bridge themes, its row fades, and the right half of the chat
@@ -25,13 +25,13 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 
 ## Deviations
 
-- **Dragged chat in the drop zone (Drop zone).** `158:1034` x +36,
-  y -72, w +10: Figma draws the chat where the pointer holds it, 111 under
+- **Dragged chat in the drop zone (Drop zone).** `158:1034` x +37,
+  y -71, w +8: Figma draws the chat where the pointer holds it, 111 under
   the hint and 75 in from the zone's left edge. The largest spacing token
   is 40, so the chat sits 40 under the hint, centred in the zone (d-100).
   It is 320 wide (`shell.popover`, the nearest width token to Figma's 310).
-  Its border is the row's running border, less bright than Figma's cyan
-  border, and it has no shadow.
+  It is `DragPreview` around the chat's row: a cyan border and a shadow,
+  as Figma draws it.
 - **Hint box (Drop zone).** `158:1048` x +13, w -27: the hint is one text
   layer in Figma with wider gaps around the "·"; the render draws the same
   string in `monoSm` with single spaces, so the box is 431 wide against

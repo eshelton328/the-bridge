@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the folders control,
 its list and the folder picker (`pnpm fidelity workspaces`, 2026-11-17,
-against the library's 1.0.0-beta.15), each with its reason. The library gaps are in
+against the library's 1.0.0-beta.15; the same on 1.0.0-beta.16), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D03's sidebar
 layout with drift check (omni-brain, Codex) in the middle, the folder
 list open over the transcript and the folder picker in the side slot

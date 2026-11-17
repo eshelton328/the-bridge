@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the subagents
 panel and the New chat form (`pnpm fidelity workspaces`, 2026-11-17,
-against the library's 1.0.0-beta.15), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+against the library's 1.0.0-beta.15; the same on 1.0.0-beta.16), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 The screen is D02b's sidebar layout with hono server (the-bridge) in the
 middle, the subagents panel in the side slot (`sideWidth="wide"`, 420) and
 the New chat form (`Dialog size="lg"`, 540) open over it.
@@ -70,6 +70,10 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   the group header buttons are 24 px with 12 px icons. Figma's group
   headers in D3 have no drag handle, and the build leaves it out
   (`sidebar.grip: false`).
+- **Sticky bars (d-107).** The subagents panel's title row and the
+  main chat's header and composer stay in view; only the cards and the
+  transcript scroll. The frame shows the top of the scroll, so this
+  changes no pixel here.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.
 - **Focus of the first message.** Figma draws the first message with the

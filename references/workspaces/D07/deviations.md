@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of one chat in the
 workbench (`pnpm fidelity workspaces`, 2026-11-17, after the move to the
-library's 1.0.0-beta.15), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+library's 1.0.0-beta.15; the same on 1.0.0-beta.16), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 The screen is D02b's sidebar with no menu open, beside the library's
 `Workbench` in place of the chat alone (`ui.workbench`): the workspace tabs
 with New chat, one pane (bridge themes, D01's chat with requirements.md

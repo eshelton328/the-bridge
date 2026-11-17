@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of the chat actions
 menu (`pnpm fidelity workspaces`, 2026-11-17, after the move to the
-library's 1.0.0-beta.15), each with its reason. The library gaps are
+library's 1.0.0-beta.15; the same on 1.0.0-beta.16), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D02's without
 the drag, with the ⋯ of the chat header pressed and its menu open.
 
