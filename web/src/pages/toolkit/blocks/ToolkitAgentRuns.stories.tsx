@@ -29,3 +29,38 @@ export const Default: Story = {
     await expect(canvas.getByText('gets only what the task hands it')).toBeVisible()
   },
 }
+
+// D9 433:1538: the hook commit-msg's four cards, its state as a badge and its captions in small text.
+export const Hook: Story = {
+  args: {
+    kind: 'hook',
+    runs: {
+      label: 'When it runs',
+      facts: [
+        { icon: 'event', label: 'Event', value: 'commit-msg', caption: 'git runs it on every commit' },
+        {
+          icon: 'state',
+          label: 'State',
+          value: 'Enabled',
+          status: 'on',
+          caption: 'core.hooksPath = toolkit/hooks, set by link.sh',
+        },
+        {
+          icon: 'rule',
+          label: 'Enforces',
+          value: 'commits-and-prs.md',
+          caption: 'change the rule and the hook together',
+        },
+        { icon: 'test', label: 'Test', value: 'test-commit-msg', caption: 'runs the rule’s ✗ and ✓ examples' },
+      ],
+    },
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await expect(canvas.getByRole('heading', { name: 'When it runs' })).toBeVisible()
+    await expect(canvas.getByText('Enabled')).toBeVisible()
+    await expect(canvasElement.querySelector('[data-figma="kind section · hook"]')).not.toBeNull()
+    // A hook's captions are small text, not mono.
+    const caption = canvas.getByText('git runs it on every commit')
+    await expect(getComputedStyle(caption).fontFamily).not.toMatch(/Mono/)
+  },
+}

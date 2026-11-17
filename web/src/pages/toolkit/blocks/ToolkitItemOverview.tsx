@@ -3,10 +3,11 @@
 // two columns: the item's main file rendered read-only (`ToolkitFilePreview`)
 // and, beside it, what uses the item, its files and the link to its evals
 // (`ToolkitItemSide`). An agent (D7) shows how it runs (`ToolkitAgentRuns`)
-// between the description and the columns. Props only.
+// between the description and the columns, and a hook (D9) when it runs, with
+// its script as code in the preview. Props only.
 import { ClockIcon, Panel } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { ToolkitItemDetailView } from '../types.ts'
+import type { ToolkitItemDetailView, ToolkitKind } from '../types.ts'
 import { ToolkitAgentRuns } from './ToolkitAgentRuns.tsx'
 import { ToolkitFilePreview } from './ToolkitFilePreview.tsx'
 import { ToolkitItemSide } from './ToolkitItemSide.tsx'
@@ -34,6 +35,7 @@ const descriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '427:271',
   'rules/skills.md': '427:627',
   'agents/writing-reviewer.md': '433:525',
+  'hooks/commit-msg': '433:1537',
 }
 // D3 427:272: the preview (560) and the side (364) are 24 apart. No size token has either width, so the columns
 // share the row 3 to 2 (LIBRARY_GAPS.md, Item overview columns).
@@ -41,10 +43,12 @@ const columns = css({ display: 'grid', gridTemplateColumns: '[3fr 2fr]', columnG
 
 export type ToolkitItemOverviewProps = {
   detail: ToolkitItemDetailView
+  /** The open item's kind: a hook's facts are drawn as D9 draws them. */
+  kind?: ToolkitKind | undefined
   onTabChange?: ((tab: string) => void) | undefined
 }
 
-export function ToolkitItemOverview({ detail, onTabChange }: ToolkitItemOverviewProps) {
+export function ToolkitItemOverview({ detail, kind, onTabChange }: ToolkitItemOverviewProps) {
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   return (
     <div className={overview}>
@@ -64,9 +68,16 @@ export function ToolkitItemOverview({ detail, onTabChange }: ToolkitItemOverview
           </Panel>
         </div>
       )}
-      {detail.runs === undefined ? null : <ToolkitAgentRuns runs={detail.runs} />}
+      {detail.runs === undefined ? null : (
+        <ToolkitAgentRuns runs={detail.runs} kind={kind === 'hook' ? 'hook' : 'agent'} />
+      )}
       <div className={columns} data-figma="columns">
-        <ToolkitFilePreview file={detail.preview.file} meta={detail.preview.meta} blocks={detail.preview.blocks} />
+        <ToolkitFilePreview
+          file={detail.preview.file}
+          meta={detail.preview.meta}
+          blocks={detail.preview.blocks}
+          code={detail.preview.code}
+        />
         {side ? <ToolkitItemSide detail={detail} onTabChange={onTabChange} /> : null}
       </div>
     </div>

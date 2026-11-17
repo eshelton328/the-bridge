@@ -52,11 +52,12 @@ const copy = css({
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
-// writing-reviewer in D7 (433:524).
+// writing-reviewer in D7 (433:524), the hook commit-msg in D9 (433:1536).
 const titleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '427:270',
   'rules/skills.md': '427:626',
   'agents/writing-reviewer.md': '433:524',
+  'hooks/commit-msg': '433:1536',
 }
 
 // D3 500:8143: the kind badge starts with the kind's icon.
@@ -134,7 +135,9 @@ export function ToolkitItem({ open, back, onTabChange, onCopyPath, onShowOnMap, 
           label: t.label,
           content:
             // The other tabs are later frames (D4, D7 to D9); until then their panels are empty.
-            t.value === 'overview' ? <ToolkitItemOverview detail={detail} onTabChange={onTabChange} /> : null,
+            t.value === 'overview' ? (
+              <ToolkitItemOverview detail={detail} kind={item.kind} onTabChange={onTabChange} />
+            ) : null,
         }))}
       />
     </article>

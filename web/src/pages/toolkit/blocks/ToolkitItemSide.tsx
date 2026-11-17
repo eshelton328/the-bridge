@@ -6,6 +6,7 @@
 import {
   ChartIcon,
   ChevronRightIcon,
+  CodeIcon,
   FileIcon,
   FolderIcon,
   KindTile,
@@ -46,6 +47,13 @@ const evalsBox = css({
 })
 const chevron = css({ display: 'inline-flex', color: 'fg.muted' })
 
+// D3 427:353: icon/file or icon/folder; D9 433:1634: icon/code for a file shown as code.
+const lineIcons = {
+  file: <FileIcon size="16" />,
+  folder: <FolderIcon size="16" />,
+  code: <CodeIcon size="16" />,
+}
+
 export type ToolkitItemSideProps = {
   detail: ToolkitItemDetailView
   onTabChange?: ((tab: string) => void) | undefined
@@ -82,9 +90,7 @@ export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
           <ul className={list}>
             {files.lines.map((fileLine) => (
               <li key={fileLine.names.join(' ')} className={line} data-figma={`file · ${fileLine.names.join('  ')}`}>
-                <span className={icon}>
-                  {fileLine.type === 'folder' ? <FolderIcon size="16" /> : <FileIcon size="16" />}
-                </span>
+                <span className={icon}>{lineIcons[fileLine.type]}</span>
                 <span className={names}>
                   {fileLine.names.map((n) => (
                     <span key={n}>{n}</span>
