@@ -7,17 +7,17 @@ check, second review, fix, ship) is in Erik's brain:
 The Figma references the checks read are in
 [../../references/AGENTS.md](../../references/AGENTS.md).
 
-| File                 | What it does                                                                                      |
-| -------------------- | ------------------------------------------------------------------------------------------------- |
-| `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks           |
-| `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have            |
-| `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px)         |
-| `checkRules.ts`      | No text hidden by overflow, no scroll bar, the render fills the frame's height, no stretched pill |
-| `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings)                 |
-| `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                         |
-| `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply        |
-| `figmaMetadata.ts`   | Parses `get_metadata` XML into a frame record; marks design-only chrome text as excluded          |
-| `references.ts`      | Reads `frame.json` and `exceptions.json` with Zod                                                 |
+| File                 | What it does                                                                                                                                        |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks                                                             |
+| `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have                                                              |
+| `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px)                                                           |
+| `checkRules.ts`      | No text hidden by overflow, no scroll bar, the render fills the frame's height, no stretched pill                                                   |
+| `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any open popover Ark portals into `body` |
+| `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                                                                           |
+| `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply                                                          |
+| `figmaMetadata.ts`   | Parses `get_metadata` XML into a frame record; marks design-only chrome text as excluded                                                            |
+| `references.ts`      | Reads `frame.json` and `exceptions.json` with Zod                                                                                                   |
 
 ## Run the loop for one frame
 

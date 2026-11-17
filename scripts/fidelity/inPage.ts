@@ -9,9 +9,9 @@ export type FigmaBox = Box & { key: string; selector: string }
 export type RuleFinding = { rule: string; selector: string; detail: string }
 
 export type PageMeasure = {
-  /** document textContent of the story root, whitespace collapsed. */
+  /** document textContent of the story root and its portals, whitespace collapsed. */
   textContent: string
-  /** innerText of the story root (applies CSS text-transform), whitespace collapsed. */
+  /** innerText of the story root and its portals (applies CSS text-transform), whitespace collapsed. */
   innerText: string
   /** Every non-empty text node, as rendered (text-transform applied), visible or not. */
   allTexts: string[]
@@ -29,13 +29,24 @@ export type PageMeasure = {
 export function collectPage(rootSelector: string): PageMeasure {
   const root = document.querySelector(rootSelector)
   if (root === null) throw new Error(`No element ${rootSelector}`)
+  // An open popover or menu renders in a portal: a direct child of body
+  // outside the story root (Ark UI's Portal). The viewer sees it, so its
+  // text, boxes and rules count with the root's.
+  const portals = [...document.body.children].filter(
+    (e) => e !== root && !e.contains(root) && e.hasAttribute('data-scope'),
+  )
+  const roots = [root, ...portals]
   const collapse = (s: string) => s.replace(/\s+/g, ' ').trim()
   const vw = window.innerWidth
   const vh = window.innerHeight
 
   const selectorOf = (el: Element): string => {
     const parts: string[] = []
-    for (let e: Element | null = el; e !== null && e !== root && parts.length < 5; e = e.parentElement) {
+    for (
+      let e: Element | null = el;
+      e !== null && !roots.includes(e) && e !== document.body && parts.length < 5;
+      e = e.parentElement
+    ) {
       const figma = e.getAttribute('data-figma')
       if (figma !== null) {
         parts.unshift(`[data-figma="${figma}"]`)
@@ -86,8 +97,12 @@ export function collectPage(rootSelector: string): PageMeasure {
   // ---- text ----
   const allTexts: string[] = []
   const visibleTexts: TextRun[] = []
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
-  for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) {
+  const textNodes: Node[] = []
+  for (const r of roots) {
+    const walker = document.createTreeWalker(r, NodeFilter.SHOW_TEXT)
+    for (let n = walker.nextNode(); n !== null; n = walker.nextNode()) textNodes.push(n)
+  }
+  for (const n of textNodes) {
     const parent = n.parentElement
     const raw = collapse(n.textContent ?? '')
     if (parent === null || raw === '' || ['SCRIPT', 'STYLE', 'TEXTAREA'].includes(parent.tagName)) continue
@@ -103,7 +118,7 @@ export function collectPage(rootSelector: string): PageMeasure {
     visibleTexts.push({ text, ...part, selector: selectorOf(parent) })
   }
   const fieldTexts: string[] = []
-  for (const f of root.querySelectorAll('input, textarea')) {
+  for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {
     if (!(f instanceof HTMLInputElement || f instanceof HTMLTextAreaElement)) continue
     const value = collapse(f.value)
     const placeholder = collapse(f.placeholder)
@@ -115,26 +130,28 @@ export function collectPage(rootSelector: string): PageMeasure {
   }
 
   // ---- data-figma boxes ----
-  const figmaBoxes: FigmaBox[] = [...root.querySelectorAll('[data-figma]')].map((el) => {
-    const r = el.getBoundingClientRect()
-    return {
-      key: el.getAttribute('data-figma') ?? '',
-      selector: selectorOf(el),
-      x: r.left + window.scrollX,
-      y: r.top + window.scrollY,
-      w: r.width,
-      h: r.height,
-    }
-  })
+  const figmaBoxes: FigmaBox[] = roots
+    .flatMap((r) => [...r.querySelectorAll('[data-figma]')])
+    .map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        key: el.getAttribute('data-figma') ?? '',
+        selector: selectorOf(el),
+        x: r.left + window.scrollX,
+        y: r.top + window.scrollY,
+        w: r.width,
+        h: r.height,
+      }
+    })
 
   // ---- rules ----
   const rules: RuleFinding[] = []
   const hasTooltip = (el: Element): boolean => {
-    for (let e: Element | null = el; e !== null && e !== root.parentElement; e = e.parentElement)
+    for (let e: Element | null = el; e !== null && e !== document.body; e = e.parentElement)
       if (e.hasAttribute('title') || e.hasAttribute('aria-describedby') || e.hasAttribute('data-tooltip')) return true
     return false
   }
-  for (const el of [root, ...root.querySelectorAll('*')]) {
+  for (const el of roots.flatMap((r) => [r, ...r.querySelectorAll('*')])) {
     if (!(el instanceof HTMLElement) || !shown(el)) continue
     const s = getComputedStyle(el)
     const hidden = (v: string) => v === 'hidden' || v === 'clip'
@@ -203,8 +220,8 @@ export function collectPage(rootSelector: string): PageMeasure {
   const first = root.firstElementChild ?? root
   const r = first.getBoundingClientRect()
   return {
-    textContent: collapse(root.textContent),
-    innerText: root instanceof HTMLElement ? collapse(root.innerText) : '',
+    textContent: collapse(roots.map((r) => r.textContent).join(' ')),
+    innerText: collapse(roots.map((r) => (r instanceof HTMLElement ? r.innerText : '')).join(' ')),
     allTexts,
     fieldTexts,
     visibleTexts,
