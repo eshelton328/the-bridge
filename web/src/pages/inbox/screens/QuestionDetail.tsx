@@ -19,7 +19,7 @@ import {
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { DetailFrame } from '../blocks/DetailFrame.tsx'
+import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { PinnedAction } from '../blocks/PinnedAction.tsx'
