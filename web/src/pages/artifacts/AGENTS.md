@@ -87,6 +87,15 @@ each file of a page folder is for.
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the
   Inbox's discussion blocks, which the Inbox page does not export.
+  For D8: `DiscussionEntry` (Erik's message, the discussion's reply with
+  its bubble and name, or a proposal) and `ArtifactProposal`
+  (`ProposalBlock tone="update"` with its `ProposalDiff`, Apply, Discard
+  and Edit first, as the Inbox's proposed update). `screens/discussionView.ts`
+  (pure, tested in `discussionView.test.ts`) drops a discarded proposal,
+  puts the sent messages after the entries, and says what each button
+  does: Discard sets `ui.discussProposal` to `discarded`, Apply to
+  `applied` (the applied artifact is D9's state, built later), and Edit
+  first puts the lines the proposal adds in the reply box.
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
@@ -95,7 +104,10 @@ each file of a page folder is for.
   (D1's data with the Add a link dialog open, Codex site picked) and D6
   `sortOpen` (D1's data with the four sorts and the Sort menu open) and
   D7 `discussOpen` (D2's data with its discussion open; `artifactOpen`
-  holds the discussion, so D2's Discuss opens it). `library` stays first in `states/index.ts`: the app
+  holds the discussion, so D2's Discuss opens it) and D8 `changeProposed`
+  (D7's data with a question, the reply and a proposed update to the
+  chart; the discussion's `layers` hold each frame's node ids of its two
+  Open in workspace buttons). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -109,7 +121,8 @@ each file of a page folder is for.
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu, and
-  the open discussion, its draft and the sent messages), each
+  the open discussion, its draft, the sent messages and what Erik did to
+  its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
