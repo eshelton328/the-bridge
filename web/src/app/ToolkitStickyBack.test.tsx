@@ -71,3 +71,50 @@ describe('the open item on a tablet (d-107)', () => {
     await view.unmount()
   })
 })
+
+describe('the open item on the phone (d-107)', () => {
+  it('keeps Back and its icon buttons in view while the item scrolls: the skill writer (M2)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderToolkit('skillOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="back row"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const back = root.querySelector('button[aria-label="Back to Toolkit"]')
+    const discuss = root.querySelector('button[aria-label="Discuss"]')
+    const map = root.querySelector('button[aria-label="Show on map"]')
+    // On the phone the item's frame is Figma's `toolkit` (M2 429:284).
+    const item = root.querySelector('article[aria-label="writer"]')
+    if (back === null || discuss === null || map === null || item === null) throw new Error('no Back, actions or item')
+    // The actions sit in the back row, as icon buttons with their names (M2 496:2, 429:291).
+    expect(backRow.contains(discuss)).toBe(true)
+    expect(backRow.contains(map)).toBe(true)
+    expect(discuss.textContent).toBe('')
+    // On the phone the item is longer than the screen without help: its files and evals run under the tab bar.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')].filter((b) => b.contains(item))
+    expect(bodies).toHaveLength(1)
+    const body = bodies[0] ?? document.body
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = { back: box(back).top, map: box(map).top, row: box(backRow).top, item: box(item).top }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop).toBeGreaterThan(0)
+    expect(root.querySelector('.app-shell__detail')?.scrollTop ?? 0).toBe(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(item).top).toBeLessThan(before.item)
+    // Back, Show on map and their row stay where they were, above the item's visible part.
+    expect(box(back).top).toBe(before.back)
+    expect(box(map).top).toBe(before.map)
+    expect(box(backRow).top).toBe(before.row)
+    expect(box(back).top).toBeGreaterThanOrEqual(0)
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(body).top)
+    // The evals link, the last part of the item, scrolls into view above the tab bar.
+    const evals = root.querySelector('[data-figma="evals link"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (evals === null || tabBar === null) throw new Error('no evals link or tab bar')
+    expect(box(evals).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
+})
