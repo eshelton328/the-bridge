@@ -445,6 +445,23 @@ describe('the Inbox list tools and task bar', () => {
     expect(page.getByText('Snoozed until 11:40').elements()).toHaveLength(1)
   })
 
+  it('keeps the edited prompt after a visit to the Toolkit page and Back', async () => {
+    await page.viewport(1512, 982)
+    const { router, rendered } = renderInbox('nextStep')
+    const view = await rendered
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await page.getByRole('textbox', { name: 'Suggested prompt' }).fill('Write one ticket per screen.')
+    await page.getByRole('button', { name: 'Done' }).click()
+    await page.getByRole('button', { name: 'Toolkit' }).click()
+    await expect.element(page.getByRole('heading', { name: 'Toolkit' })).toBeVisible()
+    await act(async () => {
+      router.history.back()
+      await router.invalidate()
+    })
+    await expect.element(page.getByText('Write one ticket per screen.')).toBeVisible()
+    await view.unmount()
+  })
+
   it('edits the prompt with Edit and Done, and brings the suggestion back with Reset', async () => {
     await tablet('taskPage')
     const editor = () => page.getByRole('textbox', { name: 'Suggested prompt' })

@@ -39,6 +39,8 @@ export type InboxScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
+  /** What Erik typed in the open item, from the page store; without it the screen keeps its own. */
+  drafts?: InboxDrafts | undefined
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
   onSelectItem?: ((id: string) => void) | undefined
@@ -58,7 +60,7 @@ export type InboxScreenProps = {
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
 }
 
-type InboxLayoutProps = Omit<InboxScreenProps, 'viewport'> & { layout: Viewport; drafts: InboxDrafts }
+type InboxLayoutProps = Omit<InboxScreenProps, 'viewport' | 'drafts'> & { layout: Viewport; drafts: InboxDrafts }
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange } = props
@@ -283,12 +285,13 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
 
 type Typed = { of: InboxData['detail']; values: InboxDrafts['values'] }
 
-export function InboxScreen({ viewport, ...props }: InboxScreenProps) {
+export function InboxScreen({ viewport, drafts: pageDrafts, ...props }: InboxScreenProps) {
   // What Erik types in the open item lives here, above the layout: a width change swaps the layout and remounts its
   // fields, and this keeps their text. Another item starts empty.
+  // The page passes its own drafts, kept in its store, so a visit to another page keeps them too.
   const item = props.data.detail
   const [typed, setTyped] = useState<Typed>({ of: item, values: {} })
-  const drafts: InboxDrafts = {
+  const drafts: InboxDrafts = pageDrafts ?? {
     values: typed.of === item ? typed.values : {},
     onChange: (field: InboxDraftField, value: string) => {
       setTyped((t) => ({ of: item, values: { ...(t.of === item ? t.values : {}), [field]: value } }))

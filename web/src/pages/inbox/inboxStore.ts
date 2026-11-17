@@ -7,7 +7,7 @@
 // state (`?state=`) and are dropped when another state is shown, so each
 // state opens with its own dialog and query.
 import { createAppStore } from '../../state/createAppStore.ts'
-import type { InboxGroupId, InboxUi } from './types.ts'
+import type { InboxDraftField, InboxDrafts, InboxGroupId, InboxUi } from './types.ts'
 
 /** The `?state=` a change belongs to; undefined is the default state. */
 export type InboxStateKey = string | undefined
@@ -24,8 +24,12 @@ type InboxEdits = {
 /** The rest of what Erik changed in the shown state's `ui`: menus, the sort, the filters, snoozed items. */
 type InboxUiEdits = { state: InboxStateKey; ui: Partial<InboxUi> }
 
+/** What Erik typed in the open item's fields. It outlives the page, so a visit to another page keeps it. */
+type InboxTyped = { item: string | undefined; values: InboxDrafts['values'] }
+
 type InboxViewState = {
   groupsOpen: Partial<Record<InboxGroupId, boolean>>
+  typed: InboxTyped
   edits: InboxEdits
   uiEdits: InboxUiEdits
   actions: {
@@ -38,6 +42,8 @@ type InboxViewState = {
     setUi: (state: InboxStateKey, change: Partial<InboxUi>) => void
     /** Drops the edits of the last state when another state is shown. */
     showState: (state: InboxStateKey) => void
+    /** Sets one field's text for `item`; another item starts empty. */
+    setDraft: (item: string | undefined, field: InboxDraftField, value: string) => void
   }
 }
 
@@ -57,6 +63,7 @@ const noUi: Partial<InboxUi> = {}
 
 const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
   groupsOpen: {},
+  typed: { item: undefined, values: {} },
   edits: noEdits(undefined),
   uiEdits: { state: undefined, ui: {} },
   actions: {
@@ -92,6 +99,13 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
         'inbox/showState',
       )
     },
+    setDraft: (item, field, value) => {
+      set(
+        (s) => ({ typed: { item, values: { ...(s.typed.item === item ? s.typed.values : {}), [field]: value } } }),
+        undefined,
+        'inbox/setDraft',
+      )
+    },
   },
 }))
 
@@ -117,6 +131,12 @@ export const useInboxQuery = (state: InboxStateKey): string | undefined =>
 /** What Erik changed in `state`'s `ui` besides the dialogs and Back; empty keeps the state's own. */
 export const useInboxUi = (state: InboxStateKey): Partial<InboxUi> =>
   useInboxStore((s) => (s.uiEdits.state === state ? s.uiEdits.ui : noUi))
+
+const noDrafts: InboxDrafts['values'] = {}
+
+/** What Erik typed in `item`'s fields; empty for another item. */
+export const useInboxDrafts = (item: string | undefined): InboxDrafts['values'] =>
+  useInboxStore((s) => (s.typed.item === item ? s.typed.values : noDrafts))
 
 /** The Inbox view actions; a stable reference. */
 export const useInboxActions = (): InboxViewState['actions'] => useInboxStore((s) => s.actions)
