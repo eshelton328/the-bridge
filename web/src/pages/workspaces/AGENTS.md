@@ -23,7 +23,8 @@ first: it says what each file of a page folder is for.
   side (D5). With `ui.paneDrag` (D6) the dragged chat's row fades in the
   sidebar and `data.paneDrop` shows as a drop zone over the chat alone.
   With `ui.workbench` (D7) the sidebar sits beside the workbench (tabs,
-  panes, status bar) in place of the chat alone.
+  panes, status bar) in place of the chat alone; then `ui.paneDrag.pane`
+  (D8) puts the drop zone over that pane of the split.
 - `blocks/`: `WorkbenchPanes` (the split, one to four panes clockwise
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
   header through `PaneSlot`: kind mark, title, model, context, status,
@@ -59,7 +60,11 @@ first: it says what each file of a page folder is for.
   `MainChat` draws as its `overlay`. D7 adds `WorkspaceTabs` (the
   `Workbench` with New chat, the sidebar toggle, which shows the
   sidebar again, when the sidebar is hidden, `WorkbenchPanes` and the status bar), which both layouts use.
-  Later frames add to these blocks.
+  D8 adds `overlay` to `PaneFrame` (drawn over the whole pane, header
+  included) and `placement="pane"` to `PaneDropZone` (4 in from the pane,
+  the dragged chat at the zone's end; `data.paneDrop` without `hint` and
+  with `icon: false` draws neither), which `WorkbenchPanes` gives the pane
+  that `ui.paneDrag.pane` names. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -71,7 +76,8 @@ first: it says what each file of a page folder is for.
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
   D3's sidebar), D5 `sideChatInPane` (from `workbench`), D6 `dragIntoPane`
   (from `chatActions`), D7 `chatInWorkbench` (from `chatActions`, with
-  D1's bridge themes pane). Later states start from
+  D1's bridge themes pane), D8 `dragOverPane` (from `chatInWorkbench`).
+  Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
@@ -83,13 +89,15 @@ first: it says what each file of a page folder is for.
   chat's `pane` and `openAsPane`, and the split's layers in `layers`
   (`emptyRows`: the empty pane's rows, as `EmptyPane` takes no
   `data-figma`); for
-  D6 the drop zone's text, `paneDrop`) and
+  D6 the drop zone's text, `paneDrop`, and for D8 its optional `hint` and
+  `icon` and the zone's layers in `layers.dropZone`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
   and the New chat form, with the open transcripts; for D4 the folder
   list, the picker and the chosen folder; for D6 `paneDrag`, the chat
   dragged onto the chat alone and its edge; for D7 `workbench`, the
-  workbench beside the sidebar), each a Zod schema.
+  workbench beside the sidebar; for D8 `paneDrag.pane`, the pane of the
+  workbench a chat is dragged over), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
