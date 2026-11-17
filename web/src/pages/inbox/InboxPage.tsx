@@ -5,6 +5,7 @@ import { getRouteApi } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import {
   useInboxActions,
+  useInboxDrafts,
   useInboxGroupsOpen,
   useInboxItemOpen,
   useInboxPromptOpen,
@@ -26,7 +27,10 @@ export function InboxPage() {
   const removeOpen = useInboxRemoveOpen(search.state)
   const query = useInboxQuery(search.state)
   const changed = useInboxUi(search.state)
-  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, setUi, showState } = useInboxActions()
+  const itemId = state.data.detail?.id
+  const draftValues = useInboxDrafts(itemId)
+  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, setUi, showState, setDraft } =
+    useInboxActions()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
@@ -44,6 +48,16 @@ export function InboxPage() {
   return (
     <InboxScreen
       data={state.data}
+      drafts={{
+        values: draftValues,
+        onChange: (field, value) => {
+          setDraft(itemId, field, value)
+        },
+      }}
+      onNavigate={(page) => {
+        // Only the pages that have a route go somewhere; the others wait for theirs.
+        if (page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+      }}
       ui={ui}
       viewport="desktop"
       query={query}

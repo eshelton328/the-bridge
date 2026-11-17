@@ -20,6 +20,14 @@
     {
       "text": "SORT BY",
       "reason": "The heading of the Sort menu as frame.png shows it (layer 346:4001, whose characters get_metadata gives as its name, \"menu header\")."
+    },
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one rail for every page (d-105)."
     }
   ]
 }

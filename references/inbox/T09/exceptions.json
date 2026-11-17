@@ -10,6 +10,10 @@
     {
       "text": "SORT BY",
       "reason": "The heading of the Sort menu as frame.png shows it (layer 346:7474, whose characters get_metadata gives as its name, \"menu header\")."
+    },
+    {
+      "text": "Artifacts",
+      "reason": "The tab bar item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one tab bar for every page (d-105)."
     }
   ]
 }

@@ -10,6 +10,10 @@
     {
       "text": "1 task hidden by filters",
       "reason": "The text of layer 359:549 as frame.png shows it; get_metadata gives its name, \"hidden count\"."
+    },
+    {
+      "text": "Artifacts",
+      "reason": "The tab bar item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one tab bar for every page (d-105)."
     }
   ]
 }
