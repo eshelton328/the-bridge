@@ -8,7 +8,7 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` (one entry per string).
-- Position: 5 of 18 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
+- Position: 6 of 18 layers pass (`task pane`, `task bar`, `title block`, `section · SOURCES`, `guard`, `composer · discussion`).
 - Rules: pass.
 
 ## Deviations
@@ -52,9 +52,12 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 - **New prompt.** Three lines in a box Figma keeps 128 px high (403:1854);
   the `Panel` hugs its text, and 128 is no size token, so the section is
   39 px shorter (`section · SUGGESTED PROMPT` h -39) and the sections
-  below start higher (RUN IN y -25, start y -14, MY NOTES y -13). Round 4
+  below start higher (RUN IN y -25, start y -18, MY NOTES y -17). Round 4
   made the links under the box 4 px shorter (12 px text), which adds 4
-  to these offsets. The change line ("Changed in a discussion · just
+  to these offsets. The tablet fix round (2026-11-17) took the 4 px gap
+  out of the Run in card, under its title row, as Figma's card has
+  (`section · RUN IN` h +5, was +9), which adds 4 more to start and MY
+  NOTES; SOURCES now passes. The change line ("Changed in a discussion · just
   now" and Undo) sits beside "Read the whole prompt", 16 px after it, as
   in Figma, and now starts at Figma's x (`change history` y -26 only).
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
@@ -64,8 +67,9 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
   Figma fades its fifth line (in D16 the prompt has three lines).
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072). With the taller
-  notes box (16 px, the `TextArea` field) the sections below WHY start
-  lower: SOURCES y +5.
+  notes box (12 px, the `TextArea` field; 16 before the note and its
+  author moved 4 closer) the sections below WHY start lower; SOURCES
+  is within the tolerance.
 - **Detail inset.** The column starts at x 104 instead of 100 (`Container
   size="detail"` pads 40 where Figma has 36, d-072 tie). Within the 4 px
   tolerance.

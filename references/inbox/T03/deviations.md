@@ -1,7 +1,7 @@
 # T03 deviations
 
 What still differs from Figma T3 · A question that blocks a chat (the question, `question`, shared with D2), after the last
-fidelity run (`pnpm fidelity inbox T03`, 2026-11-16, library
+fidelity run (`pnpm fidelity inbox T03`, 2026-11-17, library
 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -53,3 +53,30 @@ status bar.
   Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
   Newest, Filter and the row actions are a little wider. Library gap:
   Button label size.
+
+## Second review
+
+A separate agent compared `frame.png` with the render, blind to how it
+was built (2026-11-17). Each finding, fixed or with why it stays:
+
+- "Open chat" a dark filled button where Figma's is outlined: stays.
+  It is the `secondary` button with Figma's own fill (#17213a,
+  `surface.raised`, sampled from both pictures); it reads as filled
+  because the waiting box's needs-you tint is lighter than Figma's
+  (#302b2d against #1a191b), which waits on Erik.
+- "Sends your answer to the waiting chat." lighter than Figma's: stays.
+  `fg.subtle` #7986a6 against #4a5675 (d-055).
+- The selected option card 5 px taller than Figma's: stays. Its
+  Recommended pill is 24 px high against Figma's 20 (library gap: Pill
+  height).
+- The waiting box's icon and text 4 px further in, Open chat 4 px
+  further from the right: stays. `Panel` pads 16 at the sides against
+  Figma's 13 (library gap: Panel and text field padding).
+- The note field's text inset 11 px against 15: stays. `TextArea` pads
+  10 and 8 against Figma's 15 and 13 (same library gap).
+- The note text near-white against Figma's light grey: stays.
+  `TextArea` draws its value in `fg.default`; Figma draws the note in
+  #8a97b8 (`fg.muted`; same library gap).
+- Back did not return to the list (caller's review). Fixed: Back closes
+  the open item through the page store (`inboxStore` `setItemOpen`), so
+  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.

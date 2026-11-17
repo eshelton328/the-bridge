@@ -1,7 +1,7 @@
 # T06 deviations
 
 What still differs from Figma T6 · Inbox after starting a task (the list after starting a task, `runningList`), after the last
-fidelity run (`pnpm fidelity inbox T06`, 2026-11-16, library
+fidelity run (`pnpm fidelity inbox T06`, 2026-11-17, library
 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -46,3 +46,17 @@ status bar.
   Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
   Newest, Filter and the row actions are a little wider. Library gap:
   Button label size.
+
+## Second review
+
+A separate agent compared `frame.png` with the render, blind to how it
+was built (2026-11-17). Each finding, fixed or with why it stays:
+
+- Search placeholder larger and brighter than Figma's: stays.
+  `SearchField` draws its text in `body` (14 px) at every size against
+  Figma's 13 (library gap: Search field and chip count text, the same in
+  D01 to D21). Its colour is `fg.subtle` #7986a6 against Figma's
+  #4a5675 by d-055.
+- Filter chip counts as bright as their labels: stays. `FilterChips`
+  draws counts in `fg.muted`; Figma draws them in #4a5675 (same library
+  gap, the same in D01 to D21).

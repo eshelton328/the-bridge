@@ -1,7 +1,7 @@
 # T07 deviations
 
 What still differs from Figma T7 · Done (Done, the list, `doneList`), after the last
-fidelity run (`pnpm fidelity inbox T07`, 2026-11-16, library
+fidelity run (`pnpm fidelity inbox T07`, 2026-11-17, library
 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -49,3 +49,27 @@ status bar.
   Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
   Newest, Filter and the row actions are a little wider. Library gap:
   Button label size.
+
+## Second review
+
+A separate agent compared `frame.png` with the render, blind to how it
+was built (2026-11-17). Each finding, fixed or with why it stays:
+
+- The outcome line under each row is one size larger: stays. Figma
+  sets it in Geist Regular 11 (346:6834, 346:6850, 346:6888); `ListRow`
+  draws its lines in `small` (12) and no sans style has 11 px (library
+  gap: Small sans text for row lines).
+- The outcome green brighter, the dismissed grey lighter: stays. The
+  green is `status.done.fg` #6ee7a8, the colour Figma uses for done; its
+  smaller 11 px glyphs peak at #5ed98f in `frame.png`. The dismissed
+  line is `fg.subtle` #7986a6 against Figma's #4a5675 (d-055).
+- Search placeholder larger and lighter than Figma's: stays.
+  `SearchField` draws its text in `body` (14 px) at every size against
+  Figma's 13 (library gap: Search field and chip count text, the same in
+  D01 to D21). Its colour is `fg.subtle` #7986a6 against Figma's
+  #4a5675 by d-055.
+- Chip counts lighter than Figma's: stays. `FilterChips`
+  draws counts in `fg.muted`; Figma draws them in #4a5675 (same library
+  gap, the same in D01 to D21).
+- Rounded screen corners in Figma: stays. They are the device frame,
+  design-only chrome (d-089); the app draws no device.

@@ -1,7 +1,7 @@
 # T05 deviations
 
 What still differs from Figma T5 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
-fidelity run (`pnpm fidelity inbox T05`, 2026-11-16, library
+fidelity run (`pnpm fidelity inbox T05`, 2026-11-17, library
 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -49,5 +49,27 @@ status bar.
   Figma's lighter grey (library gaps: Top and bottom safe areas on the
   tablet, Composer focus).
 - **Messages.** Messages are `body` (14/20) against Figma's 13/19, so
-  Claude's reply wraps one word earlier. Library gap: Message author
+  Claude's reply wraps three words earlier. Library gap: Message author
   icon and small text.
+
+## Second review
+
+A separate agent compared `frame.png` with the render, blind to how it
+was built (2026-11-17). Each finding, fixed or with why it stays:
+
+- No caret in the focused reply box: stays. The story's play test
+  focuses the reply box, and it still has the focus when the page is
+  captured (`document.activeElement` is the reply box). Playwright's
+  screenshot hides the text caret by default, so no render shows it.
+- Claude's reply wraps three words earlier ("or wait for" moves down):
+  stays. `Message` draws its text in `body` (14/20) against Figma's
+  13/19 (library gap: Message author icon and small text).
+- Copy under the reply 72 × 28 with a 14 px label against 62 × 20 and
+  11 px; Stop 69 × 30 and send 28 against 59 × 26 and 24: stays. The
+  library's `Button size="sm"` and `Composer` controls are 28 px high
+  with 14 px labels (library gap: Button label size).
+- 17 px from the task card to the first message against 23: fixed. The
+  chat starts 24 below the card (Figma 22, 24 on the grid, d-072).
+- Back did not return to the list (caller's review). Fixed: Back closes
+  the open item through the page store (`inboxStore` `setItemOpen`), so
+  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.

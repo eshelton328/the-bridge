@@ -1,14 +1,14 @@
 # T04 deviations
 
 What still differs from Figma T4 · Running, on the task page (the started task on its own page, `runningTaskPage`), after the last
-fidelity run (`pnpm fidelity inbox T04`, 2026-11-16, library
+fidelity run (`pnpm fidelity inbox T04`, 2026-11-17, library
 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 4 of 11 layers pass (`section · SOURCES`, `running`, `running card`, `tab bar`).
+- Position: 3 of 11 layers pass (`running`, `running card`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -17,12 +17,13 @@ Render minus Figma, in px; "29 px removed" is the y offset without the
 status bar.
 
 - `nav · back`: x +2, y -29, w -4, h -4; 29 px removed: y +0.
-- `task · running`: x +2, y -25, w -4, h -4; 29 px removed: y +4.
+- `task · running`: x +2, y -25, w -4, h -8; 29 px removed: y +4.
 - `task bar`: x +2, y -31, w -4, h -2; 29 px removed: y -2.
 - `title block`: x +2, y -31, w -4, h +4; 29 px removed: y -2.
 - `section · WHY`: x +2, y -25, w -4, h +2; 29 px removed: y +4.
 - `section · SUGGESTED PROMPT`: x +2, y -21, w -4, h +3; 29 px removed: y +8.
-- `section · MY NOTES`: x +2, y -16, w -4, h +11; 29 px removed: y +13.
+- `section · MY NOTES`: x +2, y -16, w -4, h +7; 29 px removed: y +13.
+- `section · SOURCES`: x +2, y -7, w -4, h +2; 29 px removed: y +22.
 
 ## Deviations
 
@@ -56,3 +57,28 @@ status bar.
   Figma sets small buttons in Medium 12 or 13, so Snooze, Dismiss,
   Newest, Filter and the row actions are a little wider. Library gap:
   Button label size.
+
+## Second review
+
+A separate agent compared `frame.png` with the render, blind to how it
+was built (2026-11-17). Each finding, fixed or with why it stays:
+
+- The SENT PROMPT card's fifth line is not faded: stays. `Clamp` fades
+  only a text it cuts, and the prompt's five lines hold all of it (the sheet in
+  T8 shows the same whole text); Figma fades its fifth line anyway. The
+  same holds in D01 to D21.
+- MY NOTES card about 9 px taller: fixed in part. The note and its
+  author now sit 24 px apart (Figma 25) instead of following the
+  panel's 8 px gap under a 20 px line; the section is 7 px taller
+  (`section · MY NOTES` h +7, was +11): the note's 20 px line against
+  19, the author's 16 against 14 and the panel's 12 px padding against
+  11 (4 px grid, d-072).
+- "Inbox" in Back slightly larger: stays. `BackRow` draws its label in
+  `labelLg` (16 px); Figma's 15 merges into 16 (d-072, as the sheet's
+  Done in T8).
+- Back did not return to the list (caller's review). Fixed: Back closes
+  the open item through the page store (`inboxStore` `setItemOpen`), so
+  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
+
+`section · SOURCES` failed only by moving up: the MY NOTES card is 4 px
+shorter, and the status bar's -29 no longer cancels the layout's +26.
