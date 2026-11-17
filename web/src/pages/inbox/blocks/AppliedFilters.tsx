@@ -8,6 +8,8 @@ import type { AppliedSection } from '../types.ts'
 
 const label = css({ textStyle: 'small', color: 'fg.muted' })
 const row = css({ px: '4' })
+// Figma sets each value in Geist Mono 11 (T15 359:539, D13 359:993): `monoSm`.
+const value = css({ textStyle: 'monoSm' })
 const clear = css({
   textStyle: 'small',
   fontWeight: 'text.label',
@@ -30,17 +32,17 @@ export function AppliedFilters({ sections, onRemove, onClear }: AppliedFiltersPr
         <Fragment key={section.label}>
           <span className={label}>{section.label}</span>
           {/* The library has no removable filter chip (LIBRARY_GAPS.md); a pressed small button stands for one. */}
-          {section.values.map((value) => (
+          {section.values.map((v) => (
             <Button
-              key={value}
+              key={v}
               size="sm"
               pressed
-              aria-label={`Remove ${value}`}
+              aria-label={`Remove ${v}`}
               onClick={() => {
-                onRemove?.(value)
+                onRemove?.(v)
               }}
             >
-              {value}
+              <span className={value}>{v}</span>
               <CloseIcon size="12" />
             </Button>
           ))}

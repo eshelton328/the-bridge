@@ -364,6 +364,10 @@ export const SearchList: Story = {
     await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')
     await expect(canvas.getByText('4 results for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
     await expect(canvas.queryByText('drift check wants to run git mv')).toBeNull()
+    // Figma draws the field focused (its focused border and a caret), as Erik sees it while he types.
+    const search = canvas.getByRole('searchbox', { name: 'Search the inbox' })
+    search.focus()
+    await expect(search).toHaveFocus()
   },
 }
 
@@ -386,6 +390,11 @@ export const PromptEditingPage: Story = {
     await expect(canvas.getByPlaceholderText('Add a note for yourself…')).toBeVisible()
     const picker = await within(document.body).findByRole('dialog', { name: 'Run in' })
     await expect(within(picker).getByRole('radio', { name: /New Claude Code chat/ })).toBeChecked()
+    // Figma draws the editor focused (its focused border and a caret), as Erik sees it while he edits; the picker stays open.
+    const editor = canvas.getByRole('textbox', { name: 'Suggested prompt' })
+    editor.focus()
+    await expect(editor).toHaveFocus()
+    await expect(within(document.body).getByRole('dialog', { name: 'Run in' })).toBeVisible()
   },
 }
 
