@@ -56,7 +56,8 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   Snooze menus, the Run in picker and the row tags the Filter menu
   matches; a state that shows a menu or a sort only sets its `ui`.
 - `types.ts`: `InboxData` (what Figma shows; the detail is a union on
-  `kind`, and a next step's `launch` a union on `stage`: suggested or
+  `kind` and carries its item's `id`, which Snooze and Mark done act on
+  in every layout, even with nothing selected, and a next step's `launch` a union on `stage`: suggested or
   started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
   picker, the Snooze menu, the discussion or the remove dialog is open,

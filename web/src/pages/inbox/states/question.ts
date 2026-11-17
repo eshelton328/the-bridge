@@ -6,6 +6,8 @@ import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'
 import { nextStep, snoozeMenu } from './nextStep.ts'
 
+const asked = InboxItemId.parse('hono-rpc-or-fetch')
+
 export const question = {
   title: 'a question that blocks a chat',
   frames: [
@@ -16,6 +18,7 @@ export const question = {
     ...nextStep.data,
     detail: {
       kind: 'question',
+      id: asked,
       status: { tone: 'needsYou', label: 'Needs you' },
       origin: 'Question · asked 12m ago by hono server',
       title: 'Hono RPC client or plain fetch for the API?',
@@ -61,5 +64,5 @@ export const question = {
       answerHint: 'Sends your answer to the waiting chat.',
     },
   },
-  ui: { ...nextStep.ui, selectedId: InboxItemId.parse('hono-rpc-or-fetch') },
+  ui: { ...nextStep.ui, selectedId: asked },
 } satisfies ScreenState<InboxData, InboxUi>
