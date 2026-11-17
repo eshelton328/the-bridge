@@ -34,7 +34,8 @@ first: it says what each file of a page folder is for.
   with "/" opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
   `SkillPicker` (the skills after "/"), `ShellPane` (terminal lines) and
   `EmptyPane` (start a chat, or open one of the workspace). D2 adds
-  `WorkspaceSidebar` (the title, the toggle, + and the groups),
+  `WorkspaceSidebar` (the title, the toggle, + and the groups; only a
+  chat with a pane in `data.panes` can be selected),
   `SidebarGroup` (a workspace's header and chats, the drop target and the
   dragged chat), `SidebarChatRow`, `MainChat` (the chat alone: `ChatHead`
   over `ChatPane size="full"`) and `SideChatPanel`. D2b adds

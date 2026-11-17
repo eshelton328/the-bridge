@@ -79,6 +79,8 @@ export type SidebarGroupProps = {
   hovered: boolean
   /** The chat in the middle of the screen. */
   selected: string
+  /** The chats with a pane to show; the other rows cannot be selected. */
+  openable: readonly string[]
   onSelect?: ((chat: string) => void) | undefined
   /** The chat dragged over this workspace, and the hint under it. */
   drop?: { chat: SidebarChat; hint: string } | undefined
@@ -99,6 +101,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
     onOpenChange,
     hovered,
     selected,
+    openable,
     onSelect,
     drop,
     layers,
@@ -152,7 +155,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
               figma={(layers?.rows ?? rowLayers)[chat.id]}
               selected={chat.id === selected}
               moving={chat.id === moving}
-              onSelect={() => onSelect?.(chat.id)}
+              onSelect={openable.includes(chat.id) ? () => onSelect?.(chat.id) : undefined}
             />
           ))}
         </Stack>

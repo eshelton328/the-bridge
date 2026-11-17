@@ -143,6 +143,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
               text={data.sidebar}
               workspaces={data.workspaces}
               selected={chat.id}
+              openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
               onUiChange={change}
               layers={data.layers}

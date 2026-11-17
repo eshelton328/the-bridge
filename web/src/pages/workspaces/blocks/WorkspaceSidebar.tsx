@@ -1,7 +1,8 @@
 // The workspace sidebar (D2 105:611): the Workspaces title with the button
 // that hides the sidebar, + for a new workspace, then each workspace and its
-// chats. Props only; `ui` says which groups are closed, which header the
-// pointer rests on and which chat Erik drags onto which workspace.
+// chats. Only a chat with a pane to show can be selected. Props only; `ui`
+// says which groups are closed, which header the pointer rests on and which
+// chat Erik drags onto which workspace.
 import { Button, Panel, PanelIcon, PlusIcon, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, SidebarText, Workspace, WorkspacesUi } from '../types.ts'
@@ -15,6 +16,8 @@ export type WorkspaceSidebarProps = {
   workspaces: readonly Workspace[]
   /** The chat in the middle of the screen. */
   selected: string
+  /** The chats with a pane to show; the other rows cannot be selected. */
+  openable: readonly string[]
   ui: WorkspacesUi
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** The frame's Figma layers; D2's when not set. */
@@ -24,7 +27,15 @@ export type WorkspaceSidebarProps = {
 const fill = (template: string, values: Record<string, string>) =>
   template.replace(/\{(\w+)\}/g, (all, key: string) => values[key] ?? all)
 
-export function WorkspaceSidebar({ text, workspaces, selected, ui, onUiChange, layers }: WorkspaceSidebarProps) {
+export function WorkspaceSidebar({
+  text,
+  workspaces,
+  selected,
+  openable,
+  ui,
+  onUiChange,
+  layers,
+}: WorkspaceSidebarProps) {
   const collapsed = ui.collapsed ?? []
   const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.drag?.chat)
   return (
@@ -61,6 +72,7 @@ export function WorkspaceSidebar({ text, workspaces, selected, ui, onUiChange, l
               }
               hovered={ui.hovered === w.id}
               selected={selected}
+              openable={openable}
               layers={layers}
               counts={text.counts}
               grip={text.grip}
