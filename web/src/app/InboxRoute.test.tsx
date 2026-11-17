@@ -629,6 +629,20 @@ describe('the Inbox on the phone', () => {
     await expect.element(sheet('Pick the header logo')).toBeVisible()
   })
 
+  it('gives a finished row in Done no actions, so Done keeps its count', async () => {
+    await phone('doneList')
+    await expect.element(page.getByRole('radio', { name: 'Done 4' })).toBeInTheDocument()
+    const target = row('Pick the header logo')
+    target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+    target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 600)
+    })
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    expect(page.getByRole('dialog', { name: 'Pick the header logo' }).elements()).toHaveLength(0)
+    await expect.element(page.getByRole('radio', { name: 'Done 4' })).toBeInTheDocument()
+  })
+
   it('hides the tab bar and Start while the prompt editor is open, and brings them back with Done', async () => {
     await phone('taskPage')
     const tabBar = () => page.getByRole('button', { name: 'Home' })

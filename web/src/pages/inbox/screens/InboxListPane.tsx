@@ -92,8 +92,9 @@ function Rows({
               onSelectItem(row.id)
             }
       }
+      // A finished row (in Done) has nothing left to snooze, mark done or dismiss, so it has no actions.
       onActions={
-        onActions === undefined
+        onActions === undefined || row.outcome !== undefined
           ? undefined
           : () => {
               onActions(row.id)
