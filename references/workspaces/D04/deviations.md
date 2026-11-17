@@ -75,8 +75,8 @@ list open over the transcript and the folder picker in the side slot
   as on D02 to D03.
 - **Group headers (Sidebar group header).** Figma's headers in D04 have no
   count and no needs-you dot, and the build leaves them out
-  (`sidebar.counts: false`). The render still draws the drag handle before
-  each chevron, which Figma does not show, and the ⋯ buttons are 24 px.
+  (`sidebar.counts: false`), and no drag handle (`sidebar.grip: false`).
+  The ⋯ buttons are 24 px.
 - **Chat header (Chat header).** Figma's header in D04 has no ⋯, and the
   build leaves it out (`chatActions: false`); the header is 91 px against
   89, within the tolerance.

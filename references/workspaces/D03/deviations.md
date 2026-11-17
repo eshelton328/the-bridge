@@ -70,7 +70,9 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   as on D02 and D02b.
 - **Chat header and group headers (Chat header, Sidebar group header).**
   As on D02b: the ⋯ is a `Button size="xs"` (24 px) against 30 × 22, and
-  the group header buttons are 24 px with 12 px icons.
+  the group header buttons are 24 px with 12 px icons. Figma's group
+  headers in D3 have no drag handle, and the build leaves it out
+  (`sidebar.grip: false`).
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.
 - **Focus of the first message.** Figma draws the first message with the

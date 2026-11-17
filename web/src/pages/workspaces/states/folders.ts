@@ -47,7 +47,7 @@ export const folders = {
         },
       },
     ],
-    sidebar: { ...chatActions.data.sidebar, counts: false },
+    sidebar: { ...chatActions.data.sidebar, counts: false, grip: false },
     chatActions: false,
     folders: {
       label: 'Folders',

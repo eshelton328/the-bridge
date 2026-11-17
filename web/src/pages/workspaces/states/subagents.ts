@@ -21,6 +21,8 @@ export const subagents = {
     ...chatActions.data,
     workspaces,
     current: 'the-bridge',
+    // Figma's group headers in D3 have no drag handle.
+    sidebar: { ...chatActions.data.sidebar, grip: false },
     panes: [
       {
         type: 'chat',

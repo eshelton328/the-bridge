@@ -1,10 +1,11 @@
 // One workspace in the sidebar (D2 105:623): its header, with the drag
-// handle, the chevron that shows or hides its chats, the name, the count
-// and the needs-you dot, then its chats. The header shows rename and close
-// while the pointer rests on it, and the workspace menu otherwise. While a
-// chat is dragged over it, its header is the drop target and the chat
-// follows the pointer with a hint under it (105:960, 105:976). The library
-// has no drop target or drag preview (LIBRARY_GAPS.md). Props only.
+// handle (D3 and D4 have none), the chevron that shows or hides its chats,
+// the name, the count and the needs-you dot, then its chats. The header
+// shows rename and close while the pointer rests on it, and the workspace
+// menu otherwise. While a chat is dragged over it, its header is the drop
+// target and the chat follows the pointer with a hint under it (105:960,
+// 105:976). The library has no drop target or drag preview
+// (LIBRARY_GAPS.md). Props only.
 import {
   Badge,
   Button,
@@ -85,12 +86,26 @@ export type SidebarGroupProps = {
   layers?: SidebarLayers | undefined
   /** `false`: the header shows no count and no needs-you dot (D4). */
   counts?: boolean | undefined
+  /** `false`: the header has no drag handle before the chevron (D3, D4). */
+  grip?: boolean | undefined
   /** The chat dragged onto the chat shown alone: its row fades (D6). */
   moving?: string | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
-  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers, counts = true, moving } = props
+  const {
+    workspace,
+    open,
+    onOpenChange,
+    hovered,
+    selected,
+    onSelect,
+    drop,
+    layers,
+    counts = true,
+    grip = true,
+    moving,
+  } = props
   const rowsId = useId()
   const name = workspace.label
   return (
@@ -107,7 +122,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
           open={open}
           onOpenChange={onOpenChange}
           contentId={rowsId}
-          leading={<GripIcon size="12" />}
+          leading={grip ? <GripIcon size="12" /> : undefined}
           actions={
             <span className={headerActions}>
               {hovered ? (

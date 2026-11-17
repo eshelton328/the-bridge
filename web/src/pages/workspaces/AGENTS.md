@@ -62,7 +62,7 @@ first: it says what each file of a page folder is for.
   the skills; for D2 each workspace's chats, the sidebar's labels and the
   side chat; for D2b the chat actions and the frame's Figma `layers`,
   which the sidebar blocks put on `data-figma`, D2's when not set; for D3
-  the subagents panel and the New chat form; for D4 the folders, the
+  the subagents panel, the New chat form and the sidebar's `grip`; for D4 the folders, the
   folder picker, the sidebar's `counts` and `chatActions`; for D5 the side
   chat's `pane` and `openAsPane`, and the split's layers in `layers`; for
   D6 the drop zone's text, `paneDrop`) and

@@ -211,6 +211,8 @@ export const SidebarText = z.object({
   contextLabel: z.string(),
   /** `false`: the group headers show no count and no needs-you dot, as D4 draws them. */
   counts: z.boolean().optional(),
+  /** `false`: the group headers have no drag handle, as D3 and D4 draw them. */
+  grip: z.boolean().optional(),
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
