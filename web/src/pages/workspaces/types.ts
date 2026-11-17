@@ -8,9 +8,23 @@ export type AgentKind = z.infer<typeof AgentKind>
 
 const PaneStatus = z.object({
   label: z.string(),
-  tone: z.enum(['working', 'needsYou', 'idle']),
+  tone: z.enum(['working', 'running', 'needsYou', 'idle', 'done']),
 })
 type PaneStatus = z.infer<typeof PaneStatus>
+
+/** A chat in the workspace sidebar (D2 105:643): its kind, title, model, context used and status. */
+export const SidebarChat = z.object({
+  id: z.string(),
+  kind: AgentKind,
+  title: z.string(),
+  /** The model, or for a shell its program, such as "shell · zsh". */
+  model: z.string(),
+  context: z.number().optional(),
+  status: PaneStatus,
+  /** 1 for a subtask's chat, indented under the chat that started it. */
+  level: z.union([z.literal(0), z.literal(1)]).optional(),
+})
+export type SidebarChat = z.infer<typeof SidebarChat>
 
 /** One workspace tab: its name, its number of chats and whether a chat in it needs Erik. */
 export const Workspace = z.object({
@@ -18,6 +32,8 @@ export const Workspace = z.object({
   label: z.string(),
   count: z.number(),
   needsYou: z.boolean(),
+  /** Its chats, as the sidebar lists them (side chats are not listed). */
+  chats: z.array(SidebarChat).optional(),
 })
 export type Workspace = z.infer<typeof Workspace>
 
@@ -105,6 +121,30 @@ export const PaneAction = z.object({
 })
 export type PaneAction = z.infer<typeof PaneAction>
 
+/** The side chat beside the main chat (D2 105:920): a quick question that never enters it. */
+export const SideChat = z.object({
+  title: z.string(),
+  /** The command that opens it, such as "/btw". */
+  command: z.string(),
+  note: z.string(),
+  closeLabel: z.string(),
+  entries: z.array(ChatEntry),
+  composer: ComposerState,
+})
+export type SideChat = z.infer<typeof SideChat>
+
+/** The workspace sidebar's labels (D2 105:611). */
+export const SidebarText = z.object({
+  title: z.string(),
+  hide: z.string(),
+  newWorkspace: z.string(),
+  /** The hint under a chat being dragged; {chat} and {workspace} are filled in. */
+  dropHint: z.string(),
+  /** The word after the main chat's context meter. */
+  contextLabel: z.string(),
+})
+export type SidebarText = z.infer<typeof SidebarText>
+
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
@@ -124,6 +164,10 @@ export const WorkspacesData = z.object({
   /** What typing / in a composer lists. */
   skillsLabel: z.string(),
   skills: z.array(Skill),
+  /** The sidebar's labels; a state without them has no sidebar. */
+  sidebar: SidebarText.optional(),
+  /** The side chat of the current chat, when one is open. */
+  sideChat: SideChat.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -141,6 +185,16 @@ export const WorkspacesUi = z.object({
   skillsFor: z.string().nullable(),
   /** The highlighted skill. */
   skill: z.string().nullable(),
+  /** The sidebar shows in place of the tabs, with the focused pane's chat alone beside it. */
+  sidebar: z.boolean().optional(),
+  /** The workspaces whose chats the sidebar hides. */
+  collapsed: z.array(z.string()).optional(),
+  /** The workspace under the pointer: its header shows rename and close. */
+  hovered: z.string().nullable().optional(),
+  /** A chat Erik drags onto another workspace. */
+  drag: z.object({ chat: z.string(), over: z.string() }).nullable().optional(),
+  /** The side chat shows beside the main chat. */
+  sideChatOpen: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

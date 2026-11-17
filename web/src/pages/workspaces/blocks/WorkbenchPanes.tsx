@@ -10,9 +10,12 @@ import { PaneFrame } from './PaneFrame.tsx'
 import { PaneMenu } from './PaneMenu.tsx'
 import { ShellPane } from './ShellPane.tsx'
 
-// The Figma layers of the panes by their place in the split, and of the chat composers.
+// The Figma layers of the panes by their place in the split, and of the chats' composers and entries.
 const paneLayers = ['105:177', '105:262', '105:347', '105:316']
-const composerLayers = ['105:230', '105:304']
+const chatLayers = [
+  { composer: '105:230', entries: ['105:210', undefined, '105:215'] },
+  { composer: '105:304', entries: [undefined, '105:291'] },
+]
 
 export type WorkbenchPanesProps = {
   data: WorkspacesData
@@ -37,7 +40,7 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
         onMoveOpenChange={(open) => onUiChange?.({ moveOpen: open })}
       />
     )
-    const composerLayer = pane.type === 'chat' ? (composerLayers[chats++] ?? pane.id) : pane.id
+    const layers = pane.type === 'chat' ? (chatLayers[chats++] ?? { composer: pane.id }) : { composer: pane.id }
     return (
       <PaneFrame
         head={pane.head}
@@ -48,7 +51,7 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
       >
         {pane.type === 'chat' ? (
           <ChatPane
-            composerFigma={composerLayer}
+            figma={layers}
             entries={pane.entries}
             composer={pane.composer}
             skills={{

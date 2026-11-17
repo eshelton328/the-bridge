@@ -1,6 +1,6 @@
 // One entry of a chat pane's transcript: Erik's message, a tool line, an
 // agent's reply with Copy, progress lines or a command waiting for approval
-// (D1 105:210 to 105:291). Props only.
+// (D1 105:210 to 105:291). The caller names the entry's Figma layer. Props only.
 import {
   Button,
   CopyIcon,
@@ -18,14 +18,16 @@ const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' }
 
 export type ChatEntryViewProps = {
   entry: ChatEntry
+  /** The Figma layer the entry stands for, for the fidelity checks. */
+  figma?: string | undefined
   onAct?: ((action: string) => void) | undefined
 }
 
-export function ChatEntryView({ entry, onAct }: ChatEntryViewProps) {
+export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
   switch (entry.type) {
     case 'user':
       return (
-        <div data-figma="105:210">
+        <div data-figma={figma}>
           <Message from="user">{entry.text}</Message>
         </div>
       )
@@ -33,7 +35,7 @@ export function ChatEntryView({ entry, onAct }: ChatEntryViewProps) {
       return <ToolLine name={entry.name} target={entry.target} state="done" />
     case 'assistant':
       return (
-        <div data-figma="105:215">
+        <div data-figma={figma}>
           <Message
             kind={entry.kind}
             name={entry.name}
@@ -60,7 +62,7 @@ export function ChatEntryView({ entry, onAct }: ChatEntryViewProps) {
       )
     case 'approval':
       return (
-        <div data-figma="105:291">
+        <div data-figma={figma}>
           <ProposalBlock
             tone="approval"
             label={entry.label}

@@ -3,13 +3,18 @@
 // chat, the current workspace's split panes and the status bar (D1). A
 // state file's data and ui are its props. What Erik opens or closes
 // (a pane menu, the skill list, the focused pane) the screen keeps until
-// the state changes; `onUiChange` reports it.
+// the state changes; `onUiChange` reports it. With the sidebar (D2) the
+// workspaces and their chats are listed beside the focused chat, which shows
+// alone, with its side chat beside it.
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
+import { MainChat } from '../blocks/MainChat.tsx'
+import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
+import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 
 // The rail's slot is a flex column; the rail fills it.
@@ -31,15 +36,58 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     onUiChange?.(next)
   }
   const current = data.workspaces.find((w) => w.id === data.current)
+  const rail = (
+    <div data-figma="nav rail" className={railSlot}>
+      <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
+    </div>
+  )
+  const chat = data.panes.find((p) => p.id === ui.focusedPane)
+  if (ui.sidebar === true && data.sidebar !== undefined && chat?.type === 'chat') {
+    return (
+      <Backdrop size={viewport}>
+        <AppShell
+          size="desktop"
+          listWidth="sidebar"
+          rail={rail}
+          list={
+            <WorkspaceSidebar
+              text={data.sidebar}
+              workspaces={data.workspaces}
+              selected={chat.id}
+              ui={ui}
+              onUiChange={change}
+            />
+          }
+          detail={
+            <MainChat
+              pane={chat}
+              workspace={current?.label ?? data.current}
+              contextLabel={data.sidebar.contextLabel}
+              skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
+              onSkillsOpenChange={(open) => {
+                change({ skillsFor: open ? chat.id : null })
+              }}
+            />
+          }
+          side={
+            ui.sideChatOpen === true && data.sideChat !== undefined ? (
+              <SideChatPanel
+                chat={data.sideChat}
+                onClose={() => {
+                  change({ sideChatOpen: false })
+                }}
+              />
+            ) : undefined
+          }
+        />
+      </Backdrop>
+    )
+  }
   return (
     <Backdrop size={viewport}>
       <AppShell
         size="desktop"
-        rail={
-          <div data-figma="nav rail" className={railSlot}>
-            <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
-          </div>
-        }
+        rail={rail}
         detail={
           <Workbench
             value={data.current}

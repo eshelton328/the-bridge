@@ -29,3 +29,19 @@ export const Workbench: Story = {
     await expect(await body.findByRole('radio', { name: /\/writer/ })).toBeChecked()
   },
 }
+
+export const SideChat: Story = {
+  name: 'D2: the workspace sidebar and a side chat',
+  args: { data: workspacesStates.sideChat.data, ui: workspacesStates.sideChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Hide the workspace sidebar' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(canvas.getByText('theme tokens')).toBeVisible()
+    await expect(canvas.getByRole('status')).toHaveTextContent('Drop to move drift check into the-bridge')
+    await expect(canvas.getByRole('button', { name: 'Rename omni' })).toBeVisible()
+    await expect(canvas.getByRole('complementary', { name: 'Side chat' })).toBeVisible()
+    await expect(canvas.getByText('Can Panda CSS switch themes while the app runs?')).toBeVisible()
+  },
+}
