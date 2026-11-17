@@ -42,7 +42,7 @@ const chip = (c: InboxDetailView['chips'][number]) => (
 
 export function InboxDetail({ detail }: { detail: InboxDetailView }) {
   return (
-    <article className={main}>
+    <article className={main} data-figma="task pane">
       {/* Figma caps the article at 748 px; no size token has that width yet, a gap to raise in the library. */}
       <article>
         <Stack gap="24">

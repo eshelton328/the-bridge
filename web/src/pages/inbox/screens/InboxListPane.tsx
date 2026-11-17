@@ -36,7 +36,7 @@ export type InboxListPaneProps = {
 
 export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onSelectItem }: InboxListPaneProps) {
   return (
-    <section aria-label="Inbox list" className={pane}>
+    <section aria-label="Inbox list" className={pane} data-figma="inbox list">
       <PageHeader size="pane" title="Inbox" count={data.count} countLabel={data.countLabel} level={2} />
       <FilterChips
         label="Filter the inbox"
