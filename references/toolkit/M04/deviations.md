@@ -119,3 +119,9 @@ The Inbox opens the same drawer from the phone's More.
 `pnpm fidelity inbox M01 M02 M03 M04 M05` gives the same report for each
 frame on this branch as on its parent commit (d844587): the drawer is
 closed in each of them, and no `AppTabBar` or `AppRail` item changed.
+
+## Second review
+
+- **Item titles.** The drawer item titles are about 6 % wider than
+  Figma's, with 22 px from title to subtitle against 20 (gap: More
+  drawer item spacing).
