@@ -9,6 +9,9 @@ import { css } from '../../../../styled-system/css/index.js'
 // Figma: the row 41 to 73 and the task bar at 83, 42 apart. The library's BackRow is 28 high (control.sm), so
 // 12 below it puts the task bar 40 below the row's top.
 const row = css({ mb: '12' })
+// The phone's nav (M2 346:9231, M5 346:9851) is 40 high: its 32 px buttons 4 in from the top and bottom, and the task
+// 2 under it (M5 346:9866 at 84). With 12 under a 32 px row the task started 2 lower and the buttons 4 higher.
+const phoneRow = css({ py: '4', mb: '2' })
 
 export type BackToInboxProps = {
   onBack?: (() => void) | undefined
@@ -19,7 +22,7 @@ export type BackToInboxProps = {
 export function BackToInbox({ onBack, actions }: BackToInboxProps) {
   // The tablet names the row "nav · back" (T2), the phone "nav" (M2).
   return (
-    <div className={row} data-figma={actions === undefined ? 'nav · back' : 'nav'}>
+    <div className={actions === undefined ? row : phoneRow} data-figma={actions === undefined ? 'nav · back' : 'nav'}>
       <BackRow label="Inbox" onBack={onBack}>
         {actions}
       </BackRow>

@@ -84,3 +84,8 @@ it stays:
 - The note lighter than Figma's dim grey (F4): stays. It is `fg.muted`; Figma's #4a5675 is `fg.subtle`'s role, and `fg.subtle` is not for `surface.overlay` (the menu recipe, d-055). Library gap: Styles that differ from Figma.
 - Row status lines ("Codex is waiting", "Blocks hono server", "quiet-nebula · Creating 9 issues…") one size larger (F5): stays. `ListRow` lines are `small` (12) against Figma's 11. Library gap: Small sans text for row lines.
 - "Inbox" a little larger (F7): stays. `PageHeader size="phone"` draws the title in its own style with a 40 px line against Figma's 34 px text box (346:7261) in a 42 px header (`header` h -2, 4 px grid, d-072). Library gap: Styles that differ from Figma.
+- **Beta.17 (2026-11-17, step 12).** Library #119 sets a described
+  choice at D9's 50 px (346:4003). Figma's tablet menu draws the same
+  choices 54 high (346:7476: padding 10 around 18 and 14 px lines), so
+  `menu · Sort` changes from h +8 to h -16. D9 and T9 do not agree; the
+  library follows D9, and the menu covers no text in either frame.

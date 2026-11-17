@@ -131,3 +131,9 @@ For D04 it also found:
 - The list showed faintly through the menu (`surface.overlay`, alpha
   0.98): fixed by beta.9. The menu is `Popover surface="raised"`, an
   opaque #17213a fill, as Figma's (346:1737).
+- **Beta.17 (2026-11-17, step 12).** Library #119 sets the small
+  checkbox rows at Figma's 28 px (`control.sm`) and the section labels
+  at 26. The Filter menu is now 560 px high (Figma 558): `filter popover`
+  h +62 becomes h +2, and only its y +6 stays. It no longer covers
+  "ncc-1701 · infra" (346:1618) and "Snoozed until tomorrow 9:00"
+  (346:1624), which the covered-text check (the-bridge #34) found.

@@ -122,3 +122,9 @@ For D09 it also found:
   disabled secondary `Button` no longer fades: it keeps its fill and
   border and only its label and icon turn `fg.muted`, where Figma draws
   it enabled.
+- **Beta.17 (2026-11-17, step 12).** Library #119 sets a described
+  choice at Figma's 50 px (padding 6 around the 20 and 16 px lines) and
+  the heading 2 under the box padding. The Sort menu is now 283 px high,
+  as Figma's: `menu · Sort` h +24 is gone, and only x -12 stays. It no
+  longer covers "Try the tablet layout on the iPad mini" (346:3816), "3h"
+  (346:3819) and "Read the whole prompt" (346:3949).
