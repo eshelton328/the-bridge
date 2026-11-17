@@ -406,6 +406,8 @@ export const InboxUi = z.object({
   proposals: z.partialRecord(ProposalKind, InboxDecision),
   /** The boxes of a proposal Erik checked or cleared, by label; the others keep the proposal's own. */
   proposalChecks: z.record(z.string(), z.boolean()),
+  /** The prompt the task showed when Erik applied a proposed update, with his edits; Undo brings it back. */
+  promptBeforeApply: z.string().nullable(),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

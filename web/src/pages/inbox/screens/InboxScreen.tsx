@@ -82,7 +82,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const control: ProposalControl = {
     decisions: ui.proposals,
     onAct: (kind, act) => {
-      run(proposalEffect(data, ui, kind, act, desktop))
+      run(proposalEffect(data, ui, kind, act, desktop, drafts.values.prompt))
     },
     onCheck: (label, checked) => {
       onUiChange?.({ proposalChecks: { ...ui.proposalChecks, [label]: checked } })

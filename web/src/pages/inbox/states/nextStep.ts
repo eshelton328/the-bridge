@@ -290,5 +290,6 @@ export const nextStep = {
     finished: [],
     proposals: {},
     proposalChecks: {},
+    promptBeforeApply: null,
   },
 } satisfies ScreenState<InboxData, InboxUi>

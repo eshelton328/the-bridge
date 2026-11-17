@@ -113,11 +113,11 @@ export function discussionView(data: InboxData, ui: Decisions): InboxData {
 /**
  * What a press in the discussion does: the change to `ui`, and whether the
  * remove dialog opens or closes, the list shows again on a tablet or phone (`back`),
- * or the prompt editor gets a text.
+ * or the prompt (and its editor) gets a text.
  */
 export type DiscussionEffect = { ui: Partial<InboxUi>; removeOpen?: boolean; back?: true; prompt?: string }
 
-type EffectUi = Pick<InboxUi, 'proposals' | 'finished' | 'snoozed'>
+type EffectUi = Pick<InboxUi, 'proposals' | 'finished' | 'snoozed' | 'promptBeforeApply'>
 /** The data an effect reads: the discussion and the task it discusses, which carries its item's id. */
 type EffectData = Pick<InboxData, 'discussion' | 'detail'>
 
@@ -144,16 +144,22 @@ function removeTask(data: EffectData, ui: EffectUi): Pick<InboxUi, 'finished' | 
   }
 }
 
-/** What a proposal's button does; `desktop` keeps the discussion open after Apply (D16), a tablet shows the task (T19). */
+/**
+ * What a proposal's button does; `desktop` keeps the discussion open after Apply (D16), a tablet shows the task (T19).
+ * `typed` is the prompt Erik has typed in the task, if any: Apply replaces it with the proposed prompt and keeps it
+ * for Undo.
+ */
 export function proposalEffect(
   data: EffectData,
   ui: EffectUi,
   kind: ProposalKind,
   act: ProposalAct,
   desktop: boolean,
+  typed?: string,
 ): DiscussionEffect {
   if (act === 'discard') return { ui: { proposals: decide(ui.proposals, kind, 'discarded') } }
-  if (act === 'undo') return { ui: { proposals: decide(ui.proposals, kind) } }
+  if (act === 'undo')
+    return kind === 'update' ? undoUpdateEffect(ui) : { ui: { proposals: decide(ui.proposals, kind) } }
   if (kind === 'remove') return { ui: {}, removeOpen: true }
   if (kind === 'update') {
     // Edit first opens the task's prompt editor with the change filled in (T18 note).
@@ -163,7 +169,15 @@ export function proposalEffect(
         ui: { discussOpen: false, editingPrompt: true },
         ...(update === undefined ? {} : { prompt: update.apply.prompt }),
       }
-    return { ui: { proposals: decide(ui.proposals, 'update', 'applied'), discussOpen: desktop } }
+    const shown = typed ?? (data.detail?.kind === 'next' ? data.detail.prompt.text : undefined)
+    return {
+      ui: {
+        proposals: decide(ui.proposals, 'update', 'applied'),
+        discussOpen: desktop,
+        promptBeforeApply: shown ?? null,
+      },
+      ...(update === undefined ? {} : { prompt: update.apply.prompt }),
+    }
   }
   // The new tasks show in the list (D18, T21); "Also remove this task" removes this one too.
   const alsoRemove = proposalOf(data, 'create')?.alsoRemove.checked === true
@@ -186,9 +200,12 @@ export function removeEffect(data: EffectData, ui: EffectUi): DiscussionEffect {
   }
 }
 
-/** Undo on the line under a changed prompt: the update waits again. */
+/** Undo on the line under a changed prompt: the update waits again, and the prompt is as Erik left it before Apply. */
 export function undoUpdateEffect(ui: EffectUi): DiscussionEffect {
-  return { ui: { proposals: decide(ui.proposals, 'update') } }
+  return {
+    ui: { proposals: decide(ui.proposals, 'update'), promptBeforeApply: null },
+    ...(ui.promptBeforeApply === null ? {} : { prompt: ui.promptBeforeApply }),
+  }
 }
 
 /** Undo in the toast: the created tasks go, and the task they replaced comes back. */

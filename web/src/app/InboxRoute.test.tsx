@@ -424,6 +424,21 @@ describe('the Inbox list tools and task bar', () => {
       await expect.element(page.getByText('suggested 2h ago by the planning run')).toBeVisible()
     })
 
+    it('shows the proposed prompt after Apply over an edited prompt, and Undo brings the edit back', async () => {
+      await tablet('changeProposedPage')
+      await page.getByRole('button', { name: 'Back to the task' }).click()
+      await page.getByRole('button', { name: 'Edit' }).click()
+      await page.getByRole('textbox', { name: 'Suggested prompt' }).fill('Write the tickets my way.')
+      await page.getByRole('button', { name: 'Done' }).click()
+      await page.getByRole('button', { name: 'Discuss' }).click()
+      await page.getByRole('button', { name: 'Apply' }).click()
+      await expect.element(page.getByText(/Before writing, check that each frame exists/)).toBeVisible()
+      await expect.element(page.getByText('Write the tickets my way.')).not.toBeInTheDocument()
+      await page.getByRole('link', { name: 'Undo' }).click()
+      await expect.element(page.getByText('Write the tickets my way.')).toBeVisible()
+      await expect.element(page.getByText('Edited')).toBeVisible()
+    })
+
     it('discards a proposed update', async () => {
       await tablet('changeProposedPage')
       await page.getByRole('button', { name: 'Discard' }).click()
