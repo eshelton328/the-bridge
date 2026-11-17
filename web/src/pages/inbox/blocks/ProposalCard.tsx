@@ -65,7 +65,9 @@ function Body({ proposal, onCheck }: { proposal: InboxProposal; onCheck: Proposa
               <span className={meta}>{t.meta}</span>
             </Stack>
           ))}
+          {/* Figma sets "Also remove this task" in 12/16 (T20 402:11889): `size="sm"`. */}
           <Checkbox
+            size="sm"
             label={proposal.alsoRemove.label}
             checked={proposal.alsoRemove.checked}
             onCheckedChange={(checked) => {
@@ -101,7 +103,9 @@ function actionsOf(proposal: InboxProposal, applied: boolean, act: (a: ProposalA
     }
     case 'remove':
       return [
-        { label: 'Remove…', variant: 'secondaryDanger', icon: <TrashIcon />, onClick: on('apply') },
+        // Figma fills Remove… with the danger tint and a danger border (D19 403:3413, T22 402:12385): `dangerSoft`.
+        // The app is dark; the library notes its label falls under 4.5:1 only in light mode.
+        { label: 'Remove…', variant: 'dangerSoft', icon: <TrashIcon />, onClick: on('apply') },
         { label: 'Keep it', onClick: on('discard') },
       ]
   }

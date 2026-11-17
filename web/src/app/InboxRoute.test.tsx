@@ -357,6 +357,21 @@ describe('the Inbox list tools and task bar', () => {
     await expect.element(page.getByText('Write one ticket per screen.')).not.toBeInTheDocument()
   })
 
+  it('dims Reset while the prompt is the suggestion', async () => {
+    await tablet('taskPage')
+    await expect.element(page.getByRole('button', { name: 'Reset' })).toBeDisabled()
+  })
+
+  // Figma dims Reset after Apply as well (T19 402:11597, D16: the label in fg.muted, as T2's); Undo on the change
+  // line takes the discussion's change back, and Reset only Erik's own edits.
+  it('keeps Reset dim after a discussion changed the prompt, with Undo to take the change back', async () => {
+    await tablet('changeAppliedPage')
+    await expect.element(page.getByText('changed just now in a discussion')).toBeVisible()
+    await expect.element(page.getByRole('link', { name: 'Undo' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Reset' })).toBeDisabled()
+    await expect.element(page.getByText('Edited')).not.toBeInTheDocument()
+  })
+
   it('ends the long suggestion that Reset brings back with Read the whole prompt', async () => {
     await tablet('promptEditingPage')
     await page.getByRole('button', { name: 'Reset' }).click()
