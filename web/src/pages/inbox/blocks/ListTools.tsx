@@ -46,7 +46,11 @@ export type ListToolsProps = {
   sort: SortValue
   sortOpen: boolean
   onSortOpenChange?: ((open: boolean) => void) | undefined
-  onSortChange?: ((sort: SortValue) => void) | undefined
+  /**
+   * A sort picked (`close`: a click, a tap, Enter or Space, which closes the menu) or moved to with an arrow key in
+   * the phone's sheet, which stays open until Done.
+   */
+  onSortChange?: ((sort: SortValue, close: boolean) => void) | undefined
   /** The text in the search field; the field shows it and reports each change. */
   query: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
@@ -76,9 +80,12 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
   const active = sortMenu.options[0]?.value !== sort
   // The phone's sheet opens with the focus on the sheet itself: Figma draws Done with no focus ring (M13 346:11811).
   const noteRef = useRef<HTMLSpanElement>(null)
-  const pick = (value: string) => {
+  const choose = (value: string, close: boolean) => {
     const picked = SortValue.safeParse(value)
-    if (picked.success) onSortChange?.(picked.data)
+    if (picked.success) onSortChange?.(picked.data, close)
+  }
+  const pick = (value: string) => {
+    choose(value, true)
   }
   if (iconOnly)
     // The phone's Sort is an icon with a dot while a sort applies (M15), and its menu a sheet (M13).
@@ -105,6 +112,10 @@ function SortButton({ sortMenu, sort, sortOpen, onSortOpenChange, onSortChange, 
         <OptionList
           label={sortMenu.heading}
           value={sort}
+          // An arrow key moves the choice without closing the sheet; Done keeps it (M13).
+          onValueChange={(value) => {
+            choose(value, false)
+          }}
           onItemSelect={pick}
           items={sortMenu.options.map((o) => ({ value: o.value, label: o.label, description: o.description }))}
         />

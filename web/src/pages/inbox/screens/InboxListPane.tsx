@@ -214,8 +214,8 @@ export function InboxListPane({
         onSortOpenChange={(sortOpen) => {
           onUiChange?.({ sortOpen })
         }}
-        onSortChange={(sort) => {
-          onUiChange?.({ sort, sortOpen: false })
+        onSortChange={(sort, close) => {
+          onUiChange?.(close ? { sort, sortOpen: false } : { sort })
         }}
         query={q}
         onQueryChange={onQueryChange}

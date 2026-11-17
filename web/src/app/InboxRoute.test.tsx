@@ -791,6 +791,19 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByText('Sorted by kind')).toBeVisible()
   })
 
+  it('moves the sort with an arrow key in the Sort sheet, and Done keeps it', async () => {
+    await phone('list')
+    await page.getByRole('button', { name: 'Sort', exact: true }).click()
+    sheet('Sort')
+      .getByRole('radio', { name: /Newest first/ })
+      .element()
+      .focus()
+    await userEvent.keyboard('{ArrowDown}')
+    await sheet('Sort').getByRole('button', { name: 'Done' }).click()
+    await expect.element(sheet('Sort')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Sorted by oldest first')).toBeVisible()
+  })
+
   it('scrolls the selected Done chip into view', async () => {
     await phone('doneList')
     const chip = page.getByRole('radio', { name: 'Done 4' }).element()
