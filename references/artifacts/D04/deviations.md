@@ -51,9 +51,11 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
   takes 71 px of the search's width, so Sort and Filter sit further left,
   and both pad their sides more than Figma's 11 px. Library gaps "Icon-only
   view switch" and "Sort and Filter button widths".
-- **Search focus.** Figma draws the search field focused, with the cyan
-  border. The story does not focus the field, so its border is the
-  default. The × that clears the search is `CloseIcon`, as Figma's `icon/x`.
+- **Search clear button.** The story focuses the search field, so it
+  shows Figma's cyan focus border. The × that clears the search
+  (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
+  bold and bright white. `SearchField` sets the clear button's colour and
+  takes no tone for it. Library gap "Search clear button".
 - **Source chips.** `filter · chips` w +6.8: the chips are 6 apart with
   8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
 - **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
