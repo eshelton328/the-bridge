@@ -137,8 +137,8 @@ export const SortedByProject: Story = {
   args: { data: inboxStates.sortedByProject.data, ui: inboxStates.sortedByProject.ui, viewport: 'desktop' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Project' })).toHaveAttribute('aria-pressed', 'true')
-    await expect(canvas.getByText('skill-evals', { selector: 'div' })).toBeVisible()
-    await expect(canvas.getByText('omni-brain', { selector: 'div' })).toBeVisible()
+    await expect(canvas.getByText('skill-evals', { selector: '.group-header__label *' })).toBeVisible()
+    await expect(canvas.getByText('omni-brain', { selector: '.group-header__label *' })).toBeVisible()
   },
 }
 

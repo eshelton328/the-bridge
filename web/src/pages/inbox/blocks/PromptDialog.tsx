@@ -15,11 +15,11 @@ export type PromptDialogProps = {
 export function PromptDialog({ title, text: prompt, open }: PromptDialogProps) {
   return (
     <Dialog
-      size="lg"
+      size="wide"
       title={title}
       open={open}
-      actions={
-        // Figma puts Done at the end of the title row; Dialog has no place for it (LIBRARY_GAPS.md).
+      data-figma="dialog · Suggested prompt"
+      headerAction={
         <DialogClose>
           <Button variant="text">Done</Button>
         </DialogClose>

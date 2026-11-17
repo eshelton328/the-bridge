@@ -3,6 +3,7 @@
 // Snooze opens the Snooze menu when the state has one. Props only.
 import {
   Button,
+  CalendarIcon,
   CheckIcon,
   ClockIcon,
   CloseIcon,
@@ -43,15 +44,25 @@ function SnoozeButton({ head, open }: { head: InboxDetailHead; open: boolean }) 
   )
   const menu = head.snoozeMenu
   if (menu === undefined) return button
-  // "Pick a date and time…" has a calendar icon in Figma; the library has none (LIBRARY_GAPS.md).
   const items: MenuEntry[] = [
     ...menu.times.map((t) => ({ value: t.value, label: t.label, icon: <ClockIcon />, trailing: t.time })),
-    { value: 'pick', label: menu.pick },
+    { value: 'pick', label: menu.pick, icon: <CalendarIcon /> },
     { type: 'separator' },
     { value: 'done', label: menu.done, icon: <CheckIcon /> },
     { value: 'dismiss', label: menu.dismiss, icon: <CloseIcon />, tone: 'danger' },
   ]
-  return <Menu trigger={button} open={open} placement="bottom-end" heading={menu.heading} items={items} />
+  return (
+    <Menu
+      trigger={button}
+      open={open}
+      placement="bottom-end"
+      width="md"
+      size="lg"
+      data-figma="menu · Snooze or dismiss"
+      heading={menu.heading}
+      items={items}
+    />
+  )
 }
 
 export type DetailHeadProps = {

@@ -2,7 +2,7 @@
 // search row and the groups of rows; with the sort by project, a heading
 // per project in each group; with a search, a line that sums up the
 // results and a hint about matches in Done. Props only.
-import { FilterChips, FolderIcon, GroupHeader, Inline, PageHeader, Stack } from '@eshelton328/component-library-1701'
+import { FilterChips, FolderIcon, GroupHeader, PageHeader, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
@@ -21,7 +21,6 @@ const pane = css({
 })
 const header = css({ py: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
-const project = css({ textStyle: 'mono', color: 'fg.muted', px: '10', py: '4' })
 const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
 
 function Rows({
@@ -114,10 +113,7 @@ export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onS
             {open && group.projects !== undefined
               ? group.projects.map((p) => (
                   <Stack key={p.label} gap="2">
-                    <Inline gap="6" align="center" className={project}>
-                      <FolderIcon size="12" />
-                      {p.label}
-                    </Inline>
+                    <GroupHeader variant="project" label={p.label} leading={<FolderIcon />} />
                     <Rows rows={p.rows} ui={ui} query={data.search?.query} onSelectItem={onSelectItem} />
                   </Stack>
                 ))

@@ -62,7 +62,7 @@ export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
     <ListRow
       density="compact"
       title={row.title}
-      meta={query === undefined ? row.meta : <Highlight text={row.meta} query={query} />}
+      meta={query === undefined ? row.meta : <Highlight text={row.meta} query={query} variant="colour" />}
       leading={<KindTile kind={row.kind} />}
       trailing={
         row.running === undefined ? (
@@ -76,6 +76,7 @@ export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
       }
       selected={selected}
       snoozed={row.snoozed !== undefined}
+      finished={row.outcome !== undefined}
       onSelect={onSelect}
       actions={
         row.approval ? (

@@ -19,10 +19,11 @@ const meta = css({ textStyle: 'mono', color: 'fg.muted' })
 
 export function RunCard({ run }: { run: InboxRunCard }) {
   // Figma names the card after the run's state: "running card" (D6) or "result card" (D7).
-  const key = run.status.tone === 'done' ? 'result card' : 'running card'
+  const done = run.status.tone === 'done'
+  // A running card has the accent border and tint; Figma's green border of a result card has no token (LIBRARY_GAPS.md).
   return (
-    <div data-figma={key}>
-      <Panel>
+    <div data-figma={done ? 'result card' : 'running card'}>
+      <Panel tone={done ? undefined : 'accent'}>
         <Stack gap="8">
           <Inline gap="8" align="center">
             <KindMark kind={run.agent} size="16" />

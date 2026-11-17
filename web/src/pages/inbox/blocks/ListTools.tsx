@@ -5,7 +5,7 @@
 import {
   Button,
   ChevronDownIcon,
-  CloseIcon,
+  CloseCircleIcon,
   FilterIcon,
   Inline,
   Popover,
@@ -51,15 +51,17 @@ function SortButton({
     </Button>
   )
   if (menu === undefined) return button
-  // Figma's note under the choices ("Sorting applies inside each group.") has no place in RadioMenu (LIBRARY_GAPS.md).
   return (
     <RadioMenu
       trigger={button}
       label={menu.heading}
       heading={menu.heading}
+      width="sort"
+      data-figma="menu · Sort"
       open={open}
       value={menu.selected}
       options={menu.options}
+      note={menu.note}
     />
   )
 }
@@ -79,7 +81,8 @@ export function ListTools({ sort, sortActive, sortMenu, sortOpen, query, filterM
           placeholder="Search the inbox"
           icon={<SearchIcon />}
           defaultValue={query}
-          clearIcon={<CloseIcon />}
+          clearIcon={<CloseCircleIcon />}
+          clearSize="16"
           clearLabel="Clear the search"
         />
       </div>
