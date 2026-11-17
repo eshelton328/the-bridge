@@ -197,7 +197,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onStart={
           shown.kind === 'next' && shown.launch.stage === 'suggested'
             ? () => {
-                onUiChange?.({ started: [...ui.started.filter((id) => id !== shown.id), shown.id] })
+                onUiChange?.({
+                  started: [...ui.started.filter((id) => id !== shown.id), shown.id],
+                  // The started row moves to Running (`startView`), which opens to show it.
+                  groupsOpen: { ...ui.groupsOpen, running: true },
+                })
               }
             : undefined
         }

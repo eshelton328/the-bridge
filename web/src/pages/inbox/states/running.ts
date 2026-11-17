@@ -33,14 +33,7 @@ export const running = {
         dot: 'working',
         rows: nextSteps.rows
           .filter((row) => row.id === started)
-          .map((row) => ({
-            ...row,
-            running: {
-              agent: 'claude',
-              line: 'quiet-nebula · Creating 9 issues…',
-              status: { tone: 'working', label: 'Working', dot: true },
-            },
-          })),
+          .map((row) => ({ ...row, running: nextStep.data.detail.launch.start.row })),
       },
     ],
     detail: startedChat,

@@ -121,4 +121,19 @@ describe('startView', () => {
     expect(detail?.launch.stage === 'started' ? detail.launch.run.chat?.reply : undefined).toBe('Reply to quiet-nebula')
     expect(startView(nextStep.data, { started: [] })).toBe(nextStep.data)
   })
+
+  it('moves the started row from Next steps to Running, with both chips counting it there', () => {
+    const { nextStep } = inboxStates
+    const id = nextStep.data.detail.id
+    const view = startView(nextStep.data, { started: [id] })
+    const group = (g: string) => view.groups.find((x) => x.id === g)
+    expect(group('nextSteps')?.rows.map((r) => r.id)).not.toContain(id)
+    expect(group('nextSteps')?.count).toBe(2)
+    expect(group('running')?.rows.map((r) => r.id)).toEqual([id])
+    expect(group('running')?.rows[0]?.running?.line).toBe('quiet-nebula · Creating 9 issues…')
+    expect(group('running')?.count).toBe(1)
+    const chip = (v: string) => view.filters.find((f) => f.value === v)?.count
+    expect([chip('all'), chip('next'), chip('running')]).toEqual([7, 2, 1])
+    expect(view.count).toBe(nextStep.data.count)
+  })
 })

@@ -230,8 +230,16 @@ const InboxLaunch = z.discriminatedUnion('stage', [
     runIn: InboxRunIn,
     startLabel: z.string(),
     startHint: z.string(),
-    /** What Start makes of the task, as D6 draws it: its status and origin, and the run card of its chat. */
-    start: z.object({ status: InboxDetailHead.shape.status, origin: z.string(), run: InboxRunCard }),
+    /**
+     * What Start makes of the task, as D5 and D6 draw it: its status and origin, the run card of its chat, and the
+     * line its row shows in the Running group.
+     */
+    start: z.object({
+      status: InboxDetailHead.shape.status,
+      origin: z.string(),
+      run: InboxRunCard,
+      row: InboxRowView.shape.running.unwrap(),
+    }),
   }),
   z.object({ stage: z.literal('started'), run: InboxRunCard }),
 ])

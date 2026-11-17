@@ -305,7 +305,16 @@ export const nextStep = {
         },
         startLabel: 'Start in the-bridge',
         startHint: 'Opens the new chat and sends the prompt.',
-        start: { status: { tone: 'working', label: 'Running' }, origin: 'started 3m ago', run: startedRun },
+        start: {
+          status: { tone: 'working', label: 'Running' },
+          origin: 'started 3m ago',
+          run: startedRun,
+          row: {
+            agent: 'claude',
+            line: 'quiet-nebula · Creating 9 issues…',
+            status: { tone: 'working', label: 'Working', dot: true },
+          },
+        },
       },
       notes: {
         note: { text: note, by: 'You · 2m ago' },
