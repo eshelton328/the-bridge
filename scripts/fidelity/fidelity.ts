@@ -13,7 +13,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
-import { chromium, type Browser, type Page } from 'playwright'
+import { chromium, type Browser } from 'playwright'
 import { checkPosition } from './checkPosition.ts'
 import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
@@ -28,6 +28,7 @@ import {
   repoRoot,
   reportsDir,
 } from './references.ts'
+import { composeSideBySide } from './sideBySide.ts'
 import { serveStatic, stateForFrame, storybookDir, storyForState } from './storyServer.ts'
 
 const { values, positionals } = parseArgs({
@@ -143,20 +144,4 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   }
   writeFileSync(join(outDir, `${frameId}.json`), `${JSON.stringify(report, null, 2)}\n`)
   return { frameId, ok, text: text.ok, position: position.ok, rules: rules.ok }
-}
-
-/** Draws Figma's picture left and the render right on one PNG, both at 1:1. */
-async function composeSideBySide(tab: Page, left: string, right: string, out: string, w: number, h: number) {
-  const gap = 24
-  const label = 28
-  const src = (f: string) => `data:image/png;base64,${readFileSync(f).toString('base64')}`
-  await tab.setViewportSize({ width: w * 2 + gap, height: h + label })
-  await tab.setContent(
-    `<body style="margin:0;background:#fff;font:14px system-ui;display:flex;gap:${String(gap)}px">` +
-      `<figure style="margin:0"><figcaption style="height:${String(label)}px">Figma</figcaption><img src="${src(left)}" width="${String(w)}" height="${String(h)}"></figure>` +
-      `<figure style="margin:0"><figcaption style="height:${String(label)}px">Render</figcaption><img src="${src(right)}" width="${String(w)}" height="${String(h)}"></figure>` +
-      '</body>',
-  )
-  await tab.evaluate(() => Promise.all([...document.images].map((i) => i.decode())).then(() => undefined))
-  await tab.screenshot({ path: out })
 }

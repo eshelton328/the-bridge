@@ -2,7 +2,7 @@ name: setup
 description: Install pnpm, Node 24 and the locked dependencies, and optionally Chromium.
 inputs:
   browser:
-    description: Install Chromium for the Vitest browser and story tests.
+    description: Install Chromium for the Vitest browser and story tests and the script tests.
     default: "false"
   packages-token:
     description: A token that can read the component library from GitHub Packages.
