@@ -1,0 +1,52 @@
+{
+  "position": [
+    {
+      "layer": "group · RULES",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · commits-and-prs",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · diagrams",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · linear",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · readmes",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · releases",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · skills",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · ste100",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "toolkit row · writing",
+      "reason": "The frame ends at writing-reviewer (429:272, y 1223), the last Agents row; the Rules group lies below it, and only its chip (Rules 8, 429:73) is in the frame, so the frame has no layer for it. The state is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The list scrolls on the phone: Figma's list (429:50) runs on under the tab bar (424:4851, y 767) and past the frame's bottom edge (the Agents rows end at y 1276), and the tab bar stays pinned. The render scrolls the detail under the pinned tab bar the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways on the phone: Figma's chip row (429:61) is 366 wide and its Workflows chip (429:77, x 364 to 483) runs past the frame's right edge, cut after its dot. FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    }
+  ]
+}
