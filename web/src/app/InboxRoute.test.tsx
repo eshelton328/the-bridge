@@ -1142,7 +1142,8 @@ describe('the sticky bars (d-107)', () => {
         const long = document.createElement('div')
         long.style.height = '3000px'
         long.style.flexShrink = '0'
-        body.append(long)
+        // In the content, before a pinned bar that is sticky at the end of the body.
+        ;(body.firstElementChild ?? body).append(long)
       }
       for (const body of bodies) expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
       const before = { top: top === null ? 0 : box(top).top, bottom: box(bottom).bottom }
