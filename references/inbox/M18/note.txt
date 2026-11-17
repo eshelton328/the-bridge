@@ -1,0 +1,1 @@
+The task card stays on top and says what the discussion can't do. Three things it can do are listed, with starters. Chats hide the tab bar. The discussion shows its model and how much context it uses, with the same picker and meter as a Workbench chat.

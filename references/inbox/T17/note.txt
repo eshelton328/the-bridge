@@ -1,0 +1,1 @@
+On the iPad mini the discussion is a full page, like the chat in T5, with the task card on top. It reads the task and its sources and runs nothing. The discussion shows its model and how much context it uses, with the same picker and meter as a Workbench chat.

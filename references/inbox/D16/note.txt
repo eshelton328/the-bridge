@@ -1,0 +1,1 @@
+After Apply, the task shows the new prompt with Undo, and the proposal turns green as Applied. Nothing runs until Erik clicks Start.

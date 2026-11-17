@@ -1,0 +1,1 @@
+The chat inside the inbox, reached from Reply here (M10). Like every chat, it has no tab bar. The task header keeps the title and the Working state on one line; long text is cut with an ellipsis instead of pushing the state off the card. Tapping the header opens the task page (M10). Workspaces opens the same chat in Workspaces.

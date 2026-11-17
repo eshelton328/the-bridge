@@ -1,0 +1,1181 @@
+{
+  "frameId": "M10",
+  "code": "M10",
+  "name": "M10 · Running, on the task page",
+  "node": "346:10919",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "346:10942",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "346:10943",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "346:10944",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "346:10945",
+      "name": "nav",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 40,
+      "path": "content"
+    },
+    {
+      "id": "346:10946",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 52,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:10949",
+      "name": "Inbox",
+      "type": "text",
+      "x": 38,
+      "y": 51.5,
+      "w": 42,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Inbox"
+    },
+    {
+      "id": "346:10950",
+      "name": "spacer",
+      "type": "frame",
+      "x": 86,
+      "y": 61.5,
+      "w": 216,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:10951",
+      "name": "button · Snooze",
+      "type": "frame",
+      "x": 308,
+      "y": 46,
+      "w": 32,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:10952",
+      "name": "Frame",
+      "type": "frame",
+      "x": 316,
+      "y": 54,
+      "w": 16,
+      "h": 16,
+      "path": "content > nav > button · Snooze"
+    },
+    {
+      "id": "346:10956",
+      "name": "button · Dismiss",
+      "type": "frame",
+      "x": 346,
+      "y": 46,
+      "w": 32,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:10957",
+      "name": "Frame",
+      "type": "frame",
+      "x": 354,
+      "y": 54,
+      "w": 16,
+      "h": 16,
+      "path": "content > nav > button · Dismiss"
+    },
+    {
+      "id": "346:10960",
+      "name": "task · next step",
+      "type": "frame",
+      "x": 12,
+      "y": 84,
+      "w": 366,
+      "h": 554,
+      "path": "content"
+    },
+    {
+      "id": "346:10961",
+      "name": "task bar",
+      "type": "frame",
+      "x": 16,
+      "y": 92,
+      "w": 358,
+      "h": 20,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:10962",
+      "name": "pill · Running",
+      "type": "frame",
+      "x": 16,
+      "y": 92,
+      "w": 70,
+      "h": 20,
+      "path": "content > task · next step > task bar"
+    },
+    {
+      "id": "346:10963",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 24,
+      "y": 99,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · next step > task bar > pill · Running"
+    },
+    {
+      "id": "346:10964",
+      "name": "Running",
+      "type": "text",
+      "x": 35,
+      "y": 95,
+      "w": 43,
+      "h": 14,
+      "path": "content > task · next step > task bar > pill · Running",
+      "text": "Running"
+    },
+    {
+      "id": "346:10965",
+      "name": "started 3m ago",
+      "type": "text",
+      "x": 94,
+      "y": 95,
+      "w": 280,
+      "h": 14,
+      "path": "content > task · next step > task bar",
+      "text": "started 3m ago"
+    },
+    {
+      "id": "346:10966",
+      "name": "title block",
+      "type": "frame",
+      "x": 16,
+      "y": 130,
+      "w": 358,
+      "h": 85,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:10967",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 16,
+      "y": 130,
+      "w": 358,
+      "h": 27,
+      "path": "content > task · next step > title block",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "346:10968",
+      "name": "meta",
+      "type": "frame",
+      "x": 16,
+      "y": 167,
+      "w": 358,
+      "h": 24,
+      "path": "content > task · next step > title block"
+    },
+    {
+      "id": "346:10969",
+      "name": "chip · ncc-1701",
+      "type": "frame",
+      "x": 16,
+      "y": 167,
+      "w": 88,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:10970",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 173,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · ncc-1701"
+    },
+    {
+      "id": "346:10973",
+      "name": "ncc-1701",
+      "type": "text",
+      "x": 42,
+      "y": 172,
+      "w": 53,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · ncc-1701",
+      "text": "ncc-1701"
+    },
+    {
+      "id": "346:10974",
+      "name": "chip · f-005 the-bridge",
+      "type": "frame",
+      "x": 110,
+      "y": 167,
+      "w": 141,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:10975",
+      "name": "icon/feature",
+      "type": "frame",
+      "x": 119,
+      "y": 173,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · f-005 the-bridge"
+    },
+    {
+      "id": "346:10978",
+      "name": "f-005 the-bridge",
+      "type": "text",
+      "x": 136,
+      "y": 172,
+      "w": 106,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · f-005 the-bridge",
+      "text": "f-005 the-bridge"
+    },
+    {
+      "id": "346:10979",
+      "name": "chip · NCC-28",
+      "type": "frame",
+      "x": 257,
+      "y": 167,
+      "w": 75,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:10980",
+      "name": "icon/linear",
+      "type": "frame",
+      "x": 266,
+      "y": 173,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · NCC-28"
+    },
+    {
+      "id": "346:10984",
+      "name": "NCC-28",
+      "type": "text",
+      "x": 283,
+      "y": 172,
+      "w": 40,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · NCC-28",
+      "text": "NCC-28"
+    },
+    {
+      "id": "346:10985",
+      "name": "tags",
+      "type": "frame",
+      "x": 16,
+      "y": 201,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > title block"
+    },
+    {
+      "id": "346:10986",
+      "name": "icon/tag",
+      "type": "frame",
+      "x": 16,
+      "y": 202,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > tags"
+    },
+    {
+      "id": "346:10990",
+      "name": "global/planning",
+      "type": "text",
+      "x": 34,
+      "y": 201,
+      "w": 99,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "global/planning"
+    },
+    {
+      "id": "346:10991",
+      "name": "·",
+      "type": "text",
+      "x": 139,
+      "y": 201,
+      "w": 3,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "·"
+    },
+    {
+      "id": "346:10992",
+      "name": "project/ncc-1701/the-bridge",
+      "type": "text",
+      "x": 148,
+      "y": 201,
+      "w": 179,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "project/ncc-1701/the-bridge"
+    },
+    {
+      "id": "346:10993",
+      "name": "section · WHY",
+      "type": "frame",
+      "x": 16,
+      "y": 233,
+      "w": 358,
+      "h": 82,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:10994",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 233,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · WHY"
+    },
+    {
+      "id": "346:10995",
+      "name": "WHY",
+      "type": "text",
+      "x": 16,
+      "y": 233,
+      "w": 21,
+      "h": 14,
+      "path": "content > task · next step > section · WHY > section header",
+      "text": "WHY"
+    },
+    {
+      "id": "346:10996",
+      "name": "Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.",
+      "type": "text",
+      "x": 16,
+      "y": 255,
+      "w": 358,
+      "h": 60,
+      "path": "content > task · next step > section · WHY",
+      "text": "Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them."
+    },
+    {
+      "id": "346:10997",
+      "name": "section · SUGGESTED PROMPT",
+      "type": "frame",
+      "x": 16,
+      "y": 333,
+      "w": 358,
+      "h": 176,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:10998",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 333,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:10999",
+      "name": "SENT PROMPT",
+      "type": "text",
+      "x": 16,
+      "y": 333,
+      "w": 77,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header",
+      "text": "SENT PROMPT"
+    },
+    {
+      "id": "346:11000",
+      "name": "spacer",
+      "type": "frame",
+      "x": 101,
+      "y": 339.5,
+      "w": 273,
+      "h": 1,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:11001",
+      "name": "button · Reset",
+      "type": "frame",
+      "x": 235,
+      "y": 333,
+      "w": 71,
+      "h": 26,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:11002",
+      "name": "icon/reset",
+      "type": "frame",
+      "x": 244,
+      "y": 339,
+      "w": 14,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Reset"
+    },
+    {
+      "id": "346:11006",
+      "name": "Reset",
+      "type": "text",
+      "x": 264,
+      "y": 338,
+      "w": 33,
+      "h": 16,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Reset",
+      "text": "Reset"
+    },
+    {
+      "id": "346:11007",
+      "name": "button · Edit",
+      "type": "frame",
+      "x": 314,
+      "y": 333,
+      "w": 60,
+      "h": 26,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:11008",
+      "name": "icon/edit",
+      "type": "frame",
+      "x": 323,
+      "y": 339,
+      "w": 14,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Edit"
+    },
+    {
+      "id": "346:11011",
+      "name": "Edit",
+      "type": "text",
+      "x": 343,
+      "y": 338,
+      "w": 22,
+      "h": 16,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Edit",
+      "text": "Edit"
+    },
+    {
+      "id": "346:11012",
+      "name": "prompt",
+      "type": "frame",
+      "x": 16,
+      "y": 355,
+      "w": 358,
+      "h": 128,
+      "path": "content > task · next step > section · SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:11013",
+      "name": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
+      "type": "text",
+      "x": 33,
+      "y": 370,
+      "w": 324,
+      "h": 210,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > prompt",
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason."
+    },
+    {
+      "id": "346:11014",
+      "name": "fade",
+      "type": "rounded-rectangle",
+      "x": 16,
+      "y": 439,
+      "w": 358,
+      "h": 44,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > prompt"
+    },
+    {
+      "id": "346:11015",
+      "name": "show whole prompt",
+      "type": "frame",
+      "x": 16,
+      "y": 491,
+      "w": 152,
+      "h": 18,
+      "path": "content > task · next step > section · SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:11016",
+      "name": "Read the whole prompt",
+      "type": "text",
+      "x": 18,
+      "y": 493,
+      "w": 132,
+      "h": 16,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > show whole prompt",
+      "text": "Read the whole prompt"
+    },
+    {
+      "id": "346:11017",
+      "name": "Frame",
+      "type": "frame",
+      "x": 154,
+      "y": 495,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > show whole prompt"
+    },
+    {
+      "id": "346:11020",
+      "name": "section · MY NOTES",
+      "type": "frame",
+      "x": 16,
+      "y": 527,
+      "w": 358,
+      "h": 83,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:11021",
+      "name": "MY NOTES",
+      "type": "text",
+      "x": 16,
+      "y": 527,
+      "w": 58,
+      "h": 14,
+      "path": "content > task · next step > section · MY NOTES",
+      "text": "MY NOTES"
+    },
+    {
+      "id": "346:11022",
+      "name": "notes field",
+      "type": "frame",
+      "x": 16,
+      "y": 549,
+      "w": 358,
+      "h": 61,
+      "path": "content > task · next step > section · MY NOTES"
+    },
+    {
+      "id": "346:11023",
+      "name": "Check the milestone name first.",
+      "type": "text",
+      "x": 29,
+      "y": 560,
+      "w": 332,
+      "h": 19,
+      "path": "content > task · next step > section · MY NOTES > notes field",
+      "text": "Check the milestone name first."
+    },
+    {
+      "id": "346:11024",
+      "name": "You · 2m ago",
+      "type": "text",
+      "x": 29,
+      "y": 585,
+      "w": 80,
+      "h": 14,
+      "path": "content > task · next step > section · MY NOTES > notes field",
+      "text": "You · 2m ago"
+    },
+    {
+      "id": "346:11025",
+      "name": "section · SOURCES",
+      "type": "frame",
+      "x": 16,
+      "y": 623,
+      "w": 358,
+      "h": 62,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:11026",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 623,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:11027",
+      "name": "SOURCES",
+      "type": "text",
+      "x": 16,
+      "y": 623,
+      "w": 49,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > section header",
+      "text": "SOURCES"
+    },
+    {
+      "id": "346:11028",
+      "name": "source",
+      "type": "frame",
+      "x": 16,
+      "y": 645,
+      "w": 216,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:11029",
+      "name": "icon/link",
+      "type": "frame",
+      "x": 16,
+      "y": 646.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > task · next step > section · SOURCES > source"
+    },
+    {
+      "id": "346:11034",
+      "name": "increment-1.md",
+      "type": "text",
+      "x": 35,
+      "y": 645,
+      "w": 85,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "increment-1.md"
+    },
+    {
+      "id": "346:11035",
+      "name": "f-005 the-bridge",
+      "type": "text",
+      "x": 126,
+      "y": 646,
+      "w": 106,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "f-005 the-bridge"
+    },
+    {
+      "id": "346:11036",
+      "name": "source",
+      "type": "frame",
+      "x": 16,
+      "y": 669,
+      "w": 132,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:11037",
+      "name": "icon/link",
+      "type": "frame",
+      "x": 16,
+      "y": 670.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > task · next step > section · SOURCES > source"
+    },
+    {
+      "id": "346:11042",
+      "name": "NCC project",
+      "type": "text",
+      "x": 35,
+      "y": 669,
+      "w": 67,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "NCC project"
+    },
+    {
+      "id": "346:11043",
+      "name": "Linear",
+      "type": "text",
+      "x": 108,
+      "y": 670,
+      "w": 40,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "Linear"
+    },
+    {
+      "id": "346:11044",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "346:11045",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "346:11046",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "346:11047",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "346:11050",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "346:11051",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "346:11052",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "346:11053",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "346:11057",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "346:11058",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "346:11059",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "346:11060",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "346:11061",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "346:11062",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "346:11068",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "346:11069",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "346:11070",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "346:11071",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "346:11074",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "346:11075",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "346:11076",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "346:11077",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "346:11082",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "346:11083",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "346:11084",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    },
+    {
+      "id": "346:11085",
+      "name": "running",
+      "type": "frame",
+      "x": 0,
+      "y": 631,
+      "w": 390,
+      "h": 136,
+      "path": ""
+    },
+    {
+      "id": "346:11086",
+      "name": "running card",
+      "type": "frame",
+      "x": 12,
+      "y": 642,
+      "w": 366,
+      "h": 115,
+      "path": "running"
+    },
+    {
+      "id": "346:11087",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 655,
+      "w": 340,
+      "h": 20,
+      "path": "running > running card"
+    },
+    {
+      "id": "346:11088",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 25,
+      "y": 657,
+      "w": 16,
+      "h": 16,
+      "path": "running > running card > Frame"
+    },
+    {
+      "id": "346:11090",
+      "name": "Running in quiet-nebula",
+      "type": "text",
+      "x": 49,
+      "y": 656,
+      "w": 157,
+      "h": 18,
+      "path": "running > running card > Frame",
+      "text": "Running in quiet-nebula"
+    },
+    {
+      "id": "346:11091",
+      "name": "spacer",
+      "type": "frame",
+      "x": 214,
+      "y": 664.5,
+      "w": 73,
+      "h": 1,
+      "path": "running > running card > Frame"
+    },
+    {
+      "id": "346:11092",
+      "name": "pill · Working",
+      "type": "frame",
+      "x": 295,
+      "y": 655,
+      "w": 70,
+      "h": 20,
+      "path": "running > running card > Frame"
+    },
+    {
+      "id": "346:11093",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 303,
+      "y": 662,
+      "w": 6,
+      "h": 6,
+      "path": "running > running card > Frame > pill · Working"
+    },
+    {
+      "id": "346:11094",
+      "name": "Working",
+      "type": "text",
+      "x": 314,
+      "y": 658,
+      "w": 43,
+      "h": 14,
+      "path": "running > running card > Frame > pill · Working",
+      "text": "Working"
+    },
+    {
+      "id": "346:11095",
+      "name": "the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…",
+      "type": "text",
+      "x": 25,
+      "y": 683,
+      "w": 337,
+      "h": 14,
+      "path": "running > running card",
+      "text": "the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…"
+    },
+    {
+      "id": "346:11096",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 705,
+      "w": 340,
+      "h": 39,
+      "path": "running > running card"
+    },
+    {
+      "id": "346:11097",
+      "name": "button · Reply here",
+      "type": "frame",
+      "x": 25,
+      "y": 706,
+      "w": 165,
+      "h": 37,
+      "path": "running > running card > Frame"
+    },
+    {
+      "id": "346:11098",
+      "name": "Frame",
+      "type": "frame",
+      "x": 64.5,
+      "y": 717.5,
+      "w": 14,
+      "h": 14,
+      "path": "running > running card > Frame > button · Reply here"
+    },
+    {
+      "id": "346:11101",
+      "name": "Reply here",
+      "type": "text",
+      "x": 84.5,
+      "y": 716,
+      "w": 66,
+      "h": 17,
+      "path": "running > running card > Frame > button · Reply here",
+      "text": "Reply here"
+    },
+    {
+      "id": "346:11102",
+      "name": "button · Open in Workspaces",
+      "type": "frame",
+      "x": 198,
+      "y": 705,
+      "w": 167,
+      "h": 39,
+      "path": "running > running card > Frame"
+    },
+    {
+      "id": "346:11103",
+      "name": "Frame",
+      "type": "frame",
+      "x": 208.5,
+      "y": 717.5,
+      "w": 14,
+      "h": 14,
+      "path": "running > running card > Frame > button · Open in Workspaces"
+    },
+    {
+      "id": "346:11107",
+      "name": "Open in Workspaces",
+      "type": "text",
+      "x": 228.5,
+      "y": 716,
+      "w": 126,
+      "h": 17,
+      "path": "running > running card > Frame > button · Open in Workspaces",
+      "text": "Open in Workspaces"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "346:10943",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

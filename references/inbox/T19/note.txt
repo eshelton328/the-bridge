@@ -1,0 +1,1 @@
+After Apply, the task shows the new prompt and a line with Undo. Nothing runs until Erik taps Start.

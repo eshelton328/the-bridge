@@ -1,0 +1,1 @@
+Same as M9. Read the whole prompt opens the prompt read-only in a sheet. Editing stays behind Edit.

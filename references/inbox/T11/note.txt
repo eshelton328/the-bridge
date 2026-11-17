@@ -1,0 +1,1 @@
+Same as M15. On the iPad mini, the Sort button names the sort and turns cyan, so no extra line is needed. Picking Newest first again resets it.

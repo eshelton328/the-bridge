@@ -1,0 +1,1 @@
+Same as M8. The chat inside the inbox has no tab bar. The header keeps the title and the Working state on one line; tapping it opens the task page (T4).

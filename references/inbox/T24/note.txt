@@ -1,0 +1,1 @@
+A removed task sits in Done with its reason in red; its task page has Restore. None of this flow is decided.

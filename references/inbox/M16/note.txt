@@ -1,0 +1,1 @@
+After Show 6 tasks on the filter sheet (M7). The Filter button turns cyan with a dot, and a row under it lists the active filters: each one has an x to remove it, and Clear removes all. The counts and the list show only matching tasks; a line at the end says how many are hidden.

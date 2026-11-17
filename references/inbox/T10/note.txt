@@ -1,0 +1,1 @@
+Same as M14. On the iPad mini, Sort and Filter stay beside the field, so a search can be sorted and filtered. The keyboard is not drawn.

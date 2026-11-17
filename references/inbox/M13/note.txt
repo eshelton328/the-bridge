@@ -1,0 +1,1 @@
+Tapping the sort button opens this sheet. Four choices: Newest first (the default), Oldest first, Project and Kind. Sorting applies inside each group, so Needs you stays at the top. The choice is kept per device.

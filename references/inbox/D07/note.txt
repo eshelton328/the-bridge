@@ -1,0 +1,1 @@
+Done lists finished tasks by day, each with how it ended. Selecting one shows the task read-only: the sent prompt, Erik’s notes and the result, with Open chat to read the finished chat. All means every open task, not Done.

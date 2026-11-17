@@ -1,0 +1,1 @@
+Proposal from Erik's comment on M2. Discuss sits in the task bar beside Snooze and Dismiss. It opens a chat about this one task.

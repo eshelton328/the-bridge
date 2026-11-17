@@ -1,0 +1,1 @@
+A question from a chat names the chat it blocks and how long it has waited. Erik picks an option, the recommended one first, adds an optional note, and the answer goes back to the chat, which resumes. Open chat jumps to it in Workspaces.

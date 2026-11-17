@@ -1,0 +1,1 @@
+Same choices as M13. On the iPad mini, Sort opens a menu below the button instead of a sheet. The button shows the current choice.

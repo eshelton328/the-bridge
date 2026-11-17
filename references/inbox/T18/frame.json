@@ -1,0 +1,899 @@
+{
+  "frameId": "T18",
+  "code": "T18",
+  "name": "T18 · A proposed update",
+  "node": "402:11283",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "402:11342",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "402:11343",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "402:11344",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 1108,
+      "path": ""
+    },
+    {
+      "id": "402:11345",
+      "name": "nav",
+      "type": "frame",
+      "x": 22,
+      "y": 33,
+      "w": 712,
+      "h": 30,
+      "path": "content"
+    },
+    {
+      "id": "402:11346",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 38,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:11349",
+      "name": "Task",
+      "type": "text",
+      "x": 48,
+      "y": 37.5,
+      "w": 36,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Task"
+    },
+    {
+      "id": "402:11350",
+      "name": "spacer",
+      "type": "frame",
+      "x": 90,
+      "y": 47.5,
+      "w": 160,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "454:136",
+      "name": "model and context",
+      "type": "frame",
+      "x": 256,
+      "y": 37,
+      "w": 223,
+      "h": 22,
+      "path": "content > nav"
+    },
+    {
+      "id": "454:137",
+      "name": "Frame",
+      "type": "frame",
+      "x": 256,
+      "y": 37,
+      "w": 92,
+      "h": 22,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "454:138",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 265,
+      "y": 42,
+      "w": 12,
+      "h": 12,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "454:140",
+      "name": "Sonnet 5.5",
+      "type": "text",
+      "x": 283,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "Sonnet 5.5"
+    },
+    {
+      "id": "454:141",
+      "name": "Frame",
+      "type": "frame",
+      "x": 356,
+      "y": 41,
+      "w": 77,
+      "h": 14,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "454:142",
+      "name": "segments",
+      "type": "frame",
+      "x": 356,
+      "y": 44,
+      "w": 58,
+      "h": 8,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "454:143",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 356,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:144",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 362,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:145",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 368,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:146",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 374,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:147",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 380,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:148",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 386,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:149",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 392,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:150",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 398,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:151",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 404,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:152",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 410,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:153",
+      "name": "9%",
+      "type": "text",
+      "x": 419,
+      "y": 41,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "9%"
+    },
+    {
+      "id": "454:154",
+      "name": "context",
+      "type": "text",
+      "x": 441,
+      "y": 41,
+      "w": 38,
+      "h": 14,
+      "path": "content > nav > model and context",
+      "text": "context"
+    },
+    {
+      "id": "454:155",
+      "name": "spacer",
+      "type": "frame",
+      "x": 485,
+      "y": 47.5,
+      "w": 160,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:11414",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 651,
+      "y": 38,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:11415",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 659,
+      "y": 45,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "402:11416",
+      "name": "Discussion",
+      "type": "text",
+      "x": 670,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:11357",
+      "name": "task · discussing",
+      "type": "frame",
+      "x": 22,
+      "y": 71,
+      "w": 712,
+      "h": 96,
+      "path": "content"
+    },
+    {
+      "id": "402:11358",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 82,
+      "w": 686,
+      "h": 20,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:11359",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 35,
+      "y": 83,
+      "w": 576,
+      "h": 18,
+      "path": "content > task · discussing > Frame",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "402:11417",
+      "name": "pill · Next step",
+      "type": "frame",
+      "x": 619,
+      "y": 82,
+      "w": 78,
+      "h": 20,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:11418",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 627,
+      "y": 89,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · discussing > Frame > pill · Next step"
+    },
+    {
+      "id": "402:11419",
+      "name": "Next step",
+      "type": "text",
+      "x": 638,
+      "y": 85,
+      "w": 51,
+      "h": 14,
+      "path": "content > task · discussing > Frame > pill · Next step",
+      "text": "Next step"
+    },
+    {
+      "id": "402:11363",
+      "name": "chevron · open task",
+      "type": "frame",
+      "x": 705,
+      "y": 84,
+      "w": 16,
+      "h": 16,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:11366",
+      "name": "ncc-1701 · f-005 · NCC-28",
+      "type": "text",
+      "x": 35,
+      "y": 107,
+      "w": 165,
+      "h": 14,
+      "path": "content > task · discussing",
+      "text": "ncc-1701 · f-005 · NCC-28"
+    },
+    {
+      "id": "402:11420",
+      "name": "guard",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 686,
+      "h": 30,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:11421",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · discussing > guard"
+    },
+    {
+      "id": "402:11424",
+      "name": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply.",
+      "type": "text",
+      "x": 53,
+      "y": 126,
+      "w": 668,
+      "h": 30,
+      "path": "content > task · discussing > guard",
+      "text": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply."
+    },
+    {
+      "id": "402:11371",
+      "name": "discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 175,
+      "w": 712,
+      "h": 950,
+      "path": "content"
+    },
+    {
+      "id": "402:11425",
+      "name": "message · you",
+      "type": "frame",
+      "x": 22,
+      "y": 189,
+      "w": 560,
+      "h": 39,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:11426",
+      "name": "Each ticket should also link to its Figma frame. And check the frames exist before writing.",
+      "type": "text",
+      "x": 34,
+      "y": 199,
+      "w": 536,
+      "h": 19,
+      "path": "content > discussion > message · you",
+      "text": "Each ticket should also link to its Figma frame. And check the frames exist before writing."
+    },
+    {
+      "id": "402:11427",
+      "name": "message · discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 240,
+      "w": 560,
+      "h": 60,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:11428",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 240,
+      "w": 82,
+      "h": 16,
+      "path": "content > discussion > message · discussion"
+    },
+    {
+      "id": "402:11429",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 22,
+      "y": 241.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > discussion > message · discussion > Frame"
+    },
+    {
+      "id": "402:11431",
+      "name": "Discussion",
+      "type": "text",
+      "x": 41,
+      "y": 240,
+      "w": 63,
+      "h": 16,
+      "path": "content > discussion > message · discussion > Frame",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:11432",
+      "name": "The frame links are in pages.md, so the run can read them there. This changes the prompt only.",
+      "type": "text",
+      "x": 22,
+      "y": 262,
+      "w": 560,
+      "h": 38,
+      "path": "content > discussion > message · discussion",
+      "text": "The frame links are in pages.md, so the run can read them there. This changes the prompt only."
+    },
+    {
+      "id": "402:11433",
+      "name": "proposal · UPDATE THIS TASK",
+      "type": "frame",
+      "x": 22,
+      "y": 312,
+      "w": 560,
+      "h": 216,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:11434",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 325,
+      "w": 534,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS TASK"
+    },
+    {
+      "id": "402:11435",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 35,
+      "y": 326,
+      "w": 12,
+      "h": 12,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > Frame"
+    },
+    {
+      "id": "402:11437",
+      "name": "PROPOSED · UPDATE THIS TASK",
+      "type": "text",
+      "x": 53,
+      "y": 325,
+      "w": 179,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > Frame",
+      "text": "PROPOSED · UPDATE THIS TASK"
+    },
+    {
+      "id": "402:11438",
+      "name": "diff · SUGGESTED PROMPT",
+      "type": "frame",
+      "x": 35,
+      "y": 351,
+      "w": 534,
+      "h": 124,
+      "path": "content > discussion > proposal · UPDATE THIS TASK"
+    },
+    {
+      "id": "402:11439",
+      "name": "SUGGESTED PROMPT",
+      "type": "text",
+      "x": 35,
+      "y": 351,
+      "w": 106,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT",
+      "text": "SUGGESTED PROMPT"
+    },
+    {
+      "id": "402:11440",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 369,
+      "w": 530,
+      "h": 27,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT"
+    },
+    {
+      "id": "402:11441",
+      "name": "−",
+      "type": "text",
+      "x": 43,
+      "y": 374,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "−"
+    },
+    {
+      "id": "402:11442",
+      "name": "Link each ticket to its requirement IDs and leave them in Backlog",
+      "type": "text",
+      "x": 57,
+      "y": 374,
+      "w": 500,
+      "h": 17,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "Link each ticket to its requirement IDs and leave them in Backlog"
+    },
+    {
+      "id": "402:11443",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 400,
+      "w": 530,
+      "h": 44,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT"
+    },
+    {
+      "id": "402:11444",
+      "name": "+",
+      "type": "text",
+      "x": 43,
+      "y": 405,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "+"
+    },
+    {
+      "id": "402:11445",
+      "name": "Link each ticket to its requirement IDs and to its Figma frame from pages.md, and leave them in Backlog",
+      "type": "text",
+      "x": 57,
+      "y": 405,
+      "w": 500,
+      "h": 34,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "Link each ticket to its requirement IDs and to its Figma frame from pages.md, and leave them in Backlog"
+    },
+    {
+      "id": "402:11446",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 448,
+      "w": 530,
+      "h": 27,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT"
+    },
+    {
+      "id": "402:11447",
+      "name": "+",
+      "type": "text",
+      "x": 43,
+      "y": 453,
+      "w": 8,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "+"
+    },
+    {
+      "id": "402:11448",
+      "name": "Before writing, check that each frame exists, and list any that do not.",
+      "type": "text",
+      "x": 57,
+      "y": 453,
+      "w": 500,
+      "h": 17,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > diff · SUGGESTED PROMPT > Frame",
+      "text": "Before writing, check that each frame exists, and list any that do not."
+    },
+    {
+      "id": "402:11449",
+      "name": "actions",
+      "type": "frame",
+      "x": 35,
+      "y": 487,
+      "w": 534,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS TASK"
+    },
+    {
+      "id": "402:11450",
+      "name": "button · Apply",
+      "type": "frame",
+      "x": 35,
+      "y": 488,
+      "w": 74,
+      "h": 26,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions"
+    },
+    {
+      "id": "402:11451",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 45,
+      "y": 494,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions > button · Apply"
+    },
+    {
+      "id": "402:11453",
+      "name": "Apply",
+      "type": "text",
+      "x": 65,
+      "y": 493,
+      "w": 34,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions > button · Apply",
+      "text": "Apply"
+    },
+    {
+      "id": "402:11454",
+      "name": "button · Discard",
+      "type": "frame",
+      "x": 117,
+      "y": 487,
+      "w": 65,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions"
+    },
+    {
+      "id": "402:11455",
+      "name": "Discard",
+      "type": "text",
+      "x": 128,
+      "y": 493,
+      "w": 43,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions > button · Discard",
+      "text": "Discard"
+    },
+    {
+      "id": "402:11456",
+      "name": "button · Edit first",
+      "type": "frame",
+      "x": 190,
+      "y": 487,
+      "w": 90,
+      "h": 28,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions"
+    },
+    {
+      "id": "402:11457",
+      "name": "icon/edit",
+      "type": "frame",
+      "x": 201,
+      "y": 494,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions > button · Edit first"
+    },
+    {
+      "id": "402:11459",
+      "name": "Edit first",
+      "type": "text",
+      "x": 221,
+      "y": 493,
+      "w": 48,
+      "h": 16,
+      "path": "content > discussion > proposal · UPDATE THIS TASK > actions > button · Edit first",
+      "text": "Edit first"
+    },
+    {
+      "id": "402:11460",
+      "name": "spacer",
+      "type": "frame",
+      "x": 22,
+      "y": 540,
+      "w": 1,
+      "h": 488,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:11461",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 1040,
+      "w": 712,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:11462",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1051,
+      "w": 121,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:11464",
+      "name": "Ask about this task",
+      "type": "text",
+      "x": 33,
+      "y": 1051,
+      "w": 119,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about this task"
+    },
+    {
+      "id": "402:11463",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 152,
+      "y": 1051,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:11465",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 690,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:11470",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:11471",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 40,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "402:11469",
+      "name": "spacer",
+      "type": "frame",
+      "x": 67,
+      "y": 1089.5,
+      "w": 624,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:11466",
+      "name": "button · up",
+      "type": "frame",
+      "x": 697,
+      "y": 1077,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:11467",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 703,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "402:11412",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1137,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "402:11413",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1145,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "402:11343",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

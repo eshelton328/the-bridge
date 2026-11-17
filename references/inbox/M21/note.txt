@@ -1,0 +1,1 @@
+Each proposed task has a checkbox, so Erik can create only some. Also remove this task does both in one step.

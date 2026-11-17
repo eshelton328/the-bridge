@@ -1,0 +1,1 @@
+The phone list, with the tab bar and the Inbox count. Long-press a task for snooze and dismiss (M6).

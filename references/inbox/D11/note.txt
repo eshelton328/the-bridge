@@ -1,0 +1,1 @@
+Same as M15. On the desktop, the Sort button names the sort and turns cyan. The selected task stays selected after the list sorts.

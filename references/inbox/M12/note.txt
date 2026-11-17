@@ -1,0 +1,1 @@
+Done is the collection of finished tasks, grouped by day, newest first. Each row says how it ended. The chips scroll sideways with a swipe and show no scroll bar; a fade at each edge shows that more chips are there. Selecting a chip scrolls it into view, so here All has scrolled off to the left. All means every open task: Needs you, Next steps, Running and Snoozed, not Done.
