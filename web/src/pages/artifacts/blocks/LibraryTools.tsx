@@ -1,6 +1,7 @@
 // The row under the source chips (Figma 402:15397): the search, Sort and
 // Filter, and at the end the Grid or List switch. Sort names the sort on
-// the button. Props only.
+// the button. Beside an open artifact (D2) the row has no switch, and the
+// search takes the free width. Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -27,7 +28,8 @@ export type LibraryToolsProps = {
   sortLabel: string
   onSortClick?: (() => void) | undefined
   onFilterClick?: (() => void) | undefined
-  view: ViewValue
+  /** The Grid or List switch's value; without it the row has no switch (D2). */
+  view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
 }
 
@@ -66,21 +68,25 @@ export function LibraryTools({
           Filter
         </Button>
       </span>
-      <span className={grow} />
-      <span data-figma="view · Grid or List">
-        <ViewSwitch
-          label="View"
-          value={view}
-          onValueChange={(value) => {
-            const picked = ViewValue.safeParse(value)
-            if (picked.success) onViewChange?.(picked.data)
-          }}
-          items={[
-            { value: 'grid', label: 'Grid', icon: <GridIcon /> },
-            { value: 'list', label: 'List', icon: <ListIcon /> },
-          ]}
-        />
-      </span>
+      {view === undefined ? null : (
+        <>
+          <span className={grow} />
+          <span data-figma="view · Grid or List">
+            <ViewSwitch
+              label="View"
+              value={view}
+              onValueChange={(value) => {
+                const picked = ViewValue.safeParse(value)
+                if (picked.success) onViewChange?.(picked.data)
+              }}
+              items={[
+                { value: 'grid', label: 'Grid', icon: <GridIcon /> },
+                { value: 'list', label: 'List', icon: <ListIcon /> },
+              ]}
+            />
+          </span>
+        </>
+      )}
     </Inline>
   )
 }

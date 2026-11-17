@@ -28,3 +28,15 @@ export const Library: Story = {
     await expect(canvas.getAllByText('New', { selector: '.badge__root, .badge__root *' })).toHaveLength(4)
   },
 }
+
+export const ArtifactOpen: Story = {
+  name: 'D2: an artifact open beside the list',
+  args: { data: artifactsStates.artifactOpen.data, ui: artifactsStates.artifactOpen.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
+    await expect(canvas.getByText('found 12m ago by the Artifact hook')).toBeVisible()
+    await expect(canvas.getByText('Published from chat quiet-nebula')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Open artifact' })).toBeVisible()
+    await expect(canvas.getByText('Skill eval pass rates', { selector: '.list-row__title' })).toBeVisible()
+  },
+}
