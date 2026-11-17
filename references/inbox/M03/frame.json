@@ -1,0 +1,1781 @@
+{
+  "frameId": "M03",
+  "code": "M3",
+  "name": "M3 · Edit the prompt",
+  "node": "346:9392",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "346:9415",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "346:9416",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "346:9417",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 785,
+      "path": ""
+    },
+    {
+      "id": "346:9418",
+      "name": "nav",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 40,
+      "path": "content"
+    },
+    {
+      "id": "346:9419",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 52,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:9422",
+      "name": "Inbox",
+      "type": "text",
+      "x": 38,
+      "y": 51.5,
+      "w": 42,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Inbox"
+    },
+    {
+      "id": "346:9423",
+      "name": "spacer",
+      "type": "frame",
+      "x": 86,
+      "y": 61.5,
+      "w": 216,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:9424",
+      "name": "button · Snooze",
+      "type": "frame",
+      "x": 308,
+      "y": 46,
+      "w": 32,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:9425",
+      "name": "Frame",
+      "type": "frame",
+      "x": 316,
+      "y": 54,
+      "w": 16,
+      "h": 16,
+      "path": "content > nav > button · Snooze"
+    },
+    {
+      "id": "346:9429",
+      "name": "button · Dismiss",
+      "type": "frame",
+      "x": 346,
+      "y": 46,
+      "w": 32,
+      "h": 32,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:9430",
+      "name": "Frame",
+      "type": "frame",
+      "x": 354,
+      "y": 54,
+      "w": 16,
+      "h": 16,
+      "path": "content > nav > button · Dismiss"
+    },
+    {
+      "id": "346:9433",
+      "name": "task · next step",
+      "type": "frame",
+      "x": 12,
+      "y": 86,
+      "w": 366,
+      "h": 392,
+      "path": "content"
+    },
+    {
+      "id": "346:9434",
+      "name": "scrolled title",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 21,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9435",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 16,
+      "y": 94,
+      "w": 212,
+      "h": 17,
+      "path": "content > task · next step > scrolled title",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "346:9436",
+      "name": "task bar",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 20,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9437",
+      "name": "pill · Next step",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 78,
+      "h": 20,
+      "path": "content > task · next step > task bar"
+    },
+    {
+      "id": "346:9438",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 24,
+      "y": 101,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · next step > task bar > pill · Next step"
+    },
+    {
+      "id": "346:9439",
+      "name": "Next step",
+      "type": "text",
+      "x": 35,
+      "y": 97,
+      "w": 51,
+      "h": 14,
+      "path": "content > task · next step > task bar > pill · Next step",
+      "text": "Next step"
+    },
+    {
+      "id": "346:9440",
+      "name": "suggested 2h ago by the planning run",
+      "type": "text",
+      "x": 102,
+      "y": 97,
+      "w": 272,
+      "h": 14,
+      "path": "content > task · next step > task bar",
+      "text": "suggested 2h ago by the planning run"
+    },
+    {
+      "id": "346:9441",
+      "name": "title block",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 85,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9442",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 27,
+      "path": "content > task · next step > title block",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "346:9443",
+      "name": "meta",
+      "type": "frame",
+      "x": 16,
+      "y": 131,
+      "w": 358,
+      "h": 24,
+      "path": "content > task · next step > title block"
+    },
+    {
+      "id": "346:9444",
+      "name": "chip · ncc-1701",
+      "type": "frame",
+      "x": 16,
+      "y": 131,
+      "w": 88,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:9445",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 137,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · ncc-1701"
+    },
+    {
+      "id": "346:9448",
+      "name": "ncc-1701",
+      "type": "text",
+      "x": 42,
+      "y": 136,
+      "w": 53,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · ncc-1701",
+      "text": "ncc-1701"
+    },
+    {
+      "id": "346:9449",
+      "name": "chip · f-005 the-bridge",
+      "type": "frame",
+      "x": 110,
+      "y": 131,
+      "w": 141,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:9450",
+      "name": "icon/feature",
+      "type": "frame",
+      "x": 119,
+      "y": 137,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · f-005 the-bridge"
+    },
+    {
+      "id": "346:9453",
+      "name": "f-005 the-bridge",
+      "type": "text",
+      "x": 136,
+      "y": 136,
+      "w": 106,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · f-005 the-bridge",
+      "text": "f-005 the-bridge"
+    },
+    {
+      "id": "346:9454",
+      "name": "chip · NCC-28",
+      "type": "frame",
+      "x": 257,
+      "y": 131,
+      "w": 75,
+      "h": 24,
+      "path": "content > task · next step > title block > meta"
+    },
+    {
+      "id": "346:9455",
+      "name": "icon/linear",
+      "type": "frame",
+      "x": 266,
+      "y": 137,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > meta > chip · NCC-28"
+    },
+    {
+      "id": "346:9459",
+      "name": "NCC-28",
+      "type": "text",
+      "x": 283,
+      "y": 136,
+      "w": 40,
+      "h": 14,
+      "path": "content > task · next step > title block > meta > chip · NCC-28",
+      "text": "NCC-28"
+    },
+    {
+      "id": "346:9460",
+      "name": "tags",
+      "type": "frame",
+      "x": 16,
+      "y": 165,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > title block"
+    },
+    {
+      "id": "346:9461",
+      "name": "icon/tag",
+      "type": "frame",
+      "x": 16,
+      "y": 166,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > title block > tags"
+    },
+    {
+      "id": "346:9465",
+      "name": "global/planning",
+      "type": "text",
+      "x": 34,
+      "y": 165,
+      "w": 99,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "global/planning"
+    },
+    {
+      "id": "346:9466",
+      "name": "·",
+      "type": "text",
+      "x": 139,
+      "y": 165,
+      "w": 3,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "·"
+    },
+    {
+      "id": "346:9467",
+      "name": "project/ncc-1701/the-bridge",
+      "type": "text",
+      "x": 148,
+      "y": 165,
+      "w": 179,
+      "h": 14,
+      "path": "content > task · next step > title block > tags",
+      "text": "project/ncc-1701/the-bridge"
+    },
+    {
+      "id": "346:9468",
+      "name": "section · WHY",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 82,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9469",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 94,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · WHY"
+    },
+    {
+      "id": "346:9470",
+      "name": "WHY",
+      "type": "text",
+      "x": 16,
+      "y": 94,
+      "w": 21,
+      "h": 14,
+      "path": "content > task · next step > section · WHY > section header",
+      "text": "WHY"
+    },
+    {
+      "id": "346:9471",
+      "name": "Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.",
+      "type": "text",
+      "x": 16,
+      "y": 116,
+      "w": 358,
+      "h": 60,
+      "path": "content > task · next step > section · WHY",
+      "text": "Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them."
+    },
+    {
+      "id": "346:9472",
+      "name": "section · SUGGESTED PROMPT",
+      "type": "frame",
+      "x": 16,
+      "y": 133,
+      "w": 358,
+      "h": 192,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9473",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 133,
+      "w": 358,
+      "h": 26,
+      "path": "content > task · next step > section · SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:9474",
+      "name": "SUGGESTED PROMPT",
+      "type": "text",
+      "x": 16,
+      "y": 139,
+      "w": 113,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header",
+      "text": "SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:9475",
+      "name": "pill · Edited",
+      "type": "frame",
+      "x": 137,
+      "y": 136,
+      "w": 49,
+      "h": 20,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:9476",
+      "name": "Edited",
+      "type": "text",
+      "x": 145,
+      "y": 139,
+      "w": 33,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > pill · Edited",
+      "text": "Edited"
+    },
+    {
+      "id": "346:9477",
+      "name": "spacer",
+      "type": "frame",
+      "x": 194,
+      "y": 145.5,
+      "w": 25,
+      "h": 1,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:9478",
+      "name": "button · Reset",
+      "type": "frame",
+      "x": 227,
+      "y": 133,
+      "w": 71,
+      "h": 26,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:9479",
+      "name": "icon/reset",
+      "type": "frame",
+      "x": 236,
+      "y": 139,
+      "w": 14,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Reset"
+    },
+    {
+      "id": "346:9483",
+      "name": "Reset",
+      "type": "text",
+      "x": 256,
+      "y": 138,
+      "w": 33,
+      "h": 16,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Reset",
+      "text": "Reset"
+    },
+    {
+      "id": "346:9484",
+      "name": "button · Done",
+      "type": "frame",
+      "x": 306,
+      "y": 133,
+      "w": 68,
+      "h": 26,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header"
+    },
+    {
+      "id": "346:9485",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 315,
+      "y": 139,
+      "w": 14,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Done"
+    },
+    {
+      "id": "346:9488",
+      "name": "Done",
+      "type": "text",
+      "x": 335,
+      "y": 138,
+      "w": 30,
+      "h": 16,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > section header > button · Done",
+      "text": "Done"
+    },
+    {
+      "id": "346:9489",
+      "name": "prompt",
+      "type": "frame",
+      "x": 16,
+      "y": 167,
+      "w": 358,
+      "h": 136,
+      "path": "content > task · next step > section · SUGGESTED PROMPT"
+    },
+    {
+      "id": "346:9490",
+      "name": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.|",
+      "type": "text",
+      "x": 33.5,
+      "y": 182.5,
+      "w": 323,
+      "h": 105,
+      "path": "content > task · next step > section · SUGGESTED PROMPT > prompt",
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and put them in the Increment 1 cycle, assigned to me.|"
+    },
+    {
+      "id": "346:9491",
+      "name": "Edits stay with this task until you start it or press Reset.",
+      "type": "text",
+      "x": 16,
+      "y": 311,
+      "w": 280,
+      "h": 14,
+      "path": "content > task · next step > section · SUGGESTED PROMPT",
+      "text": "Edits stay with this task until you start it or press Reset."
+    },
+    {
+      "id": "346:9492",
+      "name": "section · RUN IN",
+      "type": "frame",
+      "x": 16,
+      "y": 343,
+      "w": 358,
+      "h": 107,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9493",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 343,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · RUN IN"
+    },
+    {
+      "id": "346:9494",
+      "name": "RUN IN",
+      "type": "text",
+      "x": 16,
+      "y": 343,
+      "w": 42,
+      "h": 14,
+      "path": "content > task · next step > section · RUN IN > section header",
+      "text": "RUN IN"
+    },
+    {
+      "id": "346:9495",
+      "name": "run in",
+      "type": "frame",
+      "x": 16,
+      "y": 365,
+      "w": 358,
+      "h": 85,
+      "path": "content > task · next step > section · RUN IN"
+    },
+    {
+      "id": "346:9496",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 31,
+      "y": 399.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > task · next step > section · RUN IN > run in"
+    },
+    {
+      "id": "346:9498",
+      "name": "Frame",
+      "type": "frame",
+      "x": 57,
+      "y": 378,
+      "w": 262,
+      "h": 59,
+      "path": "content > task · next step > section · RUN IN > run in"
+    },
+    {
+      "id": "346:9499",
+      "name": "Frame",
+      "type": "frame",
+      "x": 57,
+      "y": 378,
+      "w": 139,
+      "h": 17,
+      "path": "content > task · next step > section · RUN IN > run in > Frame"
+    },
+    {
+      "id": "346:9500",
+      "name": "New Claude Code chat",
+      "type": "text",
+      "x": 57,
+      "y": 378,
+      "w": 139,
+      "h": 17,
+      "path": "content > task · next step > section · RUN IN > run in > Frame > Frame",
+      "text": "New Claude Code chat"
+    },
+    {
+      "id": "346:9501",
+      "name": "the-bridge · Sonnet 5.5",
+      "type": "text",
+      "x": 57,
+      "y": 399,
+      "w": 152,
+      "h": 14,
+      "path": "content > task · next step > section · RUN IN > run in > Frame",
+      "text": "the-bridge · Sonnet 5.5"
+    },
+    {
+      "id": "346:9502",
+      "name": "pill · Recommended",
+      "type": "frame",
+      "x": 57,
+      "y": 417,
+      "w": 94,
+      "h": 20,
+      "path": "content > task · next step > section · RUN IN > run in > Frame"
+    },
+    {
+      "id": "346:9503",
+      "name": "Recommended",
+      "type": "text",
+      "x": 65,
+      "y": 420,
+      "w": 78,
+      "h": 14,
+      "path": "content > task · next step > section · RUN IN > run in > Frame > pill · Recommended",
+      "text": "Recommended"
+    },
+    {
+      "id": "346:9504",
+      "name": "button · Change",
+      "type": "frame",
+      "x": 329,
+      "y": 395.5,
+      "w": 30,
+      "h": 24,
+      "path": "content > task · next step > section · RUN IN > run in"
+    },
+    {
+      "id": "346:9505",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 338,
+      "y": 401.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · next step > section · RUN IN > run in > button · Change"
+    },
+    {
+      "id": "346:9508",
+      "name": "section · SOURCES",
+      "type": "frame",
+      "x": 16,
+      "y": 625,
+      "w": 358,
+      "h": 62,
+      "path": "content > task · next step"
+    },
+    {
+      "id": "346:9509",
+      "name": "section header",
+      "type": "frame",
+      "x": 16,
+      "y": 625,
+      "w": 358,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:9510",
+      "name": "SOURCES",
+      "type": "text",
+      "x": 16,
+      "y": 625,
+      "w": 49,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > section header",
+      "text": "SOURCES"
+    },
+    {
+      "id": "346:9511",
+      "name": "source",
+      "type": "frame",
+      "x": 16,
+      "y": 647,
+      "w": 216,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:9512",
+      "name": "icon/link",
+      "type": "frame",
+      "x": 16,
+      "y": 648.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > task · next step > section · SOURCES > source"
+    },
+    {
+      "id": "346:9517",
+      "name": "increment-1.md",
+      "type": "text",
+      "x": 35,
+      "y": 647,
+      "w": 85,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "increment-1.md"
+    },
+    {
+      "id": "346:9518",
+      "name": "f-005 the-bridge",
+      "type": "text",
+      "x": 126,
+      "y": 648,
+      "w": 106,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "f-005 the-bridge"
+    },
+    {
+      "id": "346:9519",
+      "name": "source",
+      "type": "frame",
+      "x": 16,
+      "y": 671,
+      "w": 132,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES"
+    },
+    {
+      "id": "346:9520",
+      "name": "icon/link",
+      "type": "frame",
+      "x": 16,
+      "y": 672.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > task · next step > section · SOURCES > source"
+    },
+    {
+      "id": "346:9525",
+      "name": "NCC project",
+      "type": "text",
+      "x": 35,
+      "y": 671,
+      "w": 67,
+      "h": 16,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "NCC project"
+    },
+    {
+      "id": "346:9526",
+      "name": "Linear",
+      "type": "text",
+      "x": 108,
+      "y": 672,
+      "w": 40,
+      "h": 14,
+      "path": "content > task · next step > section · SOURCES > source",
+      "text": "Linear"
+    },
+    {
+      "id": "346:9527",
+      "name": "keyboard (iOS, with Safari form bar)",
+      "type": "frame",
+      "x": 0,
+      "y": 464,
+      "w": 390,
+      "h": 380,
+      "path": ""
+    },
+    {
+      "id": "346:9528",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 464,
+      "w": 390,
+      "h": 44,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9529",
+      "name": "icon/chevUp",
+      "type": "frame",
+      "x": 16,
+      "y": 476,
+      "w": 20,
+      "h": 20,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "346:9531",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 52,
+      "y": 476,
+      "w": 20,
+      "h": 20,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "346:9533",
+      "name": "Done",
+      "type": "text",
+      "x": 333,
+      "y": 476,
+      "w": 41,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "Done"
+    },
+    {
+      "id": "346:9534",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 508,
+      "w": 390,
+      "h": 44,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9535",
+      "name": "\"wri\"",
+      "type": "text",
+      "x": 47,
+      "y": 520,
+      "w": 36,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "\"wri\""
+    },
+    {
+      "id": "346:9536",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 130,
+      "y": 518,
+      "w": 1,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "346:9537",
+      "name": "write",
+      "type": "text",
+      "x": 176,
+      "y": 520,
+      "w": 38,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "write"
+    },
+    {
+      "id": "346:9538",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 260,
+      "y": 518,
+      "w": 1,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar) > Frame"
+    },
+    {
+      "id": "346:9539",
+      "name": "writer",
+      "type": "text",
+      "x": 303,
+      "y": 520,
+      "w": 44,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar) > Frame",
+      "text": "writer"
+    },
+    {
+      "id": "346:9540",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 3,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9541",
+      "name": "q",
+      "type": "text",
+      "x": 13,
+      "y": 569,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "q"
+    },
+    {
+      "id": "346:9542",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 42,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9543",
+      "name": "w",
+      "type": "text",
+      "x": 50,
+      "y": 569,
+      "w": 17,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "w"
+    },
+    {
+      "id": "346:9544",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 81,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9545",
+      "name": "e",
+      "type": "text",
+      "x": 91.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "e"
+    },
+    {
+      "id": "346:9546",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 120,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9547",
+      "name": "r",
+      "type": "text",
+      "x": 132.5,
+      "y": 569,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "r"
+    },
+    {
+      "id": "346:9548",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 159,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9549",
+      "name": "t",
+      "type": "text",
+      "x": 171.5,
+      "y": 569,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "t"
+    },
+    {
+      "id": "346:9550",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 198,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9551",
+      "name": "y",
+      "type": "text",
+      "x": 208.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "y"
+    },
+    {
+      "id": "346:9552",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 237,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9553",
+      "name": "u",
+      "type": "text",
+      "x": 247.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "u"
+    },
+    {
+      "id": "346:9554",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 276,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9555",
+      "name": "i",
+      "type": "text",
+      "x": 290,
+      "y": 569,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "i"
+    },
+    {
+      "id": "346:9556",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 315,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9557",
+      "name": "o",
+      "type": "text",
+      "x": 325.5,
+      "y": 569,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "o"
+    },
+    {
+      "id": "346:9558",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 354,
+      "y": 560,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9559",
+      "name": "p",
+      "type": "text",
+      "x": 364,
+      "y": 569,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "p"
+    },
+    {
+      "id": "346:9560",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 22.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9561",
+      "name": "a",
+      "type": "text",
+      "x": 33,
+      "y": 623,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "a"
+    },
+    {
+      "id": "346:9562",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 61.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9563",
+      "name": "s",
+      "type": "text",
+      "x": 72.5,
+      "y": 623,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "s"
+    },
+    {
+      "id": "346:9564",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 100.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9565",
+      "name": "d",
+      "type": "text",
+      "x": 110.5,
+      "y": 623,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "d"
+    },
+    {
+      "id": "346:9566",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 139.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9567",
+      "name": "f",
+      "type": "text",
+      "x": 152,
+      "y": 623,
+      "w": 8,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "f"
+    },
+    {
+      "id": "346:9568",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 178.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9569",
+      "name": "g",
+      "type": "text",
+      "x": 188.5,
+      "y": 623,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "g"
+    },
+    {
+      "id": "346:9570",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 217.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9571",
+      "name": "h",
+      "type": "text",
+      "x": 228,
+      "y": 623,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "h"
+    },
+    {
+      "id": "346:9572",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 256.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9573",
+      "name": "j",
+      "type": "text",
+      "x": 270.5,
+      "y": 623,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "j"
+    },
+    {
+      "id": "346:9574",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 295.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9575",
+      "name": "k",
+      "type": "text",
+      "x": 306.5,
+      "y": 623,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "k"
+    },
+    {
+      "id": "346:9576",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 334.5,
+      "y": 614,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9577",
+      "name": "l",
+      "type": "text",
+      "x": 348.5,
+      "y": 623,
+      "w": 5,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "l"
+    },
+    {
+      "id": "346:9578",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 4,
+      "y": 668,
+      "w": 42,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9579",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 344,
+      "y": 668,
+      "w": 42,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9580",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 61.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9581",
+      "name": "z",
+      "type": "text",
+      "x": 72.5,
+      "y": 677,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "z"
+    },
+    {
+      "id": "346:9582",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 100.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9583",
+      "name": "x",
+      "type": "text",
+      "x": 111.5,
+      "y": 677,
+      "w": 11,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "x"
+    },
+    {
+      "id": "346:9584",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 139.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9585",
+      "name": "c",
+      "type": "text",
+      "x": 150,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "c"
+    },
+    {
+      "id": "346:9586",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 178.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9587",
+      "name": "v",
+      "type": "text",
+      "x": 189,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "v"
+    },
+    {
+      "id": "346:9588",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 217.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9589",
+      "name": "b",
+      "type": "text",
+      "x": 227.5,
+      "y": 677,
+      "w": 13,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "b"
+    },
+    {
+      "id": "346:9590",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 256.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9591",
+      "name": "n",
+      "type": "text",
+      "x": 267,
+      "y": 677,
+      "w": 12,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "n"
+    },
+    {
+      "id": "346:9592",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 295.5,
+      "y": 668,
+      "w": 33,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9593",
+      "name": "m",
+      "type": "text",
+      "x": 303,
+      "y": 677,
+      "w": 18,
+      "h": 24,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "m"
+    },
+    {
+      "id": "346:9594",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 4,
+      "y": 722,
+      "w": 88,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9595",
+      "name": "123",
+      "type": "text",
+      "x": 34,
+      "y": 733,
+      "w": 28,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "123"
+    },
+    {
+      "id": "346:9596",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 97,
+      "y": 722,
+      "w": 196,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9597",
+      "name": "space",
+      "type": "text",
+      "x": 172,
+      "y": 733,
+      "w": 46,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "space"
+    },
+    {
+      "id": "346:9598",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 298,
+      "y": 722,
+      "w": 88,
+      "h": 42,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9599",
+      "name": "return",
+      "type": "text",
+      "x": 319,
+      "y": 733,
+      "w": 46,
+      "h": 19,
+      "path": "keyboard (iOS, with Safari form bar)",
+      "text": "return"
+    },
+    {
+      "id": "346:9600",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 832,
+      "w": 134,
+      "h": 5,
+      "path": "keyboard (iOS, with Safari form bar)"
+    },
+    {
+      "id": "346:9601",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "346:9602",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "346:9416",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9533",
+      "text": "Done",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9535",
+      "text": "\"wri\"",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9537",
+      "text": "write",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9539",
+      "text": "writer",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9541",
+      "text": "q",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9543",
+      "text": "w",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9545",
+      "text": "e",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9547",
+      "text": "r",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9549",
+      "text": "t",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9551",
+      "text": "y",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9553",
+      "text": "u",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9555",
+      "text": "i",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9557",
+      "text": "o",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9559",
+      "text": "p",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9561",
+      "text": "a",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9563",
+      "text": "s",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9565",
+      "text": "d",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9567",
+      "text": "f",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9569",
+      "text": "g",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9571",
+      "text": "h",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9573",
+      "text": "j",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9575",
+      "text": "k",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9577",
+      "text": "l",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9581",
+      "text": "z",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9583",
+      "text": "x",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9585",
+      "text": "c",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9587",
+      "text": "v",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9589",
+      "text": "b",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9591",
+      "text": "n",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9593",
+      "text": "m",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9595",
+      "text": "123",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9597",
+      "text": "space",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    },
+    {
+      "id": "346:9599",
+      "text": "return",
+      "reason": "iOS keyboard (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

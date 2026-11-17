@@ -1,0 +1,1 @@
+Same as M10. After Start, or tapping a task under Running, Erik sees the task with its sent prompt read-only and his notes. The card above the tab bar shows the chat’s live state, with Reply here (T5) and Open in Workspaces.

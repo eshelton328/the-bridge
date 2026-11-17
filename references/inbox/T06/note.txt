@@ -1,0 +1,1 @@
+Same as M11. A started task moves to Running, at the bottom of the list. The chips filter the list; on the iPad mini they fit on one line. Under the chips, one row holds search, Sort (Newest, Oldest, Project or Kind) and Filter.

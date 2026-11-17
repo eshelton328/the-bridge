@@ -1,0 +1,1 @@
+Task pages keep the tab bar; only chats hide it. Snooze and dismiss sit in the top bar as icons, and Start is pinned above the tab bar. A long prompt stops at a fixed height with a fade; tapping it opens it read-only (M9), and editing stays behind Edit (M3). Start keeps Erik on this page (M10). My notes, below Run in, holds Erik’s own notes on the task; the page scrolls to it.

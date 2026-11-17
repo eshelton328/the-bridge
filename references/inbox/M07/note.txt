@@ -1,0 +1,1 @@
+Filters as a sheet. The button says how many tasks match. The Filter button sits under the chips, beside search and sort.

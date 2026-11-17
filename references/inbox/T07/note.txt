@@ -1,0 +1,1 @@
+Same as M12. Done lists finished tasks by day, each with how it ended. Tapping one opens it read-only. All means every open task, not Done.

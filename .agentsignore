@@ -12,3 +12,6 @@ web/src/pages/*/states/
 
 # Templates of `pnpm new`; scripts/AGENTS.md covers them
 scripts/templates/
+
+# The Figma references, one folder per page and frame; references/AGENTS.md covers them
+references/*/

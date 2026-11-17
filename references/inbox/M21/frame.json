@@ -1,0 +1,928 @@
+{
+  "frameId": "M21",
+  "code": "M21",
+  "name": "M21 · Proposed new tasks",
+  "node": "402:7158",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "402:7181",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "402:7182",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "402:7183",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 785,
+      "path": ""
+    },
+    {
+      "id": "402:7184",
+      "name": "nav",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 29,
+      "path": "content"
+    },
+    {
+      "id": "402:7185",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 46.5,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:7188",
+      "name": "Task",
+      "type": "text",
+      "x": 38,
+      "y": 46,
+      "w": 36,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Task"
+    },
+    {
+      "id": "402:7189",
+      "name": "spacer",
+      "type": "frame",
+      "x": 80,
+      "y": 56,
+      "w": 209,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:7253",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 295,
+      "y": 46.5,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:7254",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 303,
+      "y": 53.5,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "402:7255",
+      "name": "Discussion",
+      "type": "text",
+      "x": 314,
+      "y": 49.5,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:7196",
+      "name": "task · discussing",
+      "type": "frame",
+      "x": 12,
+      "y": 79,
+      "w": 366,
+      "h": 138,
+      "path": "content"
+    },
+    {
+      "id": "402:7197",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 90,
+      "w": 340,
+      "h": 20,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:7198",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 25,
+      "y": 91,
+      "w": 230,
+      "h": 18,
+      "path": "content > task · discussing > Frame",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "402:7256",
+      "name": "pill · Next step",
+      "type": "frame",
+      "x": 263,
+      "y": 90,
+      "w": 78,
+      "h": 20,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:7257",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 271,
+      "y": 97,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · discussing > Frame > pill · Next step"
+    },
+    {
+      "id": "402:7258",
+      "name": "Next step",
+      "type": "text",
+      "x": 282,
+      "y": 93,
+      "w": 51,
+      "h": 14,
+      "path": "content > task · discussing > Frame > pill · Next step",
+      "text": "Next step"
+    },
+    {
+      "id": "402:7202",
+      "name": "chevron · open task",
+      "type": "frame",
+      "x": 349,
+      "y": 92,
+      "w": 16,
+      "h": 16,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:7205",
+      "name": "ncc-1701 · f-005 · NCC-28",
+      "type": "text",
+      "x": 25,
+      "y": 115,
+      "w": 165,
+      "h": 14,
+      "path": "content > task · discussing",
+      "text": "ncc-1701 · f-005 · NCC-28"
+    },
+    {
+      "id": "454:254",
+      "name": "model and context",
+      "type": "frame",
+      "x": 25,
+      "y": 134,
+      "w": 223,
+      "h": 22,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "454:255",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 134,
+      "w": 92,
+      "h": 22,
+      "path": "content > task · discussing > model and context"
+    },
+    {
+      "id": "454:256",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 34,
+      "y": 139,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:258",
+      "name": "Sonnet 5.5",
+      "type": "text",
+      "x": 52,
+      "y": 138,
+      "w": 56,
+      "h": 14,
+      "path": "content > task · discussing > model and context > Frame",
+      "text": "Sonnet 5.5"
+    },
+    {
+      "id": "454:259",
+      "name": "Frame",
+      "type": "frame",
+      "x": 125,
+      "y": 138,
+      "w": 77,
+      "h": 14,
+      "path": "content > task · discussing > model and context"
+    },
+    {
+      "id": "454:260",
+      "name": "segments",
+      "type": "frame",
+      "x": 125,
+      "y": 141,
+      "w": 58,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame"
+    },
+    {
+      "id": "454:261",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 125,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:262",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 131,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:263",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 137,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:264",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 143,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:265",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 149,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:266",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 155,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:267",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 161,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:268",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 167,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:269",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 173,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:270",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 179,
+      "y": 141,
+      "w": 4,
+      "h": 8,
+      "path": "content > task · discussing > model and context > Frame > segments"
+    },
+    {
+      "id": "454:271",
+      "name": "9%",
+      "type": "text",
+      "x": 188,
+      "y": 138,
+      "w": 14,
+      "h": 14,
+      "path": "content > task · discussing > model and context > Frame",
+      "text": "9%"
+    },
+    {
+      "id": "454:272",
+      "name": "context",
+      "type": "text",
+      "x": 210,
+      "y": 138,
+      "w": 38,
+      "h": 14,
+      "path": "content > task · discussing > model and context",
+      "text": "context"
+    },
+    {
+      "id": "402:7259",
+      "name": "guard",
+      "type": "frame",
+      "x": 25,
+      "y": 161,
+      "w": 340,
+      "h": 45,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:7260",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 25,
+      "y": 161,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · discussing > guard"
+    },
+    {
+      "id": "402:7263",
+      "name": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply.",
+      "type": "text",
+      "x": 43,
+      "y": 161,
+      "w": 322,
+      "h": 45,
+      "path": "content > task · discussing > guard",
+      "text": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply."
+    },
+    {
+      "id": "402:7210",
+      "name": "discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 225,
+      "w": 366,
+      "h": 586,
+      "path": "content"
+    },
+    {
+      "id": "402:7264",
+      "name": "message · you",
+      "type": "frame",
+      "x": 12,
+      "y": 239,
+      "w": 366,
+      "h": 39,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:7265",
+      "name": "This is too big for one run. Split it.",
+      "type": "text",
+      "x": 24,
+      "y": 249,
+      "w": 342,
+      "h": 19,
+      "path": "content > discussion > message · you",
+      "text": "This is too big for one run. Split it."
+    },
+    {
+      "id": "402:7266",
+      "name": "message · discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 290,
+      "w": 366,
+      "h": 60,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:7267",
+      "name": "Frame",
+      "type": "frame",
+      "x": 12,
+      "y": 290,
+      "w": 82,
+      "h": 16,
+      "path": "content > discussion > message · discussion"
+    },
+    {
+      "id": "402:7268",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 12,
+      "y": 291.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > discussion > message · discussion > Frame"
+    },
+    {
+      "id": "402:7270",
+      "name": "Discussion",
+      "type": "text",
+      "x": 31,
+      "y": 290,
+      "w": 63,
+      "h": 16,
+      "path": "content > discussion > message · discussion > Frame",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:7271",
+      "name": "Split by area. Each new task keeps this prompt for its own screens and links back to NCC-28.",
+      "type": "text",
+      "x": 12,
+      "y": 312,
+      "w": 366,
+      "h": 38,
+      "path": "content > discussion > message · discussion",
+      "text": "Split by area. Each new task keeps this prompt for its own screens and links back to NCC-28."
+    },
+    {
+      "id": "402:7272",
+      "name": "proposal · CREATE 3 TASKS",
+      "type": "frame",
+      "x": 12,
+      "y": 362,
+      "w": 366,
+      "h": 300,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:7273",
+      "name": "Frame",
+      "type": "frame",
+      "x": 25,
+      "y": 375,
+      "w": 183,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7274",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 25,
+      "y": 376,
+      "w": 12,
+      "h": 12,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > Frame"
+    },
+    {
+      "id": "402:7276",
+      "name": "PROPOSED · CREATE 3 TASKS",
+      "type": "text",
+      "x": 43,
+      "y": 375,
+      "w": 165,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > Frame",
+      "text": "PROPOSED · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7277",
+      "name": "new task · Write the Workbench tickets",
+      "type": "frame",
+      "x": 25,
+      "y": 401,
+      "w": 340,
+      "h": 52,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7278",
+      "name": "icon/boxon",
+      "type": "frame",
+      "x": 36,
+      "y": 419,
+      "w": 16,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Workbench tickets"
+    },
+    {
+      "id": "402:7281",
+      "name": "Frame",
+      "type": "frame",
+      "x": 62,
+      "y": 410,
+      "w": 286,
+      "h": 34,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Workbench tickets"
+    },
+    {
+      "id": "402:7282",
+      "name": "Write the Workbench tickets",
+      "type": "text",
+      "x": 62,
+      "y": 410,
+      "w": 286,
+      "h": 17,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Workbench tickets > Frame",
+      "text": "Write the Workbench tickets"
+    },
+    {
+      "id": "402:7283",
+      "name": "ncc-1701 · f-005 · from NCC-28",
+      "type": "text",
+      "x": 62,
+      "y": 430,
+      "w": 198,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Workbench tickets > Frame",
+      "text": "ncc-1701 · f-005 · from NCC-28"
+    },
+    {
+      "id": "402:7284",
+      "name": "new task · Write the Inbox tickets",
+      "type": "frame",
+      "x": 25,
+      "y": 465,
+      "w": 340,
+      "h": 52,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7285",
+      "name": "icon/boxon",
+      "type": "frame",
+      "x": 36,
+      "y": 483,
+      "w": 16,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Inbox tickets"
+    },
+    {
+      "id": "402:7288",
+      "name": "Frame",
+      "type": "frame",
+      "x": 62,
+      "y": 474,
+      "w": 286,
+      "h": 34,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Inbox tickets"
+    },
+    {
+      "id": "402:7289",
+      "name": "Write the Inbox tickets",
+      "type": "text",
+      "x": 62,
+      "y": 474,
+      "w": 286,
+      "h": 17,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Inbox tickets > Frame",
+      "text": "Write the Inbox tickets"
+    },
+    {
+      "id": "402:7290",
+      "name": "ncc-1701 · f-005 · from NCC-28",
+      "type": "text",
+      "x": 62,
+      "y": 494,
+      "w": 198,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the Inbox tickets > Frame",
+      "text": "ncc-1701 · f-005 · from NCC-28"
+    },
+    {
+      "id": "402:7291",
+      "name": "new task · Write the App frame tickets",
+      "type": "frame",
+      "x": 25,
+      "y": 529,
+      "w": 340,
+      "h": 52,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7292",
+      "name": "icon/boxon",
+      "type": "frame",
+      "x": 36,
+      "y": 547,
+      "w": 16,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the App frame tickets"
+    },
+    {
+      "id": "402:7295",
+      "name": "Frame",
+      "type": "frame",
+      "x": 62,
+      "y": 538,
+      "w": 286,
+      "h": 34,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the App frame tickets"
+    },
+    {
+      "id": "402:7296",
+      "name": "Write the App frame tickets",
+      "type": "text",
+      "x": 62,
+      "y": 538,
+      "w": 286,
+      "h": 17,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the App frame tickets > Frame",
+      "text": "Write the App frame tickets"
+    },
+    {
+      "id": "402:7297",
+      "name": "ncc-1701 · f-005 · from NCC-28",
+      "type": "text",
+      "x": 62,
+      "y": 558,
+      "w": 198,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > new task · Write the App frame tickets > Frame",
+      "text": "ncc-1701 · f-005 · from NCC-28"
+    },
+    {
+      "id": "402:7298",
+      "name": "also remove",
+      "type": "frame",
+      "x": 25,
+      "y": 593,
+      "w": 143,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7299",
+      "name": "icon/box",
+      "type": "frame",
+      "x": 25,
+      "y": 593,
+      "w": 16,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > also remove"
+    },
+    {
+      "id": "402:7301",
+      "name": "Also remove this task",
+      "type": "text",
+      "x": 49,
+      "y": 593,
+      "w": 119,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > also remove",
+      "text": "Also remove this task"
+    },
+    {
+      "id": "402:7302",
+      "name": "actions",
+      "type": "frame",
+      "x": 25,
+      "y": 621,
+      "w": 197,
+      "h": 28,
+      "path": "content > discussion > proposal · CREATE 3 TASKS"
+    },
+    {
+      "id": "402:7303",
+      "name": "button · Create 3 tasks",
+      "type": "frame",
+      "x": 25,
+      "y": 622,
+      "w": 124,
+      "h": 26,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > actions"
+    },
+    {
+      "id": "402:7304",
+      "name": "icon/plus",
+      "type": "frame",
+      "x": 35,
+      "y": 628,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > actions > button · Create 3 tasks"
+    },
+    {
+      "id": "402:7306",
+      "name": "Create 3 tasks",
+      "type": "text",
+      "x": 55,
+      "y": 627,
+      "w": 84,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > actions > button · Create 3 tasks",
+      "text": "Create 3 tasks"
+    },
+    {
+      "id": "402:7307",
+      "name": "button · Discard",
+      "type": "frame",
+      "x": 157,
+      "y": 621,
+      "w": 65,
+      "h": 28,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > actions"
+    },
+    {
+      "id": "402:7308",
+      "name": "Discard",
+      "type": "text",
+      "x": 168,
+      "y": 627,
+      "w": 43,
+      "h": 16,
+      "path": "content > discussion > proposal · CREATE 3 TASKS > actions > button · Discard",
+      "text": "Discard"
+    },
+    {
+      "id": "402:7309",
+      "name": "spacer",
+      "type": "frame",
+      "x": 12,
+      "y": 674,
+      "w": 1,
+      "h": 40,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:7310",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 12,
+      "y": 726,
+      "w": 366,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:7311",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 737,
+      "w": 121,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:7313",
+      "name": "Ask about this task",
+      "type": "text",
+      "x": 23,
+      "y": 737,
+      "w": 119,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about this task"
+    },
+    {
+      "id": "402:7312",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 142,
+      "y": 737,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:7314",
+      "name": "Frame",
+      "type": "frame",
+      "x": 23,
+      "y": 762,
+      "w": 344,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:7319",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 23,
+      "y": 762,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:7320",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 30,
+      "y": 769,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "402:7318",
+      "name": "spacer",
+      "type": "frame",
+      "x": 57,
+      "y": 775.5,
+      "w": 278,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:7315",
+      "name": "button · up",
+      "type": "frame",
+      "x": 341,
+      "y": 763,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:7316",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 347,
+      "y": 769,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "402:7251",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 823,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "402:7252",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 831,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "402:7182",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

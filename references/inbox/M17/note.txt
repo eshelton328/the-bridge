@@ -1,0 +1,1 @@
+Proposal from Erik's comment on M2. Discuss opens a chat about this one task. It reads the task and its sources, and it can only propose changes to the task.

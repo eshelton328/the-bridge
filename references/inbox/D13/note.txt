@@ -1,0 +1,1 @@
+Same as M16. The Filter button reads Filter · 1 and turns cyan, and the active filters show under the row with an x each and Clear. The selected task stays open on the right.

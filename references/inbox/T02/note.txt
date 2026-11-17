@@ -1,0 +1,1 @@
+The same task view as D1 in one column. Back returns to the list. A long prompt stops at a fixed height; Read the whole prompt opens it read-only. My notes holds Erik’s own notes.

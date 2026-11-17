@@ -1,0 +1,1 @@
+Long-press a task for snooze presets, mark done, or dismiss with a reason (f-003). The sheet covers the tab bar.

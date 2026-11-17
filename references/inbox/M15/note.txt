@@ -1,0 +1,1 @@
+After a sort is picked, the list keeps its groups and sorts inside each one. Project adds a small project heading inside each group. The sort button turns cyan with a dot, and a line under the row names the sort, with Reset to go back to Newest first.

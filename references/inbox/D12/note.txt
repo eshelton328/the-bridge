@@ -1,0 +1,1 @@
+Same as M6. On the desktop, Snooze opens a menu below the button with the snooze times, Mark done and Dismiss with a reason. Keyboard: S snoozes and D dismisses the selected task.

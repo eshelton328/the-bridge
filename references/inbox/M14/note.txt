@@ -1,0 +1,1 @@
+Tapping the search field focuses it and opens the keyboard; the x in the field clears it, and Sort and Filter stay beside the field. Results update while Erik types and keep the groups, with the match in cyan. Search covers titles, IDs, tags, prompts and notes in the selected chip; a line at the end offers matches in Done.

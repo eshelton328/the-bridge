@@ -1,0 +1,1 @@
+Filter by kind, project and tags, with global and project tags listed apart (f-003). Snoozed tasks wait in their own group until their time comes, then return to the list. Filter now sits under the chips, beside search and sort, and opens its menu below the row. An active filter outlines the button.

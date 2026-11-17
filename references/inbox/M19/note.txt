@@ -1,0 +1,1 @@
+A change arrives as a proposal that shows the before and after. Apply changes the task, Discard drops it, and Edit first opens M3 with the change filled in.

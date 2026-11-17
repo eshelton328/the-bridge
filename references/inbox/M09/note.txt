@@ -1,0 +1,1 @@
+Tapping the clamped prompt opens it read-only in a sheet. Edit prompt opens it for changes (M3); Copy copies it.

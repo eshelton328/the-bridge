@@ -1,0 +1,1 @@
+Edit opens the keyboard over the bottom of the screen, and the view scrolls so the prompt stays in sight. Done keeps the edit; Reset brings back the suggestion.

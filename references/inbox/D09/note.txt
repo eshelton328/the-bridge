@@ -1,0 +1,1 @@
+Same choices as M13. On the desktop, Sort opens a menu below the button; arrow keys move and Enter picks. The button shows the current choice.

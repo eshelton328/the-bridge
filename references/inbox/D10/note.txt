@@ -1,0 +1,1 @@
+Same as M14. On the desktop, / or Cmd+F focuses the search field and Esc clears it. Sort and Filter stay beside the field. The selected task stays open on the right while Erik searches.

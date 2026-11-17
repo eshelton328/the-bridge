@@ -1,0 +1,1 @@
+Editing changes the prompt for this task only; Reset brings back the suggestion. Change opens a picker: a new Claude Code or Codex chat in any workspace, or an existing chat. Shells are left out because they cannot take a prompt. This proposes an answer to open question 5 in the requirements.

@@ -1,0 +1,1 @@
+A change arrives as a proposal with the before and after. Apply, Discard, or Edit first, which opens D3 with the change filled in.

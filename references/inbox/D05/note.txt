@@ -1,0 +1,1 @@
+After Start, Erik stays in the inbox. The task moves to a Running group in the list (M11 has the full lifecycle). The task pane collapses to a header with where it runs and its state, and the chat streams below with a reply box. Open in Workspaces jumps to the same chat there; Task details reopens the prompt and sources.

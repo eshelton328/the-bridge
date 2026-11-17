@@ -1,0 +1,1 @@
+Clicking a task under Running opens this page; Start on D1 also lands here. The pill reads Running, and the sent prompt is read-only; Read the whole prompt opens it in full. My notes keeps Erik’s notes. The card shows the chat’s live state: Reply here opens the chat in the inbox (D5), Open in Workspaces opens the same chat there.

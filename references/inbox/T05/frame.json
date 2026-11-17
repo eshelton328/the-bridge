@@ -1,0 +1,610 @@
+{
+  "frameId": "T05",
+  "code": "T5",
+  "name": "T5 · Started, the chat stays in the inbox",
+  "node": "346:6304",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "346:6363",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "346:6364",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "346:6365",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 1108,
+      "path": ""
+    },
+    {
+      "id": "346:6366",
+      "name": "nav",
+      "type": "frame",
+      "x": 22,
+      "y": 33,
+      "w": 712,
+      "h": 38,
+      "path": "content"
+    },
+    {
+      "id": "346:6367",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 42,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:6370",
+      "name": "Inbox",
+      "type": "text",
+      "x": 48,
+      "y": 41.5,
+      "w": 42,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Inbox"
+    },
+    {
+      "id": "346:6371",
+      "name": "spacer",
+      "type": "frame",
+      "x": 96,
+      "y": 51.5,
+      "w": 520,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:6372",
+      "name": "button · Open in Workspaces",
+      "type": "frame",
+      "x": 622,
+      "y": 37,
+      "w": 112,
+      "h": 30,
+      "path": "content > nav"
+    },
+    {
+      "id": "346:6373",
+      "name": "Frame",
+      "type": "frame",
+      "x": 633,
+      "y": 45,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > button · Open in Workspaces"
+    },
+    {
+      "id": "346:6377",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 653,
+      "y": 44,
+      "w": 70,
+      "h": 16,
+      "path": "content > nav > button · Open in Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "346:6378",
+      "name": "started task",
+      "type": "frame",
+      "x": 22,
+      "y": 79,
+      "w": 712,
+      "h": 82,
+      "path": "content"
+    },
+    {
+      "id": "346:6379",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 90,
+      "w": 686,
+      "h": 20,
+      "path": "content > started task"
+    },
+    {
+      "id": "346:6380",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 35,
+      "y": 91,
+      "w": 584,
+      "h": 18,
+      "path": "content > started task > Frame",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "346:6381",
+      "name": "pill · Working",
+      "type": "frame",
+      "x": 627,
+      "y": 90,
+      "w": 70,
+      "h": 20,
+      "path": "content > started task > Frame"
+    },
+    {
+      "id": "346:6382",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 635,
+      "y": 97,
+      "w": 6,
+      "h": 6,
+      "path": "content > started task > Frame > pill · Working"
+    },
+    {
+      "id": "346:6383",
+      "name": "Working",
+      "type": "text",
+      "x": 646,
+      "y": 93,
+      "w": 43,
+      "h": 14,
+      "path": "content > started task > Frame > pill · Working",
+      "text": "Working"
+    },
+    {
+      "id": "346:6384",
+      "name": "chevron · open task",
+      "type": "frame",
+      "x": 705,
+      "y": 92,
+      "w": 16,
+      "h": 16,
+      "path": "content > started task > Frame"
+    },
+    {
+      "id": "346:6387",
+      "name": "ncc-1701 · f-005 · NCC-28",
+      "type": "text",
+      "x": 35,
+      "y": 115,
+      "w": 165,
+      "h": 14,
+      "path": "content > started task",
+      "text": "ncc-1701 · f-005 · NCC-28"
+    },
+    {
+      "id": "346:6388",
+      "name": "running in",
+      "type": "frame",
+      "x": 35,
+      "y": 134,
+      "w": 686,
+      "h": 16,
+      "path": "content > started task"
+    },
+    {
+      "id": "346:6389",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 35,
+      "y": 134,
+      "w": 16,
+      "h": 16,
+      "path": "content > started task > running in"
+    },
+    {
+      "id": "346:6391",
+      "name": "quiet-nebula · the-bridge · Sonnet 5.5",
+      "type": "text",
+      "x": 57,
+      "y": 135,
+      "w": 664,
+      "h": 14,
+      "path": "content > started task > running in",
+      "text": "quiet-nebula · the-bridge · Sonnet 5.5"
+    },
+    {
+      "id": "346:6392",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 169,
+      "w": 712,
+      "h": 956,
+      "path": "content"
+    },
+    {
+      "id": "346:6393",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 183,
+      "w": 712,
+      "h": 39,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6394",
+      "name": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project…",
+      "type": "text",
+      "x": 34,
+      "y": 193,
+      "w": 688,
+      "h": 19,
+      "path": "content > Frame > Frame",
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project…"
+    },
+    {
+      "id": "346:6395",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 234,
+      "w": 228,
+      "h": 16,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6396",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 22,
+      "y": 239,
+      "w": 6,
+      "h": 6,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6397",
+      "name": "Read increment-1.md, linear.md",
+      "type": "text",
+      "x": 34,
+      "y": 234,
+      "w": 216,
+      "h": 16,
+      "path": "content > Frame > Frame",
+      "text": "Read increment-1.md, linear.md"
+    },
+    {
+      "id": "346:6398",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 262,
+      "w": 712,
+      "h": 88,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6399",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 262,
+      "w": 60,
+      "h": 16,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6400",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 22,
+      "y": 263.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6402",
+      "name": "Claude",
+      "type": "text",
+      "x": 41,
+      "y": 262,
+      "w": 41,
+      "h": 16,
+      "path": "content > Frame > Frame > Frame",
+      "text": "Claude"
+    },
+    {
+      "id": "346:6403",
+      "name": "Increment one has nine screens. The inbox screens are newer than the increment. Should they join this cycle, or wait for increment two?",
+      "type": "text",
+      "x": 22,
+      "y": 284,
+      "w": 712,
+      "h": 38,
+      "path": "content > Frame > Frame",
+      "text": "Increment one has nine screens. The inbox screens are newer than the increment. Should they join this cycle, or wait for increment two?"
+    },
+    {
+      "id": "346:6404",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 328,
+      "w": 63,
+      "h": 22,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6405",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 328,
+      "w": 63,
+      "h": 22,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6406",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 31,
+      "y": 333,
+      "w": 12,
+      "h": 12,
+      "path": "content > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6409",
+      "name": "Copy",
+      "type": "text",
+      "x": 49,
+      "y": 332,
+      "w": 27,
+      "h": 14,
+      "path": "content > Frame > Frame > Frame > Frame",
+      "text": "Copy"
+    },
+    {
+      "id": "346:6410",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 362,
+      "w": 712,
+      "h": 39,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6411",
+      "name": "Wait for increment two.",
+      "type": "text",
+      "x": 34,
+      "y": 372,
+      "w": 688,
+      "h": 19,
+      "path": "content > Frame > Frame",
+      "text": "Wait for increment two."
+    },
+    {
+      "id": "346:6412",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 413,
+      "w": 192,
+      "h": 16,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6413",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 22,
+      "y": 418,
+      "w": 6,
+      "h": 6,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6414",
+      "name": "Creating 9 issues in NCC…",
+      "type": "text",
+      "x": 34,
+      "y": 413,
+      "w": 180,
+      "h": 16,
+      "path": "content > Frame > Frame",
+      "text": "Creating 9 issues in NCC…"
+    },
+    {
+      "id": "346:6415",
+      "name": "spacer",
+      "type": "frame",
+      "x": 22,
+      "y": 441,
+      "w": 1,
+      "h": 587,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6416",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 1040,
+      "w": 712,
+      "h": 75,
+      "path": "content > Frame"
+    },
+    {
+      "id": "346:6417",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1051,
+      "w": 132.5,
+      "h": 17,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6418",
+      "name": "Reply to quiet-nebula",
+      "type": "text",
+      "x": 33,
+      "y": 1051,
+      "w": 131,
+      "h": 17,
+      "path": "content > Frame > Frame > Frame",
+      "text": "Reply to quiet-nebula"
+    },
+    {
+      "id": "346:6419",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 164,
+      "y": 1051.5,
+      "w": 1.5,
+      "h": 16,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6420",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 690,
+      "h": 28,
+      "path": "content > Frame > Frame"
+    },
+    {
+      "id": "346:6421",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 28,
+      "h": 28,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6422",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 40,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6424",
+      "name": "spacer",
+      "type": "frame",
+      "x": 67,
+      "y": 1089.5,
+      "w": 557,
+      "h": 1,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6425",
+      "name": "Frame",
+      "type": "frame",
+      "x": 630,
+      "y": 1077,
+      "w": 61,
+      "h": 26,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6426",
+      "name": "icon/stop",
+      "type": "frame",
+      "x": 639,
+      "y": 1084,
+      "w": 12,
+      "h": 12,
+      "path": "content > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6428",
+      "name": "Stop",
+      "type": "text",
+      "x": 657,
+      "y": 1083,
+      "w": 25,
+      "h": 14,
+      "path": "content > Frame > Frame > Frame > Frame",
+      "text": "Stop"
+    },
+    {
+      "id": "346:6429",
+      "name": "Frame",
+      "type": "frame",
+      "x": 697,
+      "y": 1077,
+      "w": 26,
+      "h": 26,
+      "path": "content > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6430",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 703,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > Frame > Frame > Frame > Frame"
+    },
+    {
+      "id": "346:6433",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1137,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "346:6434",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1145,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "346:6364",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

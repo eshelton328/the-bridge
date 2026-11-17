@@ -1,0 +1,1 @@
+On the iPad mini the confirm is a dialog, not a sheet. Linear is not changed.

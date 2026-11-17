@@ -1,0 +1,993 @@
+{
+  "frameId": "T23",
+  "code": "T23",
+  "name": "T23 · Confirm the removal",
+  "node": "402:12404",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16",
+  "layers": [
+    {
+      "id": "402:12463",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "402:12464",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "402:12465",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 1108,
+      "path": ""
+    },
+    {
+      "id": "402:12466",
+      "name": "nav",
+      "type": "frame",
+      "x": 22,
+      "y": 33,
+      "w": 712,
+      "h": 30,
+      "path": "content"
+    },
+    {
+      "id": "402:12467",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 38,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:12470",
+      "name": "Task",
+      "type": "text",
+      "x": 48,
+      "y": 37.5,
+      "w": 36,
+      "h": 21,
+      "path": "content > nav",
+      "text": "Task"
+    },
+    {
+      "id": "402:12471",
+      "name": "spacer",
+      "type": "frame",
+      "x": 90,
+      "y": 47.5,
+      "w": 160,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "454:196",
+      "name": "model and context",
+      "type": "frame",
+      "x": 256,
+      "y": 37,
+      "w": 223,
+      "h": 22,
+      "path": "content > nav"
+    },
+    {
+      "id": "454:197",
+      "name": "Frame",
+      "type": "frame",
+      "x": 256,
+      "y": 37,
+      "w": 92,
+      "h": 22,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "454:198",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 265,
+      "y": 42,
+      "w": 12,
+      "h": 12,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "454:200",
+      "name": "Sonnet 5.5",
+      "type": "text",
+      "x": 283,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "Sonnet 5.5"
+    },
+    {
+      "id": "454:201",
+      "name": "Frame",
+      "type": "frame",
+      "x": 356,
+      "y": 41,
+      "w": 77,
+      "h": 14,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "454:202",
+      "name": "segments",
+      "type": "frame",
+      "x": 356,
+      "y": 44,
+      "w": 58,
+      "h": 8,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "454:203",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 356,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:204",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 362,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:205",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 368,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:206",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 374,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:207",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 380,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:208",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 386,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:209",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 392,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:210",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 398,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:211",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 404,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:212",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 410,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "454:213",
+      "name": "9%",
+      "type": "text",
+      "x": 419,
+      "y": 41,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "9%"
+    },
+    {
+      "id": "454:214",
+      "name": "context",
+      "type": "text",
+      "x": 441,
+      "y": 41,
+      "w": 38,
+      "h": 14,
+      "path": "content > nav > model and context",
+      "text": "context"
+    },
+    {
+      "id": "454:215",
+      "name": "spacer",
+      "type": "frame",
+      "x": 485,
+      "y": 47.5,
+      "w": 160,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:12472",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 651,
+      "y": 38,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "402:12473",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 659,
+      "y": 45,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "402:12474",
+      "name": "Discussion",
+      "type": "text",
+      "x": 670,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:12475",
+      "name": "task · discussing",
+      "type": "frame",
+      "x": 22,
+      "y": 71,
+      "w": 712,
+      "h": 96,
+      "path": "content"
+    },
+    {
+      "id": "402:12476",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 82,
+      "w": 686,
+      "h": 20,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:12477",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 35,
+      "y": 83,
+      "w": 576,
+      "h": 18,
+      "path": "content > task · discussing > Frame",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "402:12478",
+      "name": "pill · Next step",
+      "type": "frame",
+      "x": 619,
+      "y": 82,
+      "w": 78,
+      "h": 20,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:12479",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 627,
+      "y": 89,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · discussing > Frame > pill · Next step"
+    },
+    {
+      "id": "402:12480",
+      "name": "Next step",
+      "type": "text",
+      "x": 638,
+      "y": 85,
+      "w": 51,
+      "h": 14,
+      "path": "content > task · discussing > Frame > pill · Next step",
+      "text": "Next step"
+    },
+    {
+      "id": "402:12481",
+      "name": "chevron · open task",
+      "type": "frame",
+      "x": 705,
+      "y": 84,
+      "w": 16,
+      "h": 16,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "402:12484",
+      "name": "ncc-1701 · f-005 · NCC-28",
+      "type": "text",
+      "x": 35,
+      "y": 107,
+      "w": 165,
+      "h": 14,
+      "path": "content > task · discussing",
+      "text": "ncc-1701 · f-005 · NCC-28"
+    },
+    {
+      "id": "402:12485",
+      "name": "guard",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 686,
+      "h": 30,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "402:12486",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · discussing > guard"
+    },
+    {
+      "id": "402:12489",
+      "name": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply.",
+      "type": "text",
+      "x": 53,
+      "y": 126,
+      "w": 668,
+      "h": 30,
+      "path": "content > task · discussing > guard",
+      "text": "Reads this task and its sources. Can't run commands or edit files. Changes the task only when you apply."
+    },
+    {
+      "id": "402:12490",
+      "name": "discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 175,
+      "w": 712,
+      "h": 950,
+      "path": "content"
+    },
+    {
+      "id": "402:12491",
+      "name": "event",
+      "type": "frame",
+      "x": 22,
+      "y": 189,
+      "w": 315,
+      "h": 14,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12492",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 22,
+      "y": 190,
+      "w": 12,
+      "h": 12,
+      "path": "content > discussion > event"
+    },
+    {
+      "id": "402:12494",
+      "name": "Created 3 tasks · Workbench, Inbox, App frame",
+      "type": "text",
+      "x": 40,
+      "y": 189,
+      "w": 297,
+      "h": 14,
+      "path": "content > discussion > event",
+      "text": "Created 3 tasks · Workbench, Inbox, App frame"
+    },
+    {
+      "id": "402:12495",
+      "name": "message · you",
+      "type": "frame",
+      "x": 22,
+      "y": 215,
+      "w": 560,
+      "h": 39,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12496",
+      "name": "Now that those exist, do we still need this one?",
+      "type": "text",
+      "x": 34,
+      "y": 225,
+      "w": 536,
+      "h": 19,
+      "path": "content > discussion > message · you",
+      "text": "Now that those exist, do we still need this one?"
+    },
+    {
+      "id": "402:12497",
+      "name": "message · discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 266,
+      "w": 560,
+      "h": 60,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12498",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 266,
+      "w": 82,
+      "h": 16,
+      "path": "content > discussion > message · discussion"
+    },
+    {
+      "id": "402:12499",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 22,
+      "y": 267.5,
+      "w": 13,
+      "h": 13,
+      "path": "content > discussion > message · discussion > Frame"
+    },
+    {
+      "id": "402:12501",
+      "name": "Discussion",
+      "type": "text",
+      "x": 41,
+      "y": 266,
+      "w": 63,
+      "h": 16,
+      "path": "content > discussion > message · discussion > Frame",
+      "text": "Discussion"
+    },
+    {
+      "id": "402:12502",
+      "name": "No. The three new tasks cover every screen this one asked for. If both run, NCC gets each ticket twice.",
+      "type": "text",
+      "x": 22,
+      "y": 288,
+      "w": 560,
+      "h": 38,
+      "path": "content > discussion > message · discussion",
+      "text": "No. The three new tasks cover every screen this one asked for. If both run, NCC gets each ticket twice."
+    },
+    {
+      "id": "402:12503",
+      "name": "proposal · REMOVE THIS TASK",
+      "type": "frame",
+      "x": 22,
+      "y": 338,
+      "w": 560,
+      "h": 182,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12504",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 351,
+      "w": 197,
+      "h": 14,
+      "path": "content > discussion > proposal · REMOVE THIS TASK"
+    },
+    {
+      "id": "402:12505",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 35,
+      "y": 352,
+      "w": 12,
+      "h": 12,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > Frame"
+    },
+    {
+      "id": "402:12507",
+      "name": "PROPOSED · REMOVE THIS TASK",
+      "type": "text",
+      "x": 53,
+      "y": 351,
+      "w": 179,
+      "h": 14,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > Frame",
+      "text": "PROPOSED · REMOVE THIS TASK"
+    },
+    {
+      "id": "402:12508",
+      "name": "Write the tickets for increment one",
+      "type": "text",
+      "x": 35,
+      "y": 377,
+      "w": 212,
+      "h": 17,
+      "path": "content > discussion > proposal · REMOVE THIS TASK",
+      "text": "Write the tickets for increment one"
+    },
+    {
+      "id": "402:12509",
+      "name": "reason",
+      "type": "frame",
+      "x": 35,
+      "y": 406,
+      "w": 536,
+      "h": 35,
+      "path": "content > discussion > proposal · REMOVE THIS TASK"
+    },
+    {
+      "id": "402:12510",
+      "name": "REASON",
+      "type": "text",
+      "x": 35,
+      "y": 406,
+      "w": 40,
+      "h": 14,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > reason",
+      "text": "REASON"
+    },
+    {
+      "id": "402:12511",
+      "name": "Split into three tasks: the Workbench, Inbox and App frame tickets.",
+      "type": "text",
+      "x": 35,
+      "y": 424,
+      "w": 536,
+      "h": 17,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > reason",
+      "text": "Split into three tasks: the Workbench, Inbox and App frame tickets."
+    },
+    {
+      "id": "402:12512",
+      "name": "It moves to Done as Removed. You can restore it from there.",
+      "type": "text",
+      "x": 35,
+      "y": 453,
+      "w": 299,
+      "h": 14,
+      "path": "content > discussion > proposal · REMOVE THIS TASK",
+      "text": "It moves to Done as Removed. You can restore it from there."
+    },
+    {
+      "id": "402:12513",
+      "name": "actions",
+      "type": "frame",
+      "x": 35,
+      "y": 479,
+      "w": 164,
+      "h": 28,
+      "path": "content > discussion > proposal · REMOVE THIS TASK"
+    },
+    {
+      "id": "402:12514",
+      "name": "button · Remove…",
+      "type": "frame",
+      "x": 35,
+      "y": 479,
+      "w": 95,
+      "h": 28,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > actions"
+    },
+    {
+      "id": "402:12515",
+      "name": "icon/trash",
+      "type": "frame",
+      "x": 46,
+      "y": 486,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > actions > button · Remove…"
+    },
+    {
+      "id": "402:12517",
+      "name": "Remove…",
+      "type": "text",
+      "x": 66,
+      "y": 485,
+      "w": 53,
+      "h": 16,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > actions > button · Remove…",
+      "text": "Remove…"
+    },
+    {
+      "id": "402:12518",
+      "name": "button · Keep it",
+      "type": "frame",
+      "x": 138,
+      "y": 479,
+      "w": 61,
+      "h": 28,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > actions"
+    },
+    {
+      "id": "402:12519",
+      "name": "Keep it",
+      "type": "text",
+      "x": 149,
+      "y": 485,
+      "w": 39,
+      "h": 16,
+      "path": "content > discussion > proposal · REMOVE THIS TASK > actions > button · Keep it",
+      "text": "Keep it"
+    },
+    {
+      "id": "402:12520",
+      "name": "spacer",
+      "type": "frame",
+      "x": 22,
+      "y": 532,
+      "w": 1,
+      "h": 496,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12521",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 1040,
+      "w": 712,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "402:12522",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1051,
+      "w": 121,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:12523",
+      "name": "Ask about this task",
+      "type": "text",
+      "x": 33,
+      "y": 1051,
+      "w": 119,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about this task"
+    },
+    {
+      "id": "402:12524",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 152,
+      "y": 1051,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:12525",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 690,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "402:12526",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:12527",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 40,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "402:12529",
+      "name": "spacer",
+      "type": "frame",
+      "x": 67,
+      "y": 1089.5,
+      "w": 624,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:12530",
+      "name": "button · up",
+      "type": "frame",
+      "x": 697,
+      "y": 1077,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "402:12531",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 703,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "402:12533",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1137,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "402:12534",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1145,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    },
+    {
+      "id": "402:12535",
+      "name": "scrim",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 1158,
+      "path": ""
+    },
+    {
+      "id": "402:12536",
+      "name": "dialog · Remove this task",
+      "type": "frame",
+      "x": 168,
+      "y": 444.5,
+      "w": 420,
+      "h": 269,
+      "path": ""
+    },
+    {
+      "id": "402:12537",
+      "name": "Frame",
+      "type": "frame",
+      "x": 189,
+      "y": 465.5,
+      "w": 245,
+      "h": 40,
+      "path": "dialog · Remove this task"
+    },
+    {
+      "id": "402:12538",
+      "name": "Remove this task?",
+      "type": "text",
+      "x": 189,
+      "y": 465.5,
+      "w": 151,
+      "h": 22,
+      "path": "dialog · Remove this task > Frame",
+      "text": "Remove this task?"
+    },
+    {
+      "id": "402:12539",
+      "name": "ncc-1701 · f-005 · NCC-28 · Next step",
+      "type": "text",
+      "x": 189,
+      "y": 491.5,
+      "w": 245,
+      "h": 14,
+      "path": "dialog · Remove this task > Frame",
+      "text": "ncc-1701 · f-005 · NCC-28 · Next step"
+    },
+    {
+      "id": "402:12540",
+      "name": "“Write the tickets for increment one” moves to Done as Removed, with this reason. NCC-28 in Linear stays as it is.",
+      "type": "text",
+      "x": 189,
+      "y": 517.5,
+      "w": 380,
+      "h": 38,
+      "path": "dialog · Remove this task",
+      "text": "“Write the tickets for increment one” moves to Done as Removed, with this reason. NCC-28 in Linear stays as it is."
+    },
+    {
+      "id": "402:12541",
+      "name": "reason",
+      "type": "frame",
+      "x": 189,
+      "y": 567.5,
+      "w": 378,
+      "h": 78,
+      "path": "dialog · Remove this task"
+    },
+    {
+      "id": "402:12542",
+      "name": "REASON",
+      "type": "text",
+      "x": 202,
+      "y": 578.5,
+      "w": 40,
+      "h": 14,
+      "path": "dialog · Remove this task > reason",
+      "text": "REASON"
+    },
+    {
+      "id": "402:12543",
+      "name": "Split into three tasks: the Workbench, Inbox and App frame tickets.",
+      "type": "text",
+      "x": 202,
+      "y": 596.5,
+      "w": 356,
+      "h": 38,
+      "path": "dialog · Remove this task > reason",
+      "text": "Split into three tasks: the Workbench, Inbox and App frame tickets."
+    },
+    {
+      "id": "402:12544",
+      "name": "actions",
+      "type": "frame",
+      "x": 189,
+      "y": 657.5,
+      "w": 378,
+      "h": 35,
+      "path": "dialog · Remove this task"
+    },
+    {
+      "id": "402:12545",
+      "name": "button · Keep it",
+      "type": "frame",
+      "x": 357,
+      "y": 657.5,
+      "w": 72,
+      "h": 35,
+      "path": "dialog · Remove this task > actions"
+    },
+    {
+      "id": "402:12546",
+      "name": "Keep it",
+      "type": "text",
+      "x": 372,
+      "y": 666.5,
+      "w": 42,
+      "h": 17,
+      "path": "dialog · Remove this task > actions > button · Keep it",
+      "text": "Keep it"
+    },
+    {
+      "id": "402:12547",
+      "name": "button · Remove task",
+      "type": "frame",
+      "x": 437,
+      "y": 657.5,
+      "w": 130,
+      "h": 33,
+      "path": "dialog · Remove this task > actions"
+    },
+    {
+      "id": "402:12548",
+      "name": "icon/trash",
+      "type": "frame",
+      "x": 451,
+      "y": 667,
+      "w": 14,
+      "h": 14,
+      "path": "dialog · Remove this task > actions > button · Remove task"
+    },
+    {
+      "id": "402:12550",
+      "name": "Remove task",
+      "type": "text",
+      "x": 471,
+      "y": 665.5,
+      "w": 82,
+      "h": 17,
+      "path": "dialog · Remove this task > actions > button · Remove task",
+      "text": "Remove task"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "402:12464",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

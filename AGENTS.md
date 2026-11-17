@@ -25,6 +25,10 @@ pnpm workspace; every version is pinned once in the catalog of
   and a later server both use: the `Result` union and branded ids.
 - [scripts/AGENTS.md](scripts/AGENTS.md): the generators, the checks and
   `pnpm new`.
+- [references/AGENTS.md](references/AGENTS.md): the saved Figma frames
+  (picture, layers, note) that the fidelity checks compare against.
+  `pnpm fidelity <page> [frameId…]` runs those checks; see
+  [scripts/fidelity/AGENTS.md](scripts/fidelity/AGENTS.md).
 
 ## Verify
 
