@@ -6,6 +6,7 @@ import { useEffect } from 'react'
 import {
   useInboxActions,
   useInboxGroupsOpen,
+  useInboxItemOpen,
   useInboxPromptOpen,
   useInboxQuery,
   useInboxRemoveOpen,
@@ -19,10 +20,11 @@ export function InboxPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const groupsOpen = useInboxGroupsOpen()
+  const itemOpen = useInboxItemOpen(search.state)
   const promptOpen = useInboxPromptOpen(search.state)
   const removeOpen = useInboxRemoveOpen(search.state)
   const query = useInboxQuery(search.state)
-  const { setGroupOpen, setPromptOpen, setRemoveOpen, setQuery, showState } = useInboxActions()
+  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, showState } = useInboxActions()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
@@ -30,6 +32,8 @@ export function InboxPage() {
     ...state.ui,
     filter: search.filter ?? state.ui.filter,
     groupsOpen: { ...state.ui.groupsOpen, ...groupsOpen },
+    // Back on a tablet or phone closes the open item and shows the list; the desktop always shows the item.
+    selectedId: itemOpen === false ? null : state.ui.selectedId,
     promptOpen: promptOpen ?? state.ui.promptOpen,
     removeOpen: removeOpen ?? state.ui.removeOpen,
   }
@@ -40,6 +44,9 @@ export function InboxPage() {
       viewport="desktop"
       query={query}
       onGroupOpenChange={setGroupOpen}
+      onBack={() => {
+        setItemOpen(search.state, false)
+      }}
       onPromptOpenChange={(open) => {
         setPromptOpen(search.state, open)
       }}

@@ -188,7 +188,14 @@ const InboxNextStep = InboxDetailHead.extend({
     change: z.object({ line: z.string(), undo: z.string() }).optional(),
   }),
   launch: InboxLaunch,
-  notes: z.object({ text: z.string(), by: z.string(), add: z.string() }).nullable(),
+  /**
+   * Erik's notes: his note with who wrote it and when, if he wrote one, and
+   * the placeholder of the field that adds one; without `add` (a started
+   * task on the tablet) the notes are read-only.
+   */
+  notes: z
+    .object({ note: z.object({ text: z.string(), by: z.string() }).optional(), add: z.string().optional() })
+    .nullable(),
   sources: z.array(z.object({ label: z.string(), detail: z.string() })),
 })
 export type InboxNextStep = z.infer<typeof InboxNextStep>
@@ -220,7 +227,13 @@ const InboxRunning = z.object({
   kind: z.literal('running'),
   title: z.string(),
   agent: InboxAgent,
-  meta: z.string(),
+  /**
+   * The header's meta: the task's place ("ncc-1701 · f-005 · NCC-28"), when
+   * it started ("started 3 min ago in") and the chat ("quiet-nebula ·
+   * the-bridge · Sonnet 5.5"). The desktop puts them on one line; the
+   * tablet shows the place, then the chat with its agent mark.
+   */
+  meta: z.object({ task: z.string(), started: z.string(), chat: z.string() }),
   status: InboxPill,
   chat: z.array(InboxChatEntry),
   reply: z.string(),
@@ -350,3 +363,34 @@ export type InboxUi = z.infer<typeof InboxUi>
 
 /** The schema of one Inbox state, for the state checks. */
 export const InboxState = z.object({ data: InboxData, ui: InboxUi })
+
+// The text Erik types in the open item: his note, his answer's note, the
+// prompt he edits and his reply. InboxScreen keeps it above the layout, so
+// a width change that swaps the desktop and tablet layouts, and with them
+// the fields, keeps what he typed.
+
+/** A text field of the open item that keeps what Erik types. */
+export type InboxDraftField = 'note' | 'answer' | 'prompt' | 'reply'
+
+export type InboxDrafts = {
+  values: Partial<Record<InboxDraftField, string>>
+  onChange: (field: InboxDraftField, value: string) => void
+}
+
+/**
+ * The value props of `field`'s text field: controlled from `drafts`, starting
+ * at `initial`; without `drafts`, uncontrolled from `initial`.
+ */
+export function draftProps(
+  drafts: InboxDrafts | undefined,
+  field: InboxDraftField,
+  initial = '',
+): { value?: string; defaultValue?: string; onValueChange?: (value: string) => void } {
+  if (drafts === undefined) return { defaultValue: initial }
+  return {
+    value: drafts.values[field] ?? initial,
+    onValueChange: (value) => {
+      drafts.onChange(field, value)
+    },
+  }
+}

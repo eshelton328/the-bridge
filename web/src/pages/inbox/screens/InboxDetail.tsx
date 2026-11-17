@@ -1,11 +1,14 @@
 // The open Inbox item, by its kind: a next step, a question from a chat or
-// a started item with its chat. It fills the detail pane, which is the
-// "task pane" layer of the position check. With a side, such as the
-// discussion, the item keeps its column and the side takes the rest of the
-// pane. Props only.
+// a started item with its chat. On the desktop it fills the detail pane,
+// which is the "task pane" layer of the position check; with a side, such
+// as the discussion, the item keeps its column and the side takes the rest
+// of the pane. On a tablet or phone it fills the screen, under Back.
+// Props only.
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { InboxDetailView, InboxUi } from '../types.ts'
+import type { Viewport } from '../../../lib/screenState.ts'
+import { BackToInbox } from '../blocks/BackToInbox.tsx'
+import { type InboxDrafts, type InboxDetailView, type InboxUi } from '../types.ts'
 import { NextStepDetail } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
@@ -17,26 +20,54 @@ const column = css({ flexShrink: '0', overflowY: 'auto' })
 export type InboxDetailProps = {
   detail: InboxDetailView
   ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
+  /** The screen's layout; on a tablet or phone the item has Back. */
+  layout?: Viewport | undefined
+  /** Back on a tablet or phone. */
+  onBack?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
   /** The task has a discussion: Discuss shows in its task bar, pressed while the discussion is open. */
   discuss?: { open: boolean } | undefined
   /** Beside the item, such as the open discussion. */
   side?: ReactNode
+  /** Keeps what Erik types in the item; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
-export function InboxDetail({ detail, ui, onPromptOpenChange, discuss, side }: InboxDetailProps) {
+export function InboxDetail({
+  detail,
+  ui,
+  layout = 'desktop',
+  onBack,
+  onPromptOpenChange,
+  discuss,
+  side,
+  drafts,
+}: InboxDetailProps) {
+  const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} />
   const item = (
     <>
       {detail.kind === 'next' ? (
-        <NextStepDetail detail={detail} ui={ui} onPromptOpenChange={onPromptOpenChange} discuss={discuss} />
+        <NextStepDetail
+          detail={detail}
+          ui={ui}
+          layout={layout}
+          back={back}
+          onPromptOpenChange={onPromptOpenChange}
+          discuss={discuss}
+          drafts={drafts}
+        />
       ) : null}
-      {detail.kind === 'question' ? <QuestionDetail detail={detail} /> : null}
-      {detail.kind === 'running' ? <RunningDetail detail={detail} /> : null}
+      {detail.kind === 'question' ? (
+        <QuestionDetail detail={detail} layout={layout} back={back} drafts={drafts} />
+      ) : null}
+      {detail.kind === 'running' ? (
+        <RunningDetail detail={detail} layout={layout} onBack={onBack} drafts={drafts} />
+      ) : null}
     </>
   )
   if (side === undefined)
     return (
-      <article className={pane} data-figma="task pane">
+      <article className={pane} data-figma={layout === 'desktop' ? 'task pane' : undefined}>
         {item}
       </article>
     )

@@ -1,6 +1,7 @@
 // The Inbox page's view store: which groups Erik opened or closed, and
-// what he changed in the shown state: the prompt or remove dialog closed
-// and the search text typed. Only InboxPage reads it; the screen gets the values
+// what he changed in the shown state: the open item closed with Back (on a
+// tablet or phone), the prompt or remove dialog closed and the search text
+// typed. Only InboxPage reads it; the screen gets the values
 // as props. A state's own `ui` and `data` are the start, and this store
 // holds the changes. The dialog and search changes belong to the shown
 // state (`?state=`) and are dropped when another state is shown, so each
@@ -13,6 +14,8 @@ export type InboxStateKey = string | undefined
 
 type InboxEdits = {
   state: InboxStateKey
+  /** False once Back closed the state's open item, so the list shows. */
+  itemOpen: boolean | undefined
   promptOpen: boolean | undefined
   removeOpen: boolean | undefined
   query: string | undefined
@@ -23,6 +26,7 @@ type InboxViewState = {
   edits: InboxEdits
   actions: {
     setGroupOpen: (group: InboxGroupId, open: boolean) => void
+    setItemOpen: (state: InboxStateKey, open: boolean) => void
     setPromptOpen: (state: InboxStateKey, open: boolean) => void
     setRemoveOpen: (state: InboxStateKey, open: boolean) => void
     setQuery: (state: InboxStateKey, query: string) => void
@@ -33,6 +37,7 @@ type InboxViewState = {
 
 const noEdits = (state: InboxStateKey): InboxEdits => ({
   state,
+  itemOpen: undefined,
   promptOpen: undefined,
   removeOpen: undefined,
   query: undefined,
@@ -48,6 +53,9 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
   actions: {
     setGroupOpen: (group, open) => {
       set((s) => ({ groupsOpen: { ...s.groupsOpen, [group]: open } }), undefined, 'inbox/setGroupOpen')
+    },
+    setItemOpen: (state, open) => {
+      set((s) => ({ edits: { ...editsOf(s.edits, state), itemOpen: open } }), undefined, 'inbox/setItemOpen')
     },
     setPromptOpen: (state, open) => {
       set((s) => ({ edits: { ...editsOf(s.edits, state), promptOpen: open } }), undefined, 'inbox/setPromptOpen')
@@ -66,6 +74,10 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
 
 /** The groups Erik opened or closed, over the state's own. */
 export const useInboxGroupsOpen = (): InboxViewState['groupsOpen'] => useInboxStore((s) => s.groupsOpen)
+
+/** Whether the state's open item is still open in `state`; false after Back, undefined keeps the state's own. */
+export const useInboxItemOpen = (state: InboxStateKey): boolean | undefined =>
+  useInboxStore((s) => (s.edits.state === state ? s.edits.itemOpen : undefined))
 
 /** Whether Erik opened or closed the prompt dialog in `state`; undefined keeps the state's own. */
 export const useInboxPromptOpen = (state: InboxStateKey): boolean | undefined =>
