@@ -14,9 +14,10 @@ import { NextStepDetail, type RemovedControl } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
 
-const pane = css({ display: 'flex', flexDirection: 'column', flex: '1' })
-const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1' })
-const column = css({ flexShrink: '0', overflowY: 'auto' })
+// The item fills the detail's height and no more, so its ScrollFrame scrolls the content between its bars (d-107).
+const pane = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
+const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1', minH: '[0]' })
+const column = css({ display: 'flex', flexDirection: 'column', flexShrink: '0', minH: '[0]' })
 
 export type InboxDetailProps = {
   detail: InboxDetailView

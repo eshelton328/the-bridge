@@ -14,6 +14,7 @@ import {
   KindMark,
   ModelChip,
   Panel,
+  ScrollFrame,
   Stack,
   TruncatedText,
 } from '@eshelton328/component-library-1701'
@@ -26,6 +27,11 @@ import { OpenInWorkspaces } from '../blocks/OpenInWorkspaces.tsx'
 import { draftProps, type InboxDrafts, type InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
+// The chat fills the detail's height and no more: the Back bar stays at the top, the reply box at the bottom, and only
+// the started task and the chat between them scroll (d-107).
+const frame = css({ flex: '1', minH: '[0]' })
+// The started task and the chat, 16 apart, as the stack around them was.
+const bodyGap = css({ gap: '16' })
 // The reply box is an unnamed layer: 346:6416 in T5, 346:10886 in M8.
 const replyLayer = { desktop: undefined, tablet: '346:6416', phone: '346:10886' } as const satisfies Record<
   Viewport,
@@ -83,16 +89,19 @@ function DesktopHeader({ detail, onViewTask }: { detail: InboxRunning; onViewTas
   )
 }
 
-type CompactHeaderProps = { detail: InboxRunning; onBack: (() => void) | undefined; phone: boolean }
+function CompactNav({ onBack }: { onBack: (() => void) | undefined }) {
+  return (
+    <div data-figma="nav">
+      <BackRow label="Inbox" onBack={onBack}>
+        <OpenInWorkspaces size="sm" textSize="xs" label="Workspaces" figma="button · Open in Workspaces" />
+      </BackRow>
+    </div>
+  )
+}
 
-function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
+function CompactHeader({ detail, phone }: { detail: InboxRunning; phone: boolean }) {
   return (
     <>
-      <div data-figma="nav">
-        <BackRow label="Inbox" onBack={onBack}>
-          <OpenInWorkspaces size="sm" textSize="xs" label="Workspaces" figma="button · Open in Workspaces" />
-        </BackRow>
-      </div>
       <div data-figma="started task">
         <Panel>
           <Stack gap="4">
@@ -123,12 +132,33 @@ function CompactHeader({ detail, onBack, phone }: CompactHeaderProps) {
 
 export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onViewTask }: RunningDetailProps) {
   return (
-    <Container size={detailContainerSize(layout)} className={fill}>
-      <Stack gap="16" className={fill}>
+    <Container size={detailContainerSize(layout)} className={frame}>
+      <ScrollFrame
+        gap="16"
+        bodyClassName={bodyGap}
+        header={layout === 'desktop' ? undefined : <CompactNav onBack={onBack} />}
+        footer={
+          <div data-figma={replyLayer[layout]}>
+            <Composer
+              label="Reply"
+              placeholder={detail.reply}
+              running
+              onAttach={() => undefined}
+              {...draftProps(drafts, 'reply')}
+              // The tablet's and phone's reply box (346:6416, 346:10886) has no model chip.
+              model={
+                layout === 'desktop' ? (
+                  <ModelChip model={detail.model} options={[{ value: detail.model, label: detail.model }]} />
+                ) : undefined
+              }
+            />
+          </div>
+        }
+      >
         {layout === 'desktop' ? (
           <DesktopHeader detail={detail} onViewTask={onViewTask} />
         ) : (
-          <CompactHeader detail={detail} onBack={onBack} phone={layout === 'phone'} />
+          <CompactHeader detail={detail} phone={layout === 'phone'} />
         )}
         {/* T5 and M8 set the chat's entries 12 apart (346:6393 to 346:6433, 346:10863 to 346:10882); D5 has 16. */}
         <Stack gap={layout === 'desktop' ? '16' : '12'} className={layout === 'desktop' ? fill : chatCompact}>
@@ -136,22 +166,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
             <ChatEntry key={`${String(i)}:${entry.type}`} entry={entry} />
           ))}
         </Stack>
-        <div data-figma={replyLayer[layout]}>
-          <Composer
-            label="Reply"
-            placeholder={detail.reply}
-            running
-            onAttach={() => undefined}
-            {...draftProps(drafts, 'reply')}
-            // The tablet's and phone's reply box (346:6416, 346:10886) has no model chip.
-            model={
-              layout === 'desktop' ? (
-                <ModelChip model={detail.model} options={[{ value: detail.model, label: detail.model }]} />
-              ) : undefined
-            }
-          />
-        </div>
-      </Stack>
+      </ScrollFrame>
     </Container>
   )
 }

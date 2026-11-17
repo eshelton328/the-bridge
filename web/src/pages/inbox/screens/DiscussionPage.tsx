@@ -3,7 +3,8 @@
 // task, the model and context sit in the middle of the row (in the task
 // card on the phone, M18) and a Discussion pill at its end; the task card
 // under it says what the discussion may do. The entries and the reply box
-// fill the rest. Props only.
+// fill the rest; Back stays at the top and the reply box at the bottom, and the task card and the entries scroll
+// between them (d-107). Props only.
 import {
   BackRow,
   ChevronRightIcon,
@@ -23,7 +24,8 @@ import { ModelContext } from '../blocks/ModelContext.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import type { InboxDiscussion, InboxDrafts, InboxNextStep } from '../types.ts'
 
-const fill = css({ flex: '1' })
+// The page fills the detail's height and no more: Back stays at the top, the reply box at the bottom (d-107).
+const fill = css({ flex: '1', minH: '[0]' })
 const spacer = css({ flex: '1' })
 // T17 402:11176: SemiBold 15, as the chat's task card (T5 346:6380).
 const title = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
@@ -64,46 +66,49 @@ export function DiscussionPage({
   const phone = layout === 'phone'
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
-      <Stack gap="8" className={fill}>
-        <Inline gap="8" align="center" data-figma="nav">
-          <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
-          <span className={spacer} />
-          {phone ? null : (
-            <>
-              <ModelContext discussion={discussion} centred />
-              <span className={spacer} />
-            </>
-          )}
-          <StatusPill tone="running" label="Discussion" dot />
-        </Inline>
-        <div data-figma="task · discussing">
-          <Panel>
-            <Stack gap="4">
-              <Inline gap="8" align="center">
-                <h1 className={phone ? cx(title, oneLine) : title}>
-                  {phone ? <TruncatedText>{task.title}</TruncatedText> : task.title}
-                </h1>
-                <StatusPill tone={task.status.tone} label={task.status.label} dot />
-                <span className={chevron} data-figma="chevron · open task">
-                  <ChevronRightIcon size="16" />
-                </span>
-              </Inline>
-              <span className={meta}>{place}</span>
-              {phone ? <ModelContext discussion={discussion} /> : null}
-              <DiscussionGuard text={discussion.guard} />
-            </Stack>
-          </Panel>
-        </div>
-        <DiscussionThread
-          discussion={discussion}
-          control={control}
-          centred={false}
-          className={thread}
-          drafts={drafts}
-          stacked={phone}
-          onSend={onSend}
-        />
-      </Stack>
+      <DiscussionThread
+        discussion={discussion}
+        control={control}
+        centred={false}
+        className={thread}
+        drafts={drafts}
+        stacked={phone}
+        onSend={onSend}
+        gap="8"
+        header={
+          <Inline gap="8" align="center" data-figma="nav">
+            <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
+            <span className={spacer} />
+            {phone ? null : (
+              <>
+                <ModelContext discussion={discussion} centred />
+                <span className={spacer} />
+              </>
+            )}
+            <StatusPill tone="running" label="Discussion" dot />
+          </Inline>
+        }
+        before={
+          <div data-figma="task · discussing">
+            <Panel>
+              <Stack gap="4">
+                <Inline gap="8" align="center">
+                  <h1 className={phone ? cx(title, oneLine) : title}>
+                    {phone ? <TruncatedText>{task.title}</TruncatedText> : task.title}
+                  </h1>
+                  <StatusPill tone={task.status.tone} label={task.status.label} dot />
+                  <span className={chevron} data-figma="chevron · open task">
+                    <ChevronRightIcon size="16" />
+                  </span>
+                </Inline>
+                <span className={meta}>{place}</span>
+                {phone ? <ModelContext discussion={discussion} /> : null}
+                <DiscussionGuard text={discussion.guard} />
+              </Stack>
+            </Panel>
+          </div>
+        }
+      />
     </Container>
   )
 }
