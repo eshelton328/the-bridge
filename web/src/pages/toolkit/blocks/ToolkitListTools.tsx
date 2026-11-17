@@ -1,11 +1,13 @@
 // The row under the kind chips (Figma `list tools`, D1 425:56): the search
 // over names, descriptions and files, and on the desktop the sort (by name)
 // and the legend of the counts each card shows. A tablet or phone shows the
-// search alone, full width (T1 428:48). Props only.
+// search alone, full width (T1 428:48); the phone adds the Read-only line
+// under it (M1 429:86). Props only.
 import {
   Button,
   ChevronDownIcon,
   CloseCircleIcon,
+  LockIcon,
   SearchField,
   SearchIcon,
   SortIcon,
@@ -19,6 +21,15 @@ const row = css({ display: 'flex', alignItems: 'center', gap: '6' })
 const tools = css({ display: 'flex', alignItems: 'center', gap: '6', w: '[50%]', minW: '[0]' })
 const compactTools = css({ display: 'flex', alignItems: 'center', gap: '6', flex: '1', minW: '[0]' })
 const search = css({ flex: '1', minW: '[0]' })
+// M1 429:86: the lock, then the source in mono, as wide as its text.
+const readOnly = css({
+  display: 'flex',
+  alignItems: 'center',
+  alignSelf: 'flex-start',
+  gap: '6',
+  textStyle: 'mono',
+  color: 'fg.muted',
+})
 const legend = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap', ms: 'auto' })
 
 export type ToolkitListToolsProps = {
@@ -28,6 +39,28 @@ export type ToolkitListToolsProps = {
 }
 
 export function ToolkitListTools({ query, onQueryChange, layout }: ToolkitListToolsProps) {
+  if (layout === 'phone') {
+    return (
+      <>
+        <div data-figma="search">
+          <SearchField
+            label="Search the toolkit"
+            placeholder="Search the toolkit"
+            size="lg"
+            icon={<SearchIcon />}
+            clearIcon={<CloseCircleIcon />}
+            clearLabel="Clear the search"
+            value={query}
+            onValueChange={onQueryChange}
+          />
+        </div>
+        <p className={readOnly} data-figma="read-only line">
+          <LockIcon size="12" />
+          Read-only · from toolkit/ in the brain
+        </p>
+      </>
+    )
+  }
   return (
     <div className={row} data-figma={layout === 'desktop' ? 'list tools' : undefined}>
       <div className={layout === 'desktop' ? tools : compactTools}>

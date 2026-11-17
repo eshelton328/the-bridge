@@ -23,7 +23,8 @@ import { listView } from './listView.ts'
 const page = {
   desktop: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '32', pt: '24', pb: '32' }),
   tablet: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '24', pt: '12', pb: '20' }),
-  phone: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '12', pt: '4', pb: '12' }),
+  // M1 429:50: 12 in from the sides, 4 under the status bar, and its rows 10 apart.
+  phone: css({ display: 'flex', flexDirection: 'column', gap: '10', px: '12', pt: '4', pb: '12' }),
 }
 // Figma 425:32: the chip row is as wide as its chips.
 const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })

@@ -5,6 +5,9 @@
 // shows the Rules group, and writing-reviewer links to 3 files, not 4. The
 // Workflows and Hooks items lie below the frame, and only their chip counts
 // are in it, so their groups wait for the frame that shows them.
+// Figma Toolkit M1 "M1 · Toolkit" shows the same data on the phone, as one
+// column of rows (references/toolkit/M01/frame.json): writing-reviewer
+// links to 3 files there too, and the Rules group lies below the frame.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitGroupView, ToolkitItemView, ToolkitUi } from '../types.ts'
 import { toolkitList } from './toolkitList.ts'
@@ -42,7 +45,10 @@ const groups = toolkitList.data.groups.map((group) => ({
 
 export const toolkitListTablet = {
   title: 'the list of every toolkit item, in two columns',
-  frames: [{ id: 'T1', node: '424:3567', viewport: 'tablet' }],
+  frames: [
+    { id: 'T1', node: '424:3567', viewport: 'tablet' },
+    { id: 'M1', node: '424:4580', viewport: 'phone' },
+  ],
   data: { ...toolkitList.data, groups: [...groups, rules] },
   ui: { ...toolkitList.ui },
 } satisfies ScreenState<ToolkitData, ToolkitUi>
