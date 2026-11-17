@@ -73,9 +73,6 @@ same results as before D04.
 - **File preview bar.** The box and its bar are drawn with the Panel's
   tokens around `MarkdownView`; the file icon is 16 px against Figma's 14
   (gap: File preview).
-- **Rail.** The rail items are 54 px high and 60 px apart against
-  Figma's 50 and 56, so Workspaces to More sit 4 to 20 px lower (gap:
-  Rail item height). The rail has no `data-figma` in this frame.
 - **Nothing links to the rule.** The note says the page says so when
   nothing links to an item. The frame's side column (`side`, 427:652,
   364 × 118) has no layers, so the render leaves the side column empty

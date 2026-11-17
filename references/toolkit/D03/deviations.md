@@ -75,9 +75,6 @@ The other seven frames give the same results as before D03.
 - **File preview bar.** The box and its bar are drawn with the Panel's
   tokens around `MarkdownView`; the file icon is 16 px against Figma's
   14 (gap: File preview).
-- **Rail.** The rail items are 54 px high and 60 px apart against
-  Figma's 50 and 56, so Workspaces to More sit 4 to 20 px lower (gap:
-  Rail item height). The rail has no `data-figma` in this frame.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D4, D7 to D9).
 
