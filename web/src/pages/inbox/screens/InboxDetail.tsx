@@ -8,7 +8,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { BackToInbox } from '../blocks/BackToInbox.tsx'
-import type { InboxDetailView, InboxUi } from '../types.ts'
+import { type InboxDrafts, type InboxDetailView, type InboxUi } from '../types.ts'
 import { NextStepDetail } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
@@ -29,6 +29,8 @@ export type InboxDetailProps = {
   discuss?: { open: boolean } | undefined
   /** Beside the item, such as the open discussion. */
   side?: ReactNode
+  /** Keeps what Erik types in the item; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
 export function InboxDetail({
@@ -39,6 +41,7 @@ export function InboxDetail({
   onPromptOpenChange,
   discuss,
   side,
+  drafts,
 }: InboxDetailProps) {
   const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} />
   const item = (
@@ -51,10 +54,15 @@ export function InboxDetail({
           back={back}
           onPromptOpenChange={onPromptOpenChange}
           discuss={discuss}
+          drafts={drafts}
         />
       ) : null}
-      {detail.kind === 'question' ? <QuestionDetail detail={detail} layout={layout} back={back} /> : null}
-      {detail.kind === 'running' ? <RunningDetail detail={detail} layout={layout} onBack={onBack} /> : null}
+      {detail.kind === 'question' ? (
+        <QuestionDetail detail={detail} layout={layout} back={back} drafts={drafts} />
+      ) : null}
+      {detail.kind === 'running' ? (
+        <RunningDetail detail={detail} layout={layout} onBack={onBack} drafts={drafts} />
+      ) : null}
     </>
   )
   if (side === undefined)

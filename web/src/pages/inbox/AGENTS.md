@@ -47,6 +47,10 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   picker, the Snooze menu, the discussion or the remove dialog is open),
   each a Zod schema. `InboxData.discussion` is the open task's discussion;
   its entries are a union on `type`, and a proposal a union on `kind`.
+  `InboxDrafts` is the text Erik types in the open item (note, answer,
+  prompt, reply); `InboxScreen` keeps it above `ViewportFrame`, so a
+  width change that swaps the layout keeps it, and `draftProps()` gives a
+  field its value props.
 - `LIBRARY_GAPS.md`: what the Inbox frames need that the component
   library cannot draw yet, for the batched library PR.
 

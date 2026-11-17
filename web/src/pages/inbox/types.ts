@@ -363,3 +363,34 @@ export type InboxUi = z.infer<typeof InboxUi>
 
 /** The schema of one Inbox state, for the state checks. */
 export const InboxState = z.object({ data: InboxData, ui: InboxUi })
+
+// The text Erik types in the open item: his note, his answer's note, the
+// prompt he edits and his reply. InboxScreen keeps it above the layout, so
+// a width change that swaps the desktop and tablet layouts, and with them
+// the fields, keeps what he typed.
+
+/** A text field of the open item that keeps what Erik types. */
+export type InboxDraftField = 'note' | 'answer' | 'prompt' | 'reply'
+
+export type InboxDrafts = {
+  values: Partial<Record<InboxDraftField, string>>
+  onChange: (field: InboxDraftField, value: string) => void
+}
+
+/**
+ * The value props of `field`'s text field: controlled from `drafts`, starting
+ * at `initial`; without `drafts`, uncontrolled from `initial`.
+ */
+export function draftProps(
+  drafts: InboxDrafts | undefined,
+  field: InboxDraftField,
+  initial = '',
+): { value?: string; defaultValue?: string; onValueChange?: (value: string) => void } {
+  if (drafts === undefined) return { defaultValue: initial }
+  return {
+    value: drafts.values[field] ?? initial,
+    onValueChange: (value) => {
+      drafts.onChange(field, value)
+    },
+  }
+}

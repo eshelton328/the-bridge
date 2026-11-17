@@ -21,7 +21,7 @@ import {
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
-import type { InboxNextStep } from '../types.ts'
+import { draftProps, type InboxDrafts, type InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
 import { PromptDialog } from './PromptDialog.tsx'
 
@@ -63,9 +63,11 @@ export type PromptSectionProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   /** The screen's layout: the whole prompt opens in a dialog on the desktop and in a sheet on a tablet or phone. */
   layout?: Viewport | undefined
+  /** Keeps the prompt Erik is editing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
-export function PromptSection({ prompt, editing, open, onOpenChange, layout }: PromptSectionProps) {
+export function PromptSection({ prompt, editing, open, onOpenChange, layout, drafts }: PromptSectionProps) {
   const readMore = prompt.long ? (
     <a className={more} href="#prompt">
       Read the whole prompt
@@ -95,7 +97,14 @@ export function PromptSection({ prompt, editing, open, onOpenChange, layout }: P
     >
       {editing ? (
         <Stack gap="8">
-          <TextArea labelHidden label="Suggested prompt" textSize="sm" defaultValue={prompt.text} autoresize rows={2} />
+          <TextArea
+            labelHidden
+            label="Suggested prompt"
+            textSize="sm"
+            autoresize
+            rows={2}
+            {...draftProps(drafts, 'prompt', prompt.text)}
+          />
           <span className={hint}>Edits stay with this task until you start it or press Reset.</span>
         </Stack>
       ) : (

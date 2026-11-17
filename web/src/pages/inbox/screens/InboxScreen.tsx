@@ -5,13 +5,21 @@
 // chat (Figma T1 to T8). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
+import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { RemoveDialog } from '../blocks/RemoveDialog.tsx'
-import type { InboxData, InboxGroupId, InboxProposal, InboxUi } from '../types.ts'
+import {
+  type InboxDraftField,
+  type InboxDrafts,
+  type InboxData,
+  type InboxGroupId,
+  type InboxProposal,
+  type InboxUi,
+} from '../types.ts'
 import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
 
@@ -40,7 +48,9 @@ function removal(data: InboxData): Extract<InboxProposal, { kind: 'remove' }> | 
   return undefined
 }
 
-function InboxLayout({ layout, ...props }: Omit<InboxScreenProps, 'viewport'> & { layout: Viewport }) {
+type InboxLayoutProps = Omit<InboxScreenProps, 'viewport'> & { layout: Viewport; drafts: InboxDrafts }
+
+function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const { data, ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange } = props
   const { discussion } = data
   const desktop = layout === 'desktop'
@@ -70,6 +80,7 @@ function InboxLayout({ layout, ...props }: Omit<InboxScreenProps, 'viewport'> & 
         ui={ui}
         layout={layout}
         onBack={onBack}
+        drafts={drafts}
         onPromptOpenChange={onPromptOpenChange}
         discuss={discussion === undefined ? undefined : { open: discussing }}
         side={
@@ -105,6 +116,22 @@ function InboxLayout({ layout, ...props }: Omit<InboxScreenProps, 'viewport'> & 
   )
 }
 
+type Typed = { of: InboxData['detail']; values: InboxDrafts['values'] }
+
 export function InboxScreen({ viewport, ...props }: InboxScreenProps) {
-  return <ViewportFrame initial={viewport}>{(layout) => <InboxLayout layout={layout} {...props} />}</ViewportFrame>
+  // What Erik types in the open item lives here, above the layout: a width change swaps the layout and remounts its
+  // fields, and this keeps their text. Another item starts empty.
+  const item = props.data.detail
+  const [typed, setTyped] = useState<Typed>({ of: item, values: {} })
+  const drafts: InboxDrafts = {
+    values: typed.of === item ? typed.values : {},
+    onChange: (field: InboxDraftField, value: string) => {
+      setTyped((t) => ({ of: item, values: { ...(t.of === item ? t.values : {}), [field]: value } }))
+    },
+  }
+  return (
+    <ViewportFrame initial={viewport}>
+      {(layout) => <InboxLayout layout={layout} drafts={drafts} {...props} />}
+    </ViewportFrame>
+  )
 }

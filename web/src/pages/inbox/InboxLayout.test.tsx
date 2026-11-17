@@ -1,8 +1,8 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
-import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { inboxStates } from './states/index.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
@@ -67,6 +67,41 @@ describe('the Inbox screen by width', () => {
     view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)
     await expect.element(page.getByText('Wait for increment two.')).toBeVisible()
     await expect.element(back()).toBeVisible()
+    await expect.element(tabBar()).not.toBeInTheDocument()
+  })
+
+  it('keeps the note Erik is typing when the width changes the layout', async () => {
+    await page.viewport(1512, 982)
+    const { data, ui } = inboxStates.nextStep
+    view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)
+    const note = () => page.getByRole('textbox', { name: 'Add a note' })
+    await userEvent.type(note(), 'Ask about the milestone')
+    await page.viewport(756, 1158)
+    await expect.element(back()).toBeVisible()
+    await expect.element(note()).toHaveValue('Ask about the milestone')
+    await page.viewport(1512, 982)
+    await expect.element(back()).not.toBeInTheDocument()
+    await expect.element(note()).toHaveValue('Ask about the milestone')
+  })
+
+  it('measures its width before a scale transform, as a zoomed-out canvas board draws it', async () => {
+    await page.viewport(1512, 982)
+    const { data, ui } = inboxStates.nextStep
+    // Panda skips test files, so the board's zoom is a plain style rule.
+    const zoom = document.createElement('style')
+    zoom.textContent =
+      '[data-board] { width: 1512px; height: 982px; transform: scale(0.5); transform-origin: top left; }'
+    document.head.append(zoom)
+    onTestFinished(() => {
+      zoom.remove()
+    })
+    view = await testRender(
+      <div data-board="">
+        <InboxScreen data={data} ui={ui} viewport="desktop" />
+      </div>,
+    )
+    await expect.element(page.getByText('Try the tablet layout on the iPad mini')).toBeVisible()
+    await expect.element(back()).not.toBeInTheDocument()
     await expect.element(tabBar()).not.toBeInTheDocument()
   })
 })

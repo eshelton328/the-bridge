@@ -15,7 +15,7 @@ import { PromptSection } from '../blocks/PromptSection.tsx'
 import { RunCard } from '../blocks/RunCard.tsx'
 import { RunInCard } from '../blocks/RunInCard.tsx'
 import { SourceList } from '../blocks/SourceList.tsx'
-import type { InboxNextStep, InboxUi } from '../types.ts'
+import { type InboxDrafts, type InboxNextStep, type InboxUi } from '../types.ts'
 
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const fill = css({ flex: '1' })
@@ -42,6 +42,8 @@ export type NextStepDetailProps = {
   onPromptOpenChange?: ((open: boolean) => void) | undefined
   /** The task has a discussion; see `DetailHead`. */
   discuss?: { open: boolean } | undefined
+  /** Keeps what Erik types in the prompt and his note; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
 function Launch({ launch, pickerOpen }: { launch: InboxNextStep['launch']; pickerOpen: boolean }) {
@@ -69,6 +71,7 @@ export function NextStepDetail({
   back,
   onPromptOpenChange,
   discuss,
+  drafts,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
   const pinned = compact && detail.launch.stage === 'started' ? detail.launch.run : undefined
@@ -88,11 +91,12 @@ export function NextStepDetail({
           open={ui.promptOpen}
           onOpenChange={onPromptOpenChange}
           layout={layout}
+          drafts={drafts}
         />
         {pinned === undefined ? <Launch launch={detail.launch} pickerOpen={ui.pickerOpen} /> : null}
         {detail.notes === null ? null : (
           <DetailSection title="My notes">
-            <NotesBox notes={detail.notes} />
+            <NotesBox notes={detail.notes} drafts={drafts} />
           </DetailSection>
         )}
         <DetailSection title="Sources">

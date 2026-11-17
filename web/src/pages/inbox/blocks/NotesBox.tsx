@@ -3,18 +3,25 @@
 // the field (a started task on the tablet) it is the note alone. Props only.
 import { Panel, Stack, TextArea } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { InboxNextStep } from '../types.ts'
+import { draftProps, type InboxDrafts, type InboxNextStep } from '../types.ts'
 
 // Figma 403:1889 and 403:1891: Geist Regular 13.
 const text = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 const by = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
-export function NotesBox({ notes }: { notes: NonNullable<InboxNextStep['notes']> }) {
+export type NotesBoxProps = {
+  notes: NonNullable<InboxNextStep['notes']>
+  /** Keeps the note Erik is typing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
+}
+
+export function NotesBox({ notes, drafts }: NotesBoxProps) {
   const { note, add } = notes
+  const typed = draftProps(drafts, 'note')
   if (note === undefined)
     return (
       <div data-figma="notes field">
-        <TextArea textSize="sm" labelHidden label="Add a note" placeholder={add} autoresize rows={1} />
+        <TextArea textSize="sm" labelHidden label="Add a note" placeholder={add} autoresize rows={1} {...typed} />
       </div>
     )
   return (
@@ -25,7 +32,16 @@ export function NotesBox({ notes }: { notes: NonNullable<InboxNextStep['notes']>
         <span className={by}>{note.by}</span>
       </Stack>
       {add === undefined ? null : (
-        <TextArea variant="bare" textSize="sm" labelHidden label="Add a note" placeholder={add} autoresize rows={1} />
+        <TextArea
+          variant="bare"
+          textSize="sm"
+          labelHidden
+          label="Add a note"
+          placeholder={add}
+          autoresize
+          rows={1}
+          {...typed}
+        />
       )}
     </Panel>
   )

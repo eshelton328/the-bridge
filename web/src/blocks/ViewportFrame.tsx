@@ -21,7 +21,8 @@ export function ViewportFrame({ initial, children }: ViewportFrameProps) {
   const measure = useCallback((element: HTMLDivElement | null) => {
     if (element === null) return undefined
     const update = () => {
-      setViewport(viewportForWidth(element.getBoundingClientRect().width))
+      // The layout width, before any transform: a canvas board zoomed out to half draws a 1512 px frame 756 wide.
+      setViewport(viewportForWidth(element.offsetWidth))
     }
     update()
     const observer = new ResizeObserver(update)

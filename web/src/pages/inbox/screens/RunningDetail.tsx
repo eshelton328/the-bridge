@@ -22,7 +22,7 @@ import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ChatEntry } from '../blocks/ChatEntry.tsx'
 import { InboxStatus } from '../blocks/InboxStatus.tsx'
-import type { InboxRunning } from '../types.ts'
+import { draftProps, type InboxDrafts, type InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
 // T5: the first message 22 below the started task (346:6378 to 346:6393), 24 on the grid (d-072); D5 has 18, the
@@ -40,6 +40,8 @@ export type RunningDetailProps = {
   layout?: Viewport | undefined
   /** Back on a tablet or phone. */
   onBack?: (() => void) | undefined
+  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  drafts?: InboxDrafts | undefined
 }
 
 function DesktopHeader({ detail }: { detail: InboxRunning }) {
@@ -104,7 +106,7 @@ function CompactHeader({ detail, onBack }: { detail: InboxRunning; onBack: (() =
   )
 }
 
-export function RunningDetail({ detail, layout = 'desktop', onBack }: RunningDetailProps) {
+export function RunningDetail({ detail, layout = 'desktop', onBack, drafts }: RunningDetailProps) {
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
       <Stack gap="16" className={fill}>
@@ -121,6 +123,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack }: RunningDet
             placeholder={detail.reply}
             running
             onAttach={() => undefined}
+            {...draftProps(drafts, 'reply')}
             // T5's reply box (346:6416) has no model chip.
             model={
               layout === 'desktop' ? (
