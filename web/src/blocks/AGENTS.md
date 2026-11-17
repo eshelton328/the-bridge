@@ -10,6 +10,10 @@ here when a second page needs it.
   `MoreDrawer`: Artifacts and Toolkit, then Brain and Workflows under
   Later. A screen opens it from the phone tab bar's More and passes
   `onNavigate` for Artifacts and Toolkit.
+- `DetailFrame`: a detail pane (d-107) in the library's `ScrollFrame`:
+  Back in its header on a tablet or phone, the content in the layout's
+  `Container`, and a footer that stays sticky at the end. The Inbox
+  details use it first; Toolkit and Artifacts use it for an open item.
 - `ViewportFrame`: fills its parent, measures its width and renders a
   page screen for that width's layout (`lib/viewport.ts`). A screen lays
   out by its width, never by a story's prop or `globals.viewport`.

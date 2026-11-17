@@ -5,9 +5,9 @@
 // scroll each layer keeps the place it had in one Container. Props only.
 import { Container, ScrollFrame } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
-import { css, cx } from '../../../../styled-system/css/index.js'
-import { detailContainerSize } from '../../../lib/containerSize.ts'
-import type { Viewport } from '../../../lib/screenState.ts'
+import { css, cx } from '../../styled-system/css/index.js'
+import { detailContainerSize } from '../lib/containerSize.ts'
+import type { Viewport } from '../lib/screenState.ts'
 
 const noBottom = css({ pb: '0' })
 const noTop = css({ pt: '0' })

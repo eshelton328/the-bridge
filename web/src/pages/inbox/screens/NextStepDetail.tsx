@@ -10,7 +10,7 @@ import { Button, Inline, MarkdownView, PlayIcon, Stack, TruncatedText } from '@e
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
-import { DetailFrame } from '../blocks/DetailFrame.tsx'
+import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { type DiscussControl, DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { NotesBox } from '../blocks/NotesBox.tsx'
