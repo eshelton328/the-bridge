@@ -1,0 +1,1 @@
+Today every artifact is added by hand. With R27 the library finds them, so Add a link stays only for an artifact it cannot find, such as a Codex site on its own domain (proposed). The title comes from the page’s <title>, as today.

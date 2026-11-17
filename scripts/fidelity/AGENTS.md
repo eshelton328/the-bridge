@@ -16,7 +16,7 @@ The Figma references the checks read are in
 | `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs) |
 | `sideBySide.ts`      | Draws the side-by-side PNG (Figma left, render right) in a new page, so no popover of the story leaks into it                                                      |
 | `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                                                                                          |
-| `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply                                                                         |
+| `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply and an optional characters file                                         |
 | `figmaMetadata.ts`   | Parses `get_metadata` XML into a frame record; marks design-only chrome text as excluded                                                                           |
 | `references.ts`      | Reads `frame.json` and `exceptions.json` with Zod                                                                                                                  |
 | `buildRecord.ts`     | The fidelity-builder agent's build record and the checks of it: matches the last report, deviations.md names each failure, gaps, no guarded file changed           |

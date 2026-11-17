@@ -1,0 +1,1 @@
+The same grid in two columns. Artifacts has its own tab after Projects, because the iPad mini tab bar has space for it (Erik, 2026-11-14).

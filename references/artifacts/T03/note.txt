@@ -1,0 +1,1 @@
+Filter opens as a sheet that covers the tab bar (R26).

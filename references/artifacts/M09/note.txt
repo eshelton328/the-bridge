@@ -1,0 +1,1 @@
+On the phone, Discuss opens the discussion as its own page, as in the Inbox (M18). The tab bar hides. Open in workspace opens the chat in Workspaces. The model picker and context meter sit where the Inbox discussion has them (D14, T17, M18).

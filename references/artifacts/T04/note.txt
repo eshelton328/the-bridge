@@ -1,0 +1,1 @@
+On the iPad mini, Discuss opens the discussion as its own page, as in the Inbox (T17). The tab bar hides, as in chats. The card at the top goes back to the artifact; Open in workspace opens the chat. The model picker and context meter sit where the Inbox discussion has them (D14, T17, M18).

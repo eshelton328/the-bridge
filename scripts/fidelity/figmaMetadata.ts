@@ -1,8 +1,11 @@
 // Reads the XML that the Figma MCP tool get_metadata returns and turns one
 // frame of it into a reference record (frame.json): every named layer with
 // its box relative to the frame's top-left corner and, for a text layer,
-// its characters. get_metadata names a text layer after its characters, so
-// the name is the text. Pure functions; buildReferences.ts does the I/O.
+// its characters. get_metadata names a new text layer after its characters,
+// but a designer can rename one ("title"), and get_metadata does not return
+// the characters. So the text is the layer's entry in `characters` (read
+// from Figma with use_figma) and the name only when it has none. Pure
+// functions; buildReferences.ts does the I/O.
 
 export type XmlNode = {
   tag: string
@@ -12,6 +15,8 @@ export type XmlNode = {
   y: number
   w: number
   h: number
+  /** get_metadata's `hidden="true"`: Figma does not draw the layer or its children. */
+  hidden?: boolean
   children: XmlNode[]
 }
 
@@ -88,6 +93,7 @@ export function parseMetadata(xml: string): XmlNode {
       h: Number(attrs.height ?? 0),
       children: [],
     }
+    if (attrs.hidden === 'true') node.hidden = true
     const parent = stack.at(-1)
     if (parent) parent.children.push(node)
     if (selfClosing) {
@@ -139,12 +145,22 @@ const chromeRules: { test: (path: string[], text: string, top: XmlNode | undefin
     reason: statusBarReason,
   },
   {
-    test: (path) => path.some((p) => p.startsWith('keyboard (iOS')),
+    test: (path) => path.some((p) => p === 'keyboard' || p.startsWith('keyboard (iOS')),
     reason: 'iOS keyboard (design-only chrome, d-089)',
   },
 ]
 
-export function buildFrameRef(frame: XmlNode, fileKey: string, source: string): FrameRef {
+/**
+ * Builds the reference record of one frame. `characters` maps a text
+ * layer's node id to its characters, for each layer whose name is not its
+ * text; a text layer with no entry takes its name.
+ */
+export function buildFrameRef(
+  frame: XmlNode,
+  fileKey: string,
+  source: string,
+  characters: ReadonlyMap<string, string> = new Map(),
+): FrameRef {
   const code = frameCode(frame.name)
   if (code === null) throw new Error(`Frame "${frame.name}" has no code such as D1`)
   const layers: Layer[] = []
@@ -158,6 +174,11 @@ export function buildFrameRef(frame: XmlNode, fileKey: string, source: string): 
         skipped[child.name] = (skipped[child.name] ?? 0) + 1
         continue
       }
+      // A hidden layer is not drawn, so neither it nor its children are in the frame.
+      if (child.hidden) {
+        skipped.hidden = (skipped.hidden ?? 0) + 1
+        continue
+      }
       const layer: Layer = {
         id: child.id,
         name: child.name,
@@ -169,9 +190,10 @@ export function buildFrameRef(frame: XmlNode, fileKey: string, source: string): 
         path: path.join(' > '),
       }
       if (child.tag === 'text') {
-        layer.text = child.name
-        const rule = chromeRules.find((r) => r.test(path, child.name, top))
-        if (rule) exclude.push({ id: child.id, text: child.name, reason: rule.reason })
+        const text = characters.get(child.id) ?? child.name
+        layer.text = text
+        const rule = chromeRules.find((r) => r.test(path, text, top))
+        if (rule) exclude.push({ id: child.id, text, reason: rule.reason })
       }
       layers.push(layer)
       visit(child, x, y, [...path, child.name], top ?? child)

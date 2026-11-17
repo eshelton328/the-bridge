@@ -1,0 +1,1319 @@
+{
+  "frameId": "M07",
+  "code": "M7",
+  "name": "M7 · File in a project",
+  "node": "407:919",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters read with use_figma 2026-11-17",
+  "layers": [
+    {
+      "id": "407:942",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "407:943",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "407:944",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "407:945",
+      "name": "artifact page",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 622,
+      "path": "content"
+    },
+    {
+      "id": "407:946",
+      "name": "top bar",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 38,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:947",
+      "name": "back · Artifacts",
+      "type": "frame",
+      "x": 12,
+      "y": 49,
+      "w": 91,
+      "h": 22,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "407:948",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 49,
+      "w": 22,
+      "h": 22,
+      "path": "content > artifact page > top bar > back · Artifacts"
+    },
+    {
+      "id": "407:950",
+      "name": "Artifacts",
+      "type": "text",
+      "x": 36,
+      "y": 49,
+      "w": 67,
+      "h": 22,
+      "path": "content > artifact page > top bar > back · Artifacts",
+      "text": "Artifacts"
+    },
+    {
+      "id": "407:951",
+      "name": "spacer",
+      "type": "frame",
+      "x": 111,
+      "y": 59.5,
+      "w": 223,
+      "h": 1,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "407:952",
+      "name": "button · more",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > artifact page > top bar"
+    },
+    {
+      "id": "407:953",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 352,
+      "y": 52,
+      "w": 16,
+      "h": 16,
+      "path": "content > artifact page > top bar > button · more"
+    },
+    {
+      "id": "407:955",
+      "name": "title block",
+      "type": "frame",
+      "x": 12,
+      "y": 94,
+      "w": 366,
+      "h": 156,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:956",
+      "name": "status",
+      "type": "frame",
+      "x": 12,
+      "y": 94,
+      "w": 160,
+      "h": 22,
+      "path": "content > artifact page > title block"
+    },
+    {
+      "id": "407:957",
+      "name": "pill · New",
+      "type": "frame",
+      "x": 12,
+      "y": 94,
+      "w": 58,
+      "h": 22,
+      "path": "content > artifact page > title block > status"
+    },
+    {
+      "id": "407:958",
+      "name": "icon/spark",
+      "type": "frame",
+      "x": 20,
+      "y": 99.5,
+      "w": 11,
+      "h": 11,
+      "path": "content > artifact page > title block > status > pill · New"
+    },
+    {
+      "id": "407:960",
+      "name": "New",
+      "type": "text",
+      "x": 36,
+      "y": 97,
+      "w": 26,
+      "h": 16,
+      "path": "content > artifact page > title block > status > pill · New",
+      "text": "New"
+    },
+    {
+      "id": "407:961",
+      "name": "found 12m ago",
+      "type": "text",
+      "x": 78,
+      "y": 96.5,
+      "w": 94,
+      "h": 17,
+      "path": "content > artifact page > title block > status",
+      "text": "found 12m ago"
+    },
+    {
+      "id": "407:962",
+      "name": "title",
+      "type": "text",
+      "x": 12,
+      "y": 124,
+      "w": 268,
+      "h": 41,
+      "path": "content > artifact page > title block",
+      "text": "Skill eval pass rates"
+    },
+    {
+      "id": "407:963",
+      "name": "description",
+      "type": "text",
+      "x": 12,
+      "y": 173,
+      "w": 366,
+      "h": 40,
+      "path": "content > artifact page > title block",
+      "text": "Pass rates per round for every skill in the toolkit, with and without the skill."
+    },
+    {
+      "id": "407:964",
+      "name": "chips",
+      "type": "frame",
+      "x": 12,
+      "y": 221,
+      "w": 224,
+      "h": 29,
+      "path": "content > artifact page > title block"
+    },
+    {
+      "id": "407:965",
+      "name": "chip · Claude",
+      "type": "frame",
+      "x": 12,
+      "y": 221,
+      "w": 82,
+      "h": 29,
+      "path": "content > artifact page > title block > chips"
+    },
+    {
+      "id": "407:966",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 22,
+      "y": 229.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > chip · Claude"
+    },
+    {
+      "id": "407:968",
+      "name": "Claude",
+      "type": "text",
+      "x": 40,
+      "y": 227,
+      "w": 44,
+      "h": 17,
+      "path": "content > artifact page > title block > chips > chip · Claude",
+      "text": "Claude"
+    },
+    {
+      "id": "407:969",
+      "name": "project · File in a project",
+      "type": "frame",
+      "x": 100,
+      "y": 221,
+      "w": 136,
+      "h": 29,
+      "path": "content > artifact page > title block > chips"
+    },
+    {
+      "id": "407:970",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 110,
+      "y": 229.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > project · File in a project"
+    },
+    {
+      "id": "407:972",
+      "name": "skill-evals",
+      "type": "text",
+      "x": 128,
+      "y": 227,
+      "w": 80,
+      "h": 17,
+      "path": "content > artifact page > title block > chips > project · File in a project",
+      "text": "skill-evals"
+    },
+    {
+      "id": "407:973",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 214,
+      "y": 229.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > artifact page > title block > chips > project · File in a project"
+    },
+    {
+      "id": "407:975",
+      "name": "preview",
+      "type": "frame",
+      "x": 12,
+      "y": 264,
+      "w": 368,
+      "h": 208,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:976",
+      "name": "thumbnail · chart",
+      "type": "frame",
+      "x": 13,
+      "y": 265,
+      "w": 366,
+      "h": 206,
+      "path": "content > artifact page > preview"
+    },
+    {
+      "id": "407:977",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 13,
+      "y": 265,
+      "w": 366,
+      "h": 19,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:978",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 21,
+      "y": 272,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:979",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 30,
+      "y": 272,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:980",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 39,
+      "y": 272,
+      "w": 5,
+      "h": 5,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:981",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 42,
+      "y": 300,
+      "w": 123.19999694824219,
+      "h": 8.239999771118164,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:982",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 48.15999984741211,
+      "y": 400.92431640625,
+      "w": 21.9022216796875,
+      "h": 49.07568359375,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:983",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 82.3822250366211,
+      "y": 330.99024963378906,
+      "w": 21.9022216796875,
+      "h": 119.00975036621094,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:984",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 116.60444641113281,
+      "y": 402.9251708984375,
+      "w": 21.9022216796875,
+      "h": 47.07483673095703,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:985",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 150.82666015625,
+      "y": 333.4359359741211,
+      "w": 21.9022216796875,
+      "h": 116.5640640258789,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:986",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 185.04888916015625,
+      "y": 382.57286834716797,
+      "w": 21.9022216796875,
+      "h": 67.42713165283203,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:987",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 219.2711181640625,
+      "y": 341.1261749267578,
+      "w": 21.9022216796875,
+      "h": 108.87382507324219,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:988",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 253.4933319091797,
+      "y": 364.2022705078125,
+      "w": 21.9022216796875,
+      "h": 85.7977294921875,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:989",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 287.7155456542969,
+      "y": 353.5503234863281,
+      "w": 21.9022216796875,
+      "h": 96.44967651367188,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:990",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 321.9377746582031,
+      "y": 349.0332336425781,
+      "w": 21.9022216796875,
+      "h": 100.96676635742188,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:991",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 42,
+      "y": 450,
+      "w": 308,
+      "h": 1,
+      "path": "content > artifact page > preview > thumbnail · chart"
+    },
+    {
+      "id": "407:992",
+      "name": "button · Open artifact",
+      "type": "frame",
+      "x": 12,
+      "y": 486,
+      "w": 366,
+      "h": 46,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:993",
+      "name": "Open artifact",
+      "type": "text",
+      "x": 134,
+      "y": 498.5,
+      "w": 102,
+      "h": 21,
+      "path": "content > artifact page > button · Open artifact",
+      "text": "Open artifact"
+    },
+    {
+      "id": "407:994",
+      "name": "icon/ext",
+      "type": "frame",
+      "x": 242,
+      "y": 502,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > button · Open artifact"
+    },
+    {
+      "id": "407:996",
+      "name": "secondary actions",
+      "type": "frame",
+      "x": 12,
+      "y": 546,
+      "w": 366,
+      "h": 40,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:997",
+      "name": "button · Copy link",
+      "type": "frame",
+      "x": 12,
+      "y": 546,
+      "w": 179,
+      "h": 40,
+      "path": "content > artifact page > secondary actions"
+    },
+    {
+      "id": "407:998",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 60.5,
+      "y": 559,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > secondary actions > button · Copy link"
+    },
+    {
+      "id": "407:1000",
+      "name": "Copy link",
+      "type": "text",
+      "x": 80.5,
+      "y": 557,
+      "w": 62,
+      "h": 18,
+      "path": "content > artifact page > secondary actions > button · Copy link",
+      "text": "Copy link"
+    },
+    {
+      "id": "407:1001",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 199,
+      "y": 546,
+      "w": 179,
+      "h": 40,
+      "path": "content > artifact page > secondary actions"
+    },
+    {
+      "id": "407:1002",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 252.5,
+      "y": 559,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > secondary actions > button · Discuss"
+    },
+    {
+      "id": "407:1004",
+      "name": "Discuss",
+      "type": "text",
+      "x": 272.5,
+      "y": 557,
+      "w": 52,
+      "h": 18,
+      "path": "content > artifact page > secondary actions > button · Discuss",
+      "text": "Discuss"
+    },
+    {
+      "id": "407:1005",
+      "name": "section · MADE IN",
+      "type": "frame",
+      "x": 12,
+      "y": 600,
+      "w": 366,
+      "h": 64,
+      "path": "content > artifact page"
+    },
+    {
+      "id": "407:1006",
+      "name": "MADE IN",
+      "type": "text",
+      "x": 12,
+      "y": 602,
+      "w": 51,
+      "h": 17,
+      "path": "content > artifact page > section · MADE IN",
+      "text": "MADE IN"
+    },
+    {
+      "id": "407:1007",
+      "name": "made in",
+      "type": "frame",
+      "x": 12,
+      "y": 625,
+      "w": 366,
+      "h": 39,
+      "path": "content > artifact page > section · MADE IN"
+    },
+    {
+      "id": "407:1008",
+      "name": "kind · claude",
+      "type": "frame",
+      "x": 12,
+      "y": 637.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "407:1010",
+      "name": "text",
+      "type": "frame",
+      "x": 36,
+      "y": 625,
+      "w": 267,
+      "h": 39,
+      "path": "content > artifact page > section · MADE IN > made in"
+    },
+    {
+      "id": "407:1011",
+      "name": "Chat quiet-nebula",
+      "type": "text",
+      "x": 36,
+      "y": 625,
+      "w": 119,
+      "h": 20,
+      "path": "content > artifact page > section · MADE IN > made in > text",
+      "text": "Chat quiet-nebula"
+    },
+    {
+      "id": "407:1012",
+      "name": "workspace skill-evals · Artifact hook",
+      "type": "text",
+      "x": 36,
+      "y": 647,
+      "w": 267,
+      "h": 17,
+      "path": "content > artifact page > section · MADE IN > made in > text",
+      "text": "workspace skill-evals · Artifact hook"
+    },
+    {
+      "id": "407:1013",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "407:1014",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "407:1015",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "407:1016",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "407:1019",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "407:1020",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "407:1021",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "407:1022",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "407:1026",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "407:1027",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "407:1028",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "407:1029",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "407:1030",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "407:1031",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "407:1037",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "407:1038",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "407:1039",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "407:1040",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "407:1043",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "407:1044",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "407:1045",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "407:1046",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "407:1051",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "407:1052",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "407:1053",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    },
+    {
+      "id": "407:1093",
+      "name": "scrim",
+      "type": "rounded-rectangle",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "path": ""
+    },
+    {
+      "id": "407:1094",
+      "name": "sheet · File in a project",
+      "type": "frame",
+      "x": 0,
+      "y": 411,
+      "w": 390,
+      "h": 433,
+      "path": ""
+    },
+    {
+      "id": "407:1095",
+      "name": "grabber row",
+      "type": "frame",
+      "x": 13,
+      "y": 420,
+      "w": 364,
+      "h": 5,
+      "path": "sheet · File in a project"
+    },
+    {
+      "id": "407:1096",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 177,
+      "y": 420,
+      "w": 36,
+      "h": 5,
+      "path": "sheet · File in a project > grabber row"
+    },
+    {
+      "id": "407:1097",
+      "name": "sheet header",
+      "type": "frame",
+      "x": 13,
+      "y": 427,
+      "w": 364,
+      "h": 40,
+      "path": "sheet · File in a project"
+    },
+    {
+      "id": "407:1098",
+      "name": "File in a project",
+      "type": "text",
+      "x": 17,
+      "y": 437,
+      "w": 125,
+      "h": 22,
+      "path": "sheet · File in a project > sheet header",
+      "text": "File in a project"
+    },
+    {
+      "id": "407:1099",
+      "name": "spacer",
+      "type": "frame",
+      "x": 150,
+      "y": 447.5,
+      "w": 178,
+      "h": 1,
+      "path": "sheet · File in a project > sheet header"
+    },
+    {
+      "id": "407:1100",
+      "name": "Done",
+      "type": "text",
+      "x": 336,
+      "y": 438,
+      "w": 37,
+      "h": 20,
+      "path": "sheet · File in a project > sheet header",
+      "text": "Done"
+    },
+    {
+      "id": "407:1101",
+      "name": "sheet body",
+      "type": "frame",
+      "x": 13,
+      "y": 469,
+      "w": 364,
+      "h": 340,
+      "path": "sheet · File in a project"
+    },
+    {
+      "id": "407:1060",
+      "name": "artifact name",
+      "type": "text",
+      "x": 13,
+      "y": 469,
+      "w": 364,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body",
+      "text": "Skill eval pass rates"
+    },
+    {
+      "id": "407:1054",
+      "name": "project · Not in a project",
+      "type": "frame",
+      "x": 13,
+      "y": 488,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1057",
+      "name": "Not in a project",
+      "type": "text",
+      "x": 25,
+      "y": 500,
+      "w": 98,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > project · Not in a project",
+      "text": "Not in a project"
+    },
+    {
+      "id": "407:1058",
+      "name": "spacer",
+      "type": "frame",
+      "x": 133,
+      "y": 509.5,
+      "w": 214,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body > project · Not in a project"
+    },
+    {
+      "id": "407:1059",
+      "name": "1",
+      "type": "text",
+      "x": 357,
+      "y": 501.5,
+      "w": 8,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body > project · Not in a project",
+      "text": "1"
+    },
+    {
+      "id": "407:1061",
+      "name": "project · ncc-1701",
+      "type": "frame",
+      "x": 13,
+      "y": 534,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1062",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 548.5,
+      "w": 15,
+      "h": 15,
+      "path": "sheet · File in a project > sheet body > project · ncc-1701"
+    },
+    {
+      "id": "407:1064",
+      "name": "ncc-1701",
+      "type": "text",
+      "x": 50,
+      "y": 546,
+      "w": 68,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > project · ncc-1701",
+      "text": "ncc-1701"
+    },
+    {
+      "id": "407:1065",
+      "name": "spacer",
+      "type": "frame",
+      "x": 128,
+      "y": 555.5,
+      "w": 147,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body > project · ncc-1701"
+    },
+    {
+      "id": "407:1066",
+      "name": "9 artifacts",
+      "type": "text",
+      "x": 285,
+      "y": 547.5,
+      "w": 80,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body > project · ncc-1701",
+      "text": "9 artifacts"
+    },
+    {
+      "id": "407:1067",
+      "name": "project · omni",
+      "type": "frame",
+      "x": 13,
+      "y": 580,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1068",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 594.5,
+      "w": 15,
+      "h": 15,
+      "path": "sheet · File in a project > sheet body > project · omni"
+    },
+    {
+      "id": "407:1070",
+      "name": "omni",
+      "type": "text",
+      "x": 50,
+      "y": 592,
+      "w": 34,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > project · omni",
+      "text": "omni"
+    },
+    {
+      "id": "407:1071",
+      "name": "spacer",
+      "type": "frame",
+      "x": 94,
+      "y": 601.5,
+      "w": 181,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body > project · omni"
+    },
+    {
+      "id": "407:1072",
+      "name": "6 artifacts",
+      "type": "text",
+      "x": 285,
+      "y": 593.5,
+      "w": 80,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body > project · omni",
+      "text": "6 artifacts"
+    },
+    {
+      "id": "407:1073",
+      "name": "project · omni-brain",
+      "type": "frame",
+      "x": 13,
+      "y": 626,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1074",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 640.5,
+      "w": 15,
+      "h": 15,
+      "path": "sheet · File in a project > sheet body > project · omni-brain"
+    },
+    {
+      "id": "407:1076",
+      "name": "omni-brain",
+      "type": "text",
+      "x": 50,
+      "y": 638,
+      "w": 84,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > project · omni-brain",
+      "text": "omni-brain"
+    },
+    {
+      "id": "407:1077",
+      "name": "spacer",
+      "type": "frame",
+      "x": 144,
+      "y": 647.5,
+      "w": 131,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body > project · omni-brain"
+    },
+    {
+      "id": "407:1078",
+      "name": "3 artifacts",
+      "type": "text",
+      "x": 285,
+      "y": 639.5,
+      "w": 80,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body > project · omni-brain",
+      "text": "3 artifacts"
+    },
+    {
+      "id": "407:1079",
+      "name": "project · skill-evals",
+      "type": "frame",
+      "x": 13,
+      "y": 672,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1080",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 686.5,
+      "w": 15,
+      "h": 15,
+      "path": "sheet · File in a project > sheet body > project · skill-evals"
+    },
+    {
+      "id": "407:1082",
+      "name": "skill-evals",
+      "type": "text",
+      "x": 50,
+      "y": 684,
+      "w": 93,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > project · skill-evals",
+      "text": "skill-evals"
+    },
+    {
+      "id": "407:1083",
+      "name": "spacer",
+      "type": "frame",
+      "x": 153,
+      "y": 693.5,
+      "w": 96,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body > project · skill-evals"
+    },
+    {
+      "id": "407:1084",
+      "name": "5 artifacts",
+      "type": "text",
+      "x": 259,
+      "y": 685.5,
+      "w": 80,
+      "h": 17,
+      "path": "sheet · File in a project > sheet body > project · skill-evals",
+      "text": "5 artifacts"
+    },
+    {
+      "id": "407:1085",
+      "name": "icon/check",
+      "type": "frame",
+      "x": 349,
+      "y": 686,
+      "w": 16,
+      "h": 16,
+      "path": "sheet · File in a project > sheet body > project · skill-evals"
+    },
+    {
+      "id": "407:1087",
+      "name": "divider",
+      "type": "rounded-rectangle",
+      "x": 13,
+      "y": 718,
+      "w": 364,
+      "h": 1,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1088",
+      "name": "button · Remove from the library",
+      "type": "frame",
+      "x": 13,
+      "y": 721,
+      "w": 364,
+      "h": 44,
+      "path": "sheet · File in a project > sheet body"
+    },
+    {
+      "id": "407:1089",
+      "name": "icon/trash",
+      "type": "frame",
+      "x": 25,
+      "y": 735.5,
+      "w": 15,
+      "h": 15,
+      "path": "sheet · File in a project > sheet body > button · Remove from the library"
+    },
+    {
+      "id": "407:1091",
+      "name": "Remove from the library",
+      "type": "text",
+      "x": 50,
+      "y": 733,
+      "w": 154,
+      "h": 20,
+      "path": "sheet · File in a project > sheet body > button · Remove from the library",
+      "text": "Remove from the library"
+    },
+    {
+      "id": "407:1092",
+      "name": "remove note",
+      "type": "text",
+      "x": 13,
+      "y": 767,
+      "w": 364,
+      "h": 34,
+      "path": "sheet · File in a project > sheet body",
+      "text": "Removing takes the link out of the library only; the artifact stays where it was published."
+    }
+  ],
+  "exclude": [
+    {
+      "id": "407:943",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

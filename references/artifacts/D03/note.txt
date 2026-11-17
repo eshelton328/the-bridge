@@ -1,0 +1,1 @@
+Filter by source, project, how the artifact was found and when it changed (R26). The choice applies when Erik selects Show 7. Found by and Updated are proposals; today’s page filters by Source and Project.

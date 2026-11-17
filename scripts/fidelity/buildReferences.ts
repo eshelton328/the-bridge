@@ -6,7 +6,13 @@
 // this script reports the frames that still lack one.
 //
 //   node scripts/fidelity/buildReferences.ts --page inbox \
-//     --metadata ~/.local/share/ncc/claude-design/ncc-1701-screens/inbox-metadata.xml
+//     --metadata ~/.local/share/ncc/claude-design/ncc-1701-screens/inbox-metadata.xml \
+//     [--characters <file.json>]
+//
+// get_metadata gives a text layer's name, not its characters. When a page
+// renames text layers ("title"), save {"<node id>": "<characters>"} for
+// each text layer whose name differs, from a read-only use_figma call, and
+// pass it with --characters.
 //
 // An existing frame.json keeps its `tolerance` and any `exclude` entry
 // added by hand. Exceptions with reasons live beside it in exceptions.json,
@@ -14,6 +20,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
+import { z } from 'zod'
 import { buildFrameRef, findFrames, findNotes, parseMetadata } from './figmaMetadata.ts'
 import { readFrameRef, referencesDir } from './references.ts'
 
@@ -21,17 +28,25 @@ const { values } = parseArgs({
   options: {
     page: { type: 'string' },
     metadata: { type: 'string' },
+    characters: { type: 'string' },
     'file-key': { type: 'string', default: 'PZoW9BBu43qRgon1KhJcwU' },
     source: { type: 'string', default: 'get_metadata of the page, saved 2026-11-16' },
   },
 })
 const { page, metadata } = values
 if (page === undefined || metadata === undefined) {
-  console.error('Usage: buildReferences.ts --page <page> --metadata <get_metadata.xml> [--file-key <key>]')
+  console.error(
+    'Usage: buildReferences.ts --page <page> --metadata <get_metadata.xml> [--characters <file.json>] [--file-key <key>]',
+  )
   process.exit(2)
 }
 
 const root = parseMetadata(readFileSync(metadata, 'utf8'))
+const characters = new Map<string, string>(
+  values.characters === undefined
+    ? []
+    : Object.entries(z.record(z.string(), z.string()).parse(JSON.parse(readFileSync(values.characters, 'utf8')))),
+)
 const notes = findNotes(root)
 const out = join(referencesDir, page)
 const missingPng: string[] = []
@@ -39,7 +54,7 @@ const missingNote: string[] = []
 let written = 0
 
 for (const frame of findFrames(root)) {
-  const ref = buildFrameRef(frame, values['file-key'], values.source)
+  const ref = buildFrameRef(frame, values['file-key'], values.source, characters)
   const dir = join(out, ref.frameId)
   mkdirSync(dir, { recursive: true })
   const old = existsSync(join(dir, 'frame.json')) ? readFrameRef(page, ref.frameId) : undefined
