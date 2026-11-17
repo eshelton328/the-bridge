@@ -8,7 +8,11 @@
 // (T2) under the chips, with no search row; on the phone (M11) straight under
 // the header, with no chips and no search. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
-// without `onUiChange` the screen keeps Erik's changes itself.
+// without `onUiChange` the screen keeps Erik's changes itself. A click on a
+// card, a row or the map card's Open button opens the item (`ui.open`, D3):
+// on the desktop the list moves into the list pane (`ToolkitListPane`) and
+// the item (`ToolkitItem`) fills the rest; on a tablet or phone the item
+// fills the screen under a back row.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -19,9 +23,12 @@ import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
+import { ToolkitItem } from '../blocks/ToolkitItem.tsx'
+import { ToolkitListPane } from '../blocks/ToolkitListPane.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
+import { openItem } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
@@ -44,6 +51,8 @@ export type ToolkitScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** Reports what Erik changes: the view, the kind chip, the search or a group opened or closed. */
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
+  /** Copies an open item's path, from its path badge. */
+  onCopyPath?: ((path: string) => void) | undefined
 }
 
 type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & {
@@ -51,15 +60,19 @@ type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & 
   onUiChange: (change: Partial<ToolkitUi>) => void
 }
 
-function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayoutProps) {
+function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }: ToolkitLayoutProps) {
   const desktop = layout === 'desktop'
   const view = listView(data, ui)
+  const open = openItem(data, ui)
+  const openPath = (path: string) => {
+    onUiChange({ open: path })
+  }
   const map = ui.view === 'map'
   // M11 461:709: the phone's map comes straight under the header; T2 428:348: the tablet's under the chips.
   const showChips = !(map && layout === 'phone')
   const showTools = !map || desktop
-  const setGroupOpen = (kind: ToolkitKind, open: boolean) => {
-    onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: open } })
+  const setGroupOpen = (kind: ToolkitKind, isOpen: boolean) => {
+    onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: isOpen } })
   }
   const list = (
     <section
@@ -113,6 +126,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
           onSelect={(path) => {
             onUiChange({ mapSelected: path })
           }}
+          onOpen={openPath}
         />
       ) : null}
       {(ui.view === 'map' ? [] : view.groups).map((group) => (
@@ -122,13 +136,34 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
           layout={layout}
           sharedNames={view.sharedNames}
           open={ui.groupsOpen[group.kind] ?? true}
-          onOpenChange={(open) => {
-            setGroupOpen(group.kind, open)
+          onOpenChange={(next) => {
+            setGroupOpen(group.kind, next)
           }}
+          onOpen={openPath}
         />
       ))}
     </section>
   )
+  const item =
+    open === null ? null : (
+      <ToolkitItem
+        open={open}
+        back={
+          desktop
+            ? undefined
+            : () => {
+                onUiChange({ open: null })
+              }
+        }
+        onTabChange={(itemTab) => {
+          onUiChange({ itemTab })
+        }}
+        onCopyPath={onCopyPath}
+        onShowOnMap={() => {
+          onUiChange({ open: null, view: 'map', mapSelected: open.item.path })
+        }}
+      />
+    )
   return (
     <Backdrop size={layout}>
       <AppShell
@@ -149,7 +184,18 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
             />
           )
         }
-        detail={list}
+        list={
+          item !== null && desktop ? (
+            <ToolkitListPane
+              data={data}
+              ui={ui}
+              groups={view.groups}
+              sharedNames={view.sharedNames}
+              onUiChange={onUiChange}
+            />
+          ) : undefined
+        }
+        detail={item ?? list}
       />
       {/* Only the phone's More opens it; a state with `moreOpen` (M4) shows it at any width, as a story renders it. */}
       <MoreDrawer
