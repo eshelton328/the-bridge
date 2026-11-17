@@ -22,7 +22,7 @@ import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
-import { listView } from './listView.ts'
+import { listView, mapView } from './listView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
 const page = {
@@ -106,7 +106,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
       ) : null}
       {ui.view === 'map' ? (
         <ToolkitMap
-          map={data.map ?? { columns: [], nodes: [], links: [] }}
+          map={mapView(data.map ?? { columns: [], nodes: [], links: [] }, ui)}
           selected={ui.mapSelected ?? null}
           layout={layout}
           selectedItem={data.groups.flatMap((g) => g.items).find((item) => item.path === ui.mapSelected)}
