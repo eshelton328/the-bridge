@@ -47,7 +47,11 @@ export const running = {
       kind: 'running',
       title: 'Write the tickets for increment one',
       agent: 'claude',
-      meta: 'ncc-1701 · f-005 · NCC-28 · started 3 min ago in quiet-nebula · the-bridge · Sonnet 5.5',
+      meta: {
+        task: 'ncc-1701 · f-005 · NCC-28',
+        started: 'started 3 min ago in',
+        chat: 'quiet-nebula · the-bridge · Sonnet 5.5',
+      },
       status: { tone: 'working', label: 'Working', dot: true },
       chat: [
         {

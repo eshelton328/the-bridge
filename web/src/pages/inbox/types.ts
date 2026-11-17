@@ -188,7 +188,14 @@ const InboxNextStep = InboxDetailHead.extend({
     change: z.object({ line: z.string(), undo: z.string() }).optional(),
   }),
   launch: InboxLaunch,
-  notes: z.object({ text: z.string(), by: z.string(), add: z.string() }).nullable(),
+  /**
+   * Erik's notes: his note with who wrote it and when, if he wrote one, and
+   * the placeholder of the field that adds one; without `add` (a started
+   * task on the tablet) the notes are read-only.
+   */
+  notes: z
+    .object({ note: z.object({ text: z.string(), by: z.string() }).optional(), add: z.string().optional() })
+    .nullable(),
   sources: z.array(z.object({ label: z.string(), detail: z.string() })),
 })
 export type InboxNextStep = z.infer<typeof InboxNextStep>
@@ -220,7 +227,13 @@ const InboxRunning = z.object({
   kind: z.literal('running'),
   title: z.string(),
   agent: InboxAgent,
-  meta: z.string(),
+  /**
+   * The header's meta: the task's place ("ncc-1701 · f-005 · NCC-28"), when
+   * it started ("started 3 min ago in") and the chat ("quiet-nebula ·
+   * the-bridge · Sonnet 5.5"). The desktop puts them on one line; the
+   * tablet shows the place, then the chat with its agent mark.
+   */
+  meta: z.object({ task: z.string(), started: z.string(), chat: z.string() }),
   status: InboxPill,
   chat: z.array(InboxChatEntry),
   reply: z.string(),

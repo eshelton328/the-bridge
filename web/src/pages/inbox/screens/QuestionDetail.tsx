@@ -1,6 +1,6 @@
 // The detail of a question from a chat: the chat it blocks, the context,
 // the options with the recommended one first, a note and the answer
-// button. Props only.
+// button. On a tablet or phone it sits under Back (T3). Props only.
 import {
   Badge,
   Button,
@@ -15,7 +15,10 @@ import {
   Stack,
   TextArea,
 } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import { detailContainerSize } from '../../../lib/containerSize.ts'
+import type { Viewport } from '../../../lib/screenState.ts'
 import { DetailHead } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import type { InboxQuestion } from '../types.ts'
@@ -25,10 +28,19 @@ const waitTitle = css({ textStyle: 'label' })
 const mono = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
-export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
+export type QuestionDetailProps = {
+  detail: InboxQuestion
+  /** The screen's layout. */
+  layout?: Viewport | undefined
+  /** Back, over the item on a tablet or phone. */
+  back?: ReactNode
+}
+
+export function QuestionDetail({ detail, layout = 'desktop', back }: QuestionDetailProps) {
   return (
-    <Container size="detail">
-      <Stack gap="24">
+    <Container size={detailContainerSize(layout)}>
+      {back}
+      <Stack gap="24" data-figma={layout === 'desktop' ? undefined : 'task · question'}>
         <DetailHead head={detail} />
         <div data-figma="blocking">
           <Panel tone="needsYou">

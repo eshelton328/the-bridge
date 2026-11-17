@@ -20,6 +20,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
+import type { Viewport } from '../../../lib/screenState.ts'
 import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
 import { PromptDialog } from './PromptDialog.tsx'
@@ -60,9 +61,11 @@ export type PromptSectionProps = {
   /** The whole prompt is open in its dialog. */
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
+  /** The screen's layout: the whole prompt opens in a dialog on the desktop and in a sheet on a tablet or phone. */
+  layout?: Viewport | undefined
 }
 
-export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSectionProps) {
+export function PromptSection({ prompt, editing, open, onOpenChange, layout }: PromptSectionProps) {
   const readMore = prompt.long ? (
     <a className={more} href="#prompt">
       Read the whole prompt
@@ -115,7 +118,13 @@ export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSec
               </span>
             </Inline>
           )}
-          <PromptDialog title="Suggested prompt" text={prompt.text} open={open} onOpenChange={onOpenChange} />
+          <PromptDialog
+            title="Suggested prompt"
+            text={prompt.text}
+            open={open}
+            onOpenChange={onOpenChange}
+            layout={layout}
+          />
         </Stack>
       )}
     </DetailSection>

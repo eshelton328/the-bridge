@@ -140,8 +140,7 @@ export const nextStep = {
         startHint: 'Opens the new chat and sends the prompt.',
       },
       notes: {
-        text: 'Check the milestone name matches Linear before I approve.',
-        by: 'You · 2m ago',
+        note: { text: 'Check the milestone name matches Linear before I approve.', by: 'You · 2m ago' },
         add: 'Add a note…',
       },
       sources: [

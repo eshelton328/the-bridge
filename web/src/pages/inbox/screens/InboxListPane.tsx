@@ -3,9 +3,12 @@
 // per project in each group; with a search, a line that sums up the
 // results and a hint about matches in Done; with filters that apply, a row
 // of them under the tools and how many tasks they hide; and a toast that
-// sticks to the bottom of the list. Props only.
+// sticks to the bottom of the list. On the tablet and phone (T1, T6, T7)
+// the list fills the screen on the backdrop, with the page's large title.
+// Props only.
 import {
   CheckIcon,
+  Container,
   FilterChips,
   FolderIcon,
   GroupHeader,
@@ -14,6 +17,7 @@ import {
   Toast,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import type { Viewport } from '../../../lib/screenState.ts'
 import { AppliedFilters } from '../blocks/AppliedFilters.tsx'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
@@ -45,6 +49,8 @@ const frame = css({
 // in Figma, and at the bottom of the scroll it sits under the last group, so no row stays behind it.
 // The top margin keeps it at the bottom when the list is short.
 const toast = css({ position: 'sticky', bottom: '0', mt: 'auto' })
+// The tablet list (T1 346:5415) sits on the backdrop, with no pane fill; the Container pads it.
+const compactPane = css({ display: 'flex', flexDirection: 'column', gap: '2' })
 const header = css({ py: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
 const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
@@ -80,6 +86,8 @@ function Rows({
 export type InboxListPaneProps = {
   data: InboxData
   ui: InboxUi
+  /** The screen's layout: a pane beside the detail on the desktop, the whole screen on a tablet or phone. */
+  layout?: Viewport | undefined
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
   onSelectItem?: ((id: string) => void) | undefined
@@ -91,16 +99,28 @@ export type InboxListPaneProps = {
 export function InboxListPane({
   data,
   ui,
+  layout = 'desktop',
   onFilterChange,
   onGroupOpenChange,
   onSelectItem,
   query,
   onQueryChange,
 }: InboxListPaneProps) {
+  const desktop = layout === 'desktop'
   const list = (
-    <section aria-label="Inbox list" className={pane} data-figma={data.toast === undefined ? 'inbox list' : undefined}>
-      <div className={header} data-figma="header">
-        <PageHeader size="pane" title="Inbox" count={data.count} countLabel={data.countLabel} level={2} />
+    <section
+      aria-label="Inbox list"
+      className={desktop ? pane : compactPane}
+      data-figma={data.toast === undefined ? 'inbox list' : undefined}
+    >
+      <div className={desktop ? header : undefined} data-figma="header">
+        <PageHeader
+          size={desktop ? 'pane' : 'phone'}
+          title="Inbox"
+          count={data.count}
+          countLabel={data.countLabel}
+          level={desktop ? 2 : 1}
+        />
       </div>
       <div data-figma="filter · chips">
         <FilterChips
@@ -187,6 +207,7 @@ export function InboxListPane({
       )}
     </section>
   )
+  if (!desktop) return <Container size={layout}>{list}</Container>
   if (data.toast === undefined) return list
   return (
     <div className={frame} data-figma="inbox list">
