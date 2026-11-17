@@ -1,26 +1,4 @@
 {
-  "missing": [
-    {
-      "text": "42%",
-      "layers": ["158:199"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\" (\"42\" then \"%\"), so the text check does not find the one string; the render shows \"42%\" after the segments."
-    },
-    {
-      "text": "23%",
-      "layers": ["158:282"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"23%\" after the segments."
-    },
-    {
-      "text": "78%",
-      "layers": ["158:390"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"78%\" after the segments."
-    },
-    {
-      "text": "64%",
-      "layers": ["158:404"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"64%\" after the segments."
-    }
-  ],
   "extra": [
     {
       "text": "Artifacts",

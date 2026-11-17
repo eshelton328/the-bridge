@@ -1,24 +1,9 @@
 {
   "missing": [
     {
-      "text": "42%",
-      "layers": ["105:1112"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\" (\"42\" then \"%\"), so the text check does not find the one string; the render shows \"42%\" after the segments in the bridge themes row (LIBRARY_GAPS.md: ContextMeter percentage)."
-    },
-    {
-      "text": "23%",
-      "layers": ["105:1128"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"23%\" after the segments in the drift check row (LIBRARY_GAPS.md: ContextMeter percentage)."
-    },
-    {
-      "text": "18%",
-      "layers": ["105:1201"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"18%\" after the segments in the release notes row (LIBRARY_GAPS.md: ContextMeter percentage)."
-    },
-    {
       "text": "78%",
       "layers": ["105:1235"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"78%\" after the segments in the chat header (LIBRARY_GAPS.md: ContextMeter percentage). The 78% of the hono server row (105:1164) is clipped in the render and stays a failure."
+      "reason": "The render shows \"78%\" in full in the chat header (ContextMeter draws it as one text node since 1.0.0-beta.15). Figma has a second \"78%\" in the hono server sidebar row (105:1164), and the text check wants a visible run per layer: the render cuts that row's meta 2 px short (scrollWidth 152 > clientWidth 150 on 105:1154, LIBRARY_GAPS.md: Sidebar chat row), so only one \"78%\" is fully visible and the check reports this layer. The cut row stays a failure through the hiddenOverflow rule."
     }
   ],
   "extra": [

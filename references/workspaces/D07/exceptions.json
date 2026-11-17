@@ -1,21 +1,4 @@
 {
-  "missing": [
-    {
-      "text": "42%",
-      "layers": ["402:184", "402:494"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\" (\"42\" then \"%\"), so the text check does not find the one string; the render shows \"42%\" after the segments in the bridge themes row and in the pane header (LIBRARY_GAPS.md: ContextMeter percentage)."
-    },
-    {
-      "text": "23%",
-      "layers": ["402:215"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"23%\" after the segments in the drift check row (LIBRARY_GAPS.md: ContextMeter percentage)."
-    },
-    {
-      "text": "18%",
-      "layers": ["402:304"],
-      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"18%\" after the segments in the release notes row (LIBRARY_GAPS.md: ContextMeter percentage)."
-    }
-  ],
   "extra": [
     {
       "text": "Artifacts",
