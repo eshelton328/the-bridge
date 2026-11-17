@@ -1,4 +1,4 @@
-// Figma Inbox D2 "A question that blocks a chat": the question "Hono RPC client or
+// Figma Inbox D2 and T3 "A question that blocks a chat": the question "Hono RPC client or
 // plain fetch for the API?" is open, with its options and a note. Copy
 // word for word from references/inbox/D02/frame.json; the list is D1's.
 import { InboxItemId } from '@bridge/shared'
@@ -8,7 +8,10 @@ import { nextStep } from './nextStep.ts'
 
 export const question = {
   title: 'a question that blocks a chat',
-  frames: [{ id: 'D2', node: '346:428', viewport: 'desktop' }],
+  frames: [
+    { id: 'D2', node: '346:428', viewport: 'desktop' },
+    { id: 'T3', node: '346:5844', viewport: 'tablet' },
+  ],
   data: {
     ...nextStep.data,
     detail: {

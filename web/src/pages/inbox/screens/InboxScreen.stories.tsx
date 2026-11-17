@@ -34,7 +34,7 @@ export const NextStep: Story = {
 }
 
 export const Question: Story = {
-  name: 'D2: a question that blocks a chat',
+  name: 'D2, T3: a question that blocks a chat',
   args: { data: inboxStates.question.data, ui: inboxStates.question.ui, viewport: 'desktop' },
   play: async ({ canvas }) => {
     await expect(
@@ -262,5 +262,87 @@ export const Removed: Story = {
     await expect(canvas.getByRole('heading', { level: 2, name: 'Prompt · not run' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Open discussion' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Restore' })).toBeVisible()
+  },
+}
+
+// The tablet frames (T1 to T8). Storybook opens at desktop; pick Tablet in the viewport menu to see the tablet
+// layout, which the screen takes from its width. The play tests check text that both layouts show.
+
+export const List: Story = {
+  name: 'T1: the list',
+  args: { data: inboxStates.list.data, ui: inboxStates.list.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'Inbox' })).toBeVisible()
+    await expect(canvas.getByText('Try the tablet layout on the iPad mini')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Allow once' })).toBeVisible()
+  },
+}
+
+export const TaskPage: Story = {
+  name: 'T2: a next step, on its own page',
+  args: { data: inboxStates.taskPage.data, ui: inboxStates.taskPage.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })).toBeVisible()
+    await expect(canvas.getByPlaceholderText('Add a note for yourself…')).toBeVisible()
+    await expect(canvas.queryByText('You · 2m ago')).toBeNull()
+  },
+}
+
+export const RunningTaskPage: Story = {
+  name: 'T4: running, on its own task page',
+  args: { data: inboxStates.runningTaskPage.data, ui: inboxStates.runningTaskPage.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Check the milestone name first.')).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Sent prompt' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Reply here' })).toBeVisible()
+    await expect(canvas.queryByRole('textbox', { name: 'Add a note' })).toBeNull()
+  },
+}
+
+export const Chat: Story = {
+  name: 'T5: the started task’s chat, on its own page',
+  args: { data: inboxStates.chat.data, ui: inboxStates.chat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText(
+        'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project…',
+      ),
+    ).toBeVisible()
+    await expect(canvas.getByText('Wait for increment two.')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    // Figma draws the reply box focused (346:6419, a caret), as Erik sees it after Reply here.
+    const reply = canvas.getByRole('textbox', { name: 'Reply' })
+    reply.focus()
+    await expect(reply).toHaveFocus()
+  },
+}
+
+export const RunningList: Story = {
+  name: 'T6: the list after starting a task',
+  args: { data: inboxStates.runningList.data, ui: inboxStates.runningList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /Running/ })).toBeVisible()
+  },
+}
+
+export const DoneList: Story = {
+  name: 'T7: Done, the list',
+  args: { data: inboxStates.doneList.data, ui: inboxStates.doneList.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Dismissed: already done by hand')).toBeVisible()
+    await expect(canvas.getByText('Rename spok to cpt-log everywhere')).toBeVisible()
+  },
+}
+
+export const PromptSheet: Story = {
+  name: 'T8: read the whole prompt in a sheet',
+  args: { data: inboxStates.promptSheet.data, ui: inboxStates.promptSheet.ui, viewport: 'tablet' },
+  play: async () => {
+    // The dialog or sheet renders in a portal, outside the story's canvas.
+    const sheet = await within(document.body).findByRole('dialog', { name: 'Suggested prompt' })
+    await expect(within(sheet).getByText('Read only. Edit opens the prompt for changes.')).toBeVisible()
+    await expect(within(sheet).getByRole('button', { name: 'Edit prompt' })).toBeVisible()
+    await expect(within(sheet).getByRole('button', { name: 'Copy' })).toBeVisible()
   },
 }
