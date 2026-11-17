@@ -1,19 +1,39 @@
-// One toolkit item as a card (Figma `toolkit card · <name>`, D1 425:77):
-// the kind tile, the name over its path, one line of description, and the
-// counts: the files it links to (→), the files that link to it (←) and
-// its files; the page's legend names the arrows. A long path or
-// description ends with an ellipsis and shows in full in a tooltip. Props
-// only.
+// One toolkit item as a card. On the desktop (Figma `toolkit card · <name>`,
+// D1 425:77): the kind tile, the name over its path, one line of
+// description, and the counts: the files it links to (→), the files that
+// link to it (←) and its files; the page's legend names the arrows. On a
+// tablet or phone it is a row (Figma `toolkit row · <name>`, T1 428:59):
+// the kind tile, the name over its path and the two link counts, with no
+// description. A long path or description ends with an ellipsis and shows
+// in full in a tooltip. Props only.
 import { Card, KindTile } from '@eshelton328/component-library-1701'
+import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemView } from '../types.ts'
+
+// T1 428:67: the counts are one mono line, "→0 ←1".
+const counts = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap' })
 
 export type ToolkitCardProps = {
   item: ToolkitItemView
   /** The Figma layer the card stands for; none when two shown items share a name. */
   figma?: string | undefined
+  /** The tablet and phone row: no description, and the link counts beside the name. */
+  compact?: boolean | undefined
 }
 
-export function ToolkitCard({ item, figma }: ToolkitCardProps) {
+export function ToolkitCard({ item, figma, compact = false }: ToolkitCardProps) {
+  if (compact) {
+    return (
+      <div data-figma={figma}>
+        <Card
+          title={item.name}
+          leading={<KindTile kind={item.kind} size="sm" />}
+          subtitle={item.path}
+          badge={<span className={counts}>{`→${String(item.linksTo)} ←${String(item.linkedFrom)}`}</span>}
+        />
+      </div>
+    )
+  }
   return (
     <div data-figma={figma}>
       <Card

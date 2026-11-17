@@ -1,6 +1,7 @@
 // The row under the kind chips (Figma `list tools`, D1 425:56): the search
-// over names, descriptions and files, the sort (by name), and on the
-// desktop the legend of the counts each card shows. Props only.
+// over names, descriptions and files, and on the desktop the sort (by name)
+// and the legend of the counts each card shows. A tablet or phone shows the
+// search alone, full width (T1 428:48). Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -28,7 +29,7 @@ export type ToolkitListToolsProps = {
 
 export function ToolkitListTools({ query, onQueryChange, layout }: ToolkitListToolsProps) {
   return (
-    <div className={row} data-figma="list tools">
+    <div className={row} data-figma={layout === 'desktop' ? 'list tools' : undefined}>
       <div className={layout === 'desktop' ? tools : compactTools}>
         <div className={search} data-figma="search">
           <SearchField
@@ -42,11 +43,13 @@ export function ToolkitListTools({ query, onQueryChange, layout }: ToolkitListTo
             onValueChange={onQueryChange}
           />
         </div>
-        <Button variant="secondary" size="lg" data-figma="button · Sort" aria-label="Sort by name">
-          <SortIcon size="16" />
-          Name
-          <ChevronDownIcon size="12" />
-        </Button>
+        {layout === 'desktop' ? (
+          <Button variant="secondary" size="lg" data-figma="button · Sort" aria-label="Sort by name">
+            <SortIcon size="16" />
+            Name
+            <ChevronDownIcon size="12" />
+          </Button>
+        ) : null}
       </div>
       {layout === 'desktop' ? (
         <span className={legend} data-figma="counts legend">

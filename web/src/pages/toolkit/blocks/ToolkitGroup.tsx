@@ -1,7 +1,8 @@
 // One kind's items (Figma `group · SKILLS` and its card rows, D1 425:71):
 // the group header with the count, which opens and closes the group, and
 // the cards in a grid, four across on the desktop, two on a tablet and one
-// on a phone. Props only.
+// on a phone. A tablet or phone shows each item as a row (T1 428:58), 8 px
+// apart. Props only.
 import { GroupHeader, Grid } from '@eshelton328/component-library-1701'
 import { useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -14,6 +15,8 @@ import { ToolkitCard } from './ToolkitCard.tsx'
 const header = css({ alignSelf: 'flex-start' })
 
 const columns = { desktop: '4', tablet: '2', phone: '1' } as const
+// T1 428:58: the rows are 8 apart, across and down.
+const gaps = { desktop: '16', tablet: '8', phone: '16' } as const
 
 export type ToolkitGroupProps = {
   group: ToolkitGroupView
@@ -40,12 +43,17 @@ export function ToolkitGroup({ group, open, onOpenChange, layout, sharedNames }:
         />
       </div>
       {open ? (
-        <Grid id={contentId} columns={columns[layout]} gap="16">
+        <Grid id={contentId} columns={columns[layout]} gap={gaps[layout]}>
           {group.items.map((item) => (
             <ToolkitCard
               key={item.path}
               item={item}
-              figma={sharedNames.has(item.name) ? undefined : `toolkit card · ${item.name}`}
+              compact={layout !== 'desktop'}
+              figma={
+                sharedNames.has(item.name)
+                  ? undefined
+                  : `toolkit ${layout === 'desktop' ? 'card' : 'row'} · ${item.name}`
+              }
             />
           ))}
         </Grid>

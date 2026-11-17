@@ -25,3 +25,13 @@ export const ToolkitList: Story = {
     await expect(canvas.getByText('Read from toolkit/ in the brain')).toBeVisible()
   },
 }
+
+export const ToolkitListTablet: Story = {
+  name: 'T1: the list of every toolkit item, in two columns',
+  args: { data: toolkitStates.toolkitListTablet.data, ui: toolkitStates.toolkitListTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Toolkit' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'commits-and-prs' })).toBeVisible()
+    await expect(canvas.getByText('rules/writing.md')).toBeVisible()
+  },
+}
