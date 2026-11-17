@@ -12,7 +12,9 @@
 // the side slot (D4). With the split panes, a side chat opens inside its
 // pane (D5). A chat dragged from the sidebar onto the chat shown alone
 // fades in the sidebar, and the drop zone shows where it would open (D6).
-import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
+// A chat opened from the sidebar can show in the workbench beside it, in
+// place of the chat alone (D7).
+import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -25,8 +27,8 @@ import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
 import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
-import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
+import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 
 // The rail's slot is a flex column; the rail fills it.
@@ -139,32 +141,41 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             />
           }
           detail={
-            <MainChat
-              pane={chat}
-              workspace={current?.label ?? data.current}
-              contextLabel={data.sidebar.contextLabel}
-              skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
-              onSkillsOpenChange={(open) => {
-                change({ skillsFor: open ? chat.id : null })
-              }}
-              menu={data.chatActions === false ? null : chatMenu}
-              folders={
-                data.folders === undefined ? undefined : (
-                  <FoldersControl
-                    folders={data.folders}
-                    open={ui.foldersOpen === true}
-                    onOpenChange={(foldersOpen) => {
-                      change({ foldersOpen })
-                    }}
-                    onAdd={() => {
-                      change({ foldersOpen: false, folderPickerOpen: true })
-                    }}
-                  />
-                )
-              }
-              layers={data.layers}
-              overlay={dropZone}
-            />
+            ui.workbench === true ? (
+              <WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle={false} />
+            ) : (
+              <MainChat
+                pane={chat}
+                workspace={current?.label ?? data.current}
+                contextLabel={data.sidebar.contextLabel}
+                skills={{
+                  label: data.skillsLabel,
+                  items: data.skills,
+                  value: ui.skill,
+                  open: ui.skillsFor === chat.id,
+                }}
+                onSkillsOpenChange={(open) => {
+                  change({ skillsFor: open ? chat.id : null })
+                }}
+                menu={data.chatActions === false ? null : chatMenu}
+                folders={
+                  data.folders === undefined ? undefined : (
+                    <FoldersControl
+                      folders={data.folders}
+                      open={ui.foldersOpen === true}
+                      onOpenChange={(foldersOpen) => {
+                        change({ foldersOpen })
+                      }}
+                      onAdd={() => {
+                        change({ foldersOpen: false, folderPickerOpen: true })
+                      }}
+                    />
+                  )
+                }
+                layers={data.layers}
+                overlay={dropZone}
+              />
+            )
           }
           sideWidth={subagents === undefined ? 'side' : 'wide'}
           side={subagents ?? folderPicker ?? sideChat}
@@ -184,46 +195,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
   }
   return (
     <Backdrop size={viewport}>
-      <AppShell
-        size="desktop"
-        rail={rail}
-        detail={
-          <Workbench
-            value={data.current}
-            workspaces={data.workspaces.map((w) => ({
-              value: w.id,
-              label: w.label,
-              count: w.count,
-              needsYou: w.needsYou,
-              draggable: true,
-              content: w.id === data.current ? <WorkbenchPanes data={data} ui={ui} onUiChange={change} /> : null,
-            }))}
-            actions={
-              <>
-                <Button
-                  size="sm"
-                  iconOnly
-                  aria-label={`New chat in ${current?.label ?? data.current}`}
-                  data-figma={data.layers?.newChat ?? '150:2'}
-                >
-                  <PlusIcon size="16" />
-                </Button>
-                <Button
-                  size="sm"
-                  iconOnly
-                  aria-label="Show the workspace sidebar"
-                  data-figma={data.layers?.toggle ?? '158:2'}
-                >
-                  <PanelIcon size="16" />
-                </Button>
-              </>
-            }
-            summary={data.status.summary}
-            hints={data.status.hints}
-            alert={data.status.alert}
-          />
-        }
-      />
+      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle />} />
     </Backdrop>
   )
 }

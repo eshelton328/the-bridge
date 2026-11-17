@@ -125,3 +125,19 @@ export const DragIntoPane: Story = {
     await expect(canvas.getByRole('button', { name: 'Rename omni' })).toBeVisible()
   },
 }
+
+export const ChatInWorkbench: Story = {
+  name: 'D7: one chat in the workbench beside the sidebar',
+  args: { data: workspacesStates.chatInWorkbench.data, ui: workspacesStates.chatInWorkbench.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Hide the workspace sidebar' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(canvas.queryByRole('button', { name: 'Show the workspace sidebar' })).toBeNull()
+    await expect(canvas.getByRole('tab', { name: /omni-brain/ })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByText('omni-brain · 1 pane')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.queryByText('Codex wants to run a command')).toBeNull()
+  },
+}

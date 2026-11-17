@@ -398,6 +398,11 @@ export const WorkspacesUi = z.object({
    * sidebar fades and the drop zone shows over that part of the chat.
    */
   paneDrag: z.object({ chat: z.string(), edge: DropEdge }).nullable().optional(),
+  /**
+   * With the sidebar, the workbench (the tabs, the panes and the status bar) shows beside it in place of the chat
+   * alone (D7): a chat opened from the sidebar fills the panes area.
+   */
+  workbench: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

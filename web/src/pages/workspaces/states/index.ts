@@ -2,6 +2,7 @@
 // file names in this folder; each must be a key here and a story. The first is
 // the page's default state.
 import { chatActions } from './chatActions.ts'
+import { chatInWorkbench } from './chatInWorkbench.ts'
 import { dragIntoPane } from './dragIntoPane.ts'
 import { folders } from './folders.ts'
 import { sideChat } from './sideChat.ts'
@@ -17,4 +18,5 @@ export const workspacesStates = {
   folders,
   sideChatInPane,
   dragIntoPane,
+  chatInWorkbench,
 }

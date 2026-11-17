@@ -21,6 +21,8 @@ first: it says what each file of a page folder is for.
   `data.sideChat` inside the pane its `pane` names, over the chat's right
   side (D5). With `ui.paneDrag` (D6) the dragged chat's row fades in the
   sidebar and `data.paneDrop` shows as a drop zone over the chat alone.
+  With `ui.workbench` (D7) the sidebar sits beside the workbench (tabs,
+  panes, status bar) in place of the chat alone.
 - `blocks/`: `WorkbenchPanes` (the split, one to four panes clockwise
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
   header through `PaneSlot`: kind mark, title, model, context, status,
@@ -45,11 +47,15 @@ first: it says what each file of a page folder is for.
   pane's chat, with Open as its own pane), which `ChatPane` draws as its
   `overlay`. D6 adds `PaneDropZone` (the drop zone over the part of the
   chat alone where a dragged chat would open, with the dragged chat), which
-  `MainChat` draws as its `overlay`. Later frames add to these blocks.
+  `MainChat` draws as its `overlay`. D7 adds `WorkspaceTabs` (the
+  `Workbench` with New chat, the sidebar toggle when the sidebar is
+  hidden, `WorkbenchPanes` and the status bar), which both layouts use.
+  Later frames add to these blocks.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
   D3's sidebar), D5 `sideChatInPane` (from `workbench`), D6 `dragIntoPane`
-  (from `chatActions`). Later states start from
+  (from `chatActions`), D7 `chatInWorkbench` (from `chatActions`, with
+  D1's bridge themes pane). Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
@@ -65,6 +71,7 @@ first: it says what each file of a page folder is for.
   hovered header, the drag and the side chat; for D3 the subagents panel
   and the New chat form, with the open transcripts; for D4 the folder
   list, the picker and the chosen folder; for D6 `paneDrag`, the chat
-  dragged onto the chat alone and its edge), each a Zod schema.
+  dragged onto the chat alone and its edge; for D7 `workbench`, the
+  workbench beside the sidebar), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
