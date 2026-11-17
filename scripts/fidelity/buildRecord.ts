@@ -15,7 +15,9 @@ const repoPath = z
 
 export const buildRecord = z.strictObject({
   /** `<page>/<frameId>`, such as `inbox/D13`. */
-  frame: z.string().regex(/^[a-z][a-zA-Z0-9]*\/[A-Z]\d{2}[a-z]?$/, 'must be <page>/<frameId>, such as inbox/D13 or workspaces/D02b'),
+  frame: z
+    .string()
+    .regex(/^[a-z][a-zA-Z0-9]*\/[A-Z]\d{2}[a-z]?$/, 'must be <page>/<frameId>, such as inbox/D13 or workspaces/D02b'),
   /** The worktree the agent built in, as an absolute path. */
   worktree: z.string().startsWith('/', 'must be an absolute path'),
   status: z.enum(['pass', 'deviations', 'blocked']),
