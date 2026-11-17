@@ -39,6 +39,9 @@ each file of a page folder is for.
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search
   (title, description, link and project) and leaves out a group with none;
+  `sortCards` orders each group's cards by the sort (D6: newest keeps
+  the state's order, oldest turns it round, title A to Z, project grouped
+  by project); the groups keep their order, so Found stays first.
   `searchMatches` lists the matches with the first place each matches, in
   that order; the chip and group counts stay the
   state's, because the library holds more artifacts than the cards drawn.
@@ -46,7 +49,7 @@ each file of a page folder is for.
   and Add a link), `FoundStatus` (the refresh mark and when the library
   last checked its sources), `LibraryTools` (search, Sort, Filter and the
   Grid or List `ViewSwitch`; with `data.filterMenu` Filter opens the
-  Filter menu, D3; the Sort menu comes with D6), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
+  Filter menu, D3; with `data.sortMenu` Sort opens the Sort menu, D6), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
   source, project and age; `onOpen` makes it a button). For D2:
@@ -71,13 +74,17 @@ each file of a page folder is for.
   kinds, `ProjectPicker` and Cancel and Add artifact; the link field has
   the focus, the caret after the link) and `ProjectPicker` (a
   `RadioMenu` on a `Button`, as the library has no select field). Show closes the menu; the cards
-  carry no finder or update data yet, so the grid does not narrow.
+  carry no finder or update data yet, so the grid does not narrow. For
+  D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
+  width="sort"` with the heading, a description per sort and the note,
+  as the Inbox's Sort menu; picking a sort closes it).
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
   "eval" searched: the chips count the matches, and Earlier gains the
   Writer cross-family round, whose link holds its match) and D5 `addLink`
-  (D1's data with the Add a link dialog open, Codex site picked). `library` stays first in `states/index.ts`: the app
+  (D1's data with the Add a link dialog open, Codex site picked) and D6
+  `sortOpen` (D1's data with the four sorts and the Sort menu open). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -86,10 +93,10 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, `filterMenu` and `addLinkForm`) and `ArtifactsUi` (chip,
+  `ArtifactDetail`, `filterMenu`, `addLinkForm` and `sortMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
-  open Add a link dialog and its picked source), each
+  open Add a link dialog and its picked source, and the open Sort menu), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
