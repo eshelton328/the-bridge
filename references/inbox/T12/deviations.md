@@ -8,7 +8,7 @@ library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with librar
 ## Checks
 
 - Text: pass (59 strings; 1 excepted in `exceptions.json`).
-- Position: 7 of 13 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `section · RUN IN`, `start`, `tab bar`).
+- Position: 8 of 13 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `section · RUN IN`, `start`, `tab bar`, `run in picker`).
 - Rules: pass.
 
 ## Failing layers
@@ -17,15 +17,15 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `task · next step`: x +2, y +4, w -4, h -19.
-- `section · SUGGESTED PROMPT`: x +2, y +8, w -4, h -12.
-- `section · MY NOTES`: x +2, y +2, w -4, h +7.
-- `notes field`: x +2, y +4, w -4, h +5.
-- `section · SOURCES`: x +2, y +11, w -4, h +2.
-- `run in picker`: x -4, y -0.5, w +0, h +5.
+- `task · next step`: x +2, y -2, w -4, h +17.
+- `section · SUGGESTED PROMPT`: x +2, y +6, w -4, h -12.
+- `section · MY NOTES`: x +2, y +0, w -4, h +7.
+- `notes field`: x +2, y +2, w -4, h +5.
+- `section · SOURCES`: x +2, y +9, w -4, h +2.
 
 ## Deviations
 
+- **Task frame padding (step 13).** Figma's task frame is a hug Auto Layout frame with `paddingBottom: 28` and `paddingTop: 6` (read with `use_figma`, T2 346:5683, T3 346:5911, T4 346:6144), so it ends 28 px under its last section. The build now pads the task the same way: 6 at the top (the Back row's margin is 6, not 12, so the task bar stays 40 under the row's top) and 32 at the bottom (28 has no spacing token; a tie takes the larger, d-072). `task · next step` h +17 is 4 px from the 32 against Figma's 28; the rest is the content's own excess: the sections are 24 apart against Figma's 22 (d-072), and the section labels and text lines are on the 4 px grid (16 against Figma's 14 and 17, d-100). Before, the missing padding hid that excess.
 - **Status bar.** Figma draws a 29 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
   canvas). All three checks render the page 29 px shorter (d-102),
