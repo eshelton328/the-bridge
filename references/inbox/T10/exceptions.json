@@ -1,0 +1,26 @@
+{
+  "missing": [
+    {
+      "text": "search summary",
+      "reason": "get_metadata gives the layer name of text 346:7613 as its characters; frame.png shows \"4 results for “f-005” in titles, IDs, prompts and notes\"."
+    },
+    {
+      "text": "done hint",
+      "reason": "get_metadata gives the layer name of text 346:7686 as its characters; frame.png shows \"Done has 1 more match. Show it\"."
+    }
+  ],
+  "extra": [
+    {
+      "text": "4 results for “f-005” in titles, IDs, prompts and notes",
+      "reason": "The text of layer 346:7613 as frame.png shows it; get_metadata gives its name, \"search summary\"."
+    },
+    {
+      "text": "Done has 1 more match.",
+      "reason": "The text of layer 346:7686 as frame.png shows it; get_metadata gives its name, \"done hint\"."
+    },
+    {
+      "text": "Show it",
+      "reason": "The link at the end of layer 346:7686, as frame.png shows it; get_metadata gives the layer's name, \"done hint\"."
+    }
+  ]
+}
