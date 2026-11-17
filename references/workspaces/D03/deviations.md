@@ -1,23 +1,21 @@
 # D03 deviations
 
 What still differs from Figma after the first build of the subagents
-panel and the New chat form (`pnpm fidelity workspaces D03`, 2026-11-17,
-fix round 3, against the installed library 1.0.0-beta.9), each with its
-reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
+panel and the New chat form (`pnpm fidelity workspaces`, 2026-11-17,
+against the library's 1.0.0-beta.15), each with its reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 The screen is D02b's sidebar layout with hono server (the-bridge) in the
 middle, the subagents panel in the side slot (`sideWidth="wide"`, 420) and
 the New chat form (`Dialog size="lg"`, 540) open over it.
 
 ## Checks
 
-- Text: fails on one string.
-  - `78%` (105:1164): the library's `ContextMeter` draws the number and
-    "%" as two text nodes, and the hono server row's meta is also clipped
-    in the render (see `hiddenOverflow` below), so it is a real difference.
-  - `42%` (105:1112), `23%` (105:1128), `18%` (105:1201) and the chat
-    header's `78%` (105:1235) show in full; `exceptions.json` excepts them
-    (ContextMeter percentage). `Artifacts` and `Toolkit` (rail, d-105) are
-    excepted as on D01 and D02b.
+- Text: pass. `ContextMeter` draws each percentage as one text node, so
+  `42%`, `23%` and `18%` pass without an exception. Figma has `78%` twice,
+  in the hono server row (105:1164) and the chat header (105:1235); the
+  header shows it in full, but the row cuts it 2 px (see `hiddenOverflow`
+  below), and the check wants one visible run per layer, so
+  `exceptions.json` keeps the header's entry with that measured reason.
+  `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 and D02b.
 - Position: 23 of 43 layers pass. `105:1277`, `105:1283`, `105:1335`,
   `105:1358`, `105:1379`, `114:2`, `105:1404`, `105:1389`, `105:1393`,
   `105:1399`, `105:1414`, `105:1409`, `128:2`, `128:8`, `128:12`,
@@ -26,8 +24,6 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   The `scrollBar` finding on the name field's input is excepted: Chrome's
   `clientWidth` of an `<input>` leaves out its 10 px side padding, so the
   rule reads the padding as a 20 px scroll bar; the field draws none.
-- D01, D02 and D02b give the same report as before this build
-  (`pnpm fidelity workspaces D01 D02 D02b --skip-build`): none got worse.
 
 ## Deviations
 
@@ -65,9 +61,9 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   as on D02. `105:1283` h +6: `ProposalBlock` is taller than Figma's
   approval box, as on D01. The reply has no Copy button, as in Figma.
 - **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 105:1154 (6 px): the end of "78%" in the hono server row is cut off,
-  because the library's `ContextMeter` is about 5 px wider than Figma's 83,
-  as on D02 and D02b.
+  on 105:1154: the hono server row's meta ("Sonnet 5.5" and "78%") is
+  152 px in a 150 px column beside its `Needs you` pill, so the end of
+  "78%" is cut 2 px, as on D02 and D02b.
 - **Chat header and group headers (Chat header, Sidebar group header).**
   As on D02b: the ⋯ is a `Button size="xs"` (24 px) against 30 × 22, and
   the group header buttons are 24 px with 12 px icons. Figma's group

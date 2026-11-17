@@ -1,8 +1,8 @@
 # D06 deviations
 
 What still differs from Figma after the first build of the drop zone
-(`pnpm fidelity workspaces D06`, 2026-11-17, third run after the first check, against the
-installed library 1.0.0-beta.9), each with its reason. The library gaps are
+(`pnpm fidelity workspaces`, 2026-11-17, against the library's
+1.0.0-beta.15), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D02b's
 without the open menu and the side chat: hono server is dragged from the
 sidebar onto bridge themes, its row fades, and the right half of the chat
@@ -10,22 +10,17 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 
 ## Checks
 
-- Text: fails on two percentages.
-  - `26%` (204:13) and `78%` (158:760): the library's `ContextMeter`
-    draws the number and "%" as two text nodes, and both metas are also
-    clipped in the render (see `hiddenOverflow` below), so they are real
-    differences.
-  - `42%` (158:698, 158:855), `23%` (158:717), `18%` (158:808) and the
-    dragged chat's `78%` (158:1044) show in full; `exceptions.json`
-    excepts them (ContextMeter percentage). `Artifacts` and `Toolkit`
-    (rail, d-105) are excepted as on D01 to D05.
+- Text: pass. `ContextMeter` draws each percentage as one text node, so
+  `26%`, `42%`, `23%` and `18%` pass without an exception. Figma has `78%`
+  twice, in the hono server row (158:760) and the dragged chat
+  (158:1044); the dragged chat shows it in full, but the row cuts it 2 px
+  (see `hiddenOverflow` below), and the check wants one visible run per
+  layer, so `exceptions.json` keeps the dragged chat's entry with that
+  measured reason. `Artifacts` and `Toolkit` (rail, d-105) are excepted
+  as on D01 to D05.
 - Position: 20 of 24 layers pass; `158:919`, `158:934`, `158:1048` and
   `158:1034` fail.
-- Rules: `hiddenOverflow` on two row meta lines (theme tokens 204:2 and
-  hono server 158:750).
-- D01, D02, D02b, D03, D04 and D05 give the same report as before this
-  build (`pnpm fidelity workspaces D01 D02 D02b D03 D04 D05 --skip-build`):
-  none got worse.
+- Rules: `hiddenOverflow` on the hono server row's meta line (158:750).
 
 ## Deviations
 
@@ -56,9 +51,9 @@ is the drop zone (`ui.paneDrag`, edge `right`).
   attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
   same `fg.muted`.
 - **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 204:2 (4 px) and 158:750 (6 px): the end of "26%" and "78%" is cut
-  off, because the library's `ContextMeter` is about 5 px wider than
-  Figma's 83, as on D02 to D04.
+  on 158:750: the hono server row's meta ("Sonnet 5.5" and "78%") is
+  152 px in a 150 px column beside its `Needs you` pill, so the end of
+  "78%" is cut 2 px, as on D02 to D04.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box, as on D02b. They are drawn in `fg.muted`,

@@ -1,45 +1,39 @@
 # D02 deviations
 
 What still differs from Figma after the first build of Workspaces and side
-chat (`pnpm fidelity workspaces D02`, 2026-11-17, round 3, against the
-installed library 1.0.0-beta.8), each with its reason. The library gaps are
+chat (`pnpm fidelity workspaces`, 2026-11-17, against the library's
+1.0.0-beta.15), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on seven percentages and two rail labels.
-  - `42%` (105:653, 105:810), `23%` (105:672) and `18%` (105:763): the
-    render shows each one in full. The library's `ContextMeter` draws the
-    number and "%" as two text nodes, so the check does not find the one
-    string. D01 excepts the same case in its `exceptions.json`; D02 has no
-    `exceptions.json` yet, because the three fix rounds were used before it
-    could be checked. The next run should add these four, with D01's reason.
-  - `26%` (199:61), `78%` (105:715) and `23%` (105:972): the same two text
-    nodes, and also clipped in the render (see `hiddenOverflow` below), so
-    they are real differences.
+- Text: fails on two percentages and two rail labels.
+  - `78%` (105:715) and `23%` (105:972): both metas are cut in the render
+    (see `hiddenOverflow` below). The other percentages (`42%`, `23%`,
+    `18%`, `26%`) pass: `ContextMeter` draws each as one text node.
   - `Artifacts` and `Toolkit` (extra): the shared `AppRail` adds them before
-    More (d-105), as on D01, where they are excepted.
+    More (d-105), as on D01, where they are excepted. D02 has no
+    `exceptions.json`.
 - Position: 22 of 28 layers pass; `105:960`, `105:976`, `105:874`,
   `105:889`, `105:933` and `105:935` fail.
-- Rules: `hiddenOverflow` on three row meta lines (199:51, 105:705 and the
-  dragged row 105:960).
+- Rules: `hiddenOverflow` on two row meta lines (hono server 105:705 and
+  the dragged row 105:960).
 
 ## Deviations
 
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`:
-  the meta of theme tokens (199:51) is 4 px too wide and that of hono
-  server (105:705) 6 px, so the end of "26%" and "78%" is cut off. The
-  library's `ContextMeter` is about 5 px wider than Figma's 83, and a
-  nested row or a Sonnet chat beside its status pill has no room for it.
-  The rows are `ListRow density="compact"`, 50 px as in Figma.
-- **Dragged chat (Drag preview).** `105:960` y -4, w -26.3, h -15.1: Figma
+- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
+  on 105:705: the hono server row's meta ("Sonnet 5.5" and "78%") is
+  152 px in a 150 px column beside its `Needs you` pill, so the end of
+  "78%" is cut 2 px. The rows are `ListRow density="compact"`, 50 px as in
+  Figma.
+- **Dragged chat (Drag preview).** `105:960` w -26.3, h -15.1: Figma
   turns the dragged row about 3° and lets it pass the sidebar's right
   edge; the library has no rotate token and the sidebar's scrolling body
   clips what passes its edge, so the row is not turned and ends at the
-  rows' end (268 wide). Its meta has 110 px, so "23%" is cut off
+  rows' end (268 wide). Its meta is 132 px in 110, so "23%" is cut off
   (`hiddenOverflow`). The offsets from the group header are spacing tokens
   (d-100: Figma's pointer place, 40 in and 46 down, has no token).
-- **Drop hint (Drag preview).** `105:976` y -2, w -7.1: the hint is a
+- **Drop hint (Drag preview).** `105:976` w -7.1: the hint is a
   `Badge tone="working"` (cyan text on a cyan tint) on the overlay fill,
   without Figma's cyan border, and its padding is 8 where Figma's is about
   11.
@@ -65,7 +59,7 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`, in the
   same `fg.muted`.
-- **Side chat.** `105:933` h +21 and `105:935` y +22: "Can Panda CSS switch
+- **Side chat.** `105:933` h +21 and `105:935` y +22, h +9: "Can Panda CSS switch
   themes while the app runs?" wraps to two lines in the render. `Message`
   pads the bubble 12, as Figma does, but the line is 1 px wider than the
   bubble's 321 px, so the answer starts 22 px lower. The panel is padded 16
