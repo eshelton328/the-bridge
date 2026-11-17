@@ -269,7 +269,7 @@ export const Removed: Story = {
 // layout, which the screen takes from its width. The play tests check text that both layouts show.
 
 export const List: Story = {
-  name: 'T1: the list',
+  name: 'T1, M1: the list',
   args: { data: inboxStates.list.data, ui: inboxStates.list.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { name: 'Inbox' })).toBeVisible()
@@ -279,7 +279,7 @@ export const List: Story = {
 }
 
 export const TaskPage: Story = {
-  name: 'T2: a next step, on its own page',
+  name: 'T2, M2: a next step, on its own page',
   args: { data: inboxStates.taskPage.data, ui: inboxStates.taskPage.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })).toBeVisible()
@@ -300,7 +300,7 @@ export const RunningTaskPage: Story = {
 }
 
 export const Chat: Story = {
-  name: 'T5: the started task’s chat, on its own page',
+  name: 'T5, M8: the started task’s chat, on its own page',
   args: { data: inboxStates.chat.data, ui: inboxStates.chat.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     await expect(
@@ -409,7 +409,7 @@ export const SnoozePage: Story = {
 }
 
 export const FilterList: Story = {
-  name: 'T14: filter, the list',
+  name: 'T14, M7: filter, the list',
   args: { data: inboxStates.filterList.data, ui: inboxStates.filterList.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     const menu = await within(document.body).findByRole('dialog', { name: 'Filter the inbox' })
@@ -514,5 +514,49 @@ export const RemovedList: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Removed in a discussion · split into 3')).toBeVisible()
     await expect(canvas.getByText('Rename spok to cpt-log everywhere')).toBeVisible()
+  },
+}
+
+export const RowActions: Story = {
+  name: 'M6: snooze or dismiss a row, in a sheet',
+  args: { data: inboxStates.rowActions.data, ui: inboxStates.rowActions.ui, viewport: 'phone' },
+  play: async () => {
+    const sheet = await within(document.body).findByRole('dialog', { name: 'Pick the header logo' })
+    await expect(within(sheet).getByText('ncc-1701 · f-005 · NCC-36 · Review')).toBeVisible()
+    await expect(within(sheet).getByText('Dismiss with a reason…')).toBeVisible()
+  },
+}
+
+export const PromptKeyboard: Story = {
+  name: 'M3: edit the prompt, with the keyboard',
+  args: { data: inboxStates.promptKeyboard.data, ui: inboxStates.promptKeyboard.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByDisplayValue(/put them in the Increment 1 cycle/)).toBeVisible()
+    // Unlike D3 and T12, the Run in picker is closed.
+    await expect(within(document.body).queryByRole('dialog', { name: 'Run in' })).toBeNull()
+    // Figma draws the editor focused (its cyan border and a caret), as after Edit, which focuses it (InboxRoute.test.tsx).
+    const editor = canvas.getByRole('textbox', { name: 'Suggested prompt' })
+    editor.focus()
+    await expect(editor).toHaveFocus()
+  },
+}
+
+export const RunInSheet: Story = {
+  name: 'M4: choose where it runs, in a sheet',
+  args: { data: inboxStates.runInSheet.data, ui: inboxStates.runInSheet.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    const picker = await within(document.body).findByRole('dialog', { name: 'Run in' })
+    await expect(within(picker).getByText('New Codex chat')).toBeVisible()
+    // Unlike D3 and T12, the prompt is not in its editor.
+    await expect(canvas.queryByRole('textbox', { name: 'Suggested prompt' })).toBeNull()
+  },
+}
+
+export const QuestionPhone: Story = {
+  name: 'M5: a question that blocks a chat, on the phone',
+  args: { data: inboxStates.questionPhone.data, ui: inboxStates.questionPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('hono server is waiting')).toBeVisible()
+    await expect(canvas.getByText('the-bridge · Sonnet 5.5 · 12 min')).toBeVisible()
   },
 }

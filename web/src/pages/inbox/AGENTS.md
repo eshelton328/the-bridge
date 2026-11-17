@@ -1,8 +1,8 @@
 # Inbox page
 
 The Inbox: items that need Erik, next steps and snoozed items, and the
-detail of the selected item. Figma frames `D*` (desktop) and `T*`
-(tablet) on the Main page.
+detail of the selected item. Figma frames `D*` (desktop), `T*`
+(tablet) and `M*` (phone) on the Main page.
 
 - `InboxPage.tsx`: reads the loader's state, `?filter=`, and from
   `inboxStore.ts` the open groups and, for the shown `?state=`, whether
@@ -24,11 +24,16 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   when the state shows the Done list), then the filters that apply, the search and the sort, with the
   counts that follow. The Filter menu's boxes apply when it closes; the
   Sort, Filter, Snooze and Run in menus open and close by `ui`, and Edit
-  and Done open and close the prompt editor. `InboxRoute.test.tsx` uses
+  and Done open and close the prompt editor (Edit puts the focus in it). `InboxRoute.test.tsx` uses
   each of them through the route. `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`; on a tablet a started next step's `RunCard` stays at
-  the bottom, and the whole prompt opens in a sheet. Discuss opens the
+  the bottom, and the whole prompt opens in a sheet. On the phone Snooze
+  and Dismiss are icons in the nav, Start and the answer are pinned above
+  the tab bar (`PinnedAction`), Sort and Filter are icons, the Filter menu
+  and the Run in picker are sheets, a long-press on a row opens its
+  actions sheet (`RowActionsSheet`, `ui.actionsFor`), and while the prompt
+  editor is open the keyboard hides Start and the tab bar. Discuss opens the
   task's discussion (`ui.discussOpen`): on the desktop the list hides and
   `DiscussionPanel` sits beside the task; on a tablet or phone
   `DiscussionPage` takes the task's page, with no tab bar, and Back
@@ -40,6 +45,8 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   (Apply, Discard, Edit first, Undo, Create, Remove task).
 - `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
+  `MenuSection` (a menu's labelled section, in a popover or a sheet),
+  `PinnedAction`, `RowActionsSheet`,
   `DetailHead` (with the Snooze menu), `DetailSection`, `PromptSection`
   and `PromptDialog` (a sheet on a tablet or phone), `RunInCard` and `RunInPicker`, `RunCard` (a started
   next step's chat, or how a removed one ended), `NotesBox`,
@@ -62,7 +69,9 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   `filteredList`, T16 `discussTask`, T17 `discussionPage`, T18
   `changeProposedPage`, T19 `changeAppliedPage`, T20 `tasksProposedPage`,
   T21 `tasksCreatedList`, T22 `removalProposedPage`, T23
-  `removeConfirmPage`, T24 `removedList`. D16 is D15 with the update
+  `removeConfirmPage`, T24 `removedList`; phone M1 `list`, M2
+  `taskPage`, M3 `promptKeyboard`, M4 `runInSheet`, M5 `questionPhone`,
+  M6 `rowActions`, M7 `filterList`, M8 `chat`. D16 is D15 with the update
   applied in its `ui`. A T
   state that shows only the list sets `selectedId` to null. The others start
   from `nextStep` and its `nextStepGroups`; D9 to D11 and D13 start from
@@ -75,7 +84,7 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   in every layout, even with nothing selected, and a next step's `launch` a union on `stage`: suggested or
   started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
-  picker, the Snooze menu, the discussion or the remove dialog is open,
+  picker, the Snooze menu, a row's actions sheet, the discussion or the remove dialog is open,
   the sort, the Filter menu's boxes and the filters that apply, the
   items snoozed, the items finished (marked done or dismissed from the
   task bar, or removed in a discussion), and what Erik did to each

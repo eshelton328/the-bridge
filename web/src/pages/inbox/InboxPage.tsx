@@ -35,8 +35,9 @@ export function InboxPage() {
     ...changed,
     filter: search.filter ?? state.ui.filter,
     groupsOpen: { ...state.ui.groupsOpen, ...groupsOpen },
-    // Back on a tablet or phone closes the open item and shows the list; the desktop always shows the item.
-    selectedId: itemOpen === false ? null : state.ui.selectedId,
+    // Back on a tablet or phone closes the open item and shows the list; the desktop always shows the item. A tap on
+    // the item's row opens it again: the state's own item is the one the mock data has a detail for.
+    selectedId: itemOpen === undefined ? state.ui.selectedId : itemOpen ? (state.data.detail?.id ?? null) : null,
     promptOpen: promptOpen ?? state.ui.promptOpen,
     removeOpen: removeOpen ?? state.ui.removeOpen,
   }
@@ -49,6 +50,9 @@ export function InboxPage() {
       onGroupOpenChange={setGroupOpen}
       onBack={() => {
         setItemOpen(search.state, false)
+      }}
+      onSelectItem={() => {
+        setItemOpen(search.state, true)
       }}
       onPromptOpenChange={(open) => {
         setPromptOpen(search.state, open)

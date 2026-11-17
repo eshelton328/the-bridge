@@ -506,3 +506,172 @@ describe('the Inbox list tools and task bar', () => {
     })
   })
 })
+
+// The phone (M1 to M8): what Erik does on a 390 px screen, through the route and the page store.
+describe('the Inbox on the phone', () => {
+  let view: { unmount: () => Promise<void> } | undefined
+
+  afterEach(async () => {
+    await view?.unmount()
+    view = undefined
+  })
+
+  async function phone(state: string) {
+    await page.viewport(390, 844)
+    view = await renderInbox(state).rendered
+  }
+
+  const title = () => page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })
+  const sheet = (name: string) => page.getByRole('dialog', { name })
+  /** The row of a list item, found by its title. */
+  const row = (text: string) => page.getByText(text, { exact: true }).element()
+
+  it('opens a task from the list and returns to the list with Back', async () => {
+    await phone('list')
+    await page.getByText('Write the tickets for increment one').click()
+    await expect.element(title()).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Start in the-bridge' })).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(title()).not.toBeInTheDocument()
+    await expect.element(searchbox()).toBeVisible()
+  })
+
+  it('opens a row’s actions with a long touch and snoozes it from the sheet', async () => {
+    await phone('list')
+    const target = row('Pick the header logo')
+    target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    await expect.element(sheet('Pick the header logo').getByText('ncc-1701 · f-005 · NCC-36 · Review')).toBeVisible()
+    await sheet('Pick the header logo').getByText('In 1 hour').click()
+    await expect.element(sheet('Pick the header logo')).not.toBeInTheDocument()
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+    await page.getByRole('button', { name: /Snoozed/ }).click()
+    await expect.element(page.getByText('Snoozed until 11:40')).toBeVisible()
+  })
+
+  it('opens a row’s actions with the context menu and dismisses it into Done', async () => {
+    await phone('list')
+    row('Pick the header logo').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+    await sheet('Pick the header logo').getByText('Dismiss with a reason…').click()
+    await expect.element(page.getByText('Pick the header logo')).not.toBeInTheDocument()
+    await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
+  })
+
+  it('does not open the task when a long touch opened its actions', async () => {
+    await phone('list')
+    const target = row('Write the tickets for increment one')
+    target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await expect.element(sheet('Write the tickets for increment one')).toBeVisible()
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    target.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+    await userEvent.keyboard('{Escape}')
+    await expect.element(sheet('Write the tickets for increment one')).not.toBeInTheDocument()
+    await expect.element(title()).not.toBeInTheDocument()
+    await expect.element(searchbox()).toBeVisible()
+  })
+
+  it('dismisses the open task with the icon in the nav and shows the list', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Dismiss', exact: true }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+  })
+
+  it('snoozes the open task from the clock in the nav', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Snooze', exact: true }).click()
+    await page.getByRole('menuitem', { name: /Tomorrow morning/ }).click()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+  })
+
+  it('opens the Run in sheet with the chevron and closes it with Done', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Change' }).click()
+    await expect.element(sheet('Run in').getByText('New Codex chat')).toBeVisible()
+    await sheet('Run in').getByRole('button', { name: 'Done' }).click()
+    await expect.element(sheet('Run in')).not.toBeInTheDocument()
+  })
+
+  it('opens the whole prompt read-only in a sheet', async () => {
+    await phone('taskPage')
+    await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+    await expect.element(dialog()).toBeVisible()
+  })
+
+  it('puts the focus in the prompt editor that Edit opens', async () => {
+    await phone('taskPage')
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
+  })
+
+  it('opens only the row with a detail, and a tap on another row opens its actions', async () => {
+    await phone('list')
+    const titles = ['drift check wants to run git mv', 'Pick the header logo', 'Commit the brain: 34 changes']
+    for (const text of titles) {
+      await expect.element(page.getByText(text, { exact: true })).toBeVisible()
+      expect(page.getByRole('button', { name: text, exact: true }).elements()).toHaveLength(0)
+    }
+    await expect.element(page.getByRole('button', { name: 'Write the tickets for increment one' })).toBeVisible()
+    // A tap on a row without a detail opens its actions, not a task.
+    await page.getByText('Pick the header logo', { exact: true }).click()
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
+    await expect.element(title()).not.toBeInTheDocument()
+  })
+
+  it('opens the actions of a row without a detail from the keyboard', async () => {
+    await phone('list')
+    const control = page.getByRole('button', { name: /^Pick the header logo/ })
+    control.element().focus()
+    await expect.element(control).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
+  })
+
+  it('gives a finished row in Done no actions, so Done keeps its count', async () => {
+    await phone('doneList')
+    await expect.element(page.getByRole('radio', { name: 'Done 4' })).toBeInTheDocument()
+    const target = row('Pick the header logo')
+    target.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+    target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 600)
+    })
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    expect(page.getByRole('dialog', { name: 'Pick the header logo' }).elements()).toHaveLength(0)
+    await expect.element(page.getByRole('radio', { name: 'Done 4' })).toBeInTheDocument()
+  })
+
+  it('hides the tab bar and Start while the prompt editor is open, and brings them back with Done', async () => {
+    await phone('taskPage')
+    const tabBar = () => page.getByRole('button', { name: 'Home' })
+    const start = () => page.getByRole('button', { name: 'Start in the-bridge' })
+    await page.getByRole('button', { name: 'Edit' }).click()
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toBeVisible()
+    await expect.element(tabBar()).not.toBeInTheDocument()
+    await expect.element(start()).not.toBeInTheDocument()
+    await page.getByRole('button', { name: 'Done' }).click()
+    await expect.element(tabBar()).toBeVisible()
+    await expect.element(start()).toBeVisible()
+  })
+
+  it('filters the list in the Filter sheet, and Show closes it and applies the boxes', async () => {
+    await phone('list')
+    const readme = () => page.getByText('Run the readme cross-family round x2')
+    await page.getByRole('button', { name: 'Filter', exact: true }).click()
+    await sheet('Filter').getByText('skill-evals', { exact: true }).click()
+    await sheet('Filter').getByRole('button', { name: 'Show 6 tasks' }).click()
+    await expect.element(sheet('Filter')).not.toBeInTheDocument()
+    await expect.element(readme()).not.toBeInTheDocument()
+    await expect.element(page.getByText('1 task hidden by filters')).toBeVisible()
+  })
+
+  it('keeps the reply Erik types in the chat', async () => {
+    await phone('chat')
+    const reply = page.getByRole('textbox', { name: 'Reply' })
+    await userEvent.type(reply, 'Wait for the review')
+    await expect.element(reply).toHaveValue('Wait for the review')
+    await expect.element(page.getByRole('button', { name: 'Home' })).not.toBeInTheDocument()
+  })
+})

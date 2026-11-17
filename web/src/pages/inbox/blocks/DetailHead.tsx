@@ -30,14 +30,15 @@ import {
 } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { InboxDetailHead } from '../types.ts'
+import type { InboxDetailHead, InboxSnoozeMenu } from '../types.ts'
 
 /**
- * The task bar's Snooze menu and Dismiss: whether the menu is open, what
- * Erik picks in it (a time to snooze the item until, or `null` for Mark
- * done), and Dismiss.
+ * The task bar's Snooze menu and Dismiss: the menu's entries, whether it is
+ * open, what Erik picks in it (a time to snooze the item until, or `null`
+ * for Mark done), and Dismiss.
  */
 export type SnoozeControl = {
+  menu?: InboxSnoozeMenu | undefined
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   onPick?: ((until: string | null) => void) | undefined
@@ -48,7 +49,9 @@ export type SnoozeControl = {
 export type DiscussControl = { open: boolean; onOpenChange?: ((open: boolean) => void) | undefined }
 
 const origin = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
-const title = css({ textStyle: 'title', m: '0' })
+// Panda's preflight balances the lines of every heading (`text-wrap: balance`), which broke M5's title after "or"
+// with half the line empty. Figma fills each line before it wraps, as `wrap` does.
+const title = css({ textStyle: 'title', m: '0', textWrap: 'wrap' })
 
 const chipIcons = {
   folder: <FolderIcon />,
@@ -57,15 +60,19 @@ const chipIcons = {
   file: <FileIcon />,
 } as const satisfies Record<InboxDetailHead['chips'][number]['icon'], ReactNode>
 
-function SnoozeButton({ head, snooze }: { head: InboxDetailHead; snooze: SnoozeControl }) {
-  const { open, onOpenChange, onPick } = snooze
-  const button = (
+function SnoozeButton({ snooze, iconOnly }: { snooze: SnoozeControl; iconOnly: boolean }) {
+  const { menu, open, onOpenChange, onPick } = snooze
+  // The phone's nav draws Snooze and Dismiss as 32 px icon buttons (M2 346:9237).
+  const button = iconOnly ? (
+    <Button size="md" iconOnly aria-label="Snooze" pressed={open ? true : undefined}>
+      <ClockIcon />
+    </Button>
+  ) : (
     <Button size="sm" pressed={open ? true : undefined}>
       <SnoozeIcon />
       Snooze
     </Button>
   )
-  const menu = head.snoozeMenu
   if (menu === undefined) return button
   const items: MenuEntry[] = [
     ...menu.times.map((t) => ({ value: t.value, label: t.label, icon: <ClockIcon />, trailing: t.time })),
@@ -94,15 +101,36 @@ function SnoozeButton({ head, snooze }: { head: InboxDetailHead; snooze: SnoozeC
   )
 }
 
+/** Snooze and Dismiss: in the task bar, or as icons in the phone's nav (M2). */
+export function SnoozeActions({ snooze, iconOnly = false }: { snooze: SnoozeControl; iconOnly?: boolean }) {
+  return (
+    <>
+      <SnoozeButton snooze={snooze} iconOnly={iconOnly} />
+      {iconOnly ? (
+        <Button size="md" iconOnly aria-label="Dismiss" onClick={snooze.onDismiss}>
+          <CloseIcon />
+        </Button>
+      ) : (
+        <Button size="sm" onClick={snooze.onDismiss}>
+          <CloseIcon />
+          Dismiss
+        </Button>
+      )}
+    </>
+  )
+}
+
 export type DetailHeadProps = {
   head: InboxDetailHead
   /** The Snooze menu; closed when not set. */
   snooze?: SnoozeControl | undefined
   /** The task has a discussion: the task bar shows Discuss, pressed while the discussion is open. */
   discuss?: DiscussControl | undefined
+  /** Snooze and Dismiss sit in the task bar; on the phone they sit in the nav instead (M2). */
+  barActions?: boolean | undefined
 }
 
-export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHeadProps) {
+export function DetailHead({ head, snooze = { open: false }, discuss, barActions = true }: DetailHeadProps) {
   return (
     <>
       <Inline gap="8" align="center" data-figma="task bar">
@@ -120,15 +148,7 @@ export function DetailHead({ head, snooze = { open: false }, discuss }: DetailHe
             Discuss
           </Button>
         )}
-        {head.actions ? (
-          <>
-            <SnoozeButton head={head} snooze={snooze} />
-            <Button size="sm" onClick={snooze.onDismiss}>
-              <CloseIcon />
-              Dismiss
-            </Button>
-          </>
-        ) : null}
+        {head.actions && barActions ? <SnoozeActions snooze={snooze} /> : null}
       </Inline>
       <Stack gap="10" data-figma="title block">
         <h1 className={title}>{head.title}</h1>

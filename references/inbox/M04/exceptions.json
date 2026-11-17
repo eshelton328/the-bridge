@@ -1,0 +1,54 @@
+{
+  "missing": [
+    {
+      "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review.",
+      "reason": "Figma cuts the prompt under the sheet: the text layer 346:9698 runs past its prompt box, and the sheet (346:9742) covers the rest. The render's Clamp cuts it after five lines, under the same sheet."
+    },
+    {
+      "text": "f-005 the-bridge",
+      "reason": "Layer 346:9725 is a source in the hidden SOURCES section (346:9715 sits at y 625, over RUN IN; frame.png does not show it). The render keeps Sources lower on the page, under the sheet. The visible chip with the same text (346:9663) is no longer checked (open request fidelity-layer-scoped-exceptions)."
+    }
+  ],
+  "extra": [
+    {
+      "text": "Read the whole prompt",
+      "reason": "M2's link under the prompt (346:9301) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "MY NOTES",
+      "reason": "M2's My notes (346:9322) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Add a note for yourself…",
+      "reason": "M2's notes field (346:9324) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Home",
+      "reason": "M2's tab bar (346:9345) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Workspaces",
+      "reason": "M2's tab bar (346:9345) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "Projects",
+      "reason": "M2's tab bar (346:9345) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    },
+    {
+      "text": "More",
+      "reason": "M2's tab bar (346:9345) sits under the Run in sheet: M4 is M2's task page with the sheet over it, and the sheet (346:9742) covers the bottom of the screen, so Figma leaves the layer out. The render keeps M2's page under the sheet and its scrim, where no viewer sees it; the check does not test what an overlay covers."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The task page scrolls on the phone, as in M2 (the note there: the page scrolls to My notes); the sheet covers the rest of it."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.stack > div.stack:nth-of-type(2) > section.panel__root > div.panel__body > div.clamp",
+      "reason": "The cut prompt Figma draws (346:9698 runs past its box); see the prompt's missing entry."
+    }
+  ]
+}

@@ -18,15 +18,19 @@ import { list } from './list.ts'
 import { nextStep } from './nextStep.ts'
 import { promptEditing } from './promptEditing.ts'
 import { promptEditingPage } from './promptEditingPage.ts'
+import { promptKeyboard } from './promptKeyboard.ts'
 import { promptRead } from './promptRead.ts'
 import { promptSheet } from './promptSheet.ts'
 import { question } from './question.ts'
+import { questionPhone } from './questionPhone.ts'
 import { removalProposed } from './removalProposed.ts'
 import { removalProposedPage } from './removalProposedPage.ts'
 import { removeConfirm } from './removeConfirm.ts'
 import { removeConfirmPage } from './removeConfirmPage.ts'
 import { removed } from './removed.ts'
 import { removedList } from './removedList.ts'
+import { rowActions } from './rowActions.ts'
+import { runInSheet } from './runInSheet.ts'
 import { running } from './running.ts'
 import { runningList } from './runningList.ts'
 import { runningTask } from './runningTask.ts'
@@ -64,15 +68,19 @@ export const inboxStates = {
   nextStep,
   promptEditing,
   promptEditingPage,
+  promptKeyboard,
   promptRead,
   promptSheet,
   question,
+  questionPhone,
   removalProposed,
   removalProposedPage,
   removeConfirm,
   removeConfirmPage,
   removed,
   removedList,
+  rowActions,
+  runInSheet,
   running,
   runningList,
   runningTask,

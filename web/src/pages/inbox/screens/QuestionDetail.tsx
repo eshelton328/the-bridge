@@ -1,6 +1,8 @@
 // The detail of a question from a chat: the chat it blocks, the context,
 // the options with the recommended one first, a note and the answer
-// button. On a tablet or phone it sits under Back (T3). Props only.
+// button. On a tablet or phone it sits under Back (T3); on the phone the
+// answer button is pinned above the tab bar, without its hint, and the
+// blocked chat's button says Open (M5). Props only.
 import {
   Badge,
   Button,
@@ -21,12 +23,17 @@ import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
+import { PinnedAction } from '../blocks/PinnedAction.tsx'
 import { draftProps, type InboxDrafts, type InboxQuestion } from '../types.ts'
 
 const grow = css({ flex: '1' })
 const waitTitle = css({ textStyle: 'label' })
 const mono = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
+const fill = css({ flex: '1' })
+// M2 346:9246, M5 346:9866: the phone's task frame insets its content 4 at the sides and 8 at the top. Its sections
+// are 18 apart (M2 to M5), which takes 20 (d-072: a tie takes the larger token); the tablet's 22 takes 24.
+const phoneTask = css({ px: '4', pt: '8' })
 
 export type QuestionDetailProps = {
   detail: InboxQuestion
@@ -41,11 +48,16 @@ export type QuestionDetailProps = {
 }
 
 export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooze }: QuestionDetailProps) {
-  return (
-    <Container size={detailContainerSize(layout)}>
+  const phone = layout === 'phone'
+  const column = (
+    <Container size={detailContainerSize(layout)} className={phone ? fill : undefined}>
       {back}
-      <Stack gap="24" data-figma={layout === 'desktop' ? undefined : 'task · question'}>
-        <DetailHead head={detail} snooze={snooze} />
+      <Stack
+        gap={phone ? '20' : '24'}
+        className={phone ? phoneTask : undefined}
+        data-figma={layout === 'desktop' ? undefined : 'task · question'}
+      >
+        <DetailHead head={detail} snooze={snooze} barActions={!phone} />
         <div data-figma="blocking">
           <Panel tone="needsYou">
             <Inline gap="10" align="center">
@@ -58,7 +70,7 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
               </div>
               <Button size="sm">
                 <ExternalLinkIcon />
-                Open chat
+                {phone ? 'Open' : 'Open chat'}
               </Button>
             </Inline>
           </Panel>
@@ -92,14 +104,23 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
             {...draftProps(drafts, 'answer', detail.note)}
           />
         </DetailSection>
-        <Inline gap="12" align="center" data-figma="answer">
-          <Button variant="primary" size="lg">
-            <PlayIcon />
-            {detail.answerLabel}
-          </Button>
-          <span className={hint}>{detail.answerHint}</span>
-        </Inline>
+        {phone ? null : (
+          <Inline gap="12" align="center" data-figma="answer">
+            <Button variant="primary" size="lg">
+              <PlayIcon />
+              {detail.answerLabel}
+            </Button>
+            <span className={hint}>{detail.answerHint}</span>
+          </Inline>
+        )}
       </Stack>
     </Container>
+  )
+  if (!phone) return column
+  return (
+    <>
+      {column}
+      <PinnedAction label={detail.answerLabel} />
+    </>
   )
 }

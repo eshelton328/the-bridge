@@ -1,7 +1,10 @@
 // One Inbox item in the list: its kind tile, title, meta and age; what it
 // blocks, when a snoozed item returns, where a started item runs or how a
 // finished one ended; a pill such as New; and, for an approval, the answer
-// buttons. A search marks its query in the meta line. Props only.
+// buttons. A search marks its query in the meta line. With `onActions`, a
+// long-press (a touch held for half a second) or the context menu (a right
+// click, the menu key, Shift+F10) opens the row's actions (M6); a row that
+// does not open is a button that opens them. Props only.
 import {
   Button,
   CheckIcon,
@@ -14,6 +17,7 @@ import {
   SnoozeIcon,
   TrashIcon,
 } from '@eshelton328/component-library-1701'
+import { type KeyboardEvent, type MouseEvent, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRowView } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
@@ -23,6 +27,10 @@ const runs = css({ color: 'fg.accent' })
 const finished = css({ color: 'status.done.fg' })
 const dismissed = css({ color: 'fg.subtle' })
 const removed = css({ color: 'status.danger.fg' })
+// M1 346:9052: the phone's rows pad their content 4 at the sides, against `ListRow`'s 10 (with its 1 px border, 11),
+// so the kind tile lines up under the group's chevron (16) and the age ends 16 from the screen's edge. The row
+// takes the 6 px difference outside the list's padding (LIBRARY_GAPS.md: List row padding on the phone).
+const phoneRow = css({ mx: '-6' })
 
 const outcomes = {
   done: { className: finished, icon: <CheckIcon size="12" /> },
@@ -36,6 +44,47 @@ export type InboxRowProps = {
   onSelect?: (() => void) | undefined
   /** The search query, marked in the meta line. */
   query?: string | undefined
+  /** Opens the row's actions: a long-press or the context menu. */
+  onActions?: (() => void) | undefined
+}
+
+/** How long a touch is held before it opens the row's actions, in ms; iOS's own long-press is about this. */
+const longPress = 500
+
+function useLongPress(onActions: (() => void) | undefined) {
+  const timerRef = useRef<number | undefined>(undefined)
+  // A held touch that opened the actions ends in a click; it must not open the row as well.
+  const firedRef = useRef(false)
+  const clear = () => {
+    if (timerRef.current !== undefined) window.clearTimeout(timerRef.current)
+    timerRef.current = undefined
+  }
+  if (onActions === undefined) return {}
+  return {
+    onContextMenu: (event: MouseEvent) => {
+      event.preventDefault()
+      clear()
+      onActions()
+    },
+    onPointerDown: (event: { pointerType: string }) => {
+      firedRef.current = false
+      if (event.pointerType !== 'touch') return
+      clear()
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = undefined
+        firedRef.current = true
+        onActions()
+      }, longPress)
+    },
+    onPointerUp: clear,
+    onPointerCancel: clear,
+    onPointerLeave: clear,
+    onClickCapture: (event: MouseEvent) => {
+      if (!firedRef.current) return
+      firedRef.current = false
+      event.stopPropagation()
+    },
+  }
 }
 
 function Lines({ row }: { row: InboxRowView }) {
@@ -71,14 +120,15 @@ function Lines({ row }: { row: InboxRowView }) {
   )
 }
 
-export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
+export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRowProps) {
+  const press = useLongPress(onActions)
   const lines =
     row.outcome !== undefined ||
     row.running !== undefined ||
     row.snoozed !== undefined ||
     row.blocks !== null ||
     row.pill !== undefined
-  return (
+  const item = (
     <ListRow
       density="compact"
       title={row.title}
@@ -114,5 +164,29 @@ export function InboxRow({ row, selected, onSelect, query }: InboxRowProps) {
     >
       {lines ? <Lines row={row} /> : undefined}
     </ListRow>
+  )
+  // Only a row with actions (the phone's) gets the wrapper, so the desktop and tablet lists keep their boxes.
+  if (onActions === undefined) return item
+  // A row that does not open is not a button itself, so the wrapper is the row's control: a tap, Enter or Space opens
+  // its actions, and a keyboard or screen reader reaches it. A row that opens keeps its own button, and the context
+  // menu key on that button opens the actions through the wrapper.
+  const control =
+    onSelect === undefined
+      ? {
+          role: 'button',
+          tabIndex: 0,
+          'aria-haspopup': 'dialog' as const,
+          onClick: onActions,
+          onKeyDown: (event: KeyboardEvent) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return
+            event.preventDefault()
+            onActions()
+          },
+        }
+      : {}
+  return (
+    <div className={phoneRow} {...control} {...press}>
+      {item}
+    </div>
   )
 }

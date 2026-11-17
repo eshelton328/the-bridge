@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row runs past the list too: chip · Done (346:10029) starts at x 363 and is 66 wide, so it ends at 429, beyond the list's end at 378; the row scrolls sideways on the phone. The render clips the same chip. M1 draws a fade over the cut (346:9162), which the render lacks (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}

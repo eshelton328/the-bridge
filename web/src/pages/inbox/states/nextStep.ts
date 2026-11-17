@@ -3,7 +3,7 @@
 // references/inbox/D01/frame.json.
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
-import type { InboxData, InboxDetailHead, InboxGroupView, InboxRunIn, InboxUi } from '../types.ts'
+import type { InboxData, InboxGroupView, InboxRunIn, InboxUi } from '../types.ts'
 
 const selected = InboxItemId.parse('write-the-tickets')
 
@@ -148,7 +148,7 @@ const filterMenu = {
 export const noFilter = ['approval', 'question', 'review', 'action', 'next', 'ncc-1701', 'omni-brain', 'skill-evals']
 
 /** The Snooze menu of an open item's task bar (Figma D12 346:4878). */
-export const snoozeMenu = {
+const snoozeMenu = {
   heading: 'Snooze',
   times: [
     { value: 'hour', label: 'In 1 hour', time: '11:40' },
@@ -158,7 +158,7 @@ export const snoozeMenu = {
   pick: 'Pick a date and time…',
   done: 'Mark done',
   dismiss: 'Dismiss with a reason…',
-} satisfies NonNullable<InboxDetailHead['snoozeMenu']>
+} satisfies InboxData['snoozeMenu']
 
 // The Run in picker (Figma D3 346:821), which Change opens.
 const picker = {
@@ -228,6 +228,7 @@ export const nextStep = {
       { value: 'done', label: 'Done', count: 4 },
     ],
     sortMenu,
+    snoozeMenu,
     filterMenu,
     groups: [needsYou, nextSteps, snoozed],
     detail: {
@@ -243,7 +244,6 @@ export const nextStep = {
       ],
       tags: ['global/planning', 'project/ncc-1701/the-bridge'],
       actions: true,
-      snoozeMenu,
       why: 'Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.',
       prompt: {
         text: prompt,
@@ -255,7 +255,8 @@ export const nextStep = {
         runIn: {
           title: 'New Claude Code chat',
           badge: 'Recommended',
-          detail: 'the-bridge · Sonnet 5.5 · folders ~/the-bridge',
+          detail: 'the-bridge · Sonnet 5.5',
+          folders: 'folders ~/the-bridge',
           picker,
         },
         startLabel: 'Start in the-bridge',
@@ -280,6 +281,7 @@ export const nextStep = {
     pickerOpen: false,
     sortOpen: false,
     snoozeOpen: false,
+    actionsFor: null,
     promptOpen: false,
     discussOpen: false,
     removeOpen: false,
