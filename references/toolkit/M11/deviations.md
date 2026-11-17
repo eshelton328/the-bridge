@@ -87,3 +87,15 @@ library's SVG, so they carry no `data-figma`.
   on T2 and M1. Everything inside it is at Figma's place.
 - **Open writer.** The card's button has no action yet: the item page
   (D3) is a later frame.
+
+## Second review
+
+- **Link ends.** MapGraph draws a small dot where a link meets a node;
+  Figma has no end marker (gap: Map link ends).
+- **Stars.** The library `Backdrop` draws one fixed star set for the
+  phone, taken from one Figma frame, so the faint stars sit in other
+  places than M11's; most of them fall under the map window and the
+  card. No change: a star layout for each frame is not worth a library
+  part.
+- **Status bar and corners (not real).** Figma's 9:41 status bar and the
+  rounded device corners are design-only chrome (d-089).
