@@ -80,3 +80,20 @@ export const Subagents: Story = {
     await expect(await body.findByRole('button', { name: /Start chat/ })).toBeVisible()
   },
 }
+
+export const Folders: Story = {
+  name: 'D4: the folders control, its list and the folder picker',
+  args: { data: workspacesStates.folders.data, ui: workspacesStates.folders.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: '~/omni-brain +1' })).toHaveAttribute('aria-expanded', 'true')
+    await expect(canvas.getByRole('complementary', { name: 'Add a folder' })).toBeVisible()
+    await expect(canvas.getByText('Folders on the Mac that runs the-bridge.')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: '~/the-bridge' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByRole('button', { name: /Add ~\/the-bridge/ })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'drift check actions' })).toBeNull()
+    // The folder list renders in a portal, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByText('working folder')).toBeVisible()
+    await expect(await body.findByRole('button', { name: 'Remove ~/omni' })).toBeVisible()
+  },
+}

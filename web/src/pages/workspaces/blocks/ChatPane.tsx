@@ -2,7 +2,8 @@
 // skill list over it after "/" (D1 105:209). `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). Props only.
-import { Composer, ModelChip, Stack } from '@eshelton328/component-library-1701'
+import { Composer, Inline, ModelChip, Stack } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
@@ -28,9 +29,20 @@ export type ChatPaneProps = {
   skills?: { label: string; items: readonly Skill[]; value: string | null; open: boolean } | undefined
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   size?: keyof typeof sizes | undefined
+  /** The folders control, before the model in the composer's bottom row (D4 137:9). */
+  folders?: ReactNode
 }
 
-export function ChatPane({ figma, entries, composer, skills, onSkillsOpenChange, size = 'pane' }: ChatPaneProps) {
+export function ChatPane(props: ChatPaneProps) {
+  const { figma, entries, composer, skills, onSkillsOpenChange, size = 'pane', folders } = props
+  const chip =
+    composer.model === undefined ? undefined : (
+      <ModelChip
+        model={composer.model}
+        options={[{ value: composer.model, label: composer.model }]}
+        value={composer.model}
+      />
+    )
   const box = (
     <Composer
       label={composer.placeholder}
@@ -41,12 +53,13 @@ export function ChatPane({ figma, entries, composer, skills, onSkillsOpenChange,
       onRemoveAttachment={() => undefined}
       onAttach={() => undefined}
       model={
-        composer.model === undefined ? undefined : (
-          <ModelChip
-            model={composer.model}
-            options={[{ value: composer.model, label: composer.model }]}
-            value={composer.model}
-          />
+        folders === undefined ? (
+          chip
+        ) : (
+          <Inline gap="6" align="center">
+            {folders}
+            {chip}
+          </Inline>
         )
       }
     />

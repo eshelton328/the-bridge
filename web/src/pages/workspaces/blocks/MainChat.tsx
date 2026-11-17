@@ -16,13 +16,16 @@ export type MainChatProps = {
   contextLabel: string
   skills: { label: string; items: readonly Skill[]; value: string | null; open: boolean }
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
-  /** The chat actions menu with its trigger; a plain ⋯ button when not set. */
+  /** The chat actions menu with its trigger; a plain ⋯ button when not set, and none when `null`. */
   menu?: ReactNode
+  /** The folders control under the prompt box (D4). */
+  folders?: ReactNode
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
 }
 
-export function MainChat({ pane, workspace, contextLabel, skills, onSkillsOpenChange, menu, layers }: MainChatProps) {
+export function MainChat(props: MainChatProps) {
+  const { pane, workspace, contextLabel, skills, onSkillsOpenChange, menu, folders, layers } = props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
       <ChatHead
@@ -42,6 +45,7 @@ export function MainChat({ pane, workspace, contextLabel, skills, onSkillsOpenCh
         composer={pane.composer}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
+        folders={folders}
       />
     </section>
   )

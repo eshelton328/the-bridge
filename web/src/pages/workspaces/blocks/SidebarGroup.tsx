@@ -80,10 +80,12 @@ export type SidebarGroupProps = {
   drop?: { chat: SidebarChat; hint: string } | undefined
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
+  /** `false`: the header shows no count and no needs-you dot (D4). */
+  counts?: boolean | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
-  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers } = props
+  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers, counts = true } = props
   const rowsId = useId()
   const name = workspace.label
   return (
@@ -95,8 +97,8 @@ export function SidebarGroup(props: SidebarGroupProps) {
         <GroupHeader
           variant="sidebar"
           label={name}
-          count={workspace.count}
-          dot={workspace.needsYou ? 'needsYou' : undefined}
+          count={counts ? workspace.count : undefined}
+          dot={counts && workspace.needsYou ? 'needsYou' : undefined}
           open={open}
           onOpenChange={onOpenChange}
           contentId={rowsId}

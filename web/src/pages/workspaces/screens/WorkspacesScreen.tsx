@@ -7,7 +7,9 @@
 // workspaces and their chats are listed beside the focused chat, which shows
 // alone, with its side chat beside it; its actions sit behind the ⋯ of its
 // header (D2b). In place of the side chat the subagents panel can show,
-// and the New chat form can open over the screen (D3).
+// and the New chat form can open over the screen (D3). The folders control
+// sits under the prompt box with its list open, and the folder picker takes
+// the side slot (D4).
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -17,6 +19,8 @@ import { MainChat } from '../blocks/MainChat.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
+import { FoldersControl } from '../blocks/FoldersControl.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
@@ -81,6 +85,19 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           figma={{ panel: data.layers?.subagents, cards: data.layers?.subagentCards }}
         />
       ) : undefined
+    const folderPicker =
+      ui.folderPickerOpen === true && data.folderPicker !== undefined ? (
+        <FolderPickerPane
+          picker={data.folderPicker}
+          picked={ui.pickedFolder ?? null}
+          onPick={(pickedFolder) => {
+            change({ pickedFolder })
+          }}
+          onClose={() => {
+            change({ folderPickerOpen: false })
+          }}
+        />
+      ) : undefined
     const sideChat =
       ui.sideChatOpen === true && data.sideChat !== undefined ? (
         <SideChatPanel
@@ -116,12 +133,26 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
               onSkillsOpenChange={(open) => {
                 change({ skillsFor: open ? chat.id : null })
               }}
-              menu={chatMenu}
+              menu={data.chatActions === false ? null : chatMenu}
+              folders={
+                data.folders === undefined ? undefined : (
+                  <FoldersControl
+                    folders={data.folders}
+                    open={ui.foldersOpen === true}
+                    onOpenChange={(foldersOpen) => {
+                      change({ foldersOpen })
+                    }}
+                    onAdd={() => {
+                      change({ foldersOpen: false, folderPickerOpen: true })
+                    }}
+                  />
+                )
+              }
               layers={data.layers}
             />
           }
           sideWidth={subagents === undefined ? 'side' : 'wide'}
-          side={subagents ?? sideChat}
+          side={subagents ?? folderPicker ?? sideChat}
         />
         {data.newChat === undefined ? null : (
           <NewChatDialog

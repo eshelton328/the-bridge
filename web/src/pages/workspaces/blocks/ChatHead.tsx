@@ -36,7 +36,7 @@ export type ChatHeadProps = {
   /** The workspace the chat is in. */
   workspace: string
   contextLabel: string
-  /** The chat actions menu, with its trigger; a plain button when not set. */
+  /** The chat actions menu, with its trigger; a plain button when not set, and none when `null` (D4). */
   menu?: ReactNode
   /** The Figma layers of the header and of the chat actions button, for the fidelity checks; D2's when not set. */
   figma?: { head?: string | undefined; actions?: string | undefined } | undefined
@@ -52,10 +52,12 @@ export function ChatHead({ head: chat, workspace, contextLabel, menu, figma }: C
           <span className={where}>{workspace}</span>
         </div>
         <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
-        {menu ?? (
+        {menu === undefined ? (
           <Button size="xs" aria-label={`${chat.title} actions`} data-figma={figma?.actions ?? '400:2'}>
             <MoreIcon size="12" />
           </Button>
+        ) : (
+          menu
         )}
       </Inline>
       <Inline gap="8" align="center">

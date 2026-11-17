@@ -202,6 +202,8 @@ export const SidebarText = z.object({
   dropHint: z.string(),
   /** The word after the main chat's context meter. */
   contextLabel: z.string(),
+  /** `false`: the group headers show no count and no needs-you dot, as D4 draws them. */
+  counts: z.boolean().optional(),
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
@@ -235,6 +237,47 @@ export const SidebarLayers = z.object({
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
+/** The folders of the chat shown alone (D4 128:405): the control under the prompt box and its list. */
+export const ChatFolders = z.object({
+  /** The name of the list, for assistive technology. */
+  label: z.string(),
+  /** The list's heading, in capitals, and the note at its end. */
+  heading: z.string(),
+  scope: z.string(),
+  /** The working folder first, then the folders added since. */
+  items: z.array(z.string()),
+  /** The note on the working folder. */
+  working: z.string(),
+  /** The accessible name of a folder's remove button; {folder} is filled in. */
+  remove: z.string(),
+  add: z.string(),
+})
+export type ChatFolders = z.infer<typeof ChatFolders>
+
+/** The folder picker beside the chat (D4 128:330): a search, the recent folders and the folders of one path. */
+export const FolderPicker = z.object({
+  title: z.string(),
+  closeLabel: z.string(),
+  note: z.string(),
+  searchLabel: z.string(),
+  /** What Erik has typed. */
+  query: z.string(),
+  recentLabel: z.string(),
+  /** The recent folders; `added` ones are already folders of the chat. */
+  recent: z.array(z.object({ path: z.string(), added: z.boolean() })),
+  addedLabel: z.string(),
+  browseLabel: z.string(),
+  /** The path whose folders the picker lists, such as "~/". */
+  browsePath: z.string(),
+  browse: z.array(z.string()),
+  /** The accessible name of the button that opens a listed folder; {folder} is filled in. */
+  openLabel: z.string(),
+  cancel: z.string(),
+  /** The add button's label; {folder} is filled in. */
+  add: z.string(),
+})
+export type FolderPicker = z.infer<typeof FolderPicker>
+
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
@@ -266,6 +309,12 @@ export const WorkspacesData = z.object({
   subagents: SubagentsPanel.optional(),
   /** The New chat form (D3). */
   newChat: NewChatForm.optional(),
+  /** `false`: the chat header has no ⋯, as D4 draws it. */
+  chatActions: z.boolean().optional(),
+  /** The folders of the chat shown alone (D4). */
+  folders: ChatFolders.optional(),
+  /** The folder picker (D4). */
+  folderPicker: FolderPicker.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -299,6 +348,12 @@ export const WorkspacesUi = z.object({
   transcripts: z.array(z.string()).optional(),
   /** The New chat form is open over the screen (D3). */
   newChatOpen: z.boolean().optional(),
+  /** The list of the chat's folders is open over the composer (D4). */
+  foldersOpen: z.boolean().optional(),
+  /** The folder picker shows beside the main chat, in place of the side chat (D4). */
+  folderPickerOpen: z.boolean().optional(),
+  /** The folder chosen in the picker, by path. */
+  pickedFolder: z.string().nullable().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 
