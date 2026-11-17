@@ -15,11 +15,11 @@ const withThemeAndMode: Decorator = (Story, { globals }) => {
   return Story()
 }
 
-// The Figma frame sizes of the three devices. A story picks its device
-// with `globals: { viewport: { value: 'desktop' } }`, from its state's
-// frame; the toolbar's viewport menu switches it by hand, and a link can
-// pick one with `&globals=viewport.value:phone`.
-const viewports = {
+// The Figma frame sizes of the three devices. Storybook opens at
+// desktop, the size of most frames; the toolbar's viewport menu switches
+// it, and a link can pick one with `&globals=viewport.value:phone`. A
+// story must not set `globals.viewport`: that locks the menu and the link.
+export const viewports = {
   desktop: { name: 'Desktop (Figma 1512 × 982)', styles: { width: '1512px', height: '982px' }, type: 'desktop' },
   tablet: { name: 'Tablet (Figma 756 × 1158)', styles: { width: '756px', height: '1158px' }, type: 'tablet' },
   phone: { name: 'iPhone 14 (390 × 844)', styles: { width: '390px', height: '844px' }, type: 'mobile' },
@@ -37,7 +37,7 @@ const preview: Preview = {
       toolbar: { title: 'Mode', icon: 'mirror', items: ['dark', 'light'], dynamicTitle: true },
     },
   },
-  initialGlobals: { mode: 'dark' },
+  initialGlobals: { mode: 'dark', viewport: { value: 'desktop', isRotated: false } },
   parameters: {
     // An accessibility violation fails the story test.
     a11y: { test: 'error' },
