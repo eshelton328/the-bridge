@@ -27,7 +27,8 @@ what each file of a page folder is for.
   the selected item's card). `ToolkitListPane` is the list beside an
   open item (D3): `ToolkitHeader`, `ToolkitListTools` and `ToolkitGroup`
   take `layout="pane"`, and `ToolkitRow` takes `size="pane"`.
-  `ToolkitItem` is the open item. On the map the list tools show no Sort and
+  `ToolkitItem` is the open item, with its path row (`ToolkitItemPath`)
+  and Discuss and Show on map (`ToolkitItemActions`). On the map the list tools show no Sort and
   their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
 - `types.ts`: the view models: items, groups, kind chips, the map, an open item's details, and the `ui`.
@@ -53,8 +54,11 @@ what each file of a page folder is for.
   knows. On the desktop the list moves into the list pane
   (`ToolkitListPane`) and `ToolkitItem` fills the rest, with its
   Overview (`ToolkitItemOverview`, `ToolkitFilePreview`,
-  `ToolkitItemSide`); on a tablet or phone the item fills the screen
-  under a back row. A rule (D4, `ruleOpen`,
+  `ToolkitItemSide`); on a tablet or phone (T3, `skillOpenTablet`, D3's
+  data) the item replaces the list in the shared `DetailFrame` (d-107):
+  the back row (Back to Toolkit, Discuss and Show on map) stays at the
+  top, the item scrolls under it, and the Overview puts the side under
+  the file (`src/app/ToolkitStickyBack.test.tsx`). A rule (D4, `ruleOpen`,
   which adds the Workflows and Hooks groups) adds `loads` to its details,
   shown as the Overview's load box, and has no side column: `usedIn` and
   `files` are optional. An agent (D7, `agentOpen`, T1's list with only
@@ -80,6 +84,6 @@ what each file of a page folder is for.
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
+  (T7, T17 to T19, M2, M19 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
