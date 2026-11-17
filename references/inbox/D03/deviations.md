@@ -99,6 +99,10 @@ the checks and offsets below are from the beta.9 run.
   0.98). No layer of this frame moved. On `surface.raised`, `fg.subtle`
   is 4.39:1, below WCAG AA (d-055), so the search placeholder is
   `fg.muted` (#8a97b8), brighter than Figma's #4a5675.
+- **Beta.10 (2026-11-17).** Library 1.0.0-beta.10 (#112) adds
+  `SearchField surface="raised"`, which draws the placeholder and the
+  clear icon in `fg.muted`; the picker's search uses it in place of the
+  app's own placeholder style. The colour does not change.
 
 ## Second review
 

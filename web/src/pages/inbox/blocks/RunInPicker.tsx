@@ -4,14 +4,9 @@
 // pill ("Recommended") sits beside the title and a status pill at the end.
 // Props only.
 import { KindMark, OptionList, PlusIcon, SearchField, SearchIcon } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRunIn } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
 import { MenuSection } from './MenuSection.tsx'
-
-// `SearchField` draws its placeholder in `fg.subtle`, 4.39:1 on the popover's `surface.raised` (below WCAG AA), so the
-// picker's placeholder is `fg.muted`. The wrapper adds no box.
-const search = css({ display: 'contents', '& input::placeholder': { color: 'fg.muted' } })
 
 export type RunInPickerProps = {
   picker: NonNullable<InboxRunIn['picker']>
@@ -22,9 +17,16 @@ export type RunInPickerProps = {
 export function RunInPicker({ picker, sheet }: RunInPickerProps) {
   return (
     <>
-      <div className={search}>
-        <SearchField size="md" textSize="sm" label={picker.search} placeholder={picker.search} icon={<SearchIcon />} />
-      </div>
+      {/* On the raised popover `fg.subtle` is 4.39:1, below WCAG AA: `surface="raised"` draws the placeholder in
+          `fg.muted` (library #112). */}
+      <SearchField
+        size="md"
+        textSize="sm"
+        surface="raised"
+        label={picker.search}
+        placeholder={picker.search}
+        icon={<SearchIcon />}
+      />
       {picker.sections.map((section) => (
         <MenuSection key={section.label} label={section.label} sheet={sheet}>
           <OptionList

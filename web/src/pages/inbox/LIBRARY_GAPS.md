@@ -55,7 +55,10 @@ Library #110 and #111 (beta.9) add `Popover surface="raised"`
 (the Filter menu and the Run in picker, Figma's opaque #17213a),
 `Checkbox labelTone="muted"` and `inline` ("Also remove this task", a
 16 px row in `fg.muted`) and `labelXs` on `ProposalBlock`'s buttons.
-The workspace installs `1.0.0-beta.9`, which has all of them.
+Library #112 (beta.10) adds `SearchField surface="raised"` (the Run in
+picker's search: placeholder and clear icon in `fg.muted`, for WCAG AA
+on `surface.raised`). The workspace installs `1.0.0-beta.10`, which has
+all of them.
 
 ## Gaps
 
