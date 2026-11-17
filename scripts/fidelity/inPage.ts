@@ -47,11 +47,28 @@ export function isPortalRoot(el: {
   return !el.classes.some((c) => c.startsWith('sb-'))
 }
 
-type Helpers = { fullyVisible: typeof fullyVisible; isPortalRoot: typeof isPortalRoot }
+/**
+ * The text a form field shows, whitespace collapsed: its value, else its
+ * placeholder. The value of a checkbox, radio, hidden or password input is
+ * not text a viewer reads (a form value such as "hono-rpc", or masked
+ * characters), so it gives no text; its placeholder counts only while it
+ * is empty.
+ */
+export function fieldText(field: { tagName: string; type: string; value: string; placeholder: string }): string {
+  const collapse = (s: string) => s.replace(/\s+/g, ' ').trim()
+  const valueHidden =
+    field.tagName.toUpperCase() === 'INPUT' &&
+    ['checkbox', 'radio', 'hidden', 'password'].includes(field.type.toLowerCase())
+  // The browser shows the placeholder only while the field is empty.
+  if (field.value !== '') return valueHidden ? '' : collapse(field.value)
+  return collapse(field.placeholder)
+}
+
+type Helpers = { fullyVisible: typeof fullyVisible; isPortalRoot: typeof isPortalRoot; fieldText: typeof fieldText }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()} })`
 }
 
 export type PageMeasure = {
@@ -61,7 +78,7 @@ export type PageMeasure = {
   innerText: string
   /** Every non-empty text node, as rendered (text-transform applied), visible or not. */
   allTexts: string[]
-  /** Placeholders and values of inputs and text areas. */
+  /** Placeholders and values of inputs and text areas (see fieldText). */
   fieldTexts: string[]
   /** Text runs that a viewer sees in full: inside the viewport and every clipping ancestor. */
   visibleTexts: TextRun[]
@@ -184,9 +201,7 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
   const fieldTexts: string[] = []
   for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {
     if (!(f instanceof HTMLInputElement || f instanceof HTMLTextAreaElement)) continue
-    const value = collapse(f.value)
-    const placeholder = collapse(f.placeholder)
-    const text = value || placeholder
+    const text = helpers.fieldText({ tagName: f.tagName, type: f.type, value: f.value, placeholder: f.placeholder })
     if (text === '') continue
     fieldTexts.push(text)
     const rect = f.getBoundingClientRect()
