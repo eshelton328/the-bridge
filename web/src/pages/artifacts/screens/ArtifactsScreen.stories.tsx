@@ -127,3 +127,18 @@ export const ChangeProposed: Story = {
     await expect(canvas.queryByText('Talk this artifact through')).toBeNull()
   },
 }
+
+export const ChangeApplied: Story = {
+  name: 'D9: The artifact after Apply',
+  args: { data: artifactsStates.changeApplied.data, ui: artifactsStates.changeApplied.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('updated just now from the discussion')).toBeVisible()
+    await expect(canvas.getByText('Updated', { selector: '.badge__root, .badge__root *' })).toBeVisible()
+    await expect(
+      canvas.getByText('Applied just now. Republished to the same link, claude.ai/artifact/8f3c2a91-skill-evals.'),
+    ).toBeVisible()
+    // The applied proposal shows the lines it put in, and no buttons.
+    await expect(canvas.queryByText('Bars in the order of the method log')).toBeNull()
+    await expect(canvas.queryByRole('button', { name: 'Apply' })).toBeNull()
+  },
+}
