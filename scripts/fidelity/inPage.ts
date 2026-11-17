@@ -6,7 +6,12 @@
 // and reach the page as collectPage's second argument (collectPageScript).
 
 export type Box = { x: number; y: number; w: number; h: number }
-type TextRun = Box & { text: string; selector: string }
+type TextRun = Box & {
+  text: string
+  selector: string
+  /** Another element draws over part of the run in the render, such as an open menu (see coveredAt). */
+  covered: boolean
+}
 export type FigmaBox = Box & { key: string; selector: string }
 export type RuleFinding = { rule: string; selector: string; detail: string }
 /** A rectangle by its edges, in viewport coordinates; an edge may be infinite. */
@@ -64,11 +69,164 @@ export function fieldText(field: { tagName: string; type: string; value: string;
   return collapse(field.placeholder)
 }
 
-type Helpers = { fullyVisible: typeof fullyVisible; isPortalRoot: typeof isPortalRoot; fieldText: typeof fieldText }
+/**
+ * The points where coveredAt tests a text run: the middle of each line it
+ * draws, at a tenth, half and nine tenths of the line's width.
+ */
+export function samplePoints(rects: readonly Edges[]): { x: number; y: number }[] {
+  return rects
+    .filter((r) => r.right - r.left >= 1 && r.bottom - r.top >= 1)
+    .flatMap((r) => [0.1, 0.5, 0.9].map((f) => ({ x: r.left + (r.right - r.left) * f, y: (r.top + r.bottom) / 2 })))
+}
+
+/**
+ * The lines a form field's text takes inside its box, each as wide as its
+ * text and placed by text-align within the content box (the box less border
+ * and padding). An input has one line, its whole height. A text area's
+ * lines run down from the top of its content box, `lineHeight` each: each
+ * paragraph of its text (`paragraphWidths`, one per line break) wraps at
+ * the content width; a blank paragraph gives no line, and lines below the
+ * content box are left out.
+ */
+export function fieldTextLines(field: {
+  box: Edges
+  startInset: number
+  endInset: number
+  topInset: number
+  bottomInset: number
+  lineHeight: number
+  paragraphWidths: readonly number[]
+  multiline: boolean
+  textAlign: string
+}): Edges[] {
+  const left = field.box.left + field.startInset
+  const right = field.box.right - field.endInset
+  const room = Math.max(0, right - left)
+  const place = (width: number, top: number, bottom: number): Edges => {
+    const w = Math.max(0, Math.min(width, room))
+    if (field.textAlign === 'center') {
+      const middle = (left + right) / 2
+      return { left: middle - w / 2, top, right: middle + w / 2, bottom }
+    }
+    if (field.textAlign === 'right' || field.textAlign === 'end') return { left: right - w, top, right, bottom }
+    return { left, top, right: left + w, bottom }
+  }
+  if (!field.multiline) return [place(field.paragraphWidths[0] ?? 0, field.box.top, field.box.bottom)]
+  const widths = field.paragraphWidths.flatMap((w) => {
+    if (room <= 0 || w <= 0) return [0]
+    const n = Math.ceil(w / room)
+    return [...Array.from({ length: n - 1 }, () => room), w - (n - 1) * room]
+  })
+  const top = field.box.top + field.topInset
+  const bottom = field.box.bottom - field.bottomInset
+  return widths.flatMap((w, i) => {
+    const lineTop = top + i * field.lineHeight
+    const lineBottom = lineTop + field.lineHeight
+    return w > 0 && lineBottom <= bottom + 1 ? [place(w, lineTop, lineBottom)] : []
+  })
+}
+
+/**
+ * True when an element draws something of its own over what lies beneath:
+ * a background colour that is not fully transparent, a background image,
+ * a backdrop filter, or replaced content (an image, SVG, canvas, video or
+ * frame). A transparent box, such as a positioner or a layout wrapper,
+ * lets the text under it show through.
+ */
+export function paints(el: {
+  tagName: string
+  backgroundColor: string
+  backgroundImage: string
+  backdropFilter: string
+}): boolean {
+  if (['IMG', 'SVG', 'CANVAS', 'VIDEO', 'IFRAME', 'OBJECT', 'EMBED'].includes(el.tagName.toUpperCase())) return true
+  if (el.backgroundImage !== 'none' && el.backgroundImage !== '') return true
+  if (el.backdropFilter !== 'none' && el.backdropFilter !== '') return true
+  const color = el.backgroundColor.trim()
+  if (color === '' || color === 'transparent') return false
+  const args = /\(([^)]*)\)/.exec(color)?.[1]
+  if (args === undefined) return true
+  // rgba(r, g, b, a), rgb(r g b / a), color(srgb r g b / a): the alpha is last.
+  const alpha = args.includes('/')
+    ? args.split('/').at(-1)
+    : args.split(',').length === 4
+      ? args.split(',').at(-1)
+      : '1'
+  const a = (alpha ?? '1').trim()
+  const value = a.endsWith('%') ? Number.parseFloat(a) / 100 : Number.parseFloat(a)
+  return Number.isNaN(value) || value > 0
+}
+
+/**
+ * One element at a sample point, from the top of the stack down: whether it
+ * holds the run or is one of its ancestors (`related`), whether it shows at
+ * all (`shown`: not opacity 0 or hidden) and whether it paints (see paints).
+ */
+export type Hit = { related: boolean; shown: boolean; paints: boolean }
+
+/**
+ * True when another element covers a text run at any of its sample points:
+ * going down the stack of elements at the point (elementsFromPoint), one
+ * that is not the run's own element or one of its ancestors (a child of it
+ * counts), shows and paints
+ * comes before the run's own element or an ancestor of it. A point with no
+ * element (outside the viewport) is not covered here; fullyVisible judges
+ * the viewport.
+ */
+export function coveredAt(stacks: readonly (readonly Hit[])[]): boolean {
+  return stacks.some((stack) => {
+    for (const hit of stack) {
+      if (hit.related) return false
+      if (hit.shown && hit.paints) return true
+    }
+    return false
+  })
+}
+
+/** What scrollBars reads from one element: its computed overflow and its sizes. */
+export type ScrollBox = {
+  overflowX: string
+  overflowY: string
+  clientHeight: number
+  /** offsetWidth less clientWidth and the side borders: the width a vertical bar takes. */
+  barWidth: number
+  /** offsetHeight less clientHeight and the top and bottom borders: the height a horizontal bar takes. */
+  barHeight: number
+}
+
+/**
+ * The scroll bars an element shows, as the detail of a scrollBar finding,
+ * or '' when it shows none: a bar that takes space (more than 0.5 px), on
+ * an axis whose overflow is auto or scroll. A box that scrolls its overflow
+ * with no bar that takes space is correct design (d-107). The axis must
+ * scroll because Chrome leaves an input's padding out of its clientWidth,
+ * so a padded input (overflow clip) has that space with no bar.
+ */
+export function scrollBars(el: ScrollBox): string {
+  if (el.clientHeight <= 0) return ''
+  const scrolls = (v: string) => v === 'auto' || v === 'scroll'
+  const bars: string[] = []
+  if (scrolls(el.overflowY) && el.barWidth > 0.5)
+    bars.push(`vertical ${String(el.barWidth)} px, overflow-y ${el.overflowY}`)
+  if (scrolls(el.overflowX) && el.barHeight > 0.5)
+    bars.push(`horizontal ${String(el.barHeight)} px, overflow-x ${el.overflowX}`)
+  return bars.join(', ')
+}
+
+type Helpers = {
+  fullyVisible: typeof fullyVisible
+  isPortalRoot: typeof isPortalRoot
+  fieldText: typeof fieldText
+  scrollBars: typeof scrollBars
+  samplePoints: typeof samplePoints
+  fieldTextLines: typeof fieldTextLines
+  paints: typeof paints
+  coveredAt: typeof coveredAt
+}
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
 }
 
 export type PageMeasure = {
@@ -80,7 +238,10 @@ export type PageMeasure = {
   allTexts: string[]
   /** Placeholders and values of inputs and text areas (see fieldText). */
   fieldTexts: string[]
-  /** Text runs that a viewer sees in full: inside the viewport and every clipping ancestor. */
+  /**
+   * Text runs inside the viewport and every clipping ancestor; `covered` marks
+   * the runs another element draws over in the render.
+   */
   visibleTexts: TextRun[]
   /** Elements with data-figma, with their boxes in page coordinates. */
   figmaBoxes: FigmaBox[]
@@ -176,6 +337,35 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
   const shown = (el: Element) => el.checkVisibility({ opacityProperty: true, visibilityProperty: true })
 
   // ---- text ----
+  // A run is covered when another element paints over it (an open menu over
+  // a pane). Hit testing follows paint order, so for the test every element
+  // takes pointer events: an element with pointer-events none still paints.
+  const hitStyle = document.createElement('style')
+  hitStyle.textContent = '*, *::before, *::after { pointer-events: auto !important; }'
+  document.head.append(hitStyle)
+  const stackAt = (x: number, y: number, own: Element) => {
+    const hits: { related: boolean; shown: boolean; paints: boolean }[] = []
+    for (const t of document.elementsFromPoint(x, y)) {
+      // The run's own element and its ancestors only: a child of that element
+      // (a positioned badge) can paint over the element's own text.
+      const related = t.contains(own)
+      const ts = getComputedStyle(t)
+      hits.push({
+        related,
+        shown: shown(t),
+        paints: helpers.paints({
+          tagName: t.tagName,
+          backgroundColor: ts.backgroundColor,
+          backgroundImage: ts.backgroundImage,
+          backdropFilter: ts.backdropFilter,
+        }),
+      })
+      if (related) break
+    }
+    return hits
+  }
+  const coveredRun = (rects: readonly Edges[], own: Element) =>
+    helpers.coveredAt(helpers.samplePoints(rects).map((p) => stackAt(p.x, p.y, own)))
   const allTexts: string[] = []
   const visibleTexts: TextRun[] = []
   const textNodes: Node[] = []
@@ -196,7 +386,7 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     // Every line of the string must be in view: a sentence that a scroll box
     // or an ellipsis cuts is not visible, though part of it shows.
     if (!helpers.fullyVisible(rects, clipsOf(parent), viewport)) continue
-    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent) })
+    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent), covered: coveredRun(rects, parent) })
   }
   const fieldTexts: string[] = []
   for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {
@@ -205,9 +395,34 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     if (text === '') continue
     fieldTexts.push(text)
     const rect = f.getBoundingClientRect()
-    if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport))
-      visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f) })
+    if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport)) {
+      // A field's box holds more than its text (an icon over its padding, a
+      // menu over its empty end or below its last line), so only the lines
+      // its text takes are tested.
+      const fs = getComputedStyle(f)
+      const context = document.createElement('canvas').getContext('2d')
+      if (context !== null) context.font = fs.font
+      const multiline = f instanceof HTMLTextAreaElement
+      const shownText = f.value !== '' ? f.value : f.placeholder
+      const paragraphs = multiline ? shownText.split('\n') : [text]
+      const lineHeight =
+        fs.lineHeight === 'normal' ? Number.parseFloat(fs.fontSize) * 1.2 : Number.parseFloat(fs.lineHeight)
+      const lines = helpers.fieldTextLines({
+        box: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
+        startInset: Number.parseFloat(fs.borderLeftWidth) + Number.parseFloat(fs.paddingLeft),
+        endInset: Number.parseFloat(fs.borderRightWidth) + Number.parseFloat(fs.paddingRight),
+        topInset: Number.parseFloat(fs.borderTopWidth) + Number.parseFloat(fs.paddingTop),
+        bottomInset: Number.parseFloat(fs.borderBottomWidth) + Number.parseFloat(fs.paddingBottom),
+        lineHeight,
+        paragraphWidths: paragraphs.map((p) => (context === null ? rect.width : context.measureText(p).width)),
+        multiline,
+        textAlign: fs.textAlign,
+      })
+      const covered = helpers.coveredAt(helpers.samplePoints(lines).map((p) => stackAt(p.x, p.y, f)))
+      visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f), covered })
+    }
   }
+  hitStyle.remove()
 
   // ---- data-figma boxes ----
   const figmaBoxes: FigmaBox[] = roots
@@ -260,14 +475,14 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     // 2. A scroll bar that takes space (classic scroll bars; Figma draws none).
     const borderX = Number.parseFloat(s.borderLeftWidth) + Number.parseFloat(s.borderRightWidth)
     const borderY = Number.parseFloat(s.borderTopWidth) + Number.parseFloat(s.borderBottomWidth)
-    const barY = el.offsetWidth - el.clientWidth - borderX
-    const barX = el.offsetHeight - el.clientHeight - borderY
-    if ((barY > 0.5 || barX > 0.5) && el.clientHeight > 0)
-      rules.push({
-        rule: 'scrollBar',
-        selector: selectorOf(el),
-        detail: `${barY > 0.5 ? `vertical ${String(barY)} px` : ''}${barY > 0.5 && barX > 0.5 ? ', ' : ''}${barX > 0.5 ? `horizontal ${String(barX)} px` : ''}`,
-      })
+    const bars = helpers.scrollBars({
+      overflowX: s.overflowX,
+      overflowY: s.overflowY,
+      clientHeight: el.clientHeight,
+      barWidth: el.offsetWidth - el.clientWidth - borderX,
+      barHeight: el.offsetHeight - el.clientHeight - borderY,
+    })
+    if (bars !== '') rules.push({ rule: 'scrollBar', selector: selectorOf(el), detail: bars })
     // 4. A badge or pill stretched to its container's width.
     const badge =
       [...el.classList].some((c) => /(pill|badge|chip)(__root|__item)?$/i.test(c) && !/chips$/i.test(c)) ||

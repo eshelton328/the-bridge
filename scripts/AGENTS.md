@@ -7,6 +7,7 @@ and exits 1 on a problem.
 | Script              | What it does                                                                                                                |
 | ------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `new.ts`            | `pnpm new page\|screen\|block\|state`: starts a file from `templates/`                                                      |
+| `stateIndex.ts`     | Adds a state to a page's `states/index.ts` for `pnpm new state`, at the end, keeping the order and comments                 |
 | `genRoutes.ts`      | Writes `web/src/app/routeTree.gen.ts`; `--check` fails when it is stale                                                     |
 | `genRegistry.ts`    | Writes `web/src/design/registry.gen.ts`, one canvas board per state file; `--check`                                         |
 | `checkStates.ts`    | Every state file is in its `states/index.ts` and has a story (d-082)                                                        |

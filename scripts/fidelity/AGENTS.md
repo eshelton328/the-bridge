@@ -43,7 +43,10 @@ The Figma references the checks read are in
    - `text.notVisible`: strings the DOM has but a viewer cannot see in
      full (clipped in part, scrolled away), where Figma shows them in the
      frame. Each Figma layer needs its own visible occurrence: two layers
-     with the same text need the text twice on screen.
+     with the same text need the text twice on screen. A string that
+     another element covers in the render (an open menu over a pane) is
+     not visible either, marked `covered`, unless Figma draws a later
+     layer over the same text layer too.
    - `text.extra`: visible render text that Figma does not have.
    - `position.diffs`: boxes off by more than the tolerance, with the
      delta per edge; also unknown, ambiguous or duplicate keys.

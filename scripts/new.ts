@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { pages } from '../web/src/structure.ts'
+import { addStateToIndex } from './stateIndex.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const src = join(root, 'web', 'src')
@@ -151,6 +152,14 @@ function newState(id: string): void {
   const [first] = existing
   const data = first === undefined ? "{ title: 'TODO' }" : `{ ...${first}.data }`
   const ui = first === undefined ? '{}' : `{ ...${first}.ui }`
+  // Keep the index's order and comments: its first key is the page's default state.
+  const index = join(statesDir, 'index.ts')
+  let nextIndex = ''
+  try {
+    nextIndex = addStateToIndex(readFileSync(index, 'utf8'), vars.page, id)
+  } catch (error) {
+    fail(error instanceof Error ? error.message : String(error))
+  }
   let state = fill('state.ts.tpl', { ...vars, id, frame, data, ui })
   if (first !== undefined)
     state = state.replace(
@@ -159,20 +168,7 @@ function newState(id: string): void {
     )
   write(join(statesDir, `${id}.ts`), state)
 
-  const ids = [...existing, id].sort()
-  writeFileSync(
-    join(statesDir, 'index.ts'),
-    [
-      `// Every Figma state of the ${vars.Title} page, by id. scripts/genRegistry.ts reads the`,
-      '// file names in this folder; each must be a key here and a story.',
-      ...ids.map((s) => `import { ${s} } from './${s}.ts'`),
-      '',
-      `export const ${vars.page}States = {`,
-      ...ids.map((s) => `  ${s},`),
-      '}',
-      '',
-    ].join('\n'),
-  )
+  writeFileSync(index, nextIndex)
   console.log(`updated web/src/pages/${vars.page}/states/index.ts`)
 
   const stories = join(src, 'pages', vars.page, 'screens', `${vars.Page}Screen.stories.tsx`)

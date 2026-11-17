@@ -1,6 +1,6 @@
 // The text check (fidelity loop step 4): every Figma string is in the
 // render, and the render shows no text that Figma does not have.
-import type { FrameRef } from './figmaMetadata.ts'
+import type { FrameRef, Layer } from './figmaMetadata.ts'
 import type { PageMeasure } from './inPage.ts'
 import type { Exceptions } from './references.ts'
 
@@ -12,9 +12,11 @@ export type TextResult = {
   extra: { text: string; selector: string }[]
   /**
    * Figma strings that Figma shows inside the frame and the DOM has, but
-   * that no viewer of the render sees (clipped, scrolled away or hidden).
+   * that no viewer of the render sees (clipped, scrolled away or hidden), or
+   * that another element covers in the render where Figma does not cover
+   * the layer (`covered`).
    */
-  notVisible: { id: string; text: string }[]
+  notVisible: { id: string; text: string; covered?: true }[]
   excluded: number
   excepted: number
 }
@@ -35,6 +37,42 @@ export function coveredBy(text: string, figma: readonly string[]): boolean {
   let rest = text
   for (const f of [...figma].sort((a, b) => b.length - a.length)) if (f.length > 0) rest = rest.split(f).join(' ')
   return isPunctuation(rest)
+}
+
+/** Layer types that may draw a fill: frame.json does not say which do, so each counts. */
+const drawsOver = (type: string) => type !== 'text' && type !== 'line'
+
+/**
+ * The ids of the text layers that Figma draws something over. frame.json
+ * lists layers in document order, and a later layer (with its subtree) is
+ * drawn on top, so a text layer is covered when a later layer that is not
+ * its ancestor or descendant and may draw a fill (a frame, instance,
+ * rectangle, ellipse or vector; frame.json cannot tell a fill, so a frame
+ * counts) overlaps its box by more than 1 px on both axes.
+ */
+export function coveredInFigma(layers: readonly Layer[]): Set<string> {
+  // Each layer's path is its parent's path and name, so a stack of open
+  // layers gives the parent of each, and from it the end of each subtree.
+  const childPath = (l: Layer) => (l.path === '' ? l.name : `${l.path} > ${l.name}`)
+  const subtreeEnd = layers.map((_, i) => i)
+  const open: number[] = []
+  layers.forEach((l, i) => {
+    while (open.length > 0) {
+      const top = layers[open.at(-1) ?? 0]
+      if (top !== undefined && childPath(top) === l.path) break
+      open.pop()
+    }
+    for (const a of open) subtreeEnd[a] = i
+    open.push(i)
+  })
+  const overlap = (a: Layer, b: Layer) =>
+    Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x) > 1 && Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y) > 1
+  const covered = new Set<string>()
+  layers.forEach((t, i) => {
+    if (t.text === undefined) return
+    if (layers.slice((subtreeEnd[i] ?? i) + 1).some((l) => drawsOver(l.type) && overlap(t, l))) covered.add(t.id)
+  })
+  return covered
 }
 
 export function checkText(
@@ -68,13 +106,42 @@ export function checkText(
   // Each Figma layer needs its own visible occurrence: two layers with the
   // same string need two, so one DOM string cannot stand for a heading and
   // a list row at once. Longest strings claim first, so a long string takes
-  // its run before a shorter string inside it.
+  // its run before a shorter string inside it. A run that another element
+  // covers in the render counts only for a layer that Figma covers too.
+  // Such a layer claims covered runs first, then covered and open runs,
+  // covered fragments first; it takes an open run that is the whole text of
+  // a layer still to claim only when enough such runs are left for those
+  // layers, so it never takes another layer's only open occurrence.
+  const figmaCovered = coveredInFigma(ref.layers)
   const pool = page.visibleTexts.map((v) => collapse(v.text))
+  const covered = page.visibleTexts.map((v) => v.covered)
+  const open = (j: number) => !covered[j]
+  const under = (j: number) => covered[j] === true
+  const any = () => true
   const needed = checked.filter((t) => t.inFrame && present(t.text))
-  const unseen = new Set(
-    [...needed].sort((a, b) => b.text.length - a.text.length).filter((t) => !claimRun(t.text, pool)),
+  const order = [...needed].sort(
+    (a, b) => b.text.length - a.text.length || Number(figmaCovered.has(a.id)) - Number(figmaCovered.has(b.id)),
   )
-  const notVisible = needed.filter((t) => unseen.has(t)).map((t) => ({ id: t.id, text: t.text }))
+  const unseen = new Map<(typeof needed)[number], boolean>()
+  order.forEach((t, i) => {
+    let seen: boolean
+    if (figmaCovered.has(t.id)) {
+      const waiting = order.slice(i + 1).filter((w) => !figmaCovered.has(w.id))
+      const spare = (j: number) => {
+        const v = pool[j] ?? ''
+        const wanted = waiting.filter((w) => w.text === v).length
+        return wanted === 0 || pool.filter((p, k) => p === v && open(k)).length > wanted
+      }
+      seen = claimRun(t.text, pool, under) || claimRun(t.text, pool, (j) => under(j) || spare(j), under)
+    } else seen = claimRun(t.text, pool, open)
+    // Not seen; say so when the render has it under another element.
+    if (!seen) unseen.set(t, claimRun(t.text, [...pool], any))
+  })
+  const notVisible = needed.flatMap((t) => {
+    const covered = unseen.get(t)
+    if (covered === undefined) return []
+    return covered ? [{ id: t.id, text: t.text, covered: true as const }] : [{ id: t.id, text: t.text }]
+  })
 
   const extra: TextResult['extra'] = []
   const reported = new Set<string>()
@@ -101,18 +168,25 @@ export function checkText(
 const claimed = '\u0000'
 
 /**
- * Finds one unclaimed occurrence of `s` in the visible runs and claims it,
- * so no other Figma layer can use it: a short string must be a whole run, a
- * long one may be part of a run or split over several runs (each part of it,
- * the rest punctuation). Returns false when no occurrence is left.
+ * Finds one unclaimed occurrence of `s` in the visible runs that `usable`
+ * accepts (by index), among equal fragments the `preferred` ones first, and
+ * claims it, so no other Figma layer can use it: a
+ * short string must be a whole run, a long one may be part of a run or
+ * split over several runs (each part of it, the rest punctuation). Returns
+ * false when no occurrence is left.
  */
-function claimRun(s: string, pool: string[]): boolean {
+function claimRun(
+  s: string,
+  pool: string[],
+  usable: (j: number) => boolean,
+  preferred: (j: number) => boolean = () => false,
+): boolean {
   if (s.length <= shortLength) {
-    const i = pool.indexOf(s)
+    const i = pool.findIndex((v, j) => v === s && usable(j))
     if (i >= 0) pool[i] = claimed
     return i >= 0
   }
-  const i = pool.findIndex((v) => v.includes(s))
+  const i = pool.findIndex((v, j) => v.includes(s) && usable(j))
   if (i >= 0) {
     pool[i] = (pool[i] ?? '').replace(s, claimed)
     return true
@@ -121,8 +195,8 @@ function claimRun(s: string, pool: string[]): boolean {
   const used: number[] = []
   const parts = pool
     .map((v, j) => ({ v, j }))
-    .filter(({ v }) => v.length > 0 && !v.includes(claimed) && s.includes(v))
-    .sort((a, b) => b.v.length - a.v.length)
+    .filter(({ v, j }) => usable(j) && v.length > 0 && !v.includes(claimed) && s.includes(v))
+    .sort((a, b) => b.v.length - a.v.length || Number(preferred(b.j)) - Number(preferred(a.j)))
   for (const { v, j } of parts)
     if (rest.includes(v)) {
       rest = rest.replace(v, ' ')
