@@ -24,9 +24,14 @@ const meta = css({ textStyle: 'mono', color: 'fg.muted', m: '0' })
 export type MadeInProps = {
   madeIn: ArtifactDetail['madeIn']
   onOpenInWorkspace?: (() => void) | undefined
+  /**
+   * The Figma layer of Open in workspace: its name, or its node id where the frame has two layers of that name (D7,
+   * where the discussion's header has one too).
+   */
+  buttonLayer?: string | undefined
 }
 
-export function MadeIn({ madeIn, onOpenInWorkspace }: MadeInProps) {
+export function MadeIn({ madeIn, onOpenInWorkspace, buttonLayer = 'button · Open in workspace' }: MadeInProps) {
   return (
     <Stack gap="8" data-figma="section · MADE IN">
       <h3 className={label}>{madeIn.label}</h3>
@@ -36,7 +41,7 @@ export function MadeIn({ madeIn, onOpenInWorkspace }: MadeInProps) {
           <p className={title}>{madeIn.title}</p>
           <p className={meta}>{madeIn.meta}</p>
         </Stack>
-        <span data-figma="button · Open in workspace">
+        <span data-figma={buttonLayer}>
           <Button onClick={onOpenInWorkspace}>
             <ChatIcon />
             Open in workspace

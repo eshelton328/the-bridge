@@ -1,7 +1,8 @@
 // The Artifacts page as one props-only screen, laid out by the width it
 // gets (ViewportFrame): on the desktop the rail with Artifacts selected and
 // the library beside it (Figma D1), or, with an artifact open, the library
-// as a list and the artifact beside it (D2); on a tablet or phone the
+// as a list and the artifact beside it (D2), or with its discussion open
+// the artifact and the discussion, the list closed (D7); on a tablet or phone the
 // library over the tab bar. A state file's data and ui are its props; the callbacks are
 // optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -10,6 +11,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
+import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { ArtifactDetail } from './ArtifactDetail.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
 import { LibraryList } from './LibraryList.tsx'
@@ -30,6 +32,10 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
       {(layout) => {
         // D2: the desktop opens an artifact beside the list. A tablet or phone frame of it comes later.
         const open = layout === 'desktop' ? data.open : undefined
+        // D7: Discuss opens the artifact's discussion beside it, and the list closes.
+        const discussion = open === undefined ? undefined : data.discussion
+        const discussing = discussion !== undefined && ui.discussOpen === true
+        const sent = ui.discussSent ?? []
         return (
           <Backdrop size={layout}>
             <AppShell
@@ -51,7 +57,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 )
               }
               list={
-                open === undefined ? undefined : (
+                open === undefined || discussing ? undefined : (
                   <LibraryList data={data} ui={ui} selectedId={open.id} onUiChange={onUiChange} />
                 )
               }
@@ -59,7 +65,38 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 open === undefined ? (
                   <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
                 ) : (
-                  <ArtifactDetail artifact={open} />
+                  <ArtifactDetail
+                    artifact={open}
+                    onDiscuss={
+                      discussion === undefined
+                        ? undefined
+                        : () => {
+                            onUiChange?.({ discussOpen: !discussing })
+                          }
+                    }
+                    side={
+                      discussing ? (
+                        <DiscussionPanel
+                          discussion={discussion}
+                          draft={ui.discussDraft}
+                          sent={sent}
+                          onDraftChange={
+                            onUiChange === undefined
+                              ? undefined
+                              : (text) => {
+                                  onUiChange({ discussDraft: text })
+                                }
+                          }
+                          onSend={(text) => {
+                            onUiChange?.({ discussSent: [...sent, text], discussDraft: '' })
+                          }}
+                          onClose={() => {
+                            onUiChange?.({ discussOpen: false })
+                          }}
+                        />
+                      ) : undefined
+                    }
+                  />
                 )
               }
             />
