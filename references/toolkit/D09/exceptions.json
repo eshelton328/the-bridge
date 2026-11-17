@@ -1,0 +1,31 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["433:1315"],
+      "reason": "Figma cuts the kind chip row at the list pane's right edge (484): the Workflows chip (433:1313, x 433 to 552) shows its dot and the first letter of its label, and its count 2 (433:1316) lies past the edge. The render scrolls the chip row sideways inside the pane the same way (FilterChips), so the label and count are in the DOM and come into view when the row scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["433:1316"],
+      "reason": "The Workflows chip's count (433:1316, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    },
+    {
+      "text": "# exits 1 with one line per problem. Git runs it from the top of the work",
+      "layers": ["433:1595"],
+      "reason": "Figma cuts the fourth line of the script at the preview's right edge: the text layer (433:1595, x 575 to 1101) runs past the code box (433:1583, which ends at 1083), so it shows up to \"the wo\". The render keeps the code at its full width in the library's ScrollFrame, which scrolls it sideways inside the preview the same way, so the line is in the DOM, cut at the same place, and comes into view when the code scrolls."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways: Figma's chip row (433:1297) runs past the list pane's right edge, cut after the Workflows chip's dot (433:1313, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"code\"] > div.scroll-frame__root > div.scroll-frame__body",
+      "reason": "The script's long lines run past the preview's right edge in Figma too: line 4 (433:1595) ends at x 1101, past the code box's edge at 1083, and Figma cuts it. The render keeps the code at its full width in the library's ScrollFrame, whose body scrolls it sideways and takes the keyboard focus (d-107), so the cut is the frame's own scroll, not lost text."
+    }
+  ]
+}
