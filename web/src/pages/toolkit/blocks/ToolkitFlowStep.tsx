@@ -3,7 +3,7 @@
 // on the top row, then what it runs in mono (a script in the accent colour,
 // an agent in the agent kind's colour) and its notes in small text. Every
 // card of a flow has the same size: the flow's grid makes its rows equal.
-// A gate has the needs-you border, tint and title; an end the needs-you
+// A gate has the needs-you border and title on the card's fill; an end the needs-you
 // title and a dashed needs-you border. The library has no step card that
 // fits (LIBRARY_GAPS.md, Workflow flow by phase): `FlowDiagram` numbers its
 // steps itself and puts the body beside the number, so the card is drawn
@@ -28,7 +28,7 @@ const card = css.raw({
   borderColor: 'border.default',
   borderRadius: 'lg',
 })
-const gate = css.raw({ borderColor: 'status.needsYou.border', bg: 'status.needsYou.faint' })
+const gate = css.raw({ borderColor: 'status.needsYou.border' })
 const end = css.raw({ borderColor: 'status.needsYou.border', borderStyle: 'dashed' })
 // D8 458:12: the mark (22 × 19) and the title 7 apart; the lines start 3 under the row.
 const top = css({ display: 'flex', alignItems: 'center', gap: '8', pb: '2' })
