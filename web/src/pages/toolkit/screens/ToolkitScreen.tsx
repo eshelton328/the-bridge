@@ -11,6 +11,7 @@ import { useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
+import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
@@ -110,12 +111,27 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
               selected="more"
               device={layout === 'tablet' ? 'tablet' : 'phone'}
               inboxBadge={data.railBadge}
-              onSelect={onNavigate}
+              onSelect={(next) => {
+                // On the phone More opens the drawer; the tablet's More stays the page's way to Toolkit (d-105).
+                if (next === 'more' && layout === 'phone') onUiChange({ moreOpen: true })
+                else onNavigate?.(next)
+              }}
             />
           )
         }
         detail={list}
       />
+      {layout === 'phone' ? (
+        <MoreDrawer
+          open={ui.moreOpen === true}
+          onOpenChange={(open) => {
+            onUiChange({ moreOpen: open })
+          }}
+          selected="toolkit"
+          counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
+          onNavigate={onNavigate}
+        />
+      ) : null}
     </Backdrop>
   )
 }

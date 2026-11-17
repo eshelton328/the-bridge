@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
+import { expect, within } from 'storybook/test'
 import { toolkitStates } from '../states/index.ts'
 import { ToolkitScreen } from './ToolkitScreen.tsx'
 
@@ -33,5 +33,18 @@ export const ToolkitListTablet: Story = {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Toolkit' })).toBeVisible()
     await expect(canvas.getByRole('heading', { name: 'commits-and-prs' })).toBeVisible()
     await expect(canvas.getByText('rules/writing.md')).toBeVisible()
+  },
+}
+
+export const MoreDrawer: Story = {
+  name: 'M4: the More drawer over the tab bar, with Toolkit after Artifacts',
+  args: { data: toolkitStates.moreDrawer.data, ui: toolkitStates.moreDrawer.ui, viewport: 'phone' },
+  play: async () => {
+    // The drawer renders in a portal, outside the story's canvas.
+    const drawer = await within(document.body).findByRole('dialog', { name: 'More' })
+    await expect(within(drawer).getByText('Agents, skills, workflows, rules and hooks')).toBeVisible()
+    await expect(within(drawer).getByRole('button', { name: /Toolkit/ })).toHaveAttribute('aria-current', 'page')
+    await expect(within(drawer).getByRole('button', { name: /Brain/ })).toBeDisabled()
+    await expect(within(drawer).getByText('Later')).toBeVisible()
   },
 }

@@ -44,6 +44,8 @@ export const ToolkitData = z.object({
   count: z.number().int().nonnegative(),
   /** The Inbox items that need Erik, on the rail's Inbox. */
   railBadge: z.number().int().nonnegative(),
+  /** The number of artifacts, on Artifacts in the phone's More drawer; without it the item shows no count. */
+  artifactsCount: z.number().int().nonnegative().optional(),
   chips: z.array(ToolkitKindChip),
   groups: z.array(ToolkitGroupView),
 })
@@ -62,6 +64,8 @@ export const ToolkitUi = z.object({
   query: z.string(),
   /** Each group is open unless it is here with false. */
   groupsOpen: z.partialRecord(ToolkitKind, z.boolean()),
+  /** Whether the phone's More drawer is open over the tab bar (M4); closed when not set. */
+  moreOpen: z.boolean().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 
