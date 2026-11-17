@@ -1,0 +1,49 @@
+{
+  "missing": [
+    {
+      "text": "commits-and-prs",
+      "layers": ["428:421"],
+      "reason": "The name is longer than its 140 px node (node · commits-and-prs, 428:417), and frame.png cuts it with an ellipsis (commits-and-p…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "mermaid-diagrams",
+      "layers": ["428:466"],
+      "reason": "The name is longer than its 140 px node (node · mermaid-diagrams, 428:463), and frame.png cuts it with an ellipsis (mermaid-diagr…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "writing-reviewer",
+      "layers": ["428:487"],
+      "reason": "The name is longer than its 140 px node (node · writing-reviewer, 428:483), and frame.png cuts it with an ellipsis (writing-revie…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "pr-description-checker",
+      "layers": ["428:497"],
+      "reason": "The name is longer than its 140 px node (node · pr-description-checker, 428:493), and frame.png cuts it with an ellipsis (pr-descriptio…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "readme-cold-reader",
+      "layers": ["428:502"],
+      "reason": "The name is longer than its 140 px node (node · readme-cold-reader, 428:498), and frame.png cuts it with an ellipsis (readme-cold-r…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "diagram-reviewer",
+      "layers": ["428:507"],
+      "reason": "The name is longer than its 140 px node (node · diagram-reviewer, 428:503), and frame.png cuts it with an ellipsis (diagram-revie…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "eval-case-writer",
+      "layers": ["428:512"],
+      "reason": "The name is longer than its 140 px node (node · eval-case-writer, 428:508), and frame.png cuts it with an ellipsis (eval-case-wri…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "skill-eval-cases",
+      "layers": ["428:523"],
+      "reason": "The name is longer than its 140 px node (node · skill-eval-cases, 428:518), and frame.png cuts it with an ellipsis (skill-eval-ca…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "skill-eval-round",
+      "layers": ["428:529"],
+      "reason": "The name is longer than its 140 px node (node · skill-eval-round, 428:524), and frame.png cuts it with an ellipsis (skill-eval-ro…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    }
+  ]
+}

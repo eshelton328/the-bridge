@@ -3,12 +3,15 @@
 // tablet or phone the list full width over the tab bar, which opens
 // Toolkit from More (d-105). The list (Figma D1 425:9) is the header, the
 // kind chips, the search row and a group of cards per kind, narrowed by
-// the chip and the search (`listView`). A state file's data and ui are its
+// the chip and the search (`listView`). The Map view (D2) shows the map
+// (`ToolkitMap`) under the same rows in place of the groups; on a tablet
+// (T2) under the chips, with no search row; on the phone (M11) straight under
+// the header, with no chips and no search. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
 // without `onUiChange` the screen keeps Erik's changes itself.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -17,8 +20,9 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
+import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
-import { listView } from './listView.ts'
+import { listView, mapView } from './listView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
 const page = {
@@ -27,6 +31,8 @@ const page = {
   // M1 429:50: 12 in from the sides, 4 under the status bar, and its rows 10 apart.
   phone: css({ display: 'flex', flexDirection: 'column', gap: '10', px: '12', pt: '4', pb: '12' }),
 }
+// D2 426:53: on the map the page runs to the foot of the window, below the map canvas.
+const fullHeight = css({ flexGrow: '1' })
 // Figma 425:32: the chip row is as wide as its chips.
 const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 
@@ -48,11 +54,19 @@ type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & 
 function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayoutProps) {
   const desktop = layout === 'desktop'
   const view = listView(data, ui)
+  const map = ui.view === 'map'
+  // M11 461:709: the phone's map comes straight under the header; T2 428:348: the tablet's under the chips.
+  const showChips = !(map && layout === 'phone')
+  const showTools = !map || desktop
   const setGroupOpen = (kind: ToolkitKind, open: boolean) => {
     onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: open } })
   }
   const list = (
-    <section aria-label="Toolkit" className={page[layout]} data-figma="toolkit">
+    <section
+      aria-label="Toolkit"
+      className={ui.view === 'map' ? cx(page[layout], fullHeight) : page[layout]}
+      data-figma="toolkit"
+    >
       <ToolkitHeader
         count={data.count}
         view={ui.view}
@@ -61,31 +75,47 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
           onUiChange({ view: next })
         }}
       />
-      <div className={chips} data-figma="filter · chips">
-        <FilterChips
-          label="Filter by kind"
-          multiple={false}
-          items={data.chips.map((c) => ({
-            value: c.value,
-            label: c.label,
-            count: c.count,
-            kind: c.value === 'all' ? undefined : c.value,
-          }))}
-          value={[ui.filter]}
-          onValueChange={(value) => {
-            const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
-            if (parsed.success) onUiChange({ filter: parsed.data })
+      {showChips ? (
+        <div className={chips} data-figma="filter · chips">
+          <FilterChips
+            label="Filter by kind"
+            multiple={false}
+            items={data.chips.map((c) => ({
+              value: c.value,
+              label: c.label,
+              count: c.count,
+              kind: c.value === 'all' ? undefined : c.value,
+            }))}
+            value={[ui.filter]}
+            onValueChange={(value) => {
+              const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
+              if (parsed.success) onUiChange({ filter: parsed.data })
+            }}
+          />
+        </div>
+      ) : null}
+      {showTools ? (
+        <ToolkitListTools
+          query={ui.query}
+          layout={layout}
+          view={ui.view}
+          onQueryChange={(query) => {
+            onUiChange({ query })
           }}
         />
-      </div>
-      <ToolkitListTools
-        query={ui.query}
-        layout={layout}
-        onQueryChange={(query) => {
-          onUiChange({ query })
-        }}
-      />
-      {view.groups.map((group) => (
+      ) : null}
+      {ui.view === 'map' ? (
+        <ToolkitMap
+          map={mapView(data.map ?? { columns: [], nodes: [], links: [] }, ui)}
+          selected={ui.mapSelected ?? null}
+          layout={layout}
+          selectedItem={data.groups.flatMap((g) => g.items).find((item) => item.path === ui.mapSelected)}
+          onSelect={(path) => {
+            onUiChange({ mapSelected: path })
+          }}
+        />
+      ) : null}
+      {(ui.view === 'map' ? [] : view.groups).map((group) => (
         <ToolkitGroup
           key={group.kind}
           group={group}
