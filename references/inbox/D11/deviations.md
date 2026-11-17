@@ -6,12 +6,25 @@ library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library 
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`; the checks and offsets below are from that run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.8 (#109);
+the checks and offsets below are from the beta.8 run.
 
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 8 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `task pane`, `task bar`, `title block`).
+- Position: 9 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+
+## Failing layers
+
+Render minus Figma, in px.
+
+- `group · SNOOZED`: x +0, y +6, w +1, h +2.
+- `group · RUNNING`: x +0, y +8, w +1, h +2.
+- `section · WHY`: x +4, y +6, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +4, y +10, w +0, h -2.
+- `running card`: x +4, y +10, w +0, h +1.
+- `section · MY NOTES`: x +4, y +13, w +0, h +12.
+- `section · SOURCES`: x +4, y +27, w +0, h +2.
 - Rules: pass.
 
 ## Deviations
@@ -20,8 +33,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   13 px titles (`labelSm`, 13/16) and 11 px mono meta (`monoSm`,
   11/16). A title and meta row is 56 px against Figma's 55: Figma's
   text boxes are 17 and 14 px high, and the row takes the 4 px grid
-  value nearest Figma's (d-100, library #108). Each group below the
-  first starts a little lower (NEXT STEPS y +6, SNOOZED y +14, RUNNING y +16).
+  value nearest Figma's (d-100, library #108). The later groups start a
+  little lower (SNOOZED y +6, RUNNING y +8); NEXT STEPS is within the
+  tolerance.
 - **Group headers.** 36 px high against Figma's 34 (`h +2` on each group
   header), the 4 px grid value nearest Figma's (d-100, library #108).
   The label's centre is 20 px from the header's top (Figma 21).
@@ -54,9 +68,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   their node ids.
 - **Project headings.** `GroupHeader variant="project"` (#101) with a
   `FolderIcon`: the name in `monoSm`, `fg.muted`, as Figma's. Each is
-  26 px high against Figma's 24 (the library's padding on the 4 px
-  grid), so each group below adds 2 px per heading to the row offsets
-  above. They are not keyed: Figma has three headings named
+  24 px high, as Figma's (library #109, beta.8; was 26). They are not keyed: Figma has three headings named
   `project · ncc-1701`.
 - **Beta.5 (2026-11-17).** The new library parts move these layers:
   `running card` x +4, y +10, h +1 (was x +4, y +15, h +1);
@@ -71,6 +83,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +1, h +2 (was x +0, y +40, w +1, h +4). The cause is #108's compact
   `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
   was 38; Figma 34).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) puts the project
+  `GroupHeader` at Figma's 24 px (was 26), which moves these layers:
+  `group · NEXT STEPS` within the tolerance (was x +0, y +6, w +1, h
+  +2); `group · SNOOZED` x +0, y +6, w +1, h +2 (was y +14);
+  `group · RUNNING` x +0, y +8, w +1, h +2 (was y +16). The cause is 2 px less per project heading above each group.
 
 ## Second review
 

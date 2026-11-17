@@ -76,8 +76,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Hidden Figma text.** Figma keeps Reset and Edit as hidden layers in
   the SENT PROMPT header (346:11006, 346:11011); the exceptions say why.
 - **Button labels.** Snooze and Dismiss are icons, and the run card's
-  Reply here and Open in Workspaces are `size="lg"` with the default
-  label; Reset and Edit are hidden (above). No label in this frame is
+  Reply here and Open in Workspaces are `size="lg"`, Reply here in
+  `textSize="smStrong"` (SemiBold 13) and Open in Workspaces in
+  `textSize="sm"` (Medium 13), as T4 sets them in Figma (346:6297,
+  346:6303; M10's text boxes 346:11101 and 346:11107 have the same size;
+  library #109, beta.8); Reset and Edit are hidden (above). No label in this frame is
   open in the library.
 - **Prompt fade.** The sent prompt is cut by height and its last lines
   fade with no ellipsis, as Figma's (346:11014). Before #104,

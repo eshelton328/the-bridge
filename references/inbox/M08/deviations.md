@@ -3,7 +3,8 @@
 What still differs from Figma M8 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
 fidelity run (`pnpm fidelity inbox M08`, 2026-11-17, library
 1.0.0-beta.4; updated on 2026-11-17 from `pnpm fidelity inbox` of all 70 frames against
-the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+the installed library 1.0.0-beta.7, which has #107 and #108; updated again on 2026-11-17
+from `pnpm fidelity inbox` of all 70 frames with library 1.0.0-beta.8, #109), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -19,7 +20,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
 - `nav`: x +0, y +0, w +0, h -10.
-- `button · Open in Workspaces`: x -6.8, y -4, w +6.8, h -2.
+- `button · Open in Workspaces`: x +4.8, y -4, w -4.7, h -2.
 - `started task`: x +0, y -2, w +0, h +6.
 - `running in`: x +4, y +2, w -8, h +0.
 - `346:10886`: x +0, y -6, w +0, h +3.
@@ -42,10 +43,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Figma's 13, so the chevron is 4 px left (`chevron · open task` x -4,
   within the tolerance) and the chat line 4 px right (`running
   in` x +4, w -8); the box is 6 px taller (`started task` h +6).
-  Workspaces is wider because of its 14 px label (`label`) against
-  Figma's smaller one (346:10847, a 16 px line; `button · Open in
-  Workspaces` x -7, w +7). Library gaps: Chat header on the tablet,
-  Button label size.
+  Workspaces is `textSize="xs"` (Medium 12/16), Figma's Medium 12
+  (346:10847, read from Figma; library #109, beta.8). The button is
+  `size="sm"`: 28 px high against Figma's 30 and about 5 px narrower,
+  because `sm` pads its label less than Figma's 112 px button does
+  (`button · Open in Workspaces` x +4.8, w -4.7, h -2; was x -6.8,
+  w +6.8 with the 14 px `label`). Library gap: Chat header on the
+  tablet.
 - **Title.** The title shows whole on one line, as Figma draws it, and
   a longer one ends with an ellipsis, as the note says (`TruncatedText`).
   The header's `Panel` pads 16 against Figma's 13, so its row is 8 px

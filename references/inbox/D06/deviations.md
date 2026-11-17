@@ -67,6 +67,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +2 (was x +0, y +32, w +1, h +4). The cause is #108's compact
   `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
   was 38; Figma 34).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109); no layer of
+  this frame moved. The run card's Reply here is `textSize="smStrong"`
+  (SemiBold 13) and Open in Workspaces `textSize="sm"` (Medium 13), as
+  T4 sets them in Figma (346:6297, 346:6303); D6's text boxes (346:2703,
+  346:2709) have the same size.
 
 ## Second review
 

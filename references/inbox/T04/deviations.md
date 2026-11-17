@@ -2,7 +2,7 @@
 
 What still differs from Figma T4 · Running, on the task page (the started task on its own page, `runningTaskPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.8, #109, and no layer of this frame moved), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -62,9 +62,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Tablet tab bar.
 - **Button labels.** Snooze and Dismiss take `Button textSize="xs"`
   (`labelXs`, Medium 12/16), Figma's Medium 12 (d-100). The run card's
-  Reply here and Open in Workspaces are `size="lg"` in `label` (Medium
-  14); Figma's labels are smaller, about 13 px (17 px text boxes,
-  346:6297, 346:6303), so they are a little wider. Library gap: Button label size.
+  Reply here is `textSize="smStrong"` (SemiBold 13/16) and Open in
+  Workspaces `textSize="sm"` (Medium 13/16), as Figma sets them (346:6297,
+  346:6303, read from Figma; library #109, beta.8). The labels match.
 
 ## Second review
 

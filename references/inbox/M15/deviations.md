@@ -2,13 +2,13 @@
 
 What still differs from Figma M15 · Sorted by project (`sortedList`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
+1.0.0-beta.8, which adds #109), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fail (58 strings checked; 4 Figma strings under exceptions.json). Not shown: `skill-evals · readme`.
-- Position: 7 of 10 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `sort applied`, `group · NEXT STEPS`, `tab bar`).
+- Text: pass (58 strings checked; 4 Figma strings under exceptions.json).
+- Position: 8 of 10 layers pass (`header`, `filter · chips`, `list tools`, `sort applied`, `group · NEXT STEPS`, `group · SNOOZED`, `group · RUNNING`, `tab bar`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -17,9 +17,8 @@ Render minus Figma, in px. All three checks render the page 38 px
 shorter, below Figma's status bar (d-102), and the position check adds
 38 to each render y (d-101).
 
+- `inbox list`: x +0, y +0, w +0, h -7.
 - `group · NEEDS YOU`: x +0, y -6, w +0, h +2.
-- `group · SNOOZED`: x +0, y +10, w +0, h +2.
-- `group · RUNNING`: x +0, y +12, w +0, h +2.
 
 ## Deviations
 
@@ -37,10 +36,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
   density="compact"` rows are 56 px against Figma's 55 and group
   headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
   library #108). The project headings (`GroupHeader variant="project"`)
-  are 26 px against Figma's 24, which #108 did not change (Library gap:
-  Styles that differ from Figma). So the later groups still start lower
-  (`group · SNOOZED` y +10, `group · RUNNING` y +12); `group · NEXT
-  STEPS` and the list's box (`inbox list`) are within tolerance.
+  are 24 px, as Figma's (library #109, beta.8; was 26). The later groups
+  (`group · NEXT STEPS`, `group · SNOOZED`, `group · RUNNING`) are
+  within the tolerance. The list's box hugs its rows and runs under the
+  tab bar, as Figma's 919 px list does (346:12126); it is 7 px shorter
+  than Figma's (`inbox list` h -7), from the 4 px shorter header and
+  tools rows (see Header, chips and tools) against the 1 px taller rows
+  and 2 px taller group headers. Before beta.8 the 2 px taller project
+  headings made up the difference. The list's end lies under the tab
+  bar, so no viewer sees it.
 - **Header, chips and tools.** As in M01: `PageHeader size="phone"` is
   40 px high against Figma's 44 (`header` h -4) and the tools row 40
   against 44 (`list tools` h -4); the chip row's box is 34 against
@@ -66,14 +70,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   heading per project (`GroupHeader variant="project"`).
 - **Below the fold.** SNOOZED and RUNNING lie under the tab bar in
   Figma and in the render (the exceptions say why).
-- **Last next step below the fold.** The checks render 806 px high, the
-  screen below the status bar (d-102). The 26 px project headings and
-  56 px rows put the last Next steps row about 10 px lower than Figma's.
-  Its title (`Run the readme cross-family round x2`) and age (`5h`)
-  show above the tab bar, as in Figma, but its meta line
-  (`skill-evals · readme`), which Figma shows just above the bar, lies
-  under it. The text check fails on that line until the project heading
-  takes Figma's 24 px (Library gap: Styles that differ from Figma).
+- **Last next step above the tab bar.** The checks render 806 px high,
+  the screen below the status bar (d-102). With the 24 px project
+  headings (beta.8) the last Next steps row shows whole above the tab
+  bar, as in Figma: its title (`Run the readme cross-family round x2`),
+  its age (`5h`) and its meta line (`skill-evals · readme`), which
+  beta.7 put under the bar. The text check passes.
 - **Button labels.** The approval row's Allow once, Deny and Open chat
   are `Button textSize="xs"` (`labelXs`, Medium 12/16), as Figma's
   Medium 12 (d-100). Sort and Filter are icons, and the sort line's
@@ -87,3 +89,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   h +2 (was x +0, y +36, w +0, h +4). The cause is #108's compact
   `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
   was 38; Figma 34).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) puts the project
+  `GroupHeader` at Figma's 24 px (was 26), which moves these layers:
+  `group · SNOOZED` within the tolerance (was x +0, y +10, w +0, h +2);
+  `group · RUNNING` within the tolerance (was x +0, y +12, w +0, h +2);
+  `inbox list` x +0, y +0, w +0, h -7 (was within the tolerance). The
+  text check passes: `skill-evals · readme` shows above the tab bar.

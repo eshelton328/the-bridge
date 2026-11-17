@@ -2,7 +2,7 @@
 
 What still differs from Figma T20 · Proposed new tasks (`tasksProposedPage`, D17 on the discussion page), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.8, which adds #109), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -25,7 +25,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `discussion`: x +2, y +30, w -4, h -103.
 - `message · you`: x +2, y +16, w +148, h +1.
 - `message · discussion`: x +2, y +17, w +148, h +1.
-- `proposal · CREATE 3 TASKS`: x +2, y +18, w +148, h +60.
+- `proposal · CREATE 3 TASKS`: x +2, y +18, w +148, h +18.
 - `composer · discussion`: x +2, y +20, w -4, h +3.
 
 ## Deviations
@@ -84,15 +84,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
 - **New tasks.** As in D17: each task is a bordered box with a
-  `Checkbox tone="discuss"`, whose checked box is violet
-  (`accent.discuss`, #9e8fff), Figma's. Its label is `body` (Figma 13
-  px), and each box is 66 px high against Figma's 52 (the `Checkbox`
-  row keeps a 32 px touch target), so the block is taller
-  (`proposal · CREATE 3 TASKS` h +60). The boxes and Also remove this task
+  `Checkbox tone="discuss" size="compact"`, whose checked box is violet
+  (`accent.discuss`, #9e8fff), Figma's. Its title is `bodySm` (13/20)
+  and its meta line the `Checkbox`'s `description` in `monoSm`, aligned
+  with the title (library #109, beta.8), and each box is 52 px high, as
+  Figma's 402:11865. "Also remove this task" keeps a 32 px row for touch
+  against Figma's 16, and the action row is about 2 px taller, so the
+  block is 18 px taller (`proposal · CREATE 3 TASKS` h +18; was h +60
+  with 66 px boxes). The boxes and Also remove this task
   work: the count on Create follows them, Create adds the checked tasks
   to the list with a toast, and Also remove takes this task out too
-  (`InboxRoute.test.tsx`). Library gap: Message author icon and small
-  text.
+  (`InboxRoute.test.tsx`).
 - **Button labels.** Create 3 tasks and Discard are `ProposalBlock`'s own
   `size="sm"` buttons in `label` (Medium 14) and take no `textSize`;
   Figma sets them in Medium 12, so they are a little wider. Library
@@ -103,13 +105,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
   +2, y +18, w +148, h +60 (was x +2, y +22, w +148, h +60). The cause
   is the discussion reply's author name in `labelXsStrong` (SemiBold
   12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) moves this
+  layer: `proposal · CREATE 3 TASKS` x +2, y +18, w +148, h +18 (was x
+  +2, y +18, w +148, h +60). The cause is the new-task boxes at Figma's
+  52 px (`Checkbox size="compact"` with `description`; was 66).
 
 ## Second review, round 2
 
 A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
 
 - Reply box not focused (P1): checked, it is. The play test focuses the reply box and asserts `toHaveFocus`, and the capture shows the focused border: the reply box's top edge is #3a819d (`border.selected` over the fill) against #24314f unfocused. Figma's focused border is #6863b0, so the render's focus reads as a faint cyan line. Library gap: Composer focus.
-- New-task rows taller than Figma's (P2): recorded. Figma's box is 52 high (402:11865: 9 padding, the title 17, the meta 14); `Checkbox` keeps a `control.md` (32) row for the touch target, so each box is 66. Library gap: Message author icon and small text.
+- New-task rows taller than Figma's (P2): recorded. Figma's box is 52 high (402:11865: 9 padding, the title 17, the meta 14); `Checkbox` keeps a `control.md` (32) row for the touch target, so each box is 66. Library gap: Message author icon and small text. (Fixed by beta.8, #109: `Checkbox size="compact"` with `description`, 52 px, Figma's.)
 - "Discussion" author label larger and lighter (P2): recorded. Figma sets it in SemiBold 12/16; no text style is 12 px SemiBold, so it stays `label` (Medium 14). Library gap: Message author icon and small text. (Fixed by beta.7: the name is `labelXsStrong`, SemiBold 12/16, Figma's.)
 - "Also remove this task" near-white against Figma's grey (P2): fixed in part. It is `Checkbox size="sm"` now, Figma's 12/16; Figma's label is #8a97b8 and `Checkbox` draws every label in `fg.default`. Library gap: Message author icon and small text.
 - Model chip chevron thin and grey (P3): recorded. `ModelChip` draws its chevron in `fg.muted` and has no prop for Figma's heavier #e6ecff one. Library gap: Styles that differ from Figma.

@@ -2,7 +2,8 @@
 
 What still differs from Figma T5 · Started, the chat stays in the inbox (the started task's chat, `chat`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.7, which has #107 and #108; no T5 layer moved), each
+library 1.0.0-beta.7, which has #107 and #108; no T5 layer moved;
+updated again on 2026-11-17 with library 1.0.0-beta.8, #109), each
 with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
@@ -19,7 +20,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
 - `nav`: x +2, y +8, w -4, h -10.
-- `button · Open in Workspaces`: x -8.8, y +4, w +6.8, h -2.
+- `button · Open in Workspaces`: x +2.8, y +4, w -4.7, h -2.
 - `started task`: x +2, y +6, w -4, h +6.
 - `chevron · open task`: x -6, y +9, w +0, h +0.
 - `running in`: x +6, y +10, w -12, h +0.
@@ -41,11 +42,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   small button, against Figma's 38 px row 4 px under the status bar
   (`nav` y +8, h -10). The header `Panel` pads 16 against Figma's 12,
   so the chevron is 6 px left (`chevron · open task` x -6) and the chat line
-  6 px right (`running in` x +6, w -12). Workspaces is wider because of
-  its 14 px label (`button · Open in Workspaces` x -8.8, w +6.8):
-  `OpenInWorkspaces` passes no `textSize`, so it draws `label` (Medium
-  14) against Figma's 12 px label (346:6377). Library gaps: Chat header
-  on the tablet, Button label size.
+  6 px right (`running in` x +6, w -12). Workspaces is
+  `textSize="xs"` (Medium 12/16), Figma's Medium 12 (346:6377, read
+  from Figma; library #109, beta.8). The `size="sm"` button is 28 px
+  high against Figma's 30 and pads its label less, so it is about 5 px
+  narrower (`button · Open in Workspaces` x +2.8, w -4.7, h -2; was
+  x -8.8, w +6.8 with the 14 px `label`). Library gap: Chat header on
+  the tablet.
 - **Reply box.** Figma leaves a 21 px home-indicator area under the
   reply box; `AppShell` keeps it only on the phone, so the reply box
   sits 20 px lower (`346:6416` y +20). The story focuses the reply box,
@@ -58,7 +61,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Copy and the reply box's buttons.** Copy under the reply is
   `Button size="xs" textSize="xs"`: 24 px high against Figma's 22, the
   4 px grid value (d-100), with a Medium 12 label (`labelXs`) against
-  Figma's 11, because no label style is 11. Stop and send are
+  Figma's Medium 11 (346:6409, read from Figma), because no label style
+  is 11. Stop and send are
   `Composer`'s 28 px controls with 14 px labels, against Figma's 26.
   Library gap: Button label size.
 

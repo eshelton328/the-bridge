@@ -74,6 +74,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   #108's compact `ListRow` (56 px, was 58; Figma 55) and list
   `GroupHeader` (36 px, was 38; Figma 34) and the whole prompt in
   `bodyLg` (Regular 15/24, d-100; Figma 15/23; was `body`, 14/20).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109); no layer of
+  this frame moved. The dialog's Edit prompt and Copy are
+  `textSize="sm"` (Medium 13), as T8 sets them in Figma (346:7187,
+  346:7193); D8's text boxes (346:3556, 346:3562) have the same size.
 
 ## Second review
 

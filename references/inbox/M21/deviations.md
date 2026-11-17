@@ -2,14 +2,14 @@
 
 What still differs from Figma M21 · Proposed new tasks (`tasksProposedPage`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
-1.0.0-beta.7, which adds #107 and #108), each with its reason. The library gaps are in
+1.0.0-beta.8, which adds #109), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (21 strings checked; 2 Figma strings under exceptions.json).
 - Position: 2 of 10 layers pass (`nav`, `chevron · open task`).
-- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
+- Rules: pass (1 finding under exceptions.json).
 
 ## Failing layers
 
@@ -20,11 +20,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - `task · discussing`: x +0, y -1, w +0, h +12.
 - `model and context`: x +4, y +3, w +9.6, h +4.
 - `guard`: x +4, y +6, w -8, h +3.
-- `discussion`: x +0, y +27, w +0, h -100.
+- `discussion`: x +0, y +27, w +0, h -126.
 - `message · you`: x +0, y +13, w +0, h +1.
 - `message · discussion`: x +0, y +14, w +0, h +2.
-- `proposal · CREATE 3 TASKS`: x +0, y +16, w +0, h +60.
-- `composer · discussion`: x +0, y +20, w +0, h +3.
+- `proposal · CREATE 3 TASKS`: x +0, y +16, w +0, h +18.
+- `composer · discussion`: x +0, y -6, w +0, h +3.
 
 ## Deviations
 
@@ -58,8 +58,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   entry under the card starts lower by what the card adds. Library gap:
   Chat header on the tablet.
 - **Reply box.** The reply box comes last, under the proposal, as Figma
-  draws it; in the check it sits 20 px lower (`composer · discussion`
-  y +20; Page fits says why). The story focuses the
+  draws it; in the check it sits at the bottom of the screen, 6 px
+  higher than Figma's and 3 px taller (`composer · discussion` y -6,
+  h +3), as on M18 and M24: `AppShell` keeps the home-indicator area
+  under it (Page fits says more). The story focuses the
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
@@ -80,34 +82,29 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Proposal block.** `ProposalBlock` as in T18 to T23; Figma's spark
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
-- **New tasks.** As in T20: each box is a `Checkbox` with the meta line
-  under its title; `Checkbox` keeps a 32 px row for the touch target and
-  sets its label in `body`, so each box is 66 high against Figma's 52
-  and the block 60 px taller (`proposal · CREATE 3 TASKS` h +60). Library
-  gap: Message author icon and small text.
-- **Page fits.** The page used to be 8 px taller than the phone and
-  scrolled (`hiddenOverflow` on `main.app-shell__detail`). With the card
-  8 under the nav, as Figma draws it, the page fits the 844 px frame.
-  The position check renders 38 px shorter (d-101), and there the page
-  is taller than the screen: the reply box follows the proposal, 20 px
-  lower than Figma's and 3 px taller (`composer · discussion` y +20,
-  h +3). On M18 and M24 it sits at the bottom, 6 px higher (y -6).
+- **New tasks.** As in T20: each box is `Checkbox size="compact"` with
+  the meta line as its `description` (library #109, beta.8): the title
+  in `bodySm` (13/20), the meta in `monoSm` aligned with it, and the box
+  52 px high, as Figma's 402:7278 box. "Also remove this task" keeps a
+  32 px row for touch against Figma's 16, and the action row is about
+  2 px taller, so the block is 18 px taller (`proposal · CREATE 3 TASKS`
+  h +18; was h +60 with 66 px boxes). The task card above it puts the
+  block 16 px lower (`proposal · CREATE 3 TASKS` y +16).
+- **Page fits.** The checks render 806 px high, the screen below the
+  status bar (d-102). With the 52 px new-task boxes (beta.8) the page
+  fits that screen, so nothing scrolls and the rules check passes; with
+  beta.7 it was 26 px taller (scrollHeight 798 against clientHeight
+  772) and scrolled (`hiddenOverflow` on `main.app-shell__detail`).
+  The discussion area holds only the entries and ends under the
+  proposal, where Figma's `discussion` layer runs down to the reply box
+  and holds it (`discussion` y +27, h -126; was h -100: the proposal is
+  42 px shorter, and the area's free space below it moved to the
+  reply box).
 - **Checked boxes.** The checked new-task boxes are violet, as Figma
   fills them: `Checkbox tone="discuss"` (`accent.discuss`, #9e8fff, as
   402:7278). The box is
-  16 px, as Figma's (402:7278 is 16 × 16). `Checkbox size="sm"` keeps
-  the box at 16 and the row at 32, so it would not make the box
-  shorter, and its 12 px label is as far from Figma's 13 as `body` 14
-  is; the boxes keep `body`.
-- **Page taller than the screen.** The checks render 806 px high, the
-  screen below the status bar (d-102). There the page is 26 px taller
-  than the screen (scrollHeight 798 against clientHeight 772; 802
-  before the shorter author line), as the Page fits entry says, so it
-  scrolls (`hiddenOverflow` on `main.app-shell__detail`) where Figma's
-  fits: the
-  task card and the proposal run taller than Figma's (`task · discussing`
-  h +12, `proposal · CREATE 3 TASKS` h +60, for the reasons above). The
-  rules check fails on it until those parts take Figma's heights.
+  16 px, as Figma's (402:7278 is 16 × 16), and the label 13 px
+  (`size="compact"`, `bodySm`), as Figma's.
 - **Button labels.** The proposal's Create 3 tasks and Discard are
   `ProposalBlock`'s own `size="sm"` buttons in `label` (Medium 14), which
   take no `textSize`; Figma sets them in Medium 12, so they are a little
@@ -126,3 +123,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   its entries, so the shorter author line takes 4 px off an area that
   was already 96 px shorter than Figma's (the reply box follows the
   proposal, see Page taller than the screen).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) moves these
+  layers: `proposal · CREATE 3 TASKS` x +0, y +16, w +0, h +18 (was x
+  +0, y +16, w +0, h +60); `discussion` x +0, y +27, w +0, h -126 (was
+  x +0, y +27, w +0, h -100); `composer · discussion` x +0, y -6, w +0,
+  h +3 (was x +0, y +20, w +0, h +3). The cause is the new-task boxes
+  at Figma's 52 px (`Checkbox size="compact"` with `description`; was
+  66): the page now fits the screen, so the rules check passes and the
+  reply box sits at the bottom.
