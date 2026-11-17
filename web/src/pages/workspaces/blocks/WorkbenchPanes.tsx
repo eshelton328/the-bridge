@@ -34,7 +34,7 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
   let chats = 0
   const render = (pane: WorkbenchPane, place: number) => {
     if (pane.type === 'empty')
-      return <EmptyPane {...pane} figma={{ pane: data.layers?.panes?.[place], list: data.layers?.emptyList }} />
+      return <EmptyPane {...pane} figma={{ pane: data.layers?.panes?.[place], rows: data.layers?.emptyRows }} />
     const menu = (
       <PaneMenu
         title={pane.head.title}

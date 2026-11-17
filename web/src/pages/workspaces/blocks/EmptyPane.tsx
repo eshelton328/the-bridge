@@ -1,27 +1,24 @@
 // A pane with no chat (D1 105:347): start Claude Code, Codex or a shell in
-// it, or open a chat of the workspace that no pane shows. The library has
-// no empty pane (LIBRARY_GAPS.md): the box is a dashed border.default
-// outline and the content library buttons and rows. Props only.
-import { Button, ContextMeter, Inline, KindMark, ListRow, Stack, StatusPill } from '@eshelton328/component-library-1701'
+// it, or open a chat of the workspace that no pane shows. The library's
+// `EmptyPane` draws the dashed box, the title, the line and the labelled
+// list; the start buttons and the rows are library buttons and rows.
+// Props only.
+import {
+  Button,
+  ContextMeter,
+  EmptyPane as LibraryEmptyPane,
+  Inline,
+  KindMark,
+  ListRow,
+  StatusPill,
+} from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { AgentKind, OpenableChat } from '../types.ts'
 
-const box = css({
-  display: 'flex',
-  flex: '1',
-  alignItems: 'center',
-  justifyContent: 'center',
-  minW: '[0]',
-  minH: '[0]',
-  borderRadius: 'xl',
-  borderWidth: 'default',
-  borderStyle: 'dashed',
-  borderColor: 'border.default',
-})
-const title = css({ textStyle: 'paneTitle', color: 'fg.default' })
-const text = css({ textStyle: 'bodySm', color: 'fg.muted' })
-const section = css({ textStyle: 'eyebrow', color: 'fg.muted' })
-const list = css({ w: 'shell.popoverPicker' })
+// The split's panel is a flex column; the library's pane fills this box, which carries the pane's Figma layer.
+const slot = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]', minH: '[0]' })
+// D1's rows of the list (105:370, 105:384): `EmptyPane` takes no `data-*`, so the list's box (105:368) has no layer.
+const rowLayers = ['105:370', '105:384']
 
 export type EmptyPaneProps = {
   title: string
@@ -29,30 +26,31 @@ export type EmptyPaneProps = {
   start: readonly { kind: AgentKind; label: string }[]
   openLabel: string
   open: readonly OpenableChat[]
-  /** The Figma layers of the pane and of its list, for the fidelity checks; D1's when not set. */
-  figma?: { pane?: string | undefined; list?: string | undefined } | undefined
+  /** The Figma layers of the pane and of its list's rows, for the fidelity checks; D1's when not set. */
+  figma?: { pane?: string | undefined; rows?: readonly string[] | undefined } | undefined
 }
 
 export function EmptyPane(props: EmptyPaneProps) {
-  const { title: heading, text: description, start, openLabel, open, figma } = props
+  const { title, text, start, openLabel, open, figma } = props
+  const rows = figma?.rows ?? rowLayers
   return (
-    <section data-figma={figma?.pane ?? '105:347'} className={box} aria-label={heading}>
-      <Stack gap="12" align="center">
-        <h2 className={title}>{heading}</h2>
-        <p className={text}>{description}</p>
-        <Inline gap="8">
-          {start.map((s) => (
-            <Button key={s.label} size="sm">
-              <KindMark kind={s.kind} size="16" />
-              {s.label}
-            </Button>
-          ))}
-        </Inline>
-        <Stack gap="2" className={list} data-figma={figma?.list ?? '105:368'}>
-          <span className={section}>{openLabel}</span>
-          {open.map((chat) => (
+    <div data-figma={figma?.pane ?? '105:347'} className={slot}>
+      <LibraryEmptyPane
+        title={title}
+        description={text}
+        listLabel={openLabel}
+        actions={start.map((s) => (
+          <Button key={s.label} size="sm">
+            <KindMark kind={s.kind} size="16" />
+            {s.label}
+          </Button>
+        ))}
+      >
+        {open.map((chat, i) => (
+          <div key={chat.title} data-figma={rows[i]}>
+            {/* Figma's rows (105:370) have a 13 px title and a 12 px mono meta, which `compact` draws. */}
             <ListRow
-              key={chat.title}
+              density="compact"
               title={chat.title}
               leading={<KindMark kind={chat.kind} size="16" />}
               meta={
@@ -63,9 +61,9 @@ export function EmptyPane(props: EmptyPaneProps) {
               }
               trailing={<StatusPill label={chat.status.label} tone={chat.status.tone} dot />}
             />
-          ))}
-        </Stack>
-      </Stack>
-    </section>
+          </div>
+        ))}
+      </LibraryEmptyPane>
+    </div>
   )
 }

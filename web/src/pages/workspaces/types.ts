@@ -236,9 +236,12 @@ export const SidebarLayers = z.object({
   panes: z.array(z.string()).optional(),
   /** The chat panes of the split, in order. */
   paneChats: z.array(PaneChatLayers).optional(),
-  /** The shell pane's terminal (D1 105:337) and the empty pane's list (D1 105:368). */
+  /**
+   * The shell pane's terminal (D1 105:337) and the rows of the empty pane's list (D1 105:370, 105:384): the library's
+   * `EmptyPane` takes no `data-*`, so its list's box (105:368) cannot carry one.
+   */
   shell: z.string().optional(),
-  emptyList: z.string().optional(),
+  emptyRows: z.array(z.string()).optional(),
   newWorkspace: z.string().optional(),
   /** The group headers, by workspace id. */
   headers: z.record(z.string(), z.string()).optional(),
