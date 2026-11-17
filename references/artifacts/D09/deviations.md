@@ -9,10 +9,8 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 - Text: fails on one string. `median 71%` (452:3706) is missing: the
   preview's chart has no median line or label (see Preview chart below).
-  `Toolkit` is an `extra` exception and the context meter's `49%`
-  (454:366) a `missing` exception (`exceptions.json`): the meter shows
-  49%, but `ContextMeter` draws the number and the % sign as two text
-  nodes, which the text check cannot match, as in D07 and D08.
+  `Toolkit` is an `extra` exception (`exceptions.json`). The context
+  meter's `49%` (454:366) matches with no exception, as in D07 and D08.
 - Position: 18 of 29 layers pass, among them the artifact bar,
   `pill · New` (which says Updated), the title block, preview, "Made
   in", both Open in workspace buttons (`452:3634`, `452:3644`), the

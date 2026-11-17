@@ -1,11 +1,4 @@
 {
-  "missing": [
-    {
-      "text": "49%",
-      "layers": ["454:366"],
-      "reason": "Layer 454:366 is the context meter's value. The library's ContextMeter renders the number and the % sign as two text nodes, and a string of three characters or less must equal one whole text node; the meter shows 49%, as the side-by-side shows."
-    }
-  ],
   "extra": [
     {
       "text": "Toolkit",

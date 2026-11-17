@@ -7,10 +7,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: passes. `Toolkit` is an `extra` exception and the context
-  meter's `46%` (454:328) a `missing` exception (`exceptions.json`): the
-  meter shows 46%, but `ContextMeter` draws the number and the % sign as
-  two text nodes, which the text check cannot match, as in Inbox D14.
+- Text: passes. `Toolkit` is an `extra` exception (`exceptions.json`).
+  The context meter's `46%` (454:328) matches with no exception: since
+  library 1.0.0-beta.12, `ContextMeter` draws it as one text node.
 - Position: 17 of 28 layers pass, among them the artifact bar, title
   block, preview, preview footer, Open artifact, "Made in", both Open in
   workspace buttons (`452:2406`, `452:2464`), the panel's `header`,
