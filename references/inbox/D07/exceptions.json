@@ -1,0 +1,16 @@
+{
+  "missing": [
+    {
+      "text": "Snooze",
+      "reason": "Layer 346:3007 is a hidden button in the task bar: frame.png shows no Snooze or Dismiss for a finished task. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Reset",
+      "reason": "Layer 346:3053 is a hidden button in the prompt header: frame.png shows no Reset beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    },
+    {
+      "text": "Edit",
+      "reason": "Layer 346:3058 is a hidden button in the prompt header: frame.png shows no Edit beside SENT PROMPT, because a sent prompt is read-only. get_metadata does not say a layer is hidden, so frame.json lists its text."
+    }
+  ]
+}
