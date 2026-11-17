@@ -84,3 +84,9 @@ before M02.
   preview).
 - **Tab bar.** The shared `AppTabBar` passes the position check, and its
   five items line up with Figma's.
+
+## Second review
+
+- **Preview inset.** The SKILL.md preview's content sits about 2 px
+  further in from the top and left, so the box is about 3 px taller
+  (gap: File preview).
