@@ -276,4 +276,6 @@ void test('checkBuild --guard exits 1 for a check and 0 for a page file', () => 
   assert.equal(guarded.status, 1)
   assert.match(guarded.stdout, /"ok":false/)
   assert.equal(run('web/src/pages/inbox/states/filtered.ts').status, 0)
+  assert.equal(run('./scripts/fidelity/checkText.ts').status, 1)
+  assert.equal(run('web/../scripts/fidelity/checkText.ts').status, 1)
 })

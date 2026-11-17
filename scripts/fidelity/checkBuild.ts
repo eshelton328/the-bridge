@@ -12,7 +12,7 @@
 // --base <ref> sets what the branch is compared with (default origin/main).
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, realpathSync, statSync } from 'node:fs'
-import { isAbsolute, join, relative } from 'node:path'
+import { isAbsolute, join, normalize, relative } from 'node:path'
 import { parseArgs } from 'node:util'
 import {
   buildRecord,
@@ -32,7 +32,8 @@ const { values, positionals } = parseArgs({
 })
 
 if (values.guard !== undefined) {
-  const path = isAbsolute(values.guard) ? relative(realpathSync(repoRoot), values.guard) : values.guard
+  // `./scripts/x.ts` and `web/../scripts/x.ts` name a guarded file too.
+  const path = normalize(isAbsolute(values.guard) ? relative(realpathSync(repoRoot), values.guard) : values.guard)
   const reason = guardedReason(path)
   console.log(JSON.stringify({ ok: reason === undefined, path, reason: reason ?? null }))
   process.exit(reason === undefined ? 0 : 1)
