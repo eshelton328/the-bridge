@@ -48,3 +48,15 @@ export const MoreDrawer: Story = {
     await expect(within(drawer).getByText('Later')).toBeVisible()
   },
 }
+
+export const ToolkitMap: Story = {
+  name: 'D2: the map, with writer selected and its links lit',
+  args: { data: toolkitStates.toolkitMap.data, ui: toolkitStates.toolkitMap.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('radio', { name: /Map/ })).toBeChecked()
+    await expect(canvas.getByText('A line means one file links to another')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /writer/, pressed: true })).toBeVisible()
+    await expect(canvas.getByRole('region', { name: 'writer' })).toHaveTextContent('→ links to 7')
+    await expect(canvas.getByRole('button', { name: 'Open writer' })).toBeVisible()
+  },
+}

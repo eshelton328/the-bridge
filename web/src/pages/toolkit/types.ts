@@ -39,6 +39,34 @@ export const ToolkitKindChip = z.object({
 })
 export type ToolkitKindChip = z.infer<typeof ToolkitKindChip>
 
+/** One item on the map (D2): its place in a column and the text at its end. */
+export const ToolkitMapNode = z.object({
+  /** The item's path in toolkit/, as in `ToolkitItemView.path`; links and the selection name it. */
+  path: z.string(),
+  name: z.string(),
+  kind: ToolkitKind,
+  /** The column, from 0 (Rules and hooks) to 3 (Workflows). */
+  column: z.number().int().nonnegative(),
+  /** The row in its column, from 0 at the top; a column may skip rows. */
+  row: z.number().int().nonnegative(),
+  /** Short text at the end of the node, such as "every session". */
+  meta: z.string().optional(),
+})
+export type ToolkitMapNode = z.infer<typeof ToolkitMapNode>
+
+/** A line on the map: the file at `from` links to the file at `to`. Each end is an item's path. */
+export const ToolkitMapLink = z.object({ from: z.string(), to: z.string() })
+export type ToolkitMapLink = z.infer<typeof ToolkitMapLink>
+
+/** The map of the toolkit (D2): one column for each kind, and a line where one file links to another. */
+export const ToolkitMapView = z.object({
+  /** The column headings, left to right. */
+  columns: z.array(z.string()),
+  nodes: z.array(ToolkitMapNode),
+  links: z.array(ToolkitMapLink),
+})
+export type ToolkitMapView = z.infer<typeof ToolkitMapView>
+
 export const ToolkitData = z.object({
   /** The number of items in toolkit/, after the title. */
   count: z.number().int().nonnegative(),
@@ -48,6 +76,8 @@ export const ToolkitData = z.object({
   artifactsCount: z.number().int().nonnegative().optional(),
   chips: z.array(ToolkitKindChip),
   groups: z.array(ToolkitGroupView),
+  /** The map the Map view shows; without it the Map view shows an empty map. */
+  map: ToolkitMapView.optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 
@@ -66,6 +96,8 @@ export const ToolkitUi = z.object({
   groupsOpen: z.partialRecord(ToolkitKind, z.boolean()),
   /** Whether the phone's More drawer is open over the tab bar (M4); closed when not set. */
   moreOpen: z.boolean().optional(),
+  /** The path of the item selected on the map (D2): its lines light up. None when not set. */
+  mapSelected: z.string().nullable().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

@@ -3,12 +3,13 @@
 // tablet or phone the list full width over the tab bar, which opens
 // Toolkit from More (d-105). The list (Figma D1 425:9) is the header, the
 // kind chips, the search row and a group of cards per kind, narrowed by
-// the chip and the search (`listView`). A state file's data and ui are its
+// the chip and the search (`listView`). The Map view (D2) shows the map
+// (`ToolkitMap`) under the same rows in place of the groups. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
 // without `onUiChange` the screen keeps Erik's changes itself.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -17,6 +18,7 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { ToolkitGroup } from '../blocks/ToolkitGroup.tsx'
 import { ToolkitHeader } from '../blocks/ToolkitHeader.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
+import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
 import { listView } from './listView.ts'
 
@@ -27,6 +29,8 @@ const page = {
   // M1 429:50: 12 in from the sides, 4 under the status bar, and its rows 10 apart.
   phone: css({ display: 'flex', flexDirection: 'column', gap: '10', px: '12', pt: '4', pb: '12' }),
 }
+// D2 426:53: on the map the page runs to the foot of the window, below the map canvas.
+const fullHeight = css({ flexGrow: '1' })
 // Figma 425:32: the chip row is as wide as its chips.
 const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 
@@ -52,7 +56,11 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
     onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: open } })
   }
   const list = (
-    <section aria-label="Toolkit" className={page[layout]} data-figma="toolkit">
+    <section
+      aria-label="Toolkit"
+      className={ui.view === 'map' ? cx(page[layout], fullHeight) : page[layout]}
+      data-figma="toolkit"
+    >
       <ToolkitHeader
         count={data.count}
         view={ui.view}
@@ -81,11 +89,22 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
       <ToolkitListTools
         query={ui.query}
         layout={layout}
+        view={ui.view}
         onQueryChange={(query) => {
           onUiChange({ query })
         }}
       />
-      {view.groups.map((group) => (
+      {ui.view === 'map' ? (
+        <ToolkitMap
+          map={data.map ?? { columns: [], nodes: [], links: [] }}
+          selected={ui.mapSelected ?? null}
+          selectedItem={data.groups.flatMap((g) => g.items).find((item) => item.path === ui.mapSelected)}
+          onSelect={(path) => {
+            onUiChange({ mapSelected: path })
+          }}
+        />
+      ) : null}
+      {(ui.view === 'map' ? [] : view.groups).map((group) => (
         <ToolkitGroup
           key={group.kind}
           group={group}
