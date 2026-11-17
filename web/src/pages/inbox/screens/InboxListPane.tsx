@@ -1,10 +1,12 @@
 // The Inbox list pane: the header with the count, the filter chips, the
-// search row and the groups of rows. Props only.
-import { FilterChips, GroupHeader, PageHeader, Stack } from '@eshelton328/component-library-1701'
+// search row and the groups of rows; with the sort by project, a heading
+// per project in each group; with a search, a line that sums up the
+// results and a hint about matches in Done. Props only.
+import { FilterChips, FolderIcon, GroupHeader, Inline, PageHeader, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { InboxRow } from '../blocks/InboxRow.tsx'
 import { ListTools } from '../blocks/ListTools.tsx'
-import type { InboxData, InboxGroupId, InboxUi } from '../types.ts'
+import type { InboxData, InboxGroupId, InboxGroupView, InboxUi } from '../types.ts'
 
 const pane = css({
   display: 'flex',
@@ -18,6 +20,37 @@ const pane = css({
   bg: 'surface.pane',
 })
 const header = css({ py: '4' })
+const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
+const project = css({ textStyle: 'mono', color: 'fg.muted', px: '10', py: '4' })
+const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
+
+function Rows({
+  rows,
+  ui,
+  query,
+  onSelectItem,
+}: {
+  rows: InboxGroupView['rows']
+  ui: InboxUi
+  query: string | undefined
+  onSelectItem: ((id: string) => void) | undefined
+}) {
+  return rows.map((row) => (
+    <InboxRow
+      key={row.id}
+      row={row}
+      selected={row.id === ui.selectedId}
+      query={query}
+      onSelect={
+        onSelectItem === undefined
+          ? undefined
+          : () => {
+              onSelectItem(row.id)
+            }
+      }
+    />
+  ))
+}
 
 export type InboxListPaneProps = {
   data: InboxData
@@ -46,7 +79,20 @@ export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onS
           }}
         />
       </div>
-      <ListTools sort={data.sort} filterMenu={data.filterMenu} filterOpen={ui.filterOpen} />
+      <ListTools
+        sort={data.sort}
+        sortActive={data.sortActive}
+        sortMenu={data.sortMenu}
+        sortOpen={ui.sortOpen}
+        query={data.search?.query}
+        filterMenu={data.filterMenu}
+        filterOpen={ui.filterOpen}
+      />
+      {data.search === undefined ? null : (
+        <span className={summary} data-figma="search summary">
+          {data.search.summary}
+        </span>
+      )}
       {data.groups.map((group) => {
         const open = ui.groupsOpen[group.id]
         return (
@@ -62,25 +108,31 @@ export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onS
                 }}
               />
             </div>
-            {open
-              ? group.rows.map((row) => (
-                  <InboxRow
-                    key={row.id}
-                    row={row}
-                    selected={row.id === ui.selectedId}
-                    onSelect={
-                      onSelectItem === undefined
-                        ? undefined
-                        : () => {
-                            onSelectItem(row.id)
-                          }
-                    }
-                  />
+            {open && group.projects === undefined ? (
+              <Rows rows={group.rows} ui={ui} query={data.search?.query} onSelectItem={onSelectItem} />
+            ) : null}
+            {open && group.projects !== undefined
+              ? group.projects.map((p) => (
+                  <Stack key={p.label} gap="2">
+                    <Inline gap="6" align="center" className={project}>
+                      <FolderIcon size="12" />
+                      {p.label}
+                    </Inline>
+                    <Rows rows={p.rows} ui={ui} query={data.search?.query} onSelectItem={onSelectItem} />
+                  </Stack>
                 ))
               : null}
           </Stack>
         )
       })}
+      {data.search === undefined ? null : (
+        <span className={summary} data-figma="done hint">
+          {data.search.more.text}{' '}
+          <a className={showIt} href="#done">
+            {data.search.more.link}
+          </a>
+        </span>
+      )}
     </section>
   )
 }

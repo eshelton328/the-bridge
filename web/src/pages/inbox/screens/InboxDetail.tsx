@@ -11,7 +11,7 @@ const pane = css({ display: 'flex', flexDirection: 'column', flex: '1' })
 
 export type InboxDetailProps = {
   detail: InboxDetailView
-  ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen'>
+  ui: Pick<InboxUi, 'editingPrompt' | 'pickerOpen' | 'snoozeOpen' | 'promptOpen'>
 }
 
 export function InboxDetail({ detail, ui }: InboxDetailProps) {

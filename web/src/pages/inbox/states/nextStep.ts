@@ -108,6 +108,7 @@ export const nextStep = {
       { value: 'done', label: 'Done', count: 4 },
     ],
     sort: 'Newest',
+    sortActive: false,
     groups: [needsYou, nextSteps, snoozed],
     detail: {
       kind: 'next',
@@ -120,19 +121,24 @@ export const nextStep = {
         { label: 'NCC-28', icon: 'linear', issue: true },
       ],
       tags: ['global/planning', 'project/ncc-1701/the-bridge'],
+      actions: true,
       why: 'Increment one’s screens are drawn and its acceptance is written. Tickets come before any code, and nothing blocks them.',
       prompt: {
         text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.',
         edited: false,
         long: true,
+        sent: false,
       },
-      runIn: {
-        title: 'New Claude Code chat',
-        badge: 'Recommended',
-        detail: 'the-bridge · Sonnet 5.5 · folders ~/the-bridge',
+      launch: {
+        stage: 'suggested',
+        runIn: {
+          title: 'New Claude Code chat',
+          badge: 'Recommended',
+          detail: 'the-bridge · Sonnet 5.5 · folders ~/the-bridge',
+        },
+        startLabel: 'Start in the-bridge',
+        startHint: 'Opens the new chat and sends the prompt.',
       },
-      startLabel: 'Start in the-bridge',
-      startHint: 'Opens the new chat and sends the prompt.',
       notes: {
         text: 'Check the milestone name matches Linear before I approve.',
         by: 'You · 2m ago',
@@ -147,9 +153,12 @@ export const nextStep = {
   ui: {
     filter: 'all',
     selectedId: selected,
-    groupsOpen: { needsYou: true, nextSteps: true, snoozed: false, running: false },
+    groupsOpen: { needsYou: true, nextSteps: true, snoozed: false, running: false, today: false, yesterday: false },
     filterOpen: false,
     editingPrompt: false,
     pickerOpen: false,
+    sortOpen: false,
+    snoozeOpen: false,
+    promptOpen: false,
   },
 } satisfies ScreenState<InboxData, InboxUi>

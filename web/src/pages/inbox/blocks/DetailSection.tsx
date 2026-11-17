@@ -14,11 +14,13 @@ export type DetailSectionProps = {
   /** Buttons at the end of the heading row, such as Reset and Edit. */
   actions?: ReactNode
   children: ReactNode
+  /** The Figma layer name when it is not "section · <TITLE>", as for a sent prompt. */
+  figma?: string | undefined
 }
 
-export function DetailSection({ title, meta, actions, children }: DetailSectionProps) {
+export function DetailSection({ title, meta, actions, children, figma }: DetailSectionProps) {
   return (
-    <section aria-label={title} data-figma={`section · ${title.toUpperCase()}`}>
+    <section aria-label={title} data-figma={figma ?? `section · ${title.toUpperCase()}`}>
       <Stack gap="8">
         <Inline gap="8" align="center" justify="between">
           <Inline gap="8" align="center">

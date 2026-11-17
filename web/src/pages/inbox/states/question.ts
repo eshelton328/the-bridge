@@ -22,6 +22,7 @@ export const question = {
         { label: 'NCC-31', icon: 'linear', issue: true },
       ],
       tags: ['global/decision'],
+      actions: true,
       waiting: {
         agent: 'claude',
         title: 'hono server is waiting for this answer',

@@ -35,10 +35,12 @@ export const InboxRowView = z.object({
   snoozed: z.object({ line: z.string(), age: z.string() }).optional(),
   /** A started item: the chat it runs in and what it does, and its status. */
   running: z.object({ agent: InboxAgent, line: z.string(), status: InboxPill }).optional(),
+  /** A finished item: how it ended, such as "Allowed once". A dismissed item shows a cross and dim text. */
+  outcome: z.object({ line: z.string(), dismissed: z.boolean() }).optional(),
 })
 export type InboxRowView = z.infer<typeof InboxRowView>
 
-export const InboxGroupId = z.enum(['needsYou', 'nextSteps', 'snoozed', 'running'])
+export const InboxGroupId = z.enum(['needsYou', 'nextSteps', 'snoozed', 'running', 'today', 'yesterday'])
 export type InboxGroupId = z.infer<typeof InboxGroupId>
 
 export const InboxGroupView = z.object({
@@ -47,6 +49,8 @@ export const InboxGroupView = z.object({
   count: z.number().int().nonnegative(),
   dot: InboxTone.nullable(),
   rows: z.array(InboxRowView),
+  /** With the sort by project: the same rows under a heading per project, in this order. */
+  projects: z.array(z.object({ label: z.string(), rows: z.array(InboxRowView) })).optional(),
 })
 export type InboxGroupView = z.infer<typeof InboxGroupView>
 
@@ -66,6 +70,31 @@ const InboxFilterMenu = z.object({
 })
 export type InboxFilterMenu = z.infer<typeof InboxFilterMenu>
 
+/** The Sort menu: a heading, the choices with what each does, and a note under them. */
+const InboxSortMenu = z.object({
+  heading: z.string(),
+  options: z.array(z.object({ value: z.string(), label: z.string(), description: z.string() })),
+  selected: z.string(),
+  note: z.string(),
+})
+export type InboxSortMenu = z.infer<typeof InboxSortMenu>
+
+/** A search in the list: the query, the line that sums up the results and the hint about matches in Done. */
+const InboxSearch = z.object({
+  query: z.string(),
+  summary: z.string(),
+  more: z.object({ text: z.string(), link: z.string() }),
+})
+
+/** The Snooze menu of the task bar: snooze times, then Mark done and Dismiss. */
+const InboxSnoozeMenu = z.object({
+  heading: z.string(),
+  times: z.array(z.object({ value: z.string(), label: z.string(), time: z.string() })),
+  pick: z.string(),
+  done: z.string(),
+  dismiss: z.string(),
+})
+
 const InboxMetaChip = z.object({ label: z.string(), icon: InboxChipIcon, issue: z.boolean() })
 
 /** What every item's detail starts with: its status bar and its title block. */
@@ -76,6 +105,9 @@ const InboxDetailHead = z.object({
   title: z.string(),
   chips: z.array(InboxMetaChip),
   tags: z.array(z.string()),
+  /** Snooze and Dismiss in the task bar; a finished item has neither. */
+  actions: z.boolean(),
+  snoozeMenu: InboxSnoozeMenu.optional(),
 })
 export type InboxDetailHead = z.infer<typeof InboxDetailHead>
 
@@ -105,13 +137,31 @@ const InboxRunIn = z.object({
 })
 export type InboxRunIn = z.infer<typeof InboxRunIn>
 
+/** A started next step: the chat it runs or ran in, its state and the two ways to open it. */
+const InboxRunCard = z.object({
+  agent: InboxAgent,
+  title: z.string(),
+  status: InboxPill,
+  meta: z.string(),
+  /** The primary button, such as "Reply here" or "Open chat". */
+  open: z.string(),
+  /** The secondary button, such as "Open in Workspaces". */
+  openElsewhere: z.string(),
+})
+export type InboxRunCard = z.infer<typeof InboxRunCard>
+
+/** Before Start: where it will run and the Start button; after: the run card. */
+const InboxLaunch = z.discriminatedUnion('stage', [
+  z.object({ stage: z.literal('suggested'), runIn: InboxRunIn, startLabel: z.string(), startHint: z.string() }),
+  z.object({ stage: z.literal('started'), run: InboxRunCard }),
+])
+
 const InboxNextStep = InboxDetailHead.extend({
   kind: z.literal('next'),
   why: z.string(),
-  prompt: z.object({ text: z.string(), edited: z.boolean(), long: z.boolean() }),
-  runIn: InboxRunIn,
-  startLabel: z.string(),
-  startHint: z.string(),
+  /** A sent prompt is read-only: it has no Reset or Edit. */
+  prompt: z.object({ text: z.string(), edited: z.boolean(), long: z.boolean(), sent: z.boolean() }),
+  launch: InboxLaunch,
   notes: z.object({ text: z.string(), by: z.string(), add: z.string() }).nullable(),
   sources: z.array(z.object({ label: z.string(), detail: z.string() })),
 })
@@ -162,6 +212,10 @@ export const InboxData = z.object({
   countLabel: z.string(),
   filters: z.array(InboxFilterChip),
   sort: z.string(),
+  /** A sort other than the default applies; the Sort button shows it pressed. */
+  sortActive: z.boolean(),
+  sortMenu: InboxSortMenu.optional(),
+  search: InboxSearch.optional(),
   filterMenu: InboxFilterMenu.optional(),
   groups: z.array(InboxGroupView),
   detail: InboxDetailView.nullable(),
@@ -179,6 +233,12 @@ export const InboxUi = z.object({
   editingPrompt: z.boolean(),
   /** The Run in picker is open. */
   pickerOpen: z.boolean(),
+  /** The Sort menu is open. */
+  sortOpen: z.boolean(),
+  /** The Snooze menu of the task bar is open. */
+  snoozeOpen: z.boolean(),
+  /** The whole prompt is open in its dialog. */
+  promptOpen: z.boolean(),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

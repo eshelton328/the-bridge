@@ -1,6 +1,7 @@
-// The suggested prompt of a next step: read-only with Reset and Edit, or in
-// its editor with Reset and Done, an "Edited" pill once changed and a hint
-// under it. A long prompt ends with "Read the whole prompt". Props only.
+// The prompt of a next step: suggested and read-only with Reset and Edit,
+// or in its editor with Reset and Done, an "Edited" pill once changed and a
+// hint under it. A sent prompt has no buttons. A long prompt ends with
+// "Read the whole prompt", which opens it in a dialog. Props only.
 import {
   Badge,
   Button,
@@ -16,6 +17,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
+import { PromptDialog } from './PromptDialog.tsx'
 
 const text = css({ textStyle: 'body', color: 'fg.default' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
@@ -32,24 +34,29 @@ const more = css({
 export type PromptSectionProps = {
   prompt: InboxNextStep['prompt']
   editing: boolean
+  /** The whole prompt is open in its dialog. */
+  open: boolean
 }
 
-export function PromptSection({ prompt, editing }: PromptSectionProps) {
+export function PromptSection({ prompt, editing, open }: PromptSectionProps) {
   return (
     <DetailSection
-      title="Suggested prompt"
+      title={prompt.sent ? 'Sent prompt' : 'Suggested prompt'}
+      figma="section · SUGGESTED PROMPT"
       meta={prompt.edited ? <Badge variant="pill" tone="needsYou" label="Edited" /> : undefined}
       actions={
-        <>
-          <Button size="sm">
-            <ResetIcon />
-            Reset
-          </Button>
-          <Button size="sm">
-            {editing ? <CheckIcon /> : <EditIcon />}
-            {editing ? 'Done' : 'Edit'}
-          </Button>
-        </>
+        prompt.sent ? undefined : (
+          <>
+            <Button size="sm">
+              <ResetIcon />
+              Reset
+            </Button>
+            <Button size="sm">
+              {editing ? <CheckIcon /> : <EditIcon />}
+              {editing ? 'Done' : 'Edit'}
+            </Button>
+          </>
+        )
       }
     >
       {editing ? (
@@ -70,6 +77,7 @@ export function PromptSection({ prompt, editing }: PromptSectionProps) {
               <ChevronRightIcon size="12" />
             </a>
           ) : null}
+          <PromptDialog title="Suggested prompt" text={prompt.text} open={open} />
         </Stack>
       )}
     </DetailSection>

@@ -1,14 +1,18 @@
 // The top of an item's detail: the task bar (status, where it came from,
 // Snooze and Dismiss) and the title block (title, meta chips and tags).
-// Props only.
+// Snooze opens the Snooze menu when the state has one. Props only.
 import {
   Button,
+  CheckIcon,
+  ClockIcon,
   CloseIcon,
   FeatureIcon,
   FileIcon,
   FolderIcon,
   Inline,
   LinearIcon,
+  Menu,
+  type MenuEntry,
   MetaChip,
   SnoozeIcon,
   Stack,
@@ -30,20 +34,47 @@ const chipIcons = {
   file: <FileIcon />,
 } as const satisfies Record<InboxDetailHead['chips'][number]['icon'], ReactNode>
 
-export function DetailHead({ head }: { head: InboxDetailHead }) {
+function SnoozeButton({ head, open }: { head: InboxDetailHead; open: boolean }) {
+  const button = (
+    <Button size="sm" pressed={open ? true : undefined}>
+      <SnoozeIcon />
+      Snooze
+    </Button>
+  )
+  const menu = head.snoozeMenu
+  if (menu === undefined) return button
+  // "Pick a date and time…" has a calendar icon in Figma; the library has none (LIBRARY_GAPS.md).
+  const items: MenuEntry[] = [
+    ...menu.times.map((t) => ({ value: t.value, label: t.label, icon: <ClockIcon />, trailing: t.time })),
+    { value: 'pick', label: menu.pick },
+    { type: 'separator' },
+    { value: 'done', label: menu.done, icon: <CheckIcon /> },
+    { value: 'dismiss', label: menu.dismiss, icon: <CloseIcon />, tone: 'danger' },
+  ]
+  return <Menu trigger={button} open={open} placement="bottom-end" heading={menu.heading} items={items} />
+}
+
+export type DetailHeadProps = {
+  head: InboxDetailHead
+  /** The Snooze menu is open. */
+  snoozeOpen?: boolean | undefined
+}
+
+export function DetailHead({ head, snoozeOpen = false }: DetailHeadProps) {
   return (
     <>
       <Inline gap="8" align="center" data-figma="task bar">
         <StatusPill tone={head.status.tone} label={head.status.label} dot />
         <span className={origin}>{head.origin}</span>
-        <Button size="sm">
-          <SnoozeIcon />
-          Snooze
-        </Button>
-        <Button size="sm">
-          <CloseIcon />
-          Dismiss
-        </Button>
+        {head.actions ? (
+          <>
+            <SnoozeButton head={head} open={snoozeOpen} />
+            <Button size="sm">
+              <CloseIcon />
+              Dismiss
+            </Button>
+          </>
+        ) : null}
       </Inline>
       <Stack gap="10" data-figma="title block">
         <h1 className={title}>{head.title}</h1>

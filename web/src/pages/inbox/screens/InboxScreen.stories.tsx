@@ -76,3 +76,78 @@ export const Running: Story = {
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }
+
+export const RunningTask: Story = {
+  name: 'D6: running, on the task page',
+  args: { data: inboxStates.runningTask.data, ui: inboxStates.runningTask.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Running in quiet-nebula')).toBeVisible()
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Sent prompt' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Edit' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Reply here' })).toBeVisible()
+  },
+}
+
+export const Done: Story = {
+  name: 'D7: done',
+  args: { data: inboxStates.done.data, ui: inboxStates.done.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Dismissed: already done by hand')).toBeVisible()
+    await expect(canvas.getByText('Finished in quiet-nebula')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Open chat' })).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Snooze' })).toBeNull()
+  },
+}
+
+export const PromptRead: Story = {
+  name: 'D8: read the whole prompt',
+  args: { data: inboxStates.promptRead.data, ui: inboxStates.promptRead.ui, viewport: 'desktop' },
+  play: async () => {
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = await within(document.body).findByRole('dialog', { name: 'Suggested prompt' })
+    await expect(within(dialog).getByText('Read only. Edit opens the prompt for changes.')).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Edit prompt' })).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Copy' })).toBeVisible()
+  },
+}
+
+export const SortOpen: Story = {
+  name: 'D9: sort',
+  args: { data: inboxStates.sortOpen.data, ui: inboxStates.sortOpen.ui, viewport: 'desktop' },
+  play: async () => {
+    const menu = await within(document.body).findByRole('menu')
+    await expect(within(menu).getByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
+    await expect(within(menu).getByText('Approvals first, next steps last')).toBeVisible()
+  },
+}
+
+export const Search: Story = {
+  name: 'D10: search',
+  args: { data: inboxStates.search.data, ui: inboxStates.search.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')
+    await expect(canvas.getByText('4 results for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
+    await expect(canvas.queryByText('Commit the brain: 34 changes')).toBeNull()
+    await expect(canvas.getByRole('link', { name: 'Show it' })).toBeVisible()
+  },
+}
+
+export const SortedByProject: Story = {
+  name: 'D11: sorted by project',
+  args: { data: inboxStates.sortedByProject.data, ui: inboxStates.sortedByProject.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Project' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.getByText('skill-evals', { selector: 'div' })).toBeVisible()
+    await expect(canvas.getByText('omni-brain', { selector: 'div' })).toBeVisible()
+  },
+}
+
+export const SnoozeOpen: Story = {
+  name: 'D12: snooze or dismiss',
+  args: { data: inboxStates.snoozeOpen.data, ui: inboxStates.snoozeOpen.ui, viewport: 'desktop' },
+  play: async () => {
+    const menu = await within(document.body).findByRole('menu')
+    await expect(within(menu).getByRole('menuitem', { name: /This evening/ })).toBeVisible()
+    await expect(within(menu).getByRole('menuitem', { name: 'Dismiss with a reason…' })).toBeVisible()
+  },
+}

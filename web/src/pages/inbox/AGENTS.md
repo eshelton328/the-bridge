@@ -10,16 +10,21 @@ detail of the selected item. Figma frames `D*` on the Main page.
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`.
 - `blocks/`: `InboxRow` (one row of a group), `ListTools` and
-  `FilterMenu` (search, Sort, Filter and its menu), `DetailHead`,
-  `DetailSection`, `PromptSection`, `RunInCard` and `RunInPicker`,
-  `NotesBox`, `SourceList`, `ChatEntry` and `InboxStatus` (a pill).
+  `FilterMenu` (search, Sort and its menu, Filter and its menu),
+  `DetailHead` (with the Snooze menu), `DetailSection`, `PromptSection`
+  and `PromptDialog`, `RunInCard` and `RunInPicker`, `RunCard` (a started
+  next step's chat), `NotesBox`, `SourceList`, `ChatEntry` and
+  `InboxStatus` (a pill).
 - `states/`: D1 `nextStep`, D2 `question`, D3 `promptEditing`, D4
-  `filterOpen`, D5 `running`. The others start from `nextStep` and its
-  `nextStepGroups`.
+  `filterOpen`, D5 `running`, D6 `runningTask`, D7 `done`, D8
+  `promptRead`, D9 `sortOpen`, D10 `search`, D11 `sortedByProject`, D12
+  `snoozeOpen`. The others start from `nextStep` and its
+  `nextStepGroups`; D9 to D11 start from `runningTask`.
 - `types.ts`: `InboxData` (what Figma shows; the detail is a union on
-  `kind`) and `InboxUi` (filter, selected id, open groups, and whether
-  the Filter menu, the prompt editor or the Run in picker is open), each
-  a Zod schema.
+  `kind`, and a next step's `launch` a union on `stage`: suggested or
+  started) and `InboxUi` (filter, selected id, open groups, and whether
+  the Filter or Sort menu, the prompt editor or dialog, the Run in
+  picker or the Snooze menu is open), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Inbox frames need that the component
   library cannot draw yet, for the batched library PR.
 

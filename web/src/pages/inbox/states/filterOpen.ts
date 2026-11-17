@@ -89,6 +89,7 @@ export const filterOpen = {
         text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review.',
         edited: false,
         long: false,
+        sent: false,
       },
       notes: null,
     },
