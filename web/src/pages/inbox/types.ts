@@ -17,6 +17,9 @@ const InboxChipIcon = z.enum(['folder', 'feature', 'linear', 'file'])
 /** The agent behind a chat; it picks the kind mark. */
 const InboxAgent = z.enum(['claude', 'codex'])
 
+/** How a finished item ended: done, dismissed, or removed in a discussion. */
+const InboxResult = z.enum(['done', 'dismissed', 'removed'])
+
 /** A status pill: with a dot it is a status ("Needs you"), without one a label ("Recommended"). */
 const InboxPill = z.object({ tone: InboxTone, label: z.string(), dot: z.boolean() })
 export type InboxPill = z.infer<typeof InboxPill>
@@ -39,7 +42,7 @@ export const InboxRowView = z.object({
    * A finished item: how it ended, such as "Allowed once". A dismissed item
    * shows a cross and dim text; a removed one a bin and red text.
    */
-  outcome: z.object({ line: z.string(), result: z.enum(['done', 'dismissed', 'removed']) }).optional(),
+  outcome: z.object({ line: z.string(), result: InboxResult }).optional(),
   /** A pill under the meta line, such as "New" on a task a discussion just created. */
   pill: InboxPill.optional(),
   /** The item's tags, which the Filter menu's tag boxes match. */
@@ -377,8 +380,8 @@ export const InboxUi = z.object({
   filters: z.array(z.string()),
   /** Items Erik snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
   snoozed: z.array(z.object({ id: InboxItemId, until: z.string() })),
-  /** Items Erik marked done from the Snooze menu. */
-  done: z.array(InboxItemId),
+  /** Items Erik finished from the task bar, in Done now: marked done from the Snooze menu, or dismissed. */
+  finished: z.array(z.object({ id: InboxItemId, result: InboxResult.exclude(['removed']) })),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

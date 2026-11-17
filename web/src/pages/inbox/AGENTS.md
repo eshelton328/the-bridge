@@ -9,7 +9,7 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   Erik closed the open item with Back (tablet or phone), the prompt or
   remove dialog, the search text he typed and the rest of what he changed
   in its `ui` (`setUi`: menus, the prompt editor, the sort, the filters,
-  items snoozed or marked done); it passes them to `InboxScreen` with the
+  items snoozed, marked done or dismissed); it passes them to `InboxScreen` with the
   setters, and `onUiChange` reports the `ui` changes.
 - `screens/InboxScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail, the list pane
@@ -19,8 +19,9 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   chat hides. The `viewport` prop applies only until the width is
   measured; `InboxLayout.test.tsx` checks both layouts. `InboxListPane`
   shows the list through `screens/listView.ts` (pure, tested in
-  `listView.test.ts` beside this file): the state's groups less the items snoozed or marked
-  done, then the filters that apply, the search and the sort, with the
+  `listView.test.ts` beside this file): the state's groups less the items snoozed, marked
+  done or dismissed (those two count in Done, and go at the top of Today
+  when the state shows the Done list), then the filters that apply, the search and the sort, with the
   counts that follow. The Filter menu's boxes apply when it closes; the
   Sort, Filter, Snooze and Run in menus open and close by `ui`, and Edit
   and Done open and close the prompt editor. `InboxRoute.test.tsx` uses
@@ -56,13 +57,14 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
   Snooze menus, the Run in picker and the row tags the Filter menu
   matches; a state that shows a menu or a sort only sets its `ui`.
 - `types.ts`: `InboxData` (what Figma shows; the detail is a union on
-  `kind` and carries its item's `id`, which Snooze and Mark done act on
+  `kind` and carries its item's `id`, which Snooze, Mark done and Dismiss act on
   in every layout, even with nothing selected, and a next step's `launch` a union on `stage`: suggested or
   started) and `InboxUi` (filter, selected id, open groups, whether
   the Filter or Sort menu, the prompt editor or dialog, the Run in
   picker, the Snooze menu, the discussion or the remove dialog is open,
-  the sort, the Filter menu's boxes and the filters that apply, and the
-  items snoozed or marked done),
+  the sort, the Filter menu's boxes and the filters that apply, the
+  items snoozed, and the items finished from the task bar, each marked
+  done or dismissed),
   each a Zod schema. `InboxData.discussion` is the open task's discussion;
   its entries are a union on `type`, and a proposal a union on `kind`.
   `InboxDrafts` is the text Erik types in the open item (note, answer,

@@ -43,7 +43,7 @@ export type InboxScreenProps = {
   /**
    * Reports what Erik changes in the view: a menu, the prompt editor or the
    * Run in picker opened or closed, the sort, the filters, or an item
-   * snoozed or marked done. The caller merges it into `ui`.
+   * snoozed, marked done or dismissed. The caller merges it into `ui`.
    */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
 }
@@ -81,17 +81,17 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   )
   // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
   const shown = desktop ? data.detail : open
-  // Snooze or Mark done takes the shown item out of the list, by the id the detail carries: after Back on a tablet
-  // and a resize to the desktop nothing is selected, but the desktop still shows the item. On a tablet or phone the
-  // list shows again. The desktop keeps showing the item, so Erik can pick again: the last pick replaces the earlier
-  // one, and the item is never in the list twice.
-  const snooze = (id: InboxItemId, until: string | null) => {
+  // Snooze, Mark done or Dismiss takes the shown item out of the list, by the id the detail carries: after Back on a
+  // tablet and a resize to the desktop nothing is selected, but the desktop still shows the item. Mark done and
+  // Dismiss put it in Done, with how it ended. On a tablet or phone the list shows again. The desktop keeps showing
+  // the item, so Erik can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
+  const putAway = (id: InboxItemId, to: { until: string } | { result: InboxUi['finished'][number]['result'] }) => {
     const snoozed = ui.snoozed.filter((s) => s.id !== id)
-    const done = ui.done.filter((d) => d !== id)
+    const finished = ui.finished.filter((f) => f.id !== id)
     onUiChange?.(
-      until === null
-        ? { snoozeOpen: false, snoozed, done: [...done, id] }
-        : { snoozeOpen: false, snoozed: [...snoozed, { id, until }], done },
+      'until' in to
+        ? { snoozeOpen: false, snoozed: [...snoozed, { id, until: to.until }], finished }
+        : { snoozeOpen: false, snoozed, finished: [...finished, { id, result: to.result }] },
     )
     onBack?.()
   }
@@ -106,7 +106,10 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onPromptOpenChange={onPromptOpenChange}
         onUiChange={onUiChange}
         onSnooze={(until) => {
-          snooze(shown.id, until)
+          putAway(shown.id, until === null ? { result: 'done' } : { until })
+        }}
+        onDismiss={() => {
+          putAway(shown.id, { result: 'dismissed' })
         }}
         discuss={discussion === undefined ? undefined : { open: discussing }}
         side={

@@ -35,6 +35,8 @@ export type InboxDetailProps = {
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
   /** A snooze time, or `null` for Mark done, picked in the Snooze menu. */
   onSnooze?: ((until: string | null) => void) | undefined
+  /** Dismiss in the task bar. */
+  onDismiss?: (() => void) | undefined
 }
 
 export function InboxDetail({
@@ -48,6 +50,7 @@ export function InboxDetail({
   drafts,
   onUiChange,
   onSnooze,
+  onDismiss,
 }: InboxDetailProps) {
   const back = layout === 'desktop' ? undefined : <BackToInbox onBack={onBack} />
   const snooze = {
@@ -56,6 +59,7 @@ export function InboxDetail({
       onUiChange?.({ snoozeOpen })
     },
     onPick: onSnooze,
+    onDismiss,
   }
   const item = (
     <>

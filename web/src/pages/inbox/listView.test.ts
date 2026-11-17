@@ -2,6 +2,7 @@ import { InboxItemId } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { inboxStates } from './states/index.ts'
 import { allChecks, listView } from './screens/listView.ts'
+import type { InboxGroupView, InboxRowView, InboxUi } from './types.ts'
 
 const { list, runningList, filtered, filterList } = inboxStates
 const titles = (view: ReturnType<typeof listView>, group: string) =>
@@ -99,8 +100,9 @@ describe('listView filters', () => {
   })
 })
 
-describe('listView snooze and done', () => {
+describe('listView snooze, done and dismiss', () => {
   const tickets = InboxItemId.parse('write-the-tickets')
+  const readme = InboxItemId.parse('readme-cross-family-round')
 
   it('moves a snoozed item to Snoozed until its time', () => {
     const view = listView(list.data, { ...list.ui, snoozed: [{ id: tickets, until: '11:40' }] }, '')
@@ -112,10 +114,63 @@ describe('listView snooze and done', () => {
     expect(chip(view, 'next')).toBe(2)
   })
 
-  it('takes out an item marked done', () => {
-    const view = listView(list.data, { ...list.ui, done: [tickets] }, '')
+  it('takes out an item marked done, and counts it in Done', () => {
+    const view = listView(list.data, { ...list.ui, finished: [{ id: tickets, result: 'done' }] }, '')
     expect(titles(view, 'nextSteps')).toHaveLength(2)
     expect(view.groups.find((g) => g.id === 'snoozed')?.count).toBe(1)
     expect(view.count).toBe(6)
+    expect(chip(view, 'done')).toBe(5)
+  })
+
+  it('takes out a dismissed item, and counts it in Done', () => {
+    const view = listView(list.data, { ...list.ui, finished: [{ id: tickets, result: 'dismissed' }] }, '')
+    expect(titles(view, 'nextSteps')).not.toContain('Write the tickets for increment one')
+    expect(view.count).toBe(6)
+    expect(chip(view, 'next')).toBe(2)
+    expect(chip(view, 'done')).toBe(5)
+  })
+
+  it('shows only the Done list under the Done chip, with a Today group for the finished items', () => {
+    const view = listView(
+      list.data,
+      { ...list.ui, filter: 'done', finished: [{ id: tickets, result: 'dismissed' }] },
+      '',
+    )
+    expect(view.groups.map((g) => [g.id, g.count])).toEqual([['today', 1]])
+    expect(view.groups[0]?.rows[0]?.outcome).toEqual({ line: 'Dismissed', result: 'dismissed' })
+    expect(listView(list.data, { ...list.ui, filter: 'done' }, '').groups).toEqual([])
+  })
+
+  it('puts the finished items at the top of Today in the Done list, newest first, with how each ended', () => {
+    const earlier: InboxRowView = {
+      id: InboxItemId.parse('allowed-earlier'),
+      kind: 'approval',
+      title: 'An approval allowed earlier today',
+      meta: 'omni-brain · drift check',
+      age: '11:20',
+      blocks: null,
+      approval: false,
+      outcome: { line: 'Allowed once', result: 'done' },
+    }
+    const today = {
+      id: 'today',
+      label: 'Today',
+      count: 1,
+      dot: null,
+      rows: [earlier],
+    } satisfies InboxGroupView
+    const groups = [...list.data.groups, today]
+    const finished = [
+      { id: tickets, result: 'dismissed' },
+      { id: readme, result: 'done' },
+    ] satisfies InboxUi['finished']
+    const view = listView({ ...list.data, groups }, { ...list.ui, finished }, '')
+    const shown = view.groups.find((g) => g.id === 'today')
+    expect(shown?.count).toBe(3)
+    expect(shown?.rows.map((row) => [row.title, row.outcome])).toEqual([
+      ['Run the readme cross-family round x2', { line: 'Marked done', result: 'done' }],
+      ['Write the tickets for increment one', { line: 'Dismissed', result: 'dismissed' }],
+      ['An approval allowed earlier today', { line: 'Allowed once', result: 'done' }],
+    ])
   })
 })

@@ -1,7 +1,7 @@
 // The Inbox list as Erik sees it: a state's groups after what he did to
-// them (InboxUi): the items he snoozed or marked done taken out, the
+// them (InboxUi): the items he snoozed, marked done or dismissed taken out, the
 // filters that apply, the search and the sort. The counts drop by what the
-// filters and the Snooze menu take out; a search changes only the group
+// filters and the task bar take out; a search changes only the group
 // counts, as Figma D10 and T10 show. Pure functions, no React.
 import type { InboxItemId } from '@bridge/shared'
 import {
@@ -78,24 +78,66 @@ function byProject(rows: readonly InboxRowView[]): { label: string; rows: InboxR
   return labels.map((label) => ({ label, rows: rows.filter((row) => projectOf(row) === label) }))
 }
 
-/** Takes out the snoozed and done items, and puts the snoozed ones in Snoozed, until their time. */
-function putAway(groups: readonly InboxGroupView[], ui: Pick<InboxUi, 'snoozed' | 'done'>): InboxGroupView[] {
-  const gone = new Set<InboxItemId>([...ui.done, ...ui.snoozed.map((s) => s.id)])
+/** The outcome line of an item Erik finished from the task bar; the Done list shows it under the title. */
+const finishedLine = { done: 'Marked done', dismissed: 'Dismissed' } as const satisfies Record<
+  InboxUi['finished'][number]['result'],
+  string
+>
+
+/**
+ * The rows Erik finished from the task bar, with how each ended, newest
+ * first, as the Done list shows them.
+ */
+function finishedRows(groups: readonly InboxGroupView[], finished: InboxUi['finished']): InboxRowView[] {
+  const all = groups.flatMap((group) => group.rows)
+  return finished
+    .toReversed()
+    .flatMap(({ id, result }) =>
+      all.filter((row) => row.id === id).map((row) => ({ ...row, outcome: { line: finishedLine[result], result } })),
+    )
+}
+
+/**
+ * Takes out the snoozed and finished items, puts the snoozed ones in
+ * Snoozed, until their time, and the finished ones at the top of Today,
+ * when the state shows the Done list.
+ */
+function putAway(groups: readonly InboxGroupView[], ui: Pick<InboxUi, 'snoozed' | 'finished'>): InboxGroupView[] {
+  const gone = new Set<InboxItemId>([...ui.finished.map((f) => f.id), ...ui.snoozed.map((s) => s.id)])
   const all = groups.flatMap((group) => group.rows)
   const snoozedRows = ui.snoozed.flatMap(({ id, until }) =>
     all
       .filter((row) => row.id === id)
       .map((row) => ({ ...row, snoozed: { line: `Snoozed until ${until}`, age: `until ${until}` } })),
   )
+  const doneRows = finishedRows(groups, ui.finished)
   return groups.map((group) => {
     const rows = group.rows.filter((row) => !gone.has(row.id))
-    const added = group.id === 'snoozed' ? snoozedRows : []
+    const before = group.id === 'today' ? doneRows : []
+    const after = group.id === 'snoozed' ? snoozedRows : []
     return {
       ...group,
-      count: group.count - (group.rows.length - rows.length) + added.length,
-      rows: [...rows, ...added],
+      count: group.count - (group.rows.length - rows.length) + before.length + after.length,
+      rows: [...before, ...rows, ...after],
     }
   })
+}
+
+/** The groups of the Done list: finished tasks by day. */
+const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
+
+/**
+ * The groups the selected chip shows. Done shows only the Done list (All
+ * means every open task, not Done; D7 and T7 notes), with the items Erik
+ * finished from the task bar in Today, which it adds when the state has
+ * none. The other chips show the state's groups.
+ */
+function chipView(data: InboxData, groups: readonly InboxGroupView[], ui: InboxUi): readonly InboxGroupView[] {
+  if (ui.filter !== 'done') return groups
+  const days = groups.filter((group) => doneDays.includes(group.id))
+  const rows = finishedRows(data.groups, ui.finished)
+  if (rows.length === 0 || days.some((group) => group.id === 'today')) return days
+  return [{ id: 'today', label: 'Today', count: rows.length, dot: null, rows }, ...days]
 }
 
 /** How many rows of the groups `ids` the state has and `after` does not show with `keep`. */
@@ -119,7 +161,7 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const hidden = less(groups, groups, keep, counted)
   const drafted = appliedSections(data.filterMenu, ui.filterChecks)
   const searching = query.trim() !== ''
-  const shown = groups.flatMap((group) => {
+  const shown = chipView(data, groups, ui).flatMap((group) => {
     const rows = group.rows.filter((row) => keep(row) && matches(row, query))
     if (searching && rows.length === 0) return []
     const sorted = sortRows(rows, ui.sort)
@@ -135,6 +177,8 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const chipLess = (value: string): number => {
     const id = chipGroups[value]
     if (value === 'all') return removed + hidden
+    // Done gains the items Erik finished from the task bar.
+    if (value === 'done') return -finishedRows(data.groups, ui.finished).length
     return id === undefined ? 0 : less(data.groups, groups, keep, [id])
   }
   return {
