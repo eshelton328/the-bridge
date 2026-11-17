@@ -69,7 +69,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Beta.9 (2026-11-17).** Library 1.0.0-beta.9 (#110, #111) gives the
   Filter menu an opaque fill: `Popover surface="raised"`
   (`surface.raised`, #17213a, Figma's; was `surface.overlay`, alpha
-  0.98). No layer of this frame moved.
+  0.98). No layer of this frame moved. On `surface.raised`, `fg.subtle`
+  is 4.39:1, below WCAG AA (d-055), so the counts are `fg.muted`
+  (#8a97b8), brighter than Figma's #4a5675.
 
 ## Second review
 
