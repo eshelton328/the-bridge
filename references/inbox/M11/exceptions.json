@@ -9,6 +9,11 @@
       "text": "Working",
       "layers": ["346:11301"],
       "reason": "Figma draws the Running row's Working pill under the tab bar too: layer 346:11301 sits at y 757, and the tab bar starts at y 767, so frame.png shows part of it. The render scrolls the list under the tab bar the same way."
+    },
+    {
+      "text": "ncc-1701 · f-005 · NCC-28",
+      "layers": ["346:11292"],
+      "reason": "The Running row's subtitle (346:11292, y 755 to 769) runs 2 px under the tab bar (346:11303, from y 767), so Figma does not show it in full; in the render it lies under the tab bar too, where the list scrolls."
     }
   ],
   "rules": [

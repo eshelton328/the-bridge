@@ -8,14 +8,15 @@ the installed library 1.0.0-beta.5, which has #104 to #106), each with its reaso
 
 ## Checks
 
-- Text: pass (51 strings checked).
+- Text: fail (51 strings checked; 0 Figma strings under exceptions.json). Not shown: `SNOOZED`, `1`.
 - Position: 5 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
-- Rules: pass (1 findings under exceptions.json).
+- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 38 px
-shorter, below Figma's status bar, and adds 38 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 38 px
+shorter, below Figma's status bar (d-102), and the position check adds
+38 to each render y (d-101).
 
 - `inbox list`: x +0, y +0, w +0, h +19.
 - `group · NEXT STEPS`: x +0, y +16, w +0, h +4.
@@ -25,8 +26,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 38 px shorter and adds
-  38 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 38 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 38 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
@@ -70,6 +72,13 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
   control that does nothing (`InboxRoute.test.tsx`).
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square
   as in Figma (346:9036, 346:9041).
+- **Below the fold.** The checks render 806 px high, the screen below
+  the status bar (d-102). The taller rows and group headers make the list
+  19 px taller than Figma's (`inbox list` h +19), so it scrolls
+  (`hiddenOverflow` on `main.app-shell__detail`) where Figma's fits, and
+  the Snoozed header (`SNOOZED` and its count `1`), which Figma shows
+  just above the tab bar, lies under it. The text and rules checks fail
+  on it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
 - **Button labels.** Button labels are 14 px (`label`) here;
   Figma sets small buttons in Medium 12 or 13, which no text style has
   (d-050). `Button textSize="sm"` (Medium 13, #105) serves only the

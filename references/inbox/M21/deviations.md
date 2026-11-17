@@ -7,14 +7,15 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (21 strings checked, 2 excepted in `exceptions.json`).
+- Text: pass (21 strings checked; 2 Figma strings under exceptions.json).
 - Position: 2 of 10 layers pass (`nav`, `chevron · open task`).
-- Rules: pass (1 finding under exceptions.json).
+- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 38 px
-shorter, below Figma's status bar, and adds 38 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 38 px
+shorter, below Figma's status bar (d-102), and the position check adds
+38 to each render y (d-101).
 
 - `task · discussing`: x +0, y -1, w +0, h +12.
 - `model and context`: x +4, y +3, w +9.6, h +4.
@@ -29,8 +30,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 38 px shorter and adds
-  38 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 38 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 38 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
@@ -98,6 +100,13 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
   the box at 16 and the row at 32, so it would not make the box
   shorter, and its 12 px label is as far from Figma's 13 as `body` 14
   is; the boxes keep `body`.
+- **Page taller than the screen.** The checks render 806 px high, the
+  screen below the status bar (d-102). There the page is 30 px taller
+  than the screen, as the Page fits entry says, so it scrolls
+  (`hiddenOverflow` on `main.app-shell__detail`) where Figma's fits: the
+  task card and the proposal run taller than Figma's (`task · discussing`
+  h +12, `proposal · CREATE 3 TASKS` h +60, for the reasons above). The
+  rules check fails on it until those parts take Figma's heights.
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.

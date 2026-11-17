@@ -7,14 +7,15 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (48 strings checked, 17 excepted in `exceptions.json`).
+- Text: pass (48 strings checked; 17 Figma strings under exceptions.json).
 - Position: 6 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
-- Rules: pass (1 findings under exceptions.json).
+- Rules: fail: `hiddenOverflow` on `main.app-shell__detail` (1 other findings under exceptions.json).
 
 ## Failing layers
 
-Render minus Figma, in px. The position check renders the page 38 px
-shorter, below Figma's status bar, and adds 38 to each render y (d-101).
+Render minus Figma, in px. All three checks render the page 38 px
+shorter, below Figma's status bar (d-102), and the position check adds
+38 to each render y (d-101).
 
 - `group · SNOOZED`: x +0, y +22, w +0, h +4.
 - `toast · created`: x -4, y +3, w +8, h +0.
@@ -23,8 +24,9 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
 
 - **Status bar.** Figma draws a 38 px status bar (9:41) at the top of
   the frame; the app has none (d-089: device chrome belongs to the
-  canvas). The position check renders the page 38 px shorter and adds
-  38 to each render y (d-101), so a layer anchored to the top or to the
+  canvas). All three checks render the page 38 px shorter (d-102),
+  so text under its bottom edge counts as not shown, and the position
+  check adds 38 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
@@ -63,6 +65,11 @@ shorter, below Figma's status bar, and adds 38 to each render y (d-101).
   It used to follow the last group, 47 above the tab bar. The new tasks
   come from the discussion's proposal applied in the state's `ui`, so
   Undo takes them out (`InboxRoute.test.tsx`).
+- **List 3 px too tall.** The checks render 806 px high (d-102). The
+  taller rows and group headers make the list 3 px taller than the screen
+  above the tab bar, so it scrolls (`hiddenOverflow` on
+  `main.app-shell__detail`) where Figma's fits. The rules check fails on
+  it until the library rows and group headers take Figma's heights (Library gap: Small text in the detail).
 - **Button labels.** Button labels are 14 px (`label`) at every size;
   Figma sets small buttons in Medium 12 or 13, so the buttons are a
   little wider. Library gap: Button label size.
