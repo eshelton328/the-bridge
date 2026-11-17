@@ -19,7 +19,7 @@ import type { InboxRunning } from '../types.ts'
 
 const fill = css({ flex: '1' })
 const title = css({ textStyle: 'subtitle', m: '0', flex: '1' })
-const meta = css({ textStyle: 'mono', color: 'fg.muted', flex: '1' })
+const meta = css({ textStyle: 'monoSm', color: 'fg.muted', flex: '1' })
 
 export function RunningDetail({ detail }: { detail: InboxRunning }) {
   return (

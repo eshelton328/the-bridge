@@ -22,6 +22,7 @@ export function RunInPicker({ picker }: { picker: NonNullable<InboxRunIn['picker
         <PopoverSection key={section.label} label={section.label}>
           <OptionList
             label={section.label}
+            size="sm"
             descriptionStyle="mono"
             selectedFill
             value={section.choices.some((c) => c.value === picker.selected) ? picker.selected : null}

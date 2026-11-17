@@ -1,8 +1,8 @@
 # D09 deviations
 
-What still differs from Figma after round 5 of the fidelity loop
+What still differs from Figma after round 6 of the fidelity loop
 (`pnpm fidelity inbox D09`, 2026-11-16, against the installed
-library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library gaps are in
+library 1.0.0-beta.3, which has #97 to #102), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -21,14 +21,17 @@ library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library 
   about half the offset of the 14 px rows.
 - **Group headers.** 38 px high against Figma's 34 (`h +4` on each group
   header): the library's `GroupHeader` after the 4 px grid (#96).
-- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99), as
+- **Detail text.** WHY and the prompt use `bodySm` (13/20, #99; WHY through
+  `MarkdownView size="sm" padding="none"`, #102), as
   Figma's WHY (346:354 in D1) does, so WHY fits on one line. Figma's
   prompt lines are 21 px apart; `bodySm` keeps 20 (4 px grid). The
   prompt's five lines hold all of it, so it does not fade where Figma
   fades its fifth line (`section · SUGGESTED PROMPT` h +7).
-  The mono lines in the detail (the task bar, the chips, the run line)
-  stay in `mono` (12 px) against Figma's 11; this round changed only
-  the body text.
+  The mono lines in the detail (the task bar, the chips, the tags, the
+  run line, the note's author and the source details) use `monoSm`
+  (11/16, #102), Figma's 11 px; `MetaChip` and `TagsLine` take
+  `size="sm"`. Their line boxes stay 16 px against Figma's 14 (4 px
+  grid), so no layer moved.
 - **Section gaps.** Sections are 24 px apart against Figma's 22; 22 has
   no spacing token and ties go to the larger (d-072).
 - **Detail inset.** The column starts at x 524 instead of 520 (`Container
@@ -50,8 +53,9 @@ library 1.0.0-beta.2, which has #97 to #101), each with its reason. The library 
 
 ## Second review
 
-Rounds 4 and 5 had no new second review: round 4 changed only the row
-and body text sizes, and round 5 only put in the #101 parts; the checks
+Rounds 4 to 6 had no new second review: round 4 changed only the row
+and body text sizes, round 5 only put in the #101 parts and round 6
+only the #102 small sizes; the checks
 above measure those. The findings below are from
 the earlier rounds; those about taller rows and wider detail text are
 now smaller (see "List row heights" and "Detail text").

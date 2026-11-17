@@ -5,7 +5,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { InboxNextStep } from '../types.ts'
 
 const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
-const by = css({ textStyle: 'mono', color: 'fg.muted' })
+const by = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
 export function NotesBox({ notes }: { notes: NonNullable<InboxNextStep['notes']> }) {
   return (
