@@ -1,0 +1,1118 @@
+{
+  "frameId": "M40",
+  "code": "M40",
+  "name": "M40 · How an agent works",
+  "node": "495:3209",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "495:3232",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "495:3233",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "495:3234",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "495:3235",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "495:3236",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3237",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "495:3238",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "495:3240",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "495:3241",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:54",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:55",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "495:3242",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "495:3243",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "495:3248",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 208,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3249",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 70,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:9013",
+      "name": "icon/agent",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "495:3253",
+      "name": "Agent",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 33,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Agent"
+    },
+    {
+      "id": "495:3254",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 90,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "495:3255",
+      "name": "writing-reviewer",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 221,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "writing-reviewer"
+    },
+    {
+      "id": "495:3256",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 299,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3257",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "495:3260",
+      "name": "toolkit/agents/writing-reviewer.md",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 245,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/agents/writing-reviewer.md"
+    },
+    {
+      "id": "495:3261",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 290,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "495:3382",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3383",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 218,
+      "w": 82,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3384",
+      "name": "Overview",
+      "type": "text",
+      "x": 22,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "495:3385",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 98,
+      "y": 217,
+      "w": 107,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3386",
+      "name": "How it works",
+      "type": "text",
+      "x": 109,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "495:3387",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 209,
+      "y": 218,
+      "w": 51,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3388",
+      "name": "Files",
+      "type": "text",
+      "x": 219,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "495:3389",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3390",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "495:3391",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3392",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "495:3393",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "495:3394",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "495:3395",
+      "name": "trigger",
+      "type": "frame",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 48,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3396",
+      "name": "Loads when a task writes text that anoth",
+      "type": "text",
+      "x": 23,
+      "y": 268,
+      "w": 344,
+      "h": 34,
+      "path": "content > toolkit > trigger",
+      "text": "Starts when step 7 of the writer skill runs it, or when a task asks to review a draft."
+    },
+    {
+      "id": "495:3397",
+      "name": "steps",
+      "type": "frame",
+      "x": 12,
+      "y": 321,
+      "w": 366,
+      "h": 384,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "495:3398",
+      "name": "step 1",
+      "type": "frame",
+      "x": 12,
+      "y": 321,
+      "w": 366,
+      "h": 105,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3399",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 331,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 1"
+    },
+    {
+      "id": "495:3400",
+      "name": "1",
+      "type": "text",
+      "x": 33,
+      "y": 332,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 1 > num",
+      "text": "1"
+    },
+    {
+      "id": "495:3401",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 331,
+      "w": 306,
+      "h": 85,
+      "path": "content > toolkit > steps > step 1"
+    },
+    {
+      "id": "495:3402",
+      "name": "Run the lint",
+      "type": "text",
+      "x": 59,
+      "y": 331,
+      "w": 76,
+      "h": 20,
+      "path": "content > toolkit > steps > step 1 > text",
+      "text": "Run the lint"
+    },
+    {
+      "id": "495:3403",
+      "name": "Each fail is a lead for W1. Read the sentence to confirm it.",
+      "type": "text",
+      "x": 59,
+      "y": 355,
+      "w": 306,
+      "h": 34,
+      "path": "content > toolkit > steps > step 1 > text",
+      "text": "Each fail is a lead for W1. Read the sentence to confirm it."
+    },
+    {
+      "id": "495:3508",
+      "name": "uses",
+      "type": "frame",
+      "x": 59,
+      "y": 393,
+      "w": 306,
+      "h": 23,
+      "path": "content > toolkit > steps > step 1 > text"
+    },
+    {
+      "id": "495:3519",
+      "name": "uses · writer/scripts/check",
+      "type": "frame",
+      "x": 59,
+      "y": 393,
+      "w": 174,
+      "h": 23,
+      "path": "content > toolkit > steps > step 1 > text > uses"
+    },
+    {
+      "id": "495:3953",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 66,
+      "y": 399,
+      "w": 11,
+      "h": 11,
+      "path": "content > toolkit > steps > step 1 > text > uses > uses · writer/scripts/check"
+    },
+    {
+      "id": "495:3523",
+      "name": "writer/scripts/check",
+      "type": "text",
+      "x": 82,
+      "y": 396,
+      "w": 144,
+      "h": 17,
+      "path": "content > toolkit > steps > step 1 > text > uses > uses · writer/scripts/check",
+      "text": "writer/scripts/check"
+    },
+    {
+      "id": "495:3404",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 426,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3405",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 427,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3407",
+      "name": "step 2",
+      "type": "frame",
+      "x": 12,
+      "y": 440,
+      "w": 366,
+      "h": 88,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3408",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 450,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 2"
+    },
+    {
+      "id": "495:3409",
+      "name": "2",
+      "type": "text",
+      "x": 33,
+      "y": 451,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 2 > num",
+      "text": "2"
+    },
+    {
+      "id": "495:3410",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 450,
+      "w": 306,
+      "h": 68,
+      "path": "content > toolkit > steps > step 2"
+    },
+    {
+      "id": "495:3411",
+      "name": "Read the form",
+      "type": "text",
+      "x": 59,
+      "y": 450,
+      "w": 94,
+      "h": 20,
+      "path": "content > toolkit > steps > step 2 > text",
+      "text": "Read the form"
+    },
+    {
+      "id": "495:3412",
+      "name": "The reference for the form, in the writer skill.",
+      "type": "text",
+      "x": 59,
+      "y": 474,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 2 > text",
+      "text": "The reference for the form, in the writer skill."
+    },
+    {
+      "id": "495:3413",
+      "name": "uses",
+      "type": "frame",
+      "x": 59,
+      "y": 495,
+      "w": 306,
+      "h": 23,
+      "path": "content > toolkit > steps > step 2 > text"
+    },
+    {
+      "id": "495:3524",
+      "name": "uses · references/<form>.md",
+      "type": "frame",
+      "x": 59,
+      "y": 495,
+      "w": 174,
+      "h": 23,
+      "path": "content > toolkit > steps > step 2 > text > uses"
+    },
+    {
+      "id": "495:3955",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 66,
+      "y": 501,
+      "w": 11,
+      "h": 11,
+      "path": "content > toolkit > steps > step 2 > text > uses > uses · references/<form>.md"
+    },
+    {
+      "id": "495:3528",
+      "name": "references/<form>.md",
+      "type": "text",
+      "x": 82,
+      "y": 498,
+      "w": 144,
+      "h": 17,
+      "path": "content > toolkit > steps > step 2 > text > uses > uses · references/<form>.md",
+      "text": "references/<form>.md"
+    },
+    {
+      "id": "495:3424",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 528,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3425",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 529,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3427",
+      "name": "step 3",
+      "type": "frame",
+      "x": 12,
+      "y": 542,
+      "w": 366,
+      "h": 88,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3428",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 552,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 3"
+    },
+    {
+      "id": "495:3429",
+      "name": "3",
+      "type": "text",
+      "x": 33,
+      "y": 553,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > num",
+      "text": "3"
+    },
+    {
+      "id": "495:3430",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 552,
+      "w": 306,
+      "h": 68,
+      "path": "content > toolkit > steps > step 3"
+    },
+    {
+      "id": "495:3431",
+      "name": "Check each claim",
+      "type": "text",
+      "x": 59,
+      "y": 552,
+      "w": 117,
+      "h": 20,
+      "path": "content > toolkit > steps > step 3 > text",
+      "text": "Check each claim"
+    },
+    {
+      "id": "495:3432",
+      "name": "A source for each claim, read in this se",
+      "type": "text",
+      "x": 59,
+      "y": 576,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > text",
+      "text": "Find each claim in a source or in the repo."
+    },
+    {
+      "id": "495:3529",
+      "name": "uses",
+      "type": "frame",
+      "x": 59,
+      "y": 597,
+      "w": 306,
+      "h": 23,
+      "path": "content > toolkit > steps > step 3 > text"
+    },
+    {
+      "id": "495:3540",
+      "name": "uses · ls, grep, git ls-files",
+      "type": "frame",
+      "x": 59,
+      "y": 597,
+      "w": 189,
+      "h": 23,
+      "path": "content > toolkit > steps > step 3 > text > uses"
+    },
+    {
+      "id": "495:3958",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 66,
+      "y": 603,
+      "w": 11,
+      "h": 11,
+      "path": "content > toolkit > steps > step 3 > text > uses > uses · ls, grep, git ls-files"
+    },
+    {
+      "id": "495:3544",
+      "name": "ls, grep, git ls-files",
+      "type": "text",
+      "x": 82,
+      "y": 600,
+      "w": 159,
+      "h": 17,
+      "path": "content > toolkit > steps > step 3 > text > uses > uses · ls, grep, git ls-files",
+      "text": "ls, grep, git ls-files"
+    },
+    {
+      "id": "495:3433",
+      "name": "arrow",
+      "type": "frame",
+      "x": 189,
+      "y": 630,
+      "w": 12,
+      "h": 14,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3434",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 189,
+      "y": 631,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > steps > arrow"
+    },
+    {
+      "id": "495:3436",
+      "name": "step 4",
+      "type": "frame",
+      "x": 12,
+      "y": 644,
+      "w": 366,
+      "h": 61,
+      "path": "content > toolkit > steps"
+    },
+    {
+      "id": "495:3437",
+      "name": "num",
+      "type": "frame",
+      "x": 25,
+      "y": 654,
+      "w": 24,
+      "h": 19,
+      "path": "content > toolkit > steps > step 4"
+    },
+    {
+      "id": "495:3438",
+      "name": "4",
+      "type": "text",
+      "x": 33,
+      "y": 655,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > steps > step 4 > num",
+      "text": "4"
+    },
+    {
+      "id": "495:3439",
+      "name": "text",
+      "type": "frame",
+      "x": 59,
+      "y": 654,
+      "w": 306,
+      "h": 41,
+      "path": "content > toolkit > steps > step 4"
+    },
+    {
+      "id": "495:3440",
+      "name": "Grade W1 to W7",
+      "type": "text",
+      "x": 59,
+      "y": 654,
+      "w": 104,
+      "h": 20,
+      "path": "content > toolkit > steps > step 4 > text",
+      "text": "Grade W1 to W7"
+    },
+    {
+      "id": "495:3441",
+      "name": "The first sentence gives the reader what",
+      "type": "text",
+      "x": 59,
+      "y": 678,
+      "w": 306,
+      "h": 17,
+      "path": "content > toolkit > steps > step 4 > text",
+      "text": "PASS, FAIL or NA for each, returned as JSON."
+    },
+    {
+      "id": "495:3341",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "495:3342",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3343",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "495:3344",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "495:3347",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "495:3348",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3349",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "495:3350",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "495:3354",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "495:3355",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "495:3356",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "495:3357",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3358",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "495:3359",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "495:3365",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "495:3366",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3367",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "495:3368",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "495:3371",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "495:3372",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "495:3373",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "495:3374",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "495:3379",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "495:3380",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "495:3381",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "495:3233",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

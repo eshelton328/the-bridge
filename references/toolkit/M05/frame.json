@@ -1,0 +1,1219 @@
+{
+  "frameId": "M05",
+  "code": "M5",
+  "name": "M5 · Files",
+  "node": "435:6",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "435:29",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "435:30",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "435:31",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "435:32",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "435:203",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "435:204",
+      "name": "back · writer",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "435:205",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · writer"
+    },
+    {
+      "id": "435:207",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · writer",
+      "text": "Toolkit"
+    },
+    {
+      "id": "435:208",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 151,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "435:199",
+      "name": "button · copy",
+      "type": "frame",
+      "x": 254,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "435:200",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 263.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · copy"
+    },
+    {
+      "id": "496:82",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:83",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "496:85",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:86",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "435:209",
+      "name": "title",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 80,
+      "h": 41,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "435:210",
+      "name": "writer",
+      "type": "text",
+      "x": 12,
+      "y": 90,
+      "w": 80,
+      "h": 41,
+      "path": "content > toolkit > title",
+      "text": "writer"
+    },
+    {
+      "id": "464:539",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 143,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "480:294",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 144,
+      "w": 82,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:295",
+      "name": "Overview",
+      "type": "text",
+      "x": 22,
+      "y": 149,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "480:296",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 98,
+      "y": 144,
+      "w": 105,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:297",
+      "name": "How it works",
+      "type": "text",
+      "x": 108,
+      "y": 149,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "480:298",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 207,
+      "y": 143,
+      "w": 53,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:299",
+      "name": "Files",
+      "type": "text",
+      "x": 218,
+      "y": 149,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "480:300",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 144,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:301",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 149,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "480:302",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 144,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:303",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 149,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "480:304",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 144,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "480:305",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 149,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "435:212",
+      "name": "toolkit/skills/writer/",
+      "type": "text",
+      "x": 12,
+      "y": 187,
+      "w": 159,
+      "h": 17,
+      "path": "content > toolkit",
+      "text": "toolkit/skills/writer/"
+    },
+    {
+      "id": "435:213",
+      "name": "tree",
+      "type": "frame",
+      "x": 12,
+      "y": 216,
+      "w": 366,
+      "h": 366,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "435:214",
+      "name": "tree · SKILL.md",
+      "type": "frame",
+      "x": 13,
+      "y": 217,
+      "w": 364,
+      "h": 54,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:215",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 25,
+      "y": 236,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · SKILL.md"
+    },
+    {
+      "id": "435:218",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 227,
+      "w": 138,
+      "h": 34,
+      "path": "content > toolkit > tree > tree · SKILL.md"
+    },
+    {
+      "id": "435:219",
+      "name": "SKILL.md",
+      "type": "text",
+      "x": 51,
+      "y": 227,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · SKILL.md > text",
+      "text": "SKILL.md"
+    },
+    {
+      "id": "435:220",
+      "name": "When to use, steps, rules",
+      "type": "text",
+      "x": 51,
+      "y": 244,
+      "w": 138,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · SKILL.md > text",
+      "text": "When to use, steps, rules"
+    },
+    {
+      "id": "435:221",
+      "name": "spacer",
+      "type": "frame",
+      "x": 199,
+      "y": 243.5,
+      "w": 142,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · SKILL.md"
+    },
+    {
+      "id": "435:222",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 351,
+      "y": 237,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · SKILL.md"
+    },
+    {
+      "id": "435:224",
+      "name": "tree · references/",
+      "type": "frame",
+      "x": 13,
+      "y": 271,
+      "w": 364,
+      "h": 54,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:225",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 290,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · references/"
+    },
+    {
+      "id": "435:227",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 281,
+      "w": 93,
+      "h": 34,
+      "path": "content > toolkit > tree > tree · references/"
+    },
+    {
+      "id": "435:228",
+      "name": "references/",
+      "type": "text",
+      "x": 51,
+      "y": 281,
+      "w": 80,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · references/ > text",
+      "text": "references/"
+    },
+    {
+      "id": "435:229",
+      "name": "Read on demand",
+      "type": "text",
+      "x": 51,
+      "y": 298,
+      "w": 93,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · references/ > text",
+      "text": "Read on demand"
+    },
+    {
+      "id": "435:230",
+      "name": "spacer",
+      "type": "frame",
+      "x": 154,
+      "y": 297.5,
+      "w": 169,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · references/"
+    },
+    {
+      "id": "435:231",
+      "name": "6",
+      "type": "text",
+      "x": 333,
+      "y": 289.5,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · references/",
+      "text": "6"
+    },
+    {
+      "id": "435:232",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 351,
+      "y": 291,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · references/"
+    },
+    {
+      "id": "435:234",
+      "name": "tree · scripts/",
+      "type": "frame",
+      "x": 13,
+      "y": 325,
+      "w": 364,
+      "h": 54,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:235",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 344,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · scripts/"
+    },
+    {
+      "id": "435:237",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 335,
+      "w": 73,
+      "h": 34,
+      "path": "content > toolkit > tree > tree · scripts/"
+    },
+    {
+      "id": "435:238",
+      "name": "scripts/",
+      "type": "text",
+      "x": 51,
+      "y": 335,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · scripts/ > text",
+      "text": "scripts/"
+    },
+    {
+      "id": "435:239",
+      "name": "Run, not read",
+      "type": "text",
+      "x": 51,
+      "y": 352,
+      "w": 73,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · scripts/ > text",
+      "text": "Run, not read"
+    },
+    {
+      "id": "435:240",
+      "name": "spacer",
+      "type": "frame",
+      "x": 134,
+      "y": 351.5,
+      "w": 189,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · scripts/"
+    },
+    {
+      "id": "435:241",
+      "name": "4",
+      "type": "text",
+      "x": 333,
+      "y": 343.5,
+      "w": 8,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · scripts/",
+      "text": "4"
+    },
+    {
+      "id": "435:242",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 351,
+      "y": 345,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · scripts/"
+    },
+    {
+      "id": "435:244",
+      "name": "tree · check",
+      "type": "frame",
+      "x": 13,
+      "y": 379,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:245",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 25,
+      "y": 389.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · check"
+    },
+    {
+      "id": "435:247",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 389,
+      "w": 36,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · check"
+    },
+    {
+      "id": "435:248",
+      "name": "check",
+      "type": "text",
+      "x": 51,
+      "y": 389,
+      "w": 36,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · check > text",
+      "text": "check"
+    },
+    {
+      "id": "435:249",
+      "name": "spacer",
+      "type": "frame",
+      "x": 97,
+      "y": 397,
+      "w": 143,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · check"
+    },
+    {
+      "id": "435:250",
+      "name": "437 lines",
+      "type": "text",
+      "x": 250,
+      "y": 389,
+      "w": 65,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · check",
+      "text": "437 lines"
+    },
+    {
+      "id": "435:251",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 325,
+      "y": 390.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · check"
+    },
+    {
+      "id": "435:253",
+      "name": "tree · ste-dict",
+      "type": "frame",
+      "x": 13,
+      "y": 416,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:254",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 25,
+      "y": 426.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · ste-dict"
+    },
+    {
+      "id": "435:256",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 426,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-dict"
+    },
+    {
+      "id": "435:257",
+      "name": "ste-dict",
+      "type": "text",
+      "x": 51,
+      "y": 426,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-dict > text",
+      "text": "ste-dict"
+    },
+    {
+      "id": "435:258",
+      "name": "spacer",
+      "type": "frame",
+      "x": 119,
+      "y": 434,
+      "w": 128,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · ste-dict"
+    },
+    {
+      "id": "435:259",
+      "name": "96 lines",
+      "type": "text",
+      "x": 257,
+      "y": 426,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-dict",
+      "text": "96 lines"
+    },
+    {
+      "id": "435:260",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 325,
+      "y": 427.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · ste-dict"
+    },
+    {
+      "id": "435:262",
+      "name": "tree · ste-stop-hook",
+      "type": "frame",
+      "x": 13,
+      "y": 453,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:263",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 25,
+      "y": 463.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · ste-stop-hook"
+    },
+    {
+      "id": "435:265",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 463,
+      "w": 94,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-stop-hook"
+    },
+    {
+      "id": "435:266",
+      "name": "ste-stop-hook",
+      "type": "text",
+      "x": 51,
+      "y": 463,
+      "w": 94,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-stop-hook > text",
+      "text": "ste-stop-hook"
+    },
+    {
+      "id": "435:267",
+      "name": "spacer",
+      "type": "frame",
+      "x": 155,
+      "y": 471,
+      "w": 92,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · ste-stop-hook"
+    },
+    {
+      "id": "435:268",
+      "name": "69 lines",
+      "type": "text",
+      "x": 257,
+      "y": 463,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · ste-stop-hook",
+      "text": "69 lines"
+    },
+    {
+      "id": "435:269",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 325,
+      "y": 464.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · ste-stop-hook"
+    },
+    {
+      "id": "435:271",
+      "name": "tree · test-check",
+      "type": "frame",
+      "x": 13,
+      "y": 490,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:272",
+      "name": "icon/code",
+      "type": "frame",
+      "x": 25,
+      "y": 500.5,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · test-check"
+    },
+    {
+      "id": "435:274",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 500,
+      "w": 72,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · test-check"
+    },
+    {
+      "id": "435:275",
+      "name": "test-check",
+      "type": "text",
+      "x": 51,
+      "y": 500,
+      "w": 72,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · test-check > text",
+      "text": "test-check"
+    },
+    {
+      "id": "435:276",
+      "name": "spacer",
+      "type": "frame",
+      "x": 133,
+      "y": 508,
+      "w": 107,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · test-check"
+    },
+    {
+      "id": "435:277",
+      "name": "133 lines",
+      "type": "text",
+      "x": 250,
+      "y": 500,
+      "w": 65,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · test-check",
+      "text": "133 lines"
+    },
+    {
+      "id": "435:278",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 325,
+      "y": 501.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · test-check"
+    },
+    {
+      "id": "435:280",
+      "name": "tree · evals/",
+      "type": "frame",
+      "x": 13,
+      "y": 527,
+      "w": 364,
+      "h": 54,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "435:281",
+      "name": "icon/folder",
+      "type": "frame",
+      "x": 25,
+      "y": 546,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · evals/"
+    },
+    {
+      "id": "435:283",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 537,
+      "w": 152,
+      "h": 34,
+      "path": "content > toolkit > tree > tree · evals/"
+    },
+    {
+      "id": "435:284",
+      "name": "evals/",
+      "type": "text",
+      "x": 51,
+      "y": 537,
+      "w": 44,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · evals/ > text",
+      "text": "evals/"
+    },
+    {
+      "id": "435:285",
+      "name": "Never loaded into a session",
+      "type": "text",
+      "x": 51,
+      "y": 554,
+      "w": 152,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · evals/ > text",
+      "text": "Never loaded into a session"
+    },
+    {
+      "id": "435:286",
+      "name": "spacer",
+      "type": "frame",
+      "x": 213,
+      "y": 553.5,
+      "w": 67,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · evals/"
+    },
+    {
+      "id": "435:287",
+      "name": "5 cases",
+      "type": "text",
+      "x": 290,
+      "y": 545.5,
+      "w": 51,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · evals/",
+      "text": "5 cases"
+    },
+    {
+      "id": "435:288",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 351,
+      "y": 547,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · evals/"
+    },
+    {
+      "id": "435:158",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "435:159",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "435:160",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "435:161",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "435:164",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "435:165",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "435:166",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "435:167",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "435:171",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "435:172",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "435:173",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "435:174",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "435:175",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "435:176",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "435:182",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "435:183",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "435:184",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "435:185",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "435:188",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "435:189",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "435:190",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "435:191",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "435:196",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "435:197",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "435:198",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "435:30",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

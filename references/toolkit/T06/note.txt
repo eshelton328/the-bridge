@@ -1,0 +1,1 @@
+A script opens in Explain: the overview and the walkthrough. A line link opens Code at that line.

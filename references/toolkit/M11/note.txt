@@ -1,0 +1,1 @@
+The map icon on M1 opens this. The phone shows the map at full size in a frame: pinch to zoom and drag to move, and the small map in the corner shows where you are. Tap an item for its card; Show links opens M3 (proposal). The map button on an item page opens this map with the item selected.

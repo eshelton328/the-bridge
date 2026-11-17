@@ -1,0 +1,1 @@
+A hook is the script and its tests.

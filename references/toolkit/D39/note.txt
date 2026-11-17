@@ -1,0 +1,1 @@
+The hook: what it checks on each commit, and its tests.

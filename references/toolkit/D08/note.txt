@@ -1,0 +1,1 @@
+A workflow’s own section draws its steps by phase: check, run, grade and decide. Every card has the same size, gates are amber, and the dashed line is the loop back to skill-eval-cases. Open full page opens D13.

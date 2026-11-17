@@ -1,0 +1,745 @@
+{
+  "frameId": "M35",
+  "code": "M35",
+  "name": "M35 · A rule’s files",
+  "node": "494:4406",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "494:4429",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "494:4430",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "494:4431",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "494:4432",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "494:4433",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "494:4434",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "494:4435",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "494:4437",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "494:4438",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:109",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:110",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "494:4439",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "494:4440",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "494:4445",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 200,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "494:4446",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 62,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:9627",
+      "name": "icon/rule",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "494:4450",
+      "name": "Rule",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 25,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Rule"
+    },
+    {
+      "id": "494:4451",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 82,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "494:4452",
+      "name": "skills",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 71,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "skills"
+    },
+    {
+      "id": "494:4453",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 220,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "494:4454",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "494:4457",
+      "name": "toolkit/rules/skills.md",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 166,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/rules/skills.md"
+    },
+    {
+      "id": "494:4458",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 211,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "494:4541",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "494:4542",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 218,
+      "w": 82,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4543",
+      "name": "Overview",
+      "type": "text",
+      "x": 22,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "494:4544",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 98,
+      "y": 218,
+      "w": 105,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4545",
+      "name": "How it works",
+      "type": "text",
+      "x": 108,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "494:4546",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 207,
+      "y": 217,
+      "w": 53,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4547",
+      "name": "Files",
+      "type": "text",
+      "x": 218,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "494:4548",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4549",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "494:4550",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4551",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "494:4552",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "494:4553",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "494:4554",
+      "name": "toolkit/rules/",
+      "type": "text",
+      "x": 12,
+      "y": 261,
+      "w": 101,
+      "h": 17,
+      "path": "content > toolkit",
+      "text": "toolkit/rules/"
+    },
+    {
+      "id": "494:4555",
+      "name": "tree",
+      "type": "frame",
+      "x": 12,
+      "y": 290,
+      "w": 366,
+      "h": 56,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "494:4661",
+      "name": "tree · skills.md",
+      "type": "frame",
+      "x": 13,
+      "y": 291,
+      "w": 364,
+      "h": 54,
+      "path": "content > toolkit > tree"
+    },
+    {
+      "id": "494:4662",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 25,
+      "y": 310,
+      "w": 16,
+      "h": 16,
+      "path": "content > toolkit > tree > tree · skills.md"
+    },
+    {
+      "id": "494:4665",
+      "name": "text",
+      "type": "frame",
+      "x": 51,
+      "y": 301,
+      "w": 115,
+      "h": 34,
+      "path": "content > toolkit > tree > tree · skills.md"
+    },
+    {
+      "id": "494:4666",
+      "name": "skills.md",
+      "type": "text",
+      "x": 51,
+      "y": 301,
+      "w": 65,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · skills.md > text",
+      "text": "skills.md"
+    },
+    {
+      "id": "494:4667",
+      "name": "104 lines · markdown",
+      "type": "text",
+      "x": 51,
+      "y": 318,
+      "w": 115,
+      "h": 17,
+      "path": "content > toolkit > tree > tree · skills.md > text",
+      "text": "104 lines · markdown"
+    },
+    {
+      "id": "494:4668",
+      "name": "spacer",
+      "type": "frame",
+      "x": 176,
+      "y": 317.5,
+      "w": 165,
+      "h": 1,
+      "path": "content > toolkit > tree > tree · skills.md"
+    },
+    {
+      "id": "494:4669",
+      "name": "icon/right",
+      "type": "frame",
+      "x": 351,
+      "y": 311,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > tree > tree · skills.md"
+    },
+    {
+      "id": "494:4500",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "494:4501",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "494:4502",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "494:4503",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "494:4506",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "494:4507",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "494:4508",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "494:4509",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "494:4513",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "494:4514",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "494:4515",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "494:4516",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "494:4517",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "494:4518",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "494:4524",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "494:4525",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "494:4526",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "494:4527",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "494:4530",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "494:4531",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "494:4532",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "494:4533",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "494:4538",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "494:4539",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "494:4540",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "494:4430",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

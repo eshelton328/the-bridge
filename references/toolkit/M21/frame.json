@@ -1,0 +1,1029 @@
+{
+  "frameId": "M21",
+  "code": "M21",
+  "name": "M21 · A workflow",
+  "node": "487:1677",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "487:1700",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "487:1701",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "487:1702",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "487:1703",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "487:1704",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1705",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "487:1706",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "487:1708",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "487:1709",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:11",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:12",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "487:1710",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "487:1711",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "487:1716",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 228,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1848",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 90,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:8501",
+      "name": "icon/workflow",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "487:1853",
+      "name": "Workflow",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 53,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Workflow"
+    },
+    {
+      "id": "487:1721",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 110,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "487:1722",
+      "name": "skill-eval-round",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 212,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "skill-eval-round"
+    },
+    {
+      "id": "487:1854",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 321,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1855",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "487:1858",
+      "name": "toolkit/workflows/skill-eval-round.md",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 267,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/workflows/skill-eval-round.md"
+    },
+    {
+      "id": "487:1859",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 312,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "487:1730",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1731",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 84,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1732",
+      "name": "Overview",
+      "type": "text",
+      "x": 23,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "487:1733",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 100,
+      "y": 218,
+      "w": 105,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1734",
+      "name": "How it works",
+      "type": "text",
+      "x": 110,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "487:1735",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 209,
+      "y": 218,
+      "w": 51,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1736",
+      "name": "Files",
+      "type": "text",
+      "x": 219,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "487:1737",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 264,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1738",
+      "name": "Links",
+      "type": "text",
+      "x": 274,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "487:1739",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 323,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1740",
+      "name": "Evals",
+      "type": "text",
+      "x": 333,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "487:1741",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "487:1742",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "487:1862",
+      "name": "Runs one pre-registered eval round for a",
+      "type": "text",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 60,
+      "path": "content > toolkit",
+      "text": "Runs one pre-registered eval round for a skill on both model families, grades every run with the other family, and stops for the owner to decide."
+    },
+    {
+      "id": "487:1863",
+      "name": "kind section · workflow",
+      "type": "frame",
+      "x": 12,
+      "y": 333,
+      "w": 366,
+      "h": 96,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1864",
+      "name": "steps header",
+      "type": "frame",
+      "x": 12,
+      "y": 333,
+      "w": 366,
+      "h": 29,
+      "path": "content > toolkit > kind section · workflow"
+    },
+    {
+      "id": "487:1865",
+      "name": "STEPS · FROM THE MERMAID FLOW IN THE FIL",
+      "type": "text",
+      "x": 12,
+      "y": 339,
+      "w": 296,
+      "h": 17,
+      "path": "content > toolkit > kind section · workflow > steps header",
+      "text": "STEPS · FROM THE MERMAID FLOW IN THE FILE"
+    },
+    {
+      "id": "487:1866",
+      "name": "spacer",
+      "type": "frame",
+      "x": 316,
+      "y": 347,
+      "w": 1,
+      "h": 1,
+      "path": "content > toolkit > kind section · workflow > steps header"
+    },
+    {
+      "id": "487:1867",
+      "name": "button · Open full page",
+      "type": "frame",
+      "x": 325,
+      "y": 333,
+      "w": 122,
+      "h": 29,
+      "path": "content > toolkit > kind section · workflow > steps header"
+    },
+    {
+      "id": "487:1868",
+      "name": "icon/ext",
+      "type": "frame",
+      "x": 336,
+      "y": 341,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > kind section · workflow > steps header > button · Open full page"
+    },
+    {
+      "id": "487:1870",
+      "name": "Open full page",
+      "type": "text",
+      "x": 355,
+      "y": 339,
+      "w": 81,
+      "h": 17,
+      "path": "content > toolkit > kind section · workflow > steps header > button · Open full page",
+      "text": "Open full page"
+    },
+    {
+      "id": "487:1963",
+      "name": "runs",
+      "type": "frame",
+      "x": 12,
+      "y": 372,
+      "w": 366,
+      "h": 27,
+      "path": "content > toolkit > kind section · workflow"
+    },
+    {
+      "id": "487:1964",
+      "name": "Agents it runs:",
+      "type": "text",
+      "x": 12,
+      "y": 377,
+      "w": 80,
+      "h": 17,
+      "path": "content > toolkit > kind section · workflow > runs",
+      "text": "Agents it runs:"
+    },
+    {
+      "id": "487:1965",
+      "name": "link · eval-grader",
+      "type": "frame",
+      "x": 100,
+      "y": 372,
+      "w": 116,
+      "h": 27,
+      "path": "content > toolkit > kind section · workflow > runs"
+    },
+    {
+      "id": "500:8505",
+      "name": "icon/agent",
+      "type": "frame",
+      "x": 109,
+      "y": 379.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > kind section · workflow > runs > link · eval-grader"
+    },
+    {
+      "id": "487:1969",
+      "name": "eval-grader",
+      "type": "text",
+      "x": 127,
+      "y": 377,
+      "w": 80,
+      "h": 17,
+      "path": "content > toolkit > kind section · workflow > runs > link · eval-grader",
+      "text": "eval-grader"
+    },
+    {
+      "id": "487:1970",
+      "name": "Gates in amber; G1 and G6 run after step 1.",
+      "type": "text",
+      "x": 224,
+      "y": 377,
+      "w": 233,
+      "h": 17,
+      "path": "content > toolkit > kind section · workflow > runs",
+      "text": "Gates in amber; G1 and G6 run after step 1."
+    },
+    {
+      "id": "487:2275",
+      "name": "Runs one pre-registered eval round for a",
+      "type": "text",
+      "x": 12,
+      "y": 409,
+      "w": 366,
+      "h": 20,
+      "path": "content > toolkit > kind section · workflow",
+      "text": "The steps, gates and loop are on How it works."
+    },
+    {
+      "id": "487:1971",
+      "name": "columns",
+      "type": "frame",
+      "x": 12,
+      "y": 441,
+      "w": 366,
+      "h": 200,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "487:1972",
+      "name": "file preview",
+      "type": "frame",
+      "x": 12,
+      "y": 441,
+      "w": 366,
+      "h": 240,
+      "path": "content > toolkit > columns"
+    },
+    {
+      "id": "487:1973",
+      "name": "preview bar",
+      "type": "frame",
+      "x": 13,
+      "y": 442,
+      "w": 364,
+      "h": 37,
+      "path": "content > toolkit > columns > file preview"
+    },
+    {
+      "id": "487:1974",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 27,
+      "y": 453.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1977",
+      "name": "skill-eval-round.md",
+      "type": "text",
+      "x": 49,
+      "y": 452,
+      "w": 137,
+      "h": 17,
+      "path": "content > toolkit > columns > file preview > preview bar",
+      "text": "skill-eval-round.md"
+    },
+    {
+      "id": "487:1978",
+      "name": "93 lines",
+      "type": "text",
+      "x": 194,
+      "y": 452,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > columns > file preview > preview bar",
+      "text": "93 lines"
+    },
+    {
+      "id": "487:1979",
+      "name": "spacer",
+      "type": "frame",
+      "x": 260,
+      "y": 460,
+      "w": 18,
+      "h": 1,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1980",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 286,
+      "y": 454.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > columns > file preview > preview bar"
+    },
+    {
+      "id": "487:1983",
+      "name": "Read-only",
+      "type": "text",
+      "x": 306,
+      "y": 452,
+      "w": 57,
+      "h": 17,
+      "path": "content > toolkit > columns > file preview > preview bar",
+      "text": "Read-only"
+    },
+    {
+      "id": "487:1984",
+      "name": "rendered markdown",
+      "type": "frame",
+      "x": 13,
+      "y": 479,
+      "w": 364,
+      "h": 201,
+      "path": "content > toolkit > columns > file preview"
+    },
+    {
+      "id": "487:1985",
+      "name": "skill-eval-round",
+      "type": "text",
+      "x": 29,
+      "y": 493,
+      "w": 332,
+      "h": 29,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "skill-eval-round"
+    },
+    {
+      "id": "487:1986",
+      "name": "It is the second of two stages; skill-ev",
+      "type": "text",
+      "x": 29,
+      "y": 530,
+      "w": 332,
+      "h": 60,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "It is the second of two stages; skill-eval-cases builds the cases and ends at the pre-registration this stage starts from."
+    },
+    {
+      "id": "487:1987",
+      "name": "Purpose and trigger",
+      "type": "text",
+      "x": 29,
+      "y": 598,
+      "w": 332,
+      "h": 20,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "Purpose and trigger"
+    },
+    {
+      "id": "487:1988",
+      "name": "Run it when a skill’s ledger holds a rou",
+      "type": "text",
+      "x": 29,
+      "y": 626,
+      "w": 332,
+      "h": 40,
+      "path": "content > toolkit > columns > file preview > rendered markdown",
+      "text": "Run it when a skill’s ledger holds a round pre-registered under method 0.7."
+    },
+    {
+      "id": "487:1989",
+      "name": "side",
+      "type": "frame",
+      "x": 12,
+      "y": 697,
+      "w": 366,
+      "h": 1,
+      "path": "content > toolkit > columns"
+    },
+    {
+      "id": "487:1990",
+      "name": "files",
+      "type": "frame",
+      "x": 12,
+      "y": 697,
+      "w": 366,
+      "h": 40,
+      "path": "content > toolkit > columns > side"
+    },
+    {
+      "id": "487:1991",
+      "name": "FILES 1",
+      "type": "text",
+      "x": 12,
+      "y": 697,
+      "w": 51,
+      "h": 17,
+      "path": "content > toolkit > columns > side > files",
+      "text": "FILES 1"
+    },
+    {
+      "id": "487:1992",
+      "name": "file · skill-eval-round.md",
+      "type": "frame",
+      "x": 12,
+      "y": 720,
+      "w": 223,
+      "h": 17,
+      "path": "content > toolkit > columns > side > files"
+    },
+    {
+      "id": "487:1993",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 12,
+      "y": 721.5,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > columns > side > files > file · skill-eval-round.md"
+    },
+    {
+      "id": "487:1996",
+      "name": "skill-eval-round.md",
+      "type": "text",
+      "x": 33,
+      "y": 720,
+      "w": 137,
+      "h": 17,
+      "path": "content > toolkit > columns > side > files > file · skill-eval-round.md",
+      "text": "skill-eval-round.md"
+    },
+    {
+      "id": "487:1997",
+      "name": "93 lines",
+      "type": "text",
+      "x": 177,
+      "y": 720,
+      "w": 58,
+      "h": 17,
+      "path": "content > toolkit > columns > side > files > file · skill-eval-round.md",
+      "text": "93 lines"
+    },
+    {
+      "id": "487:1807",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "487:1808",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1809",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "487:1810",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "487:1813",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "487:1814",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1815",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "487:1816",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "487:1820",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "487:1821",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "487:1822",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "487:1823",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1824",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "487:1825",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "487:1831",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "487:1832",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1833",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "487:1834",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "487:1837",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "487:1838",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "487:1839",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "487:1840",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "487:1845",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "487:1846",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "487:1847",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "487:1701",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

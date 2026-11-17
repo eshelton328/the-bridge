@@ -1,0 +1,1000 @@
+{
+  "frameId": "M27",
+  "code": "M27",
+  "name": "M27 · A rule’s evals",
+  "node": "492:3839",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "phone",
+  "w": 390,
+  "h": 844,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "492:3862",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 38,
+      "path": ""
+    },
+    {
+      "id": "492:3863",
+      "name": "9:41",
+      "type": "text",
+      "x": 30,
+      "y": 14,
+      "w": 28,
+      "h": 18,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "492:3864",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 38,
+      "w": 390,
+      "h": 729,
+      "path": ""
+    },
+    {
+      "id": "492:3865",
+      "name": "toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 725,
+      "path": "content"
+    },
+    {
+      "id": "492:3866",
+      "name": "back row",
+      "type": "frame",
+      "x": 12,
+      "y": 42,
+      "w": 366,
+      "h": 36,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "492:3867",
+      "name": "back · Toolkit",
+      "type": "frame",
+      "x": 12,
+      "y": 47.5,
+      "w": 75,
+      "h": 25,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "492:3868",
+      "name": "icon/left",
+      "type": "frame",
+      "x": 12,
+      "y": 50,
+      "w": 20,
+      "h": 20,
+      "path": "content > toolkit > back row > back · Toolkit"
+    },
+    {
+      "id": "492:3870",
+      "name": "Toolkit",
+      "type": "text",
+      "x": 36,
+      "y": 47.5,
+      "w": 51,
+      "h": 25,
+      "path": "content > toolkit > back row > back · Toolkit",
+      "text": "Toolkit"
+    },
+    {
+      "id": "492:3871",
+      "name": "spacer",
+      "type": "frame",
+      "x": 95,
+      "y": 59.5,
+      "w": 195,
+      "h": 1,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:167",
+      "name": "button · Discuss",
+      "type": "frame",
+      "x": 298,
+      "y": 46,
+      "w": 36,
+      "h": 28,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "496:168",
+      "name": "icon/chat",
+      "type": "frame",
+      "x": 309,
+      "y": 53,
+      "w": 14,
+      "h": 14,
+      "path": "content > toolkit > back row > button · Discuss"
+    },
+    {
+      "id": "492:3872",
+      "name": "button · map",
+      "type": "frame",
+      "x": 342,
+      "y": 42,
+      "w": 36,
+      "h": 36,
+      "path": "content > toolkit > back row"
+    },
+    {
+      "id": "492:3873",
+      "name": "icon/map",
+      "type": "frame",
+      "x": 351.5,
+      "y": 51.5,
+      "w": 17,
+      "h": 17,
+      "path": "content > toolkit > back row > button · map"
+    },
+    {
+      "id": "492:3878",
+      "name": "meta row",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 200,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "492:3879",
+      "name": "kind badge",
+      "type": "frame",
+      "x": 12,
+      "y": 90,
+      "w": 62,
+      "h": 25,
+      "path": "content > toolkit > meta row"
+    },
+    {
+      "id": "500:11593",
+      "name": "icon/rule",
+      "type": "frame",
+      "x": 21,
+      "y": 96,
+      "w": 13,
+      "h": 13,
+      "path": "content > toolkit > meta row > kind badge"
+    },
+    {
+      "id": "492:3883",
+      "name": "Rule",
+      "type": "text",
+      "x": 40,
+      "y": 94,
+      "w": 25,
+      "h": 17,
+      "path": "content > toolkit > meta row > kind badge",
+      "text": "Rule"
+    },
+    {
+      "id": "492:3884",
+      "name": "changed 6 days ago",
+      "type": "text",
+      "x": 82,
+      "y": 94,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > meta row",
+      "text": "changed 6 days ago"
+    },
+    {
+      "id": "492:3885",
+      "name": "skills",
+      "type": "text",
+      "x": 12,
+      "y": 127,
+      "w": 71,
+      "h": 41,
+      "path": "content > toolkit",
+      "text": "skills"
+    },
+    {
+      "id": "492:3886",
+      "name": "path badge",
+      "type": "frame",
+      "x": 12,
+      "y": 180,
+      "w": 220,
+      "h": 25,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "492:3887",
+      "name": "icon/file",
+      "type": "frame",
+      "x": 21,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "492:3890",
+      "name": "toolkit/rules/skills.md",
+      "type": "text",
+      "x": 39,
+      "y": 184,
+      "w": 166,
+      "h": 17,
+      "path": "content > toolkit > path badge",
+      "text": "toolkit/rules/skills.md"
+    },
+    {
+      "id": "492:3891",
+      "name": "icon/copy",
+      "type": "frame",
+      "x": 211,
+      "y": 186.5,
+      "w": 12,
+      "h": 12,
+      "path": "content > toolkit > path badge"
+    },
+    {
+      "id": "492:3974",
+      "name": "item tabs",
+      "type": "frame",
+      "x": 12,
+      "y": 217,
+      "w": 366,
+      "h": 32,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "492:3975",
+      "name": "tab · Overview",
+      "type": "frame",
+      "x": 12,
+      "y": 218,
+      "w": 82,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3976",
+      "name": "Overview",
+      "type": "text",
+      "x": 22,
+      "y": 223,
+      "w": 62,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Overview",
+      "text": "Overview"
+    },
+    {
+      "id": "492:3977",
+      "name": "tab · How it works",
+      "type": "frame",
+      "x": 98,
+      "y": 218,
+      "w": 105,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3978",
+      "name": "How it works",
+      "type": "text",
+      "x": 108,
+      "y": 223,
+      "w": 85,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · How it works",
+      "text": "How it works"
+    },
+    {
+      "id": "492:3979",
+      "name": "tab · Files",
+      "type": "frame",
+      "x": 207,
+      "y": 218,
+      "w": 51,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3980",
+      "name": "Files",
+      "type": "text",
+      "x": 217,
+      "y": 223,
+      "w": 31,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Files",
+      "text": "Files"
+    },
+    {
+      "id": "492:3981",
+      "name": "tab · Links",
+      "type": "frame",
+      "x": 262,
+      "y": 218,
+      "w": 55,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3982",
+      "name": "Links",
+      "type": "text",
+      "x": 272,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Links",
+      "text": "Links"
+    },
+    {
+      "id": "492:3983",
+      "name": "tab · Evals",
+      "type": "frame",
+      "x": 321,
+      "y": 217,
+      "w": 57,
+      "h": 32,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3984",
+      "name": "Evals",
+      "type": "text",
+      "x": 332,
+      "y": 223,
+      "w": 35,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Evals",
+      "text": "Evals"
+    },
+    {
+      "id": "492:3985",
+      "name": "tab · Activity",
+      "type": "frame",
+      "x": 382,
+      "y": 218,
+      "w": 71,
+      "h": 30,
+      "path": "content > toolkit > item tabs"
+    },
+    {
+      "id": "492:3986",
+      "name": "Activity",
+      "type": "text",
+      "x": 392,
+      "y": 223,
+      "w": 51,
+      "h": 20,
+      "path": "content > toolkit > item tabs > tab · Activity",
+      "text": "Activity"
+    },
+    {
+      "id": "492:3987",
+      "name": "evals",
+      "type": "frame",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 374,
+      "path": "content > toolkit"
+    },
+    {
+      "id": "492:3988",
+      "name": "panel · status",
+      "type": "frame",
+      "x": 12,
+      "y": 261,
+      "w": 366,
+      "h": 102,
+      "path": "content > toolkit > evals"
+    },
+    {
+      "id": "492:3989",
+      "name": "panel header",
+      "type": "frame",
+      "x": 29,
+      "y": 274,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · status"
+    },
+    {
+      "id": "492:3990",
+      "name": "NO EVALS FOR RULES",
+      "type": "text",
+      "x": 29,
+      "y": 274,
+      "w": 130,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · status > panel header",
+      "text": "NO EVALS FOR RULES"
+    },
+    {
+      "id": "492:3991",
+      "name": "spacer",
+      "type": "frame",
+      "x": 167,
+      "y": 282,
+      "w": 186,
+      "h": 1,
+      "path": "content > toolkit > evals > panel · status > panel header"
+    },
+    {
+      "id": "492:3992",
+      "name": "Text",
+      "type": "text",
+      "x": 361,
+      "y": 274,
+      "w": 0,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · status > panel header",
+      "text": ""
+    },
+    {
+      "id": "492:4018",
+      "name": "D1 fails on Opus under the Codex grader:",
+      "type": "text",
+      "x": 29,
+      "y": 299,
+      "w": 332,
+      "h": 51,
+      "path": "content > toolkit > evals > panel · status",
+      "text": "A rule has no eval cases. The skill ledgers test what it asks for: four of them cite its rule 7, which says to measure each skill against a baseline."
+    },
+    {
+      "id": "492:4075",
+      "name": "panel · rounds",
+      "type": "frame",
+      "x": 12,
+      "y": 375,
+      "w": 366,
+      "h": 231,
+      "path": "content > toolkit > evals"
+    },
+    {
+      "id": "492:4076",
+      "name": "panel header",
+      "type": "frame",
+      "x": 29,
+      "y": 388,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds"
+    },
+    {
+      "id": "492:4077",
+      "name": "LEDGERS THAT CITE IT",
+      "type": "text",
+      "x": 29,
+      "y": 388,
+      "w": 144,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > panel header",
+      "text": "LEDGERS THAT CITE IT"
+    },
+    {
+      "id": "492:4078",
+      "name": "spacer",
+      "type": "frame",
+      "x": 181,
+      "y": 396,
+      "w": 120,
+      "h": 1,
+      "path": "content > toolkit > evals > panel · rounds > panel header"
+    },
+    {
+      "id": "492:4079",
+      "name": "4 ledgers",
+      "type": "text",
+      "x": 309,
+      "y": 388,
+      "w": 52,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > panel header",
+      "text": "4 ledgers"
+    },
+    {
+      "id": "492:4096",
+      "name": "round · writer",
+      "type": "frame",
+      "x": 29,
+      "y": 413,
+      "w": 332,
+      "h": 39,
+      "path": "content > toolkit > evals > panel · rounds"
+    },
+    {
+      "id": "492:4097",
+      "name": "top",
+      "type": "frame",
+      "x": 29,
+      "y": 413,
+      "w": 122,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · writer"
+    },
+    {
+      "id": "492:4098",
+      "name": "writer",
+      "type": "text",
+      "x": 29,
+      "y": 413,
+      "w": 39,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · writer > top",
+      "text": "writer"
+    },
+    {
+      "id": "492:4099",
+      "name": "writer.md:773",
+      "type": "text",
+      "x": 76,
+      "y": 413,
+      "w": 75,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · writer > top",
+      "text": "writer.md:773"
+    },
+    {
+      "id": "492:4100",
+      "name": "Chat answers name the exact tool; every ",
+      "type": "text",
+      "x": 29,
+      "y": 435,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · writer",
+      "text": "Cites rule 7 for its baseline runs."
+    },
+    {
+      "id": "492:4101",
+      "name": "round · ambitious",
+      "type": "frame",
+      "x": 29,
+      "y": 460,
+      "w": 332,
+      "h": 39,
+      "path": "content > toolkit > evals > panel · rounds"
+    },
+    {
+      "id": "492:4102",
+      "name": "top",
+      "type": "frame",
+      "x": 29,
+      "y": 460,
+      "w": 165,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · ambitious"
+    },
+    {
+      "id": "492:4103",
+      "name": "ambitious",
+      "type": "text",
+      "x": 29,
+      "y": 460,
+      "w": 65,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · ambitious > top",
+      "text": "ambitious"
+    },
+    {
+      "id": "492:4104",
+      "name": "ambitious.md:58",
+      "type": "text",
+      "x": 102,
+      "y": 460,
+      "w": 92,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · ambitious > top",
+      "text": "ambitious.md:58"
+    },
+    {
+      "id": "492:4105",
+      "name": "Chat answers name the exact tool; every ",
+      "type": "text",
+      "x": 29,
+      "y": 482,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · ambitious",
+      "text": "Cites rule 7 for its baseline runs."
+    },
+    {
+      "id": "492:4106",
+      "name": "round · agents-md",
+      "type": "frame",
+      "x": 29,
+      "y": 507,
+      "w": 332,
+      "h": 39,
+      "path": "content > toolkit > evals > panel · rounds"
+    },
+    {
+      "id": "492:4107",
+      "name": "top",
+      "type": "frame",
+      "x": 29,
+      "y": 507,
+      "w": 186,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · agents-md"
+    },
+    {
+      "id": "492:4108",
+      "name": "agents-md",
+      "type": "text",
+      "x": 29,
+      "y": 507,
+      "w": 72,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · agents-md > top",
+      "text": "agents-md"
+    },
+    {
+      "id": "492:4109",
+      "name": "agents-md.md:282",
+      "type": "text",
+      "x": 109,
+      "y": 507,
+      "w": 106,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · agents-md > top",
+      "text": "agents-md.md:282"
+    },
+    {
+      "id": "492:4110",
+      "name": "Chat answers name the exact tool; every ",
+      "type": "text",
+      "x": 29,
+      "y": 529,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · agents-md",
+      "text": "Cites rule 7 for its baseline runs."
+    },
+    {
+      "id": "492:4111",
+      "name": "round · readme",
+      "type": "frame",
+      "x": 29,
+      "y": 554,
+      "w": 332,
+      "h": 39,
+      "path": "content > toolkit > evals > panel · rounds"
+    },
+    {
+      "id": "492:4112",
+      "name": "top",
+      "type": "frame",
+      "x": 29,
+      "y": 554,
+      "w": 131,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · readme"
+    },
+    {
+      "id": "492:4113",
+      "name": "readme",
+      "type": "text",
+      "x": 29,
+      "y": 554,
+      "w": 50,
+      "h": 20,
+      "path": "content > toolkit > evals > panel · rounds > round · readme > top",
+      "text": "readme"
+    },
+    {
+      "id": "492:4114",
+      "name": "readme.md:9",
+      "type": "text",
+      "x": 87,
+      "y": 554,
+      "w": 73,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · readme > top",
+      "text": "readme.md:9"
+    },
+    {
+      "id": "492:4115",
+      "name": "Chat answers name the exact tool; every ",
+      "type": "text",
+      "x": 29,
+      "y": 576,
+      "w": 332,
+      "h": 17,
+      "path": "content > toolkit > evals > panel · rounds > round · readme",
+      "text": "Cites rule 6: run the task without the skill first."
+    },
+    {
+      "id": "492:4095",
+      "name": "From projects/skill-evals/writer.md, the",
+      "type": "text",
+      "x": 12,
+      "y": 618,
+      "w": 366,
+      "h": 17,
+      "path": "content > toolkit > evals",
+      "text": "From a search of projects/skill-evals/ for toolkit/rules/skills.md."
+    },
+    {
+      "id": "492:3933",
+      "name": "tab bar",
+      "type": "frame",
+      "x": 0,
+      "y": 767,
+      "w": 390,
+      "h": 77,
+      "path": ""
+    },
+    {
+      "id": "492:3934",
+      "name": "tab · Home",
+      "type": "frame",
+      "x": 8,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "492:3935",
+      "name": "icon",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home"
+    },
+    {
+      "id": "492:3936",
+      "name": "icon/home",
+      "type": "frame",
+      "x": 33.400001525878906,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Home > icon"
+    },
+    {
+      "id": "492:3939",
+      "name": "Home",
+      "type": "text",
+      "x": 31.400001525878906,
+      "y": 804,
+      "w": 28,
+      "h": 13,
+      "path": "tab bar > tab · Home",
+      "text": "Home"
+    },
+    {
+      "id": "492:3940",
+      "name": "tab · Inbox",
+      "type": "frame",
+      "x": 82.80000305175781,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "492:3941",
+      "name": "icon",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox"
+    },
+    {
+      "id": "492:3942",
+      "name": "icon/inbox",
+      "type": "frame",
+      "x": 108.20000457763672,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "492:3946",
+      "name": "badge · needs you",
+      "type": "frame",
+      "x": 122.20000457763672,
+      "y": 773,
+      "w": 17,
+      "h": 15,
+      "path": "tab bar > tab · Inbox > icon"
+    },
+    {
+      "id": "492:3947",
+      "name": "4",
+      "type": "text",
+      "x": 127.20000457763672,
+      "y": 774,
+      "w": 7,
+      "h": 13,
+      "path": "tab bar > tab · Inbox > icon > badge · needs you",
+      "text": "4"
+    },
+    {
+      "id": "492:3948",
+      "name": "Inbox",
+      "type": "text",
+      "x": 106.70000457763672,
+      "y": 804,
+      "w": 27,
+      "h": 13,
+      "path": "tab bar > tab · Inbox",
+      "text": "Inbox"
+    },
+    {
+      "id": "492:3949",
+      "name": "tab · Workspaces",
+      "type": "frame",
+      "x": 157.60000610351562,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "492:3950",
+      "name": "icon",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces"
+    },
+    {
+      "id": "492:3951",
+      "name": "icon/workspaces",
+      "type": "frame",
+      "x": 183.00000762939453,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Workspaces > icon"
+    },
+    {
+      "id": "492:3957",
+      "name": "Workspaces",
+      "type": "text",
+      "x": 166.00000762939453,
+      "y": 804,
+      "w": 58,
+      "h": 13,
+      "path": "tab bar > tab · Workspaces",
+      "text": "Workspaces"
+    },
+    {
+      "id": "492:3958",
+      "name": "tab · Projects",
+      "type": "frame",
+      "x": 232.40000915527344,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "492:3959",
+      "name": "icon",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects"
+    },
+    {
+      "id": "492:3960",
+      "name": "icon/projects",
+      "type": "frame",
+      "x": 257.80001068115234,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · Projects > icon"
+    },
+    {
+      "id": "492:3963",
+      "name": "Projects",
+      "type": "text",
+      "x": 250.30001068115234,
+      "y": 804,
+      "w": 39,
+      "h": 13,
+      "path": "tab bar > tab · Projects",
+      "text": "Projects"
+    },
+    {
+      "id": "492:3964",
+      "name": "tab · More",
+      "type": "frame",
+      "x": 307.20001220703125,
+      "y": 775,
+      "w": 74.80000305175781,
+      "h": 42,
+      "path": "tab bar"
+    },
+    {
+      "id": "492:3965",
+      "name": "icon",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More"
+    },
+    {
+      "id": "492:3966",
+      "name": "icon/more",
+      "type": "frame",
+      "x": 332.60001373291016,
+      "y": 777,
+      "w": 24,
+      "h": 24,
+      "path": "tab bar > tab · More > icon"
+    },
+    {
+      "id": "492:3971",
+      "name": "More",
+      "type": "text",
+      "x": 332.60001373291016,
+      "y": 804,
+      "w": 24,
+      "h": 13,
+      "path": "tab bar > tab · More",
+      "text": "More"
+    },
+    {
+      "id": "492:3972",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 844,
+      "w": 390,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "492:3973",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 128,
+      "y": 852,
+      "w": 134,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "492:3863",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 22
+  }
+}

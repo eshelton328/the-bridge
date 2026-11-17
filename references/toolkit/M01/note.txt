@@ -1,0 +1,1 @@
+On the phone the toolkit is a list. It opens from the More drawer (M4), so More stays selected. The map button opens the links view (M3).

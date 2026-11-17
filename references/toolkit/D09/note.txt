@@ -1,0 +1,1 @@
+A hook’s own section shows its git event, whether it is on, the rule it enforces and its test. State reads core.hooksPath; it was On on this machine on 2026-11-14. The preview is code.

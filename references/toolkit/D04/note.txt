@@ -1,0 +1,1 @@
+A rule’s own section is when it loads. rules/skills.md loads only when a file under toolkit/skills/** changes, from its paths frontmatter. When nothing links to an item, the page says so.

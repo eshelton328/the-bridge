@@ -1,0 +1,855 @@
+{
+  "frameId": "T05",
+  "code": "T5",
+  "name": "T5 · Discuss",
+  "node": "438:64",
+  "fileKey": "PZoW9BBu43qRgon1KhJcwU",
+  "device": "tablet",
+  "w": 756,
+  "h": 1158,
+  "tolerance": 4,
+  "source": "get_metadata of the page, saved 2026-11-16; characters from use_figma, 2026-11-17",
+  "layers": [
+    {
+      "id": "464:302",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 0,
+      "w": 756,
+      "h": 29,
+      "path": ""
+    },
+    {
+      "id": "464:303",
+      "name": "9:41",
+      "type": "text",
+      "x": 24,
+      "y": 8,
+      "w": 26,
+      "h": 17,
+      "path": "Frame",
+      "text": "9:41"
+    },
+    {
+      "id": "464:304",
+      "name": "content",
+      "type": "frame",
+      "x": 0,
+      "y": 29,
+      "w": 756,
+      "h": 1108,
+      "path": ""
+    },
+    {
+      "id": "464:305",
+      "name": "nav",
+      "type": "frame",
+      "x": 22,
+      "y": 33,
+      "w": 712,
+      "h": 30,
+      "path": "content"
+    },
+    {
+      "id": "464:306",
+      "name": "Frame",
+      "type": "frame",
+      "x": 22,
+      "y": 38,
+      "w": 20,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:309",
+      "name": "writer",
+      "type": "text",
+      "x": 50,
+      "y": 37.5,
+      "w": 44,
+      "h": 21,
+      "path": "content > nav",
+      "text": "writer"
+    },
+    {
+      "id": "464:310",
+      "name": "spacer",
+      "type": "frame",
+      "x": 102,
+      "y": 47.5,
+      "w": 79.5,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:311",
+      "name": "model and context",
+      "type": "frame",
+      "x": 189.5,
+      "y": 37,
+      "w": 223,
+      "h": 22,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:312",
+      "name": "Frame",
+      "type": "frame",
+      "x": 189.5,
+      "y": 37,
+      "w": 92,
+      "h": 22,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "464:313",
+      "name": "icon/down",
+      "type": "frame",
+      "x": 198.5,
+      "y": 42,
+      "w": 12,
+      "h": 12,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "464:315",
+      "name": "Sonnet 5.5",
+      "type": "text",
+      "x": 216.5,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "Sonnet 5.5"
+    },
+    {
+      "id": "464:316",
+      "name": "Frame",
+      "type": "frame",
+      "x": 289.5,
+      "y": 41,
+      "w": 77,
+      "h": 14,
+      "path": "content > nav > model and context"
+    },
+    {
+      "id": "464:317",
+      "name": "segments",
+      "type": "frame",
+      "x": 289.5,
+      "y": 44,
+      "w": 58,
+      "h": 8,
+      "path": "content > nav > model and context > Frame"
+    },
+    {
+      "id": "464:318",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 289.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:319",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 295.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:320",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 301.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:321",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 307.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:322",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 313.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:323",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 319.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:324",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 325.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:325",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 331.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:326",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 337.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:327",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 343.5,
+      "y": 44,
+      "w": 4,
+      "h": 8,
+      "path": "content > nav > model and context > Frame > segments"
+    },
+    {
+      "id": "464:328",
+      "name": "6%",
+      "type": "text",
+      "x": 352.5,
+      "y": 41,
+      "w": 14,
+      "h": 14,
+      "path": "content > nav > model and context > Frame",
+      "text": "6%"
+    },
+    {
+      "id": "464:329",
+      "name": "context",
+      "type": "text",
+      "x": 374.5,
+      "y": 41,
+      "w": 38,
+      "h": 14,
+      "path": "content > nav > model and context",
+      "text": "context"
+    },
+    {
+      "id": "464:330",
+      "name": "spacer",
+      "type": "frame",
+      "x": 420.5,
+      "y": 47.5,
+      "w": 79.5,
+      "h": 1,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:331",
+      "name": "pill · Discussion",
+      "type": "frame",
+      "x": 508,
+      "y": 38,
+      "w": 83,
+      "h": 20,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:332",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 516,
+      "y": 45,
+      "w": 6,
+      "h": 6,
+      "path": "content > nav > pill · Discussion"
+    },
+    {
+      "id": "464:333",
+      "name": "Discussion",
+      "type": "text",
+      "x": 527,
+      "y": 41,
+      "w": 56,
+      "h": 14,
+      "path": "content > nav > pill · Discussion",
+      "text": "Discussion"
+    },
+    {
+      "id": "464:393",
+      "name": "button · Open in Workbench",
+      "type": "frame",
+      "x": 599,
+      "y": 37,
+      "w": 135,
+      "h": 22,
+      "path": "content > nav"
+    },
+    {
+      "id": "464:396",
+      "name": "icon/ext",
+      "type": "frame",
+      "x": 608,
+      "y": 42.5,
+      "w": 11,
+      "h": 11,
+      "path": "content > nav > button · Open in Workbench"
+    },
+    {
+      "id": "464:395",
+      "name": "Open in Workbench",
+      "type": "text",
+      "x": 624,
+      "y": 41,
+      "w": 101,
+      "h": 14,
+      "path": "content > nav > button · Open in Workbench",
+      "text": "Open in Workbench"
+    },
+    {
+      "id": "464:334",
+      "name": "task · discussing",
+      "type": "frame",
+      "x": 22,
+      "y": 71,
+      "w": 712,
+      "h": 96,
+      "path": "content"
+    },
+    {
+      "id": "464:335",
+      "name": "Frame",
+      "type": "frame",
+      "x": 35,
+      "y": 82,
+      "w": 686,
+      "h": 20,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "464:336",
+      "name": "writer",
+      "type": "text",
+      "x": 35,
+      "y": 83,
+      "w": 604,
+      "h": 18,
+      "path": "content > task · discussing > Frame",
+      "text": "writer"
+    },
+    {
+      "id": "464:337",
+      "name": "pill · Skill",
+      "type": "frame",
+      "x": 647,
+      "y": 82,
+      "w": 50,
+      "h": 20,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "464:338",
+      "name": "Ellipse",
+      "type": "ellipse",
+      "x": 655,
+      "y": 89,
+      "w": 6,
+      "h": 6,
+      "path": "content > task · discussing > Frame > pill · Skill"
+    },
+    {
+      "id": "464:339",
+      "name": "Skill",
+      "type": "text",
+      "x": 666,
+      "y": 85,
+      "w": 23,
+      "h": 14,
+      "path": "content > task · discussing > Frame > pill · Skill",
+      "text": "Skill"
+    },
+    {
+      "id": "464:340",
+      "name": "chevron · open task",
+      "type": "frame",
+      "x": 705,
+      "y": 84,
+      "w": 16,
+      "h": 16,
+      "path": "content > task · discussing > Frame"
+    },
+    {
+      "id": "464:343",
+      "name": "toolkit/skills/writer/ · 11 files",
+      "type": "text",
+      "x": 35,
+      "y": 107,
+      "w": 218,
+      "h": 14,
+      "path": "content > task · discussing",
+      "text": "toolkit/skills/writer/ · 11 files"
+    },
+    {
+      "id": "464:344",
+      "name": "guard",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 686,
+      "h": 30,
+      "path": "content > task · discussing"
+    },
+    {
+      "id": "464:345",
+      "name": "icon/lock",
+      "type": "frame",
+      "x": 35,
+      "y": 126,
+      "w": 12,
+      "h": 12,
+      "path": "content > task · discussing > guard"
+    },
+    {
+      "id": "464:348",
+      "name": "Reads writer’s files and what links to it. Can’t run commands or edit files. To change writer, open this chat in Workbench.",
+      "type": "text",
+      "x": 53,
+      "y": 126,
+      "w": 668,
+      "h": 30,
+      "path": "content > task · discussing > guard",
+      "text": "Reads writer’s files and what links to it. Can’t run commands or edit files. To change writer, open this chat in Workbench."
+    },
+    {
+      "id": "464:349",
+      "name": "discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 175,
+      "w": 712,
+      "h": 950,
+      "path": "content"
+    },
+    {
+      "id": "464:350",
+      "name": "empty state",
+      "type": "frame",
+      "x": 22,
+      "y": 189,
+      "w": 712,
+      "h": 190,
+      "path": "content > discussion"
+    },
+    {
+      "id": "464:351",
+      "name": "Frame",
+      "type": "frame",
+      "x": 357,
+      "y": 249,
+      "w": 42,
+      "h": 42,
+      "path": "content > discussion > empty state"
+    },
+    {
+      "id": "464:352",
+      "name": "icon/bubble",
+      "type": "frame",
+      "x": 367,
+      "y": 259,
+      "w": 22,
+      "h": 22,
+      "path": "content > discussion > empty state > Frame"
+    },
+    {
+      "id": "464:354",
+      "name": "Talk writer through",
+      "type": "text",
+      "x": 300.5,
+      "y": 301,
+      "w": 155,
+      "h": 22,
+      "path": "content > discussion > empty state",
+      "text": "Talk writer through"
+    },
+    {
+      "id": "464:355",
+      "name": "Ask how it works, why a step exists or where it runs. Answers cite the file and line. Nothing here changes the toolkit.",
+      "type": "text",
+      "x": 168,
+      "y": 333,
+      "w": 420,
+      "h": 38,
+      "path": "content > discussion > empty state",
+      "text": "Ask how it works, why a step exists or where it runs. Answers cite the file and line. Nothing here changes the toolkit."
+    },
+    {
+      "id": "464:356",
+      "name": "center",
+      "type": "frame",
+      "x": 22,
+      "y": 391,
+      "w": 712,
+      "h": 156,
+      "path": "content > discussion"
+    },
+    {
+      "id": "464:357",
+      "name": "it can",
+      "type": "frame",
+      "x": 98,
+      "y": 391,
+      "w": 560,
+      "h": 112,
+      "path": "content > discussion > center"
+    },
+    {
+      "id": "464:358",
+      "name": "IT CAN",
+      "type": "text",
+      "x": 111,
+      "y": 404,
+      "w": 40,
+      "h": 14,
+      "path": "content > discussion > center > it can",
+      "text": "IT CAN"
+    },
+    {
+      "id": "464:359",
+      "name": "Frame",
+      "type": "frame",
+      "x": 111,
+      "y": 426,
+      "w": 190,
+      "h": 16,
+      "path": "content > discussion > center > it can"
+    },
+    {
+      "id": "464:398",
+      "name": "icon/book",
+      "type": "frame",
+      "x": 111,
+      "y": 427,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > center > it can > Frame"
+    },
+    {
+      "id": "464:362",
+      "name": "Explain a step, a file or a script",
+      "type": "text",
+      "x": 133,
+      "y": 426,
+      "w": 168,
+      "h": 16,
+      "path": "content > discussion > center > it can > Frame",
+      "text": "Explain a step, a file or a script"
+    },
+    {
+      "id": "464:363",
+      "name": "Frame",
+      "type": "frame",
+      "x": 111,
+      "y": 450,
+      "w": 253,
+      "h": 16,
+      "path": "content > discussion > center > it can"
+    },
+    {
+      "id": "464:401",
+      "name": "icon/links",
+      "type": "frame",
+      "x": 111,
+      "y": 451,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > center > it can > Frame"
+    },
+    {
+      "id": "464:366",
+      "name": "Find what links to writer and where it runs",
+      "type": "text",
+      "x": 133,
+      "y": 450,
+      "w": 231,
+      "h": 16,
+      "path": "content > discussion > center > it can > Frame",
+      "text": "Find what links to writer and where it runs"
+    },
+    {
+      "id": "464:367",
+      "name": "Frame",
+      "type": "frame",
+      "x": 111,
+      "y": 474,
+      "w": 271,
+      "h": 16,
+      "path": "content > discussion > center > it can"
+    },
+    {
+      "id": "464:406",
+      "name": "icon/ext",
+      "type": "frame",
+      "x": 111,
+      "y": 475,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > center > it can > Frame"
+    },
+    {
+      "id": "464:370",
+      "name": "Open the chat in Workbench to change writer",
+      "type": "text",
+      "x": 133,
+      "y": 474,
+      "w": 249,
+      "h": 16,
+      "path": "content > discussion > center > it can > Frame",
+      "text": "Open the chat in Workbench to change writer"
+    },
+    {
+      "id": "464:371",
+      "name": "suggestions",
+      "type": "frame",
+      "x": 61.5,
+      "y": 515,
+      "w": 633,
+      "h": 32,
+      "path": "content > discussion > center"
+    },
+    {
+      "id": "464:372",
+      "name": "button · Why does step 7 use a separate agent?",
+      "type": "frame",
+      "x": 61.5,
+      "y": 515,
+      "w": 246,
+      "h": 32,
+      "path": "content > discussion > center > suggestions"
+    },
+    {
+      "id": "464:373",
+      "name": "Why does step 7 use a separate agent?",
+      "type": "text",
+      "x": 74.5,
+      "y": 523,
+      "w": 220,
+      "h": 16,
+      "path": "content > discussion > center > suggestions > button · Why does step 7 use a separate agent?",
+      "text": "Why does step 7 use a separate agent?"
+    },
+    {
+      "id": "464:374",
+      "name": "button · What does scripts/check test?",
+      "type": "frame",
+      "x": 313.5,
+      "y": 515,
+      "w": 200,
+      "h": 32,
+      "path": "content > discussion > center > suggestions"
+    },
+    {
+      "id": "464:375",
+      "name": "What does scripts/check test?",
+      "type": "text",
+      "x": 326.5,
+      "y": 523,
+      "w": 174,
+      "h": 16,
+      "path": "content > discussion > center > suggestions > button · What does scripts/check test?",
+      "text": "What does scripts/check test?"
+    },
+    {
+      "id": "464:376",
+      "name": "button · Which skills link to writer?",
+      "type": "frame",
+      "x": 519.5,
+      "y": 515,
+      "w": 175,
+      "h": 32,
+      "path": "content > discussion > center > suggestions"
+    },
+    {
+      "id": "464:377",
+      "name": "Which skills link to writer?",
+      "type": "text",
+      "x": 532.5,
+      "y": 523,
+      "w": 149,
+      "h": 16,
+      "path": "content > discussion > center > suggestions > button · Which skills link to writer?",
+      "text": "Which skills link to writer?"
+    },
+    {
+      "id": "464:378",
+      "name": "spacer",
+      "type": "frame",
+      "x": 22,
+      "y": 559,
+      "w": 1,
+      "h": 469,
+      "path": "content > discussion"
+    },
+    {
+      "id": "464:379",
+      "name": "composer · discussion",
+      "type": "frame",
+      "x": 22,
+      "y": 1040,
+      "w": 712,
+      "h": 75,
+      "path": "content > discussion"
+    },
+    {
+      "id": "464:380",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1051,
+      "w": 103,
+      "h": 17,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "464:381",
+      "name": "Ask about writer",
+      "type": "text",
+      "x": 33,
+      "y": 1051,
+      "w": 101,
+      "h": 17,
+      "path": "content > discussion > composer · discussion > Frame",
+      "text": "Ask about writer"
+    },
+    {
+      "id": "464:382",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 134,
+      "y": 1051,
+      "w": 2,
+      "h": 16,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "464:383",
+      "name": "Frame",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 690,
+      "h": 28,
+      "path": "content > discussion > composer · discussion"
+    },
+    {
+      "id": "464:384",
+      "name": "button · clip",
+      "type": "frame",
+      "x": 33,
+      "y": 1076,
+      "w": 28,
+      "h": 28,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "464:385",
+      "name": "icon/clip",
+      "type": "frame",
+      "x": 40,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · clip"
+    },
+    {
+      "id": "464:387",
+      "name": "spacer",
+      "type": "frame",
+      "x": 67,
+      "y": 1089.5,
+      "w": 624,
+      "h": 1,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "464:388",
+      "name": "button · up",
+      "type": "frame",
+      "x": 697,
+      "y": 1077,
+      "w": 26,
+      "h": 26,
+      "path": "content > discussion > composer · discussion > Frame"
+    },
+    {
+      "id": "464:389",
+      "name": "icon/up",
+      "type": "frame",
+      "x": 703,
+      "y": 1083,
+      "w": 14,
+      "h": 14,
+      "path": "content > discussion > composer · discussion > Frame > button · up"
+    },
+    {
+      "id": "464:391",
+      "name": "Frame",
+      "type": "frame",
+      "x": 0,
+      "y": 1137,
+      "w": 756,
+      "h": 21,
+      "path": ""
+    },
+    {
+      "id": "464:392",
+      "name": "Rectangle",
+      "type": "rounded-rectangle",
+      "x": 288,
+      "y": 1145,
+      "w": 180,
+      "h": 5,
+      "path": "Frame"
+    }
+  ],
+  "exclude": [
+    {
+      "id": "464:303",
+      "text": "9:41",
+      "reason": "iOS status bar (design-only chrome, d-089)"
+    }
+  ],
+  "skipped": {
+    "star": 58
+  }
+}

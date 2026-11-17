@@ -1,0 +1,1 @@
+A rule on the iPad mini: when it loads and the rule file.

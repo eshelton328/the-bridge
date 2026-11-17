@@ -1,0 +1,1 @@
+How it works draws the skill’s steps from SKILL.md: what each step reads, runs or starts, and the steps that repeat. A chat answer uses steps 1, 3, 4, 5 and 6. An agent can show its procedure and a hook its checks the same way (proposal).

@@ -1,0 +1,1 @@
+On the phone, Discuss opens a full-screen chat, the same as Discuss on an inbox task (Inbox M18). Workbench moves the chat to a workspace.
