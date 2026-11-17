@@ -82,10 +82,12 @@ export type SidebarGroupProps = {
   layers?: SidebarLayers | undefined
   /** `false`: the header shows no count and no needs-you dot (D4). */
   counts?: boolean | undefined
+  /** The chat dragged onto the chat shown alone: its row fades (D6). */
+  moving?: string | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
-  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers, counts = true } = props
+  const { workspace, open, onOpenChange, hovered, selected, onSelect, drop, layers, counts = true, moving } = props
   const rowsId = useId()
   const name = workspace.label
   return (
@@ -131,6 +133,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
               chat={chat}
               figma={(layers?.rows ?? rowLayers)[chat.id]}
               selected={chat.id === selected}
+              moving={chat.id === moving}
               onSelect={() => onSelect?.(chat.id)}
             />
           ))}

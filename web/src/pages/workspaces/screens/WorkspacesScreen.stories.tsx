@@ -112,3 +112,16 @@ export const SideChatInPane: Story = {
     await expect(canvas.queryByRole('menuitem', { name: /Move to workspace/ })).toBeNull()
   },
 }
+
+export const DragIntoPane: Story = {
+  name: 'D6: a chat dragged onto the chat shown alone',
+  args: { data: workspacesStates.dragIntoPane.data, ui: workspacesStates.dragIntoPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Open hono server beside bridge themes')
+    await expect(within(zone).getByText('splits the view into two panes')).toBeVisible()
+    await expect(within(zone).getByText('edge: split beside, above or below · middle: replace this chat')).toBeVisible()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Rename omni' })).toBeVisible()
+  },
+}

@@ -63,6 +63,7 @@ export function WorkspaceSidebar({ text, workspaces, selected, ui, onUiChange, l
               selected={selected}
               layers={layers}
               counts={text.counts}
+              moving={ui.paneDrag?.chat}
               onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
               drop={
                 dragged !== undefined && ui.drag?.over === w.id

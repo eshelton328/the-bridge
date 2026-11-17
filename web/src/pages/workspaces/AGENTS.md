@@ -19,7 +19,8 @@ first: it says what each file of a page folder is for.
   list `ui.foldersOpen` opens, and `ui.folderPickerOpen` puts the folder
   picker in the side slot. With the split panes, `ui.sideChatOpen` opens
   `data.sideChat` inside the pane its `pane` names, over the chat's right
-  side (D5).
+  side (D5). With `ui.paneDrag` (D6) the dragged chat's row fades in the
+  sidebar and `data.paneDrop` shows as a drop zone over the chat alone.
 - `blocks/`: `WorkbenchPanes` (the split, one to four panes clockwise
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
   header through `PaneSlot`: kind mark, title, model, context, status,
@@ -42,10 +43,13 @@ first: it says what each file of a page folder is for.
   and `FolderPickerPane` (Add a folder: search, recent folders, browse).
   D5 adds `placement="pane"` to `SideChatPanel` (the side chat over its
   pane's chat, with Open as its own pane), which `ChatPane` draws as its
-  `overlay`. Later frames add to these blocks.
+  `overlay`. D6 adds `PaneDropZone` (the drop zone over the part of the
+  chat alone where a dragged chat would open, with the dragged chat), which
+  `MainChat` draws as its `overlay`. Later frames add to these blocks.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with
-  D3's sidebar), D5 `sideChatInPane` (from `workbench`). Later states start from
+  D3's sidebar), D5 `sideChatInPane` (from `workbench`), D6 `dragIntoPane`
+  (from `chatActions`). Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
@@ -54,11 +58,13 @@ first: it says what each file of a page folder is for.
   which the sidebar blocks put on `data-figma`, D2's when not set; for D3
   the subagents panel and the New chat form; for D4 the folders, the
   folder picker, the sidebar's `counts` and `chatActions`; for D5 the side
-  chat's `pane` and `openAsPane`, and the split's layers in `layers`) and
+  chat's `pane` and `openAsPane`, and the split's layers in `layers`; for
+  D6 the drop zone's text, `paneDrop`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list, the open skill list; for D2 the sidebar, closed groups, the
   hovered header, the drag and the side chat; for D3 the subagents panel
   and the New chat form, with the open transcripts; for D4 the folder
-  list, the picker and the chosen folder), each a Zod schema.
+  list, the picker and the chosen folder; for D6 `paneDrag`, the chat
+  dragged onto the chat alone and its edge), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

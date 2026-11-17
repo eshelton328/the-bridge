@@ -301,6 +301,20 @@ export const FolderPicker = z.object({
 })
 export type FolderPicker = z.infer<typeof FolderPicker>
 
+/** Where a dragged chat lands on the chat shown alone (D6 158:1025): an edge splits the view, the middle replaces. */
+export const DropEdge = z.enum(['left', 'right', 'top', 'bottom', 'middle'])
+export type DropEdge = z.infer<typeof DropEdge>
+
+/** The drop zone a chat dragged from the sidebar shows over the chat shown alone (D6 158:1025). */
+const PaneDrop = z.object({
+  /** What the drop does, such as "Open {chat} beside {target}"; {chat} and {target} are filled in. */
+  title: z.string(),
+  /** The line under it, such as "splits the view into two panes". */
+  text: z.string(),
+  /** The hint on where to drop, in one line. */
+  hint: z.string(),
+})
+
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
@@ -338,6 +352,8 @@ export const WorkspacesData = z.object({
   folders: ChatFolders.optional(),
   /** The folder picker (D4). */
   folderPicker: FolderPicker.optional(),
+  /** The drop zone's text while a chat is dragged onto the chat shown alone (D6). */
+  paneDrop: PaneDrop.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -377,6 +393,11 @@ export const WorkspacesUi = z.object({
   folderPickerOpen: z.boolean().optional(),
   /** The folder chosen in the picker, by path. */
   pickedFolder: z.string().nullable().optional(),
+  /**
+   * A chat Erik drags from the sidebar onto the chat shown alone, and where it would land (D6): its row in the
+   * sidebar fades and the drop zone shows over that part of the chat.
+   */
+  paneDrag: z.object({ chat: z.string(), edge: DropEdge }).nullable().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

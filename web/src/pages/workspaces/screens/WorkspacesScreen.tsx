@@ -10,7 +10,8 @@
 // and the New chat form can open over the screen (D3). The folders control
 // sits under the prompt box with its list open, and the folder picker takes
 // the side slot (D4). With the split panes, a side chat opens inside its
-// pane (D5).
+// pane (D5). A chat dragged from the sidebar onto the chat shown alone
+// fades in the sidebar, and the drop zone shows where it would open (D6).
 import { AppShell, Backdrop, Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -22,6 +23,7 @@ import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
+import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkbenchPanes } from '../blocks/WorkbenchPanes.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
@@ -109,6 +111,17 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           }}
         />
       ) : undefined
+    const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
+    const dropZone =
+      ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined ? undefined : (
+        <PaneDropZone
+          edge={ui.paneDrag.edge}
+          chat={dragged}
+          title={data.paneDrop.title.replace('{chat}', dragged.title).replace('{target}', chat.head.title)}
+          text={data.paneDrop.text}
+          hint={data.paneDrop.hint}
+        />
+      )
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -150,6 +163,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
                 )
               }
               layers={data.layers}
+              overlay={dropZone}
             />
           }
           sideWidth={subagents === undefined ? 'side' : 'wide'}
