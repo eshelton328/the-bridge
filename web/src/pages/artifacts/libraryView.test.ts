@@ -68,3 +68,45 @@ describe('libraryView', () => {
     ])
   })
 })
+
+describe('the sort (D6)', () => {
+  it('keeps Found since you last looked first in every sort', () => {
+    for (const sort of ['newest', 'oldest', 'title', 'project']) {
+      expect(titles({ sort }).map(([id]) => id)).toEqual(['found', 'earlier'])
+    }
+  })
+
+  it('keeps the state’s order for Newest first and turns it round for Oldest first', () => {
+    expect(titles({ sort: 'newest' })[0]).toEqual([
+      'found',
+      ['Skill eval pass rates', 'Hono server spike', 'Inbox task lifecycle', 'Tailscale access check'],
+    ])
+    expect(titles({ sort: 'oldest' })[0]).toEqual([
+      'found',
+      ['Tailscale access check', 'Inbox task lifecycle', 'Hono server spike', 'Skill eval pass rates'],
+    ])
+  })
+
+  it('sorts by title A to Z in any case', () => {
+    expect(titles({ sort: 'title' })[1]).toEqual([
+      'earlier',
+      [
+        'Agent factory and session tracking',
+        'Application versioning and releases',
+        'Brain map prototype',
+        'Logo options',
+        'Panda tokens playground',
+        'readme cold-reader run',
+        'the-bridge theme ideas',
+        'Type safety in agentic systems',
+      ],
+    ])
+  })
+
+  it('groups by project, each project newest first', () => {
+    expect(titles({ sort: 'project' })[0]).toEqual([
+      'found',
+      ['Hono server spike', 'Inbox task lifecycle', 'Tailscale access check', 'Skill eval pass rates'],
+    ])
+  })
+})

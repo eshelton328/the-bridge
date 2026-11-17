@@ -4,7 +4,8 @@
 // come from libraryView (the chip and the search over the state's groups).
 // The List view (D4) shows them as rows (LibraryRows). During a search the
 // count says how many of the library's artifacts show, such as "3 of 24".
-// With `data.addLinkForm` Add a link opens the Add a link dialog (D5).
+// With `data.addLinkForm` Add a link opens the Add a link dialog (D5), and
+// with `data.sortMenu` Sort opens the Sort menu (D6).
 // Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -91,6 +92,15 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
           onUiChange?.({ query })
         }}
         sortLabel={sort?.label ?? ''}
+        sortMenu={data.sortMenu}
+        sort={ui.sort}
+        sortOpen={ui.sortOpen}
+        onSortOpenChange={(sortOpen) => {
+          onUiChange?.({ sortOpen })
+        }}
+        onSortChange={(picked) => {
+          onUiChange?.({ sort: picked, sortOpen: false })
+        }}
         filterMenu={data.filterMenu}
         filterChecks={ui.filterChecks}
         filterOpen={ui.filterOpen}

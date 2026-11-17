@@ -1,7 +1,8 @@
 // The row under the source chips (Figma 402:15397): the search, Sort and
 // Filter, and at the end the Grid or List switch. Sort names the sort on
 // the button. Beside an open artifact (D2) the row has no switch, and the
-// search takes the free width. With a Filter menu (D3) Filter opens it.
+// search takes the free width. With a Filter menu (D3) Filter opens it,
+// and with a Sort menu (D6) Sort opens it.
 // Props only.
 import {
   Button,
@@ -17,8 +18,9 @@ import {
   ViewSwitch,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import { type ArtifactFilterMenu, ViewValue } from '../types.ts'
+import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../types.ts'
 import { FilterPopover } from './FilterPopover.tsx'
+import { SortMenu } from './SortMenu.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
 const grow = css({ flex: '1', overflow: 'hidden' })
@@ -30,6 +32,14 @@ export type LibraryToolsProps = {
   /** The sort's short label, such as "Newest". */
   sortLabel: string
   onSortClick?: (() => void) | undefined
+  /** The Sort menu (D6); without it Sort is a button that opens nothing yet. */
+  sortMenu?: ArtifactSortMenu | undefined
+  /** The picked sort, such as `newest`. */
+  sort?: string | undefined
+  sortOpen?: boolean | undefined
+  onSortOpenChange?: ((open: boolean) => void) | undefined
+  /** A sort picked in the Sort menu; the menu then closes. */
+  onSortChange?: ((sort: string) => void) | undefined
   onFilterClick?: (() => void) | undefined
   /** The Filter menu (D3); without it Filter is a button that opens nothing yet. */
   filterMenu?: ArtifactFilterMenu | undefined
@@ -50,6 +60,11 @@ export function LibraryTools({
   onQueryChange,
   sortLabel,
   onSortClick,
+  sortMenu,
+  sort = '',
+  sortOpen = false,
+  onSortOpenChange,
+  onSortChange,
   onFilterClick,
   filterMenu,
   filterChecks = [],
@@ -74,13 +89,24 @@ export function LibraryTools({
           onValueChange={onQueryChange}
         />
       </div>
-      <span data-figma="button · Sort">
-        <Button textSize="sm" onClick={onSortClick}>
-          <SortDescIcon />
-          {sortLabel}
-          <ChevronDownIcon size="12" />
-        </Button>
-      </span>
+      {sortMenu === undefined ? (
+        <span data-figma="button · Sort">
+          <Button textSize="sm" onClick={onSortClick}>
+            <SortDescIcon />
+            {sortLabel}
+            <ChevronDownIcon size="12" />
+          </Button>
+        </span>
+      ) : (
+        <SortMenu
+          menu={sortMenu}
+          sort={sort}
+          sortLabel={sortLabel}
+          open={sortOpen}
+          onOpenChange={onSortOpenChange}
+          onSortChange={onSortChange}
+        />
+      )}
       {filterMenu === undefined ? (
         <span data-figma="button · Filter">
           <Button textSize="sm" onClick={onFilterClick}>
