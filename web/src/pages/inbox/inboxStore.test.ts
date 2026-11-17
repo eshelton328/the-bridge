@@ -25,6 +25,7 @@ describe('inboxStore edits', () => {
     setQuery('promptRead', 'f-0')
     expect(inboxStore.getState().edits).toEqual({
       state: 'promptRead',
+      itemOpen: undefined,
       promptOpen: false,
       removeOpen: undefined,
       query: 'f-0',
@@ -37,6 +38,7 @@ describe('inboxStore edits', () => {
     setQuery('search', 'f-005 x')
     expect(inboxStore.getState().edits).toEqual({
       state: 'search',
+      itemOpen: undefined,
       promptOpen: undefined,
       removeOpen: undefined,
       query: 'f-005 x',
@@ -63,9 +65,22 @@ describe('inboxStore showState', () => {
     showState('nextStep')
     expect(inboxStore.getState().edits).toEqual({
       state: 'nextStep',
+      itemOpen: undefined,
       promptOpen: undefined,
       removeOpen: undefined,
       query: undefined,
     })
+  })
+})
+
+describe('inboxStore open item', () => {
+  it('records the open item closed with Back for one state only', () => {
+    const { setItemOpen, showState } = inboxStore.getState().actions
+    setItemOpen('taskPage', false)
+    expect(inboxStore.getState().edits.itemOpen).toBe(false)
+    showState('taskPage')
+    expect(inboxStore.getState().edits.itemOpen).toBe(false)
+    showState('list')
+    expect(inboxStore.getState().edits.itemOpen).toBeUndefined()
   })
 })

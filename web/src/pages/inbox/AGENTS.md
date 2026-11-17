@@ -6,8 +6,9 @@ detail of the selected item. Figma frames `D*` (desktop) and `T*`
 
 - `InboxPage.tsx`: reads the loader's state, `?filter=`, and from
   `inboxStore.ts` the open groups and, for the shown `?state=`, whether
-  Erik closed the prompt or remove dialog and the search text he typed;
-  it passes them to `InboxScreen` with the setters.
+  Erik closed the open item with Back (tablet or phone), the prompt or
+  remove dialog, and the search text he typed; it passes them to
+  `InboxScreen` with the setters.
 - `screens/InboxScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail, the list pane
   (`InboxListPane`) and the detail (`InboxDetail`) side by side; on a

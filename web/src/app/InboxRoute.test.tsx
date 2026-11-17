@@ -106,6 +106,32 @@ describe('the Inbox route', () => {
     await view.unmount()
   })
 
+  it('returns to the list with Back on the tablet, and opens the item again in a state that has it open', async () => {
+    await page.viewport(756, 1158)
+    const { router, rendered } = renderInbox('taskPage')
+    const view = await rendered
+    const title = () => page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })
+    await expect.element(title()).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(title()).not.toBeInTheDocument()
+    await expect.element(searchbox()).toBeVisible()
+    await showState(router, 'list')
+    await showState(router, 'taskPage')
+    await expect.element(title()).toBeVisible()
+    await view.unmount()
+  })
+
+  it("returns to the list with Back from a started task's chat on the tablet", async () => {
+    await page.viewport(756, 1158)
+    const { rendered } = renderInbox('chat')
+    const view = await rendered
+    await expect.element(page.getByText('Wait for increment two.')).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(page.getByText('Wait for increment two.')).not.toBeInTheDocument()
+    await expect.element(searchbox()).toBeVisible()
+    await view.unmount()
+  })
+
   it('scrolls the Snoozed toggle clear of the toast in D18', async () => {
     await page.viewport(1512, 982)
     const { rendered } = renderInbox('tasksCreated')
