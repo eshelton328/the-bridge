@@ -3,7 +3,8 @@
 // finished one ended; a pill such as New; and, for an approval, the answer
 // buttons. A search marks its query in the meta line. With `onActions`, a
 // long-press (a touch held for half a second) or the context menu (a right
-// click, the menu key, Shift+F10) opens the row's actions (M6). Props only.
+// click, the menu key, Shift+F10) opens the row's actions (M6); a row that
+// does not open is a button that opens them. Props only.
 import {
   Button,
   CheckIcon,
@@ -16,7 +17,7 @@ import {
   SnoozeIcon,
   TrashIcon,
 } from '@eshelton328/component-library-1701'
-import { type MouseEvent, useRef } from 'react'
+import { type KeyboardEvent, type MouseEvent, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRowView } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
@@ -165,10 +166,26 @@ export function InboxRow({ row, selected, onSelect, query, onActions }: InboxRow
     </ListRow>
   )
   // Only a row with actions (the phone's) gets the wrapper, so the desktop and tablet lists keep their boxes.
-  return onActions === undefined ? (
-    item
-  ) : (
-    <div className={phoneRow} {...press}>
+  if (onActions === undefined) return item
+  // A row that does not open is not a button itself, so the wrapper is the row's control: a tap, Enter or Space opens
+  // its actions, and a keyboard or screen reader reaches it. A row that opens keeps its own button, and the context
+  // menu key on that button opens the actions through the wrapper.
+  const control =
+    onSelect === undefined
+      ? {
+          role: 'button',
+          tabIndex: 0,
+          'aria-haspopup': 'dialog' as const,
+          onClick: onActions,
+          onKeyDown: (event: KeyboardEvent) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return
+            event.preventDefault()
+            onActions()
+          },
+        }
+      : {}
+  return (
+    <div className={phoneRow} {...control} {...press}>
       {item}
     </div>
   )

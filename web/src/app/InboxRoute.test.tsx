@@ -606,7 +606,7 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
   })
 
-  it('makes only a row with a detail a button, so no row is a dead control', async () => {
+  it('opens only the row with a detail, and a tap on another row opens its actions', async () => {
     await phone('list')
     const titles = ['drift check wants to run git mv', 'Pick the header logo', 'Commit the brain: 34 changes']
     for (const text of titles) {
@@ -614,9 +614,19 @@ describe('the Inbox on the phone', () => {
       expect(page.getByRole('button', { name: text, exact: true }).elements()).toHaveLength(0)
     }
     await expect.element(page.getByRole('button', { name: 'Write the tickets for increment one' })).toBeVisible()
+    // A tap on a row without a detail opens its actions, not a task.
     await page.getByText('Pick the header logo', { exact: true }).click()
-    await expect.element(searchbox()).toBeVisible()
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
     await expect.element(title()).not.toBeInTheDocument()
+  })
+
+  it('opens the actions of a row without a detail from the keyboard', async () => {
+    await phone('list')
+    const control = page.getByRole('button', { name: /^Pick the header logo/ })
+    control.element().focus()
+    await expect.element(control).toHaveFocus()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
   })
 
   it('hides the tab bar and Start while the prompt editor is open, and brings them back with Done', async () => {
