@@ -7,7 +7,7 @@ Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 - [inbox/AGENTS.md](inbox/AGENTS.md): the Inbox, the first page built.
 - [artifacts/AGENTS.md](artifacts/AGENTS.md): the Artifacts page, empty until its loop builds it.
 - [toolkit/AGENTS.md](toolkit/AGENTS.md): the Toolkit page: the list of toolkit items (D1).
-- [workspaces/AGENTS.md](workspaces/AGENTS.md): the Workspaces page (Figma Workbench), empty until its loop builds it.
+- [workspaces/AGENTS.md](workspaces/AGENTS.md): the Workspaces page (Figma Workbench), built from D1 on.
 
 ## A page folder
 

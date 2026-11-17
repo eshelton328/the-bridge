@@ -1,0 +1,19 @@
+{
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "scrollBar",
+      "selector": "[data-figma=\"114:2\"] > div.text-field__root:nth-of-type(2) > input.text-field__input",
+      "reason": "The name field draws no scroll bar. Chrome's clientWidth of an <input> leaves out its padding (offsetWidth 498, clientWidth 476, border 2, padding 10 + 10), so the rule reads the 20 px of side padding as a vertical scroll bar. The rule cannot tell a padded input from a scroll bar."
+    }
+  ]
+}
