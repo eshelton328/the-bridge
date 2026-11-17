@@ -339,3 +339,12 @@ void test('in Chromium a run under an open menu is covered; under a transparent 
   )
   assert.deepEqual(both.notVisible, [])
 })
+
+void test('in Chromium a child that paints over the text of its parent covers it', async () => {
+  const measured = await measureHtml(`<body style="margin:0;font:16px/20px sans-serif">
+<div id="storybook-root"><p style="position:relative;margin:20px">Parent text
+<span style="position:absolute;left:0;top:0;width:200px;height:20px;background:rgb(30,30,40)">Badge</span></p>
+<p style="margin:20px">Plain <b>bold</b> text</p></div></body>`)
+  const covered = Object.fromEntries(measured.visibleTexts.map((v) => [v.text, v.covered]))
+  assert.deepEqual(covered, { 'Parent text': true, Badge: false, Plain: false, bold: false, text: false })
+})

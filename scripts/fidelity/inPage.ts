@@ -144,7 +144,8 @@ export type Hit = { related: boolean; shown: boolean; paints: boolean }
 /**
  * True when another element covers a text run at any of its sample points:
  * going down the stack of elements at the point (elementsFromPoint), one
- * that is outside the run's own element and its ancestors, shows and paints
+ * that is not the run's own element or one of its ancestors (a child of it
+ * counts), shows and paints
  * comes before the run's own element or an ancestor of it. A point with no
  * element (outside the viewport) is not covered here; fullyVisible judges
  * the viewport.
@@ -322,7 +323,9 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
   const stackAt = (x: number, y: number, own: Element) => {
     const hits: { related: boolean; shown: boolean; paints: boolean }[] = []
     for (const t of document.elementsFromPoint(x, y)) {
-      const related = own.contains(t) || t.contains(own)
+      // The run's own element and its ancestors only: a child of that element
+      // (a positioned badge) can paint over the element's own text.
+      const related = t.contains(own)
       const ts = getComputedStyle(t)
       hits.push({
         related,
