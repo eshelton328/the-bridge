@@ -1,7 +1,7 @@
 # D07 deviations
 
 What still differs from Figma after the first build of one chat in the
-workbench (`pnpm fidelity workspaces D07`, 2026-11-17, first run after the
+workbench (`pnpm fidelity workspaces D07`, 2026-11-17, second run after the
 first check, against the installed library 1.0.0-beta.9), each with its
 reason. The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 The screen is D02b's sidebar with no menu open, beside the library's
