@@ -81,3 +81,9 @@ the same results as before D07 (D03: text fail with the same four strings,
   The three pass the position check.
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D8, D9).
+
+## Second review
+
+- **Row counts.** In each Agents row the counts sit level with the name,
+  where Figma centres them on the row. `ListRow` puts its trailing part at
+  the top of the row, as in D3 and D4 (gap: Toolkit row (pane)).
