@@ -154,6 +154,16 @@ const chromeRules: { test: (path: string[], text: string, top: XmlNode | undefin
     test: (path) => path.some((p) => p === 'keyboard' || p.startsWith('keyboard (iOS')),
     reason: 'iOS keyboard (design-only chrome, d-089)',
   },
+  {
+    // A keyboard drawn as a plain box: a top-level layer at least 200 px
+    // high that holds only text layers, labelled "Keyboard" (Workbench T4).
+    test: (_path, text, top) =>
+      text.trim().toLowerCase() === 'keyboard' &&
+      top !== undefined &&
+      top.h >= 200 &&
+      [...walk(top)].every((n) => n === top || n.tag === 'text'),
+    reason: 'iOS keyboard placeholder (design-only chrome, d-089)',
+  },
 ]
 
 /**
