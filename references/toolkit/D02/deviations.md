@@ -50,3 +50,10 @@ check measures only the canvas, the legend and the card.
   Rail item height).
 - **Open writer.** The card's button has no action yet: the item page
   (D3) is a later frame.
+
+## Second review
+
+- **Source note (not real).** The reviewer saw a comma after "Read from
+  toolkit/ in the brain". The text check passes and the code has no
+  comma; the marks are the feet of Geist Mono's "i" and "n" at 1x, which
+  the Figma mono font does not draw.
