@@ -253,6 +253,8 @@ void test('storyLocksViewport finds globals.viewport only', () => {
   assert.equal(storyLocksViewport("globals: { viewport: { value: 'phone', isRotated: false } }"), true)
   assert.equal(storyLocksViewport("args: { viewport: 'desktop' }"), false)
   assert.equal(storyLocksViewport('globals: { backgrounds: { value: "dark" } }'), false)
+  assert.equal(storyLocksViewport("globals: { backgrounds: { value: 'dark' }, viewport: { value: 'phone' } }"), true)
+  assert.equal(storyLocksViewport("globals: { backgrounds: { value: 'dark' } }, args: { viewport: 'phone' }"), false)
 })
 
 void test('gapRows reads the Gaps table and framesInclude reads its Frames cell', () => {

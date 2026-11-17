@@ -114,7 +114,17 @@ export function changeProblems(changes: readonly Change[]): string[] {
 
 /** True when a story file sets `globals` with a viewport, which locks Storybook's viewport menu. */
 export function storyLocksViewport(source: string): boolean {
-  return /\bglobals\s*:\s*\{[^}]*\bviewport\b/s.test(source)
+  for (const m of source.matchAll(/\bglobals\s*:\s*\{/g)) {
+    // Read the whole globals object, nested objects included.
+    let depth = 0
+    let end = m.index + m[0].length - 1
+    for (; end < source.length; end++) {
+      if (source[end] === '{') depth++
+      else if (source[end] === '}' && --depth === 0) break
+    }
+    if (/\bviewport\b/.test(source.slice(m.index, end))) return true
+  }
+  return false
 }
 
 /** The rows of the `## Gaps` table of a LIBRARY_GAPS.md: part (backticks removed) and its Frames cell. */
