@@ -1,5 +1,5 @@
 // The Inbox after what Erik did to the open task's discussion
-// (InboxUi.proposals and proposalChecks): an applied update puts its prompt
+// (InboxUi.proposals, proposalChecks and sent): the messages he sent follow its entries; an applied update puts its prompt
 // in the task with the change line; created tasks join Next steps with a
 // New pill and a toast that offers Undo; a discarded proposal leaves the
 // discussion; the boxes Erik checked or cleared replace the proposal's.
@@ -19,7 +19,7 @@ import {
   ProposalKind,
 } from '../types.ts'
 
-type Decisions = Pick<InboxUi, 'proposals' | 'proposalChecks'>
+type Decisions = Pick<InboxUi, 'proposals' | 'proposalChecks' | 'sent'>
 
 /** The discussion's proposal of `kind`, if it has one. */
 export function proposalOf<K extends ProposalKind>(
@@ -104,14 +104,36 @@ function removedView(data: InboxData, task: InboxNextStep, removed: Removed): In
 export const isRemoved = (data: Pick<InboxData, 'discussion'>, ui: Pick<InboxUi, 'proposals'>): boolean =>
   proposalOf(data, 'remove') !== undefined && ui.proposals.remove === 'applied'
 
+/**
+ * The list without the rows a state draws as created (`InboxToast.created`, D18) once Undo took them back: the
+ * groups, the count and the All and Next steps chips lose them, and the toast goes.
+ */
+function undoneView(data: InboxData): InboxData {
+  const created = data.toast?.created ?? []
+  const n = created.length
+  return {
+    ...data,
+    toast: undefined,
+    count: data.count - n,
+    filters: data.filters.map((f) => (f.value === 'all' || f.value === 'next' ? { ...f, count: f.count - n } : f)),
+    groups: data.groups.map((group) => {
+      const rows = group.rows.filter((row) => !created.includes(row.id))
+      return { ...group, count: group.count - (group.rows.length - rows.length), rows }
+    }),
+  }
+}
+
 export function discussionView(data: InboxData, ui: Decisions): InboxData {
   const { discussion } = data
+  if (data.toast?.created !== undefined && ui.proposals.create !== 'applied') return undoneView(data)
   if (discussion === undefined) return data
   const entries = discussion.entries.flatMap((entry): InboxDiscussionEntry[] => {
     if (entry.type !== 'proposal') return [entry]
     if (ui.proposals[entry.proposal.kind] === 'discarded') return []
     return [{ ...entry, proposal: checked(entry.proposal, ui.proposalChecks) }]
   })
+  // The messages Erik sent follow the entries; nothing answers them in this mock-up.
+  for (const text of ui.sent) entries.push({ type: 'user', text })
   let view: InboxData = { ...data, discussion: { ...discussion, entries } }
   const update = proposalOf(view, 'update')
   if (update !== undefined && ui.proposals.update === 'applied' && view.detail?.kind === 'next') {

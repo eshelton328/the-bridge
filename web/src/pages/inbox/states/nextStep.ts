@@ -3,7 +3,7 @@
 // references/inbox/D01/frame.json.
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
-import type { InboxData, InboxGroupView, InboxRunIn, InboxUi } from '../types.ts'
+import type { InboxData, InboxGroupView, InboxRunCard, InboxRunIn, InboxUi } from '../types.ts'
 
 const selected = InboxItemId.parse('write-the-tickets')
 
@@ -11,6 +11,48 @@ const selected = InboxItemId.parse('write-the-tickets')
 const prompt =
   'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.'
 const note = 'Check the milestone name matches Linear before I approve.'
+
+// The chat Start opens in quiet-nebula, as D5 shows it, and the run card that stands for it on the task page (D6).
+// Start (`InboxUi.started`) and the running states D5 and D6 show the same chat.
+export const startedChat = {
+  kind: 'running',
+  id: selected,
+  title: 'Write the tickets for increment one',
+  agent: 'claude',
+  meta: {
+    task: 'ncc-1701 · f-005 · NCC-28',
+    started: 'started 3 min ago in',
+    chat: 'quiet-nebula · the-bridge · Sonnet 5.5',
+  },
+  status: { tone: 'working', label: 'Working', dot: true },
+  chat: [
+    {
+      type: 'user',
+      text: 'Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review…',
+    },
+    { type: 'tool', name: 'Read', target: 'increment-1.md, linear.md', state: 'done' },
+    {
+      type: 'assistant',
+      agent: 'claude',
+      name: 'Claude',
+      text: 'Increment one has nine screens. The inbox screens are newer than the increment. Should they join this cycle, or wait for increment two?',
+    },
+    { type: 'user', text: 'Wait for increment two.' },
+    { type: 'tool', name: 'Creating', target: '9 issues in NCC…', state: 'running' },
+  ],
+  reply: 'Reply to quiet-nebula',
+  model: 'Sonnet 5.5',
+} satisfies NonNullable<InboxRunCard['chat']>
+
+const startedRun = {
+  agent: 'claude',
+  title: 'Running in quiet-nebula',
+  status: { tone: 'working', label: 'Working', dot: true },
+  meta: 'the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…',
+  open: 'Reply here',
+  openElsewhere: 'Open in Workspaces',
+  chat: startedChat,
+} satisfies InboxRunCard
 
 const needsYou = {
   id: 'needsYou',
@@ -263,6 +305,7 @@ export const nextStep = {
         },
         startLabel: 'Start in the-bridge',
         startHint: 'Opens the new chat and sends the prompt.',
+        start: { status: { tone: 'working', label: 'Running' }, origin: 'started 3m ago', run: startedRun },
       },
       notes: {
         note: { text: note, by: 'You · 2m ago' },
@@ -296,5 +339,7 @@ export const nextStep = {
     proposals: {},
     proposalChecks: {},
     promptBeforeApply: null,
+    sent: [],
+    started: [],
   },
 } satisfies ScreenState<InboxData, InboxUi>

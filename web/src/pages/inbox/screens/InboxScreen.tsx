@@ -31,6 +31,7 @@ import {
 } from './discussionView.ts'
 import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
+import { startView } from './startView.ts'
 
 export type InboxScreenProps = {
   data: InboxData
@@ -61,7 +62,7 @@ type InboxLayoutProps = Omit<InboxScreenProps, 'viewport'> & { layout: Viewport;
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange } = props
-  const data = discussionView(props.data, ui)
+  const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
   // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
@@ -113,6 +114,10 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       onUiChange?.({ proposalChecks: { ...ui.proposalChecks, [label]: checked } })
     },
   }
+  // Send in the discussion's reply box: the message follows its entries (`discussionView`).
+  const send = (text: string) => {
+    onUiChange?.({ sent: [...ui.sent, text] })
+  }
   const closeDiscussion = () => {
     onUiChange?.({ discussOpen: false })
   }
@@ -161,6 +166,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onClose={closeDiscussion}
         control={control}
         drafts={drafts}
+        onSend={send}
       />
     ) : shown === null ? undefined : (
       <InboxDetail
@@ -188,6 +194,13 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onUndoChange={() => {
           run(undoUpdateEffect(ui))
         }}
+        onStart={
+          shown.kind === 'next' && shown.launch.stage === 'suggested'
+            ? () => {
+                onUiChange?.({ started: [...ui.started.filter((id) => id !== shown.id), shown.id] })
+              }
+            : undefined
+        }
         removed={
           removed
             ? {
@@ -212,7 +225,13 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         }
         side={
           discussing ? (
-            <DiscussionPanel discussion={discussion} control={control} onClose={closeDiscussion} drafts={drafts} />
+            <DiscussionPanel
+              discussion={discussion}
+              control={control}
+              onClose={closeDiscussion}
+              drafts={drafts}
+              onSend={send}
+            />
           ) : undefined
         }
       />

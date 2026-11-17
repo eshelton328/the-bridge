@@ -60,8 +60,16 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   removed (the remove proposal's `removed`: its Done line, and on its
   page Open discussion and Restore); its effects say what each press
   changes (Apply, Discard, Edit first, Undo, Create, Remove task,
-  Restore, which puts the task back in its group). The removal flow is
-  not decided (M25 note).
+  Restore, which puts the task back in its group). Send in the
+  discussion's reply box adds Erik's message after its entries
+  (`ui.sent`); the box has no attach button until a file flow is designed.
+  Undo in the toast also takes out the rows a state draws as created
+  (`toast.created`, D18 and T21). The removal flow is
+  not decided (M25 note). Start on a next step starts it
+  (`ui.started`): `screens/startView.ts` (tested in
+  `discussionView.test.ts`) shows the launch's `start`, the run card of
+  the chat D5 shows, whose Reply here opens that chat. D7's Open chat
+  opens the finished chat.
 - `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
   `MenuSection` (a menu's labelled section, in a popover or a sheet),

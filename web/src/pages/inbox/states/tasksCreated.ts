@@ -1,6 +1,8 @@
 // Figma Inbox D18 "The new tasks in the inbox": the discussion is closed
 // and the list is back. The three new tasks sit under Next steps with a
-// New pill, and a toast offers Undo. Copy word for word from
+// New pill, and a toast offers Undo. Figma's task has no Discuss here, so
+// the state draws the new rows and the toast names them; its `ui` has the
+// tasks created, and Undo takes them out as in M22. Copy word for word from
 // references/inbox/D18/frame.json.
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
@@ -41,7 +43,7 @@ export const tasksCreated = {
       { ...nextSteps, count: 6, rows: [...(first === undefined ? [] : [first]), ...created, ...rest] },
       snoozed,
     ],
-    toast: { text: 'Created 3 tasks from a discussion', action: 'Undo' },
+    toast: { text: 'Created 3 tasks from a discussion', action: 'Undo', created: created.map((row) => row.id) },
   },
-  ui: nextStep.ui,
+  ui: { ...nextStep.ui, proposals: { create: 'applied' } },
 } satisfies ScreenState<InboxData, InboxUi>

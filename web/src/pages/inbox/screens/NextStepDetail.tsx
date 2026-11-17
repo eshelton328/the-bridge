@@ -72,6 +72,8 @@ export type NextStepDetailProps = {
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
   /** A task removed in its discussion: its card's Open discussion and Restore. */
   removed?: RemovedControl | undefined
+  /** Start: the task starts and shows its run card (`startView`). */
+  onStart?: (() => void) | undefined
 }
 
 /** A removed task's card: Open discussion opens its discussion, Restore puts the task back. */
@@ -81,12 +83,13 @@ type LaunchProps = {
   launch: InboxNextStep['launch']
   onOpenChat: (() => void) | undefined
   onRestore: (() => void) | undefined
+  onStart: (() => void) | undefined
   pickerOpen: boolean
   onPickerOpenChange: (open: boolean) => void
   layout: Viewport
 }
 
-function Launch({ launch, onOpenChat, onRestore, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
+function Launch({ launch, onOpenChat, onRestore, onStart, pickerOpen, onPickerOpenChange, layout }: LaunchProps) {
   if (launch.stage === 'started') return <RunCard run={launch.run} onOpen={onOpenChat} onRestore={onRestore} />
   return (
     <>
@@ -101,7 +104,7 @@ function Launch({ launch, onOpenChat, onRestore, pickerOpen, onPickerOpenChange,
       {/* The phone pins Start above the tab bar (PinnedAction). */}
       {layout === 'phone' ? null : (
         <Inline gap="12" align="center" data-figma="start">
-          <Button variant="primary" size="lg">
+          <Button variant="primary" size="lg" onClick={onStart}>
             <PlayIcon />
             {launch.startLabel}
           </Button>
@@ -124,6 +127,7 @@ export function NextStepDetail({
   onUiChange,
   onUndoChange,
   removed,
+  onStart,
 }: NextStepDetailProps) {
   const compact = layout !== 'desktop'
   const phone = layout === 'phone'
@@ -183,6 +187,7 @@ export function NextStepDetail({
             launch={detail.launch}
             onOpenChat={onOpenChat}
             onRestore={onRestore}
+            onStart={onStart}
             pickerOpen={ui.pickerOpen}
             onPickerOpenChange={(pickerOpen) => {
               onUiChange?.({ pickerOpen })
@@ -205,7 +210,7 @@ export function NextStepDetail({
     return (
       <>
         {column}
-        <PinnedAction label={start} />
+        <PinnedAction label={start} onPress={onStart} />
       </>
     )
   if (pinned === undefined) return column

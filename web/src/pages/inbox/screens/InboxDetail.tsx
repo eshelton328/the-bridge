@@ -46,6 +46,8 @@ export type InboxDetailProps = {
   onDismiss?: (() => void) | undefined
   /** A task removed in its discussion: Open discussion and Restore on its card. */
   removed?: RemovedControl | undefined
+  /** Start on a next step that has not started. */
+  onStart?: (() => void) | undefined
 }
 
 export function InboxDetail({
@@ -64,6 +66,7 @@ export function InboxDetail({
   onSnooze,
   onDismiss,
   removed,
+  onStart,
 }: InboxDetailProps) {
   const snooze = {
     menu: snoozeMenu,
@@ -98,6 +101,7 @@ export function InboxDetail({
           snooze={snooze}
           onUiChange={onUiChange}
           removed={removed}
+          onStart={onStart}
         />
       ) : null}
       {detail.kind === 'question' ? (

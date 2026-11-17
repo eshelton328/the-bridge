@@ -24,6 +24,9 @@ const label = css({ textStyle: 'eyebrow', textTransform: 'uppercase', color: 'fg
 const reason = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 // M24 402:7849 and 402:7853: the sheet's buttons span its width.
 const wide = css({ w: '[100%]' })
+// M24 402:7842 to 402:7853: the meta line, the text, the reason and the buttons start 17 from the sheet's edge, under
+// the title. The sheet pads 12 and its title row 4 more (BottomSheet's header); the content takes the same 4.
+const sheetBody = css({ px: '4' })
 
 export type RemoveDialogProps = {
   proposal: Extract<InboxProposal, { kind: 'remove' }>
@@ -55,7 +58,7 @@ export function RemoveDialog({ proposal, open, onOpenChange, onConfirm, layout =
     // starts on Keep it, so Enter does not remove the task.
     return (
       <BottomSheet title={confirm.title} open={open} onOpenChange={onOpenChange} initialFocus={() => keepRef.current}>
-        <Stack gap="12" data-figma="sheet · Remove this task">
+        <Stack gap="12" className={sheetBody} data-figma="sheet · Remove this task">
           <p className={meta}>{confirm.meta}</p>
           <p className={text}>{confirm.text}</p>
           <div data-figma="402:7846">

@@ -37,8 +37,19 @@ const text = css({
   alignSelf: 'center',
   maxW: 'shell.widePane',
 })
+// M18 402:2060: on the phone the text is 320 wide, centred, so its lines break where Figma's do. No token names a
+// text column's width; `shell.popover` has the same 320 (LIBRARY_GAPS.md, Empty state with an icon tile).
+const phoneText = css({
+  textStyle: 'bodySm',
+  color: 'fg.muted',
+  m: '0',
+  textAlign: 'center',
+  alignSelf: 'center',
+  maxW: 'shell.popover',
+})
 const can = css({ textStyle: 'small', color: 'fg.default' })
-const canIcon = css({ display: 'inline-flex', color: 'fg.muted' })
+// Figma tints the three icons violet (#9e8fff, D14, T17 and M18 402:2064 to 402:2072): `accent.discuss`.
+const canIcon = css({ display: 'inline-flex', color: 'accent.discuss' })
 // Figma 403:984: the suggestion labels are Geist Medium 12, not the Button's Medium 14. At 14 the row
 // is about 80 px wider than Figma's 507 and fills the 587 px column, so it wraps where glyph widths
 // round up (Linux).
@@ -71,7 +82,7 @@ export function DiscussionEmpty({ empty, stacked = false, onPick }: DiscussionEm
         <BubbleIcon size="20" />
       </span>
       <h3 className={title}>{empty.title}</h3>
-      <p className={text}>{empty.text}</p>
+      <p className={stacked ? phoneText : text}>{empty.text}</p>
       <div data-figma="it can">
         <Panel title={empty.canLabel}>
           <Stack gap="8">

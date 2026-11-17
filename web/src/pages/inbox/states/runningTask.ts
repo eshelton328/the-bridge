@@ -8,6 +8,7 @@ import { nextStep } from './nextStep.ts'
 import { running } from './running.ts'
 
 const base = nextStep.data.detail
+const { start } = base.launch
 
 export const runningTask = {
   title: 'running, on the task page',
@@ -16,21 +17,11 @@ export const runningTask = {
     ...running.data,
     detail: {
       ...base,
-      status: { tone: 'working', label: 'Running' },
-      origin: 'started 3m ago',
+      // Start's result (D6): the launch's `start`.
+      status: start.status,
+      origin: start.origin,
       prompt: { ...base.prompt, state: 'sent' },
-      launch: {
-        stage: 'started',
-        run: {
-          agent: 'claude',
-          title: 'Running in quiet-nebula',
-          status: { tone: 'working', label: 'Working', dot: true },
-          meta: 'the-bridge · Sonnet 5.5 · Creating 9 issues in NCC…',
-          open: 'Reply here',
-          openElsewhere: 'Open in Workspaces',
-          chat: running.data.detail,
-        },
-      },
+      launch: { stage: 'started', run: start.run },
     },
   },
   ui: running.ui,

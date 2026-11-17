@@ -31,8 +31,9 @@ const title = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
 const oneLine = css({ display: 'grid' })
 const meta = css({ textStyle: 'monoSm', color: 'fg.muted' })
 const chevron = css({ color: 'fg.muted', display: 'inline-flex' })
-// T18: the first entry 22 below the task card (402:11357 to 402:11425), 24 on the grid (d-072): the stack's 16 and 8.
-const thread = css({ mt: '8' })
+// T17 and M18 to M24 put the task card 8 under the nav (T17 402:11162 to 402:11174, M21 402:7184 to 402:7196).
+// T18: the first entry 22 below the task card (402:11357 to 402:11425), 24 on the grid (d-072): the stack's 8 and 16.
+const thread = css({ mt: '16' })
 
 export type DiscussionPageProps = {
   discussion: InboxDiscussion
@@ -46,13 +47,24 @@ export type DiscussionPageProps = {
   control?: ProposalControl | undefined
   /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
+  /** Erik sent a message from the reply box. */
+  onSend?: ((text: string) => void) | undefined
 }
 
-export function DiscussionPage({ discussion, task, place, layout, onClose, control, drafts }: DiscussionPageProps) {
+export function DiscussionPage({
+  discussion,
+  task,
+  place,
+  layout,
+  onClose,
+  control,
+  drafts,
+  onSend,
+}: DiscussionPageProps) {
   const phone = layout === 'phone'
   return (
     <Container size={detailContainerSize(layout)} className={fill}>
-      <Stack gap="16" className={fill}>
+      <Stack gap="8" className={fill}>
         <Inline gap="8" align="center" data-figma="nav">
           <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
           <span className={spacer} />
@@ -89,6 +101,7 @@ export function DiscussionPage({ discussion, task, place, layout, onClose, contr
           className={thread}
           drafts={drafts}
           stacked={phone}
+          onSend={onSend}
         />
       </Stack>
     </Container>

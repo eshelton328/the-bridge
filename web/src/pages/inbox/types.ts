@@ -127,8 +127,12 @@ export type InboxSnoozeMenu = z.infer<typeof InboxSnoozeMenu>
 /** A Filter menu section that narrows the list: its label and its checked values. */
 export type AppliedSection = { label: string; values: string[] }
 
-/** A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. */
-const InboxToast = z.object({ text: z.string(), action: z.string() })
+/**
+ * A toast over the bottom of the list, such as "Created 3 tasks from a discussion" with Undo. `created` names the rows a
+ * state draws as created (D18, whose task has no discussion to apply): they show while `InboxUi.proposals.create` is
+ * applied, and Undo takes them out, as it takes out the rows of an applied proposal (M22).
+ */
+const InboxToast = z.object({ text: z.string(), action: z.string(), created: z.array(InboxItemId).optional() })
 
 const InboxMetaChip = z.object({ label: z.string(), icon: InboxChipIcon, issue: z.boolean() })
 
@@ -221,7 +225,14 @@ export type InboxRunCard = z.infer<typeof InboxRunCard>
 
 /** Before Start: where it will run and the Start button; after: the run card. */
 const InboxLaunch = z.discriminatedUnion('stage', [
-  z.object({ stage: z.literal('suggested'), runIn: InboxRunIn, startLabel: z.string(), startHint: z.string() }),
+  z.object({
+    stage: z.literal('suggested'),
+    runIn: InboxRunIn,
+    startLabel: z.string(),
+    startHint: z.string(),
+    /** What Start makes of the task, as D6 draws it: its status and origin, and the run card of its chat. */
+    start: z.object({ status: InboxDetailHead.shape.status, origin: z.string(), run: InboxRunCard }),
+  }),
   z.object({ stage: z.literal('started'), run: InboxRunCard }),
 ])
 
@@ -440,6 +451,10 @@ export const InboxUi = z.object({
   proposalChecks: z.record(z.string(), z.boolean()),
   /** The prompt the task showed when Erik applied a proposed update, with his edits; Undo brings it back. */
   promptBeforeApply: z.string().nullable(),
+  /** The messages Erik sent in the open task's discussion, in order; each follows the discussion's entries. */
+  sent: z.array(z.string()),
+  /** The next steps Erik started with Start: each shows the run card its launch's `start` holds. */
+  started: z.array(InboxItemId),
 })
 export type InboxUi = z.infer<typeof InboxUi>
 

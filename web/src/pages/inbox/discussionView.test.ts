@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { discussionView, proposalEffect, removeEffect, undoCreateEffect } from './screens/discussionView.ts'
 import { restoreEffect } from './screens/discussionView.ts'
+import { startView } from './screens/startView.ts'
 import { inboxStates } from './states/index.ts'
 
 const { changeProposed, tasksProposed, removalProposed } = inboxStates
@@ -87,5 +88,37 @@ describe('the discussion effects', () => {
     expect(restored.finished).toEqual([])
     expect(restored.proposals).toEqual({})
     expect(discussionView(removed.data, restored).detail).toEqual(removed.data.detail)
+  })
+
+  it('adds the messages Erik sent after the entries', () => {
+    const view = discussionView(tasksProposed.data, { ...tasksProposed.ui, sent: ['Keep the Inbox one.'] })
+    expect(view.discussion?.entries.at(-1)).toEqual({ type: 'user', text: 'Keep the Inbox one.' })
+  })
+
+  it('takes the rows a state draws as created out after Undo, with the counts and the toast', () => {
+    const { tasksCreated } = inboxStates
+    const shown = discussionView(tasksCreated.data, tasksCreated.ui)
+    expect(shown.toast).toBeDefined()
+    const undone = discussionView(tasksCreated.data, {
+      ...tasksCreated.ui,
+      ...undoCreateEffect(tasksCreated.data, tasksCreated.ui).ui,
+    })
+    expect(undone.toast).toBeUndefined()
+    expect(undone.count).toBe(tasksCreated.data.count - 3)
+    const next = undone.groups.find((g) => g.id === 'nextSteps')
+    expect(next?.rows.map((r) => r.pill?.label)).not.toContain('New')
+    expect(next?.count).toBe(next?.rows.length)
+  })
+})
+
+describe('startView', () => {
+  it('shows a started next step with its run card, Running and its prompt sent', () => {
+    const { nextStep } = inboxStates
+    const view = startView(nextStep.data, { started: [nextStep.data.detail.id] })
+    const detail = view.detail?.kind === 'next' ? view.detail : undefined
+    expect(detail?.status.label).toBe('Running')
+    expect(detail?.prompt.state).toBe('sent')
+    expect(detail?.launch.stage === 'started' ? detail.launch.run.chat?.reply : undefined).toBe('Reply to quiet-nebula')
+    expect(startView(nextStep.data, { started: [] })).toBe(nextStep.data)
   })
 })

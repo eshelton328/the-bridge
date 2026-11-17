@@ -1,14 +1,17 @@
 // Figma Inbox D7 "Done": finished tasks by day, each with how it ended.
-// The finished next step is open, read-only, with Open chat. Copy word for
-// word from references/inbox/D07/frame.json.
+// The finished next step is open, read-only, with Open chat, which opens
+// its chat in quiet-nebula: the one Start opened, with its last tool line
+// done (no frame draws the finished chat). Copy word for word from
+// references/inbox/D07/frame.json.
 import { InboxItemId } from '@bridge/shared'
 import type { ScreenState } from '../../../lib/screenState.ts'
-import type { InboxData, InboxUi } from '../types.ts'
-import { nextStep } from './nextStep.ts'
+import type { InboxData, InboxPill, InboxUi } from '../types.ts'
+import { nextStep, startedChat } from './nextStep.ts'
 import { runningTask } from './runningTask.ts'
 
 const base = runningTask.data.detail
 const selected = nextStep.ui.selectedId
+const finishedPill: InboxPill = { tone: 'done', label: 'Done', dot: true }
 
 export const done = {
   title: 'done',
@@ -83,10 +86,15 @@ export const done = {
         run: {
           agent: 'claude',
           title: 'Finished in quiet-nebula',
-          status: { tone: 'done', label: 'Done', dot: true },
+          status: finishedPill,
           meta: 'the-bridge · Sonnet 5.5 · 9 issues created in NCC, milestone Increment one',
           open: 'Open chat',
           openElsewhere: 'Open in Workspaces',
+          chat: {
+            ...startedChat,
+            status: finishedPill,
+            chat: startedChat.chat.map((entry) => (entry.type === 'tool' ? { ...entry, state: 'done' } : entry)),
+          },
         },
       },
     },
