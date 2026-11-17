@@ -20,7 +20,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { InboxProposal } from '../types.ts'
 
 // A new task (D17 403:2435): a bordered box, 52 high, with the checkbox and title, and the meta line under
-// the title, past the checkbox (16 px box and 8 px gap). A Panel pads 16 and would be 14 px taller.
+// the title, past the checkbox (16 px box and 8 px gap). In a Panel each box is 12 px taller.
 const task = css({
   py: '8',
   px: '10',
