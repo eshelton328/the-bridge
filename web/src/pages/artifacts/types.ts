@@ -58,6 +58,40 @@ type SortValue = z.infer<typeof SortValue>
 export const ViewValue = z.enum(['grid', 'list'])
 export type ViewValue = z.infer<typeof ViewValue>
 
+/** The chat that published an open artifact (D2 "Made in"): Open in workspace opens it. A proposal (D2 note). */
+const ArtifactMadeIn = z.object({
+  /** The section's label, such as "Made in". */
+  label: z.string(),
+  source: ArtifactSource,
+  /** Such as "Published from chat quiet-nebula". */
+  title: z.string(),
+  /** The workspace, model and age as one line, such as "workspace skill-evals · Opus 5.5 · 12m ago". */
+  meta: z.string(),
+})
+
+/** The artifact open beside the list (D2): its bar, title block, preview and the chat that made it. */
+export const ArtifactDetail = z.object({
+  /** The card it opens; its row is drawn selected. */
+  id: z.string(),
+  isNew: z.boolean(),
+  /** Who found it and when, such as "found 12m ago by the Artifact hook". */
+  found: z.string(),
+  title: z.string(),
+  description: z.string(),
+  source: ArtifactSource,
+  /** The source as its chip names it, such as "Claude artifact". */
+  sourceLabel: z.string(),
+  /** The project it is filed in; its chip opens the project menu. */
+  project: z.string(),
+  /** Such as "updated 12m ago". */
+  updated: z.string(),
+  preview: ArtifactPreview,
+  /** The artifact's address without the scheme, as the preview's footer shows it. */
+  link: z.string(),
+  madeIn: ArtifactMadeIn,
+})
+export type ArtifactDetail = z.infer<typeof ArtifactDetail>
+
 export const ArtifactsData = z.object({
   title: z.string(),
   /** The number of artifacts in the library, after the title. */
@@ -72,6 +106,8 @@ export const ArtifactsData = z.object({
   /** The sorts, each with the short label the Sort button shows. */
   sorts: z.array(z.object({ value: SortValue, label: z.string() })),
   groups: z.array(ArtifactGroup),
+  /** The artifact open beside the list (D2); without it the library shows its grid (D1). */
+  open: ArtifactDetail.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
