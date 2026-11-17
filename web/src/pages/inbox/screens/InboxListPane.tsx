@@ -2,8 +2,8 @@
 // search row and the groups of rows; with the sort by project, a heading
 // per project in each group; with a search, a line that sums up the
 // results and a hint about matches in Done; with filters that apply, a row
-// of them under the tools and how many tasks they hide; and a toast over
-// the bottom of the list. Props only.
+// of them under the tools and how many tasks they hide; and a toast that
+// sticks to the bottom of the list. Props only.
 import {
   CheckIcon,
   FilterChips,
@@ -30,11 +30,10 @@ const pane = css({
   overflow: 'auto',
   bg: 'surface.pane',
 })
-// The pane holds the scrolling list and, over its bottom, the toast (D18 403:2943: 12 px in, 16 px up).
-// The list ends at the toast's bottom edge, so nothing shows in the 16 px under the toast, as in Figma,
-// where the toast covers the last group header.
+// The pane holds the scrolling list, and the toast sticks to the list's bottom (D18 403:2943: 12 px in,
+// 16 px up). The list ends at the toast's bottom edge, so nothing shows in the 16 px under the toast, as
+// in Figma, where the toast covers the last group header.
 const frame = css({
-  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   flex: '1',
@@ -42,7 +41,10 @@ const frame = css({
   pb: '16',
   bg: 'surface.pane',
 })
-const toast = css({ position: 'absolute', insetInline: '12', bottom: '16' })
+// The toast is the list's last child and sticks to its bottom: at rest it covers the end of the list, as
+// in Figma, and at the bottom of the scroll it sits under the last group, so no row stays behind it.
+// The top margin keeps it at the bottom when the list is short.
+const toast = css({ position: 'sticky', bottom: '0', mt: 'auto' })
 const header = css({ py: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
 const showIt = css({ color: 'fg.accent', textDecoration: 'none', _hover: { textDecoration: 'underline' } })
@@ -172,21 +174,23 @@ export function InboxListPane({
           {data.applied.hidden}
         </span>
       )}
+      {data.toast === undefined ? null : (
+        <div className={toast} data-figma="toast · created">
+          <Toast
+            tone="discuss"
+            icon={<CheckIcon size="12" />}
+            action={{ label: data.toast.action, onClick: () => undefined }}
+          >
+            {data.toast.text}
+          </Toast>
+        </div>
+      )}
     </section>
   )
   if (data.toast === undefined) return list
   return (
     <div className={frame} data-figma="inbox list">
       {list}
-      <div className={toast} data-figma="toast · created">
-        <Toast
-          tone="discuss"
-          icon={<CheckIcon size="12" />}
-          action={{ label: data.toast.action, onClick: () => undefined }}
-        >
-          {data.toast.text}
-        </Toast>
-      </div>
     </div>
   )
 }

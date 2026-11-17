@@ -1,3 +1,6 @@
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
+import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { act } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -7,7 +10,12 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // The Inbox through the real route, loader and page store: what the
-// props-only stories cannot show, because they have no state owner.
+// props-only stories cannot show, because they have no state owner. The
+// app's styles and fonts load as in main.ts, and the root has the theme
+// and mode of index.html, so the layout tests measure the real layout.
+document.documentElement.classList.add('dark')
+document.documentElement.dataset.pandaTheme = 'viewscreen'
+
 function renderInbox(state: string) {
   const router = createRouter({
     routeTree,
@@ -26,9 +34,13 @@ const dialog = () => page.getByRole('dialog', { name: 'Suggested prompt' })
 const removeDialog = () => page.getByRole('alertdialog', { name: 'Remove this task?' })
 const searchbox = () => page.getByRole('searchbox', { name: 'Search the inbox' })
 
-afterEach(() => {
+afterEach(async () => {
   resetAllStores()
+  await page.viewport(1512, 982)
 })
+
+/** The box of an element found by a locator. */
+const box = (el: Element) => el.getBoundingClientRect()
 
 describe('the Inbox route', () => {
   it('closes the prompt dialog with Escape', async () => {
@@ -91,6 +103,26 @@ describe('the Inbox route', () => {
     await expect.element(searchbox()).toHaveValue('')
     await showState(router, 'search')
     await expect.element(searchbox()).toHaveValue('f-005')
+    await view.unmount()
+  })
+
+  it('scrolls the Snoozed toggle clear of the toast in D18', async () => {
+    await page.viewport(1512, 982)
+    const { rendered } = renderInbox('tasksCreated')
+    const view = await rendered
+    await expect.element(page.getByText('Created 3 tasks from a discussion')).toBeVisible()
+    const list = page.getByRole('region', { name: 'Inbox list' }).element()
+    list.scrollTop = list.scrollHeight
+    const toggle = page.getByRole('button', { name: /Snoozed/ }).element()
+    const toast = page
+      .getByText('Created 3 tasks from a discussion')
+      .element()
+      .closest('[data-figma="toast · created"]')
+    expect(toast).not.toBeNull()
+    const t = box(toggle)
+    const hit = document.elementFromPoint(t.left + t.width / 2, t.top + t.height / 2)
+    expect(hit !== null && toggle.contains(hit), 'the toggle is under the pointer').toBe(true)
+    if (toast !== null) expect(t.bottom).toBeLessThanOrEqual(box(toast).top)
     await view.unmount()
   })
 })
