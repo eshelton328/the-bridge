@@ -1,0 +1,31 @@
+{
+  "missing": [
+    {
+      "text": "commits-and-prs",
+      "layers": ["461:940"],
+      "reason": "The name is longer than its 140 px node (node · commits-and-prs, 461:936), and frame.png cuts it with an ellipsis (commits-and-p…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "mermaid-diagrams",
+      "layers": ["461:985"],
+      "reason": "The name is longer than its 140 px node (node · mermaid-diagrams, 461:982), and frame.png cuts it with an ellipsis (mermaid-diagr…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
+    },
+    {
+      "text": "commit-msg",
+      "layers": ["461:965"],
+      "reason": "The node (node · commit-msg, 461:961, y 667) lies below the bottom edge of the map window (map viewport 461:866, y 93 to 593), which clips the drawing: frame.png does not show it. The text check reads only the layer's box, which is inside the frame, and cannot see Figma's clip. The render clips the node at the same edge."
+    },
+    {
+      "text": "ambitious",
+      "layers": ["461:1001"],
+      "reason": "The node (node · ambitious, 461:998, y 609) lies below the bottom edge of the map window (map viewport 461:866, y 93 to 593), which clips the drawing: frame.png does not show it. The text check reads only the layer's box, which is inside the frame, and cannot see Figma's clip. The render clips the node at the same edge."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"map viewport\"] > div.map-graph__root:nth-of-type(1) > div.map-graph__scroller",
+      "reason": "The phone shows the map in a window that Erik drags to move (note, M11): Figma's map viewport (461:866, 366 × 500) clips the 712 px drawing (map canvas 461:867) at its right edge, so AGENTS, WORKFLOWS and the agent and workflow nodes are off to the right in frame.png too. The render's window is MapGraph's scroller, which cuts the drawing at the same edge and scrolls sideways to show the rest."
+    }
+  ]
+}
