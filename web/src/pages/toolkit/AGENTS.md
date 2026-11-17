@@ -54,10 +54,15 @@ what each file of a page folder is for.
   (`ToolkitListPane`) and `ToolkitItem` fills the rest, with its
   Overview (`ToolkitItemOverview`, `ToolkitFilePreview`,
   `ToolkitItemSide`); on a tablet or phone the item fills the screen
-  under a back row. A click on a card, a row or the map card's Open
+  under a back row. In the list pane the header, chips and search stay
+  at the top while the groups scroll, and when the open row is out of
+  view the pane scrolls its group to the top. A rule (D4, `ruleOpen`,
+  which adds the Workflows and Hooks groups) adds `loads` to its details,
+  shown as the Overview's load box, and has no side column: `usedIn` and
+  `files` are optional. A click on a card, a row or the map card's Open
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (D4, D7 to D9, T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
+  (D7 to D9, T3, T7, T17 to T19, M2, M19 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

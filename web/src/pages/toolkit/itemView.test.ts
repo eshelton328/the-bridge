@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
-const { skillOpen, toolkitList } = toolkitStates
+const { ruleOpen, skillOpen, toolkitList } = toolkitStates
 
 describe('openItem', () => {
   it('opens nothing without ui.open, or for a path the list does not have', () => {
@@ -30,5 +30,13 @@ describe('openItem', () => {
     expect(open?.detail.location).toBe('toolkit/agents/writer.md')
     expect(open?.detail.description).toBe('Drafts one doc, ticket or PRD in its own context')
     expect(open?.detail.tabs.map((t) => t.value)).toEqual(['overview'])
+  })
+
+  it('opens a rule with when it loads and no side column (D4)', () => {
+    const open = openItem(ruleOpen.data, ruleOpen.ui)
+    expect(open?.item.kind).toBe('rule')
+    expect(open?.detail.loads?.when).toBe('a file under toolkit/skills/** or skills/** changes')
+    expect(open?.detail.usedIn).toBeUndefined()
+    expect(open?.detail.files).toBeUndefined()
   })
 })
