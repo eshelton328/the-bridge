@@ -18,7 +18,9 @@ What still differs from Figma after round 2 of the fidelity loop
 ## Deviations
 
 - **Card height.** Each card is 124 px high against Figma's 150
-  (`h -26` on every `toolkit card · …` key). Figma puts a 14 px spacer
+  (`h -26` on every card key: `toolkit card · agents-md`,
+  `toolkit card · ambitious`, `toolkit card · audit-slop` and
+  `toolkit card · eval-cases` in the first row, and the cards below). Figma puts a 14 px spacer
   (425:86) and another 10 px gap between the description and the
   counts; the library `Card` puts the counts 10 px under the
   description (gap: Toolkit card height). Each card row starts higher
