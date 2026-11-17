@@ -69,3 +69,15 @@ frames give the same results as before T03.
   Figma groups them in the centre. The tab bar is the shared `AppTabBar`
   (d-105), as on T01 and T02; its box passes the position check, and a
   change to it needs the app-frame lock.
+
+## Second review
+
+- **Item tabs.** The tabs are spaced wider: How it works starts about
+  10 px further right than in Figma, and Activity about 33 px.
+  `ItemTabs` pads its list 2 and each tab 12, where Figma has 0 and 10;
+  its sizes change only the height (gap: Item tab spacing).
+- **Skill evals link.** The chart icon and the chevron sit level with the
+  title, about 11 px above the box's centre, as on D3 (gap: Toolkit row
+  (pane)).
+- **File lines.** The six lines are about 22 px apart against 23, so the
+  list is about 5 px shorter (gap: Item file summary).
