@@ -1,0 +1,41 @@
+{
+  "missing": [
+    {
+      "text": "42%",
+      "layers": ["105:1112"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\" (\"42\" then \"%\"), so the text check does not find the one string; the render shows \"42%\" after the segments in the bridge themes row (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "23%",
+      "layers": ["105:1128"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"23%\" after the segments in the drift check row (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "18%",
+      "layers": ["105:1201"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"18%\" after the segments in the release notes row (LIBRARY_GAPS.md: ContextMeter percentage)."
+    },
+    {
+      "text": "78%",
+      "layers": ["105:1235"],
+      "reason": "The library's ContextMeter draws the percentage as two text nodes, the number and \"%\", so the text check does not find the one string; the render shows \"78%\" after the segments in the chat header (LIBRARY_GAPS.md: ContextMeter percentage). The 78% of the hono server row (105:1164) is clipped in the render and stays a failure."
+    }
+  ],
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "scrollBar",
+      "selector": "[data-figma=\"114:2\"] > div.text-field__root:nth-of-type(2) > input.text-field__input",
+      "reason": "The name field draws no scroll bar. Chrome's clientWidth of an <input> leaves out its padding (offsetWidth 498, clientWidth 476, border 2, padding 10 + 10), so the rule reads the 20 px of side padding as a vertical scroll bar. The rule cannot tell a padded input from a scroll bar."
+    }
+  ]
+}
