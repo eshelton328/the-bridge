@@ -64,7 +64,9 @@ what each file of a page folder is for.
   row to the kind badge's row. A rule (D4, `ruleOpen`,
   which adds the Workflows and Hooks groups) adds `loads` to its details,
   shown as the Overview's load box, and has no side column: `usedIn` and
-  `files` are optional. An agent (D7, `agentOpen`, T1's list with only
+  `files` are optional. On a tablet (T17, `ruleOpenTablet`, D4's data) the rule
+  opens in `DetailFrame` as T3's skill does, and its load box spans the
+  item. An agent (D7, `agentOpen`, T1's list with only
   the Skills and Agents groups and Skills closed) adds `runs` to its
   details, the How it runs cards (`ToolkitAgentRuns`) between the
   description and the columns, a `meta` after the preview's file name and
@@ -87,6 +89,6 @@ what each file of a page folder is for.
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T7, T17 to T19, M19 to M22) fill `details` and
+  (T7, T18, T19, M19 to M22) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

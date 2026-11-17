@@ -59,8 +59,12 @@ const titleLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1536',
   'workflows/skill-eval-round.md': '433:1032',
 }
-// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567).
-const pageTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '428:567' }
+// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567), the rule skills in
+// T17 (487:355).
+const pageTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '428:567',
+  'rules/skills.md': '487:355',
+}
 // On the phone: writer in M2 (429:303).
 const phoneTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '429:303' }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }

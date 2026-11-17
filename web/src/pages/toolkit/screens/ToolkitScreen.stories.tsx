@@ -198,3 +198,19 @@ export const SkillOpenPhone: Story = {
     await expect(within(item).getByRole('region', { name: 'SKILL.md' })).toBeVisible()
   },
 }
+
+export const RuleOpenTablet: Story = {
+  name: 'T17: a rule open on a tablet, in place of the list',
+  args: { data: toolkitStates.ruleOpenTablet.data, ui: toolkitStates.ruleOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the rule in place of the list, under Back.
+  // The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the tablet's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skills' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(within(item).getByText('a file under toolkit/skills/** or skills/** changes')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'rules/skills.md' })).toBeVisible()
+  },
+}

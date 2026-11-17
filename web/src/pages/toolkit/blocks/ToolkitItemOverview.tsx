@@ -22,11 +22,17 @@ const overview = css({ display: 'flex', flexDirection: 'column', gap: '16' })
 // M2: on the phone the description (487:142) is 12 over the columns (487:143), and the side (487:162) 16 under the
 // file preview, which ends 1 px under the columns' foot; 12 apart keeps each within 3 px of Figma's.
 const phoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' })
+// T17: a rule on a tablet has its description (487:501), the load box (487:502) and the file (487:508) 14 apart; no
+// space token has 14, and the Panel pads the box 12 where Figma has 10, so it is 4 px taller. 12 apart keeps each row
+// within 2 px of Figma's (LIBRARY_GAPS.md, Tablet item spacing).
+const ruleTabletOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' })
 const description = css({ textStyle: 'body', color: 'fg.muted' })
 // D4 427:628: a box with the needs-you border and tint, as wide as its line: the clock icon, "Loads when" in the
 // needs-you colour and the condition in mono, 10 apart. The Panel pads it 12 above and below, where Figma has 10
 // (LIBRARY_GAPS.md, Rule load box).
 const loadsBox = css({ alignSelf: 'flex-start' })
+// T17 487:502: on a tablet the box spans the page (712 wide).
+const loadsBoxPage = css({ alignSelf: 'stretch' })
 const loadsLine = css({ display: 'flex', alignItems: 'center', gap: '10', whiteSpace: 'nowrap' })
 const loadsLabel = css({
   display: 'inline-flex',
@@ -45,8 +51,11 @@ const descriptionLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1537',
   'workflows/skill-eval-round.md': '433:1033',
 }
-// T3: the description of writer on a tablet (487:78).
-const pageDescriptionLayers: Readonly<Record<string, string>> = { 'skills/writer/': '487:78' }
+// T3: the description of writer on a tablet (487:78); T17: the rule skills's (487:501).
+const pageDescriptionLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '487:78',
+  'rules/skills.md': '487:501',
+}
 // M2: the description of writer on the phone (487:142).
 const phoneDescriptionLayers: Readonly<Record<string, string>> = { 'skills/writer/': '487:142' }
 const descriptionLayersOf = {
@@ -87,12 +96,20 @@ export function ToolkitItemOverview({
     <ToolkitItemSide detail={detail} onTabChange={onTabChange} compact={layout === 'phone'} />
   ) : null
   return (
-    <div className={layout === 'phone' ? phoneOverview : overview}>
+    <div
+      className={
+        layout === 'phone'
+          ? phoneOverview
+          : layout === 'tablet' && detail.loads !== undefined
+            ? ruleTabletOverview
+            : overview
+      }
+    >
       <p className={description} data-figma={descriptionLayersOf[layout][detail.path]}>
         {detail.description}
       </p>
       {detail.loads === undefined ? null : (
-        <div className={loadsBox} data-figma="when it loads">
+        <div className={layout === 'tablet' ? loadsBoxPage : loadsBox} data-figma="when it loads">
           <Panel tone="needsYou">
             <p className={loadsLine}>
               <span className={loadsLabel}>

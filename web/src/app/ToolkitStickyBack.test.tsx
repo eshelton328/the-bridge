@@ -70,6 +70,25 @@ describe('the open item on a tablet (d-107)', () => {
     expect(box(backRow).bottom).toBeLessThanOrEqual(box(body).top)
     await view.unmount()
   })
+
+  it('opens the rule skills under Back, its load box across the item (T17)', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('ruleOpenTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="when it loads"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]')
+    const item = root.querySelector('[data-figma="toolkit item"]')
+    const loads = root.querySelector('[data-figma="when it loads"]')
+    if (backRow === null || item === null || loads === null) throw new Error('no back row, item or load box')
+    // The item is under Back, and on a tablet the load box spans the item, as T17's 712 px box (487:502).
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    expect(box(loads).width).toBe(box(item).width)
+    await view.unmount()
+  })
 })
 
 describe('the open item on the phone (d-107)', () => {
