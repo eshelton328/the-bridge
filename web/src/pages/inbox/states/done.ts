@@ -11,6 +11,8 @@ import { runningTask } from './runningTask.ts'
 
 const base = runningTask.data.detail
 const selected = nextStep.ui.selectedId
+// The Done days' items are finished ones; an open item with the same title (drift check, the header logo) is another
+// item, so their ids differ and marking the open one done finds only it (D21 has both).
 const finishedPill: InboxPill = { tone: 'done', label: 'Done', dot: true }
 
 export const done = {
@@ -36,7 +38,7 @@ export const done = {
             outcome: { line: 'Finished in quiet-nebula · 9 issues created', result: 'done' },
           },
           {
-            id: InboxItemId.parse('drift-check-git-mv'),
+            id: InboxItemId.parse('drift-check-git-mv-allowed'),
             kind: 'approval',
             title: 'drift check wants to run git mv',
             meta: 'omni-brain · drift check',
@@ -54,7 +56,7 @@ export const done = {
         dot: null,
         rows: [
           {
-            id: InboxItemId.parse('pick-the-header-logo'),
+            id: InboxItemId.parse('pick-the-header-logo-answered'),
             kind: 'review',
             title: 'Pick the header logo',
             meta: 'ncc-1701 · f-005 · NCC-36',
