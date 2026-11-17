@@ -32,7 +32,12 @@ each file of a page folder is for.
   bars stay in view, and that a long draft keeps Send in reach.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
-  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). In
+  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
+  tablet (T1) the rows are 10 apart, 24 in: `LibraryHeader` puts the found
+  status on its own row under a 44 px header with the phone title size and
+  a 36 px Add a link, `LibraryTools size="lg"` gives 36 px controls 8 apart
+  with no space before the view switch, and `CardGroup` draws two columns
+  of cards whose meta line has the source mark without its name. In
   the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
   with a search, one `ListGroup` of the matches ("3 matches for “eval”"),
   each `LibraryRow` with where it matched, and the search's hint under it;
@@ -119,7 +124,9 @@ each file of a page folder is for.
   (D7's data with a question, the reply and a proposed update to the
   chart; the discussion's `layers` hold each frame's node ids of its two
   Open in workspace buttons; it also holds what Apply shows, so its Apply
-  shows D9) and D9 `changeApplied` (D8's data after Apply). `library` stays first in `states/index.ts`: the app
+  shows D9) and D9 `changeApplied` (D8's data after Apply) and T1
+  `libraryTablet` (D1's data on the tablet: "Search artifacts", two
+  shorter Earlier descriptions, and only Earlier's two cards in the frame). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
