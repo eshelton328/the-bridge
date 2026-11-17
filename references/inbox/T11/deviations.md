@@ -2,14 +2,14 @@
 
 What still differs from Figma T11 · Sorted by project (the list sorted by project, `sortedList`, the list of D11 `sortedByProject`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.7, which has #107 and #108; no layer moved), each
+library 1.0.0-beta.8, which adds #109), each
 with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: pass (62 strings).
-- Position: 5 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `tab bar`).
+- Position: 7 of 9 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -18,10 +18,8 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `inbox list`: x +2, y +0, w -4, h +7.
-- `group · NEXT STEPS`: x +2, y +6, w -4, h +2.
-- `group · SNOOZED`: x +2, y +14, w -4, h +2.
-- `group · RUNNING`: x +2, y +16, w -4, h +2.
+- `group · SNOOZED`: x +2, y +6, w -4, h +2.
+- `group · RUNNING`: x +2, y +8, w -4, h +2.
 
 ## Deviations
 
@@ -40,12 +38,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
   library #108).
 - **Project headings.** Each project heading is the library's
-  `GroupHeader variant="project"`, 26 px against Figma's 24 (#96 rows
-  on the 4 px grid; #108 left it as it was). With the rows and group
-  headers above, each later group starts lower (`group · NEXT STEPS`
-  y +6, `group · SNOOZED` y +14, `group · RUNNING` y +16) and the
-  list is 7 px taller than Figma's (`inbox list` h +7). Library gap:
-  Styles that differ from Figma.
+  `GroupHeader variant="project"`, 24 px as Figma's (library #109,
+  beta.8; was 26). With the 1 px taller rows and the 2 px taller group
+  headers above, the later groups still start a little lower
+  (`group · SNOOZED` y +6, `group · RUNNING` y +8); `group · NEXT
+  STEPS` and the list's box (`inbox list`) are within the tolerance.
 - **Tab bar.** `TabBar` spreads its five tabs over the full width;
   Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
   Library gap: Tablet tab bar.
@@ -68,6 +65,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   -4, h +2 (was x +2, y +40, w -4, h +4). The cause is #108's compact
   `ListRow` (56 px, was 58; Figma 55) and list `GroupHeader` (36 px,
   was 38; Figma 34).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) puts the project
+  `GroupHeader` at Figma's 24 px (was 26), which moves these layers:
+  `inbox list` within the tolerance (was x +2, y +0, w -4, h +7);
+  `group · NEXT STEPS` within the tolerance (was y +6); `group ·
+  SNOOZED` x +2, y +6, w -4, h +2 (was y +14); `group · RUNNING` x +2,
+  y +8, w -4, h +2 (was y +16). The cause is 2 px less per project heading above each group.
 
 ## Second review
 

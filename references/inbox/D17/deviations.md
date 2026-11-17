@@ -6,13 +6,30 @@ library 1.0.0-beta.4), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
-`pnpm fidelity inbox`; the checks and offsets below are from that run.
+`pnpm fidelity inbox`, and again on 2026-11-17 against 1.0.0-beta.8 (#109);
+the checks and offsets below are from the beta.8 run.
 
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` by their layer ids (one entry per string, d-101), so the same text in the task pane is still checked.
 - Position: 6 of 17 layers pass (`task pane`, `task bar`, `title block`, `guard`, `message · you`, `composer · discussion`).
 - Rules: pass.
+
+## Failing layers
+
+Render minus Figma, in px.
+
+- `section · WHY`: x +4, y +8, w +0, h +2.
+- `section · SUGGESTED PROMPT`: x +4, y +12, w +0, h -2.
+- `section · RUN IN`: x +4, y +12, w +0, h +1.
+- `start`: x +4, y +15, w +0, h -1.
+- `section · MY NOTES`: x +4, y +16, w +0, h +12.
+- `section · SOURCES`: x +4, y +30, w +0, h +2.
+- `discussion panel`: x +8, y +0, w -8, h +0.
+- `model and context`: x +0, y -2, w +9.6, h +4.
+- `discussion`: x +0, y +4, w +0, h -7.
+- `message · discussion`: x +0, y +5, w -1, h +21.
+- `proposal · CREATE 3 TASKS`: x +0, y +26, w +0, h +18.
 
 ## Deviations
 
@@ -54,11 +71,16 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   `ProposalBlock`'s buttons take no `textSize` (LIBRARY_GAPS.md, row
   "Button label size").
 - **New tasks.** Each task is a bordered box (`border.default`, radius
-  `lg`, 8 by 10 padding) with a `Checkbox` and the meta line under the
-  title; in a `Panel` each box was 12 px taller (round 1). The `Checkbox` label is `body`
-  (14/20) where Figma's title is 13/17, and "Also remove this task" is a `size="sm"`
-  `Checkbox` too, so the block is 60 px taller
-  (`proposal · CREATE 3 TASKS` h +60). A checked box is
+  `lg`, 6 by 10 padding) with `Checkbox size="compact"`: the title in
+  `bodySm` (13/20) and the meta line as its `description` in `monoSm`
+  (11/16), aligned with the title (library #109, beta.8). Each box is
+  52 px high, as Figma's 403:2435 (`InboxLayout.test.tsx` measures
+  it); Figma's title and meta boxes are 17 and 14 high, the library's
+  lines 20 and 16 (4 px grid), with 6 px padding against Figma's 9.
+  "Also remove this task" is a `size="sm"` `Checkbox`, whose row is
+  32 px high for touch against Figma's 16 (403:2459), and the action
+  row is about 2 px taller, so the block is 18 px taller
+  (`proposal · CREATE 3 TASKS` h +18; was h +60 with 66 px boxes). A checked box is
   `Checkbox tone="discuss"` (violet, `accent.discuss`, #9e8fff), as
   Figma's. Create 3 tasks counts the checked tasks.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
@@ -98,6 +120,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   y +26, w +0, h +60 (was x +0, y +30, w +0, h +60). The cause is the
   discussion reply's author name in `labelXsStrong` (SemiBold 12/16,
   Figma's; was `label`, Medium 14/20), a 4 px shorter line.
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109) moves this
+  layer: `proposal · CREATE 3 TASKS` x +0, y +26, w +0, h +18 (was x
+  +0, y +26, w +0, h +60). The cause is the new-task boxes at Figma's
+  52 px (`Checkbox size="compact"` with `description`; was 66).
 
 ## Second review
 

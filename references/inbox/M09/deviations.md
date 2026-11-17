@@ -88,8 +88,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   render (the exception says why).
 - **Button labels.** Reset and Edit are `Button textSize="xs"`
   (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100). Change,
-  Snooze and Dismiss are icons; the sheet's Edit prompt and Copy and the
-  pinned Start are `size="xl"` with the default label. The labels
+  Snooze and Dismiss are icons; the sheet's Edit prompt and Copy are
+  `size="xl"` with `textSize="sm"` (Medium 13), as T8 sets them in Figma
+  (346:7187, 346:7193; M9's text boxes 346:10802 and 346:10808 have the
+  same size; library #109, beta.8), and the pinned Start is `size="xl"`
+  with the default label. The labels
   match.
 - **Prompt fade.** Behind the sheet the task's prompt is cut by height
   and fades with no ellipsis, as Figma's (#104, as M2).

@@ -229,7 +229,8 @@ export function ListTools({
           onOpenChange={onFilterOpenChange}
           note={filterNote}
           actions={
-            <Button size="sm" onClick={onFilterClear}>
+            // Figma sets Clear in Medium 12 (T14 346:8975).
+            <Button size="sm" textSize="xs" onClick={onFilterClear}>
               Clear
             </Button>
           }

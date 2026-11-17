@@ -74,6 +74,13 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +0, y +10, w +1, h +4). The cause is #108's compact `ListRow` (56
   px, was 58; Figma 55) and list `GroupHeader` (36 px, was 38; Figma
   34).
+- **Beta.8 (2026-11-17).** Library 1.0.0-beta.8 (#109); no layer of
+  this frame moved. `RunCard` sets its primary button, here Open chat,
+  in `textSize="smStrong"` (SemiBold 13) and Open in Workspaces in
+  `textSize="sm"` (Medium 13), as T4 sets Reply here and Open in
+  Workspaces in Figma (346:6297, 346:6303). D7's text boxes (346:3082,
+  346:3088) have the same height; Open chat's type was not read from
+  Figma.
 
 ## Second review
 

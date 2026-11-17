@@ -13,24 +13,23 @@ import {
   type ProposalAction,
   ProposalDiff,
   ProposalSection,
-  Stack,
   TrashIcon,
   UndoIcon,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxProposal, InboxUi } from '../types.ts'
 
-// A new task (D17 403:2435): a bordered box, 52 high, with the checkbox and title, and the meta line under
-// the title, past the checkbox (16 px box and 8 px gap). In a Panel each box is 12 px taller.
+// A new task (D17 403:2435, T20 402:11865, M21 402:7278): a bordered box, 52 high, with the checkbox, the title
+// in 13/20 and the meta line under it, aligned with the title (`Checkbox size="compact"` with `description`,
+// library #109): 6 + 20 + 16 + 6 and the 1 px border.
 const task = css({
-  py: '8',
+  py: '6',
   px: '10',
   borderWidth: 'default',
   borderStyle: 'solid',
   borderColor: 'border.default',
   borderRadius: 'lg',
 })
-const meta = css({ textStyle: 'monoSm', color: 'fg.muted', pl: '24' })
 
 /** A proposal's button: apply (Apply, Create, Remove…), discard (Discard, Keep it), undo or edit (Edit first). */
 export type ProposalAct = 'apply' | 'discard' | 'undo' | 'edit'
@@ -57,18 +56,19 @@ function Body({ proposal, onCheck, created }: BodyProps) {
       return (
         <>
           {proposal.tasks.map((t) => (
-            <Stack key={t.title} gap="0" className={task}>
+            <div key={t.title} className={task}>
               <Checkbox
                 tone="discuss"
+                size="compact"
                 label={t.title}
+                description={t.meta}
                 checked={t.checked}
                 disabled={created}
                 onCheckedChange={(checked) => {
                   onCheck?.(t.title, checked)
                 }}
               />
-              <span className={meta}>{t.meta}</span>
-            </Stack>
+            </div>
           ))}
           {/* Figma sets "Also remove this task" in 12/16 (T20 402:11889): `size="sm"`. */}
           <Checkbox

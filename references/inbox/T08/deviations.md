@@ -2,7 +2,7 @@
 
 What still differs from Figma T8 · Read the whole prompt (the prompt in a sheet, `promptSheet`), after the last
 fidelity run (`pnpm fidelity inbox`, 2026-11-17, against the installed
-library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.8, #109, and no layer of this frame moved), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -79,9 +79,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   sheet take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's
   Medium 12, and Start takes `textSize="smStrong"` (`labelSmStrong`,
   SemiBold 13/16), Figma's SemiBold 13 (d-100). The sheet's Edit prompt
-  and Copy are `size="xl"` in `label` (Medium 14); Figma's labels are
-  smaller, about 13 px (17 px text boxes, 346:7187, 346:7193), so they
-  are a little wider. Library gap: Button label size.
+  and Copy are `size="xl"` with `textSize="sm"` (Medium 13/16), as
+  Figma sets them (346:7187, 346:7193, read from Figma; library #109,
+  beta.8). The labels match; the buttons' boxes follow the sheet's
+  inset, as before (`button · Edit prompt`, `button · Copy`).
 - **Disabled Reset.** Reset behind the sheet keeps its fill and
   `border.default` border with only its label and icon in `fg.muted`, as
   Figma draws it; beta.5 (#105) stopped fading the whole button.

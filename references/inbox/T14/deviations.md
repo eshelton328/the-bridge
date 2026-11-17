@@ -2,7 +2,7 @@
 
 What still differs from Figma T14 · Filter (the Filter menu open over the list, `filterList`, T1 `list` with skill-evals cleared in the menu), after the last
 fidelity run (`pnpm fidelity inbox`, all 70 frames, 2026-11-17,
-against the installed library 1.0.0-beta.7, which has #107 and #108), each with its reason. The library gaps are in
+against the installed library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with library 1.0.0-beta.8, #109, and no layer of this frame moved), each with its reason. The library gaps are in
 `web/src/pages/inbox/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -53,10 +53,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Button labels.** Newest and Filter take `Button textSize="sm"`
   (Medium 13, #105), as Figma draws them. The approval row's Allow
   once, Deny and Open chat take `textSize="xs"` (`labelXs`, Medium
-  12/16), Figma's Medium 12 (d-100). The Filter menu's Clear is still
-  `Button size="sm"` in `label` (Medium 14) against Figma's Medium 12
-  (346:8975, a 16 px text box), so it is a little wider: `ListTools`
-  passes it no `textSize`. Library gap: Button label size.
+  12/16), Figma's Medium 12 (d-100). The Filter menu's Clear is
+  `Button size="sm" textSize="xs"` (Medium 12/16), as Figma sets it
+  (346:8975, read from Figma; library #109, beta.8). The labels match.
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `inbox list` x +2, y +0, w -4, h -5 (was x
   +2, y +0, w -4, h +21); `group · NEXT STEPS` within tolerance (was x
