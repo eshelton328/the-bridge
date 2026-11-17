@@ -37,8 +37,8 @@ each file of a page folder is for.
 - `blocks/`: `LibraryHeader` (`PageHeader` with the count, `FoundStatus`
   and Add a link), `FoundStatus` (the refresh mark and when the library
   last checked its sources), `LibraryTools` (search, Sort, Filter and the
-  Grid or List `ViewSwitch`; the Sort and Filter menus come with D6 and
-  D3), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
+  Grid or List `ViewSwitch`; with `data.filterMenu` Filter opens the
+  Filter menu, D3; the Sort menu comes with D6), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
   source, project and age; `onOpen` makes it a button). For D2:
@@ -48,9 +48,15 @@ each file of a page folder is for.
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
   source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
   `Thumbnail` over the link and Open artifact) and `MadeIn` (the chat
-  that published it and Open in workspace).
-- `states/`: D1 `library` and D2 `artifactOpen` (D1's data with the
-  open artifact). `library` stays first in `states/index.ts`: the app
+  that published it and Open in workspace). For D3: `FilterPopover`
+  (Filter, pressed while open and with a dot while boxes are checked, and
+  the `Popover` with the footer's note and Show) and `FilterMenu` (a
+  `PopoverSection` per section, a `Checkbox size="compact"` with its count
+  per box, as the Inbox's Filter menu). Show closes the menu; the cards
+  carry no finder or update data yet, so the grid does not narrow.
+- `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
+  open artifact) and D3 `filterOpen` (D1's data with the Filter menu,
+  two boxes checked). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -59,8 +65,9 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`) and `ArtifactsUi` (chip,
-  sort, view, open groups and search text), each a Zod schema.
+  `ArtifactDetail` and `filterMenu`) and `ArtifactsUi` (chip,
+  sort, view, open groups, search text, and the optional open Filter
+  menu and its checked boxes), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
 
