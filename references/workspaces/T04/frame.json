@@ -943,6 +943,11 @@
       "id": "105:2156",
       "text": "9:41",
       "reason": "iOS status bar (design-only chrome, d-089)"
+    },
+    {
+      "id": "105:2295",
+      "text": "Keyboard",
+      "reason": "iOS keyboard placeholder (design-only chrome, d-089)"
     }
   ],
   "skipped": {
