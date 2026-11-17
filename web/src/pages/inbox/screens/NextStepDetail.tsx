@@ -20,7 +20,7 @@ export type NextStepDetailProps = {
 
 export function NextStepDetail({ detail, ui }: NextStepDetailProps) {
   return (
-    <Container size="desktop">
+    <Container size="detail">
       <Stack gap="24">
         <DetailHead head={detail} />
         <DetailSection title="Why">

@@ -23,7 +23,7 @@ const meta = css({ textStyle: 'mono', color: 'fg.muted', flex: '1' })
 
 export function RunningDetail({ detail }: { detail: InboxRunning }) {
   return (
-    <Container size="desktop" className={fill}>
+    <Container size="detail" className={fill}>
       <Stack gap="16" className={fill}>
         <div data-figma="started task">
           <Panel>

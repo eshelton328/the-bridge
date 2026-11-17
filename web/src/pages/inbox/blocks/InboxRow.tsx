@@ -19,7 +19,7 @@ function Lines({ row }: { row: InboxRowView }) {
   if (row.running !== undefined)
     return (
       <Inline gap="6" align="center" className={runs}>
-        <KindMark kind={row.running.agent} size="14" />
+        <KindMark kind={row.running.agent} size="12" />
         {row.running.line}
       </Inline>
     )
@@ -59,7 +59,7 @@ export function InboxRow({ row, selected, onSelect }: InboxRowProps) {
             <Button variant="primary" size="sm">
               Allow once
             </Button>
-            <Button variant="dangerSoft" size="sm">
+            <Button variant="secondaryDanger" size="sm">
               Deny
             </Button>
             <Button size="sm">Open chat</Button>

@@ -30,11 +30,12 @@ export const promptEditing = {
               choices: [
                 {
                   value: 'new-claude',
+                  agent: 'claude',
                   label: 'New Claude Code chat',
                   description: 'the-bridge · Sonnet 5.5',
                   pill: { tone: 'working', label: 'Recommended', dot: false },
                 },
-                { value: 'new-codex', label: 'New Codex chat', description: 'the-bridge · GPT-5.5' },
+                { value: 'new-codex', agent: 'codex', label: 'New Codex chat', description: 'the-bridge · GPT-5.5' },
                 { value: 'new-elsewhere', label: 'New chat in another workspace…' },
               ],
             },
@@ -43,6 +44,7 @@ export const promptEditing = {
               choices: [
                 {
                   value: 'hono-server',
+                  agent: 'claude',
                   label: 'hono server',
                   description: 'Sonnet 5.5 · 78% context',
                   pill: { tone: 'needsYou', label: 'Needs you', dot: true },
@@ -54,12 +56,14 @@ export const promptEditing = {
               choices: [
                 {
                   value: 'bridge-themes',
+                  agent: 'claude',
                   label: 'bridge themes',
                   description: 'Opus 5.5 · 42% context',
                   pill: { tone: 'working', label: 'Working', dot: true },
                 },
                 {
                   value: 'drift-check',
+                  agent: 'codex',
                   label: 'drift check',
                   description: 'GPT-5.5 · 23% context',
                   pill: { tone: 'needsYou', label: 'Needs you', dot: true },

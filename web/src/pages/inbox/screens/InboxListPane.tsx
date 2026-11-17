@@ -39,6 +39,7 @@ export function InboxListPane({ data, ui, onFilterChange, onGroupOpenChange, onS
           items={data.filters}
           value={[ui.filter]}
           multiple={false}
+          size="compact"
           onValueChange={(values) => {
             const [first] = values
             if (first !== undefined) onFilterChange?.(first)

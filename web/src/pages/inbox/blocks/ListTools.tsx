@@ -47,6 +47,7 @@ export function ListTools({ sort, filterMenu, filterOpen }: ListToolsProps) {
       ) : (
         <Popover
           trigger={filter}
+          width="filter"
           label="Filter the inbox"
           open={filterOpen}
           note={filterMenu.note}

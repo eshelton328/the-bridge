@@ -46,7 +46,14 @@ export function RunInCard({ runIn, pickerOpen }: RunInCardProps) {
         {runIn.picker === undefined ? (
           change
         ) : (
-          <Popover trigger={change} label="Run in" open={pickerOpen} note={runIn.picker.note} placement="bottom-end">
+          <Popover
+            trigger={change}
+            label="Run in"
+            open={pickerOpen}
+            width="picker"
+            note={runIn.picker.note}
+            placement="bottom-end"
+          >
             <RunInPicker picker={runIn.picker} />
           </Popover>
         )}

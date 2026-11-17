@@ -6,6 +6,7 @@ import {
   Button,
   CheckIcon,
   ChevronRightIcon,
+  Clamp,
   EditIcon,
   Panel,
   ResetIcon,
@@ -16,7 +17,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
 
-const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
+const text = css({ textStyle: 'body', color: 'fg.default' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const more = css({
   display: 'inline-flex',
@@ -59,7 +60,9 @@ export function PromptSection({ prompt, editing }: PromptSectionProps) {
       ) : (
         <Stack gap="8">
           <Panel>
-            <p className={text}>{prompt.text}</p>
+            <Clamp lines={5} fade>
+              <span className={text}>{prompt.text}</span>
+            </Clamp>
           </Panel>
           {prompt.long ? (
             <a className={more} href="#prompt">

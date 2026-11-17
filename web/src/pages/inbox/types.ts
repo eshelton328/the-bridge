@@ -80,6 +80,8 @@ export type InboxDetailHead = z.infer<typeof InboxDetailHead>
 /** One choice of the Run in picker. */
 const InboxRunChoice = z.object({
   value: z.string(),
+  /** The agent the chat runs; without one the row starts a chat elsewhere and shows a plus. */
+  agent: InboxAgent.optional(),
   label: z.string(),
   description: z.string().optional(),
   pill: InboxPill.optional(),

@@ -27,11 +27,11 @@ const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 
 export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
   return (
-    <Container size="desktop">
+    <Container size="detail">
       <Stack gap="24">
         <DetailHead head={detail} />
         <div data-figma="blocking">
-          <Panel>
+          <Panel tone="needsYou">
             <Inline gap="10" align="center">
               <KindMark kind={detail.waiting.agent} size="16" />
               <div className={grow}>
@@ -53,6 +53,7 @@ export function QuestionDetail({ detail }: { detail: InboxQuestion }) {
         <DetailSection title="Choose one">
           <OptionList
             label="Choose one"
+            variant="card"
             value={detail.selected}
             items={detail.options.map((o) => ({
               value: o.value,

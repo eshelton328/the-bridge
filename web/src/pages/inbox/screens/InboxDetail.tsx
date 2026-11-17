@@ -7,7 +7,6 @@ import { NextStepDetail } from './NextStepDetail.tsx'
 import { QuestionDetail } from './QuestionDetail.tsx'
 import { RunningDetail } from './RunningDetail.tsx'
 
-// Figma caps the detail column at 748 px (820 with its padding); no size token has that width (LIBRARY_GAPS.md).
 const pane = css({ display: 'flex', flexDirection: 'column', flex: '1' })
 
 export type InboxDetailProps = {
