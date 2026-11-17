@@ -54,6 +54,8 @@ export const artifactOpen = {
         suggestions: ['Add a median line', 'Sort the bars by pass rate', 'Why did readme drop?'],
       },
       placeholder: 'Ask about this artifact',
+      entries: [],
+      layers: { header: '452:2464', madeIn: '452:2406' },
     },
   },
   ui: { ...library.ui },

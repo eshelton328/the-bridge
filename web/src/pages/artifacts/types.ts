@@ -174,6 +174,32 @@ export const AddLinkForm = z.object({
 })
 export type AddLinkForm = z.infer<typeof AddLinkForm>
 
+/** One line of a proposed change: taken out or put in. */
+const ArtifactDiffLine = z.object({ change: z.enum(['removed', 'added']), text: z.string() })
+
+/**
+ * A change to the artifact the discussion proposes (D8), as the Inbox's proposed update (Inbox D15): the block's
+ * eyebrow, such as "Proposed · Update this artifact", the part it changes, such as "Chart", and the lines it takes out
+ * and puts in. Nothing changes until Apply.
+ */
+const ArtifactProposal = z.object({
+  label: z.string(),
+  section: z.string(),
+  lines: z.array(ArtifactDiffLine),
+})
+export type ArtifactProposal = z.infer<typeof ArtifactProposal>
+
+/** One entry of the artifact's discussion: Erik's message, the discussion's reply or a proposed change (D8). */
+const ArtifactDiscussionEntry = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('user'), text: z.string() }),
+  z.object({ type: z.literal('reply'), name: z.string(), text: z.string() }),
+  z.object({ type: z.literal('proposal'), proposal: ArtifactProposal }),
+])
+export type ArtifactDiscussionEntry = z.infer<typeof ArtifactDiscussionEntry>
+
+/** What Erik did to the discussion's proposal: applied it or discarded it (D8). */
+const ProposalDecision = z.enum(['applied', 'discarded'])
+
 /**
  * The discussion of the open artifact (D7), beside it: the header with Open in workspace, the model and how much
  * context it uses, what it may do, and before the first message the empty state and its suggested questions. A
@@ -196,6 +222,13 @@ const ArtifactDiscussion = z.object({
     suggestions: z.array(z.string()),
   }),
   placeholder: z.string(),
+  /** What was said and proposed so far (D8); with none the discussion shows `empty`. */
+  entries: z.array(ArtifactDiscussionEntry),
+  /**
+   * The Figma node ids of the two layers named "button · Open in workspace" in the frame that shows the discussion:
+   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own.
+   */
+  layers: z.object({ header: z.string(), madeIn: z.string() }),
 })
 export type ArtifactDiscussion = z.infer<typeof ArtifactDiscussion>
 
@@ -255,6 +288,11 @@ export const ArtifactsUi = z.object({
   discussDraft: z.string().optional(),
   /** The messages Erik sent in the discussion, in order; nothing answers them in this mock-up. */
   discussSent: z.array(z.string()).optional(),
+  /**
+   * What Erik did to the discussion's proposal (D8): Discard drops it; Apply is recorded here and the applied artifact
+   * comes with D9.
+   */
+  discussProposal: ProposalDecision.optional(),
 })
 export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 

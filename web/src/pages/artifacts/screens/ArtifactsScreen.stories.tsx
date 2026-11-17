@@ -114,3 +114,16 @@ export const DiscussOpen: Story = {
     await expect(canvas.queryByText('Skill eval pass rates', { selector: '.list-row__title' })).toBeNull()
   },
 }
+
+export const ChangeProposed: Story = {
+  name: 'D8: A proposed update to the artifact',
+  args: { data: artifactsStates.changeProposed.data, ui: artifactsStates.changeProposed.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Bars sorted from the lowest pass rate to the highest')).toBeVisible()
+    await expect(canvas.getByText('A dashed line at the median pass rate, 71%')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Edit first' })).toBeVisible()
+    // The empty state goes once the discussion has entries.
+    await expect(canvas.queryByText('Talk this artifact through')).toBeNull()
+  },
+}
