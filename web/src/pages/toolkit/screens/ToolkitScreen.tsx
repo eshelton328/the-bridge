@@ -28,7 +28,7 @@ import { ToolkitListPane } from '../blocks/ToolkitListPane.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
-import { openItem } from './itemView.ts'
+import { openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
@@ -160,7 +160,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }}
         onCopyPath={onCopyPath}
         onShowOnMap={() => {
-          onUiChange({ open: null, view: 'map', mapSelected: open.item.path })
+          onUiChange(showOnMap(open.item.path))
         }}
       />
     )

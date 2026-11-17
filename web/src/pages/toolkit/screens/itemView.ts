@@ -1,9 +1,19 @@
 // The item open beside the list (D3): the list's item with the path in
 // `ui.open`, and what the state knows of it in `data.details`. An item with
 // no details opens with what the list knows: its name, kind, path and
-// description, the Overview tab, and no files. Pure, so itemView.test.ts
-// checks it without rendering.
-import type { ToolkitData, ToolkitItemDetailView, ToolkitItemView, ToolkitOpenItem, ToolkitUi } from '../types.ts'
+// description, the Overview tab, and no files. An item that is on the map
+// but not in the list (the Rules items of the D1 list) opens from its map
+// node, with its link counts from the map. `showOnMap` is the ui change of
+// the item's Show on map button. Pure, so itemView.test.ts checks both
+// without rendering.
+import type {
+  ToolkitData,
+  ToolkitItemDetailView,
+  ToolkitItemView,
+  ToolkitMapView,
+  ToolkitOpenItem,
+  ToolkitUi,
+} from '../types.ts'
 
 const overview = { value: 'overview', label: 'Overview' }
 
@@ -21,10 +31,30 @@ function fallback(item: ToolkitItemView): ToolkitItemDetailView {
   }
 }
 
+/** The map node with this path as a list item: no description, its link counts from the map, and one file. */
+function fromMap(map: ToolkitMapView | undefined, path: string): ToolkitItemView | undefined {
+  const node = map?.nodes.find((n) => n.path === path)
+  if (node === undefined || map === undefined) return undefined
+  return {
+    kind: node.kind,
+    name: node.name,
+    path: node.path,
+    description: '',
+    linksTo: map.links.filter((l) => l.from === path).length,
+    linkedFrom: map.links.filter((l) => l.to === path).length,
+    files: 1,
+  }
+}
+
+/** The ui change of Show on map: close the item, show the map with it selected, and clear the chip and the search, which could hide it. */
+export function showOnMap(path: string): Partial<ToolkitUi> {
+  return { open: null, view: 'map', mapSelected: path, filter: 'all', query: '' }
+}
+
 export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTab'>): ToolkitOpenItem | null {
   if (ui.open === undefined || ui.open === null) return null
   const path = ui.open
-  const item = data.groups.flatMap((g) => g.items).find((i) => i.path === path)
+  const item = data.groups.flatMap((g) => g.items).find((i) => i.path === path) ?? fromMap(data.map, path)
   if (item === undefined) return null
   const detail = data.details?.find((d) => d.path === path) ?? fallback(item)
   const first = detail.tabs[0]?.value ?? overview.value

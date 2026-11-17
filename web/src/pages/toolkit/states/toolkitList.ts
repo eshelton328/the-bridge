@@ -42,8 +42,8 @@ const paths: Record<ToolkitKind, (name: string) => string> = {
   skill: (name) => `skills/${name}/`,
   agent: (name) => `agents/${name}.md`,
   rule: (name) => `rules/${name}.md`,
-  workflow: (name) => `workflows/${name}/`,
-  hook: (name) => `hooks/${name}/`,
+  workflow: (name) => `workflows/${name}.md`,
+  hook: (name) => `hooks/${name}`,
 }
 const skillPath = paths.skill
 const agentPath = paths.agent

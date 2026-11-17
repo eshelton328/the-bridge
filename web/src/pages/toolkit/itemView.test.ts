@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { openItem } from './screens/itemView.ts'
+import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { ruleOpen, skillOpen, toolkitList } = toolkitStates
@@ -38,5 +39,35 @@ describe('openItem', () => {
     expect(open?.detail.loads?.when).toBe('a file under toolkit/skills/** or skills/** changes')
     expect(open?.detail.usedIn).toBeUndefined()
     expect(open?.detail.files).toBeUndefined()
+  })
+})
+
+describe('an item on the map', () => {
+  it('opens from its map node when the list has no such item, with its link counts', () => {
+    const open = openItemFromMap(toolkitList.data, { open: 'rules/writing.md' })
+    expect(open?.item).toMatchObject({ kind: 'rule', name: 'writing', path: 'rules/writing.md' })
+    expect([open?.item.linksTo, open?.item.linkedFrom]).toEqual([6, 3])
+  })
+
+  it('has the same path as the list item of the same kind and name, in every state', () => {
+    for (const state of Object.values(toolkitStates)) {
+      const nodes = new Map(state.data.map.nodes.map((n) => [`${n.kind} ${n.name}`, n.path]))
+      for (const item of state.data.groups.flatMap((g) => g.items)) {
+        const node = nodes.get(`${item.kind} ${item.name}`)
+        if (node !== undefined) expect(node).toBe(item.path)
+      }
+    }
+  })
+})
+
+describe('showOnMap', () => {
+  it('closes the item, shows it selected on the map and clears the chip and the search', () => {
+    expect(showOnMapChange('skills/writer/')).toEqual({
+      open: null,
+      view: 'map',
+      mapSelected: 'skills/writer/',
+      filter: 'all',
+      query: '',
+    })
   })
 })
