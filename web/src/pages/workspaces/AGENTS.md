@@ -7,9 +7,10 @@ first: it says what each file of a page folder is for.
 - `WorkspacesPage.tsx` is the connected entry; it passes the loader's
   state to the screen.
 - `screens/WorkspacesScreen.tsx`: the rail (`AppRail`) and the library's
-  `Workbench`: the workspace tabs with New chat and the sidebar toggle,
-  the current workspace's panes and the status bar. It keeps what Erik
-  opens or closes (a pane menu, Move to workspace, the skill list, the
+  `Workbench`: the 52 px tab bar (`size="compact"`) with the sidebar
+  toggle before the tabs and New chat after them, the current
+  workspace's panes and the status bar. It keeps what Erik opens or
+  closes (a pane menu, Move to workspace, the skill list, the
   focused pane) until the state changes, and reports it with `onUiChange`.
   With `ui.sidebar` (D2) it shows the workspace sidebar in the list slot,
   the focused chat alone in the detail and its side chat in the side slot;
@@ -27,8 +28,9 @@ first: it says what each file of a page folder is for.
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
   header through `PaneSlot`: kind mark, title, model, context, status,
   Maximise and the menu), `PaneMenu` (fork, side chat, subtask, Move to
-  workspace with its list, rename, close), `ChatPane` (the transcript
-  and the composer), `ChatEntryView` (one entry, by `type`),
+  workspace with its list as the action's `submenu`, rename, close;
+  compact rows, and the highlighted row and workspace from the state),
+  `ChatPane` (the transcript and the composer), `ChatEntryView` (one entry, by `type`),
   `SkillPicker` (the skills after "/"), `ShellPane` (terminal lines) and
   `EmptyPane` (start a chat, or open one of the workspace). D2 adds
   `WorkspaceSidebar` (the title, the toggle, + and the groups),
@@ -67,8 +69,8 @@ first: it says what each file of a page folder is for.
   chat's `pane` and `openAsPane`, and the split's layers in `layers`; for
   D6 the drop zone's text, `paneDrop`) and
   `WorkspacesUi` (the focused pane, the open menu and
-  list, the open skill list; for D2 the sidebar, closed groups, the
-  hovered header, the drag and the side chat; for D3 the subagents panel
+  list with their highlighted row and workspace, the open skill list;
+  for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
   and the New chat form, with the open transcripts; for D4 the folder
   list, the picker and the chosen folder; for D6 `paneDrag`, the chat
   dragged onto the chat alone and its edge; for D7 `workbench`, the
