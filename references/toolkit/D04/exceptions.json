@@ -1,0 +1,114 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["427:471"],
+      "reason": "Figma cuts the kind chip row at the list pane's right edge (484): the Workflows chip (427:469, x 433 to 552) shows its dot and the first letter of its label, and its count 2 (427:472) lies past the edge. The render scrolls the chip row sideways inside the pane the same way (FilterChips), so the label and count are in the DOM and come into view when the row scrolls."
+    },
+    {
+      "text": "2",
+      "layers": ["427:472"],
+      "reason": "The Workflows chip's count (427:472, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    }
+  ],
+  "extra": [
+    {
+      "text": "writer",
+      "reason": "The render scrolls the list pane so the Rules group sits under the search, as in Figma (427:478); the header, chips and search stay at the pane's top over the rows scrolled under them, with the pane fill and blur. The last Agents row(s) lie behind that block, covered, and the text check cannot see that one element covers another, so it counts them as visible. They do not show in the render."
+    },
+    {
+      "text": "agents/writer.md",
+      "reason": "The render scrolls the list pane so the Rules group sits under the search, as in Figma (427:478); the header, chips and search stay at the pane's top over the rows scrolled under them, with the pane fill and blur. The last Agents row(s) lie behind that block, covered, and the text check cannot see that one element covers another, so it counts them as visible. They do not show in the render."
+    },
+    {
+      "text": "writing-reviewer",
+      "reason": "The render scrolls the list pane so the Rules group sits under the search, as in Figma (427:478); the header, chips and search stay at the pane's top over the rows scrolled under them, with the pane fill and blur. The last Agents row(s) lie behind that block, covered, and the text check cannot see that one element covers another, so it counts them as visible. They do not show in the render."
+    },
+    {
+      "text": "agents/writing-reviewer.md",
+      "reason": "The render scrolls the list pane so the Rules group sits under the search, as in Figma (427:478); the header, chips and search stay at the pane's top over the rows scrolled under them, with the pane fill and blur. The last Agents row(s) lie behind that block, covered, and the text check cannot see that one element covers another, so it counts them as visible. They do not show in the render."
+    },
+    {
+      "text": "→3 ←4",
+      "reason": "The render scrolls the list pane so the Rules group sits under the search, as in Figma (427:478); the header, chips and search stay at the pane's top over the rows scrolled under them, with the pane fill and blur. The last Agents row(s) lie behind that block, covered, and the text check cannot see that one element covers another, so it counts them as visible. They do not show in the render."
+    }
+  ],
+  "position": [
+    {
+      "layer": "group · SKILLS",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · agents-md",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · ambitious",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · audit-slop",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · eval-cases",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · mermaid-diagrams",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · pr-description",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · project-setup",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · readme",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "group · AGENTS",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · diagram-reviewer",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · eval-case-writer",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · eval-grader",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · pr-description-checker",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · readme-cold-reader",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    },
+    {
+      "layer": "toolkit row · writing-reviewer",
+      "reason": "The frame's list starts at the Rules group (group · RULES 427:478, y 148, under the search), and the Skills and Agents groups have no layer in it: the pane is scrolled to the open rule's group. The state's list has every group (All 27, as the chips say), and the render scrolls the Skills and Agents rows above the pane's top, where Figma's list has them."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own under its pinned header, chips and search: Figma's list (427:443) shows the Rules, Workflows and Hooks groups, scrolled past Skills and Agents, beside the open item. The render scrolls the pane the same way."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways: Figma's chip row (427:453) runs past the list pane's right edge, cut after the Workflows chip's dot (427:469, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
+    }
+  ]
+}
