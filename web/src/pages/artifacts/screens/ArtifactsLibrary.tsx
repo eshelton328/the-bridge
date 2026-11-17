@@ -63,6 +63,18 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
           onUiChange?.({ query })
         }}
         sortLabel={sort?.label ?? ''}
+        filterMenu={data.filterMenu}
+        filterChecks={ui.filterChecks}
+        filterOpen={ui.filterOpen}
+        onFilterOpenChange={(filterOpen) => {
+          onUiChange?.({ filterOpen })
+        }}
+        onFilterChecksChange={(filterChecks) => {
+          onUiChange?.({ filterChecks })
+        }}
+        onFilterApply={() => {
+          onUiChange?.({ filterOpen: false })
+        }}
         view={ui.view}
         onViewChange={(view) => {
           onUiChange?.({ view })

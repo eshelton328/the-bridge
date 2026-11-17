@@ -1,7 +1,8 @@
 // The row under the source chips (Figma 402:15397): the search, Sort and
 // Filter, and at the end the Grid or List switch. Sort names the sort on
 // the button. Beside an open artifact (D2) the row has no switch, and the
-// search takes the free width. Props only.
+// search takes the free width. With a Filter menu (D3) Filter opens it.
+// Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -15,7 +16,8 @@ import {
   ViewSwitch,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import { ViewValue } from '../types.ts'
+import { type ArtifactFilterMenu, ViewValue } from '../types.ts'
+import { FilterPopover } from './FilterPopover.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
 const grow = css({ flex: '1', overflow: 'hidden' })
@@ -28,6 +30,14 @@ export type LibraryToolsProps = {
   sortLabel: string
   onSortClick?: (() => void) | undefined
   onFilterClick?: (() => void) | undefined
+  /** The Filter menu (D3); without it Filter is a button that opens nothing yet. */
+  filterMenu?: ArtifactFilterMenu | undefined
+  filterChecks?: readonly string[] | undefined
+  filterOpen?: boolean | undefined
+  onFilterOpenChange?: ((open: boolean) => void) | undefined
+  onFilterChecksChange?: ((checks: string[]) => void) | undefined
+  /** Show in the Filter menu: applies the checked boxes. */
+  onFilterApply?: (() => void) | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
@@ -40,6 +50,12 @@ export function LibraryTools({
   sortLabel,
   onSortClick,
   onFilterClick,
+  filterMenu,
+  filterChecks = [],
+  filterOpen = false,
+  onFilterOpenChange,
+  onFilterChecksChange,
+  onFilterApply,
   view,
   onViewChange,
 }: LibraryToolsProps) {
@@ -62,12 +78,23 @@ export function LibraryTools({
           <ChevronDownIcon size="12" />
         </Button>
       </span>
-      <span data-figma="button · Filter">
-        <Button textSize="sm" onClick={onFilterClick}>
-          <FilterIcon />
-          Filter
-        </Button>
-      </span>
+      {filterMenu === undefined ? (
+        <span data-figma="button · Filter">
+          <Button textSize="sm" onClick={onFilterClick}>
+            <FilterIcon />
+            Filter
+          </Button>
+        </span>
+      ) : (
+        <FilterPopover
+          menu={filterMenu}
+          checks={filterChecks}
+          open={filterOpen}
+          onOpenChange={onFilterOpenChange}
+          onChecksChange={onFilterChecksChange}
+          onApply={onFilterApply}
+        />
+      )}
       {view === undefined ? null : (
         <>
           <span className={grow} />
