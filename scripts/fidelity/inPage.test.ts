@@ -168,38 +168,35 @@ void test('a desktop frame without a status bar renders at its full size', () =>
 // checkRules' scrollBar rule. Chrome leaves an input's padding out of its
 // clientWidth: a 498 px input with 2 px of border has a clientWidth of 476,
 // which offsetWidth less clientWidth read as a 20 px scroll bar.
-const box = {
-  overflowX: 'visible',
-  overflowY: 'visible',
-  scrollWidth: 476,
-  scrollHeight: 36,
-  clientWidth: 476,
-  clientHeight: 36,
-  barWidth: 0,
-  barHeight: 0,
-}
+const box = { overflowX: 'visible', overflowY: 'visible', clientHeight: 36, barWidth: 0, barHeight: 0 }
 
 void test('a padded input has no scroll bar', () => {
   assert.equal(scrollBars({ ...box, overflowX: 'clip', overflowY: 'clip', barWidth: 20 }), '')
 })
 
-void test('a box that scrolls its overflow, or a classic bar on overflow scroll, is a scroll bar', () => {
+void test('a bar that takes space on an axis whose overflow is auto or scroll is a scroll bar', () => {
+  assert.equal(scrollBars({ ...box, overflowY: 'auto', barWidth: 12 }), 'vertical 12 px, overflow-y auto')
   assert.equal(
-    scrollBars({ ...box, overflowY: 'auto', scrollHeight: 900, clientHeight: 400 }),
-    'vertical: scrollHeight 900 > clientHeight 400, overflow-y auto',
+    scrollBars({ ...box, overflowX: 'scroll', overflowY: 'scroll', barWidth: 15, barHeight: 15 }),
+    'vertical 15 px, overflow-y scroll, horizontal 15 px, overflow-x scroll',
   )
-  assert.equal(
-    scrollBars({ ...box, overflowX: 'scroll', scrollWidth: 700 }),
-    'horizontal: scrollWidth 700 > clientWidth 476, overflow-x scroll',
-  )
-  assert.equal(scrollBars({ ...box, overflowY: 'scroll', barWidth: 15 }), 'vertical: 15 px, overflow-y scroll')
-  // Overflow that the box does not scroll, or a scroll box whose content fits, shows no bar.
-  assert.equal(scrollBars({ ...box, overflowY: 'hidden', scrollHeight: 900 }), '')
-  assert.equal(scrollBars({ ...box, overflowY: 'auto', scrollHeight: 37 }), '')
+  // The space on an axis that does not scroll is no bar; a box with no height has none.
+  assert.equal(scrollBars({ ...box, overflowX: 'auto', barWidth: 12 }), '')
+  assert.equal(scrollBars({ ...box, overflowY: 'auto', barWidth: 12, clientHeight: 0 }), '')
 })
 
-async function rulesOf(html: string): Promise<PageMeasure['rules']> {
-  const browser = await chromium.launch()
+void test('a box that scrolls its overflow with no bar that takes space has no scroll bar (d-107)', () => {
+  assert.equal(scrollBars({ ...box, overflowY: 'auto' }), '')
+  assert.equal(scrollBars({ ...box, overflowX: 'scroll', barHeight: 0.4 }), '')
+})
+
+/**
+ * The rule findings of `html`. Playwright launches Chromium with
+ * --hide-scrollbars, under which no bar takes space; `classicBars` leaves
+ * that flag out, so a bar styled with ::-webkit-scrollbar takes its width.
+ */
+async function rulesOf(html: string, classicBars = false): Promise<PageMeasure['rules']> {
+  const browser = await chromium.launch(classicBars ? { ignoreDefaultArgs: ['--hide-scrollbars'] } : {})
   try {
     const tab = await browser.newPage({ viewport: { width: 800, height: 600 } })
     await tab.setContent(`<body style="margin:0"><div id="storybook-root">${html}</div></body>`)
@@ -209,17 +206,28 @@ async function rulesOf(html: string): Promise<PageMeasure['rules']> {
   }
 }
 
-void test('in Chromium a padded input passes the scrollBar rule and a scrolling box fails it', async () => {
+void test('in Chromium a padded input passes the scrollBar rule and a classic scroll bar fails it', async () => {
   const input =
     '<input placeholder="Search" style="box-sizing:border-box;width:498px;padding:0 10px;border:1px solid gray">'
   assert.deepEqual(
-    (await rulesOf(input)).filter((r) => r.rule === 'scrollBar'),
+    (await rulesOf(input, true)).filter((r) => r.rule === 'scrollBar'),
     [],
   )
-  const list = `<section style="height:100px;overflow-y:auto"><div style="height:400px"></div></section>`
+  // A classic bar, forced so the test does not depend on the OS's scroll bars.
+  const bar = `<style>.bar::-webkit-scrollbar { width: 12px; height: 12px }</style>
+<section class="bar" style="height:100px;overflow-y:auto"><div style="height:400px"></div></section>`
   assert.deepEqual(
-    (await rulesOf(list)).filter((r) => r.rule === 'scrollBar').map((r) => [r.selector, r.detail]),
-    [['section', 'vertical: scrollHeight 400 > clientHeight 100, overflow-y auto']],
+    (await rulesOf(bar, true)).filter((r) => r.rule === 'scrollBar').map((r) => [r.selector, r.detail]),
+    [['section.bar', 'vertical 12 px, overflow-y auto']],
+  )
+})
+
+void test('in Chromium a box that scrolls but draws no bar that takes space passes the scrollBar rule', async () => {
+  const overlay = `<style>.quiet::-webkit-scrollbar { width: 0; height: 0 }</style>
+<section class="quiet" style="height:100px;overflow-y:auto"><div style="height:400px"></div></section>`
+  assert.deepEqual(
+    (await rulesOf(overlay, true)).filter((r) => r.rule === 'scrollBar'),
+    [],
   )
 })
 
