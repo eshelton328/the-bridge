@@ -27,7 +27,15 @@ const tile = css({
   color: 'accent.discuss',
 })
 const title = css({ textStyle: 'subtitle', color: 'fg.default', m: '0', textAlign: 'center' })
-const text = css({ textStyle: 'body', color: 'fg.muted', m: '0', textAlign: 'center', px: '40' })
+// Figma 403:967: Geist Regular 13/19 in a 420 px column, centred. 420 is the shell.widePane size.
+const text = css({
+  textStyle: 'bodySm',
+  color: 'fg.muted',
+  m: '0',
+  textAlign: 'center',
+  alignSelf: 'center',
+  maxW: 'shell.widePane',
+})
 const can = css({ textStyle: 'small', color: 'fg.default' })
 const canIcon = css({ display: 'inline-flex', color: 'fg.muted' })
 

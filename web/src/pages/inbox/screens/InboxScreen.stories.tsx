@@ -14,6 +14,14 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
+// Figma draws the discussion's composer focused (D14 to D19: a caret and the lighter border), the state Erik
+// sees after opening the discussion. The story puts the focus there; the screen's props do not hold focus.
+async function focusComposer(canvas: { getByRole: (role: 'textbox', options: { name: string }) => HTMLElement }) {
+  const composer = canvas.getByRole('textbox', { name: 'Ask about this task' })
+  composer.focus()
+  await expect(composer).toHaveFocus()
+}
+
 export const NextStep: Story = {
   name: 'D1: a next step',
   args: { data: inboxStates.nextStep.data, ui: inboxStates.nextStep.ui, viewport: 'desktop' },
@@ -171,6 +179,7 @@ export const DiscussOpen: Story = {
     await expect(canvas.queryByRole('region', { name: 'Inbox list' })).toBeNull()
     await expect(canvas.getByRole('heading', { name: 'Talk this task through' })).toBeVisible()
     await expect(canvas.getByRole('meter', { name: 'Context used' })).toHaveAttribute('aria-valuenow', '6')
+    await focusComposer(canvas)
   },
 }
 
@@ -182,6 +191,7 @@ export const ChangeProposed: Story = {
     await expect(within(proposal).getByRole('button', { name: 'Apply' })).toBeVisible()
     await expect(within(proposal).getByRole('button', { name: 'Edit first' })).toBeVisible()
     await expect(canvas.queryByRole('heading', { name: 'Talk this task through' })).toBeNull()
+    await focusComposer(canvas)
   },
 }
 
@@ -192,6 +202,7 @@ export const ChangeApplied: Story = {
     await expect(canvas.getByText('Changed in a discussion · just now')).toBeVisible()
     await expect(canvas.getByText('Applied just now. The task shows the new prompt.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Undo' })).toBeVisible()
+    await focusComposer(canvas)
   },
 }
 
@@ -202,6 +213,7 @@ export const TasksProposed: Story = {
     await expect(canvas.getByRole('checkbox', { name: 'Write the Inbox tickets' })).toBeChecked()
     await expect(canvas.getByRole('checkbox', { name: 'Also remove this task' })).not.toBeChecked()
     await expect(canvas.getByRole('button', { name: 'Create 3 tasks' })).toBeVisible()
+    await focusComposer(canvas)
   },
 }
 
@@ -226,6 +238,7 @@ export const RemovalProposed: Story = {
       within(proposal).getByText('It moves to Done as Removed. You can restore it from there.'),
     ).toBeVisible()
     await expect(canvas.getByText('Created 3 tasks · Workbench, Inbox, App frame')).toBeVisible()
+    await focusComposer(canvas)
   },
 }
 

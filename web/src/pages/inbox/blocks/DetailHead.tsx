@@ -108,7 +108,7 @@ export function DetailHead({ head, snoozeOpen = false, discuss }: DetailHeadProp
               size="sm"
               label={c.label}
               icon={chipIcons[c.icon]}
-              tone={c.issue ? 'issue' : undefined}
+              tone={c.issue ? 'issue' : 'muted'}
             />
           ))}
         </Inline>

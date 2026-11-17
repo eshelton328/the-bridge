@@ -31,7 +31,17 @@ const pane = css({
   bg: 'surface.pane',
 })
 // The pane holds the scrolling list and, over its bottom, the toast (D18 403:2943: 12 px in, 16 px up).
-const frame = css({ position: 'relative', display: 'flex', flexDirection: 'column', flex: '1', overflow: 'hidden' })
+// The list ends at the toast's bottom edge, so nothing shows in the 16 px under the toast, as in Figma,
+// where the toast covers the last group header.
+const frame = css({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  flex: '1',
+  overflow: 'hidden',
+  pb: '16',
+  bg: 'surface.pane',
+})
 const toast = css({ position: 'absolute', insetInline: '12', bottom: '16' })
 const header = css({ py: '4' })
 const summary = css({ textStyle: 'small', color: 'fg.muted', alignSelf: 'flex-start' })
@@ -86,7 +96,7 @@ export function InboxListPane({
   onQueryChange,
 }: InboxListPaneProps) {
   const list = (
-    <section aria-label="Inbox list" className={pane} data-figma="inbox list">
+    <section aria-label="Inbox list" className={pane} data-figma={data.toast === undefined ? 'inbox list' : undefined}>
       <div className={header} data-figma="header">
         <PageHeader size="pane" title="Inbox" count={data.count} countLabel={data.countLabel} level={2} />
       </div>
@@ -166,7 +176,7 @@ export function InboxListPane({
   )
   if (data.toast === undefined) return list
   return (
-    <div className={frame}>
+    <div className={frame} data-figma="inbox list">
       {list}
       <div className={toast} data-figma="toast · created">
         <Toast

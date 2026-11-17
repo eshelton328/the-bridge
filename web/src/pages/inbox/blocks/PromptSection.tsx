@@ -18,6 +18,7 @@ import {
   TextArea,
   UndoIcon,
 } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
@@ -26,17 +27,32 @@ import { PromptDialog } from './PromptDialog.tsx'
 const text = css({ textStyle: 'bodySm', color: 'fg.default' })
 const hint = css({ textStyle: 'small', color: 'fg.subtle' })
 const change = css({ display: 'inline-flex', alignItems: 'center', gap: '6', textStyle: 'monoSm', color: 'fg.muted' })
-const undo = css({ textStyle: 'label', color: 'fg.accent', textDecoration: 'none' })
+// Figma 403:1858 and 403:1980: Geist Medium 12, the `small` size at the label weight.
+const undo = css({ textStyle: 'small', fontWeight: 'text.label', color: 'fg.accent', textDecoration: 'none' })
 const titles = { suggested: 'Suggested prompt', sent: 'Sent prompt', notRun: 'Prompt · not run' } as const
 const more = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '4',
   alignSelf: 'flex-start',
-  textStyle: 'label',
+  textStyle: 'small',
+  fontWeight: 'text.label',
   color: 'fg.accent',
   textDecoration: 'none',
 })
+
+// Figma breaks a line after a slash ("following toolkit/" | "rules/linear.md", 403:1855); a browser keeps a path
+// whole. A <wbr> after each slash gives the browser the same break, so the lines wrap where Figma's do.
+function breakAfterSlashes(text: string) {
+  const out: ReactNode[] = []
+  let start = 0
+  for (let slash = text.indexOf('/'); slash !== -1; slash = text.indexOf('/', start)) {
+    out.push(text.slice(start, slash + 1), <wbr key={`wbr-${String(slash)}`} />)
+    start = slash + 1
+  }
+  out.push(text.slice(start))
+  return out
+}
 
 export type PromptSectionProps = {
   prompt: InboxNextStep['prompt']
@@ -82,7 +98,7 @@ export function PromptSection({ prompt, editing, open, onOpenChange }: PromptSec
         <Stack gap="8">
           <Panel>
             <Clamp lines={5} fade>
-              <span className={text}>{prompt.text}</span>
+              <span className={text}>{breakAfterSlashes(prompt.text)}</span>
             </Clamp>
           </Panel>
           {prompt.change === undefined ? (
