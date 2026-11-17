@@ -1,0 +1,33 @@
+{
+  "missing": [
+    {
+      "text": "search summary",
+      "reason": "get_metadata gives the layer name of text 346:11908 as its characters; frame.png shows \"4 results for “f-005” in titles, IDs, prompts and notes\"."
+    },
+    {
+      "text": "done hint",
+      "reason": "get_metadata gives the layer name of text 346:11981 as its characters; frame.png shows the Done hint under the keyboard, as T10 shows \"Done has 1 more match. Show it\"."
+    }
+  ],
+  "extra": [
+    {
+      "text": "4 results for “f-005” in titles, IDs, prompts and notes",
+      "reason": "The text of layer 346:11908 as frame.png shows it; get_metadata gives its name, \"search summary\"."
+    },
+    {
+      "text": "Done has 1 more match.",
+      "reason": "The text of layer 346:11981 (T10 346:7686 shows it); get_metadata gives its name, \"done hint\". In M14 the keyboard covers it."
+    },
+    {
+      "text": "Show it",
+      "reason": "The link at the end of layer 346:11981 (T10 346:7686 shows it); get_metadata gives the layer's name, \"done hint\"."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "Figma's chip row runs past the list too and scrolls sideways on the phone: `chip · Done` starts at x 363, beyond the end of the visible row, under `fade · R`. The render clips the same row; only the fade is missing (LIBRARY_GAPS.md: Chip row fade)."
+    }
+  ]
+}
