@@ -11,6 +11,7 @@ import {
   Button,
   ChatIcon,
   CopyIcon,
+  FileIcon,
   FolderIcon,
   HookIcon,
   ItemTabs,
@@ -48,6 +49,10 @@ const copy = css({
   _hover: { color: 'fg.default' },
   _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
+
+// The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
+// node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626).
+const titleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '427:270', 'rules/skills.md': '427:626' }
 
 // D3 500:8143: the kind badge starts with the kind's icon.
 const kindIcons = {
@@ -90,14 +95,15 @@ export function ToolkitItem({ open, back, onTabChange, onCopyPath, onShowOnMap, 
           </Button>
         </div>
       </div>
-      <h2 className={title} data-figma="427:270">
+      <h2 className={title} data-figma={titleLayers[item.path]}>
         {item.name}
       </h2>
       <div className={pathRow} data-figma="path row">
         <div data-figma="path badge">
           <PathBadge
             path={detail.location}
-            icon={<FolderIcon />}
+            // A folder's path ends with "/" (D3 457:47); a file's shows the file icon (D4 457:56).
+            icon={detail.location.endsWith('/') ? <FolderIcon /> : <FileIcon />}
             trailing={
               <button
                 type="button"

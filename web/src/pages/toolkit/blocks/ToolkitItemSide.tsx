@@ -1,7 +1,8 @@
 // The side column of an open item's Overview (Figma `side`, D3 427:291):
 // the items that use it ("Used in workflows" and their count), its files
 // (a line per file or folder, a folder's files side by side) and the link
-// to its evals, which opens the Evals tab. Props only.
+// to its evals, which opens the Evals tab. A section the item does not have
+// is left out; with none (the rule in D4) the column is empty. Props only.
 import {
   ChartIcon,
   ChevronRightIcon,
@@ -54,7 +55,7 @@ export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
   const { usedIn, files, evals } = detail
   return (
     <div className={side} data-figma="side">
-      {usedIn.label === '' ? null : (
+      {usedIn === undefined || usedIn.label === '' ? null : (
         <section aria-label={usedIn.label} className={section} data-figma="used in workflows">
           <h3 className={heading}>
             {usedIn.label}
@@ -72,27 +73,29 @@ export function ToolkitItemSide({ detail, onTabChange }: ToolkitItemSideProps) {
           )}
         </section>
       )}
-      <section aria-label="Files" className={cx(section, filesSection)} data-figma="files">
-        <h3 className={heading}>
-          Files
-          <span className={count}>{files.count}</span>
-        </h3>
-        <ul className={list}>
-          {files.lines.map((fileLine) => (
-            <li key={fileLine.names.join(' ')} className={line} data-figma={`file · ${fileLine.names.join('  ')}`}>
-              <span className={icon}>
-                {fileLine.type === 'folder' ? <FolderIcon size="16" /> : <FileIcon size="16" />}
-              </span>
-              <span className={names}>
-                {fileLine.names.map((n) => (
-                  <span key={n}>{n}</span>
-                ))}
-              </span>
-              {fileLine.count === undefined ? null : <span className={count}>{fileLine.count}</span>}
-            </li>
-          ))}
-        </ul>
-      </section>
+      {files === undefined ? null : (
+        <section aria-label="Files" className={cx(section, filesSection)} data-figma="files">
+          <h3 className={heading}>
+            Files
+            <span className={count}>{files.count}</span>
+          </h3>
+          <ul className={list}>
+            {files.lines.map((fileLine) => (
+              <li key={fileLine.names.join(' ')} className={line} data-figma={`file · ${fileLine.names.join('  ')}`}>
+                <span className={icon}>
+                  {fileLine.type === 'folder' ? <FolderIcon size="16" /> : <FileIcon size="16" />}
+                </span>
+                <span className={names}>
+                  {fileLine.names.map((n) => (
+                    <span key={n}>{n}</span>
+                  ))}
+                </span>
+                {fileLine.count === undefined ? null : <span className={count}>{fileLine.count}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {evals === undefined ? null : (
         <div className={evalsBox} data-figma="evals link">
           <ListRow

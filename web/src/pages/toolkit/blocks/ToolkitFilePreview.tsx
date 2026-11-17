@@ -44,6 +44,12 @@ function Block({ block }: { block: ToolkitMarkdownBlock }) {
       return <h2>{block.text}</h2>
     case 'paragraph':
       return <p>{block.text}</p>
+    case 'pre':
+      return (
+        <pre>
+          <code>{block.text}</code>
+        </pre>
+      )
     case 'code':
       return (
         <p className={refs}>

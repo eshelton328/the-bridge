@@ -86,6 +86,8 @@ export const ToolkitMarkdownBlock = z.discriminatedUnion('type', [
   z.object({ type: z.literal('heading'), text: z.string() }),
   z.object({ type: z.literal('paragraph'), text: z.string() }),
   z.object({ type: z.literal('code'), items: z.array(z.string()).min(1) }),
+  /** A block of preformatted lines, such as a folder tree (D4 427:650); `text` keeps its line breaks. */
+  z.object({ type: z.literal('pre'), text: z.string() }),
 ])
 export type ToolkitMarkdownBlock = z.infer<typeof ToolkitMarkdownBlock>
 
@@ -96,7 +98,7 @@ const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: ToolkitKind })
 
 /**
- * An open item (D3): what the page shows beside the list for one item. Its kind, name and link counts come from
+ * An open item (D3, a rule in D4): what the page shows beside the list for one item. Its kind, name and link counts come from
  * the list's `ToolkitItemView` with the same path.
  */
 export const ToolkitItemDetailView = z.object({
@@ -108,13 +110,21 @@ export const ToolkitItemDetailView = z.object({
   changed: z.string(),
   /** What the item is for, in full, over the Overview. */
   description: z.string(),
+  /**
+   * When a rule loads (D4 `when it loads` 427:628), from its paths frontmatter: the label ("Loads when") and the
+   * condition, such as "a file under toolkit/skills/** or skills/** changes". None for an item that is not a rule.
+   */
+  loads: z.object({ label: z.string(), when: z.string() }).optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /** The item's main file, rendered read-only: its name and its blocks. */
   preview: z.object({ file: z.string(), blocks: z.array(ToolkitMarkdownBlock) }),
-  /** The heading of the items that use this one, such as "Used in workflows", and those items. */
-  usedIn: z.object({ label: z.string(), items: z.array(ToolkitItemRef) }),
-  /** The item's files: how many, and the lines of the summary. */
-  files: z.object({ count: z.number().int().nonnegative(), lines: z.array(ToolkitFileLine) }),
+  /**
+   * The heading of the items that use this one, such as "Used in workflows", and those items. None when the side
+   * column does not show it, as for the rule in D4.
+   */
+  usedIn: z.object({ label: z.string(), items: z.array(ToolkitItemRef) }).optional(),
+  /** The item's files: how many, and the lines of the summary. None when the side column does not show them (D4). */
+  files: z.object({ count: z.number().int().nonnegative(), lines: z.array(ToolkitFileLine) }).optional(),
   /** The link to the item's evals, with its caption, such as "5 cases · open the Evals tab"; none when not set. */
   evals: z.object({ title: z.string(), caption: z.string(), tab: z.string() }).optional(),
 })
