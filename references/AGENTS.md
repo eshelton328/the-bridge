@@ -21,5 +21,12 @@ read-only.
   frame's longer side), and `get_metadata` of the page saved to a file,
   then
   `pnpm fidelity:refs --page <page> --metadata <file>`.
+- `get_metadata` gives a text layer's name, not its characters. When a
+  page renames text layers (`title`, `age`), read the characters of each
+  text layer whose name differs with one read-only `use_figma` call, save
+  them as `{"<node id>": "<characters>"}` and add
+  `--characters <file.json>`. The Artifacts page needs it.
+- Hidden layers (`hidden="true"`) are left out of `layers` and counted in
+  `skipped`, with their children.
 - The stars of the backdrop are left out of `layers` (`skipped` counts
   them).

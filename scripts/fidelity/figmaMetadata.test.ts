@@ -91,6 +91,21 @@ void test('excludes the text of a layer named keyboard', () => {
   )
 })
 
+void test("takes a renamed text layer's characters from the characters map", () => {
+  const renamed = `<frame id="5:1" name="D1 · Library" x="0" y="0" width="1512" height="982">
+    <text id="5:2" name="title" x="4" y="1" width="244" height="20" />
+    <text id="5:3" name="Artifacts" x="4" y="30" width="85" height="29" />
+  </frame>`
+  const ref = buildFrameRef(parseMetadata(renamed), 'KEY', 'test', new Map([['5:2', 'Skill eval pass rates']]))
+  assert.deepEqual(
+    ref.layers.map((l) => [l.name, l.text]),
+    [
+      ['title', 'Skill eval pass rates'],
+      ['Artifacts', 'Artifacts'],
+    ],
+  )
+})
+
 void test('finds note frames by the name of the frame they annotate', () => {
   assert.equal(findNotes(parseMetadata(xml)).get('M3 · Edit the prompt'), 'Edit opens the keyboard.')
 })
