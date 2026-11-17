@@ -141,3 +141,16 @@ export const ChatInWorkbench: Story = {
     await expect(canvas.queryByText('Codex wants to run a command')).toBeNull()
   },
 }
+
+export const DragOverPane: Story = {
+  name: 'D8: a chat dragged over a pane of the workbench',
+  args: { data: workspacesStates.dragOverPane.data, ui: workspacesStates.dragOverPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 1 pane')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Open drift check to the right')
+    await expect(zone).toHaveTextContent('splits bridge themes into two panes side by side')
+    // The drop zone over a pane has no hint on where to drop, unlike D6's.
+    await expect(canvas.queryByText(/edge: split beside/)).toBeNull()
+  },
+}
