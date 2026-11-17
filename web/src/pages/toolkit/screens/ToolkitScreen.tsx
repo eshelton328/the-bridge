@@ -121,17 +121,16 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange }: ToolkitLayo
         }
         detail={list}
       />
-      {layout === 'phone' ? (
-        <MoreDrawer
-          open={ui.moreOpen === true}
-          onOpenChange={(open) => {
-            onUiChange({ moreOpen: open })
-          }}
-          selected="toolkit"
-          counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
-          onNavigate={onNavigate}
-        />
-      ) : null}
+      {/* Only the phone's More opens it; a state with `moreOpen` (M4) shows it at any width, as a story renders it. */}
+      <MoreDrawer
+        open={ui.moreOpen === true}
+        onOpenChange={(open) => {
+          onUiChange({ moreOpen: open })
+        }}
+        selected="toolkit"
+        counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
+        onNavigate={onNavigate}
+      />
     </Backdrop>
   )
 }
