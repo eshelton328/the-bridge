@@ -1,6 +1,6 @@
 # D04 deviations
 
-What still differs from Figma after round 2 of the fidelity loop
+What still differs from Figma after the last round of the fidelity loop
 (`pnpm fidelity toolkit D03 D04`, 2026-11-17, against the installed
 library 1.0.0-beta.10), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
@@ -10,23 +10,17 @@ same results as before D04.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. Three strings are not
-  visible, because the taller list rows push the Hooks row past the
-  frame's bottom edge (see Row height): `commit-msg` (427:601),
-  `hooks/commit-msg` (427:602) and `→1 ←1` (427:604). In
-  `exceptions.json`: the Workflows chip's label and count (427:471,
-  427:472), which Figma cuts at the list pane's edge too, and five strings
-  of the last Agents rows (`writer`, `agents/writer.md`,
-  `writing-reviewer`, `agents/writing-reviewer.md`, `→3 ←4`), which lie
-  behind the pinned header, chips and search, where the text check cannot
-  see that they are covered.
-- Position: 16 of 49 layers pass (`toolkit list`, `header`,
-  `read-only`, `filter · chips`, `search`, `group · RULES`,
-  `toolkit item`, `meta row`, `kind badge`, `button · Discuss`,
-  `button · Show on map`, `427:626`, `path row`, `path badge`,
-  `when it loads`, `columns`). The Skills and Agents groups and their rows
-  (16 layers) are in `exceptions.json`: the frame's list is scrolled to
-  the Rules group, so it has no layer for them.
+- Text: pass. In `exceptions.json`: the Workflows chip's label and count
+  (427:471, 427:472), which Figma cuts at the list pane's edge too; the
+  Rules, Workflows and Hooks list text that lies below the frame's bottom
+  edge in the render (see List scroll); and the Skills and Agents list
+  text that the render shows where Figma has scrolled it away.
+- Position: 15 of 49 layers pass (`toolkit list`, `header`, `read-only`,
+  `filter · chips`, `search`, `toolkit item`, `meta row`, `kind badge`,
+  `button · Discuss`, `button · Show on map`, `427:626`, `path row`,
+  `path badge`, `when it loads`, `columns`). The Skills and Agents groups
+  and their rows (16 layers) are in `exceptions.json`: the frame has no
+  layer for them.
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`, as
   in D03: the list pane scrolls on its own (`[data-figma="toolkit list"]`),
   and the kind chips scroll sideways, cut at the pane's edge
@@ -34,19 +28,28 @@ same results as before D04.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53
-  (`h +9` on every row key; the open row is 62 against 55, `h +7`), and
-  its counts sit level with the name, where Figma centres them. `ListRow`
-  pads 10 inside a 1 px border (gap: Toolkit row (pane)). The first row
-  starts 7 px lower and each row after it 9 px lower again:
-  `toolkit row · commits-and-prs` y +7; `toolkit row · diagrams` y +16;
-  `toolkit row · linear` y +25; `toolkit row · readmes` y +34;
-  `toolkit row · releases` y +43; `toolkit row · skills` y +52;
-  `toolkit row · ste100` y +59; `toolkit row · writing` y +68;
-  `group · WORKFLOWS` y +77; `toolkit row · skill-eval-cases` y +80;
-  `toolkit row · skill-eval-round` y +89; `group · HOOKS` y +98;
-  `toolkit row · commit-msg` y +101. So the Hooks row (commit-msg) lies
-  below the frame's bottom edge, and only the Hooks header shows.
+- **List scroll.** Figma draws the list pane scrolled to the Rules group
+  under a pinned header, chips and search. The render's pane starts at
+  its header with the Skills group first, as in D3: no page builds its
+  own sticky layout until the library's `ScrollFrame` arrives with the
+  move to 1.0.0-beta.15 in bridge-inbox's PR (d-107). So the Rules,
+  Workflows and Hooks groups sit about 1236 px lower than Figma's and
+  below the frame's bottom edge, and the Skills and Agents rows fill the
+  pane in their place. With the taller rows (see Row height) each key is
+  off by more: `group · RULES` y +1236;
+  `toolkit row · commits-and-prs` y +1239 h +9;
+  `toolkit row · diagrams` y +1248 h +9; `toolkit row · linear` y +1257
+  h +9; `toolkit row · readmes` y +1266 h +9; `toolkit row · releases`
+  y +1275 h +9; `toolkit row · skills` y +1284 h +7;
+  `toolkit row · ste100` y +1291 h +9; `toolkit row · writing` y +1300
+  h +9; `group · WORKFLOWS` y +1309; `toolkit row · skill-eval-cases`
+  y +1312 h +9; `toolkit row · skill-eval-round` y +1321 h +9;
+  `group · HOOKS` y +1330; `toolkit row · commit-msg` y +1333 h +9.
+- **Row height.** Each list row is 62 px high against Figma's 53 (the
+  open row is 62 against 55), and its counts sit level with the name,
+  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
+  Toolkit row (pane)). Each row after the first adds 9 px to the offsets
+  above.
 - **File preview width.** The preview is 554.4 px wide against Figma's
   560: no size token has 560 or 364, and the columns share the row 3 to 2
   even with the side column empty (gap: Item overview columns):
@@ -61,11 +64,6 @@ same results as before D04.
   above and below and 16 at the sides, where Figma has 10 and 14 (gap:
   Rule load box). It passes the position check; the preview under it
   starts 4 px lower.
-- **Pinned list top.** The header, chips and search stay at the list
-  pane's top, and the pane opens scrolled so the open rule's group (Rules)
-  is first under the search, as Figma draws it. The pinned block has the
-  pane's fill and blur over the pane's own, so it is a little darker than
-  the rows when stars lie behind it.
 - **Buttons.** Discuss and Show on map are both 32 px high, against
   Figma's 34 and 36 (gap: Item action buttons). Both pass the position
   check.
