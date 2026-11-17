@@ -21,14 +21,19 @@ what each file of a page folder is for.
   Map and Activity switch), `ToolkitListTools` (search, Sort, the counts
   legend), `ToolkitGroup` (a kind's header and card grid),
   `ToolkitCard` (one item: a card on the desktop, a row with no
-  description on a tablet) and `ToolkitRow` (one item as a list row on
-  the phone, M1). On the phone the header shows the views as icon
+  description on a tablet), `ToolkitRow` (one item as a list row on
+  the phone, M1) and `ToolkitMap` (the Map view, D2: the library
+  `MapGraph`, each item placed by its column and row, with the legend and
+  the selected item's card). On the map the list tools show no Sort and
+  their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
-- `types.ts`: the view models: items, groups, kind chips, and the `ui`.
+- `types.ts`: the view models: items, groups, kind chips, the map, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
   the state it shows, or a state of its own when its data differs
   (`toolkitListTablet`, T1 and M1, adds the Rules group; `moreDrawer`,
-  M4, opens the More drawer over M1's list); the map (D2) and an open item (D3) add a
-  `ui.view` or an item and their own screens.
+  M4, opens the More drawer over M1's list). The map (D2, `toolkitMap`)
+  sets `ui.view` to `map` and `ui.mapSelected`, and adds `data.map`: the
+  columns, each item's column and row, and the links. An open item (D3)
+  adds an item and its own screen.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
