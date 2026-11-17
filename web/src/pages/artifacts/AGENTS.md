@@ -28,7 +28,8 @@ each file of a page folder is for.
   with a search, one `ListGroup` of the matches ("3 matches for “eval”"),
   each `LibraryRow` with where it matched, and the search's hint under it;
   without one, a `ListGroup` per group. During a search the header's count
-  says how many show, such as "3 of 24".
+  says how many show, such as "3 of 24". With `data.addLinkForm` (D5)
+  Add a link opens `AddLinkDialog`.
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -65,13 +66,18 @@ each file of a page folder is for.
   marked by `Highlight`, the meta line with the link when the match is in
   it, and at the end the New dot, the place as `Badge variant="tag"`, the
   age and an icon-only Open) and `NewDot` (the list rows' New dot, also in
-  `ArtifactRow`). Show closes the menu; the cards
+  `ArtifactRow`). For D5: `AddLinkDialog` (`Dialog size="lg"` with the
+  link and title `TextField`s, the source as a `ViewSwitch` of the two
+  kinds, `ProjectPicker` and Cancel and Add artifact; the link field has
+  the focus, the caret after the link) and `ProjectPicker` (a
+  `RadioMenu` on a `Button`, as the library has no select field). Show closes the menu; the cards
   carry no finder or update data yet, so the grid does not narrow.
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
-  two boxes checked) and D4 `searchList` (D1's data in the List view with
+  two boxes checked), D4 `searchList` (D1's data in the List view with
   "eval" searched: the chips count the matches, and Earlier gains the
-  Writer cross-family round, whose link holds its match). `library` stays first in `states/index.ts`: the app
+  Writer cross-family round, whose link holds its match) and D5 `addLink`
+  (D1's data with the Add a link dialog open, Codex site picked). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -80,9 +86,10 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail` and `filterMenu`) and `ArtifactsUi` (chip,
+  `ArtifactDetail`, `filterMenu` and `addLinkForm`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
-  menu and its checked boxes, and whether the matches group is open), each
+  menu and its checked boxes, whether the matches group is open, and the
+  open Add a link dialog and its picked source), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
