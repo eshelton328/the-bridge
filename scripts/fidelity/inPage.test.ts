@@ -9,7 +9,7 @@ import {
   collectPageScript,
   coveredAt,
   fieldText,
-  fieldTextLine,
+  fieldTextLines,
   fullyVisible,
   isPortalRoot,
   paints,
@@ -81,7 +81,7 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /scrollBars: function scrollBars\(/)
   assert.match(script, /samplePoints: function samplePoints\(/)
   assert.match(script, /paints: function paints\(/)
-  assert.match(script, /fieldTextLine: function fieldTextLine\(/)
+  assert.match(script, /fieldTextLines: function fieldTextLines\(/)
   assert.match(script, /coveredAt: function coveredAt\(/)
 })
 
@@ -243,12 +243,57 @@ void test('a run is sampled at three points along the middle of each line it dra
 
 void test('a field is tested only where its text is, not over its whole box', () => {
   // Inbox T12: a menu covers the right end of "Add a note for yourself…", not its text.
-  const field = { box: edges(20, 700, 740, 740), startInset: 13, endInset: 13, textWidth: 150 }
-  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'start' }), edges(33, 700, 183, 740))
-  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'right' }), edges(577, 700, 727, 740))
-  assert.deepEqual(fieldTextLine({ ...field, textAlign: 'center' }), edges(305, 700, 455, 740))
+  const field = {
+    box: edges(20, 700, 740, 740),
+    startInset: 13,
+    endInset: 13,
+    topInset: 9,
+    bottomInset: 9,
+    lineHeight: 22,
+    paragraphWidths: [150],
+    multiline: false,
+  }
+  assert.deepEqual(fieldTextLines({ ...field, textAlign: 'start' }), [edges(33, 700, 183, 740)])
+  assert.deepEqual(fieldTextLines({ ...field, textAlign: 'right' }), [edges(577, 700, 727, 740)])
+  assert.deepEqual(fieldTextLines({ ...field, textAlign: 'center' }), [edges(305, 700, 455, 740)])
   // Text wider than the field stops at its padding.
-  assert.deepEqual(fieldTextLine({ ...field, textWidth: 900, textAlign: 'left' }), edges(33, 700, 727, 740))
+  assert.deepEqual(fieldTextLines({ ...field, paragraphWidths: [900], textAlign: 'left' }), [edges(33, 700, 727, 740)])
+})
+
+void test('a text area is tested on the lines its text takes from the top, not at its middle', () => {
+  // A 300 px text area: content box 33–727 wide, from y 109; 22 px lines.
+  const area = {
+    box: edges(20, 100, 740, 400),
+    startInset: 13,
+    endInset: 13,
+    topInset: 9,
+    bottomInset: 9,
+    lineHeight: 22,
+    multiline: true,
+    textAlign: 'start',
+  }
+  // One paragraph that wraps once, a blank line, then a short one.
+  assert.deepEqual(fieldTextLines({ ...area, paragraphWidths: [900, 0, 120] }), [
+    edges(33, 109, 727, 131),
+    edges(33, 131, 239, 153),
+    edges(33, 175, 153, 197),
+  ])
+  // Lines below the content box are scrolled away, so they are not tested.
+  assert.deepEqual(fieldTextLines({ ...area, box: edges(20, 100, 740, 150), paragraphWidths: [80, 80, 80] }), [
+    edges(33, 109, 113, 131),
+  ])
+})
+
+void test("in Chromium an overlay over a text area's blank space does not cover its text; one over its text does", async () => {
+  const page = (overlayTop: number) => `<body style="margin:0;font:16px/20px sans-serif">
+<div id="storybook-root"><div><textarea style="position:absolute;top:20px;left:20px;width:400px;height:300px;padding:8px;border:1px solid gray;font:16px/20px sans-serif;resize:none">A short note</textarea></div></div>
+<div style="position:fixed;top:${String(overlayTop)}px;left:0;width:500px;height:60px;background:rgb(30,30,40)"></div></body>`
+  const coveredOf = async (overlayTop: number) =>
+    (await measureHtml(page(overlayTop))).visibleTexts.find((v) => v.text === 'A short note')?.covered
+  // Over the middle of the box, where it has no text.
+  assert.equal(await coveredOf(150), false)
+  // Over its first line, at the top of the box.
+  assert.equal(await coveredOf(20), true)
 })
 
 void test('an element paints when it has a background, an image or replaced content', () => {

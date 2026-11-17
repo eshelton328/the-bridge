@@ -80,27 +80,50 @@ export function samplePoints(rects: readonly Edges[]): { x: number; y: number }[
 }
 
 /**
- * The line a form field's text takes inside its box: its content box (the
- * box less border and padding), as wide as the text and placed by its
- * text-align. A field taller than one line (a text area) keeps its height.
+ * The lines a form field's text takes inside its box, each as wide as its
+ * text and placed by text-align within the content box (the box less border
+ * and padding). An input has one line, its whole height. A text area's
+ * lines run down from the top of its content box, `lineHeight` each: each
+ * paragraph of its text (`paragraphWidths`, one per line break) wraps at
+ * the content width; a blank paragraph gives no line, and lines below the
+ * content box are left out.
  */
-export function fieldTextLine(field: {
+export function fieldTextLines(field: {
   box: Edges
   startInset: number
   endInset: number
-  textWidth: number
+  topInset: number
+  bottomInset: number
+  lineHeight: number
+  paragraphWidths: readonly number[]
+  multiline: boolean
   textAlign: string
-}): Edges {
+}): Edges[] {
   const left = field.box.left + field.startInset
   const right = field.box.right - field.endInset
-  const width = Math.max(0, Math.min(field.textWidth, right - left))
-  const { top, bottom } = field.box
-  if (field.textAlign === 'center') {
-    const middle = (left + right) / 2
-    return { left: middle - width / 2, top, right: middle + width / 2, bottom }
+  const room = Math.max(0, right - left)
+  const place = (width: number, top: number, bottom: number): Edges => {
+    const w = Math.max(0, Math.min(width, room))
+    if (field.textAlign === 'center') {
+      const middle = (left + right) / 2
+      return { left: middle - w / 2, top, right: middle + w / 2, bottom }
+    }
+    if (field.textAlign === 'right' || field.textAlign === 'end') return { left: right - w, top, right, bottom }
+    return { left, top, right: left + w, bottom }
   }
-  if (field.textAlign === 'right' || field.textAlign === 'end') return { left: right - width, top, right, bottom }
-  return { left, top, right: left + width, bottom }
+  if (!field.multiline) return [place(field.paragraphWidths[0] ?? 0, field.box.top, field.box.bottom)]
+  const widths = field.paragraphWidths.flatMap((w) => {
+    if (room <= 0 || w <= 0) return [0]
+    const n = Math.ceil(w / room)
+    return [...Array.from({ length: n - 1 }, () => room), w - (n - 1) * room]
+  })
+  const top = field.box.top + field.topInset
+  const bottom = field.box.bottom - field.bottomInset
+  return widths.flatMap((w, i) => {
+    const lineTop = top + i * field.lineHeight
+    const lineBottom = lineTop + field.lineHeight
+    return w > 0 && lineBottom <= bottom + 1 ? [place(w, lineTop, lineBottom)] : []
+  })
 }
 
 /**
@@ -196,14 +219,14 @@ type Helpers = {
   fieldText: typeof fieldText
   scrollBars: typeof scrollBars
   samplePoints: typeof samplePoints
-  fieldTextLine: typeof fieldTextLine
+  fieldTextLines: typeof fieldTextLines
   paints: typeof paints
   coveredAt: typeof coveredAt
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLine: ${fieldTextLine.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
 }
 
 export type PageMeasure = {
@@ -374,18 +397,28 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     const rect = f.getBoundingClientRect()
     if (shown(f) && helpers.fullyVisible([rect], clipsOf(f.parentElement ?? f), viewport)) {
       // A field's box holds more than its text (an icon over its padding, a
-      // menu over its empty end), so only the line its text takes is tested.
+      // menu over its empty end or below its last line), so only the lines
+      // its text takes are tested.
       const fs = getComputedStyle(f)
       const context = document.createElement('canvas').getContext('2d')
       if (context !== null) context.font = fs.font
-      const line = helpers.fieldTextLine({
+      const multiline = f instanceof HTMLTextAreaElement
+      const shownText = f.value !== '' ? f.value : f.placeholder
+      const paragraphs = multiline ? shownText.split('\n') : [text]
+      const lineHeight =
+        fs.lineHeight === 'normal' ? Number.parseFloat(fs.fontSize) * 1.2 : Number.parseFloat(fs.lineHeight)
+      const lines = helpers.fieldTextLines({
         box: { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom },
         startInset: Number.parseFloat(fs.borderLeftWidth) + Number.parseFloat(fs.paddingLeft),
         endInset: Number.parseFloat(fs.borderRightWidth) + Number.parseFloat(fs.paddingRight),
-        textWidth: context === null ? rect.width : context.measureText(text).width,
+        topInset: Number.parseFloat(fs.borderTopWidth) + Number.parseFloat(fs.paddingTop),
+        bottomInset: Number.parseFloat(fs.borderBottomWidth) + Number.parseFloat(fs.paddingBottom),
+        lineHeight,
+        paragraphWidths: paragraphs.map((p) => (context === null ? rect.width : context.measureText(p).width)),
+        multiline,
         textAlign: fs.textAlign,
       })
-      const covered = helpers.coveredAt(helpers.samplePoints([line]).map((p) => stackAt(p.x, p.y, f)))
+      const covered = helpers.coveredAt(helpers.samplePoints(lines).map((p) => stackAt(p.x, p.y, f)))
       visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f), covered })
     }
   }
