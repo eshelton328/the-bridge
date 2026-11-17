@@ -48,7 +48,8 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
   line is 1 px wider than the bubble's 321 px, as on D02.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
-  14 px icons with no button box, as on D02.
+  14 px icons with no button box, as on D02. They are drawn in `fg.muted`,
+  Figma's grey.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.
 - **Figma layers.** Each sidebar block takes the frame's layer ids from the

@@ -51,7 +51,8 @@ sidebar has the toggle, so the tab bar has none.
   Figma's 83, as on D02 to D06.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
-  14 px icons with no button box, as on D02b.
+  14 px icons with no button box, as on D02b. They are drawn in `fg.muted`,
+  Figma's grey.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.
 

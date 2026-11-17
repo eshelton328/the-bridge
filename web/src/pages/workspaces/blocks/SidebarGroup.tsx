@@ -41,6 +41,9 @@ const group = css({ position: 'relative' })
 // Figma's header is 28 high with 14 px icons (105:623); the library's smallest icon button is 24 (control.xs),
 // so the buttons reach 4 into the header's padding above and below instead of making the header taller.
 const headerActions = css({ display: 'inline-flex', alignItems: 'center', gap: '4', my: '-4' })
+// A text button draws its icon in the accent colour; Figma draws the header's ⋯, rename and close in the header's
+// grey (fg.muted, D2 105:743 and 105:746).
+const headerAction = css({ color: 'fg.muted' })
 // The drop target (105:687): a dashed cyan outline on the selected fill, as Figma draws it.
 const dropTarget = css({
   borderRadius: 'md',
@@ -109,15 +112,15 @@ export function SidebarGroup(props: SidebarGroupProps) {
             <span className={headerActions}>
               {hovered ? (
                 <>
-                  <Button variant="text" size="xs" iconOnly aria-label={`Rename ${name}`}>
+                  <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`Rename ${name}`}>
                     <EditIcon size="12" />
                   </Button>
-                  <Button variant="text" size="xs" iconOnly aria-label={`Close ${name}`}>
+                  <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`Close ${name}`}>
                     <CloseIcon size="12" />
                   </Button>
                 </>
               ) : (
-                <Button variant="text" size="xs" iconOnly aria-label={`${name} actions`}>
+                <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`${name} actions`}>
                   <MoreIcon size="12" />
                 </Button>
               )}

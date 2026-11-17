@@ -49,7 +49,9 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box; they sit 4 px into the header's padding
-  so the header keeps Figma's height (30 against 28).
+  so the header keeps Figma's height (30 against 28). They are text
+  buttons with an `fg.muted` class, Figma's grey, where the text variant
+  draws the accent.
 - **Chat header (Chat header).** The header (105:785) is within the 4 px
   tolerance only because its gaps are cut to the 4 and 8 px tokens: the
   title is `subtitle` (24 px line, Figma 21) and the model chip is taller
