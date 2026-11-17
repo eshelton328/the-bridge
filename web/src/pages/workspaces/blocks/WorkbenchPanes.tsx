@@ -1,12 +1,14 @@
 // The current workspace's panes in the split, clockwise from the top left
 // (D1 105:174): each chat or shell in a `PaneFrame` with its menu, and an
 // empty pane as it is. An open side chat shows inside the pane it belongs
-// to (D5). Props only; `ui` says which pane is focused and which menu,
+// to (D5), and a chat dragged from the sidebar over a pane shows the drop
+// zone over the part of the pane where it would open (D8). Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { ChatPane } from './ChatPane.tsx'
 import { EmptyPane } from './EmptyPane.tsx'
+import { PaneDropZone } from './PaneDropZone.tsx'
 import { PaneFrame } from './PaneFrame.tsx'
 import { PaneMenu } from './PaneMenu.tsx'
 import { ShellPane } from './ShellPane.tsx'
@@ -31,6 +33,8 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
   const panes = data.layers?.panes ?? paneLayers
   const chatsLayers = data.layers?.paneChats ?? chatLayers
   const side = ui.sideChatOpen === true ? data.sideChat : undefined
+  const drag = ui.paneDrag
+  const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === drag?.chat)
   let chats = 0
   const render = (pane: WorkbenchPane, place: number) => {
     if (pane.type === 'empty')
@@ -59,6 +63,18 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
         focused={ui.focusedPane === pane.id}
         onActivate={() => onUiChange?.({ focusedPane: pane.id })}
         menu={menu}
+        overlay={
+          drag?.pane === pane.id && dragged !== undefined && data.paneDrop !== undefined ? (
+            <PaneDropZone
+              edge={drag.edge}
+              chat={dragged}
+              target={pane.head.title}
+              drop={data.paneDrop}
+              placement="pane"
+              figma={data.layers?.dropZone}
+            />
+          ) : undefined
+        }
       >
         {pane.type === 'chat' ? (
           <ChatPane

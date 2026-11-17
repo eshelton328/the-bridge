@@ -13,7 +13,8 @@
 // pane (D5). A chat dragged from the sidebar onto the chat shown alone
 // fades in the sidebar, and the drop zone shows where it would open (D6).
 // A chat opened from the sidebar can show in the workbench beside it, in
-// place of the chat alone (D7).
+// place of the chat alone (D7), and a chat dragged over one of its panes
+// shows the drop zone over that pane (D8).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -127,9 +128,9 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
         <PaneDropZone
           edge={ui.paneDrag.edge}
           chat={dragged}
-          title={data.paneDrop.title.replace('{chat}', dragged.title).replace('{target}', chat.head.title)}
-          text={data.paneDrop.text}
-          hint={data.paneDrop.hint}
+          target={chat.head.title}
+          drop={data.paneDrop}
+          figma={data.layers?.dropZone}
         />
       )
     return (

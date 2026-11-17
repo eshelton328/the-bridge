@@ -262,6 +262,8 @@ export const SidebarLayers = z.object({
   /** The subagents panel and its cards, by subagent id (D3). */
   subagents: z.string().optional(),
   subagentCards: z.record(z.string(), z.string()).optional(),
+  /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
+  dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -310,15 +312,21 @@ export type FolderPicker = z.infer<typeof FolderPicker>
 export const DropEdge = z.enum(['left', 'right', 'top', 'bottom', 'middle'])
 export type DropEdge = z.infer<typeof DropEdge>
 
-/** The drop zone a chat dragged from the sidebar shows over the chat shown alone (D6 158:1025). */
+/**
+ * The drop zone a chat dragged from the sidebar shows over the chat shown alone (D6 158:1025) or over a pane of the
+ * workbench (D8 402:1112).
+ */
 const PaneDrop = z.object({
   /** What the drop does, such as "Open {chat} beside {target}"; {chat} and {target} are filled in. */
   title: z.string(),
-  /** The line under it, such as "splits the view into two panes". */
+  /** The line under it, such as "splits {target} into two panes side by side"; {chat} and {target} are filled in. */
   text: z.string(),
-  /** The hint on where to drop, in one line. */
-  hint: z.string(),
+  /** The hint on where to drop, in one line; none when not set (D8). */
+  hint: z.string().optional(),
+  /** `false`: no split icon over the title (D8). */
+  icon: z.boolean().optional(),
 })
+export type PaneDrop = z.infer<typeof PaneDrop>
 
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
@@ -357,7 +365,7 @@ export const WorkspacesData = z.object({
   folders: ChatFolders.optional(),
   /** The folder picker (D4). */
   folderPicker: FolderPicker.optional(),
-  /** The drop zone's text while a chat is dragged onto the chat shown alone (D6). */
+  /** The drop zone's text while a chat is dragged onto the chat shown alone (D6) or a pane of the workbench (D8). */
   paneDrop: PaneDrop.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
@@ -402,9 +410,10 @@ export const WorkspacesUi = z.object({
   pickedFolder: z.string().nullable().optional(),
   /**
    * A chat Erik drags from the sidebar onto the chat shown alone, and where it would land (D6): its row in the
-   * sidebar fades and the drop zone shows over that part of the chat.
+   * sidebar fades and the drop zone shows over that part of the chat. With the workbench (D8), `pane` is the pane
+   * it is over, and the drop zone shows over that part of the pane.
    */
-  paneDrag: z.object({ chat: z.string(), edge: DropEdge }).nullable().optional(),
+  paneDrag: z.object({ chat: z.string(), edge: DropEdge, pane: z.string().optional() }).nullable().optional(),
   /**
    * With the sidebar, the workbench (the tabs, the panes and the status bar) shows beside it in place of the chat
    * alone (D7): a chat opened from the sidebar fills the panes area.
