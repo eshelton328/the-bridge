@@ -25,6 +25,8 @@ import { ToolkitFlowStep } from './ToolkitFlowStep.tsx'
 type Flow = NonNullable<ToolkitItemDetailView['flow']>
 
 // D8 433:1034: the header (29 high), the box and the agents' row, 10 apart.
+// A branch label ("yes", "no") with its destination for a screen reader; the arrow icons stay hidden.
+const srOnly = css({ srOnly: true })
 const section = css({ display: 'flex', flexDirection: 'column', gap: '10' })
 const header = css({ display: 'flex', alignItems: 'center', gap: '8' })
 const heading = css({ textStyle: 'eyebrow', color: 'fg.muted' })
@@ -139,9 +141,16 @@ export function ToolkitWorkflowFlow({ flow, onOpenFullPage, onOpenItem }: Toolki
             <div className={cx(lane, laneColumn(i))} />
             <h4 className={cx(laneLabel, laneColumn(i))}>{phase.label}</h4>
             {(phase.from ?? []).map((row, n) => (
-              <span key={row} aria-hidden="true" className={cx(arrow, across, gapColumn(i), rows[String(3 + 2 * row)])}>
-                {n === 0 && phase.fromLabel !== undefined ? <span>{phase.fromLabel}</span> : null}
-                <span className={acrossIcon}>
+              <span key={row} className={cx(arrow, across, gapColumn(i), rows[String(3 + 2 * row)])}>
+                {n === 0 && phase.fromLabel !== undefined ? (
+                  <span>
+                    {phase.fromLabel}
+                    <span className={srOnly}>
+                      {`, to ${phase.steps.find((step) => step.row === row)?.title ?? phase.label}`}
+                    </span>
+                  </span>
+                ) : null}
+                <span aria-hidden="true" className={acrossIcon}>
                   <ArrowRightIcon size="12" />
                 </span>
               </span>
@@ -156,7 +165,6 @@ export function ToolkitWorkflowFlow({ flow, onOpenFullPage, onOpenItem }: Toolki
                   />
                   {next === undefined || phase.parallel === true ? null : (
                     <span
-                      aria-hidden="true"
                       className={cx(
                         arrow,
                         down,
@@ -164,8 +172,13 @@ export function ToolkitWorkflowFlow({ flow, onOpenFullPage, onOpenItem }: Toolki
                         rows[`${String(4 + 2 * step.row)}/${String(3 + 2 * next.row)}`],
                       )}
                     >
-                      {step.down === undefined ? null : <span>{step.down}</span>}
-                      <ArrowDownIcon size="12" />
+                      {step.down === undefined ? null : (
+                        <span>
+                          {step.down}
+                          <span className={srOnly}>{`, to ${next.title}`}</span>
+                        </span>
+                      )}
+                      <ArrowDownIcon size="12" aria-hidden="true" />
                     </span>
                   )}
                 </Fragment>
