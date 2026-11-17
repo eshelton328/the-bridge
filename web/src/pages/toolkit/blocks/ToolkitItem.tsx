@@ -3,54 +3,44 @@
 // the name, the path badge that copies the path and when the item changed,
 // then the item's tabs; the Overview tab (`ToolkitItemOverview`) shows the
 // description, the main file rendered read-only, what uses the item, its
-// files and its evals. On a tablet or phone a back row to the list comes
-// first. Nothing edits the item (R35). Props only.
+// files and its evals. On a tablet or phone (T3) the item replaces the list
+// in the shared DetailFrame (d-107): the back row to Toolkit, with Discuss and
+// Show on map at its end, stays at the top, and only the item under it
+// scrolls. Nothing edits the item (R35). Props only.
 import {
   AgentIcon,
   BackRow,
-  Button,
-  ChatIcon,
-  CopyIcon,
-  FileIcon,
-  FolderIcon,
   HookIcon,
   ItemTabs,
   KindBadge,
-  MapIcon,
-  PathBadge,
   RuleIcon,
   SkillIcon,
   WorkflowIcon,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
+import { ToolkitItemActions } from './ToolkitItemActions.tsx'
 import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
+import { ToolkitItemPath } from './ToolkitItemPath.tsx'
 
 // D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
 // the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
 // The pane fills the frame's height; 24 under the content keeps D8's item (its content ends 42 over the frame's foot,
 // 940, and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
 const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '24' })
-// D3 427:251: the kind badge at the start, the two buttons 10 apart at the end. Show on map (427:258) is 36 high,
-// but the lg button is 9 px wider than Figma's 136, so it takes the md size, as Discuss does (34 in Figma).
-// The row is 40 high (4 above and below its 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
+// T3 428:542: the DetailFrame's Container pads the item at the sides and the foot. The back row (428:543) ends at 77
+// and the meta row (428:561) starts at 91, and the rows under it are 14 apart; no space token has 14. The BackRow is
+// 32 high against Figma's 36, so 20 above the meta row and 12 between the rows keep each row within 3 px of Figma's
+// (the tabs' panel adds 16 above the description, Figma's 14).
+const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20' })
+// D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
+// 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
 const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '4' })
-const actions = css({ display: 'flex', alignItems: 'center', gap: '10', ms: 'auto' })
+// T3 428:561: on a tablet the meta row holds only the kind badge, and is as wide as it.
+const metaRowPage = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start' })
 const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.default' })
-// D3 457:45: the path badge, then when it changed in mono, 10 apart.
-const pathRow = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '10' })
-const changed = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap' })
-// D3 457:50: the copy icon is a bare 12 px icon inside the badge; the library's smallest button is 24 high.
-const copy = css({
-  display: 'inline-flex',
-  p: '0',
-  color: 'fg.muted',
-  bg: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  _hover: { color: 'fg.default' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
-})
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
@@ -62,6 +52,8 @@ const titleLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1536',
   'workflows/skill-eval-round.md': '433:1032',
 }
+// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567).
+const pageTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '428:567' }
 
 // D3 500:8143: the kind badge starts with the kind's icon.
 const kindIcons = {
@@ -74,7 +66,9 @@ const kindIcons = {
 
 export type ToolkitItemProps = {
   open: ToolkitOpenItem
-  /** On a tablet or phone the item fills the screen, under a back row to the list. */
+  /** The desktop shows the item as a pane beside the list; a tablet or phone in place of the list, under Back. */
+  layout?: Viewport | undefined
+  /** Back to the list, on a tablet or phone. */
   back?: (() => void) | undefined
   onTabChange?: ((tab: string) => void) | undefined
   /** Called with the badge's path when its copy button is pressed. */
@@ -90,6 +84,7 @@ export type ToolkitItemProps = {
 
 export function ToolkitItem({
   open,
+  layout = 'desktop',
   back,
   onTabChange,
   onCopyPath,
@@ -99,49 +94,20 @@ export function ToolkitItem({
   onOpenItem,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
-  return (
-    <article aria-label={item.name} className={pane} data-figma="toolkit item">
-      {back === undefined ? null : <BackRow label="Toolkit" onBack={back} />}
-      <div className={metaRow} data-figma="meta row">
+  const desktop = layout === 'desktop'
+  const actions = <ToolkitItemActions gap={desktop ? '10' : '8'} onDiscuss={onDiscuss} onShowOnMap={onShowOnMap} />
+  const article = (
+    <article aria-label={item.name} className={desktop ? pane : page} data-figma="toolkit item">
+      <div className={desktop ? metaRow : metaRowPage} data-figma="meta row">
         <div data-figma="kind badge">
           <KindBadge kind={item.kind} icon={kindIcons[item.kind]} />
         </div>
-        <div className={actions}>
-          <Button variant="primary" data-figma="button · Discuss" onClick={onDiscuss}>
-            <ChatIcon />
-            Discuss
-          </Button>
-          <Button variant="secondary" data-figma="button · Show on map" onClick={onShowOnMap}>
-            <MapIcon />
-            Show on map
-          </Button>
-        </div>
+        {desktop ? actions : null}
       </div>
-      <h2 className={title} data-figma={titleLayers[item.path]}>
+      <h2 className={title} data-figma={(desktop ? titleLayers : pageTitleLayers)[item.path]}>
         {item.name}
       </h2>
-      <div className={pathRow} data-figma="path row">
-        <div data-figma="path badge">
-          <PathBadge
-            path={detail.location}
-            // A folder's path ends with "/" (D3 457:47); a file's shows the file icon (D4 457:56).
-            icon={detail.location.endsWith('/') ? <FolderIcon /> : <FileIcon />}
-            trailing={
-              <button
-                type="button"
-                className={copy}
-                aria-label={`Copy ${detail.location}`}
-                onClick={() => {
-                  onCopyPath?.(detail.location)
-                }}
-              >
-                <CopyIcon />
-              </button>
-            }
-          />
-        </div>
-        {detail.changed === '' ? null : <span className={changed}>{detail.changed}</span>}
-      </div>
+      <ToolkitItemPath location={detail.location} changed={detail.changed} onCopyPath={onCopyPath} />
       <ItemTabs
         label={`${item.name} sections`}
         value={tab}
@@ -155,6 +121,7 @@ export function ToolkitItem({
               <ToolkitItemOverview
                 detail={detail}
                 kind={item.kind}
+                layout={layout}
                 onTabChange={onTabChange}
                 onOpenFullPage={onOpenFullPage}
                 onOpenItem={onOpenItem}
@@ -163,5 +130,20 @@ export function ToolkitItem({
         }))}
       />
     </article>
+  )
+  if (desktop) return article
+  return (
+    <DetailFrame
+      layout={layout}
+      back={
+        <div data-figma="back row">
+          <BackRow label="Toolkit" onBack={back}>
+            {actions}
+          </BackRow>
+        </div>
+      }
+    >
+      {article}
+    </DetailFrame>
   )
 }

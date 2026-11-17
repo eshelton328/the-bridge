@@ -11,8 +11,8 @@
 // without `onUiChange` the screen keeps Erik's changes itself. A click on a
 // card, a row or the map card's Open button opens the item (`ui.open`, D3):
 // on the desktop the list moves into the list pane (`ToolkitListPane`) and
-// the item (`ToolkitItem`) fills the rest; on a tablet or phone the item
-// fills the screen under a back row.
+// the item (`ToolkitItem`) fills the rest; on a tablet or phone (T3) the item
+// replaces the list, in the shared DetailFrame under its back row.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -149,6 +149,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
     open === null ? null : (
       <ToolkitItem
         open={open}
+        layout={layout}
         back={
           desktop
             ? undefined
