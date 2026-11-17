@@ -13,7 +13,7 @@
     {
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"inbox list\"] > section",
-      "reason": "Figma's list (403:2620) runs on under the toast, and its last group header is out of sight there. The render's scrolling list ends at the toast's bottom edge (y 966), so nothing shows under the toast, as in Figma. Its rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), so the list is 26 px taller than that area and only the collapsed SNOOZED header lies past its edge."
+      "reason": "Figma's list (403:2620) runs on under the toast, and its last group header is out of sight there. The render's scrolling list ends at the toast's bottom edge (y 966), and the toast sticks to the list's bottom as its last child, so at rest nothing shows under the toast, as in Figma. The list scrolls 66 px (scrollHeight 1032, clientHeight 966): its rows are 3 px taller each and its group headers 4 px (4 px grid, d-072; List row heights in deviations.md), and the toast's own height is in the scroll area so that a user can scroll the collapsed SNOOZED header clear of the toast (Codex review of #9)."
     }
   ]
 }
