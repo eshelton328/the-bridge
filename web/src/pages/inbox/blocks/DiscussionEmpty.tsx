@@ -65,7 +65,8 @@ export function DiscussionEmpty({ empty }: { empty: NonNullable<InboxDiscussion[
           </Stack>
         </Panel>
       </div>
-      <Inline gap="6" align="center" justify="center" data-figma="suggestions">
+      {/* One row at 1512 (Figma 403:521); the buttons wrap in a narrower panel, which clips its overflow. */}
+      <Inline gap="6" align="center" justify="center" wrap data-figma="suggestions">
         {empty.suggestions.map((s) => (
           <Button key={s}>{s}</Button>
         ))}

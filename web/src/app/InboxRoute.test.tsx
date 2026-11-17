@@ -125,4 +125,36 @@ describe('the Inbox route', () => {
     if (toast !== null) expect(t.bottom).toBeLessThanOrEqual(box(toast).top)
     await view.unmount()
   })
+
+  it('keeps every suggestion button inside the discussion panel at 1280 px', async () => {
+    await page.viewport(1280, 832)
+    const { rendered } = renderInbox('discussOpen')
+    const view = await rendered
+    await expect.element(page.getByRole('button', { name: 'Make the prompt shorter' })).toBeVisible()
+    const panel = page.getByRole('complementary').element()
+    const suggestions = panel.querySelector('[data-figma="suggestions"]')
+    expect(suggestions).not.toBeNull()
+    const buttons = [...(suggestions?.querySelectorAll('button') ?? [])]
+    expect(buttons).toHaveLength(3)
+    const p = box(panel)
+    for (const button of buttons) {
+      const b = box(button)
+      expect(b.left, button.textContent).toBeGreaterThanOrEqual(p.left)
+      expect(b.right, button.textContent).toBeLessThanOrEqual(p.right)
+      expect(button.scrollWidth, button.textContent).toBeLessThanOrEqual(button.clientWidth)
+    }
+    await view.unmount()
+  })
+
+  it('keeps the suggestion buttons on one row at 1512 px, as in Figma', async () => {
+    await page.viewport(1512, 982)
+    const { rendered } = renderInbox('discussOpen')
+    const view = await rendered
+    await expect.element(page.getByRole('button', { name: 'Make the prompt shorter' })).toBeVisible()
+    const suggestions = document.querySelector('[data-figma="suggestions"]')
+    const tops = [...(suggestions?.querySelectorAll('button') ?? [])].map((b) => box(b).top)
+    expect(tops).toHaveLength(3)
+    expect(new Set(tops).size).toBe(1)
+    await view.unmount()
+  })
 })
