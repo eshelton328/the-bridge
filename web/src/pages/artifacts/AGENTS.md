@@ -23,7 +23,12 @@ each file of a page folder is for.
   `detail` (`ArtifactDetail`); a tablet or phone frame of it comes later.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
-  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1).
+  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). In
+  the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
+  with a search, one `ListGroup` of the matches ("3 matches for “eval”"),
+  each `LibraryRow` with where it matched, and the search's hint under it;
+  without one, a `ListGroup` per group. During a search the header's count
+  says how many show, such as "3 of 24".
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -32,7 +37,9 @@ each file of a page folder is for.
   and `MadeIn`, 20 apart.
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search
-  and leaves out a group with none; the chip and group counts stay the
+  (title, description, link and project) and leaves out a group with none;
+  `searchMatches` lists the matches with the first place each matches, in
+  that order; the chip and group counts stay the
   state's, because the library holds more artifacts than the cards drawn.
 - `blocks/`: `LibraryHeader` (`PageHeader` with the count, `FoundStatus`
   and Add a link), `FoundStatus` (the refresh mark and when the library
@@ -52,11 +59,19 @@ each file of a page folder is for.
   (Filter, pressed while open and with a dot while boxes are checked, and
   the `Popover` with the footer's note and Show) and `FilterMenu` (a
   `PopoverSection` per section, a `Checkbox size="compact"` with its count
-  per box, as the Inbox's Filter menu). Show closes the menu; the cards
+  per box, as the Inbox's Filter menu). For D4: `ListGroup` (a
+  `GroupHeader` over rows 6 apart), `LibraryRow` (`ListRow` in a bordered
+  box: a wide `Thumbnail`, the title and the description with the match
+  marked by `Highlight`, the meta line with the link when the match is in
+  it, and at the end the New dot, the place as `Badge variant="tag"`, the
+  age and an icon-only Open) and `NewDot` (the list rows' New dot, also in
+  `ArtifactRow`). Show closes the menu; the cards
   carry no finder or update data yet, so the grid does not narrow.
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
-  open artifact) and D3 `filterOpen` (D1's data with the Filter menu,
-  two boxes checked). `library` stays first in `states/index.ts`: the app
+  open artifact), D3 `filterOpen` (D1's data with the Filter menu,
+  two boxes checked) and D4 `searchList` (D1's data in the List view with
+  "eval" searched: the chips count the matches, and Earlier gains the
+  Writer cross-family round, whose link holds its match). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -67,7 +82,9 @@ each file of a page folder is for.
   each with its `preview` kind and `source`, and the optional `open`
   `ArtifactDetail` and `filterMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
-  menu and its checked boxes), each a Zod schema.
+  menu and its checked boxes, and whether the matches group is open), each
+  a Zod schema. A card may have a `link`, and `search` holds the label of
+  each match place and the hint (D4).
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
 
