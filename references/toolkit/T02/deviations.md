@@ -20,7 +20,7 @@ header, the chips, the canvas, the selection and the tab bar.
   where Figma shows it in full (see Node labels). Nine names that Figma
   also cuts with an ellipsis (428:421, 428:466, 428:487, 428:497,
   428:502, 428:507, 428:512, 428:523, 428:529) are in `exceptions.json`.
-- Position: 2 of 8 layers pass (`header`, `tab bar`).
+- Position: 3 of 8 layers pass (`header`, `filter · chips`, `tab bar`).
 - Rules: pass.
 
 ## Deviations
@@ -49,13 +49,12 @@ header, the chips, the canvas, the selection and the tab bar.
   with it.
 - **View switch.** List, Map and Activity are 232.5 px wide and 36 high
   against Figma's 239 and 38, with 12 px icons against 15
-  (`view · List, Map or Activity` x +4.5, w -6.5; gap: View switch
-  38 px). The Read-only badge before it moves right with it
-  (`read-only` x +5.2). The selected item (Map) has a cyan outline and a
+  (`view · List, Map or Activity` x -7.5, w +5.5 with library beta.15;
+  gap: View switch 38 px). The Read-only badge before it moves left
+  with it (`read-only` x -6.8). The selected item (Map) has a cyan outline and a
   white label, where Figma draws the fill alone with a cyan label.
-- **Kind chips.** The chip row is 594 px wide and 36 high against
-  Figma's 568 and 32 (`filter · chips` w +25.8): `FilterChips` pads the
-  row 2 px and its labels are wider (gap: Kind chip row).
+- **Kind chips.** With library beta.15 the chip row passes the position
+  check; it is still 36 high against Figma's 32 (gap: Kind chip row).
 - **Links in one column.** A link between two items of one column bows
   out 40 px for every length; Figma's tablet map bows 22.2 px for rows
   next to each other (project-setup to agents-md) and 65.7 for six rows,

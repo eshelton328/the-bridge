@@ -86,7 +86,7 @@ The blind second review of round 3 (`reports/fidelity/inbox/D21.sideBySide.png`,
   "Button label size"). Fixed by beta.5: Newest and Filter take
   `Button textSize="sm"` (Medium 13) and the search field
   `SearchField textSize="sm"` (13 px).
-- Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".
+- Rail items: library #115 (beta.14) closed the gap. `NavRail` items are 50 px high and 56 px apart, as Figma's.
 - Tag chips larger and whiter: colour fixed. The chips are now `MetaChip tone="muted"` (Figma #8a97b8, `fg.muted`); the NCC chip keeps `tone="issue"`. Their widths match Figma's within 1 px (88.8, 141.6 and 75.6 against 88, 141 and 75); they are 26 px high against 24 because `monoSm` keeps a 16 px line on the 4 px grid (d-072).
 
 ## Disabled controls

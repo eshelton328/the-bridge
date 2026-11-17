@@ -98,6 +98,6 @@ The blind second review of round 3 (`reports/fidelity/inbox/D18.sideBySide.png`,
   "Button label size"). Fixed by beta.5: Newest and Filter take
   `Button textSize="sm"` (Medium 13) and the search field
   `SearchField textSize="sm"` (13 px).
-- Rail items further apart: recorded. The library `NavRail` items are 54 px high and 60 px apart against Figma's 50 and 56 (More y 241 against 233). D01 to D12 render the same rail. LIBRARY_GAPS.md, row "Rail item height".
+- Rail items: library #115 (beta.14) closed the gap. `NavRail` items are 50 px high and 56 px apart, as Figma's.
 - Task title smaller: recorded. Figma's title is Geist SemiBold 22/28 (403:1809). No text style has 22 px (`title` is 20, `heading` 28), so the title is in `title`. LIBRARY_GAPS.md, row "22 px title".
 - Links brighter blue: no change. The links are `fg.accent`, Figma's #5ee1ff; at the larger size they looked brighter. They are now Figma's 12 px.
