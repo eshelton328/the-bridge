@@ -55,7 +55,7 @@ jobs:
       - run: pnpm check:ci
       - run: pnpm test:scripts
 
-  test:
+  test-unit:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -64,7 +64,18 @@ jobs:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
           browser: "true"
       - run: pnpm codegen
-      - run: pnpm test
+      - run: pnpm test:unit
+
+  test-stories:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
+          browser: "true"
+      - run: pnpm codegen
+      - run: pnpm test:stories
 
   build:
     runs-on: ubuntu-24.04
