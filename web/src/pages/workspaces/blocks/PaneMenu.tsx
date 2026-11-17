@@ -23,14 +23,22 @@ import {
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
+import { css } from '../../../../styled-system/css/index.js'
 import type { PaneAction, Workspace } from '../types.ts'
+
+// A menu row draws its icon in fg.muted; Figma draws the Subagents icon in the accent colour (D2b 402:5553).
+const accentIcon = css({ display: 'inline-flex', '& svg': { color: 'fg.accent' } })
 
 const icons: Record<PaneAction['value'], ReactNode> = {
   newChat: <PlusIcon size="16" />,
   fork: <BranchIcon size="16" />,
   sideChat: <BubbleIcon size="16" />,
   subtask: <SparkleIcon size="16" />,
-  subagents: <WorkspacesIcon size="16" />,
+  subagents: (
+    <span className={accentIcon}>
+      <WorkspacesIcon size="16" />
+    </span>
+  ),
   folders: <ProjectsIcon size="16" />,
   move: <MoveIcon size="16" />,
   rename: <EditIcon size="16" />,

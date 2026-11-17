@@ -30,6 +30,8 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
   eight rows make the menu 295 high against 279. Its icons are 16 px
   (Figma 14), as in the pane menu of D01. The menu is 240 wide
   (`width="sm"`) and opens under the ⋯ at its right edge, as in Figma.
+  The Subagents icon is `fg.accent`, as Figma draws it; the other icons
+  are the menu's `fg.muted`.
 - **Highlighted row (Menu highlighted row).** Figma fills Move to
   workspace and colours its icon cyan; `Menu` fills only the row under the
   pointer or the focus, so no row is filled.
