@@ -259,7 +259,8 @@ export function checkRecord(record: BuildRecord, repo: RepoView): string[] {
   if (record.deviations.length > 0 && record.deviationsFile === null)
     err(`deviations are listed: write them to ${canonical.deviations} and set deviationsFile`)
   if (repo.exceptionsError !== undefined) err(repo.exceptionsError)
-  if (record.exceptionsFile === null && repo.changes.some((c) => c.path === canonical.exceptions))
+  // A deleted exceptions.json has no file to point at, so only an added or changed one needs the field.
+  if (record.exceptionsFile === null && repo.changes.some((c) => c.path === canonical.exceptions && c.status !== 'D'))
     err(`${canonical.exceptions} changed: set exceptionsFile so the caller sees it`)
 
   // Each gap is a row of the page's LIBRARY_GAPS.md that lists this frame.

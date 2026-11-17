@@ -187,6 +187,8 @@ void test('file fields must be the canonical paths and exist', () => {
   has(checkRecord(record(), repo({ exceptionsError: 'exceptions.json: reason too short' })), /reason too short/)
   const changed = repo({ changes: [{ path: 'references/inbox/D13/exceptions.json', status: 'A', deleted: 0 }] })
   has(checkRecord(record(), changed), /set exceptionsFile/)
+  const removed = repo({ changes: [{ path: 'references/inbox/D13/exceptions.json', status: 'D', deleted: 4 }] })
+  assert.deepEqual(checkRecord(record(), removed), [])
 })
 
 void test('a guarded change or a story that sets globals.viewport fails the record', () => {
