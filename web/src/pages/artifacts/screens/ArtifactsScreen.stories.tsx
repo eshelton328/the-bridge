@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect } from 'storybook/test'
+import { expect, within } from 'storybook/test'
 import { artifactsStates } from '../states/index.ts'
 import { ArtifactsScreen } from './ArtifactsScreen.tsx'
 
@@ -38,5 +38,19 @@ export const ArtifactOpen: Story = {
     await expect(canvas.getByText('Published from chat quiet-nebula')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Open artifact' })).toBeVisible()
     await expect(canvas.getByText('Skill eval pass rates', { selector: '.list-row__title' })).toBeVisible()
+  },
+}
+
+export const FilterOpen: Story = {
+  name: 'D3: the Filter menu open over the library',
+  args: { data: artifactsStates.filterOpen.data, ui: artifactsStates.filterOpen.ui, viewport: 'desktop' },
+  play: async () => {
+    // The menu is a popover outside the story's root.
+    const page = within(document.body)
+    await expect(await page.findByRole('dialog', { name: 'Filter the artifacts' })).toBeVisible()
+    await expect(page.getByRole('checkbox', { name: 'Claude artifacts' })).toBeChecked()
+    await expect(page.getByRole('checkbox', { name: 'Codex sites' })).not.toBeChecked()
+    await expect(page.getByText('Claude artifacts in ncc-1701')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Show 7' })).toBeVisible()
   },
 }

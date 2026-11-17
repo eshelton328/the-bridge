@@ -92,6 +92,30 @@ export const ArtifactDetail = z.object({
 })
 export type ArtifactDetail = z.infer<typeof ArtifactDetail>
 
+/** One box of the Filter menu (D3): a source, a project, a finder or an age, with how many artifacts it matches. */
+const ArtifactFilterItem = z.object({
+  value: z.string(),
+  label: z.string(),
+  count: z.number().int().nonnegative(),
+  /** The label is a name in mono, such as a project (D3 403:6884); "Not in a project" is not. */
+  mono: z.boolean(),
+})
+
+/**
+ * The Filter menu under the list tools (D3): sections of checkboxes with counts, and a footer that names the
+ * checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
+ */
+export const ArtifactFilterMenu = z.object({
+  /** The label of the menu, for assistive technology. */
+  label: z.string(),
+  sections: z.array(z.object({ label: z.string(), items: z.array(ArtifactFilterItem) })),
+  /** What the checked boxes show, such as "Claude artifacts in ncc-1701". */
+  note: z.string(),
+  /** The Show button, such as "Show 7". */
+  show: z.string(),
+})
+export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
+
 export const ArtifactsData = z.object({
   title: z.string(),
   /** The number of artifacts in the library, after the title. */
@@ -108,6 +132,8 @@ export const ArtifactsData = z.object({
   groups: z.array(ArtifactGroup),
   /** The artifact open beside the list (D2); without it the library shows its grid (D1). */
   open: ArtifactDetail.optional(),
+  /** The Filter menu (D3); without it Filter opens nothing yet (D1, D2). */
+  filterMenu: ArtifactFilterMenu.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -120,6 +146,10 @@ export const ArtifactsUi = z.object({
   groupsOpen: z.record(ArtifactGroupId, z.boolean()),
   /** The text in the search field. */
   query: z.string(),
+  /** The Filter menu is open (D3). */
+  filterOpen: z.boolean().optional(),
+  /** The Filter menu's checked boxes; they apply when Erik selects Show. */
+  filterChecks: z.array(z.string()).optional(),
 })
 export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 
