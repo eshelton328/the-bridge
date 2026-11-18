@@ -179,3 +179,16 @@ export const FilterTablet: Story = {
     await expect(menu.getByRole('checkbox', { name: 'Codex sites' })).not.toBeChecked()
   },
 }
+
+export const DiscussTablet: Story = {
+  name: 'T4: the open artifact’s discussion on its own page on a tablet',
+  args: { data: artifactsStates.discussTablet.data, ui: artifactsStates.discussTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the tablet's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks T4's page at the tablet's width.
+    await expect(canvas.getByText('Talk this artifact through')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Why did readme drop?' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Ask about this artifact' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
+  },
+}
