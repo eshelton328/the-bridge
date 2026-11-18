@@ -10,6 +10,10 @@ import type { CloseWorkspaceText } from '../types.ts'
 
 // M13 208:769, 208:771: Cancel and Close share the row's width, each 44 high.
 const half = css({ flex: '1' })
+// M13 208:765: Figma puts the text 10 under the title (208:766, 208:767), where `Dialog size="md"` leaves 12.
+const box = css({ gap: '10' })
+// M13 208:768: the buttons' row pads 8 over the buttons, so they sit 18 under the text, and keeps them 10 apart.
+const buttons = css({ display: 'flex', flex: '1', gap: '10', pt: '8' })
 
 export type CloseWorkspaceDialogProps = {
   text: CloseWorkspaceText
@@ -39,9 +43,10 @@ export function CloseWorkspaceDialog({ text, workspace, onOpenChange, onConfirm,
         const box = cancelRef.current?.closest('[role="alertdialog"]')
         return box instanceof HTMLElement ? box : null
       }}
+      className={box}
       data-figma={layers?.dialog}
       actions={
-        <>
+        <div className={buttons}>
           <DialogClose>
             <Button ref={cancelRef} size="xl" className={half} data-figma={layers?.cancel}>
               {text.cancel}
@@ -58,7 +63,7 @@ export function CloseWorkspaceDialog({ text, workspace, onOpenChange, onConfirm,
           >
             {text.close}
           </Button>
-        </>
+        </div>
       }
     />
   )

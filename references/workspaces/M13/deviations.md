@@ -19,10 +19,10 @@ The screen is M2's list in edit mode (`PhoneWorkspaceList` with
     `208:704` (OMNI header) y -7, `208:720` (release notes) y -10,
     `208:743` (SKILL-EVALS header) y -8: the list's rows sit higher than
     Figma's (see "List rows sit higher").
-  - `208:765` (confirm dialog) x -24, y +18, w +48; `208:769` (Cancel)
-    x -24, y +20, w +25; `208:771` (Close) y +20, w +25: the dialog is
-    wider and lower (see "The dialog is wider" and "The dialog is
-    lower").
+  - `208:765` (confirm dialog) x -24, y +16, w +48, h +6; `208:769`
+    (Cancel) x -24, y +22, w +24; `208:771` (Close) y +22, w +24: the
+    dialog is wider, lower and taller (see "The dialog is wider", "The
+    dialog is lower" and "Title and text lines").
 - Rules: pass.
 
 ## Deviations
@@ -36,8 +36,17 @@ The screen is M2's list in edit mode (`PhoneWorkspaceList` with
 - **The dialog is lower (status bar, d-102).** Figma centres the dialog
   in the whole 844 px frame (y 326). The app draws no status bar
   (d-089), so the render is 806 high and the library centres the dialog
-  in that, 19 px lower once the position check adds the bar's 38 px
-  back (y 344).
+  in that, lower once the position check adds the bar's 38 px back
+  (y 342).
+- **Title and text lines (Phone confirm dialog).** Figma's title
+  (208:766) is 151 × 21, as Geist Bold 17 sets it; `Dialog size="md"`
+  draws `subtitle` (SemiBold 17/24), 148 wide on a 24 px line, and no
+  text style has weight 700. The text (208:767) is 14 on a 19 px line;
+  `body` is 14/20, so its three lines are 60 high against 57. The
+  spacing is Figma's: the text 10 under the title (the box's `gap: 10`)
+  and the buttons 18 under the text and 10 apart (a row with `pt: 8`
+  and `gap: 10`, as Figma's 208:768). With the taller title and text,
+  the dialog is 198 high against 192 and the buttons 22 px lower.
 - **Button labels and Close's fill (Phone confirm dialog).** Figma sets
   Cancel and Close in SemiBold 15 and fills Close dark red (about
   #3a1420) inside a bright red border. `Button size="xl"` draws `label`
