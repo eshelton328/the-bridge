@@ -3,7 +3,7 @@
 What still differs from Figma M8 · Folders (D4's folders and folder picker
 in a sheet over drift check on the phone, `phoneFolders`), after the last
 fidelity run (`pnpm fidelity workspaces M08`, 2026-11-17, library
-1.0.0-beta.25), each with its reason. The library gaps are in
+1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
 `PhoneChat` with drift check, no ⋯ and the folders chip in place of the
 context label; `PhoneFolders` (`BottomSheet` titled Folders with its

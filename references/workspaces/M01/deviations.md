@@ -2,11 +2,11 @@
 
 What still differs from Figma M1 · Workspaces (the phone's home,
 `phoneHome`), after the last fidelity run (`pnpm fidelity workspaces`,
-2026-11-17, library 1.0.0-beta.25), each with its reason. The library gaps
+2026-11-17, library 1.0.0-beta.27), each with its reason. The library gaps
 are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is the first
 phone frame of the page: at a phone's width a state with `data.phone`
-draws `WorkspacesPhone` (the list over the shared tab bar); D01 to D21
-render as before (the same run gives each the same report as on main).
+draws `WorkspacesPhone` (the list, with the shared tab bar laid over
+its foot); D01 to D21 render as before (the same run gives each the same report as on main).
 
 ## Checks
 

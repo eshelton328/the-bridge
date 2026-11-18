@@ -3,7 +3,7 @@
 What still differs from Figma M5 · Side chat (D2's side chat with M5's
 note, in a sheet over bridge themes on the phone, `phoneSideChat`), after
 the last fidelity run (`pnpm fidelity workspaces M05`, 2026-11-17, library
-1.0.0-beta.25), each with its reason. The library gaps are in
+1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
 `PhoneChat` with `ui.sideChatOpen` set: `PhoneSideChat` (`BottomSheet
 size="sm"` with no title row) holds `SideChatPanel placement="sheet"`, and

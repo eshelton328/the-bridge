@@ -2,7 +2,7 @@
 
 What still differs from Figma M2 · Edit workspaces (the phone's list in
 edit mode, `phoneEdit`), after the last fidelity run (`pnpm fidelity
-workspaces M02`, 2026-11-17, library 1.0.0-beta.25), each with its reason.
+workspaces M02`, 2026-11-17, library 1.0.0-beta.27), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is M1's list (`PhoneWorkspaceList`) with `ui.editing`: each
 workspace is a `PhoneEditGroup`, Done takes Edit's place and + is off.

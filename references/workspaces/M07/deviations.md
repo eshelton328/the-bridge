@@ -2,7 +2,7 @@
 
 What still differs from Figma M7 · New chat (the New chat form on the
 phone, `phoneNewChat`), after the last fidelity run (`pnpm fidelity
-workspaces M07`, 2026-11-17, library 1.0.0-beta.25), each with its reason.
+workspaces M07`, 2026-11-17, library 1.0.0-beta.27), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is `PhoneNewChat` in the phone's detail with no tab bar: Cancel and
 the title in a `ScrollFrame` header, `NewChatFields` (D3's fields, the

@@ -2,7 +2,7 @@
 
 What still differs from Figma M4 · Chat actions (bridge themes' actions in
 a sheet on the phone, `phoneChatActions`), after the last fidelity run
-(`pnpm fidelity workspaces M04`, 2026-11-17, library 1.0.0-beta.25), each
+(`pnpm fidelity workspaces M04`, 2026-11-17, library 1.0.0-beta.27), each
 with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
 `PhoneChat` with `ui.menuFor` set: its ⋯ is the trigger of

@@ -2,7 +2,7 @@
 
 What still differs from Figma M6 · Subagents (bridge themes' subagents on
 the phone, `phoneSubagents`), after the last fidelity run (`pnpm fidelity
-workspaces M06`, 2026-11-17, library 1.0.0-beta.25), each with its reason.
+workspaces M06`, 2026-11-17, library 1.0.0-beta.27), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is `PhoneSubagents` in the phone's detail with no tab bar: `BackRow`
 to the chat, `PageHeader size="phone"` and the count line in a
