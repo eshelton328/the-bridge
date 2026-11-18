@@ -443,3 +443,19 @@ export const PhoneNewChat: Story = {
     await expectTrapFocus(dialog.getByRole('textbox', { name: 'FIRST MESSAGE' }))
   },
 }
+
+export const PhoneFolders: Story = {
+  name: "M8: the chat's folders on the phone, with the folder picker",
+  args: { data: workspacesStates.phoneFolders.data, ui: workspacesStates.phoneFolders.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with drift check alone, D4's
+    // folders list and the folder picker beside it; at a phone's width the folders sheet draws M8.
+    // WorkspacesPhoneFolders.test.tsx checks the sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    const picker = canvas.getByRole('complementary', { name: 'Add a folder' })
+    await expect(within(picker).getByText('Folders on the Mac that runs the-bridge.')).toBeVisible()
+    await expect(within(picker).getByRole('button', { name: 'Open the-bridge' })).toBeVisible()
+    // M8's picker lists the folders of ~/ without D4's Documents.
+    await expect(within(picker).queryByRole('button', { name: 'Open Documents' })).toBeNull()
+  },
+}

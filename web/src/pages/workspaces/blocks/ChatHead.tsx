@@ -2,7 +2,8 @@
 // its workspace (and where the chat came from, D16), the status and the chat actions; under them the model, the
 // context used and its label. While Erik renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
-// first and the rows sit 8 apart under a 4 px top. The library's `Pane`
+// first and the rows sit 8 apart under a 4 px top; the folders chip can take
+// the context label's place (M8). The library's `Pane`
 // header has one row (LIBRARY_GAPS.md: Chat header). Props only.
 import {
   Button,
@@ -54,10 +55,12 @@ export type ChatHeadProps = {
   size?: keyof typeof sizes | undefined
   /** Drawn before the kind mark, such as the phone's back button (M3 105:2750). */
   back?: ReactNode
+  /** Drawn after the context used in place of its label, such as the phone's folders chip (M8 128:695). */
+  extra?: ReactNode
 }
 
 export function ChatHead(props: ChatHeadProps) {
-  const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back } = props
+  const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back, extra } = props
   return (
     <header data-figma={figma?.head ?? '105:785'} className={cx(head, sizes[size])}>
       <Inline gap="8" align="center">
@@ -79,7 +82,7 @@ export function ChatHead(props: ChatHeadProps) {
       <Inline gap="8" align="center">
         <ModelChip model={chat.model} options={[{ value: chat.model, label: chat.model }]} value={chat.model} />
         {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
-        <span className={label}>{contextLabel}</span>
+        {extra ?? <span className={label}>{contextLabel}</span>}
       </Inline>
     </header>
   )

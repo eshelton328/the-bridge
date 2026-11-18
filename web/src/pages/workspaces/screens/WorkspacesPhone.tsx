@@ -9,6 +9,9 @@
 // 'subagents'`, PhoneSubagents), which the actions' Subagents opens and
 // whose back row returns to the chat. M7 is New chat (`ui.newChatOpen`,
 // PhoneNewChat), which fills the screen with no tab bar; Cancel closes it.
+// M8 is the chat's folders (`ui.foldersOpen`, PhoneFolders), a sheet that the
+// folders chip in the chat's header opens, with the folder picker
+// (`ui.folderPickerOpen`) under the folders.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -17,6 +20,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
+import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
 import { PhoneNewChat } from '../blocks/PhoneNewChat.tsx'
 import { PhoneSideChat } from '../blocks/PhoneSideChat.tsx'
 import { PhoneSubagents } from '../blocks/PhoneSubagents.tsx'
@@ -129,6 +133,29 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         layers={data.layers?.sheetIcons}
                       />
                     )
+              }
+              noActions={data.chatActions === false}
+              folders={
+                data.folders?.chip === undefined ? undefined : (
+                  <PhoneFolders
+                    folders={data.folders}
+                    chip={data.folders.chip}
+                    picker={data.folderPicker}
+                    open={ui.foldersOpen === true}
+                    onOpenChange={(foldersOpen) => {
+                      onUiChange({ foldersOpen })
+                    }}
+                    pickerOpen={ui.folderPickerOpen === true}
+                    onPickerOpenChange={(folderPickerOpen) => {
+                      onUiChange({ folderPickerOpen })
+                    }}
+                    picked={ui.pickedFolder ?? null}
+                    onPick={(pickedFolder) => {
+                      onUiChange({ pickedFolder })
+                    }}
+                    layers={data.layers?.phoneFolders}
+                  />
+                )
               }
               layers={data.layers}
             />

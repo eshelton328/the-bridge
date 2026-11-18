@@ -30,6 +30,7 @@ import { phoneChatActions } from './phoneChatActions.ts'
 import { phoneSideChat } from './phoneSideChat.ts'
 import { phoneSubagents } from './phoneSubagents.ts'
 import { phoneNewChat } from './phoneNewChat.ts'
+import { phoneFolders } from './phoneFolders.ts'
 
 export const workspacesStates = {
   workbench,
@@ -61,4 +62,5 @@ export const workspacesStates = {
   phoneSideChat,
   phoneSubagents,
   phoneNewChat,
+  phoneFolders,
 }

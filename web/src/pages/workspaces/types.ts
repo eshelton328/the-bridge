@@ -335,6 +335,24 @@ export const PhoneText = z.object({
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
+/**
+ * The Figma layers of the folders sheet on the phone (M8 128:704), for the fidelity checks: the header's chip
+ * (128:695), the folder rows in order and Add folder, the rule over the picker, the picker's title row, search and
+ * rows, and its Add button.
+ */
+export const PhoneFoldersLayers = z.object({
+  chip: z.string(),
+  rows: z.array(z.string()),
+  add: z.string(),
+  rule: z.string(),
+  pickerTitle: z.string(),
+  search: z.string(),
+  recent: z.array(z.string()),
+  browse: z.array(z.string()),
+  addFolder: z.string(),
+})
+export type PhoneFoldersLayers = z.infer<typeof PhoneFoldersLayers>
+
 /** The Figma layers of a chat pane's composer and entries, for the fidelity checks. */
 const PaneChatLayers = z.object({
   composer: z.string(),
@@ -421,6 +439,8 @@ export const SidebarLayers = z.object({
   sheetIcons: z.record(z.string(), z.string()).optional(),
   /** The New chat form on the phone (M7). */
   newChatForm: NewChatLayers.optional(),
+  /** The folders sheet on the phone (M8). */
+  phoneFolders: PhoneFoldersLayers.optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -438,6 +458,11 @@ export const ChatFolders = z.object({
   /** The accessible name of a folder's remove button; {folder} is filled in. */
   remove: z.string(),
   add: z.string(),
+  /**
+   * The chip in a phone chat's header that opens the folders sheet (M8 128:695), such as "{count} folders"; {count}
+   * is the number of folders. Without it, the phone's header has no chip.
+   */
+  chip: z.string().optional(),
 })
 export type ChatFolders = z.infer<typeof ChatFolders>
 

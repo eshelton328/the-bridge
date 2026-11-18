@@ -17,7 +17,10 @@ first: it says what each file of a page folder is for.
   the side chat, a sheet over the chat (`ui.sideChatOpen`, `PhoneSideChat`);
   M6 is the chat's subagents (`ui.phoneView: 'subagents'`, `PhoneSubagents`),
   with no tab bar; M7 is New chat (`ui.newChatOpen`, `PhoneNewChat`), which
-  fills the screen with no tab bar. Every other width, and a state without `data.phone` (D1 to D21), draws
+  fills the screen with no tab bar; M8 is the chat's folders, a sheet that
+  the folders chip in the chat's header opens (`ui.foldersOpen`,
+  `PhoneFolders`), with the folder picker under the folders
+  (`ui.folderPickerOpen`). Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
   Later phone frames add their views to `WorkspacesPhone`.
@@ -169,7 +172,18 @@ first: it says what each file of a page folder is for.
   `NewChatFields` (D3's fields for a phone's width: the name, Runs in as
   stacked rows with a check on the chosen one, the workspace, the folder
   chips, the model and the first message), and `size` to `SelectField`
-  (`xl`, 44 high). Later frames add to these blocks.
+  (`xl`, 44 high). M8 adds `PhoneFolders` (the chat's folders on the phone:
+  the chip in the header is the trigger of a `BottomSheet` titled Folders
+  with a `ScrollFrame` of the folder rows, a rule and the picker, and Add as
+  its footer; the search has the focus, its caret at the end), and moves
+  D4's parts into two blocks both layouts use: `FolderRows` (the folder
+  rows and Add folder, which `FoldersControl` draws in its popover;
+  `accent` draws the working folder's icon cyan) and `FolderPickerList`
+  (the picker's title row, note, search, recent and listed folders, which
+  `FolderPickerPane` draws; `size="sheet"` puts every part 8 apart). It
+  adds `extra` to `ChatHead` (in place of the context label) and
+  `folders` and `noActions` (no ⋯) to `PhoneChat`. Later frames add to
+  these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -218,7 +232,9 @@ first: it says what each file of a page folder is for.
   `phoneSubagents` (from `phoneChatActions`, without the sheet: D3's
   subagents, Layout notes' transcript open, on the phone), M7
   `phoneNewChat` (from `phoneHome`, with D3's New chat form and its summary
-  line: the form open on the phone).
+  line: the form open on the phone), M8 `phoneFolders` (from `phoneChat`,
+  with D4's drift check pane with Erik's message alone, its folders and
+  its picker without Documents: the folders sheet open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -249,7 +265,8 @@ first: it says what each file of a page folder is for.
   `running` and `openTranscript` labels and the view's layers in
   `layers.subagentsHeader`, `subagentsTitle`, `subagentsCount` and
   `subagentChevrons`; for M7 the New chat form's `summary` and its models'
-  `short` names, and the form's layers in `layers.newChatForm`) and
+  `short` names, and the form's layers in `layers.newChatForm`; for M8 the
+  folders' `chip` and the sheet's layers in `layers.phoneFolders`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

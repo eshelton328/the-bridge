@@ -4,7 +4,8 @@
 // and the composer (ChatPane), whose "/" lists the skills as wide as the
 // composer. The header and the composer stay put and only the transcript
 // scrolls (d-107). The chat actions behind the ⋯ come from the caller, which
-// gets the ⋯ as their trigger (M4).
+// gets the ⋯ as their trigger (M4), and the folders chip with its sheet
+// (M8).
 // Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -34,12 +35,28 @@ export type PhoneChatProps = {
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The chat actions, such as the sheet of M4, given the ⋯ as their trigger; the bare ⋯ when not set. */
   renderMenu?: ((trigger: ReactElement) => ReactNode) | undefined
+  /** Without the chat actions: the header has no ⋯ (M8 128:672). */
+  noActions?: boolean | undefined
+  /** Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8). */
+  folders?: ReactNode
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
 
 export function PhoneChat(props: PhoneChatProps) {
-  const { pane, workspace, contextLabel, backLabel, onBack, skills, onSkillsOpenChange, renderMenu, layers } = props
+  const {
+    pane,
+    workspace,
+    contextLabel,
+    backLabel,
+    onBack,
+    skills,
+    onSkillsOpenChange,
+    renderMenu,
+    noActions,
+    folders,
+    layers,
+  } = props
   const more = (
     <Button variant="text" size="xs" iconOnly className={moreButton} aria-label={`${pane.head.title} actions`}>
       <span className={icon} data-figma={layers?.chatActions}>
@@ -66,7 +83,8 @@ export function PhoneChat(props: PhoneChatProps) {
             <ChevronLeftIcon size="20" />
           </Button>
         }
-        menu={renderMenu === undefined ? more : renderMenu(more)}
+        menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
+        extra={folders}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
