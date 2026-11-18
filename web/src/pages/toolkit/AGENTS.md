@@ -419,4 +419,32 @@ what each file of a page folder is for.
   Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
+- The Activity view (D11, `toolkitActivity`, D1's list with `ui.view`
+  `activity` and `data.activity`, from `states/shared/activityView.ts`) is
+  `ToolkitActivityPage`: the header says the counts come from the session
+  files, the kind chips, the source switch (`ToolkitActivitySources`: All
+  sessions, Chats and Headless runs as a `ViewSwitch`, since at the row's
+  end; a source with no counts in `counts` is disabled, so only All works
+  until T11 and T12 add theirs; `ui.activitySource` keeps the pick) and
+  `ToolkitActivityBody`: the key figures (`ToolkitActivityKpis` with the
+  view's keys), the runs (`ToolkitActivityRuns`, a `ToolkitRunRow` each)
+  beside the calls per day (`ToolkitCallsPerDay`, a library `DailyBarChart`
+  per source), Most called (`ToolkitMostCalled`: `HorizontalBarChart` with a
+  button over each row) beside the log (`ToolkitActivityLog`) and the source
+  line. The kind chip narrows the runs, Most called and the log. A tap on a
+  run or its Open session sets `ui.run` (D12, `toolkitActivityRun`, writing-
+  reviewer, with D12's keys in the run's `detail.layers`): on the desktop
+  `ToolkitRunPanel` takes the AppShell's wide side slot (its header, close,
+  Open the session in Workbench, disabled with a title as no Workbench state
+  takes a run, the fields, the steps and the result, `ToolkitRunDetail`);
+  close clears `ui.run`. On a tablet (T9, `toolkitActivityTablet`) the view
+  is a page in `DetailFrame` under Back to Toolkit (the list) with since at
+  the row's end, the title and one column with no log; on the phone (M10,
+  `toolkitActivityPhone`) it is under the list's header with two runs. There
+  a run opens on its own page (`ToolkitRunPage`, Back to Activity), as M10's
+  note says. A Most called item opens on its page (`openCalled`). The pure
+  parts are in `blocks/activityPage.ts` (`activityPage.test.ts`); the layout
+  and the taps in `src/app/ToolkitActivityView.test.tsx` (LIBRARY_GAPS.md,
+  Activity KPI tile, Activity daily chart, Most called bars, Activity log
+  line, Activity run row, Run side panel, Run panel).
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
