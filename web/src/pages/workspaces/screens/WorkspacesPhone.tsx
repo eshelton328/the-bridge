@@ -360,6 +360,8 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
                     onPick={(pickedFolder) => {
                       onUiChange({ pickedFolder })
                     }}
+                    device={device}
+                    chat={chat.head.title}
                     layers={data.layers?.phoneFolders}
                   />
                 )

@@ -52,7 +52,10 @@ export type PhoneChatProps = {
   renderMenu?: ((trigger: ReactElement) => ReactNode) | undefined
   /** Without the chat actions: the header has no ⋯ (M8 128:672). */
   noActions?: boolean | undefined
-  /** Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8). */
+  /**
+   * Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8);
+   * on a tablet after the label (T5 128:520).
+   */
   folders?: ReactNode
   /**
    * The header on one line, this under the title in place of the workspace and the model row, such as "Opus 5.5 ·
@@ -119,6 +122,7 @@ export function PhoneChat(props: PhoneChatProps) {
         }
         menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
         extra={folders}
+        extraAfterLabel={device === 'tablet'}
         meta={meta}
         rename={rename}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}

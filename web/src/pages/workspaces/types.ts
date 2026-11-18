@@ -416,6 +416,8 @@ export type PhoneText = z.infer<typeof PhoneText>
  */
 export const PhoneFoldersLayers = z.object({
   chip: z.string(),
+  /** The tablet's title row, Folders with the chat's name and × (T5 128:540). */
+  title: z.string().optional(),
   rows: z.array(z.string()),
   add: z.string(),
   rule: z.string(),
@@ -424,6 +426,8 @@ export const PhoneFoldersLayers = z.object({
   recent: z.array(z.string()),
   browse: z.array(z.string()),
   addFolder: z.string(),
+  /** The tablet's Cancel before Add (T5 128:636). */
+  cancel: z.string().optional(),
 })
 export type PhoneFoldersLayers = z.infer<typeof PhoneFoldersLayers>
 

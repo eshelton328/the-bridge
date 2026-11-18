@@ -764,3 +764,16 @@ export const TabletComposing: Story = {
     await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
   },
 }
+
+export const TabletFolders: Story = {
+  name: "T5: the chat's folders on the tablet, in a sheet with the folder picker",
+  args: { data: workspacesStates.tabletFolders.data, ui: workspacesStates.tabletFolders.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D4's folders list and picker beside it; the tablet's menu draws T5's sheet over the chat.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const body = within(document.body)
+    await expect(await body.findByRole('button', { name: /Add ~\/the-bridge/ })).toBeVisible()
+    await expect(body.getByRole('button', { name: /Documents/ })).toBeVisible()
+  },
+}

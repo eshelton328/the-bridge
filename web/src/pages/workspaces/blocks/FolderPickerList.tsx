@@ -2,7 +2,7 @@
 // a note, the search, the recent folders (those the chat has are marked
 // added; the chosen one has the cyan border) and the folders of one path,
 // each opening its own. The side panel beside the chat (D4, FolderPickerPane)
-// and the phone's folders sheet (M8, PhoneFolders) draw it, each with its own
+// and the folders sheet of the phone (M8) and the tablet (T5, PhoneFolders) draw it, each with its own
 // buttons under it. The library has no folder picker (LIBRARY_GAPS.md:
 // Folder picker). Props only.
 import {
@@ -58,14 +58,16 @@ export type FolderPickerListProps = {
   layers?: FolderPickerLayers | undefined
   /**
    * `side` (the default): the side panel's spacing (D4); `sheet`: the phone's folders sheet, whose parts and rows are
-   * all 8 apart (M8 128:747 to 128:793), and the chosen folder's icon is in the accent colour (128:767).
+   * all 8 apart (M8 128:747 to 128:793), and the chosen folder's icon is in the accent colour (128:767); `tabletSheet`:
+   * the tablet's folders sheet, the same with every part and row 10 apart (T5 128:569 to 128:626).
    */
-  size?: 'side' | 'sheet' | undefined
+  size?: 'side' | 'sheet' | 'tabletSheet' | undefined
 }
 
 export function FolderPickerList(props: FolderPickerListProps) {
   const { picker, picked, onPick, onClose, layers = d4, size = 'side' } = props
-  const sheet = size === 'sheet'
+  const sheet = size !== 'side'
+  const tablet = size === 'tabletSheet'
   return (
     <>
       <Inline gap="8" align="center" data-figma={layers.title}>
@@ -87,8 +89,8 @@ export function FolderPickerList(props: FolderPickerListProps) {
           clearIcon={<CloseIcon size="12" />}
         />
       </div>
-      <Stack gap={sheet ? '8' : '12'}>
-        <Stack gap={sheet ? '8' : '10'}>
+      <Stack gap={tablet ? '10' : sheet ? '8' : '12'}>
+        <Stack gap={tablet ? '10' : sheet ? '8' : '10'}>
           <span className={label}>{picker.recentLabel}</span>
           {picker.recent.map((f, i) => (
             <Button
@@ -113,7 +115,7 @@ export function FolderPickerList(props: FolderPickerListProps) {
             </Button>
           ))}
         </Stack>
-        <Stack gap="8">
+        <Stack gap={tablet ? '10' : '8'}>
           <Inline gap="8" align="center">
             <span className={label}>{picker.browseLabel}</span> <span className={subtle}>{picker.browsePath}</span>
           </Inline>

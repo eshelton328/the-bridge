@@ -3,7 +3,7 @@
 // context used and its label. While Erik renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
 // first and the rows sit 8 apart under a 4 px top; the folders chip can take
-// the context label's place (M8). While the phone's keyboard is up the
+// the context label's place (M8) or follow it (T5). While the phone's keyboard is up the
 // header shrinks to one line: `meta`, the model, the context used and the
 // folders, takes the workspace's place under the title, with no second row
 // (M10 147:46). The library's `Pane`
@@ -65,6 +65,8 @@ export type ChatHeadProps = {
   back?: ReactNode
   /** Drawn after the context used in place of its label, such as the phone's folders chip (M8 128:695). */
   extra?: ReactNode
+  /** Draw `extra` after the context label, not in its place, as the tablet's folders chip is (T5 128:520). */
+  extraAfterLabel?: boolean | undefined
   /**
    * Drawn under the title in place of the workspace, with no second row, such as "Opus 5.5 · 42% · 2 folders" while
    * the phone's keyboard is up (M10 147:53).
@@ -74,6 +76,7 @@ export type ChatHeadProps = {
 
 export function ChatHead(props: ChatHeadProps) {
   const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back, extra, meta } = props
+  const contextText = <span className={label}>{contextLabel}</span>
   return (
     <header
       data-figma={figma?.head ?? '105:785'}
@@ -101,7 +104,8 @@ export function ChatHead(props: ChatHeadProps) {
         <Inline gap="8" align="center">
           <ModelChip model={chat.model} options={[{ value: chat.model, label: chat.model }]} value={chat.model} />
           {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
-          {extra ?? <span className={label}>{contextLabel}</span>}
+          {props.extraAfterLabel === true && extra !== undefined && extra !== null ? contextText : null}
+          {extra ?? contextText}
         </Inline>
       ) : null}
     </header>
