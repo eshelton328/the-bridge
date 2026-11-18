@@ -32,8 +32,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Message` draws the reply in `body` (14/20) and the name in `label`
   (14/500) and takes no size; Figma draws Geist 13 on a 19 px line and the
   name at 12. The reply's three lines are 60 high against 57, and its
-  text is about 5% wider. Erik's message is 2 px taller for the same
-  reason. Copy (402:10813) is about 67 × 24 against Figma's 63 × 22, as
+  text is about 5% wider. Erik's message (402:10803, Regular 13 on 19)
+  is 2 px taller and its first line about 7% wider for the same reason,
+  and the name "Claude" (402:10811, SemiBold 12) is 46 wide against 41. Copy (402:10813) is about 67 × 24 against Figma's 63 × 22, as
   in M03: no button size is 22 and no label style is Medium 11.
 - **The composer is 7 px taller and starts 10 px higher (Composer text,
   Phone safe area), `402:10833` y -10, h +7.** `Composer` draws its text
@@ -43,7 +44,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   band; `AppShell` keeps a 34 px safe area under the detail when there is
   no tab bar, so the composer ends 3 px higher. Both push its top up: 698
   against 708.
-- **The header is 4 px taller (Chat header, Chat header text).** The title
+- **The header is 4 px taller (Chat header, Chat header text).** Its 1 px
+  rule is Figma's (402:10800, `border.default` in both). The title
   is `subtitle` (17/24) against Figma's SemiBold 16 at 21, and the model
   chip is 26 high against 22, so the header is 83 high against 79; the
   entries below move 4 px down, within the tolerance.

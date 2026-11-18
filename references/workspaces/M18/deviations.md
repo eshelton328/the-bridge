@@ -47,19 +47,27 @@ shorter, below Figma's status bar (d-102), and the position check adds
   draws its `md` title in `subtitle` (17/24) and its close button as a
   28 px button with a 16 px ×, and takes no title size.
 - **Fork's arrow is 16 px.** Figma's up arrow is 14 px (422:301); the
-  icon set has no 14 px size.
-- **The choices are 3 px shorter, with a Medium label (Runs in choice).**
-  Whole chat and Up to a message… are `Button size="lg"` (36 px) against
-  Figma's 39, with the label in Medium 14 (`label`) against Regular 14,
-  as in D15. Whole chat is `pressed`: Figma draws its border opaque
+  icon set has no 14 px size. Its label is Figma's Geist Medium 12
+  (422:304, `textSize="xs"`).
+- **The choices are 3 px shorter, and Up to a message… is brighter (Runs
+  in choice).** Whole chat and Up to a message… are `Button size="lg"
+  textSize="sm"` (36 px, Medium 13 as Figma's 422:238 and 422:244)
+  against Figma's 39. Figma draws the unchosen label in `fg.muted`
+  (#8a97b8); a secondary `Button` draws an unpressed label in
+  `fg.default` and has no option to mute it, so it reads near-white.
+  Whole chat is `pressed`: Figma draws its border opaque
   #5ee1ff, which is `border.active`, the library's pressed border.
 - **Field labels (Form field label).** NAME and START FROM are `eyebrow`
   spans 6 px above the control, against Figma's 8, as in D15.
 - **No focus ring.** Figma draws none. The sheet itself takes the focus
   when it opens, as D15's dialog does, so no control shows a ring.
-- **Claude's reply is 9 px taller (Message text), `422:175` h +9.** As in
-  M17: `Message` draws the reply in `body` (14/20); Figma draws Geist 13
-  on a 19 px line. Copy is about 67 × 24 against Figma's 63 × 22.
+- **Claude's reply is 9 px taller, Erik's message and the name wider
+  (Message text), `422:175` h +9.** As in M17: `Message` draws the reply
+  and Erik's message in `body` (14/20) and the name in `label` (14/500);
+  Figma draws both texts in Geist Regular 13 on a 19 px line (422:171,
+  422:180) and the name in SemiBold 12 (422:179). Erik's first line is
+  about 7% wider (323 against 301 px) and his bubble 2 px taller, and
+  "Claude" is 46 wide against 41. Copy is about 67 × 24 against Figma's 63 × 22.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:188` y -12, h +7.** As in M17: `Composer` draws
   its text in `body` and Stop as `Button size="sm"`, so the box is 112
