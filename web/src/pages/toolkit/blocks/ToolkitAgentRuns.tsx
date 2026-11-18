@@ -18,8 +18,8 @@ import {
   RuleIcon,
   ToolkitIcon,
 } from '@eshelton328/component-library-1701'
-import type { ReactNode } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { Fragment, type ReactNode } from 'react'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
 
 type Runs = NonNullable<ToolkitItemDetailView['runs']>
@@ -30,6 +30,9 @@ const section = css({ display: 'flex', flexDirection: 'column', gap: '10' })
 const heading = css({ textStyle: 'eyebrow', color: 'fg.muted' })
 // D7 433:529: the head (433:530), the value (433:535) and the caption (433:536) are 6 apart.
 const fact = css({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6', minW: '[0]' })
+// T19 487:1131: on a tablet the head starts 13 under the card's top and the card is 109 high; the notice variant pads
+// 10 above and below, so 4 more keeps the head and the card's foot within 1 px of Figma's.
+const factCompact = css({ py: '4' })
 // D7 433:530: the 14 px icon (no icon token has 14: 16), then the label 6 after it.
 const head = css({ display: 'flex', alignItems: 'center', gap: '6', textStyle: 'small', color: 'fg.muted' })
 const value = css({ textStyle: 'label', color: 'fg.default' })
@@ -64,6 +67,10 @@ export type ToolkitAgentRunsProps = {
   runs: Runs
   /** The open item's kind: it names the Figma section and picks the captions' style. An agent when not set. */
   kind?: 'agent' | 'hook' | undefined
+  /** A tablet's cards are narrower (T19 487:1130, 170 wide): they pad 12 at the sides, so the text keeps Figma's lines. */
+  compact?: boolean | undefined
+  /** The cards across a row: four (D7, D9, T19), or two on the phone (M22 487:2185, two rows of 178 px cards). */
+  columns?: '2' | '4' | undefined
 }
 
 /** A fact's value: its text, or for a state (D9 479:21, 73 × 20) a small badge, on in the done colour with a check. */
@@ -78,22 +85,44 @@ function FactValue({ f }: { f: Fact }) {
   )
 }
 
-export function ToolkitAgentRuns({ runs, kind = 'agent' }: ToolkitAgentRunsProps) {
+/**
+ * T19 487:1147: Figma breaks a narrow card's caption after a path's slash ("toolkit/" over "hooks, set by link.sh");
+ * the browser does not break there, so a `wbr` after each slash allows it. The text stays the same.
+ */
+function Breakable({ text }: { text: string }) {
+  const parts = text.split('/')
+  return parts.map((part, i) => (
+    // The parts of one caption never reorder, so a part's place and text name it.
+    <Fragment key={`${String(i)}:${part}`}>
+      {part}
+      {i < parts.length - 1 ? (
+        <>
+          /<wbr />
+        </>
+      ) : null}
+    </Fragment>
+  ))
+}
+
+export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false, columns = '4' }: ToolkitAgentRunsProps) {
   return (
     <section aria-label={runs.label} className={section} data-figma={`kind section · ${kind}`}>
       <h3 className={heading}>{runs.label}</h3>
-      {/* D7 433:528: four cards across, 10 apart. */}
-      <Grid columns="4" gap="10" data-figma="facts">
+      {/* D7 433:528: four cards across, 10 apart. T19 487:1130: on a tablet each card is 170 wide and pads 15 at the
+          sides, leaving its text 140; the section variant's 16 leaves 135.5 in the 708 px item, which breaks the Enforces
+          value and the State caption onto an extra line. The notice variant pads 12 at the sides and 10 above and below
+          (Figma 13; LIBRARY_GAPS.md, Agent fact card). */}
+      <Grid columns={columns} gap="10" data-figma="facts">
         {runs.facts.map((f) => (
           <div key={f.label} data-figma={`fact · ${f.label}`}>
-            <Panel>
-              <div className={fact}>
+            <Panel variant={compact ? 'notice' : 'section'}>
+              <div className={compact ? cx(fact, factCompact) : fact}>
                 <span className={head}>
                   <span className={icons[f.icon].className}>{icons[f.icon].icon}</span>
                   {f.label}
                 </span>
                 <FactValue f={f} />
-                <span className={captions[kind]}>{f.caption}</span>
+                <span className={captions[kind]}>{compact ? <Breakable text={f.caption} /> : f.caption}</span>
               </div>
             </Panel>
           </div>

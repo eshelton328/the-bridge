@@ -59,10 +59,19 @@ const titleLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1536',
   'workflows/skill-eval-round.md': '433:1032',
 }
-// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567).
-const pageTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '428:567' }
-// On the phone: writer in M2 (429:303).
-const phoneTitleLayers: Readonly<Record<string, string>> = { 'skills/writer/': '429:303' }
+// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567), the rule skills in
+// T17 (487:355), the hook commit-msg in T19 (487:980).
+const pageTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '428:567',
+  'rules/skills.md': '487:355',
+  'hooks/commit-msg': '487:980',
+}
+// On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264), the hook commit-msg in M22 (487:2043).
+const phoneTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '429:303',
+  'rules/skills.md': '487:1264',
+  'hooks/commit-msg': '487:2043',
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
 const itemLayer = { desktop: 'toolkit item', tablet: 'toolkit item', phone: 'toolkit' }

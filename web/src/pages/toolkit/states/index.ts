@@ -13,6 +13,10 @@ import { hookOpen } from './hookOpen.ts'
 import { workflowOpen } from './workflowOpen.ts'
 import { skillOpenTablet } from './skillOpenTablet.ts'
 import { skillOpenPhone } from './skillOpenPhone.ts'
+import { ruleOpenTablet } from './ruleOpenTablet.ts'
+import { ruleOpenPhone } from './ruleOpenPhone.ts'
+import { hookOpenTablet } from './hookOpenTablet.ts'
+import { hookOpenPhone } from './hookOpenPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -27,4 +31,8 @@ export const toolkitStates = {
   workflowOpen,
   skillOpenTablet,
   skillOpenPhone,
+  ruleOpenTablet,
+  ruleOpenPhone,
+  hookOpenTablet,
+  hookOpenPhone,
 }

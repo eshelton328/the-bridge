@@ -198,3 +198,72 @@ export const SkillOpenPhone: Story = {
     await expect(within(item).getByRole('region', { name: 'SKILL.md' })).toBeVisible()
   },
 }
+
+export const RuleOpenTablet: Story = {
+  name: 'T17: a rule open on a tablet, in place of the list',
+  args: { data: toolkitStates.ruleOpenTablet.data, ui: toolkitStates.ruleOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the rule in place of the list, under Back.
+  // The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the tablet's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skills' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(within(item).getByText('a file under toolkit/skills/** or skills/** changes')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'rules/skills.md' })).toBeVisible()
+  },
+}
+
+export const RuleOpenPhone: Story = {
+  name: 'M19: a rule open on the phone, in place of the list',
+  args: { data: toolkitStates.ruleOpenPhone.data, ui: toolkitStates.ruleOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the rule under Back, with icon buttons. The play
+  // test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the phone's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skills' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(within(item).getByText('a file under toolkit/skills/** or skills/** changes')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'rules/skills.md' })).toBeVisible()
+  },
+}
+
+export const HookOpenTablet: Story = {
+  name: 'T19: a hook open on a tablet, in place of the list',
+  args: { data: toolkitStates.hookOpenTablet.data, ui: toolkitStates.hookOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the hook in place of the list, under Back.
+  // The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the tablet's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'commit-msg' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'When it runs' })
+    await expect(within(runs).getByText('core.hooksPath = toolkit/hooks, set by link.sh')).toBeVisible()
+    await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
+    await expect(within(item).getByText('MAX=72')).toBeVisible()
+    await expect(within(item).getByText('97 lines')).toBeVisible()
+  },
+}
+
+export const HookOpenPhone: Story = {
+  name: 'M22: a hook open on the phone, in place of the list',
+  args: { data: toolkitStates.hookOpenPhone.data, ui: toolkitStates.hookOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the hook under Back, with icon buttons and its
+  // When it runs cards two by two. The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx
+  // checks the phone's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'commit-msg' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'When it runs' })
+    await expect(within(runs).getByText('test-commit-msg')).toBeVisible()
+    await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
+  },
+}

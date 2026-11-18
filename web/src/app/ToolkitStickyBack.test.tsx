@@ -70,6 +70,58 @@ describe('the open item on a tablet (d-107)', () => {
     expect(box(backRow).bottom).toBeLessThanOrEqual(box(body).top)
     await view.unmount()
   })
+
+  it('opens the rule skills under Back, its load box across the item (T17)', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('ruleOpenTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="when it loads"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]')
+    const item = root.querySelector('[data-figma="toolkit item"]')
+    const loads = root.querySelector('[data-figma="when it loads"]')
+    if (backRow === null || item === null || loads === null) throw new Error('no back row, item or load box')
+    // The item is under Back, and on a tablet the load box spans the item, as T17's 712 px box (487:502).
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    expect(box(loads).width).toBe(box(item).width)
+    await view.unmount()
+  })
+
+  it('opens the hook commit-msg under Back, its four cards in one row and its files above the tab bar (T19)', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('hookOpenTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="facts"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]')
+    const item = root.querySelector('article[aria-label="commit-msg"]')
+    const cards = [...root.querySelectorAll('[data-figma^="fact · "]')]
+    const lastFile = root.querySelector('[data-figma="file · test-commit-msg"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (backRow === null || item === null || lastFile === null || tabBar === null) {
+      throw new Error('no back row, item, file or tab bar')
+    }
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The four When it runs cards share one row and one height, as T19's 170 × 109 cards (487:1130 to 487:1156), and
+    // none is taller than Figma's by a line: each value and caption keeps Figma's lines.
+    expect(cards).toHaveLength(4)
+    const [first] = cards
+    if (first === undefined) throw new Error('no card')
+    for (const card of cards) {
+      expect(box(card).top).toBe(box(first).top)
+      expect(box(card).height).toBe(box(first).height)
+    }
+    expect(box(first).height).toBeLessThan(109 + 4)
+    // The hook's last file line ends above the tab bar, so the item needs no scroll to show it (487:1214).
+    expect(box(lastFile).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })
 
 describe('the open item on the phone (d-107)', () => {
@@ -115,6 +167,87 @@ describe('the open item on the phone (d-107)', () => {
     const tabBar = root.querySelector('[data-figma="tab bar"]')
     if (evals === null || tabBar === null) throw new Error('no evals link or tab bar')
     expect(box(evals).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
+
+  it('opens the rule skills under Back, its load box across the item and its file above the tab bar (M19)', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('ruleOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="when it loads"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const discuss = root.querySelector('button[aria-label="Discuss"]')
+    const map = root.querySelector('button[aria-label="Show on map"]')
+    const item = root.querySelector('article[aria-label="skills"]')
+    const loads = root.querySelector('[data-figma="when it loads"]')
+    const last = [...root.querySelectorAll('[data-figma="rendered markdown"] p')].at(-1)
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (discuss === null || map === null || item === null || loads === null || last === undefined || tabBar === null) {
+      throw new Error('no actions, item, load box, file or tab bar')
+    }
+    // The actions are icon buttons in the back row, and the item is under it (M19 496:5, 487:1252).
+    expect(backRow.contains(discuss)).toBe(true)
+    expect(backRow.contains(map)).toBe(true)
+    expect(discuss.textContent).toBe('')
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The load box spans the item (487:1404, 366 wide), and its condition wraps beside the label in the box.
+    expect(box(loads).width).toBe(box(item).width)
+    expect(box(loads).height).toBeLessThan(80)
+    // The file's last line ends above the tab bar, as Figma's (487:1427) does.
+    expect(box(last).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
+
+  it('opens the hook commit-msg under Back, its cards two by two, and scrolls its script under Back (M22)', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('hookOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="facts"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const back = root.querySelector('button[aria-label="Back to Toolkit"]')
+    const discuss = root.querySelector('button[aria-label="Discuss"]')
+    const item = root.querySelector('article[aria-label="commit-msg"]')
+    const cards = [...root.querySelectorAll('[data-figma^="fact · "]')]
+    const lastFile = root.querySelector('[data-figma="file · test-commit-msg"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (back === null || discuss === null || item === null || lastFile === null || tabBar === null) {
+      throw new Error('no Back, actions, item, file or tab bar')
+    }
+    // The actions are icon buttons in the back row, and the item is under it (M22 496:14, 487:2024).
+    expect(backRow.contains(discuss)).toBe(true)
+    expect(discuss.textContent).toBe('')
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The four When it runs cards sit two by two, each half the item less the 10 between (487:2186 to 487:2212,
+    // 178 wide), and the second row starts under the first.
+    expect(cards).toHaveLength(4)
+    const [event, state, enforces, test] = cards
+    if (event === undefined || state === undefined || enforces === undefined || test === undefined) {
+      throw new Error('no card')
+    }
+    expect(box(state).top).toBe(box(event).top)
+    expect(box(test).top).toBe(box(enforces).top)
+    expect(box(enforces).top).toBeGreaterThan(box(event).bottom)
+    expect(box(event).width).toBe((box(item).width - 10) / 2)
+    // The script runs under the tab bar, as Figma's does: the item scrolls its files into view, under Back.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')].filter((b) => b.contains(item))
+    expect(bodies).toHaveLength(1)
+    const body = bodies[0] ?? document.body
+    expect(box(lastFile).top).toBeGreaterThan(box(tabBar).top)
+    const before = { back: box(back).top, row: box(backRow).top }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop).toBeGreaterThan(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(back).top).toBe(before.back)
+    expect(box(backRow).top).toBe(before.row)
+    expect(box(lastFile).bottom).toBeLessThanOrEqual(box(tabBar).top)
     await view.unmount()
   })
 })
