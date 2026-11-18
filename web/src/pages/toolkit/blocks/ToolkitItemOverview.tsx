@@ -34,6 +34,9 @@ const sideAfterCode = css({ pt: '12' })
 // The tabs' list is 36 high (Figma 32) and the Panel makes the box 58 high (Figma 56), so at 12 apart the file runs
 // 5 px low and its last line (487:1427, which Figma ends 1 px over the tab bar) goes under the tab bar. 8 apart keeps
 // each row within 3 px of Figma's and that line in view (LIBRARY_GAPS.md, Rule load box, Item tab spacing).
+// M22: a hook on the phone has its description (487:2182), when it runs (487:2183) and the code (487:2219) 12 apart
+// too; with the 36 px tabs and the cards 1 to 2 px taller than Figma's 109 (LIBRARY_GAPS.md, Agent fact card), 12
+// apart runs the code 5 px low, and 8 apart keeps each row within 3 px of Figma's.
 const rulePhoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 const description = css({ textStyle: 'body', color: 'fg.muted' })
 // D4 427:628: a box with the needs-you border and tint, as wide as its line: the clock icon, "Loads when" in the
@@ -71,10 +74,12 @@ const pageDescriptionLayers: Readonly<Record<string, string>> = {
   'rules/skills.md': '487:501',
   'hooks/commit-msg': '487:1126',
 }
-// M2: the description of writer on the phone (487:142); M19: the rule skills's (487:1403).
+// M2: the description of writer on the phone (487:142); M19: the rule skills's (487:1403); M22: the hook
+// commit-msg's (487:2182).
 const phoneDescriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '487:142',
   'rules/skills.md': '487:1403',
+  'hooks/commit-msg': '487:2182',
 }
 const descriptionLayersOf = {
   desktop: descriptionLayers,
@@ -111,6 +116,8 @@ export function ToolkitItemOverview({
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
+  // M22 487:2185: a hook's four When it runs cards sit two by two on the phone, each 178 wide.
+  const hookPhone = phone && kind === 'hook'
   const sideColumn = side ? (
     <ToolkitItemSide detail={detail} onTabChange={onTabChange} compact={layout === 'phone'} />
   ) : null
@@ -118,7 +125,7 @@ export function ToolkitItemOverview({
     <div
       className={
         phone
-          ? detail.loads === undefined
+          ? detail.loads === undefined && kind !== 'hook'
             ? phoneOverview
             : rulePhoneOverview
           : layout === 'tablet' && (detail.loads !== undefined || kind === 'hook')
@@ -143,7 +150,12 @@ export function ToolkitItemOverview({
         </div>
       )}
       {detail.runs === undefined ? null : (
-        <ToolkitAgentRuns runs={detail.runs} kind={kind === 'hook' ? 'hook' : 'agent'} compact={layout === 'tablet'} />
+        <ToolkitAgentRuns
+          runs={detail.runs}
+          kind={kind === 'hook' ? 'hook' : 'agent'}
+          compact={layout === 'tablet' || hookPhone}
+          columns={hookPhone ? '2' : '4'}
+        />
       )}
       {detail.flow === undefined ? null : (
         <ToolkitWorkflowFlow flow={detail.flow} onOpenFullPage={onOpenFullPage} onOpenItem={onOpenItem} />

@@ -69,6 +69,8 @@ export type ToolkitAgentRunsProps = {
   kind?: 'agent' | 'hook' | undefined
   /** A tablet's cards are narrower (T19 487:1130, 170 wide): they pad 12 at the sides, so the text keeps Figma's lines. */
   compact?: boolean | undefined
+  /** The cards across a row: four (D7, D9, T19), or two on the phone (M22 487:2185, two rows of 178 px cards). */
+  columns?: '2' | '4' | undefined
 }
 
 /** A fact's value: its text, or for a state (D9 479:21, 73 × 20) a small badge, on in the done colour with a check. */
@@ -102,7 +104,7 @@ function Breakable({ text }: { text: string }) {
   ))
 }
 
-export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false }: ToolkitAgentRunsProps) {
+export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false, columns = '4' }: ToolkitAgentRunsProps) {
   return (
     <section aria-label={runs.label} className={section} data-figma={`kind section · ${kind}`}>
       <h3 className={heading}>{runs.label}</h3>
@@ -110,7 +112,7 @@ export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false }: Tool
           sides, leaving its text 140; the section variant's 16 leaves 135.5 in the 708 px item, which breaks the Enforces
           value and the State caption onto an extra line. The notice variant pads 12 at the sides and 10 above and below
           (Figma 13; LIBRARY_GAPS.md, Agent fact card). */}
-      <Grid columns="4" gap="10" data-figma="facts">
+      <Grid columns={columns} gap="10" data-figma="facts">
         {runs.facts.map((f) => (
           <div key={f.label} data-figma={`fact · ${f.label}`}>
             <Panel variant={compact ? 'notice' : 'section'}>

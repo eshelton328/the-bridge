@@ -82,7 +82,11 @@ what each file of a page folder is for.
   line's `type: 'code'`). On a tablet (T19, `hookOpenTablet`, D9's data)
   the hook opens in `DetailFrame` as T17's rule does: its rows are 12
   apart, the When it runs cards take `Panel`'s notice variant so their
-  text keeps Figma's lines, and the files sit 24 under the code. A workflow (D8, `workflowOpen`, D9's list)
+  text keeps Figma's lines, and the files sit 24 under the code. On the phone (M22, `hookOpenPhone`, D9's
+  data) the hook opens as M19's rule does: the When it runs cards sit two by
+  two (`ToolkitAgentRuns` `columns="2"`, with T19's notice variant), the
+  overview's rows are 8 apart, and the script runs under the tab bar, as in
+  Figma. A workflow (D8, `workflowOpen`, D9's list)
   adds `flow` to its details: its steps by phase
   (`ToolkitWorkflowFlow`, each card a `ToolkitFlowStep`), drawn in a grid
   whose card rows are equal, so every card has one size; a phase's
@@ -95,6 +99,6 @@ what each file of a page folder is for.
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T7, T18, M20 to M22) fill `details` and
+  (T7, T18, M20, M21) fill `details` and
   the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

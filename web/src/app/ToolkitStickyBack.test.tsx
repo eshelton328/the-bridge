@@ -201,4 +201,53 @@ describe('the open item on the phone (d-107)', () => {
     expect(box(last).bottom).toBeLessThanOrEqual(box(tabBar).top)
     await view.unmount()
   })
+
+  it('opens the hook commit-msg under Back, its cards two by two, and scrolls its script under Back (M22)', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('hookOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="facts"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const back = root.querySelector('button[aria-label="Back to Toolkit"]')
+    const discuss = root.querySelector('button[aria-label="Discuss"]')
+    const item = root.querySelector('article[aria-label="commit-msg"]')
+    const cards = [...root.querySelectorAll('[data-figma^="fact · "]')]
+    const lastFile = root.querySelector('[data-figma="file · test-commit-msg"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (back === null || discuss === null || item === null || lastFile === null || tabBar === null) {
+      throw new Error('no Back, actions, item, file or tab bar')
+    }
+    // The actions are icon buttons in the back row, and the item is under it (M22 496:14, 487:2024).
+    expect(backRow.contains(discuss)).toBe(true)
+    expect(discuss.textContent).toBe('')
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The four When it runs cards sit two by two, each half the item less the 10 between (487:2186 to 487:2212,
+    // 178 wide), and the second row starts under the first.
+    expect(cards).toHaveLength(4)
+    const [event, state, enforces, test] = cards
+    if (event === undefined || state === undefined || enforces === undefined || test === undefined) {
+      throw new Error('no card')
+    }
+    expect(box(state).top).toBe(box(event).top)
+    expect(box(test).top).toBe(box(enforces).top)
+    expect(box(enforces).top).toBeGreaterThan(box(event).bottom)
+    expect(box(event).width).toBe((box(item).width - 10) / 2)
+    // The script runs under the tab bar, as Figma's does: the item scrolls its files into view, under Back.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')].filter((b) => b.contains(item))
+    expect(bodies).toHaveLength(1)
+    const body = bodies[0] ?? document.body
+    expect(box(lastFile).top).toBeGreaterThan(box(tabBar).top)
+    const before = { back: box(back).top, row: box(backRow).top }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop).toBeGreaterThan(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(back).top).toBe(before.back)
+    expect(box(backRow).top).toBe(before.row)
+    expect(box(lastFile).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })

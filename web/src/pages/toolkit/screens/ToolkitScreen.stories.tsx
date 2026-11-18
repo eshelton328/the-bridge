@@ -249,3 +249,21 @@ export const HookOpenTablet: Story = {
     await expect(within(item).getByText('97 lines')).toBeVisible()
   },
 }
+
+export const HookOpenPhone: Story = {
+  name: 'M22: a hook open on the phone, in place of the list',
+  args: { data: toolkitStates.hookOpenPhone.data, ui: toolkitStates.hookOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the hook under Back, with icon buttons and its
+  // When it runs cards two by two. The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx
+  // checks the phone's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'commit-msg' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'When it runs' })
+    await expect(within(runs).getByText('test-commit-msg')).toBeVisible()
+    await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
+  },
+}

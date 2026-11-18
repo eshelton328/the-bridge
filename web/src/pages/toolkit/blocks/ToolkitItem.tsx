@@ -66,10 +66,11 @@ const pageTitleLayers: Readonly<Record<string, string>> = {
   'rules/skills.md': '487:355',
   'hooks/commit-msg': '487:980',
 }
-// On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264).
+// On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264), the hook commit-msg in M22 (487:2043).
 const phoneTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '429:303',
   'rules/skills.md': '487:1264',
+  'hooks/commit-msg': '487:2043',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
