@@ -25,21 +25,19 @@ each with its reason. The library gaps are in
 
 - **Row previews and row heights.** The previews are `Thumbnail
   size="lg" shape="wide"`, 128 × 72 as Figma's (403:8217, library
-  1.0.0-beta.36), so the text starts where Figma's does. Each row is
-  96 high against Figma's 98 (`ListRow` pads 10 inside the box's and its
-  own 1 px borders, Figma 12 inside one); the rows are 8 apart against
-  Figma's 6, so they keep Figma's 104 px pitch and the three rows,
-  `result list` (h -2) and `hint` pass. Library gap "List row padding
-  and age".
-- **Row layout.** The match place, the age and Open sit at the top of the
-  row, on the title line; Figma centres them down the row. The row's box
-  (border, radius and pane fill) is drawn with the Card's tokens around a
-  `ListRow`, as `ListRow` has no border, and its content is 12 in (Figma
-  13). Library gap "List row padding and age".
-- **New dot.** The cyan dot of the new Skill eval pass rates sits at the
-  start of the trailing items, before "in title"; Figma puts it 8 px after
-  the title. `ListRow` takes the title as text only. Library gap "New dot in
-  a list row".
+  1.0.0-beta.36). Since library 1.0.0-beta.39 (#147) each row is
+  `ListRow surface="card" padding="lg"`: the pane fill in a 1 px
+  `border.default` border, padded 12, 98 high and 6 apart, as Figma's
+  (403:8216), and the three rows, `result list` and `hint` pass.
+- **Row layout.** The match place, the age and Open are centred down the
+  row, as Figma's (`trailingAlign="center"`, library 1.0.0-beta.39). The
+  text starts 10 after the preview (the title at x 247) against Figma's
+  16 (403:8232 at x 253), and 13 under the row's top against Figma's 18
+  (403:8231), as `ListRow` puts its body at the top. Library gap "List
+  row padding and age".
+- **New dot.** None left: since library 1.0.0-beta.39 (#147) the cyan
+  dot of the new Skill eval pass rates is `ListRow dot="working"`, 8 px
+  after the title, as Figma's (403:8233).
 - **Match place chip.** "in title", "in description" and "in link" are
   `Badge variant="tag"`: a box with the small radius, 6 px sides and
   20 px high, against Figma's round pill with 8 px sides, 21 high. Library

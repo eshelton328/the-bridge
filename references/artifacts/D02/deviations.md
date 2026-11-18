@@ -42,13 +42,13 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   draw `Thumbnail size="sm"`, 64 × 40 as Figma's (403:194), with each
   kind's row drawing (the grid as six round-cornered cells, the ui as a
   window with a side bar and rows), not the card's drawing scaled down.
-- **Row height and age.** Each row is 62 high against Figma's 58, and its
-  age sits on the title line, not centred down the row. Each row after
-  the first starts 2 up, so the rows keep Figma's 60 px pitch and the
-  position check passes. Library gap "List row padding and age".
-- **New dot.** The dot of a new artifact sits beside its age, 12 apart,
-  on the title line, as Figma's; it is drawn with tokens, as no library
-  part has it. Library gap "New dot in a list row".
+- **Row height and age.** None left: since library 1.0.0-beta.39
+  (#147) each row is `ListRow padding="sm"`, 58 high as Figma's
+  (403:219), 2 apart, and its age is centred down the row
+  (`trailingAlign="center"`, 403:218).
+- **New dot.** None left: since library 1.0.0-beta.39 (#147) the dot of
+  a new artifact is `ListRow dot="working" dotPosition="end"`, 6 px at
+  the end of the title line, 12 before the age, as Figma's (403:213).
 - **Artifact title.** "Skill eval pass rates" is 28 px type (`heading`)
   against Figma's about 26 px, so it is a little larger and its box is
   40 high against 34. Library gap "Artifact title size".
@@ -82,7 +82,7 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 Each value with no token is recorded for the library in `LIBRARY_GAPS.md`
 and drawn with the nearest token until it lands: the row thumbnail 64
 (Figma's; `Thumbnail size="sm"` since beta.36), the row padding 8
-(Figma's; drawn 10 by `ListRow`), the title 26/36 (Figma's size on the 4
+(Figma's; `ListRow padding="sm"` since beta.39), the title 26/36 (Figma's size on the 4
 px grid; drawn `heading` 28/40), the detail inset 36 (Figma's; drawn 40),
 and the made-in box's side padding 16 (Figma 15, on the 4 px grid). The
 New pill takes `Badge tone="working" size="sm"` (20 px, Figma 22), as D1's
