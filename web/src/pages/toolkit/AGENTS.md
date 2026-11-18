@@ -225,7 +225,14 @@ what each file of a page folder is for.
   Markdown file (a view with blocks and no code) opens rendered
   (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
   shows the source written back from the blocks (`markdownSource`), and
-  `ui.fileView` keeps the choice (`rendered` or `code`). Only the
+  `ui.fileView` keeps the choice (`rendered` or `code`). On a tablet or phone a
+  script with an explanation opens on a page of its own (T6,
+  `scriptExplainedTablet`, D10's data with the script's language and length and
+  no line on what uses it, `ui.filePage`; `selectFile` in `blocks/filesView.ts`
+  sets it): the back row goes back to Files, the title and the path badge name
+  the script (the badge's folder and the file's path), and `ToolkitFilePage`
+  puts the Explain and Code switch in a row over the box. Back to Files shows
+  the tree with the script under it. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

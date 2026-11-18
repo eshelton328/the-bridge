@@ -235,3 +235,77 @@ describe('the Files tab on a tablet (T4)', () => {
     await view.unmount()
   })
 })
+
+// A script explained on a tablet (T6): the script opens on a page of its own, under Back to Files, with its name and
+// path in the item's header, the Explain and Code switch over the box. Back to Files shows the tree with the script
+// selected under it; selected again from another file, the script opens its page again.
+describe('a script explained on a tablet (T6)', () => {
+  it('opens the script on its own page, switches to Code and back, and goes back to the tree', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('scriptExplainedTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="explain"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    // No tree and no viewer bar: the page names the script.
+    expect(root.querySelector('[data-figma="tree"]')).toBeNull()
+    expect(root.querySelector('[data-figma="viewer bar"]')).toBeNull()
+    expect(root.querySelector('[data-figma="back row"]')?.textContent).toContain('Files')
+    expect(root.querySelector('article h2')?.textContent).toBe('check')
+    const path = root.querySelector('[data-figma="path row"]')
+    expect(path?.textContent).toContain('skills/writer/scripts/check')
+    expect(path?.textContent).toContain('Python · 437 lines')
+    // T6 440:1918, 440:1925: the switch's row over the box, the box as wide as the item.
+    const mode = box('[data-figma="mode row"]')
+    const explain = box('[data-figma="explain"]')
+    expect(explain.top).toBeGreaterThan(mode.bottom)
+    expect(explain.width).toBeCloseTo(mode.width, 0)
+    const item = (name: string) => {
+      const label = [...root.querySelectorAll('[data-figma="toggle · Explain | Code"] label')].find(
+        (el) => el.textContent === name,
+      )
+      if (label === undefined) throw new Error(`no ${name} item`)
+      return label
+    }
+    // A line link shows the source on Code; Explain brings the explanation back.
+    const link = [...root.querySelectorAll('[data-figma="explain"] button')].find((el) => el.textContent === 'line 406')
+    if (link === undefined) throw new Error('no line 406 link')
+    await userEvent.click(link)
+    await expect.poll(() => root.querySelector('[data-figma="code"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="explain"]')).toBeNull()
+    await userEvent.click(item('Explain'))
+    await expect.poll(() => root.querySelector('[data-figma="explain"]')).not.toBeNull()
+    // Back to Files shows the tree and the item's header; the script in the tree opens its page again.
+    const back = [...root.querySelectorAll('[data-figma="back row"] button')].find((el) =>
+      el.textContent.includes('Files'),
+    )
+    if (back === undefined) throw new Error('no Back to Files')
+    await userEvent.click(back)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    expect(root.querySelector('article h2')?.textContent).toBe('writer')
+    expect(root.querySelector('[data-figma="back row"]')?.textContent).toContain('Toolkit')
+    // Back keeps the script selected, shown under the tree; another file opens under the tree, and the script
+    // selected again opens its page.
+    expect(root.querySelector('[aria-label="scripts/check"]')).not.toBeNull()
+    const row = (name: string) => {
+      const el = [...root.querySelectorAll('[role="treeitem"]')].find((r) => r.textContent.startsWith(name))
+      if (el === undefined) throw new Error(`no ${name} row`)
+      return el
+    }
+    await userEvent.click(row('doc.md'))
+    await expect.poll(() => root.querySelector('[aria-label="references/doc.md"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    await userEvent.click(row('check'))
+    await expect.poll(() => root.querySelector('[data-figma="mode row"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="tree"]')).toBeNull()
+    await view.unmount()
+  })
+})

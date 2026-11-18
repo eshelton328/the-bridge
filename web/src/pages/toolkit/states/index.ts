@@ -43,6 +43,7 @@ import { agentFiles } from './agentFiles.ts'
 import { workflowFiles } from './workflowFiles.ts'
 import { hookFiles } from './hookFiles.ts'
 import { skillFilesTablet } from './skillFilesTablet.ts'
+import { scriptExplainedTablet } from './scriptExplainedTablet.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -87,4 +88,5 @@ export const toolkitStates = {
   workflowFiles,
   hookFiles,
   skillFilesTablet,
+  scriptExplainedTablet,
 }

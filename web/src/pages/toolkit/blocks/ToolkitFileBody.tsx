@@ -28,9 +28,11 @@ export type ToolkitFileBodyProps = {
   mode: FileMode
   /** Called with the other view when the Markdown switch or a step's line link changes it. */
   onModeChange?: ((mode: FileMode) => void) | undefined
+  /** Names the explanation's Figma layer (`explain`); a box around the body names it instead (T6). */
+  explainLayer?: boolean | undefined
 }
 
-export function ToolkitFileBody({ view, mode, onModeChange }: ToolkitFileBodyProps) {
+export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true }: ToolkitFileBodyProps) {
   const modes = fileModes(view)
   const markdown = modes.some((m) => m.value === 'rendered')
   const toggle = markdown ? (
@@ -49,7 +51,7 @@ export function ToolkitFileBody({ view, mode, onModeChange }: ToolkitFileBodyPro
   ) : null
   if (mode === 'explain' && view.explain !== undefined)
     return (
-      <div data-figma="explain">
+      <div data-figma={explainLayer ? 'explain' : undefined}>
         <ScriptExplanation
           summary={view.explain.summary}
           facts={view.explain.facts}

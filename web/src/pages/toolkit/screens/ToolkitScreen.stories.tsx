@@ -765,3 +765,25 @@ export const SkillFilesTablet: Story = {
     await expect(within(viewer).getByRole('radio', { name: 'Source' })).not.toBeChecked()
   },
 }
+
+export const ScriptExplainedTablet: Story = {
+  name: 'T6: a skill’s script explained on a tablet, on a page of its own',
+  args: {
+    data: toolkitStates.scriptExplainedTablet.data,
+    ui: toolkitStates.scriptExplainedTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the script on a page of its own, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Explain: its language and length, the overview, the walkthrough and who wrote it.
+    await expect(within(item).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(item).getByText('Python · 437 lines')).toBeVisible()
+    await expect(within(item).getByText('0 pass · 1 a rule fails · 2 bad input')).toBeVisible()
+    await expect(within(item).getByText(/^Written by Claude from this version of the file/)).toBeVisible()
+    await expect(within(item).queryByText('Step 6 of SKILL.md runs this script on the draft.')).toBeNull()
+    await expect(within(item).getByRole('button', { name: 'line 433' })).toBeVisible()
+  },
+}

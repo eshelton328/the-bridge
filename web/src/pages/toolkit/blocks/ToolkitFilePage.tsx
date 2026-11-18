@@ -57,8 +57,8 @@ export function ToolkitFilePage({ view, mode, onModeChange }: ToolkitFilePagePro
           </span>
         </div>
       ) : null}
-      <div className={box}>
-        <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} />
+      <div className={box} data-figma={mode === 'explain' ? 'explain' : undefined}>
+        <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} explainLayer={false} />
       </div>
     </div>
   )
