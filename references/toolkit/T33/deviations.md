@@ -17,7 +17,7 @@ results as before T33.
 
 ## Checks
 
-- Text: pass (29 strings checked). Nothing lies under the tab bar.
+- Text: pass (33 strings checked). Nothing lies under the tab bar.
 - Position: 14 of 22 layers pass (`back row`,
   `breadcrumb · Toolkit › writer › writing-reviewer`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `tab bar` and the six
