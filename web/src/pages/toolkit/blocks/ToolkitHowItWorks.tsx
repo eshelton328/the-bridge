@@ -22,7 +22,8 @@ import {
   TerminalIcon,
 } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import type { Viewport } from '../../../lib/screenState.ts'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
 import { ToolkitHowStep } from './ToolkitHowStep.tsx'
 
@@ -34,6 +35,8 @@ type How = NonNullable<ToolkitItemDetailView['how']>
 const body = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '4', pb: '4', px: '2' })
 // D14 459:599: the label at the start, the legend at the end.
 const header = css({ display: 'flex', alignItems: 'center', gap: '12' })
+// Below the desktop the legend goes under the label when the line is too short for both.
+const headerWrap = css({ flexWrap: 'wrap' })
 const label = css({ textStyle: 'monoCaps', color: 'fg.muted' })
 // The file keeps its name as it is written, such as "SKILL.md".
 const file = css({ textTransform: 'none' })
@@ -74,6 +77,9 @@ const steps = css({
   m: '0',
   p: '0',
 })
+// On a tablet or the phone (T10, M12) the steps stand in one column, each card as wide as the list, with the arrow
+// down between them: four columns would leave each card about 50 px wide on the phone.
+const column = css({ gridTemplateColumns: '[1fr]', gridAutoRows: 'auto' })
 const across = css({ display: 'flex', alignItems: 'center', px: '12', color: 'fg.muted' })
 // The arrow down sits under the first card of the row, where the next row starts; the rest of its row is empty.
 const down = css({ display: 'flex', justifyContent: 'center', py: '16', color: 'fg.muted' })
@@ -90,7 +96,7 @@ const elsewhereText = css({ textStyle: 'small', color: 'fg.muted' })
 // D14 459:773: as wide as its line.
 const note = css({ alignSelf: 'flex-start', textStyle: 'small', color: 'fg.muted' })
 
-const perRow = 4
+const desktopPerRow = 4
 
 export type ToolkitHowItWorksProps = {
   how: How
@@ -99,14 +105,18 @@ export type ToolkitHowItWorksProps = {
    * 459:599, D37 495:398.
    */
   headerLayer?: string | undefined
+  /** The desktop draws four steps to a row; a tablet and the phone draw them in one column. */
+  layout?: Viewport | undefined
 }
 
-export function ToolkitHowItWorks({ how, headerLayer }: ToolkitHowItWorksProps) {
+export function ToolkitHowItWorks({ how, headerLayer, layout = 'desktop' }: ToolkitHowItWorksProps) {
+  const stacked = layout !== 'desktop'
+  const perRow = stacked ? 1 : desktopPerRow
   return (
     <div data-figma="how it works">
       <Panel>
         <div className={body}>
-          <div className={header} data-figma={headerLayer}>
+          <div className={stacked ? cx(header, headerWrap) : header} data-figma={headerLayer}>
             {/* The tab's heading, under the item's h2; the steps' titles and ChatPath's title are h4. */}
             <h3 className={label}>
               {how.label}
@@ -136,7 +146,7 @@ export function ToolkitHowItWorks({ how, headerLayer }: ToolkitHowItWorksProps) 
               </Panel>
             </div>
           )}
-          <ol className={steps} aria-label="Steps" data-figma="steps">
+          <ol className={stacked ? cx(steps, column) : steps} aria-label="Steps" data-figma="steps">
             {how.steps.map((step, i) => {
               const last = i === how.steps.length - 1
               const rowEnd = (i + 1) % perRow === 0
@@ -148,7 +158,7 @@ export function ToolkitHowItWorks({ how, headerLayer }: ToolkitHowItWorksProps) 
                       <li className={down} aria-hidden="true">
                         <ArrowDownIcon size="16" />
                       </li>
-                      <li className={downRest} aria-hidden="true" />
+                      {stacked ? null : <li className={downRest} aria-hidden="true" />}
                     </>
                   ) : (
                     <li className={across} aria-hidden="true">

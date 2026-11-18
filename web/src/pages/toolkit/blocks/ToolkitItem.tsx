@@ -193,7 +193,7 @@ export function ToolkitItem({
                 onOpenItem={onOpenItem}
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
-              <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} />
+              <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : null,
         }))}
       />
