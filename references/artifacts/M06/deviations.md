@@ -79,8 +79,9 @@ the Project field passes and the offsets grow towards the top.
 - **Rows.** As M1: the previews are `Thumbnail size="md"`, 76 × 48 as
   Figma's, but drawn as D2's row drawing scaled up, with window dots and
   smaller cells (library gap "Phone row preview drawing"), and the rows
-  are 70 high against Figma's 66, at Figma's 68 px pitch (library gap
-  "List row padding and age"). New is `Badge size="xs"` with
+  are 70 high against Figma's 66 (d-072, `ListRow padding="phone"` pads
+  10 against Figma's 9), and `RowGroup`'s `mt: -2` holds Figma's 68 px
+  pitch (library gap "ListRow phone height 70 vs 66"). New is `Badge size="xs"` with
   `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
   is 12 px against 9 (408:513, 408:514; library gap "New badge"). The
   previews' colours differ as in M1 (library gap "Thumbnail colour").
