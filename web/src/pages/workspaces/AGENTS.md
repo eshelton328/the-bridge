@@ -266,7 +266,9 @@ first: it says what each file of a page folder is for.
   M23 adds `rename` to `PhoneChat` (in `ChatHead`'s title place) and
   `size="phone"` to `ChatNameField` (160 wide): D21's field while
   `ui.renaming`, which Rename in the chat actions sheet opens; a tap
-  outside saves the name in `ui.names`, × undoes the change.
+  outside saves the name in `ui.names`, × undoes the change. Either
+  gives the focus back to the message box if it had it before Rename
+  (`ui.refocusMessage`).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -421,6 +423,7 @@ first: it says what each file of a page folder is for.
   `closedWorkspaces`; for M14 `workspaceMenuFor`, the workspace whose
   actions are open; for M15 `addMenuOpen`, `addedWorkspaces` and
   `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
-  box in focus with the skills closed), each a Zod schema.
+  box in focus with the skills closed; for M23 `refocusMessage`, the box
+  takes the focus back when the name field closes), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

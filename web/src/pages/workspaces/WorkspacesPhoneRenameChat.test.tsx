@@ -40,6 +40,8 @@ describe('a chat renamed on the phone', () => {
     await userEvent.fill(field, 'theme explorations')
     await userEvent.click(page.getByText('Three directions', { exact: false }))
     await expect.element(page.getByRole('heading', { name: 'theme explorations' })).toBeVisible()
+    // M23 opens with the focus in the field, not in the message box, so the box does not take it.
+    await expect.element(page.getByRole('textbox')).not.toHaveFocus()
   })
 
   it('undoes the change with ×', async () => {
@@ -52,6 +54,7 @@ describe('a chat renamed on the phone', () => {
     await userEvent.click(page.getByRole('button', { name: 'Undo the rename' }))
     await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
     await expect.element(field).not.toBeInTheDocument()
+    await expect.element(page.getByRole('textbox')).not.toHaveFocus()
   })
 
   it('opens the field from Rename in the chat actions sheet', async () => {
@@ -76,5 +79,51 @@ describe('a chat renamed on the phone', () => {
     // The field takes the title's place in the chat's header.
     expect(field.element().closest('header')).not.toBeNull()
     await expect.element(page.getByRole('heading', { name: 'bridge themes' })).not.toBeInTheDocument()
+  })
+
+  it('saves with Enter and gives the focus back to the message box that had it (M21)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSubtaskRunning
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const box = page.getByRole('textbox')
+    await expect.element(box).toHaveFocus()
+    await userEvent.click(page.getByRole('button', { name: 'bridge themes actions' }))
+    await userEvent.click(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Rename', { exact: true }))
+    const field = page.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect.element(field).toHaveFocus()
+    await userEvent.fill(field, 'theme explorations')
+    await userEvent.keyboard('{Enter}')
+    await expect.element(page.getByRole('heading', { name: 'theme explorations' })).toBeVisible()
+    await expect.element(field).not.toBeInTheDocument()
+    await expect.element(box).toHaveFocus()
+  })
+
+  it('saves with a tap outside and gives the focus back to the message box that had it (M21)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSubtaskRunning
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('button', { name: 'bridge themes actions' }))
+    await userEvent.click(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Rename', { exact: true }))
+    const field = page.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect.element(field).toHaveFocus()
+    await userEvent.fill(field, 'theme explorations')
+    await userEvent.click(page.getByText('Three directions', { exact: false }))
+    await expect.element(page.getByRole('heading', { name: 'theme explorations' })).toBeVisible()
+    await expect.element(page.getByRole('textbox')).toHaveFocus()
+  })
+
+  it('undoes the change with × and gives the focus back to the message box that had it (M21)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSubtaskRunning
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('button', { name: 'bridge themes actions' }))
+    await userEvent.click(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Rename', { exact: true }))
+    const field = page.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect.element(field).toHaveFocus()
+    await userEvent.fill(field, 'theme explorations')
+    await userEvent.click(page.getByRole('button', { name: 'Undo the rename' }))
+    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect.element(field).not.toBeInTheDocument()
+    await expect.element(page.getByRole('textbox')).toHaveFocus()
   })
 })

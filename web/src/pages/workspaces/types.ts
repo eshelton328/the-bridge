@@ -810,6 +810,11 @@ export const WorkspacesUi = z.object({
    * With the skills open (M3) the box has the focus anyway.
    */
   messageFocus: z.boolean().optional(),
+  /**
+   * The phone chat's message box had the focus when Rename opened the name field in its header (M23): the box takes
+   * the focus back when the field closes, saved or undone.
+   */
+  refocusMessage: z.boolean().optional(),
   /** The workspace whose close dialog is open over the phone's list (M13), or null. */
   closing: z.string().nullable().optional(),
   /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */

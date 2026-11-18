@@ -31,7 +31,8 @@
 // the chat after a move (`ui.toastOpen`): D20's toast over the composer, with
 // Undo, which closes it. M23 is the chat's name as a field in its header
 // (`ui.renaming`, ChatNameField), which the actions' Rename opens: a tap
-// outside saves the name in `ui.names`, × undoes the change.
+// outside saves the name in `ui.names`, × undoes the change; either gives the
+// focus back to the message box if it had it before (`ui.refocusMessage`).
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -195,6 +196,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
       : [chat.head.model, chat.head.context === undefined ? undefined : `${String(chat.head.context)}%`, folderCount]
           .filter((part) => part !== undefined)
           .join(' · ')
+  // M23: the name field closes, saved or undone, and the focus goes back to the message box if it had it before.
+  const afterRename: Partial<WorkspacesUi> =
+    ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   if (chat !== undefined)
     return (
       <Backdrop size="phone">
@@ -224,10 +228,10 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                   <ChatNameField
                     name={chat.head.title}
                     onSave={(name) => {
-                      onUiChange({ renaming: false, names: { ...ui.names, [chat.id]: name } })
+                      onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
                     }}
                     onCancel={() => {
-                      onUiChange({ renaming: false })
+                      onUiChange(afterRename)
                     }}
                     figma={data.layers?.renameField}
                     size="phone"
@@ -273,7 +277,8 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         }}
                         highlight={ui.menuHighlight}
                         onSelect={(action) => {
-                          if (action === 'rename') onUiChange({ renaming: true, messageFocus: false })
+                          if (action === 'rename')
+                            onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
                           if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
                           if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
                           if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
