@@ -53,7 +53,11 @@ export type ToolkitMostCalledProps = {
 
 export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCalledProps) {
   return (
-    <section className={fill} aria-label={mostCalled.label} data-figma={panelLayer(mostCalled.label, layout)}>
+    <section
+      className={fill}
+      aria-label={mostCalled.label}
+      data-figma={panelLayer(mostCalled.layer ?? mostCalled.label, layout)}
+    >
       <Panel>
         <div className={body}>
           <ToolkitEvalsHeader
