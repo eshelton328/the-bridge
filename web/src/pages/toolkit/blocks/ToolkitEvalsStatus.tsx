@@ -4,7 +4,8 @@
 // one library Badge for each criterion or test run, in its state's colour)
 // and a line on what they mean. The badges are a list, and each says its
 // state in visually hidden text after its label ("D1 Quality failed"),
-// since the library's Badge hides its icon from assistive technology. A badge that names another item's results (D5
+// since the library's Badge hides its icon from assistive technology; a
+// badge that is a button takes the same words as its name. A badge that names another item's results (D5
 // Reviewer, the agent writing-reviewer) is a button that opens that item on
 // its Evals tab; the library's Badge takes no press, so the button around it
 // is a plain one styled with tokens (LIBRARY_GAPS.md, Evals panels). An item
@@ -55,25 +56,25 @@ export function ToolkitEvalsStatus({ status, onOpenEvals }: ToolkitEvalsStatusPr
               const look = badgeLook(b.state)
               const result = badgeResult(b)
               const badge = (
-                <>
-                  <Badge
-                    size="sm"
-                    tone={look.tone}
-                    label={b.label}
-                    icon={look.icon === null ? undefined : icons[look.icon]}
-                  />
-                  {result === null ? null : <span className={srOnly}>{` ${result}`}</span>}
-                </>
+                <Badge
+                  size="sm"
+                  tone={look.tone}
+                  label={b.label}
+                  icon={look.icon === null ? undefined : icons[look.icon]}
+                />
               )
+              const name = result === null ? b.label : `${b.label} ${result}`
               const open = b.open
               return open === undefined ? (
                 <span key={b.label} role="listitem" className={badgeBox} data-figma={badgeLayer(b)}>
                   {badge}
+                  {result === null ? null : <span className={srOnly}>{` ${result}`}</span>}
                 </span>
               ) : (
                 <span key={b.label} role="listitem" className={badgeBox}>
                   <button
                     type="button"
+                    aria-label={name}
                     className={press}
                     data-figma={badgeLayer(b)}
                     onClick={() => {
