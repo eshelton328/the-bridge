@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The library scrolls on the phone: Figma's library (406:69) runs to y 875, under the tab bar (y 767) and past the frame's bottom edge (844), and the tab bar stays pinned. The render scrolls the detail under the pinned tab bar the same way (d-107)."
+    }
+  ]
+}
