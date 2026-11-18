@@ -1,0 +1,98 @@
+# T07 deviations
+
+What still differs from Figma T7 · New chat (D3's New chat form in a
+dialog over bridge themes on the iPad mini, `tabletNewChat`), after the
+last fidelity run (`pnpm fidelity workspaces T07`, 2026-11-18, library
+1.0.0-beta.39), each with its reason. The library gaps are in
+`web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
+`PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`)
+with D3's `NewChatDialog` (`Dialog size="lg"`, 540) open over it, with
+T7's layers (`layers.newChatDialog`). The chat has no tab bar, so the
+render has no Artifacts tab, and the dialog makes the chat under it
+inert, so its composer's text is not counted: no exception is needed.
+
+## Checks
+
+- Text: pass. Every Figma string is in the render and visible; the
+  render has no extra text.
+- Position: fail, 4 of 25 layers pass: the header (`420:252`), the back
+  button (`420:254`), the ⋯ (`420:265`) and Erik's message (`420:281`).
+  21 fail:
+  - `420:286` (Claude's reply with Copy): h +8.
+  - `420:298` (the chat's composer): y +30.
+  - `420:322` (the dialog): y +24, h -19.
+  - `420:329` (Name field): y +24; `420:332` (its box): y +25.
+  - `420:336` (Runs in field): y +24; `420:340`, `420:344` and
+    `420:350` (Claude Code, Codex, shell): y +27.
+  - `420:355` (Workspace field): y +24; `420:358` (its box): y +27.
+  - `420:363` (Folders field): y +26; `420:367` (~/the-bridge): y +29,
+    w -7; `420:371` (~/omni): x -9, y +29; `420:378` (Add folder):
+    x -8.4, y +28.
+  - `420:383` (Model field): y +27; `420:386` (its box): y +30.
+  - `420:391` (First message field): y +29, h -20; `420:394` (its box):
+    y +32, h -23.
+  - `420:403` (Cancel): y +9; `420:405` (Start chat): y +8.
+- Rules: pass.
+
+## Deviations
+
+- **The dialog sits 24 px lower and is 19 px shorter (Composer in a
+  form), `420:322` y +24, h -19.** The first message box is `Composer`,
+  which sizes its text area to one line (78 px against Figma's 101), so
+  the dialog is 592 high against 611. `Dialog` centres in the app's
+  screen, which starts under Figma's 29 px status bar (d-089, d-102);
+  Figma centres the dialog over the whole frame, status bar included.
+  The two together put the dialog 24 px lower. Every field moves down
+  with it (`420:329`, `420:332`, `420:336`, `420:340`, `420:344`,
+  `420:350`, `420:355`, `420:358`, `420:363`, `420:383`, `420:386`,
+  `420:391`, y +24 to +30); inside the dialog each field is 0 to 6 px
+  lower than Figma's, as on D03, because each label is 6 px over its
+  control against Figma's 8 (Form field label) and the boxes are 36 px
+  against Figma's 37 and 39 (Select field, Runs in choice).
+- **The first message box is 23 px shorter (Composer in a form),
+  `420:394` y +32, h -23, `420:391` y +29, h -20.** `Composer` draws one
+  line of text; it also draws "/" (the skill button) and a send button,
+  which Figma's box has not. Cancel and Start chat (`420:403` y +9,
+  `420:405` y +8) sit under the shorter box, at the dialog's foot.
+- **"random if blank" (Field hint).** Figma draws the hint inside the name
+  field at its end; `TextField` has no slot there, so the hint is at the
+  end of the label row, 20 px higher.
+- **Folder chips (Folder chip), `420:367` w -7, `420:371` x -9,
+  `420:378` x -8.4.** The paths are in `label` (Geist 14) against
+  Figma's Geist Mono 13, the chips are 28 px against 30, and the × of
+  ~/omni is part of the chip's button. ~/the-bridge's border is
+  `border.selected` (`pressedBorder="selected"`), Figma's #5ee1ff at
+  0.6; D03's chip now uses it too.
+- **Runs in, Workspace and Model (Runs in choice, Select field, Selected
+  toggle border).** The boxes are 36 px against Figma's 39 and 37, and
+  the values are Medium 14 (`label`) against Regular 14. Claude Code's
+  border is the pressed `border.active` (0.7) against Figma's opaque
+  #5ee1ff.
+- **Dialog padding.** The form is padded 20 (`Dialog`) against Figma's
+  23, so the fields start 2 px further left and are 4 px wider (within
+  the tolerance).
+- **The chat's composer sits at the screen's end (Tablet safe area),
+  `420:298` y +30.** Figma ends T7's composer 33 over the screen's end
+  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
+  the detail when there is no tab bar, so the composer ends at the
+  screen's end, as on T02b and T06. Library beta.42 adds the tablet safe
+  area.
+- **Claude's reply is taller (Message text), `420:286` h +8.** `Message`
+  draws the text in `body` (14/20) and the name in `label` against
+  Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high
+  against 22; the reply wraps at another word.
+- **The ⋯ is lighter and the header is 2 px taller (Chat header, Chat
+  header text).** As on T06: a thin 20 px `MoreIcon` against Figma's
+  heavy 18 px icon, and the title in `subtitle` (17/24); within the
+  tolerance.
+- **The workspace.** Figma's T7 chooses the-bridge, as D3 does, so the
+  state does too; the note says the workspace defaults to the current
+  chat's (omni-brain). The chat actions' New chat opens the form with
+  the current chat's workspace chosen.
+- **The stars sit elsewhere (Backdrop stars).** `Backdrop size="tablet"`
+  draws the library's fixed star field, not T7's own stars.
+- **No status bar.** The app draws no status bar (d-089), so the
+  side-by-side shows a blank band at the top.
+- **Actions still to build.** Start chat, Add folder, the folder's ×
+  and the attach button draw only, as on D03.
+- **No exceptions.**
