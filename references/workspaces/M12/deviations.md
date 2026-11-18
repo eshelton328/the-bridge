@@ -76,10 +76,3 @@ task and the entries in its body, and the read-only note as its footer.
   chevron of a card in the subagents opens the transcript again. The
   browser's back gesture does not follow that path yet: the phone view is
   ui state, not a route. Stop does not stop the subagent.
-
-## Verify
-
-`pnpm verify` passes with the branch's files as they are, except the
-Biome format check of `references/workspaces/M11/deviations.md`, which
-M11's build left unformatted; this build does not change another frame's
-references.
