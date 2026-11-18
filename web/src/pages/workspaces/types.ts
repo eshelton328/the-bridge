@@ -802,6 +802,8 @@ export const WorkspaceLayout = z.object({
   panes: z.array(z.string()),
   splitSizes: SplitSizes.optional(),
   focusedPane: z.string().optional(),
+  /** The workspace's side chat is open (`ui.sideChatOpen`); closed when not set. */
+  sideChatOpen: z.boolean().optional(),
 })
 export type WorkspaceLayout = z.infer<typeof WorkspaceLayout>
 

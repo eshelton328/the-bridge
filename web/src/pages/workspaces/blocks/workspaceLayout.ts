@@ -1,5 +1,6 @@
 // Each workspace keeps its own layout (R6, D1's open question 4): its panes,
-// the sizes of its handles and its focused pane, in `ui.layouts` by
+// the sizes of its handles, its focused pane and whether its side chat is
+// open, in `ui.layouts` by
 // workspace id. A workspace with no saved layout shows the state's panes
 // when it is `data.current`, and its last chat alone in one pane when it is
 // another. These helpers give the shown workspace's layout and the ui
@@ -20,7 +21,12 @@ function layoutOf(data: WorkspacesData, ui: WorkspacesUi, workspace: string): Wo
   const saved = ui.layouts?.[workspace]
   if (saved !== undefined) return saved
   if (workspace === data.current) {
-    return { panes: data.panes.map((p) => p.id), splitSizes: ui.splitSizes, focusedPane: ui.focusedPane }
+    return {
+      panes: data.panes.map((p) => p.id),
+      splitSizes: ui.splitSizes,
+      focusedPane: ui.focusedPane,
+      sideChatOpen: ui.sideChatOpen,
+    }
   }
   const last = data.lastChats?.[workspace]
   return last === undefined ? { panes: [] } : { panes: [last.id], focusedPane: last.id }
@@ -56,8 +62,8 @@ export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: Works
 
 /**
  * The ui change of a click on `next`'s tab: the shown workspace's layout saved as it is now, then `next` shown with
- * its own focused pane, and the open menus, skill list, drag and handle readout closed, as they belong to a pane of
- * the workspace left.
+ * its own focused pane and side chat (closed when it has none), and the open menus, skill list, drag and handle readout
+ * closed, as they belong to a pane of the workspace left.
  */
 export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): Partial<WorkspacesUi> {
   const shown = shownWorkspace(data, ui)
@@ -66,6 +72,7 @@ export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): 
     panes: left.panes,
     splitSizes: liveSizes(data, ui, left.splitSizes),
     focusedPane: ui.focusedPane,
+    sideChatOpen: ui.sideChatOpen,
   }
   const target = next === shown ? saved : layoutOf(data, ui, next)
   const focusedPane = target.focusedPane ?? target.panes[0]
@@ -73,6 +80,7 @@ export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): 
     workspace: next,
     layouts: { ...ui.layouts, [shown]: saved },
     focusedPane: focusedPane ?? ui.focusedPane,
+    sideChatOpen: target.sideChatOpen ?? false,
     menuFor: null,
     moveOpen: false,
     skillsFor: null,
@@ -97,7 +105,7 @@ export function closeShownPane(data: WorkspacesData, ui: WorkspacesUi, pane: str
   const panes = layout.panes.filter((id) => id !== pane)
   const focusedPane = ui.focusedPane === pane ? panes[0] : ui.focusedPane
   return {
-    layouts: { ...ui.layouts, [shown]: { panes, focusedPane } },
+    layouts: { ...ui.layouts, [shown]: { panes, focusedPane, sideChatOpen: layout.sideChatOpen } },
     focusedPane: focusedPane ?? ui.focusedPane,
     resize: null,
   }

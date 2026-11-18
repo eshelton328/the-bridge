@@ -115,4 +115,21 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(pane('drift check')).toBeVisible()
     await expect.element(pane('bridge themes')).not.toBeInTheDocument()
   })
+
+  it('shows no side chat of omni-brain on the-bridge, and omni-brain keeps its side chat open', async () => {
+    const { data, ui } = workspacesStates.sideChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
+    const sideChat = () => page.getByRole('heading', { name: 'Side chat', exact: true })
+    await expect.element(sideChat()).toBeVisible()
+    await userEvent.click(hideSidebar())
+    await userEvent.click(tab('the-bridge'))
+    await userEvent.click(showSidebar())
+    await expect.element(page.getByRole('heading', { name: 'hono server' })).toBeVisible()
+    await expect.element(sideChat()).not.toBeInTheDocument()
+    await userEvent.click(hideSidebar())
+    await userEvent.click(tab('omni-brain'))
+    await userEvent.click(showSidebar())
+    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect.element(sideChat()).toBeVisible()
+  })
 })

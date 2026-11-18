@@ -585,7 +585,8 @@ first: it says what each file of a page folder is for.
   takes the focus back when the name field closes), each a Zod schema.
 - Workspace tabs (Erik's review R6): a click on a tab shows that
   workspace (`ui.workspace`) with the layout it had when Erik left it:
-  its panes, the sizes of its handles and its focused pane, in
+  its panes, the sizes of its handles, its focused pane and its side chat
+  (`sideChatOpen`, closed for a workspace that has none), in
   `ui.layouts` by workspace id (`blocks/workspaceLayout.ts`). A resize or
   a closed pane (the empty pane's Close pane) changes only the shown
   workspace's layout, so a later Reset pane sizes can reset one
