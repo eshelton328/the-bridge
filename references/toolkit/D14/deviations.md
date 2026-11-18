@@ -78,8 +78,9 @@ tabs' `tone` and `density` props (2026-11-17).
   the selected tab's label, How it works, cyan, as Figma's. The outline
   stays `border.selected` at half alpha where Figma's is solid cyan (no
   solid selected token, d-050). The desktop keeps the default density:
-  12 px sides and 4 apart, as Figma's, but the list's 2 px inset and the
-  slightly wider labels put Activity about 8 px further right.
+  12 px sides and 4 apart, as Figma's, and since library #153 (beta.42)
+  each tab is within 1.1 px of Figma's width: the list's 2 px inset puts
+  Overview at 526 against 524, and Activity ends at 988.3 against 989.
 - **Row height.** Each list row is 62 px high against Figma's 53 (the
   open row is 62 against 55), and its counts sit level with the name,
   where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:

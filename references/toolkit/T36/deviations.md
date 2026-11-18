@@ -59,13 +59,14 @@ with library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
 - **Copy button.** As on T17, the path badge's copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button); the path row
   passes the position check.
-- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
-  beta.21) starts the tabs at the list's edge with 10 px sides and draws
-  How it works' label cyan, as Figma's. The outline stays
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws How it works' label cyan, as Figma's. The outline stays
   `border.selected` at half alpha where Figma's is solid cyan (no solid
-  selected token, d-050), and Activity starts about 8 px further right, as
-  each label renders a little wider. The item adds 4 above the panel, so
-  the trigger stays in place.
+  selected token, d-050), and since library #153 (beta.42) each tab is
+  within 1.1 px of Figma's width: the tabs start at 24 against 22 (the
+  Container's 24 px side), and Activity ends at 462.3 against 463. The
+  item adds 4 above the panel, so the trigger stays in place.
 - **In Codex line.** D37 draws what Codex does instead under the steps;
   T36 draws nothing there, so the state leaves `elsewhere` out and the
   render shows nothing under step 4, as in Figma.

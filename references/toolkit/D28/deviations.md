@@ -61,11 +61,14 @@ position and rule results as before the Evals tab. The frame has no
   Figma's 11 px icon. Its stroke is 1 px, where Figma's check is about
   2 px wide, so the render's check is thinner; no icon takes a weight
   (gap: Evals criterion badge).
-- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
-  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
-  Figma draws a border only on the selected tab, and the list pads 2 px
-  in the default density. So Overview starts at 526 against Figma's 524
-  and Activity ends at 998.3 against 989 (gap: Item tab width).
+- **Item tabs.** Since library #153 (beta.42) only the selected tab has
+  a border, so each tab is within 1.1 px of Figma's width and starts
+  within 2 px of its x: Overview starts at 526 against Figma's 524 (the
+  list pads 2 px in the default density), and Activity ends at 988.3
+  against 989. The selected tab, Evals, is 60.9 × 32 against Figma's
+  61 × 34, 2 px lower (y 180 against 178), since `ItemTabs`' selected
+  tab is as high as the others (32) and no size token is 34 (gap: Item
+  tab width).
 - **Cross mark.** Figma's test line has the ballot cross ✗ (U+2717)
   and the check ✓ (U+2713), the cross slanted. The line now draws them
   as the library's `CloseIcon` and `CheckIcon` (12, the text's size, in

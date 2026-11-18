@@ -38,9 +38,8 @@ has no `exceptions.json`.
   in the small style and the accent colour that opens the workflow's
   Files tab on its design doc (D35); the library has no small text link
   (gap: Evals panels).
-- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
-  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
-  Figma draws a border only on the selected tab. So Activity ends at
-  472.3 against Figma's 463, 2 px of it the Container's 24 px side
-  (gap: Item tab width). The selected tab's outline is `border.selected` at half
-  alpha where Figma's is solid cyan (d-050).
+- **Item tabs.** Since library #153 (beta.42) only the selected tab has
+  a border, so each tab is within 1.1 px of Figma's width and Activity
+  ends at 462.3 against Figma's 463; the tabs start at 24 against 22,
+  the Container's 24 px side. The selected tab's outline is
+  `border.selected` at half alpha where Figma's is solid cyan (d-050).
