@@ -203,6 +203,12 @@ what each file of a page folder is for.
   tested in `filesView.test.ts`); a file the state has no view of shows its bar
   only. On the desktop the tree and the viewer sit side by side and the box
   runs to the pane's foot (`src/app/ToolkitFiles.test.tsx`); on a narrower
-  layout the viewer comes under the tree. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  layout the viewer comes under the tree. A script whose view has `explain`
+  (D10, `scriptExplained`, D6's data with check's explanation) opens on
+  Explain: the bar holds the Explain and Code switch (`ViewSwitch`), and the
+  viewer draws the library's `ScriptExplanation` (the overview with its facts,
+  the steps with their line links, the note); a line link or Code shows the
+  source. `ui.fileView` keeps the choice, and another file opens on its own
+  default (`fileMode` in `blocks/filesView.ts`). Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

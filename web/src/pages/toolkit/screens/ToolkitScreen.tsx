@@ -184,7 +184,12 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }}
         file={ui.file}
         onFileChange={(file) => {
-          onUiChange({ file })
+          // Another file opens on its default view: Explain for a script with an explanation (D10).
+          onUiChange({ file, fileView: undefined })
+        }}
+        fileView={ui.fileView}
+        onFileViewChange={(fileView) => {
+          onUiChange({ fileView })
         }}
         onCopyPath={onCopyPath}
         onShowOnMap={() => {

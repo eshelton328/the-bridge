@@ -645,3 +645,22 @@ export const SkillFiles: Story = {
     await expect(within(item).queryByText('Used in workflows')).toBeNull()
   },
 }
+
+export const ScriptExplained: Story = {
+  name: 'D10: a skill’s script explained, on Files',
+  args: { data: toolkitStates.scriptExplained.data, ui: toolkitStates.scriptExplained.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    const viewer = within(item).getByRole('region', { name: 'scripts/check' })
+    // A script with an explanation opens on Explain: the overview, the walkthrough and who wrote it.
+    await expect(within(viewer).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(viewer).getByText('437 lines')).toBeVisible()
+    await expect(within(viewer).getByText('0 pass · 1 a rule fails · 2 bad input')).toBeVisible()
+    await expect(within(viewer).getByText('Exit 1 if any file has a fail. Otherwise exit 0.')).toBeVisible()
+    await expect(within(viewer).getByText(/^Written by Claude from this version of the file/)).toBeVisible()
+    await expect(within(viewer).queryByText('#!/usr/bin/env python3')).toBeNull()
+    // Each step links to its line; the play test does not press one, so the render stays on Explain (the fidelity
+    // check draws the story after its play). src/app/ToolkitFiles.test.tsx presses the switch and the links.
+    await expect(within(viewer).getByRole('button', { name: 'line 433' })).toBeVisible()
+  },
+}

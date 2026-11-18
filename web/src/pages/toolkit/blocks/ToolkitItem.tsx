@@ -34,7 +34,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
-import { openFile } from './filesView.ts'
+import { type FileMode, fileMode, openFile } from './filesView.ts'
 import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
@@ -186,9 +186,14 @@ const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<strin
   tablet: { 'workflows/skill-eval-round.md': '448:215' },
   phone: { 'workflows/skill-eval-round.md': '448:492' },
 }
-// On the Files tab: writer in D6 (432:2010).
+// On the Files tab: writer in D6 (432:2010), and in D10 (440:1198) with a script on Explain.
 const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: { 'skills/writer/': '432:2010' },
+  tablet: {},
+  phone: {},
+}
+const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'skills/writer/': '440:1198' },
   tablet: {},
   phone: {},
 }
@@ -230,6 +235,10 @@ export type ToolkitItemProps = {
   file?: string | undefined
   /** Called with a file's path when it is selected on the Files tab. */
   onFileChange?: ((path: string) => void) | undefined
+  /** Explain or Code for the Files tab's script (D10, `ui.fileView`); Explain when not set. */
+  fileView?: FileMode | undefined
+  /** Called with Explain or Code when the Files tab's viewer changes its view. */
+  onFileViewChange?: ((mode: FileMode) => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
   /**
@@ -259,11 +268,18 @@ export function ToolkitItem({
   fullPage,
   file,
   onFileChange,
+  fileView,
+  onFileViewChange,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const full = fullPage !== undefined
+  // The Files tab shows a script's explanation (D10), which names its own title layer.
+  const explaining =
+    tab === 'files' &&
+    detail.browser !== undefined &&
+    fileMode(openFile(detail.browser, file).view, fileView) === 'explain'
   // M9 448:473: on the phone a workflow's own page names only the workflow after Toolkit.
   const fullPhone = full && phone
   const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
@@ -343,7 +359,7 @@ export function ToolkitItem({
             : tab === 'how'
               ? howTitleLayersOf[layout][item.path]
               : tab === 'files'
-                ? filesTitleLayers[layout][item.path]
+                ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
                 : titleLayersOf[layout][item.path]
         }
       >
@@ -395,6 +411,8 @@ export function ToolkitItem({
                 open={openFile(detail.browser, file)}
                 layout={layout}
                 onSelect={onFileChange}
+                mode={fileView}
+                onModeChange={onFileViewChange}
                 onCopy={(path) => {
                   onCopyPath?.(`${detail.location}${path}`)
                 }}

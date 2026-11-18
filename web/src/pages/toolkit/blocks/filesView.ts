@@ -33,3 +33,15 @@ export function openFile(browser: ToolkitFileBrowser, file?: string): OpenFile {
     view: browser.views.find((v) => v.path === path),
   }
 }
+
+/** How the viewer shows a file (D10): a script's explanation or its code. */
+export type FileMode = 'explain' | 'code'
+
+/**
+ * The view of the selected file: Explain, the default of a script with an explanation and code, unless `mode`
+ * (`ui.fileView`) asks for Code; Code for any other file, which has no switch.
+ */
+export function fileMode(view: ToolkitFileView | undefined, mode?: FileMode): FileMode {
+  if (view?.explain === undefined || view.code === undefined) return 'code'
+  return mode ?? 'explain'
+}

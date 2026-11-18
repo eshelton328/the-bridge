@@ -10,7 +10,7 @@ import { FileTree } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileBrowser as Browser } from '../types.ts'
-import type { OpenFile } from './filesView.ts'
+import { type FileMode, fileMode, type OpenFile } from './filesView.ts'
 import { ToolkitFileViewer } from './ToolkitFileViewer.tsx'
 
 // D6 432:2141: a bordered box, as the Overview's file preview (D3 427:273). The library has no file browser frame
@@ -50,9 +50,21 @@ export type ToolkitFileBrowserProps = {
   onSelect?: ((path: string) => void) | undefined
   /** Called with the selected file's path when the viewer's copy button is pressed. */
   onCopy?: ((path: string) => void) | undefined
+  /** Explain or Code for a script with an explanation (D10, `ui.fileView`); Explain when not set. */
+  mode?: FileMode | undefined
+  /** Called with Explain or Code when the viewer's switch or a step's line link changes the view. */
+  onModeChange?: ((mode: FileMode) => void) | undefined
 }
 
-export function ToolkitFileBrowser({ browser, open, layout = 'desktop', onSelect, onCopy }: ToolkitFileBrowserProps) {
+export function ToolkitFileBrowser({
+  browser,
+  open,
+  layout = 'desktop',
+  onSelect,
+  onCopy,
+  mode,
+  onModeChange,
+}: ToolkitFileBrowserProps) {
   const desktop = layout === 'desktop'
   return (
     <div className={cx(box, desktop ? columns : stacked)} data-figma="file browser">
@@ -64,6 +76,8 @@ export function ToolkitFileBrowser({ browser, open, layout = 'desktop', onSelect
           path={open.path}
           type={open.type}
           view={open.view}
+          mode={fileMode(open.view, mode)}
+          onModeChange={onModeChange}
           onCopy={() => {
             onCopy?.(open.path)
           }}

@@ -4,7 +4,11 @@
 // then a copy button and Read-only at its end; under it the file's first lines
 // with their numbers (the library's CodeLines) or its blocks rendered
 // (`ToolkitMarkdownBlocks`), and a line on what uses the file (`used by`,
-// 432:2347). A file the state has no view of shows its bar only. Props only.
+// 432:2347). A script with an explanation (D10 `explain` 440:1423) has the
+// Explain and Code switch in its bar (`toggle · Explain | Code` 440:1418) and
+// opens on Explain (the library's ScriptExplanation); a step's line link
+// switches to Code. A file the state has no view of shows its bar only. Props
+// only.
 import {
   AgentIcon,
   CodeIcon,
@@ -14,12 +18,15 @@ import {
   HookIcon,
   LockIcon,
   RuleIcon,
+  ScriptExplanation,
   ScrollFrame,
   SkillIcon,
+  ViewSwitch,
   WorkflowIcon,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
+import type { FileMode } from './filesView.ts'
 import { ToolkitMarkdownBlocks } from './ToolkitMarkdownBlocks.tsx'
 
 // D6 432:2290: the viewer fills the browser's column beside the tree, as high as the tree.
@@ -39,6 +46,8 @@ const bar = css({
 })
 const name = css({ textStyle: 'mono', color: 'fg.default', whiteSpace: 'nowrap', flexShrink: '0' })
 const fileMeta = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap', minW: '[0]' })
+// D10 440:1418: the switch sits 8 before the copy icon; its box is the switch's own.
+const switchBox = css({ display: 'inline-flex' })
 const end = css({ display: 'inline-flex', alignItems: 'center', gap: '8', ms: 'auto', flexShrink: '0' })
 const readOnly = css({
   display: 'inline-flex',
@@ -90,10 +99,20 @@ export type ToolkitFileViewerProps = {
   view?: ToolkitFileView | undefined
   /** Called when the bar's copy button is pressed. */
   onCopy?: (() => void) | undefined
+  /** How a script with an explanation shows (`fileMode` in blocks/filesView.ts); its code when not set. */
+  mode?: FileMode | undefined
+  /** Called with Explain or Code when the switch or a step's line link changes the view. */
+  onModeChange?: ((mode: FileMode) => void) | undefined
 }
 
-export function ToolkitFileViewer({ path, type, view, onCopy }: ToolkitFileViewerProps) {
+const modes = [
+  { value: 'explain', label: 'Explain' },
+  { value: 'code', label: 'Code' },
+] as const
+
+export function ToolkitFileViewer({ path, type, view, onCopy, mode = 'code', onModeChange }: ToolkitFileViewerProps) {
   const code = view?.code
+  const explain = code === undefined ? undefined : view?.explain
   // Each line's text, from its coloured pieces.
   const lines = (code ?? []).map((line) => line.map((piece) => piece.text).join(''))
   return (
@@ -103,6 +122,19 @@ export function ToolkitFileViewer({ path, type, view, onCopy }: ToolkitFileViewe
         <span className={name}>{path}</span>
         {view?.meta === undefined ? null : <span className={fileMeta}>{view.meta}</span>}
         <span className={end}>
+          {explain === undefined ? null : (
+            <span className={switchBox} data-figma="toggle · Explain | Code">
+              <ViewSwitch
+                label="View"
+                tone="accent"
+                items={modes}
+                value={mode}
+                onValueChange={(value) => {
+                  onModeChange?.(value === 'explain' ? 'explain' : 'code')
+                }}
+              />
+            </span>
+          )}
           <button type="button" className={copy} aria-label={`Copy ${path}`} onClick={onCopy}>
             <CopyIcon size="12" />
           </button>
@@ -112,7 +144,19 @@ export function ToolkitFileViewer({ path, type, view, onCopy }: ToolkitFileViewe
           </span>
         </span>
       </div>
-      {view === undefined ? null : code === undefined ? (
+      {view === undefined ? null : explain !== undefined && mode === 'explain' ? (
+        <div data-figma="explain">
+          <ScriptExplanation
+            summary={explain.summary}
+            facts={explain.facts}
+            steps={explain.steps}
+            note={explain.note}
+            onLineSelect={() => {
+              onModeChange?.('code')
+            }}
+          />
+        </div>
+      ) : code === undefined ? (
         <ToolkitMarkdownBlocks blocks={view.blocks} />
       ) : (
         <div data-figma="code">

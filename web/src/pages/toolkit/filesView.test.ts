@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { findFile, openFile } from './blocks/filesView.ts'
+import { fileMode, findFile, openFile } from './blocks/filesView.ts'
 import { toolkitStates } from './states/index.ts'
 
-const { skillFiles } = toolkitStates
+const { skillFiles, scriptExplained } = toolkitStates
 const writer = skillFiles.data.details.find((d) => d.path === 'skills/writer/')
 const browser = writer?.browser
 if (browser === undefined) throw new Error('D6 has no file browser')
@@ -31,5 +31,23 @@ describe('openFile', () => {
 
   it('falls back to the selected file for a path the tree does not have', () => {
     expect(openFile(browser, 'scripts/gone').path).toBe('scripts/check')
+  })
+})
+
+describe('fileMode', () => {
+  const explained = scriptExplained.data.details.find((d) => d.path === 'skills/writer/')?.browser
+  if (explained === undefined) throw new Error('D10 has no file browser')
+
+  it('opens a script with an explanation on Explain, and on Code when ui.fileView asks for it (D10)', () => {
+    const view = openFile(explained).view
+    expect(fileMode(view)).toBe('explain')
+    expect(fileMode(view, 'code')).toBe('code')
+    expect(fileMode(view, 'explain')).toBe('explain')
+  })
+
+  it('shows Code for a script with no explanation (D6) and for a file with no view', () => {
+    expect(fileMode(openFile(browser).view)).toBe('code')
+    expect(fileMode(openFile(browser).view, 'explain')).toBe('code')
+    expect(fileMode(undefined, 'explain')).toBe('code')
   })
 })

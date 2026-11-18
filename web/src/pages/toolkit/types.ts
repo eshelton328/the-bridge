@@ -283,6 +283,19 @@ const ToolkitFileNode: z.ZodType<ToolkitFileNode> = z.object({
 })
 
 /**
+ * A script explained in plain English (D10 `explain` 440:1423), the default view of a script that has one: what it
+ * does (`overview` 440:1424), its facts such as In, Out and Exit (`io · In` 440:1427), each step with the line it
+ * explains (`walkthrough` 440:1437) and a note on who wrote it (`generated` 440:1480). The library's
+ * `ScriptExplanation` draws it.
+ */
+const ToolkitFileExplain = z.object({
+  summary: z.string(),
+  facts: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
+  steps: z.array(z.object({ text: z.string(), line: z.number().int().positive().optional() })).min(1),
+  note: z.string().optional(),
+})
+
+/**
  * One file as the Files tab's viewer shows it (D6 `viewer` 432:2290): the path in the bar (`scripts/check`), text after
  * it (D6 432:2295, "Python · 437 lines · run, not read"), the file's first lines as code, each split into its syntax
  * colours, or its blocks rendered read-only, and a line under it on what uses the file (D6 `used by` 432:2347), with
@@ -295,6 +308,8 @@ const ToolkitFileView = z.object({
   blocks: z.array(ToolkitMarkdownBlock),
   code: z.array(z.array(ToolkitCodeSegment)).optional(),
   usedBy: z.object({ kind: ToolkitKind, text: z.string() }).optional(),
+  /** A script's explanation (D10); a script with one and `code` opens on it, with the Explain and Code switch. */
+  explain: ToolkitFileExplain.optional(),
 })
 export type ToolkitFileView = z.infer<typeof ToolkitFileView>
 
@@ -453,6 +468,11 @@ export const ToolkitUi = z.object({
   flowStep: z.string().optional(),
   /** The path of the file selected on the open item's Files tab (D6); the browser's `selected` when not set. */
   file: z.string().optional(),
+  /**
+   * How the Files tab's viewer shows a script that has an explanation (D10): Explain or Code. Explain when not set;
+   * a script with no explanation shows its code.
+   */
+  fileView: z.enum(['explain', 'code']).optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 
