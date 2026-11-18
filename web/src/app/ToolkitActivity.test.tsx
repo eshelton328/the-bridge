@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { toolkitStates } from '../pages/toolkit/states/index.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // The Activity tab of an open item through the real route (D17, `activity` 474:583): the key figures, the bar panels
@@ -137,6 +138,42 @@ describe('the Activity tab of an open item (D17)', () => {
     expect(selectedTab(root, 'writer')).toBe('Evals')
     expect(root.querySelector('[data-figma="evals"]')?.textContent).toContain('D5 Reviewer')
   })
+})
+
+// The skills a round names as the D4 list (ruleOpen, every group) shows them: their description and file count.
+const listItem = (path: string) => {
+  const found = toolkitStates.ruleOpen.data.groups.flatMap((g) => g.items).find((i) => i.path === path)
+  if (found === undefined) throw new Error(`no list item ${path}`)
+  return found
+}
+
+describe('a round opens its skill with the details the list has (D23)', () => {
+  for (const [state, size] of [
+    ['workflowOpen', 'desktop'],
+    ['workflowActivity', 'desktop'],
+    ['workflowActivityTablet', 'tablet'],
+    ['workflowActivityPhone', 'phone'],
+  ] as const) {
+    for (const [round, name, path] of [
+      ['readme · cross-family x1', 'readme', 'skills/readme/'],
+      ['pr-description · round 4', 'pr-description', 'skills/pr-description/'],
+    ] as const) {
+      it(`opens ${name} from ${state} with its description and every file`, async () => {
+        const ready = state === 'workflowOpen' ? 'article[aria-label="skill-eval-round"]' : '[data-figma="activity"]'
+        const { root } = await renderToolkit(state, size, ready)
+        if (state === 'workflowOpen') await userEvent.click(tab(root, 'skill-eval-round', 'Activity'))
+        await expect.poll(() => rowButton(root, round)).not.toBeNull()
+        const button = rowButton(root, round)
+        if (!(button instanceof HTMLElement)) throw new Error('no round button')
+        await userEvent.click(button)
+        await expect.poll(() => root.querySelector(`article[aria-label="${name}"]`)).not.toBeNull()
+        const item = listItem(path)
+        const article = root.querySelector(`article[aria-label="${name}"]`)
+        expect(article?.textContent).toContain(item.description)
+        expect(article?.querySelector('[data-figma="files"] h3')?.textContent).toBe(`Files${String(item.files)}`)
+      })
+    }
+  }
 })
 
 describe('the Activity tab on a tablet and the phone', () => {
