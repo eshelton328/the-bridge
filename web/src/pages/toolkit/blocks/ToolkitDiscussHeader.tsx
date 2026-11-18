@@ -29,7 +29,8 @@ const context = css({
   bg: 'surface.inset',
   color: 'fg.muted',
 })
-const attached = css({ textStyle: 'monoSm', color: 'fg.default', flex: '1' })
+// 438:19: the path is mono 12 (224 × 17).
+const attached = css({ textStyle: 'mono', color: 'fg.default', flex: '1' })
 const readOnly = css({ display: 'inline-flex', alignItems: 'center', gap: '6', textStyle: 'monoSm', color: 'fg.muted' })
 
 export type ToolkitDiscussHeaderProps = {
