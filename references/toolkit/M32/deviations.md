@@ -16,21 +16,15 @@ M22, M05, M35, M17 and M31 give the same results as before M32. The frame
 has no `exceptions.json`.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
-2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
-open item 150 × 40 at Figma's place and, on the phone, the open item's
-lines drawn upright and the open item selected. Text fails, 24 of 27
-position layers pass and the rules fail. Against the same run on main
-(24fc7be), the position and rule results, failing keys and findings are
-the same. The text result is new: the check now also finds
-`writing-reviewer` (493:6090) not visible, the open item's name, which
-the 150 × 40 node cuts with an ellipsis.
+2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
+Text passes, 24 of 27 position layers pass and the rules fail: the
+same results, failing keys and findings as the run on beta.39 before
+this change, so the checks below still hold.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render and nothing extra
-  shows. One string is not visible: `writing-reviewer` (493:6090), the
-  graph's open item, which the 150 px node cuts with an ellipsis (see
-  Open agent).
+- Text: pass. Every Figma string is in the render and visible where
+  Figma shows it; no extra text and no covered text.
 - Position: 24 of 27 layers pass: `back row`, `button · map`,
   `meta row`, `kind badge`, `493:5750` (the title writing-reviewer),
   `path badge`, `links header`, `links graph`, `row · in and out`,
@@ -45,30 +39,25 @@ the 150 × 40 node cuts with an ellipsis.
 
 ## Deviations
 
-- **Graph lines.** The render draws the open item's lines upright
-  (`MapGraph orientation="vertical"`, library beta.39 #148), all lit, as
-  the open item is selected. Figma draws each line as its own curve from
-  the foot of an item over writing-reviewer down into its top, and from
-  its foot down into each item under it. The library runs the lines down
-  a lane between or beside the columns, behind writing-reviewer, and
-  meets each item at the side that faces the lane, so the lines do not
-  fan into writing-reviewer's top and foot (gap: Links graph (phone)).
+- **Graph lines.** Figma draws a curve from the foot of each item over
+  writing-reviewer down into its top, and from its foot down into each
+  item under it. The render draws no lines. Library beta.39 (#148) draws
+  upright lines (`MapGraph orientation="vertical"`), but
+  `linksView.test.ts` asserts that the phone graph has no edges and
+  selects nothing, and `ToolkitLinks.test.tsx` that no node of M17's
+  graph is pressed; a change to those lines waits for Erik (gap: Links
+  graph (phone)).
 - **Open agent.** writing-reviewer in the middle of the graph is
-  150 × 40 with its name in the label style, selected (the accent ring
-  and the selected fill), at Figma's place. Its icon is 16 px against
-  Figma's 15 and sits 8 from the name against Figma's 6: `MapNode` takes
-  no icon size or gap (gap: Links graph). So the name does not fit:
-  Figma's `writing-reviewer` is 108 px wide in the 150 px node, and the
-  library's label style leaves it 104 (a 1 px border and 10 px padding
-  at each side, the 16 px icon and the 8 px gap), so the name ends in an
-  ellipsis and the text check reports `writing-reviewer` (493:6090) as
-  not visible. A width of the bridge's own would be a raw value, so the
-  node keeps Figma's 150.
+  162 × 32 with a plain border in the agent's colour and its name in
+  mono, against Figma's 150 × 40 with an accent ring, a selected fill and
+  its name in the label style. With no lines a selected node would dim
+  every other node, so nothing is selected; writing-reviewer is centred
+  where Figma centres it (gap: Links graph (phone), Links graph).
 - **Node borders.** Since library beta.39 (#151) each item of the graph
   has its kind's colour at 60 % alpha (`MapGraph nodeTone="muted"`) and
   each link row's node at 45 % (`MapNode tone="faint"`), with the icons
-  in the full kind colour, as in Figma. The open item is selected,
-  so it has the accent border, as in Figma. The icons are 16 px
+  in the full kind colour, as in Figma. With nothing selected on the
+  phone, the open item has the muted border too. The icons are 16 px
   against Figma's 13 (gap: Links graph, Links panel rows).
 - **Link nodes.** The item at the start of each link row is a `MapNode`
   28 px high against Figma's 29, and the file and line at the row's end

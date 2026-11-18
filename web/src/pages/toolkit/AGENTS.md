@@ -282,7 +282,8 @@ what each file of a page folder is for.
   order, placed by `linksGraph` in `blocks/linksView.ts`, tested in
   `linksView.test.ts`; the side items in a muted kind border, `nodeTone`,
   the lines with no end dot, `edgeEnd`, and the open item 150 × 40 with
-  its name in the label style; on the desktop and tablet the pointer over a
+  its name in the label style, or as wide as the side items when the name
+  is cut, `useWideFocus` and `widenFocus`; on the desktop and tablet the pointer over a
   side item, or the keyboard focus on it, lights only its line, `litNode`),
   the two panels side by side (`ToolkitLinksPanel`: each
   link's item as a `MapNode tone="faint"`, its file and line, and the
