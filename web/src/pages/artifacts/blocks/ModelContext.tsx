@@ -6,7 +6,9 @@ import { ContextMeter, Inline, ModelChip } from '@eshelton328/component-library-
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDiscussion } from '../types.ts'
 
-const meterLabel = css({ textStyle: 'monoSm', color: 'fg.muted' })
+// Figma's "context" (D7 454:329) is 11 px text, 38 wide and 14 high: the sans `smallXs` (Regular 11/16; its line is on
+// the 4 px grid, d-072), not the 46 px wide mono `monoSm` (LIBRARY_GAPS.md: Model chip width).
+const meterLabel = css({ textStyle: 'smallXs', color: 'fg.muted' })
 
 export type ModelContextProps = {
   discussion: Pick<ArtifactDiscussion, 'model' | 'context' | 'contextLabel'>
