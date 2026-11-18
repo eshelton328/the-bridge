@@ -67,6 +67,23 @@ async function scrollMessages(root: HTMLElement, area: HTMLElement, fixed: reado
   })
 }
 
+/** Sends messages until the list overflows, then checks the last one sent shows inside the scroll body. */
+async function sendUntilOverflow(root: HTMLElement, scope: string, composer: string) {
+  const message = `${scope} [data-figma="message · Erik"]`
+  for (let n = 1; n <= 12; n++) {
+    const before = root.querySelectorAll(message).length
+    await userEvent.click(find(root, `${composer} textarea`))
+    await userEvent.keyboard(`Message ${String(n)}: why does the review run after the draft and not before it?{Enter}`)
+    await expect.poll(() => root.querySelectorAll(message).length).toBe(before + 1)
+  }
+  const last = [...root.querySelectorAll<HTMLElement>(message)].at(-1)
+  const body = last?.closest<HTMLElement>('.scroll-frame__body')
+  if (last === undefined || body === null || body === undefined) throw new Error('no sent message or scroll body')
+  expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+  await expect.poll(() => box(last).bottom <= box(body).bottom && box(last).top >= box(body).top).toBe(true)
+  expect(last.textContent).toContain('Message 12:')
+}
+
 afterEach(async () => {
   resetAllStores()
   await page.viewport(1512, 982)
@@ -144,6 +161,11 @@ describe('the discussion on the desktop (D5)', () => {
     expect(text.innerText).toBe('a\n  b')
   })
 
+  it('scrolls to each message sent once the messages overflow', async () => {
+    const root = await renderToolkit('skillDiscuss', 'desktop', panel)
+    await sendUntilOverflow(root, panel, `${panel} [data-figma="composer"]`)
+  })
+
   it('closes when another item opens, so it opens without the last one’s discussion', async () => {
     const root = await renderToolkit('skillDiscuss', 'desktop', panel)
     await userEvent.click(find(root, '[data-figma="button · Show on map"]'))
@@ -200,6 +222,11 @@ describe('the discussion on the phone (M7)', () => {
     await userEvent.click(find(root, '[data-figma="nav"] button[aria-label="Back to writer"]'))
     await expect.poll(() => root.querySelector('article[aria-label="writer"]')).not.toBeNull()
     expect(root.querySelector('[data-figma="tab bar"]')).not.toBeNull()
+  })
+
+  it('scrolls to each message sent once the messages overflow', async () => {
+    const root = await renderToolkit('skillDiscussPhone', 'phone', '[data-figma="task · discussing"]')
+    await sendUntilOverflow(root, '[data-figma="discussion"]', '[data-figma="composer · discussion"]')
   })
 
   it('fits the empty state and the reply box on the screen with no scroll, and Workbench waits', async () => {

@@ -4,13 +4,13 @@
 // slot. Built from the same library parts as the Artifacts discussion panel
 // (D7 there). The header stays at the top and the reply box at the bottom;
 // only the messages between them scroll (d-107, ScrollFrame). Props only.
-import { ScrollFrame, Stack } from '@eshelton328/component-library-1701'
+import { ScrollFrame } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitDiscussEntry as Entry, ToolkitDiscussion } from '../types.ts'
 import { ToolkitDiscussComposer } from './ToolkitDiscussComposer.tsx'
 import { ToolkitDiscussEmpty } from './ToolkitDiscussEmpty.tsx'
-import { ToolkitDiscussEntry } from './ToolkitDiscussEntry.tsx'
 import { ToolkitDiscussHeader } from './ToolkitDiscussHeader.tsx'
+import { ToolkitDiscussThread } from './ToolkitDiscussThread.tsx'
 
 // 438:2: 420 wide, its content 21 in from the sides and 19 from the top and the foot (20 on the grid).
 const panel = css({
@@ -80,11 +80,7 @@ export function ToolkitDiscussPanel({
           {empty ? (
             <ToolkitDiscussEmpty empty={discussion.empty} layout="tablet" onPick={onDraftChange} />
           ) : (
-            <Stack gap="12">
-              {entries.map((entry, i) => (
-                <ToolkitDiscussEntry key={`${String(i)}:${entry.type}`} entry={entry} onCopy={onCopy} />
-              ))}
-            </Stack>
+            <ToolkitDiscussThread entries={entries} onCopy={onCopy} />
           )}
         </div>
       </ScrollFrame>

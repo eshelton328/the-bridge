@@ -395,8 +395,9 @@ what each file of a page folder is for.
   takes the AppShell's 420 px side slot (`sideWidth="wide"`): the header
   (`ToolkitDiscussHeader`: Discuss and the item's name, Open in Workbench,
   close, the note and the folder attached read-only), the messages
-  (`ToolkitDiscussEntry`: Erik's question and Claude's answer with its cited
-  files and Copy, which calls `onCopyText`) and the reply box
+  (`ToolkitDiscussThread`, each a `ToolkitDiscussEntry`: Erik's question,
+  its line breaks kept, and Claude's answer with its cited files and Copy,
+  which calls `onCopyText`; a message sent scrolls into view) and the reply box
   (`ToolkitDiscussComposer`, with the model chip) in a `ScrollFrame`; the
   item keeps its Overview and D5's title and description layers (the
   discussion's `itemLayers`). Discuss toggles the panel and close shuts it.

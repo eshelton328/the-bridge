@@ -16,8 +16,8 @@ import type { ToolkitDiscussEntry as Entry, ToolkitDiscussion } from '../types.t
 import { ToolkitDiscussCard } from './ToolkitDiscussCard.tsx'
 import { ToolkitDiscussComposer } from './ToolkitDiscussComposer.tsx'
 import { ToolkitDiscussEmpty } from './ToolkitDiscussEmpty.tsx'
-import { ToolkitDiscussEntry } from './ToolkitDiscussEntry.tsx'
 import { ToolkitDiscussModel } from './ToolkitDiscussModel.tsx'
+import { ToolkitDiscussThread } from './ToolkitDiscussThread.tsx'
 import { ToolkitOpenInWorkbench } from './ToolkitOpenInWorkbench.tsx'
 
 // The page fills the detail's height and no more, so only the messages scroll; the Composer caps a long draft at 30%
@@ -143,11 +143,7 @@ export function ToolkitDiscussPage({
               pad={{ outer: emptyPads[layout], inner: emptyInner[layout] }}
             />
           ) : (
-            <Stack gap="12">
-              {entries.map((entry, i) => (
-                <ToolkitDiscussEntry key={`${String(i)}:${entry.type}`} entry={entry} onCopy={onCopy} />
-              ))}
-            </Stack>
+            <ToolkitDiscussThread entries={entries} onCopy={onCopy} />
           )}
         </div>
       </DetailFrame>
