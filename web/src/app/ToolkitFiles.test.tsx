@@ -542,3 +542,49 @@ describe('a script explained on its own page on the phone (M8)', () => {
     await view.unmount()
   })
 })
+
+// The Files tab of the other kinds on the phone (M35 to M38): the item keeps its header (the kind badge with when it
+// changed, the name and the path badge with its copy button), and under the tabs the item's folder in the toolkit and
+// the tree with no viewer and no row marked. A file with a view opens on a page of its own.
+const phoneKinds = [
+  { state: 'ruleFilesPhone', item: 'skills', folder: 'toolkit/rules/', rows: 1, kind: 'Rule', file: 'skills.md' },
+]
+
+describe('the Files tab of a rule, an agent, a workflow and a hook on the phone (M35 to M38)', () => {
+  it.each(phoneKinds)('keeps $state’s header over $folder and its $rows tree rows', async (kind) => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit(kind.state)
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    expect(root.querySelector(`article[aria-label="${kind.item}"]`)).not.toBeNull()
+    expect(root.querySelector('[data-figma="kind badge"]')?.textContent).toBe(kind.kind)
+    expect(root.querySelector('[data-figma="meta row"]')?.textContent).toContain('changed 6 days ago')
+    expect(root.querySelector('[data-figma="path badge"] button')).not.toBeNull()
+    expect(root.querySelector('[data-figma="back row"] [data-figma="button · copy"]')).toBeNull()
+    // The folder over the tree, the tree as wide as the item, no viewer and no row marked.
+    expect(box('[data-figma="tree"]').top).toBeGreaterThan(box(`[data-figma="${kind.folder}"]`).bottom)
+    expect(box('[data-figma="tree"]').width).toBeCloseTo(box('[data-figma="toolkit"]').width, 0)
+    expect(root.querySelector('[data-figma="viewer"]')).toBeNull()
+    const rows = [...root.querySelectorAll('[data-figma="tree"] [role="treeitem"]')]
+    expect(rows).toHaveLength(kind.rows)
+    expect(rows.filter((r) => r.getAttribute('aria-selected') === 'true')).toHaveLength(0)
+    // The file opens on a page of its own, under Back to Files.
+    const row = rows.find((r) => r.textContent.startsWith(kind.file))
+    if (row === undefined) throw new Error(`no ${kind.file} row`)
+    await userEvent.click(row)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).toBeNull()
+    expect(root.querySelector('[data-figma="back row"]')?.textContent).toContain('Files')
+    expect(root.querySelector('[data-figma="path badge"]')?.textContent).toBe(kind.file)
+    await view.unmount()
+  })
+})

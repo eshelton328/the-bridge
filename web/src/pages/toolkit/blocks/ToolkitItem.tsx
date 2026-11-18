@@ -222,8 +222,8 @@ const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string
     'workflows/skill-eval-round.md': '494:3571',
     'hooks/commit-msg': '494:4073',
   },
-  // On the phone: writer in M5 (435:210).
-  phone: { 'skills/writer/': '435:210' },
+  // On the phone: writer in M5 (435:210), and the rule skills in M35 (494:4452).
+  phone: { 'skills/writer/': '435:210', 'rules/skills.md': '494:4452' },
 }
 // A file on a page of its own names it by the item's path and the file's: check in T6 (440:1773).
 const filePageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {

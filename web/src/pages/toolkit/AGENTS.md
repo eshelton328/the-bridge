@@ -263,7 +263,10 @@ what each file of a page folder is for.
   the explanation has no box: `ToolkitFilePage` restyles the library's
   `ScriptExplanation` slots so it starts at the item's edge and each line
   link sits under its step's text (LIBRARY_GAPS.md, Script explanation).
-  Only the
+  A browser with no `badge` keeps the item's header on the phone, as on M19
+  (M35, `ruleFilesPhone`, T32's files with the phone's role line: the
+  length and kind), with the folder and the tree under the tabs and no row
+  marked until a file is opened. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
