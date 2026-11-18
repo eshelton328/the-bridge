@@ -63,6 +63,8 @@ export type LibraryToolsProps = {
   size?: 'md' | 'lg' | undefined
   /** Sort and Filter as icon-only buttons, named by their labels (the phone, M1 406:97, 406:104). */
   iconOnly?: boolean | undefined
+  /** The search field's Figma layer; "search" when not set (M5 names it by its node id). */
+  searchFigma?: string | undefined
   /** Extra classes for the row, such as the phone's space above the controls (M1 406:90). */
   className?: string | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
@@ -92,6 +94,7 @@ export function LibraryTools({
   sortAs = 'popover',
   size = 'md',
   iconOnly = false,
+  searchFigma = 'search',
   className,
   view,
   onViewChange,
@@ -99,7 +102,7 @@ export function LibraryTools({
   const large = size === 'lg'
   return (
     <Inline gap={large && !iconOnly ? '8' : '6'} align="center" className={className} data-figma="list tools">
-      <div className={grow} data-figma="search">
+      <div className={grow} data-figma={searchFigma}>
         <SearchField
           label={placeholder}
           size={size}

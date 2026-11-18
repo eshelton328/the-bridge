@@ -4,8 +4,11 @@
 // and a RowGroup per group: a list of rows with small previews, the age
 // and New at each row's end. With a Filter menu, Filter opens it as a
 // sheet over the tab bar (M3), as on a tablet, and with a Sort menu, Sort
-// opens it as a sheet too (M4). The rows come from libraryView, as the
-// grid's cards do. Props only; changes go out through onUiChange.
+// opens it as a sheet too (M4). With a search (M5) the status gives way to
+// one group of the matches, each row marking its match in the title or in
+// the line that matched under its meta line. The rows come from
+// libraryView, as the grid's cards do. Props only; changes go out through
+// onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { FoundStatus } from '../blocks/FoundStatus.tsx'
@@ -13,7 +16,7 @@ import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { RowGroup } from '../blocks/RowGroup.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
-import { libraryView } from './libraryView.ts'
+import { libraryView, searchMatches } from './libraryView.ts'
 
 // 406:69: the library starts 4 under the status bar and 12 in; its end scrolls clear of the tab bar (AppShell).
 const page = css({ pt: '4', pb: '12', px: '12' })
@@ -36,6 +39,8 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
   const groups = libraryView(data, ui)
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
+  const query = ui.query.trim()
+  const matches = searchMatches(data, ui)
   return (
     // Figma's rows are 2 apart (406:70 to 406:114), each in a frame with its own padding. FilterChips pads its row 2
     // below the chips too, where Figma's chip frame ends (406:77), so the search row follows it with no gap.
@@ -44,7 +49,7 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
         <Stack gap="2">
           <LibraryHeader
             title={data.title}
-            count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
+            count={query === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
             found={data.found}
             addLink={data.addLink}
             layout="phone"
@@ -98,27 +103,53 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           filterAs="sheet"
           size="lg"
           iconOnly
+          searchFigma={query === '' ? undefined : data.search?.fieldLayer}
           className={toolsRow}
         />
       </Stack>
-      <div className={chips}>
-        <FoundStatus text={data.found} className={statusRow} />
-      </div>
-      {/* 406:196: Earlier's header sits 2 under Found's last row; the phone's rows end 4 higher (see RowGroup). */}
-      <Stack gap="4">
-        {groups.map((group) => (
-          <RowGroup
-            key={group.id}
-            group={group}
-            layout="phone"
-            open={ui.groupsOpen[group.id]}
-            onOpenChange={(open) => {
-              onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group.id]: open } })
-            }}
-            onOpenArtifact={onOpenArtifact}
-          />
-        ))}
-      </Stack>
+      {query === '' ? (
+        <>
+          <div className={chips}>
+            <FoundStatus text={data.found} className={statusRow} />
+          </div>
+          {/* 406:196: Earlier's header sits 2 under Found's last row; the phone's rows end 4 higher (see RowGroup). */}
+          <Stack gap="4">
+            {groups.map((group) => (
+              <RowGroup
+                key={group.id}
+                group={group}
+                layout="phone"
+                open={ui.groupsOpen[group.id]}
+                onOpenChange={(open) => {
+                  onUiChange?.({ groupsOpen: { ...ui.groupsOpen, [group.id]: open } })
+                }}
+                onOpenArtifact={onOpenArtifact}
+              />
+            ))}
+          </Stack>
+        </>
+      ) : (
+        // M5 408:290: the matches' header sits 2 under the search row, as M1's status does, with no count.
+        <RowGroup
+          group={{
+            id: 'matches',
+            label: `${String(matches.length)} ${matches.length === 1 ? 'match' : 'matches'}`,
+            cards: matches.map((match) => match.card),
+          }}
+          figma="group · matches"
+          search={{
+            query,
+            places: new Map(matches.map((match) => [match.card.id, match.place])),
+            excerpts: data.search?.excerpts,
+          }}
+          layout="phone"
+          open={ui.matchesOpen ?? true}
+          onOpenChange={(matchesOpen) => {
+            onUiChange?.({ matchesOpen })
+          }}
+          onOpenArtifact={onOpenArtifact}
+        />
+      )}
     </Stack>
   )
 }

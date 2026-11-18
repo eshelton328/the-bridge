@@ -168,7 +168,15 @@ const ArtifactSearch = z.object({
   places: z.record(MatchPlace, z.string()),
   /** What search reads, under the results. */
   hint: z.string(),
+  /**
+   * The phone's match line for a match in a description, by the card's id, such as "…the cold-reader eval of the
+   * readme skill…" (M5): the words around the match, as Figma writes them. A link match shows the link.
+   */
+  excerpts: z.record(z.string(), z.string()).optional(),
+  /** The search field's Figma node id, where another layer of the frame is named "search" too (M5's keyboard key). */
+  fieldLayer: z.string().optional(),
 })
+export type ArtifactSearch = z.infer<typeof ArtifactSearch>
 
 /** A field of the Add a link dialog (D5): its label, its value and the line under it. */
 const AddLinkField = z.object({

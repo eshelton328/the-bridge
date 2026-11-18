@@ -260,3 +260,16 @@ export const SortPhone: Story = {
     await expect(page.getByText('Found since you last looked stays at the top.')).toBeVisible()
   },
 }
+
+export const SearchPhone: Story = {
+  name: 'M5: a search on a phone, each match with the line that matched',
+  args: { data: artifactsStates.searchPhone.data, ui: artifactsStates.searchPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it; pnpm fidelity checks M5's rows at the phone's width.
+    await expect(canvas.getByText('Writer cross-family round x1')).toBeVisible()
+    // Figma draws the search focused (its cyan border), with the keyboard open.
+    const search = canvas.getByRole('searchbox', { name: /Search artifacts/i })
+    search.focus()
+    await expect(search).toHaveFocus()
+  },
+}

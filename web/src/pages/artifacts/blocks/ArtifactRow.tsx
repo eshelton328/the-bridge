@@ -3,9 +3,12 @@
 // the end the New dot and the age. The open artifact's row is selected.
 // On the phone (M1 406:121) the library is a list of these rows: the age
 // sits at the end of the title line and New, as the cards' badge, under it.
+// In the phone's search (M5 408:76) a row marks the match in its title, or
+// shows the line that matched under the meta line, the match marked.
 // With `onOpen` the row is a button. Props only.
 import {
   Badge,
+  Highlight,
   Inline,
   KindMark,
   ListRow,
@@ -31,14 +34,41 @@ export type ArtifactRowProps = {
   selected?: boolean | undefined
   /** `phone` puts the age on the title line and New under it (M1); `list` (the default) the New dot before the age (D2). */
   layout?: 'list' | 'phone' | undefined
+  /** The search, whose match is marked in the title or in `matchLine` (M5). */
+  query?: string | undefined
+  /** Whether the search matched the title (M5 408:92), which then marks it. */
+  titleMatch?: boolean | undefined
+  /** The line that matched, under the meta line, such as the link (M5 408:358). */
+  matchLine?: string | undefined
   onOpen?: ((id: string) => void) | undefined
 }
 
-export function ArtifactRow({ card, selected = false, layout = 'list', onOpen }: ArtifactRowProps) {
+export function ArtifactRow({
+  card,
+  selected = false,
+  layout = 'list',
+  query = '',
+  titleMatch = false,
+  matchLine,
+  onOpen,
+}: ArtifactRowProps) {
+  // A line of its own under the meta line, with the match marked (M5 408:328). Without one the row gets no children,
+  // as ListRow draws a line for any children.
+  const line =
+    matchLine === undefined
+      ? {}
+      : {
+          children: (
+            <span>
+              <Highlight text={matchLine} query={query} />
+            </span>
+          ),
+        }
   return (
     <div data-figma={`artifact row · ${card.title}`}>
       <ListRow
         title={card.title}
+        highlight={titleMatch ? query : undefined}
         leading={
           <span className={thumb}>
             <Thumbnail kind={card.preview} shape="compact" />
@@ -66,6 +96,7 @@ export function ArtifactRow({ card, selected = false, layout = 'list', onOpen }:
                 onOpen(card.id)
               }
         }
+        {...line}
       />
     </div>
   )

@@ -98,6 +98,14 @@ each file of a page folder is for.
   icon-only Filter opens T3's sheet over the tab bar (M3, `FilterSheet
   iconOnly`), and with `data.sortMenu` the icon-only Sort opens D6's
   menu as a sheet over the tab bar (M4, `LibraryTools sortAs="sheet"`).
+  With a search (M5) the found status and the groups give way to one
+  `RowGroup` of the matches (`search`, no count), whose `ArtifactRow`s
+  mark a title match, or show the line that matched under the meta line
+  with the match marked: the state's excerpt of a description
+  (`data.search.excerpts`) or the link. `data.search.fieldLayer` names
+  the search field's Figma layer by node id, as M5's keyboard key is
+  named "search" too. The keyboard is the phone's own (d-089): the
+  render draws none and keeps the tab bar, which Figma keeps under it.
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -214,7 +222,9 @@ each file of a page folder is for.
   M3's node id of the footer around Show; `libraryPhone` does not hold the
   menu, so M1's Filter opens nothing yet) and M4 `sortPhone` (M1's data
   with D6's sorts and Sort menu and the Sort sheet open, Newest first
-  picked). `library` stays first in `states/index.ts`: the app
+  picked) and M5 `searchPhone` (M1's data with D4's search, "eval",
+  the excerpt of the readme cold-reader run's description and the
+  Writer round's preview as a chart). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
