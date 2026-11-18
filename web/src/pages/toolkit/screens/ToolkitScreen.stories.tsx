@@ -896,3 +896,20 @@ export const ScriptCodePhone: Story = {
     await expect(within(item).getByText(/Step 6 of SKILL\.md runs this script\.$/)).toBeVisible()
   },
 }
+
+export const ScriptExplainedPhone: Story = {
+  name: 'M8: a skill’s script explained on the phone, on a page of its own',
+  args: { data: toolkitStates.scriptExplainedPhone.data, ui: toolkitStates.scriptExplainedPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the explanation with no box, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Explain, with the phone's meta line: the overview and each step's line link.
+    await expect(within(item).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(item).getByText('Python · 437 lines · run, not read')).toBeVisible()
+    await expect(within(item).getByText('one JSON line for each file')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'line 406' })).toBeVisible()
+    await expect(within(item).queryByText('draft against toolkit/rules/writing.md.')).toBeNull()
+  },
+}

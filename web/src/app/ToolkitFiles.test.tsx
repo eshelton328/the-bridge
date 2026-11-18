@@ -504,3 +504,41 @@ describe('a script on its own page on the phone (M6)', () => {
     await view.unmount()
   })
 })
+
+// A script explained on its own page on the phone (M8): the explanation opens on Explain with no box, its overview
+// card at the item's edge, and each step's line link under its text, at the text's start; a line link shows the source
+// on Code.
+describe('a script explained on its own page on the phone (M8)', () => {
+  it('draws the explanation at the item’s edge with the line links under the steps', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('scriptExplainedPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="explain"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    const item = box('[data-figma="toolkit"]')
+    // M8 440:1631: the overview card spans the item, with no box or padding around the explanation.
+    const card = box('[data-figma="explain"] section')
+    expect(card.left).toBeCloseTo(item.left, 0)
+    expect(card.width).toBeCloseTo(item.width, 0)
+    // M8 440:1648: step 1's line link sits under its text, at the text's start.
+    const step = root.querySelector('[data-figma="explain"] li')
+    const text = step?.children[1]?.getBoundingClientRect()
+    const link = [...(step?.querySelectorAll('button') ?? [])].find((el) => el.textContent === 'line 406')
+    if (text === undefined || link === undefined) throw new Error('no step 1')
+    expect(link.getBoundingClientRect().top).toBeGreaterThanOrEqual(text.bottom)
+    expect(link.getBoundingClientRect().left).toBeCloseTo(text.left, 0)
+    await userEvent.click(link)
+    await expect.poll(() => root.querySelector('[data-figma="code"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="explain"]')).toBeNull()
+    await view.unmount()
+  })
+})

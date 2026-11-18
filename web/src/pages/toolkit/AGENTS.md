@@ -259,7 +259,11 @@ what each file of a page folder is for.
   joins the back row. `ToolkitFilePage layout="phone"` puts the file's meta
   line over the switch, and on Code the line on what runs it after
   Read-only, the source wrapped (`CodeLines` `wrap`) in a box and the view's
-  `footnote` under it. Only the
+  `footnote` under it. On Explain (M8, `scriptExplainedPhone`, M6's data)
+  the explanation has no box: `ToolkitFilePage` restyles the library's
+  `ScriptExplanation` slots so it starts at the item's edge and each line
+  link sits under its step's text (LIBRARY_GAPS.md, Script explanation).
+  Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
