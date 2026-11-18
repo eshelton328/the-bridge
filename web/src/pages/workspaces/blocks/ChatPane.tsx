@@ -43,10 +43,6 @@ const gaps = {
   inset: { body: css({ gap: '10', minH: 'control.lg', contain: 'size' }), footer: css({ gap: '10', pt: '10' }) },
 } satisfies Record<keyof typeof sizes, { body: string; footer: string }>
 const footer = css({ display: 'flex', flexDirection: 'column' })
-// A long draft grows the composer; past half the window, or half the pane in a short pane of the split (`PaneFrame`
-// is a size container; with none, `cqh` is the window's), it scrolls inside, so Send stays in reach (d-107).
-const reply = css({ maxH: '[min(50vh, 50cqh)]', overflowY: 'auto' })
-
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
   figma: { composer: string; entries?: readonly (string | undefined)[] | undefined }
@@ -120,9 +116,7 @@ export function ChatPane(props: ChatPaneProps) {
   )
   const composerBox =
     skills === undefined ? (
-      <div data-figma={figma.composer} className={reply}>
-        {box}
-      </div>
+      <div data-figma={figma.composer}>{box}</div>
     ) : (
       <SkillPicker
         label={skills.label}
@@ -141,7 +135,7 @@ export function ChatPane(props: ChatPaneProps) {
       >
         {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
             (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
-        <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label} className={reply}>
+        <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label}>
           {box}
         </div>
       </SkillPicker>
