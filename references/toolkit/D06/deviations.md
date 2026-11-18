@@ -95,3 +95,11 @@ results are unchanged). The frame has no `exceptions.json`.
 - **Buttons.** Discuss and Show on map are both 32 px high, against
   Figma's 34 and 36, as on D3 (gap: Item action buttons). Both pass the
   position check.
+
+## Second review
+
+- **List row counts.** The change counts sit level with each row's name,
+  where Figma centres them in the row. The list pane is D3's; D3's
+  deviations record the same (Toolkit row (pane)).
+- **All chip.** The render draws All as the selected chip, with the
+  selected fill and border, as D3's deviations record.
