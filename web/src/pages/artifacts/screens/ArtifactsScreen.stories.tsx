@@ -166,3 +166,16 @@ export const ArtifactTablet: Story = {
     await expect(canvas.getByText('claude.ai/artifact/8f3c2a91-skill-evals')).toBeVisible()
   },
 }
+
+export const FilterTablet: Story = {
+  name: 'T3: the Filter sheet open over the library on a tablet',
+  args: { data: artifactsStates.filterTablet.data, ui: artifactsStates.filterTablet.ui, viewport: 'tablet' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the tablet's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; app/ArtifactsRoute.test.tsx checks the tablet's sheet).
+    const menu = within(await within(document.body).findByRole('dialog', { name: /^Filter/ }))
+    await expect(menu.getByRole('button', { name: 'Show 7 artifacts' })).toBeVisible()
+    await expect(menu.getByRole('checkbox', { name: 'Claude artifacts' })).toBeChecked()
+    await expect(menu.getByRole('checkbox', { name: 'Codex sites' })).not.toBeChecked()
+  },
+}
