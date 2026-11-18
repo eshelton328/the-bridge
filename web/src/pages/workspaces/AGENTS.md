@@ -297,6 +297,13 @@ first: it says what each file of a page folder is for.
   lists the skills over the composer as M3 does (`SkillPicker
   layout="phone"`), and the screen keeps its full height under the
   keyboard (LIBRARY_GAPS.md: Phone keyboard).
+  T5 adds `device` and `chat` to `PhoneFolders` (at a tablet's width the
+  sheet's title row is Folders with the chat's name after it and ×, drawn
+  in the `ScrollFrame`'s header as the library's title row takes a string;
+  the parts sit 23 in and 10 apart, and D4's Cancel and Add sit at the end
+  of the foot), `size="tabletSheet"` to `FolderPickerList` (every part and
+  row 10 apart) and `extraAfterLabel` to `ChatHead` (the folders chip after
+  "context", not in its place).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -396,7 +403,9 @@ first: it says what each file of a page folder is for.
   subtask), T4 `tabletComposing` (from `tabletChatActions`, without the
   menu, with M3's "/" typed, requirements.md attached and the skills
   listed, and Claude's second reply: the chat on the tablet while Erik
-  types).
+  types), T5 `tabletFolders` (from `tabletChatActions`, without the menu,
+  with Erik's message and Claude's reply alone, M8's folders sheet and D4's
+  picker with Documents: the chat's folders on the tablet, the picker open).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -442,7 +451,8 @@ first: it says what each file of a page folder is for.
   `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
   sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
   in `layers.phoneSubtask`; for T1 `tabletList`, `phone.moveTo` and the
-  Move to… buttons' layers in `layers.rowMoves`; for T3 the subagents'
+  Move to… buttons' layers in `layers.rowMoves`; for T5 the tablet's title
+  row and Cancel in `layers.phoneFolders` (`title`, `cancel`); for T3 the subagents'
   `startedFrom` and `startSubtask` labels and Start a subtask's layer in
   `layers.subagentsStart`) and
   `WorkspacesUi` (the focused pane, the open menu and
