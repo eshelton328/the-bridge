@@ -7,6 +7,10 @@ Storybook and the canvas bundle. Styles come from the component library
 
 - [src/AGENTS.md](src/AGENTS.md): the layers and what each may import.
   Read it before you add a file.
+- [public/AGENTS.md](public/AGENTS.md): the web app manifest and the
+  home-screen icons. `index.html` links them with the Apple tags
+  (`apple-mobile-web-app-*`, `theme-color`), so "Add to Home Screen"
+  opens the app standalone.
 - `.storybook/`: Storybook 10. Each story is also a Vitest browser test.
 - `vite.config.ts`: the app. `vite.canvas.config.ts`: the canvas bundle,
   `dist-canvas/bridge.js`, an IIFE that sets `window.Bridge` and takes
