@@ -1,6 +1,7 @@
 // The Project field of the Add a link dialog (D5 403:7578): its label, a
 // button with the folder, the project and a chevron that opens the menu of
-// projects, and the line under it. The library has no select field
+// projects, and the line under it when the form has one (the phone's sheet,
+// M6 408:742, has none). The library has no select field
 // (LIBRARY_GAPS.md "Select field"), so it is a `RadioMenu` on a `Button`.
 // Props only.
 import { Button, ChevronDownIcon, FolderIcon, RadioMenu, Stack } from '@eshelton328/component-library-1701'
@@ -45,7 +46,7 @@ export function ProjectPicker({ field, onValueChange }: ProjectPickerProps) {
             </Button>
           }
         />
-        <span className={hint}>{field.hint}</span>
+        {field.hint === undefined ? null : <span className={hint}>{field.hint}</span>}
       </Stack>
     </div>
   )

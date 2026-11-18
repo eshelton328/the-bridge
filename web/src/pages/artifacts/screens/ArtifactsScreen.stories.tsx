@@ -273,3 +273,20 @@ export const SearchPhone: Story = {
     await expect(search).toHaveFocus()
   },
 }
+
+export const AddLinkPhone: Story = {
+  name: 'M6: the Add a link sheet open over the library on a phone',
+  args: { data: artifactsStates.addLinkPhone.data, ui: artifactsStates.addLinkPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The form is portalled outside the story's root: a sheet at the phone's width, a dialog at a wider one (the story
+    // renders at the width Storybook gives it; pnpm fidelity checks M6's sheet at the phone's width).
+    const page = within(document.body)
+    const form = within(await page.findByRole('dialog', { name: 'Add a link' }))
+    await expect(form.getByText('For an artifact the library did not find.')).toBeVisible()
+    await expect(form.getByRole('button', { name: /^Add$/ })).toBeVisible()
+    await expect(form.getByRole('radio', { name: 'Codex site' })).toBeChecked()
+    await expect(form.queryByText('Chosen from the link; change it if it is wrong.')).toBeNull()
+    // The focus trap moves the focus to the link in the frame after it opens.
+    await expectTrapFocus(form.getByRole('textbox', { name: 'Link' }))
+  },
+}

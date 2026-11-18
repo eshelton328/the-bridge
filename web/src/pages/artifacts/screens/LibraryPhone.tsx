@@ -7,10 +7,12 @@
 // opens it as a sheet too (M4). With a search (M5) the status gives way to
 // one group of the matches, each row marking its match in the title or in
 // the line that matched under its meta line. The rows come from
-// libraryView, as the grid's cards do. Props only; changes go out through
+// libraryView, as the grid's cards do. With an Add a link form the plus
+// button opens it as a sheet over the tab bar (M6). Props only; changes go out through
 // onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { AddLinkSheet } from '../blocks/AddLinkSheet.tsx'
 import { FoundStatus } from '../blocks/FoundStatus.tsx'
 import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
@@ -53,8 +55,31 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             found={data.found}
             addLink={data.addLink}
             layout="phone"
-            onAddLink={onAddLink}
+            onAddLink={
+              data.addLinkForm === undefined
+                ? onAddLink
+                : () => {
+                    onUiChange?.({ addLinkOpen: true })
+                  }
+            }
           />
+          {/* M6: the plus button opens D5's form as a sheet over the tab bar, as Filter and Sort do (M3, M4). */}
+          {data.addLinkForm === undefined ? null : (
+            <AddLinkSheet
+              form={data.addLinkForm}
+              open={ui.addLinkOpen ?? false}
+              source={ui.addLinkSource ?? 'claude'}
+              onOpenChange={(addLinkOpen) => {
+                onUiChange?.({ addLinkOpen })
+              }}
+              onSourceChange={(addLinkSource) => {
+                onUiChange?.({ addLinkSource })
+              }}
+              onSubmit={() => {
+                onUiChange?.({ addLinkOpen: false })
+              }}
+            />
+          )}
           <div className={chips} data-figma="filter · chips">
             <FilterChips
               label="Filter by source"

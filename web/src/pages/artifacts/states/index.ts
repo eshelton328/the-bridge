@@ -20,6 +20,7 @@ import { artifactPhone } from './artifactPhone.ts'
 import { filterPhone } from './filterPhone.ts'
 import { sortPhone } from './sortPhone.ts'
 import { searchPhone } from './searchPhone.ts'
+import { addLinkPhone } from './addLinkPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -41,4 +42,5 @@ export const artifactsStates = {
   filterPhone,
   sortPhone,
   searchPhone,
+  addLinkPhone,
 }

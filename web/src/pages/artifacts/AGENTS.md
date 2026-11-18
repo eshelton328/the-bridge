@@ -106,6 +106,8 @@ each file of a page folder is for.
   the search field's Figma layer by node id, as M5's keyboard key is
   named "search" too. The keyboard is the phone's own (d-089): the
   render draws none and keeps the tab bar, which Figma keeps under it.
+  With `data.addLinkForm` the plus button opens D5's form as a sheet over
+  the tab bar (M6, `AddLinkSheet`).
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -152,10 +154,12 @@ each file of a page folder is for.
   marked by `Highlight`, the meta line with the link when the match is in
   it, and at the end the New dot, the place as `Badge variant="tag"`, the
   age and an icon-only Open) and `NewDot` (the list rows' New dot, also in
-  `ArtifactRow`). For D5: `AddLinkDialog` (`Dialog size="lg"` with the
-  link and title `TextField`s, the source as a `ViewSwitch` of the two
-  kinds, `ProjectPicker` and Cancel and Add artifact; the link field has
-  the focus, the caret after the link) and `ProjectPicker` (a
+  `ArtifactRow`). For D5: `AddLinkFields` (the form's fields: the link
+  and title `TextField`s, the source as a `ViewSwitch` of the two kinds
+  and `ProjectPicker`, each line under a field only when the form has
+  one; the link field has the focus, the caret after the link),
+  `AddLinkDialog` (`Dialog size="lg"` with `AddLinkFields` and Cancel and
+  Add artifact) and `ProjectPicker` (a
   `RadioMenu` on a `Button`, as the library has no select field). Show closes the menu; the cards
   carry no finder or update data yet, so the grid does not narrow. For
   D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
@@ -164,7 +168,10 @@ each file of a page folder is for.
   `SortSheet` (the phone's icon-only Sort and a `BottomSheet` titled
   Sort by with an `OptionList size="sm"` of the sorts and the note under
   it, as the Inbox's phone Sort sheet; picking a sort closes it, and the
-  scrim and Escape close it and keep the sort). For D7:
+  scrim and Escape close it and keep the sort). For M6: `AddLinkSheet`
+  (a `BottomSheet` titled Add a link with Cancel at the start of its
+  title row and Add at the end, then the description and
+  `AddLinkFields`, 16 apart; Cancel, the scrim and Escape close it). For D7:
   `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
   state or the sent messages, and `Composer`, whose draft is
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
@@ -224,7 +231,9 @@ each file of a page folder is for.
   with D6's sorts and Sort menu and the Sort sheet open, Newest first
   picked) and M5 `searchPhone` (M1's data with D4's search, "eval",
   the excerpt of the readme cold-reader run's description and the
-  Writer round's preview as a chart). `library` stays first in `states/index.ts`: the app
+  Writer round's preview as a chart) and M6 `addLinkPhone` (M1's data
+  with D5's form in the phone's shorter words, the sheet open, Codex site
+  picked). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips

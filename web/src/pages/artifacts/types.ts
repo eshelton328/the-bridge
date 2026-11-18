@@ -182,7 +182,8 @@ export type ArtifactSearch = z.infer<typeof ArtifactSearch>
 const AddLinkField = z.object({
   label: z.string(),
   value: z.string(),
-  hint: z.string(),
+  /** The line under the field; the phone's sheet (M6) leaves it out under the project. */
+  hint: z.string().optional(),
 })
 
 /**
@@ -198,7 +199,8 @@ export const AddLinkForm = z.object({
     label: z.string(),
     /** One choice per source, labelled as the dialog names it, such as "Codex site". */
     options: z.array(z.object({ value: ArtifactSource, label: z.string() })),
-    hint: z.string(),
+    /** The line under the choice; the phone's sheet (M6) leaves it out. */
+    hint: z.string().optional(),
   }),
   name: AddLinkField,
   /** The project, picked from a menu of `projects`; it may be left out. */
