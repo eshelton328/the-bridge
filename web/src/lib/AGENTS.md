@@ -25,7 +25,8 @@ layer, a store or the router.
   state per device), `frameSizes` (the Figma frame of each device, which
   Storybook's viewport menu also reads) and `screenMapProblems()`, which
   a page's `states/screens.test.ts` runs: every state in exactly one
-  screen, on a device its Figma frame is.
+  screen, on a device its Figma frame is. A state with frames on two
+  devices (Inbox `list`: T1, M1) fills both devices of its screen.
 - `dataSource.ts`: the data source layer. `readState()` gives a page
   loader its state from the source `?source=` names: `fixtures` (the
   state files, the default), or `mock-api` and `live`, which are not
