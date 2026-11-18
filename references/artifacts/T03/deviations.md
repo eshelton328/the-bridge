@@ -10,24 +10,19 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
 
 ## Checks
 
-- Text: fails on one string, as T1. `Routes, the RPC client and the owner
-  check over Tailscale` (407:1376) is cut with an ellipsis in the render,
-  and Figma shows it whole (see "Card text column" below). Nothing is
-  missing and nothing extra shows. The four strings of the third card
-  row's body (407:1433, 407:1434, 407:1457, 407:1458) lie under the tab
-  bar and the sheet in Figma and in the render, and the Tailscale
-  description (414:711) lies under the sheet; they are `missing`
-  exceptions (`exceptions.json`), as in T1.
-- Position: 18 of 37 layers pass (`header`, `found status`, `list tools`,
-  `view · Grid or List`, both groups, the six cards, `tab bar`,
+- Text: passes, as T1: Hono server spike's description (407:1376) shows
+  whole. The four strings of the third card row's body (407:1433,
+  407:1434, 407:1457, 407:1458) lie under the tab bar and the sheet in
+  Figma and in the render, and the Tailscale description (414:711) lies
+  under the sheet; they are `missing` exceptions (`exceptions.json`), as
+  in T1.
+- Position: 17 of 37 layers pass (`header`, `found status`, `list tools`,
+  both groups, the six cards, `tab bar`,
   `group · UPDATED`, `check · Today`, `check · This week`, the footer
   `407:1719` and `button · Show 7 artifacts`).
-- Rules: fails on one `hiddenOverflow`, as T1: the Hono server spike
-  description (`[data-figma="artifact card · Hono server spike"] >
-  article.card__root > div.card__body:nth-of-type(2) > p.card__description
-  > span.truncated-text`), the same cut as the text failure. The
-  scrolling pane and the two cut descriptions under the sheet (Tailscale,
-  versioning) are `hiddenOverflow` exceptions, as in T1.
+- Rules: pass, as T1. The scrolling pane and the two cut descriptions
+  under the sheet (Tailscale, versioning) are `hiddenOverflow`
+  exceptions, as in T1.
 
 ## Deviations
 
@@ -50,9 +45,9 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
   Claude or Codex mark between the box and the label (407:1508,
   407:1518): `Checkbox` takes only a text label. Library gap "Checkbox
   leading icon".
-- **Search, Sort, Filter and Add a link.** `search` w -28.8,
-  `button · Sort` x -26.8, w +16.4, `button · Filter` x -10.4, w +12.4,
-  `button · Add a link` x -11.2, w +9.2, as T1: the library's 36 px
+- **Search, Sort, Filter and Add a link.** `search` w -20.8,
+  `button · Sort` x -22.8, w +16.4, `button · Filter` x -6.4, w +12.4,
+  `button · Add a link` x -7.2, w +9.2, as T1: the library's 36 px
   `size="lg"` buttons pad 16 at the sides against Figma's 11, so each is
   wider and the search narrower. Filter shows no dot while the sheet is
   open, as Figma draws it (407:1303); it shows the dot once the sheet
@@ -60,11 +55,11 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
 - **Source chips.** `filter · chips` w +4.2, as T1: the chips are 6 apart
   with 8 px sides against Figma's 5 and 9. Library gap "Compact chip
   spacing".
-- **Card text column.** Hono server spike's description ends "…over
-  Tailsc…" in the render and shows whole in Figma (407:1376), as T1: the
-  cards are 346 wide against 349 (24 px sides and 16 px columns on the
-  4 px grid, d-100) and `Card` pads 16 against Figma's 14. Library gap
-  "Card body and line heights".
+- **Grid or List and cards.** `view · Grid or List` x +6, as T1: the
+  68 px `ViewSwitch` (Figma 72) ends at the page's 20 px side. The cards
+  are 352 wide, 20 in and 12 apart (Figma 349, 22 and 14, d-100), so the
+  descriptions break where Figma's do. Library gaps "Sort and Filter
+  button widths" and "Card body and line heights".
 - **New badge, page title and thumbnails.** As T1, under the scrim: New
   sits 8 px after the card title, not at the end of the row; "Artifacts"
   uses the phone title size (28 px type), a little smaller than Figma's;
