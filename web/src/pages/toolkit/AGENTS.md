@@ -328,6 +328,33 @@ what each file of a page folder is for.
   keeps M20's header under Back to Toolkit, and a workflow (M33,
   `workflowLinksPhone`, T30's data) M21's; a hook (M34, `hookLinksPhone`,
   T31's data) keeps M22's, with the rule it enforces over it and under it.
+  The Evals tab (D20, `skillEvals`, D3's data with `ui.itemTab` `evals`)
+  draws a detail's `results` (`ToolkitEvals`): the status panel
+  (`ToolkitEvalsStatus`: its header, the criteria as the library's `Badge`
+  and one line), the chart (`ToolkitEvalsChart`, the library's
+  `GroupedBarChart`) and the cases (`ToolkitEvalsCases`) side by side, the
+  rounds (`ToolkitEvalsRounds`) and the source line. `blocks/evalsView.ts`
+  (tested in `evalsView.test.ts`) gives each badge's tone and icon, the
+  panels' counts, the rounds header's end and the row's layout. Each
+  Overview state (D3, D4, D7 to D9) carries its item's `results` from
+  `states/shared/evalResults.ts`, so the Overview's evals link opens the
+  tab whichever state opened the item. writer's D5 Reviewer badge opens
+  the agent writing-reviewer on its Evals tab from writer (`openEvals`;
+  D26, `agentEvals`, and T25 under T7's breadcrumb), and Open the ledger
+  is disabled: the ledger is outside the toolkit and no frame draws it.
+  A rule (D25, `ruleEvals`, D37's data) has no eval cases: the status says
+  so and the rounds panel lists the ledgers that cite it; a tap on one
+  opens that skill on its Evals tab, or its Overview when it has none,
+  from `evalTargets` (`ledgerSkills` in `states/shared/evals.ts`: D4's
+  skills, which D25's list does not show). An agent (D26) has only its
+  drafts and one round, a workflow (D27, `workflowEvals`) lists its gates
+  and "from the file" opens its Files tab, and a hook (D28, `hookEvals`)
+  shows its test run as one badge over its test groups. On a tablet (T16,
+  T24 to T27) and the phone (M18, M27 to M30) the panels stand one under
+  the other; T16 and M18 set `named` (Toolkit › writer, no kind badge or
+  path row), and M18's status header is its own. The chart has one size in
+  the library, so it is 392 wide on every layout and scrolls sideways on
+  the phone (LIBRARY_GAPS.md, Evals bar chart; `src/app/ToolkitEvals.test.tsx`).
   Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
