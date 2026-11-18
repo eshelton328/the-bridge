@@ -2,7 +2,7 @@
 
 What still differs from Figma M2 · Edit workspaces (the phone's list in
 edit mode, `phoneEdit`), after the last fidelity run (`pnpm fidelity
-workspaces M02`, 2026-11-17, library 1.0.0-beta.27), each with its reason.
+workspaces M02`, 2026-11-18, library 1.0.0-beta.30), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is M1's list (`PhoneWorkspaceList`) with `ui.editing`: each
 workspace is a `PhoneEditGroup`, Done takes Edit's place and + is off.
@@ -55,9 +55,10 @@ All checks pass; these differences show in the side-by-side only.
   2 px wider. The header is `PageHeader size="phone"`, 40 high against
   44, padded 4 under it, as in M01.
 - **The chevron of the renamed workspace is a bare button.** Figma draws
-  the chevron (105:2612) bare; a `Button` with `aria-expanded` draws the
-  expanded border (Bare menu trigger), so the chevron's button names what
-  a tap does ("Hide the chats of the-bridge") in place of `aria-expanded`.
+  the chevron (105:2612) bare. It is a disclosure toggle, so it has
+  `aria-expanded` and `expandedBorder="default"` (library 1.0.0-beta.30,
+  #135), which keeps it bare while the chats show; its name says what a
+  tap does ("Hide the chats of the-bridge").
 - **The stars sit elsewhere (Backdrop stars).** Figma draws the frame's
   own 22 stars behind the screen (the 22 `star` layers that `frame.json`
   skips); `Backdrop size="phone"` draws the Inbox phone frame's 22 stars
