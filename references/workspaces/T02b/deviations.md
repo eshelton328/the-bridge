@@ -82,12 +82,3 @@ tab bar, so the render has no Artifacts tab, and no exception is needed.
 - **Erik's message is larger (Message text).** Figma draws it in Geist
   13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
   is about 7% wider (review T06 F1).
-
-## Build check
-
-`pnpm fidelity:check-build` fails on one item that is not part of T02b:
-`web/src/pages/workspaces/OpenControlBorders.test.tsx lost 8 line(s)`.
-The branch's commits b07ce10 and 49c0fcb, which came before this build,
-rewrote those lines when they added the light-mode checks. T02b's commits
-do not touch the file, and the builder may not edit a test to make the
-check pass, so the failure stays for the caller.
