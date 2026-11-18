@@ -28,8 +28,9 @@ const title = css({ textStyle: 'subtitle', color: 'fg.default', m: '0' })
 // M7 105:3282: the fields start 4 under the header, 16 in from the sides; Figma puts them 18 apart, off the 4 px grid,
 // so they are 16 apart (d-100).
 const body = css({ px: '16', pt: '4', pb: '16', gap: '16' })
-// M7 147:8: the summary 8 under the fields and Start chat 8 under it, 16 in from the sides.
-const bar = css({ display: 'flex', flexDirection: 'column', gap: '8', px: '16', pt: '8' })
+// M7 147:8: the summary 8 under the fields and Start chat 8 under it, 16 in from the sides. The footer clips what
+// reaches past its edge, so the bar pads 4 under Start chat: its focus ring (2 out, 2 wide) shows whole.
+const bar = css({ display: 'flex', flexDirection: 'column', gap: '8', px: '16', pt: '8', pb: '4' })
 // The summary is as wide as its text, as Figma's (147:9).
 const summary = css({ alignSelf: 'flex-start', textStyle: 'monoSm', color: 'fg.subtle', m: '0' })
 const start = css({ w: '[100%]' })
