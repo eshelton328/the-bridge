@@ -97,8 +97,8 @@ describe('a workflow on its own page on a tablet', () => {
     // The fork has an arrow over each parallel step; the join one arrow in the middle of the column.
     const fork = document.querySelector('[data-figma="fork · 4 and 5"]')
     const join = document.querySelector('[data-figma="join · 4 and 5"]')
-    expect(fork?.querySelectorAll('svg').length).toBe(2)
-    expect(join?.querySelectorAll('svg').length).toBe(1)
+    expect(fork?.querySelectorAll('.flow-branch__head').length).toBe(2)
+    expect(join?.querySelectorAll('.flow-branch__head').length).toBe(1)
     const forkTop = fork?.getBoundingClientRect().top ?? 0
     expect(forkTop).toBeGreaterThanOrEqual(box('step · Blinding')?.bottom ?? Number.POSITIVE_INFINITY)
     expect(primary?.top ?? 0).toBeGreaterThanOrEqual(fork?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY)
@@ -140,8 +140,8 @@ describe('a workflow on its own page on the phone', () => {
     expect(second?.height ?? 0).toBeGreaterThan(runs?.height ?? Number.POSITIVE_INFINITY)
     const fork = document.querySelector('[data-figma="arrows · into 4 and 5"]')
     const join = document.querySelector('[data-figma="arrows · out of 4 and 5"]')
-    expect(fork?.querySelectorAll('svg').length).toBe(2)
-    expect(join?.querySelectorAll('svg').length).toBe(1)
+    expect(fork?.querySelectorAll('.flow-branch__head').length).toBe(2)
+    expect(join?.querySelectorAll('.flow-branch__head').length).toBe(1)
     expect(Math.round(fork?.getBoundingClientRect().height ?? -1)).toBe(24)
     // The breadcrumb is Toolkit › skill-eval-round; the page has no path row, details panel or list.
     const trail = document.querySelector('nav[aria-label="Breadcrumb"]')
@@ -176,5 +176,90 @@ describe('a tap on a step of a workflow on its own page on the phone', () => {
     await page.elementLocator(runs).click()
     await expect.poll(() => document.querySelector('[data-figma="step 1 details"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="step 4 details"]')).toBeNull()
+  })
+})
+
+// The connectors are the library's (FlowLine, FlowBranch and FlowLoop, library #133 and #137): each joins two steps,
+// or a gate and the stop, and its tip ends short of the box it points at, so no tip touches a step or the stop.
+type Way = 'right' | 'down' | 'left'
+
+/** The gap from a tip to the nearest step or stop box it points at, or null when none is in its way. */
+function tipGap(head: DOMRect, way: Way): number | null {
+  const targets = [...document.querySelectorAll('[data-figma^="step · "], [data-figma^="stop · "]')].map((el) =>
+    el.getBoundingClientRect(),
+  )
+  const across = (t: DOMRect) =>
+    way === 'down' ? t.left < head.right && t.right > head.left : t.top < head.bottom && t.bottom > head.top
+  const gap = (t: DOMRect) =>
+    way === 'right' ? t.left - head.right : way === 'down' ? t.top - head.bottom : head.left - t.right
+  const gaps = targets
+    .filter(across)
+    .map(gap)
+    .filter((g) => g > -12)
+  return gaps.length === 0 ? null : Math.min(...gaps)
+}
+
+function expectTips(selector: string, way: Way, count: number) {
+  const heads = [...document.querySelectorAll(selector)].map((el) => el.getBoundingClientRect())
+  expect(heads.length).toBe(count)
+  for (const head of heads) {
+    const gap = tipGap(head, way)
+    expect(gap).not.toBeNull()
+    expect(gap ?? 0).toBeGreaterThanOrEqual(1)
+    expect(gap ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(8)
+  }
+}
+
+describe('the connectors of a workflow on its own page', () => {
+  it('draws the library’s lines, fork, join and loop on the desktop, each tip clear of its step (D13)', async () => {
+    await renderPage(1512, 982)
+    const flow = document.querySelector('[data-figma="flow"]')
+    expect(flow?.querySelectorAll('.flow-line__root[data-direction="right"]').length).toBe(5)
+    expect(flow?.querySelectorAll('.flow-branch__root[data-kind="fork"][data-direction="right"]').length).toBe(1)
+    expect(flow?.querySelectorAll('.flow-branch__root[data-kind="join"][data-direction="right"]').length).toBe(1)
+    expect(flow?.querySelectorAll('.flow-loop__root').length).toBe(1)
+    expect(flow?.querySelectorAll('svg').length).toBe(1)
+    expectTips('[data-figma="flow"] .flow-line__root[data-direction="right"] .flow-line__head', 'right', 5)
+    expectTips('[data-figma="flow"] .flow-branch__head', 'right', 3)
+    // The gate's way out runs down to the stop, with its label beside it; the loop comes back into the stop.
+    const exit = flow?.querySelector('.flow-line__root[data-direction="down"]')
+    expect(exit?.textContent).toBe('no')
+    expectTips('[data-figma="flow"] .flow-line__root[data-direction="down"] .flow-line__head', 'down', 1)
+    expectTips('[data-figma="flow"] .flow-loop__head', 'left', 1)
+    const loop = flow?.querySelector('.flow-loop__root')?.getBoundingClientRect()
+    const stop = document.querySelector('[data-figma^="stop · "]')?.getBoundingClientRect()
+    const owner = document.querySelector('[data-figma="step · Owner decides"]')?.getBoundingClientRect()
+    expect(Math.abs((loop?.left ?? 0) - (stop?.right ?? -9))).toBeLessThan(1)
+    expect(Math.abs((loop?.right ?? 0) - ((owner?.left ?? 0) + (owner?.right ?? 0)) / 2)).toBeLessThan(1)
+    expect(Math.abs((loop?.top ?? 0) - (owner?.bottom ?? -9))).toBeLessThan(1)
+    expect(Math.abs((loop?.bottom ?? 0) - ((stop?.top ?? 0) + (stop?.bottom ?? 0)) / 2)).toBeLessThan(1)
+  })
+
+  it('draws the library’s lines, fork and join down the column on a tablet, each tip clear of its step (T8)', async () => {
+    await renderTablet()
+    const steps = document.querySelector('[data-figma="steps"]')
+    expect(steps?.querySelectorAll('.flow-line__root[data-direction="down"]').length).toBe(5)
+    expect(document.querySelectorAll('[data-figma="fork · 4 and 5"] .flow-branch__root[data-kind="fork"]').length).toBe(
+      1,
+    )
+    expect(document.querySelectorAll('[data-figma="join · 4 and 5"] .flow-branch__root[data-kind="join"]').length).toBe(
+      1,
+    )
+    expectTips('[data-figma="steps"] .flow-line__head', 'down', 5)
+    expectTips('[data-figma="steps"] .flow-branch__head', 'down', 3)
+  })
+
+  it('draws the library’s lines, fork and join down the column on the phone, each tip clear of its step (M9)', async () => {
+    await renderPhone()
+    const steps = document.querySelector('[data-figma="steps"]')
+    expect(steps?.querySelectorAll('.flow-line__root[data-direction="down"]').length).toBe(5)
+    expect(
+      document.querySelectorAll('[data-figma="arrows · into 4 and 5"] .flow-branch__root[data-kind="fork"]').length,
+    ).toBe(1)
+    expect(
+      document.querySelectorAll('[data-figma="arrows · out of 4 and 5"] .flow-branch__root[data-kind="join"]').length,
+    ).toBe(1)
+    expectTips('[data-figma="steps"] .flow-line__head', 'down', 5)
+    expectTips('[data-figma="steps"] .flow-branch__head', 'down', 3)
   })
 })
