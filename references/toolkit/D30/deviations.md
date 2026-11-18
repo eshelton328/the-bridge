@@ -11,17 +11,23 @@ D33 give the same results as before D30 (each report's text, position and
 rule results are unchanged). The frame has no `exceptions.json`.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
-2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
-Text fails, 34 of 40 position layers pass and the rules fail: the same
-results, failing keys and findings as the run on beta.39 before this
-change, so the checks below still hold.
+2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
+open item 150 × 40 at Figma's place and, on the phone, the open item's
+lines drawn upright and the open item selected. Text fails, 34 of 40
+position layers pass and the rules fail. Against the same run on main
+(24fc7be), the position and rule results, failing keys and findings are
+the same. The text result is new: the check now also finds
+`writing-reviewer` (493:1502) not visible, the open item's name, which
+the 150 × 40 node cuts with an ellipsis.
 
 ## Checks
 
 - Text: fail. All Figma strings are in the render, nothing extra shows,
-  and no text is covered by another element. Two strings are not visible:
+  and no text is covered by another element. Three strings are not visible:
   `Workflows` and `2` (493:1095, 493:1096), the Workflows chip, which the
   chip row cuts at the list pane's edge, as Figma does (see Kind chips).
+  And `writing-reviewer` (493:1502), the graph's open item, which the
+  150 px node cuts with an ellipsis (see Graph's open item).
 - Position: 34 of 40 layers pass, among them every layer of the Links
   tab: `links`, `links header`, `links graph`, `row · in and out`,
   `panel · linked from`, `panel · links to` and all seven link rows
@@ -51,14 +57,17 @@ change, so the checks below still hold.
 - **Kind chips.** The chip row is wider than the list pane and scrolls
   sideways; Figma cuts the Workflows chip at the same edge, so `Workflows`
   and `2` are not visible in either.
-- **Graph's open item.** writing-reviewer in the middle of the graph has
-  its name in the label style, as Figma's, since library beta.39
-  (`labelStyle: 'label'`, #151), but is 180 × 32, as the items at the
-  sides are, against Figma's 150 × 40 with a 15 px icon; it is centred
-  where Figma centres it, so its lines start and end 15 px further out.
-  beta.39 gives a node its own `size`, but four tests of
-  `linksView.test.ts` assert the open item at 180 × 32, and a change to
-  those lines waits for Erik (gap: Links graph).
+- **Graph's open item.** writing-reviewer in the middle of the graph is
+  150 × 40 with its name in the label style, at Figma's place, as
+  Figma's (library beta.39 node `size` and `labelStyle: 'label'`, #151).
+  Its icon is 16 px against Figma's 15 and sits 8 from the name against
+  Figma's 6: `MapNode` takes no icon size or gap (gap: Links graph). So
+  the name does not fit: Figma's `writing-reviewer` is 108 px wide in
+  the 150 px node, and the library's label style leaves it 104 (a 1 px
+  border and 10 px padding at each side, the 16 px icon and the 8 px
+  gap), so the name ends in an ellipsis and the text check reports
+  `writing-reviewer` (493:1502) as not visible. A width of the bridge's
+  own would be a raw value, so the node keeps Figma's 150.
 - **Node borders.** Since library beta.39 (#151) each item at a side of
   the graph has its kind's colour at 60 % alpha (`MapGraph
   nodeTone="muted"`, `kindBorder.*`) and each link row's node at 45 %

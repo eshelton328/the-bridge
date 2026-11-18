@@ -14,10 +14,12 @@ D32, T03, T04, T07, T10, T15, T17, T19 and T28 to T30 give the same
 results as before T31. The frame has no `exceptions.json`.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
-2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
-Text passes, 21 of 24 position layers pass and the rules pass: the
-same results, failing keys and findings as the run on beta.39 before
-this change, so the checks below still hold.
+2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
+open item 150 × 40 at Figma's place and, on the phone, the open item's
+lines drawn upright and the open item selected. Text passes, 21 of 24
+position layers pass and the rules pass. Against the same run on main
+(24fc7be), the position and rule results, failing keys and findings are
+the same.
 
 ## Checks
 
@@ -46,13 +48,11 @@ this change, so the checks below still hold.
   further left (`button · Discuss` x -5.1, h -2).
 - **Title.** The name commit-msg renders 11.7 px wider than Figma's
   (`493:4892` w +11.7), as on T19: the `heading` glyphs.
-- **Graph.** The open hook has its name in the label style, as Figma's,
-  and the lines end at the node's edge with no dot, since library
-  beta.39 (#151). It is 180 × 32, where Figma's `node · commit-msg
-  (focus)` (493:5266) is 150 × 40 with a 15 px icon: beta.39 gives a
-  node its own `size`, but four tests of `linksView.test.ts` assert the
-  open item at 180 × 32, and a change to those lines waits for Erik
-  (gap: Links graph).
+- **Graph.** The open hook is 150 × 40 with its name in the label style,
+  as Figma's `node · commit-msg (focus)` (493:5266), and the lines end
+  at the node's edge with no dot (library beta.39, #151). Its icon is 16
+  px against Figma's 15 and sits 8 from the name against Figma's 6:
+  `MapNode` takes no icon size or gap (gap: Links graph).
 - **Node borders.** Since library beta.39 (#151) each item at a side of
   the graph has its kind's colour at 60 % alpha (`MapGraph
   nodeTone="muted"`, `kindBorder.*`) and each link row's node at 45 %

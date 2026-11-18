@@ -14,15 +14,21 @@ D32, T03, T04, T07, T10, T15, T17, T19 and T28 give the same results as
 before T29. The frame has no `exceptions.json`.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
-2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
-Text passes, 24 of 30 position layers pass and the rules fail: the
-same results, failing keys and findings as the run on beta.39 before
-this change, so the checks below still hold.
+2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
+open item 150 × 40 at Figma's place and, on the phone, the open item's
+lines drawn upright and the open item selected. Text fails, 24 of 30
+position layers pass and the rules fail. Against the same run on main
+(24fc7be), the position and rule results, failing keys and findings are
+the same. The text result is new: the check now also finds
+`writing-reviewer` (493:4045) not visible, the open item's name, which
+the 150 × 40 node cuts with an ellipsis.
 
 ## Checks
 
-- Text: pass. Every Figma string in the frame is in the render and
-  visible, and nothing extra shows.
+- Text: fail. Every Figma string is in the render and nothing extra
+  shows. One string is not visible: `writing-reviewer` (493:4045), the
+  graph's open item, which the 150 px node cuts with an ellipsis (see
+  Graph).
 - Position: the layers that pass include `back row`,
   `breadcrumb · Toolkit › writer › writing-reviewer`,
   `button · Show on map`, `meta row`, `kind badge`, `path row`,
@@ -71,13 +77,17 @@ this change, so the checks below still hold.
 - **Title.** The name writing-reviewer renders 220.7 px wide against 206
   (`493:3697` w +14.7), as on T07: the heading text style draws the name
   wider.
-- **Graph.** The open agent has its name in the label style, as Figma's,
-  and the lines end at the node's edge with no dot, since library
-  beta.39 (#151). It is 180 × 32, where Figma's `node · writing-reviewer
-  (focus)` (493:4042) is 150 × 40 with a 15 px icon: beta.39 gives a
-  node its own `size`, but four tests of `linksView.test.ts` assert the
-  open item at 180 × 32, and a change to those lines waits for Erik
-  (gap: Links graph).
+- **Graph.** The open agent is 150 × 40 with its name in the label
+  style, as Figma's `node · writing-reviewer (focus)` (493:4042), and
+  the lines end at the node's edge with no dot (library beta.39, #151).
+  Its icon is 16 px against Figma's 15 and sits 8 from the name against
+  Figma's 6: `MapNode` takes no icon size or gap (gap: Links graph). So
+  the name does not fit: Figma's `writing-reviewer` is 108 px wide in
+  the 150 px node, and the library's label style leaves it 104 (a 1 px
+  border and 10 px padding at each side, the 16 px icon and the 8 px
+  gap), so the name ends in an ellipsis and the text check reports
+  `writing-reviewer` (493:4045) as not visible. A width of the bridge's
+  own would be a raw value, so the node keeps Figma's 150.
 - **Node borders.** Since library beta.39 (#151) each item at a side of
   the graph has its kind's colour at 60 % alpha (`MapGraph
   nodeTone="muted"`, `kindBorder.*`) and each link row's node at 45 %

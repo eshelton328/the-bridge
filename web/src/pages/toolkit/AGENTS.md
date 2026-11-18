@@ -281,10 +281,12 @@ what each file of a page folder is for.
   the items it names on the right, each column in the side's `graph`
   order, placed by `linksGraph` in `blocks/linksView.ts`, tested in
   `linksView.test.ts`; the side items in a muted kind border, `nodeTone`,
-  the lines with no end dot, `edgeEnd`, and the open item's name in the
-  label style), the two panels side by side (`ToolkitLinksPanel`: each
+  the lines with no end dot, `edgeEnd`, and the open item 150 × 40 with
+  its name in the label style; on the desktop and tablet the pointer over a
+  side item, or the keyboard focus on it, lights only its line, `litNode`),
+  the two panels side by side (`ToolkitLinksPanel`: each
   link's item as a `MapNode tone="faint"`, its file and line, and the
-  line's text) and the note. A tap on an item opens it from the open item (`openFrom`);
+  line's text) and the note. One tap on an item opens it from the open item (`tapNode`, `openFrom`), on every layout;
   a tap on a file and line opens that file on its item's Files tab
   (`linkFile`, and `openFile` in `screens/itemView.ts`;
   `src/app/ToolkitLinks.test.tsx`). Each Links state's `linkTargets`
@@ -322,8 +324,8 @@ what each file of a page folder is for.
   only T15's is 4 px shorter in Figma. On the phone (M17, `skillLinksPhone`,
   T15's data) the item opens as on M12, and the graph stands upright
   (`linksGraph`'s `phone` size): the side that names the item two to a row
-  over it, the side it names under it, with no lines and nothing selected
-  (LIBRARY_GAPS.md, Links graph (phone)). A rule on the phone (M31,
+  over it, the side it names under it, with the open item's lines run
+  upright (MapGraph `orientation="vertical"`) and the open item selected. A rule on the phone (M31,
   `ruleLinksPhone`, T28's data) keeps M19's header, and the reason stands in
   the side over the rule, where its first row would be. An agent on the
   phone (M32, `agentLinksPhone`, T29's data with no `ui.from`, as on M20)
