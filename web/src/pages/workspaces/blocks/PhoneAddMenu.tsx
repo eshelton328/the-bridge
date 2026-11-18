@@ -1,9 +1,9 @@
 // The + at the top of the phone's list and the menu it opens (M15 208:515):
 // New chat and New workspace, under + at its end. Like every menu trigger, +
-// draws border.active while the menu is open (the library default). Figma's
-// menu is 220 wide with 42 px rows and 18 px icons; `Menu size="lg"` is at
-// least 240 wide with 44 px rows and 20 px icons (LIBRARY_GAPS.md: Phone new
-// menu). Props only.
+// draws border.active while the menu is open (the library default). The menu
+// is 220 wide (`width="phone"`) with its icons in the label's colour
+// (`iconTone="default"`), as Figma's; its rows are 44 with 20 px icons against
+// Figma's 42 and 18, on the 4 px grid (d-100). Props only.
 import { Button, GridIcon, Menu, PlusIcon } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -52,6 +52,8 @@ export function PhoneAddMenu({ label, text, disabled, open, onOpenChange, onSele
       }}
       placement="bottom-end"
       size="lg"
+      width="phone"
+      iconTone="default"
       trigger={trigger}
       items={[
         { value: 'newChat', label: text.newChat, icon: icon('newChat', <PlusIcon size="20" />) },

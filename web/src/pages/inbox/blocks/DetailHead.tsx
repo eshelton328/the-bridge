@@ -122,11 +122,12 @@ export function SnoozeActions({ snooze, iconOnly = false }: { snooze: SnoozeCont
 
 /** Discuss: in the task bar, or in the phone's nav before Snooze and Dismiss (M17, 402:1945). */
 export function DiscussButton({ discuss }: { discuss: DiscussControl }) {
-  // Figma draws Discuss in violet while the discussion is open; the library's pressed button is cyan (LIBRARY_GAPS.md).
+  // Open, its border is accent.discuss (`pressedBorder="discuss"`); Figma's violet fill has no token (LIBRARY_GAPS.md).
   return (
     <Button
       textSize="xs"
       pressed={discuss.open}
+      pressedBorder="discuss"
       onClick={() => {
         discuss.onOpenChange?.(!discuss.open)
       }}

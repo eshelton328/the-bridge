@@ -47,8 +47,12 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   Figma's x 905. Library gaps "Discussion panel width" and "Detail column
   inset".
 - **Discuss.** `button · Discuss` x -4.2, w +4.8, as in D08: `Button
-  textSize="sm"` pads its sides more than Figma's. It is pressed, but
-  cyan where Figma draws it violet. Library gaps "Sort and Filter button
+  textSize="sm"` pads its sides more than Figma's. It is pressed while the
+  discussion is open; since library beta.36 (#138) its border is
+  `accent.discuss` (`pressedBorder="discuss"`), the solid violet, where
+  Figma draws `border.discuss` at 50 %: that gives under 3:1 (WCAG
+  1.4.11) over the pressed fill. Figma's violet fill has no token, so the
+  fill stays `surface.selected`. Library gaps "Sort and Filter button
   widths" and "Discuss toggle".
 - **Project chip.** `chips` w -13.6, `project · File in a project` x +6,
   w -16.8, `chip · updated 12m ago` x -10.8, as in D08: the project chip
