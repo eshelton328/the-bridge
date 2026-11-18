@@ -16,8 +16,10 @@ import type { ChatEntry } from '../types.ts'
 
 // The progress lines keep their leading spaces, as a terminal does.
 const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
-// The event line is as wide as its text, as Figma's layer is (T9 420:769).
-const eventLine = css({ w: 'fit-content' })
+// The event line is as wide as its text, as Figma's layer is (T9 420:769),
+// but never wider than the transcript, so a long event truncates on a narrow phone.
+// The one grid column can shrink below the text, so the line never pushes the transcript wider.
+const eventLine = css({ display: 'grid', gridTemplateColumns: 'minmax(0, auto)', w: 'fit-content', maxW: '[100%]' })
 
 export type ChatEntryViewProps = {
   entry: ChatEntry
