@@ -349,7 +349,9 @@ what each file of a page folder is for.
   skills, which D25's list does not show). An agent (D26) has only its
   drafts and one round, a workflow (D27, `workflowEvals`) lists its gates
   and "from the file" opens its Files tab, and a hook (D28, `hookEvals`)
-  shows its test run as one badge over its test groups. On a tablet (T16,
+  shows its test run as one badge over its test groups; its status line
+  draws Figma's ✗ and ✓ as the library's cross and check icons (a status
+  `text` with `mark` runs, named fail and pass). On a tablet (T16,
   T24 to T27) and the phone (M18, M27 to M30) the panels stand one under
   the other; T16 and M18 set `named` (Toolkit › writer, no kind badge or
   path row), and M18's status header is its own. The chart has one size in

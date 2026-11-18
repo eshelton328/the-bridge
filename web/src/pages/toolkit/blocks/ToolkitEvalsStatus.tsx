@@ -10,7 +10,8 @@
 // its Evals tab; the library's Badge takes no press, so the button around it
 // is a plain one styled with tokens (LIBRARY_GAPS.md, Evals panels). An item
 // with no evals (D25, D27) has no badges: the line says why. Props only.
-import { Badge, CheckIcon, CloseCircleIcon, Panel } from '@eshelton328/component-library-1701'
+import { Badge, CheckIcon, CloseCircleIcon, CloseIcon, Panel } from '@eshelton328/component-library-1701'
+import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvals } from '../types.ts'
 import { badgeLayer, badgeLook, badgeResult } from './evalsView.ts'
@@ -35,6 +36,34 @@ const press = css({
 const text = css({ textStyle: 'small', color: 'fg.muted', mt: '2' })
 
 const icons = { check: <CheckIcon size="12" />, cross: <CloseCircleIcon size="12" /> }
+
+// D28 492:2185: a pass or fail mark in the line, Figma's ✓ and ✗, as the library's check and cross at the text's 12
+// px, in the line's colour; the icon's title is its accessible text.
+const mark = css({ display: 'inline-flex', verticalAlign: 'middle', color: 'fg.muted' })
+const marks = {
+  pass: <CheckIcon size="12" title="pass" />,
+  fail: <CloseIcon size="12" title="fail" />,
+}
+
+function MarkedText({ text }: { text: ToolkitEvals['status']['text'] }) {
+  if (typeof text === 'string') return text
+  // Each run is keyed by where it starts in the line.
+  let at = 0
+  const runs = text.map((run) => {
+    const start = at
+    at += typeof run === 'string' ? run.length : 1
+    return { run, start }
+  })
+  return runs.map(({ run, start }) =>
+    typeof run === 'string' ? (
+      <Fragment key={start}>{run}</Fragment>
+    ) : (
+      <span key={start} className={mark} data-figma={`mark · ${run.mark}`}>
+        {marks[run.mark]}
+      </span>
+    ),
+  )
+}
 
 export type ToolkitEvalsStatusProps = {
   status: ToolkitEvals['status']
@@ -88,7 +117,9 @@ export function ToolkitEvalsStatus({ status, onOpenEvals }: ToolkitEvalsStatusPr
             })}
           </div>
         )}
-        <p className={text}>{status.text}</p>
+        <p className={text}>
+          <MarkedText text={status.text} />
+        </p>
       </Panel>
     </section>
   )

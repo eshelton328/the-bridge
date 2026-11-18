@@ -198,11 +198,26 @@ describe('the accent text and the symbols of the Evals tab', () => {
     expect(getComputedStyle(button(root, 'from the file')).color).toBe(tokenColor('fg-accent'))
   })
 
-  it('keeps Figma’s ballot cross ✗ (U+2717) in the hook’s test line, not the sign × (D28, T27, M30)', async () => {
+  it('draws Figma’s ✗ and ✓ in the hook’s test line as the library’s icons, named fail and pass (D28, T27, M30)', async () => {
     const { root } = await renderToolkit('hookEvals')
-    const status = root.querySelector('[data-figma="panel · status"]')?.textContent ?? ''
-    expect(status).toContain('the rule’s \u2717 and \u2713 examples')
-    expect(status).not.toContain('\u00d7')
+    const status = root.querySelector('[data-figma="panel · status"]')
+    if (!(status instanceof HTMLElement)) throw new Error('no status')
+    const line = status.querySelector('p')
+    expect(line?.textContent).not.toMatch(/[\u2713\u2717\u00d7]/)
+    // Each mark is an icon in the line, with its accessible text.
+    const fail = page.getByRole('img', { name: 'fail' }).last()
+    const pass = page.getByRole('img', { name: 'pass' }).last()
+    await expect.element(fail).toBeInTheDocument()
+    await expect.element(pass).toBeInTheDocument()
+    expect(line?.contains(fail.element())).toBe(true)
+    expect(line?.contains(pass.element())).toBe(true)
+    // At the text's size and in its colour.
+    const text = line instanceof HTMLElement ? getComputedStyle(line) : null
+    for (const icon of [fail.element(), pass.element()]) {
+      expect(icon.getBoundingClientRect().width).toBeCloseTo(12, 0)
+      expect(getComputedStyle(icon).color).toBe(text?.color)
+    }
+    expect(text?.color).toBe(tokenColor('fg-muted'))
   })
 })
 
