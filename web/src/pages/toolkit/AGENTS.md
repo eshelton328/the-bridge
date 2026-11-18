@@ -413,7 +413,7 @@ what each file of a page folder is for.
   (`withDiscussReset`). Open in Workbench (`ToolkitOpenInWorkbench`) is
   disabled with a title: no Workbench state takes a toolkit chat. Attach
   does nothing: no file flow is designed (`src/app/ToolkitDiscuss.test.tsx`;
-  LIBRARY_GAPS.md, Discussion empty state to Discussion model chip).
+  LIBRARY_GAPS.md, Discussion empty state to Composer size).
   Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
