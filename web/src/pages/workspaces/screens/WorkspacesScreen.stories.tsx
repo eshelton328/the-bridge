@@ -595,3 +595,58 @@ export const PhoneTapChat: Story = {
     await expect(within(document.body).queryByRole('dialog')).toBeNull()
   },
 }
+
+export const PhoneChatFull: Story = {
+  name: 'M17: a chat full screen on the phone, with no tab bar',
+  args: { data: workspacesStates.phoneChatFull.data, ui: workspacesStates.phoneChatFull.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // "/" typed and no skill list open, and the phone's menu draws M17. WorkspacesPhoneChatFull.test.tsx checks the chat
+    // and its back button at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
+  },
+}
+
+export const PhoneFork: Story = {
+  name: 'M18: fork a chat on the phone',
+  args: { data: workspacesStates.phoneFork.data, ui: workspacesStates.phoneFork.ui, viewport: 'phone' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws D15's Fork dialog over bridge themes,
+    // with M18's note, and the phone's menu draws M18's sheet. WorkspacesPhoneFork.test.tsx checks the sheet at a
+    // phone's width.
+    const body = within(document.body)
+    await expect(await body.findByRole('dialog', { name: 'Fork bridge themes' })).toBeVisible()
+    await expect(body.getByText('Copies the messages and the context. The original keeps running.')).toBeVisible()
+    await expect(body.getByRole('button', { name: 'Whole chat', pressed: true })).toBeVisible()
+  },
+}
+
+export const PhoneForkedChat: Story = {
+  name: 'M19: a forked chat on the phone, Idle',
+  args: { data: workspacesStates.phoneForkedChat.data, ui: workspacesStates.phoneForkedChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with the fork alone, and the
+    // phone's menu draws M19. WorkspacesPhoneForkedChat.test.tsx checks the chat and its back button at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes · fork' })).toBeVisible()
+    await expect(canvas.getByText('Forked from bridge themes here')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Stop' })).toBeNull()
+  },
+}
+
+export const PhoneSubtask: Story = {
+  name: 'M20: start a subtask on the phone',
+  args: { data: workspacesStates.phoneSubtask.data, ui: workspacesStates.phoneSubtask.ui, viewport: 'phone' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws D17's Subtask dialog over bridge themes,
+    // with M20's task, and the phone's menu draws M20's sheet. WorkspacesPhoneSubtask.test.tsx checks the sheet at a
+    // phone's width.
+    const body = within(document.body)
+    await expect(await body.findByRole('dialog', { name: 'Start a subtask' })).toBeVisible()
+    await expect(body.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })).toHaveValue(
+      'Draft layout notes for the three directions.',
+    )
+  },
+}

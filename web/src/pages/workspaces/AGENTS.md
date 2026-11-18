@@ -237,6 +237,25 @@ first: it says what each file of a page folder is for.
   workspace chosen (`ui.newChatWorkspace`), and New workspace adds one
   (`ui.addedWorkspaces`, after the others) and opens its name as a field
   in edit mode.
+  M17 adds `focusMessage` to `PhoneChat` (the focus in the message box
+  with the skills closed, `ui.messageFocus`); Back returns to the list,
+  where the other chats keep running. M18 adds `ForkFields` (D15's name,
+  start-from choice and note, which `ForkDialog` draws too) and `PhoneFork`
+  (the Fork form on the phone: `BottomSheet` titled "Fork {chat}" with ×,
+  the fields and Fork across the sheet, no Cancel), which the chat actions'
+  Fork opens (`ui.chatDialog: 'fork'`) when the state has `data.fork`;
+  `ForkFields size="phone"` draws the choices' labels in `labelSm`.
+  M19 needs no new block: the fork fills the screen as M17's chat does,
+  `ChatHead` puts its `origin` after the workspace, `ChatEntryView` draws
+  the line where it was forked as D16's `event` entry, and Back returns to
+  the list, where `SidebarChatRow` draws the fork under bridge themes with
+  D16's branch mark. M20 adds `SubtaskFields` (D17's model, task and
+  note, which `SubtaskDialog` draws too) and `PhoneSubtask` (the Subtask
+  form on the phone: `BottomSheet` titled "Start a subtask" with ×, the
+  fields with the focus in the task and Start subtask across the sheet, no
+  Cancel), which the chat actions' Subtask opens (`ui.chatDialog:
+  'subtask'`) when the state has `data.subtask`; `SubtaskFields
+  size="phone"` draws the note in `small`.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -303,7 +322,17 @@ first: it says what each file of a page folder is for.
   closes), M14 `phoneWorkspaceActions` (from `phoneHome`, with M2's Done
   and M13's dialog text: omni-brain's actions open in a sheet), M15
   `phoneAddMenu` (from `phoneHome`, with M2's Done and M7's New chat
-  form: the menu that + opens).
+  form: the menu that + opens), M16 `phoneTapChat` (from `phoneHome`,
+  with M3's back label: the tap that opens bridge themes), M17
+  `phoneChatFull` (from `phoneChat`, without the skills, the focus in the
+  message box: the chat full screen), M18 `phoneFork` (from
+  `phoneChatFull`, with D15's Fork form without the hint, M18's note, M4's
+  chat actions and the message box empty and out of focus: the Fork sheet
+  open on the phone), M19 `phoneForkedChat` (from `phoneChatFull`, with
+  D16's fork under bridge themes: the fork full screen, Idle with no Stop,
+  nothing typed and the focus in the message box), M20 `phoneSubtask`
+  (from `phoneFork`, without the Fork form, with D17's Subtask form and
+  M20's task: the Subtask sheet open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -346,7 +375,9 @@ first: it says what each file of a page folder is for.
   dialog's text, and its layers in `layers.closeDialog`; for M14
   `phone.workspaceMenu`, a workspace's actions; for M15 `phone.addMenu`,
   the labels of the menu that + opens, and its layers in
-  `layers.addMenu`) and
+  `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
+  sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
+  in `layers.phoneSubtask`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -368,6 +399,7 @@ first: it says what each file of a page folder is for.
   `closing`, the workspace whose close dialog is open, and
   `closedWorkspaces`; for M14 `workspaceMenuFor`, the workspace whose
   actions are open; for M15 `addMenuOpen`, `addedWorkspaces` and
-  `newChatWorkspace`), each a Zod schema.
+  `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
+  box in focus with the skills closed), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

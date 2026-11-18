@@ -301,8 +301,8 @@ export const ForkForm = z.object({
   title: z.string(),
   /** The field labels, as Figma writes them, in capitals. */
   labels: z.object({ name: z.string(), startFrom: z.string() }),
-  /** The name the copy gets, which Erik can change, and the hint inside the field. */
-  name: z.object({ value: z.string(), hint: z.string() }),
+  /** The name the copy gets, which Erik can change, and the hint inside the field; the phone's has none (M18). */
+  name: z.object({ value: z.string(), hint: z.string().optional() }),
   /** Where the copy starts: the whole chat, or up to a message Erik picks next. */
   startFrom: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
   /** The line under the choice that says what the fork copies. */
@@ -537,6 +537,27 @@ export const SidebarLayers = z.object({
    * no `data-*`, so the icons carry the rows' places.
    */
   addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
+  /** The Fork sheet on the phone (M18 422:217): its fields, the start-from choices in order, the note and Fork. */
+  phoneFork: z
+    .object({
+      name: z.string(),
+      startFrom: z.string(),
+      choices: z.array(z.string()),
+      note: z.string(),
+      submit: z.string(),
+    })
+    .optional(),
+  /** The Subtask sheet on the phone (M20 422:520): the model's field and box, the task's, the note and Start subtask. */
+  phoneSubtask: z
+    .object({
+      model: z.string(),
+      modelBox: z.string(),
+      task: z.string(),
+      taskBox: z.string(),
+      note: z.string(),
+      submit: z.string(),
+    })
+    .optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -784,6 +805,11 @@ export const WorkspacesUi = z.object({
    * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
    */
   keyboardOpen: z.boolean().optional(),
+  /**
+   * The phone chat's message box has the focus with no skill list open, the caret after the text (M17 402:10841).
+   * With the skills open (M3) the box has the focus anyway.
+   */
+  messageFocus: z.boolean().optional(),
   /** The workspace whose close dialog is open over the phone's list (M13), or null. */
   closing: z.string().nullable().optional(),
   /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
