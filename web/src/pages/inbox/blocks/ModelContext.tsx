@@ -5,7 +5,8 @@ import { ContextMeter, Inline, ModelChip } from '@eshelton328/component-library-
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxDiscussion } from '../types.ts'
 
-const muted = css({ textStyle: 'monoSm', color: 'fg.muted' })
+// Figma's "context" (D15, M18, T17) is Geist Regular 11, 38 px wide: `smallXs`, not the mono style.
+const muted = css({ textStyle: 'smallXs', color: 'fg.muted' })
 const hug = css({ alignSelf: 'flex-start' })
 
 export function ModelContext({ discussion, centred = false }: { discussion: InboxDiscussion; centred?: boolean }) {

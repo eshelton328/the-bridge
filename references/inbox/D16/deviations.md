@@ -131,6 +131,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   they start 24 and 20 px apart (Figma 25 and 20). The card is 8 px
   shorter: `section · MY NOTES` y -26 px (was y -26, h +12 px); `section · SOURCES` y -20 px (was y -12 px). SOURCES now starts 8 px higher, as the
   applied prompt above it is shorter than Figma's (see above).
+- **Model and context label (2026-11-18).** "context" is `smallXs`
+  (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
+  group is now within tolerance (was `model and context` w +6.4).
 
 ## Second review
 
