@@ -54,13 +54,14 @@ a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   `FlowLine` (library #133 and #137), across in 16 px columns and down in
   the 12 px between cards, and the long amber line down the Check lane
   from the gate to Stop with `no` beside it, in `small` text (12/16)
-  against Figma's smaller label. There is no elbow from Blinding into the
-  grades or from the grades into Aggregate (a straight line at each row
-  instead), and no dashed loop under the lanes; the loop's label
-  `new failure` sits under the lanes on its own (gap: Workflow flow by
-  phase).
+  against Figma's smaller label. The elbows from Blinding into the grades
+  and from Second grades into Aggregate are the library's `FlowElbow`, and
+  the dashed loop from Owner decides up into Stop's foot is
+  `FlowLoop end="up"` (library #144, beta.36), with `new failure` on the
+  line, as on D8.
 - **Loop label.** The `new failure` label is a `Badge variant="tag"` in
-  12 px mono, 91 × 21 against Figma's 74 × 18 bordered pill, and it sits
+  12 px mono, 91 × 20 against Figma's 74 × 18 bordered pill, on the box's
+  colour so the dashed line does not show through it, and it sits
   79 px lower with the taller flow (`label · new failure` x -8.8, y +77.3,
   w +17.7; gaps: Workflow flow by phase, Workflow flow (tablet)).
 - **Open full page.** `Button size="sm"` with its 16 px icon is 127.5 ×
@@ -124,3 +125,17 @@ a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
 After the move to `FlowLine`, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
 and toolkit (2026-11-18, library 1.0.0-beta.31) gives T18 the same results as
 before: the same text, position and rule results.
+
+## Library beta.36 parts
+
+The elbows and the loop moved to `FlowElbow` and `FlowLoop end="up"`
+(library #144, beta.36). `pnpm fidelity toolkit` on every Toolkit frame
+before and after the change (2026-11-18) gives T18 the same text and rule
+results (both pass) and the same 15 of 41 passing layers. The flow is
+1 px shorter, as the loop label's wrapper is now as high as the badge
+(20 against 21): `flow · by phase` and `kind section · workflow` h +77.6
+(were +78.6), `runs` and `link · eval-grader` y +78.6, `columns`,
+`file preview`, `preview bar` and `rendered markdown` y +81.6, `side` and
+`files` y +98.6, `file · skill-eval-round.md` y +101.6, and
+`toolkit item` h -57; `label · new failure` keeps x -8.8, y +77.3,
+w +17.7.

@@ -65,13 +65,15 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   across into Run (under `yes`, which sits over the line as Figma's), into
   both Grade steps and into Aggregate, each across line 38 long from a
   card's edge to 2 before the next, and the long amber line from
-  Pre-registered? down to Stop with `no` beside it. The library has no
-  elbow that leaves Blinding at its own row and enters both grades at
-  theirs, so the arrows into Grade and into Aggregate are straight lines
-  at each row they enter; and `FlowLoop`'s head points into a side, so
-  the dashed amber loop from Owner decides up into Stop's foot is not
-  drawn, and its label `new failure` sits alone under the lanes, centred
-  as Figma's (gap: Workflow flow by phase).
+  Pre-registered? down to Stop with `no` beside it. The elbows are the
+  library's `FlowElbow` (library #144, beta.36): from Blinding up into
+  both grades (466:6) and from Second grades up into Aggregate (466:7),
+  each turning halfway across and its tip 2 before the card. The dashed
+  amber loop (466:10) is `FlowLoop end="up"`: from Owner decides' foot
+  down, back under the lanes and up into Stop's foot, its tip 4 under the
+  card, with `new failure` on the line, centred as Figma's. The join into
+  Aggregate draws its straight line and its elbow with one head each, at
+  the same place, so the picture shows one head.
 - **Step cards.** `FlowDiagram` numbers its steps itself and puts the
   body beside the number, so the cards are drawn with its card's tokens
   (gap: Workflow flow by phase): 10 px padding against Figma's 11, the
@@ -83,8 +85,13 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   space token has 14), so each lane is 212.5 px wide against 212; the
   cards pass the position check.
 - **Loop label.** `new failure` is a `Badge variant="tag"
-  tone="needsYou"`, 91 × 21 against Figma's bordered pill of 98 × 23
-  (`label · new failure` x +3.4 y -2.5 w -6.8).
+  tone="needsYou"`, 91 × 20 against Figma's bordered pill of 98 × 23
+  (`label · new failure` w -6.8). The tag's tint is see-through, so the
+  label stands on the box's colour (`surface.pane`, in the tag's `sm`
+  radius) and the dashed line does not show through it, as under
+  Figma's pill. `FlowLoop`'s own label is plain `mono` text under the
+  line, not a pill on it, so the flow does not use it (gap: Workflow flow
+  by phase).
 - **Open full page.** `Button size="sm" textSize="sm"` with the 16 px
   `ExternalLinkIcon` is 127.5 × 28 against Figma's 122 × 29 with a 13 px
   icon (`button · Open full page` x -5.5 w +5.5). It sets
@@ -140,3 +147,13 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
 After the move to `FlowLine`, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
 and toolkit (2026-11-18, library 1.0.0-beta.31) gives D08 the same results as
 before: the same text, position and rule results.
+
+## Library beta.36 parts
+
+The elbows and the loop moved to `FlowElbow` and `FlowLoop end="up"`
+(library #144, beta.36). `pnpm fidelity toolkit` on every Toolkit frame
+before and after the change (2026-11-18) gives D08 the same text and rule
+results (text fail with `commit-msg`, `hooks/commit-msg` and `→1 ←1`;
+rules fail with the list pane's `hiddenOverflow`) and the same 35 of 58
+passing layers. `label · new failure` is 20 high against 21 (its wrapper
+is now as high as the badge); its other edges do not move.

@@ -44,9 +44,9 @@ before T06.
   `labelLg` and 18 px chevron. Gap: Item action buttons.
 - **Explanation.** `ScriptExplanation` pads 20 against 19, its card 16 by
   12 against 15 by 13, draws 24 px step numbers against 22 and a 12 px
-  spark against 13, and sizes the fact keys to their text, so In, Out and
-  Exit's values start about 8 px further left than Figma's 40 px key
-  column. Figma's summary runs past the card's right edge; the render
+  spark against 13. The facts put the keys in a 40 px column (library
+  #141, beta.36), so the In, Out and Exit values start 50 after their
+  keys, as Figma's. Figma's summary runs past the card's right edge; the render
   wraps it inside the card, so its first line ends at "and so" against
   "and so does". The steps wrap a word earlier in places (steps 1, 2 and
   4). Gap: Script explanation.
@@ -73,3 +73,13 @@ differences.
   (`icon/spark` 440:1983, 13 px). `ScriptExplanation` draws the note's
   `SparkIcon` itself, at 12 px in the note's colour, with no prop for
   the icon or its colour. Gap: Script explanation.
+
+## Library beta.36 parts
+
+The tablet keeps `ScriptExplanation`'s `wide` layout (its default), now
+named in `ToolkitFileBody`'s `explainLayout`; the phone takes the
+library's `narrow` layout (library #141). `pnpm fidelity toolkit` on
+every Toolkit frame before and after the change (2026-11-18) gives T06
+the same results: text and rules pass, and the same 15 of 18 layers pass
+(`button · Discuss` x -5.1, `toolkit item` y +32 h -258 and `440:1773`
+w +5.3 fail, as above).
