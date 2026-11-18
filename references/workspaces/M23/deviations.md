@@ -43,7 +43,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Message` draws the reply in `body` (14/20) and the name in `label`
   (14/500) and takes no size; Figma draws Geist 13 on a 19 px line and the
   name at 12. The reply's three lines are 60 high against 57, and its text
-  is about 5% wider, so "and" moves to the first line. Copy (422:890) is
+  is about 5% wider, so "a" moves down to the second line and "sessions"
+  to the third: the render's lines end with "and", "long" and "desktop"
+  against Figma's "and a", "sessions" and "desktop". Copy (422:890) is
   about 67 × 24 against Figma's 63 × 22: no button size is 22 and no label
   style is Medium 11.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,

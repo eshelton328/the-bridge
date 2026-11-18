@@ -34,15 +34,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Claude's reply is 9 px taller (Message text), `422:671` h +9.**
   `Message` draws the reply in `body` (14/20) and the name in `label`
   (14/500) and takes no size; Figma draws Geist 13 on a 19 px line and the
-  name at 12. The reply's three lines are 60 high against 57, and its
-  text is about 5% wider, so "and" moves to the first line. Erik's message
-  is 2 px taller for the same reason, the name "Claude" is wider, and the
-  lines under it move down by up to 12 px: the subtask line "Subtask
-  layout notes started · returns here" (422:712) is at about 361 against
-  Figma's 349. It is a `ToolLine`, which takes no `data-figma`, so the
-  position check does not measure it, as M19's fork line. Copy (422:678)
-  is about 67 × 24 against Figma's 63 × 22: no button size is 22 and no
-  label style is Medium 11.
+  name at 12. The reply's three lines are 60 high against 57, and its text
+  is about 5% wider, so "a" moves down to the second line and "sessions"
+  to the third: the render's lines end with "and", "long" and "desktop"
+  against Figma's "and a", "sessions" and "desktop". Erik's message is 2
+  px taller for the same reason, the name "Claude" is wider, and the lines
+  under it move down by up to 12 px: the subtask line "Subtask layout
+  notes started · returns here" (422:712) is at about 361 against Figma's
+  349. It is a `ToolLine`, which takes no `data-figma`, so the position
+  check does not measure it, as M19's fork line. Copy (422:678) is about
+  67 × 24 against Figma's 63 × 22: no button size is 22 and no label style
+  is Medium 11.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:684` y -12, h +7.** `Composer` draws its text in
   `body` and Stop as `Button size="sm"` (14 px label, 16 px icon), so the

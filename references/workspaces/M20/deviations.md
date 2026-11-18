@@ -73,8 +73,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (Message text), `422:478` h +9.** As in M17: `Message` draws the reply
   and Erik's message in `body` (14/20) and the name in `label` (14/500);
   Figma draws both texts in Geist Regular 13 on a 19 px line and the name
-  (422:482) in SemiBold 12. Erik's first line (422:474) is about 7% wider
-  (324 against 301 px), and "Claude" is 46 wide against 41. Copy is about 67 × 24 against Figma's 63 × 22.
+  (422:482) in SemiBold 12. The reply wraps as in M17: "a" moves down to
+  the second line and "sessions" to the third: the render's lines end with
+  "and", "long" and "desktop" against Figma's "and a", "sessions" and
+  "desktop". Erik's first line (422:474) is about 7% wider (324 against
+  301 px), and "Claude" is 46 wide against 41. Copy is about 67 × 24
+  against Figma's 63 × 22.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:491` y -12, h +7.** As in M18: `Composer` draws
   its text in `body` and Stop as `Button size="sm"`, so the box is 112
