@@ -7,7 +7,9 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/skillHowItWorks.ts`: D3's data (the list has
 T1's data), with writer open on its How it works tab. D03, D04, D07, D08
 and D09 give the same results as before D14 (each report's text, position
-and rule results are unchanged). The frame has no `exceptions.json`.
+and rule results are unchanged). The frame has no `exceptions.json`. The
+Checks below are from a rerun with library 1.0.0-beta.25 and the item
+tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -72,10 +74,12 @@ and rule results are unchanged). The frame has no `exceptions.json`.
   header carries its node id, but the list pane's `ToolkitHeader` carries
   `header` in every frame, so the check finds `header` ambiguous. Its
   name is right in D03, D04, D07, D08 and D09, which have one `header`.
-- **Item tabs.** The selected tab, How it works, is white with a grey
-  outline where Figma's is cyan, and the tabs are spaced wider, so
-  Activity starts further right (gaps: Item tab selected tone, Item tab
-  spacing). A later PR sets the beta.21 props.
+- **Item tabs.** `ItemTabs tone="accent"` (library #126, beta.21) draws
+  the selected tab's label, How it works, cyan, as Figma's. The outline
+  stays `border.selected` at half alpha where Figma's is solid cyan (no
+  solid selected token, d-050). The desktop keeps the default density:
+  12 px sides and 4 apart, as Figma's, but the list's 2 px inset and the
+  slightly wider labels put Activity about 8 px further right.
 - **Row height.** Each list row is 62 px high against Figma's 53 (the
   open row is 62 against 55), and its counts sit level with the name,
   where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:

@@ -9,14 +9,15 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 in the shared `DetailFrame` (d-107): the back row stays at the top and
 the item scrolls under it (`web/src/app/ToolkitStickyBack.test.tsx`, the
 phone case). T03, D03, D04, D07, D08 and D09 give the same results as
-before M02.
+before M02. The Checks below are from a rerun with library 1.0.0-beta.25
+and the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Five strings are not visible: `Evals` (480:127, see Item
-  tabs) and `FILES 11` (487:166), `SKILL.md` (487:171), `references/`
-  (487:175) and `6` (487:176), see Under the tab bar.
+  covered text. Four strings are not visible: `FILES 11` (487:166),
+  `SKILL.md` (487:171), `references/` (487:175) and `6` (487:176), see
+  Under the tab bar.
 - Position: 21 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `429:303`, `path badge`, `487:142`,
   `file preview`, `preview bar`, `rendered markdown`,
@@ -43,12 +44,12 @@ before M02.
   `exceptions.json` for these four strings and this rule was refused by
   the session's permission check, so they stay as failures for Erik to
   accept.
-- **Item tabs.** Figma's tabs are 10 px in at the sides with no list
-  padding, so Evals ends at 368, inside the 390 px screen, and only
-  Activity runs past it. `ItemTabs` pads its list 2 and each tab 12, so
-  the row is about 35 px longer and Evals is cut at the screen's edge
-  (`Evals` not visible; the list's sideways scroll is the second
-  `hiddenOverflow`, which Figma's row has too). Gap: Item tab spacing.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's, so Evals ends inside the
+  390 px screen and only Activity runs past it (the list's sideways scroll is the second `hiddenOverflow`, which Figma's
+  row has too). The outline stays `border.selected` at half alpha where
+  Figma's is solid cyan (no solid selected token, d-050).
 - **Discuss button.** Figma's Discuss is an icon button 36 × 28; an
   icon-only `Button` is square, so Discuss is `sm`, 28 × 28, and starts
   8 px further right (`button · Discuss` x +8 w -8). Show on map is
@@ -74,9 +75,9 @@ before M02.
   `file · check  ste-dict  ste-stop-hook  test-check` w -10.8.
   Gap: Item file summary.
 - **Row spacing.** Figma's rows from the meta row to the columns are 12
-  apart, and the item uses 12. The tabs' list is 36 high with its 2 px
-  padding against Figma's 32, so the description and the preview run
-  3 px lower than Figma's, within the tolerance.
+  apart, and the item uses 12. The tabs' list is 32 high, as Figma's,
+  and the item adds 4 above the panel, so the description and the
+  preview run 3 px lower than Figma's, within the tolerance.
 - **File references.** The three references wrap as one line of code,
   two spaces apart, with a break after `references/`, as Figma's text
   does; the render's code glyphs are a little wider (Geist Mono).

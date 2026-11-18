@@ -10,7 +10,9 @@ open beside it. D03, D04, D07 and D09 give the same results as before D08
 (D03: text fail with the same four strings, 15 of 53 layers; D04: text
 pass, 15 of 49 layers; D07: text pass, 21 of 36 layers; D09: text fail
 with the same three strings, 21 of 43 layers, the same `hiddenOverflow`
-on the list pane; D03, D04 and D07 rules pass).
+on the list pane; D03, D04 and D07 rules pass). The Checks below are
+from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 The workspace stays on library 1.0.0-beta.15: no part of beta.16
 (TerminalLines, EmptyPane, DragPreview, Popover `width="xs"`, OptionList
@@ -113,6 +115,10 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   (gap: Path badge copy button); the preview box and bar are drawn with
   the Panel's tokens, with a 16 px file icon against 14 (gap: File
   preview). The three pass the position check.
+- **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames.
 

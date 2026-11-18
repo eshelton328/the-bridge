@@ -15,13 +15,14 @@ it works. `web/src/app/ToolkitStickyBack.test.tsx` checks that the phone
 draws no flow, that the header and the agents' row scroll sideways inside
 the item's width and that the item does not. D03, D04, D07, D08, D09, T03,
 M02, T07, M20 and T18 give the same results as before M21 (every text,
-position delta and rule finding).
+position delta and rule finding). The Checks below are from a rerun with
+library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
+(2026-11-17).
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. One string is not visible: `Evals` (487:1740), see Item
-  tabs.
+- Text: pass. Every Figma string is in the render and visible; no extra
+  text and no covered text.
 - Position: 19 of 28 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1722`, `path badge`, `487:1862`,
   `kind section · workflow`, `steps header`, `runs`,
@@ -50,16 +51,13 @@ position delta and rule finding).
 - **Open full page.** `Button size="sm"` is 127.5 × 28 with a 16 px icon
   against Figma's 122 × 29 with a 13 px `icon/ext`
   (`button · Open full page` w +5.5). Gap: Workflow flow by phase.
-- **Item tabs.** Figma's tabs are 10 px in at the sides with no list
-  padding, so Evals ends at 378 and only Activity runs past the screen.
-  `ItemTabs` pads its list 2 and each tab 12, so the row is about 35 px
-  longer and Evals is cut at the screen's edge (`Evals` not visible; the
-  list's sideways scroll is the `hiddenOverflow` finding on
-  `div.item-tabs__list`, which Figma's row has too). Gap: Item tab
-  spacing.
-- **Selected tab tone.** Figma's selected tab, Overview, has a cyan
-  label; the render's label is white with the cyan border. A library
-  release adds the prop. Gap: Item tab selected tone.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's, so Evals ends inside the
+  390 px screen and only Activity runs past it (the list's sideways scroll is the `hiddenOverflow` finding on
+  `div.item-tabs__list`, which Figma's
+  row has too). The outline stays `border.selected` at half alpha where
+  Figma's is solid cyan (no solid selected token, d-050).
 - **Rendered file.** Figma's file is 16 px in from the box, with the
   title 14 under the bar; `MarkdownView` pads 20 by 24, so the text is
   narrower and the box 17 px taller (`rendered markdown` h +17,

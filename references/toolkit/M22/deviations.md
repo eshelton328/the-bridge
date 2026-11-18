@@ -9,13 +9,14 @@ with the hook commit-msg open. On the phone the hook replaces the list in
 the shared `DetailFrame` (d-107), as M2's skill and M19's rule do: the back
 row stays at the top and the item scrolls under it
 (`web/src/app/ToolkitStickyBack.test.tsx`, the M22 case). D03, D04, D07,
-D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
+D08, D09, T03, M02, T17, M19 and T19 give the same results as before
+M22. The Checks below are from a rerun with library 1.0.0-beta.25 and
+the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Six strings are not visible: `Evals` (487:2061, see Item
-  tabs); the code lines `# Checks a commit message against
+  covered text. Five strings are not visible: the code lines `# Checks a commit message against
   toolkit/rules/commits-and-prs.md and` (487:2240), `# exits 1 with one
   line per problem. Git runs it from the top of the work` (487:2243) and
   ``# tree once `core.hooksPath` is `toolkit/hooks` (link.sh sets that).``
@@ -60,12 +61,13 @@ D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
   than the file preview inside it (323). The render's columns hold the
   preview, 249 high (`columns` h -6). Gaps: File preview, Code line wrap.
 - **Row spacing.** Figma's description, When it runs and the code are 12
-  apart. The tabs' list is 36 high (Figma 32) and the cards are 110 and
-  111 high (Figma 109), so at 12 apart the code started 5 px low
+  apart. The tabs' list is 32 high, as Figma's, with 4 above the panel,
+  and the cards are 110 and 111 high (Figma 109), so at 12 apart the
+  code started 5 px low
   (`columns`, `file preview`, `preview bar` and `code` y +5 in the first
   run). As on M19, the phone's hook overview puts the rows 8 apart: the
   description is 3 px lower than Figma's, the cards 2 px and the code
-  3 px higher. Gaps: Item tab spacing, Agent fact card.
+  3 px higher. Gap: Agent fact card.
 - **Fact cards.** The four cards sit two by two, 178 wide and 10 apart,
   as in Figma. They are `Panel` in its notice variant with 4 more above
   and below, as on T19: 12 in at the sides where Figma has 15, so the text
@@ -75,15 +77,12 @@ D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
 - **Event icon.** The Event card starts with the library's `BranchIcon`
   (a branch with two rings), where Figma draws `icon/git` (a commit mark).
   Gap: Git icon.
-- **Item tabs.** As on M02 and M19, Figma's tabs are 10 px in at the
-  sides with no list padding, so Evals ends at 378, inside the 390 px
-  screen. `ItemTabs` pads its list 2 and each tab 12, so the tabs are
-  spaced wider and Evals is cut at the screen's edge (`Evals` not visible;
-  the list's sideways scroll is the second `hiddenOverflow`). Gap: Item
-  tab spacing.
-- **Selected tab.** Overview is white with a grey outline, where Figma's
-  is cyan with a cyan outline. `ItemTabs` has no accent tone yet; a
-  library PR adds one (gap: Item tab selected tone).
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's, so Evals ends inside the
+  390 px screen and only Activity runs past it (the list's sideways scroll is the second `hiddenOverflow`, which Figma's
+  row has too). The outline stays `border.selected` at half alpha where
+  Figma's is solid cyan (no solid selected token, d-050).
 - **Discuss button.** As on M19, Figma's Discuss is an icon button
   36 × 28; an icon-only `Button` is square, so Discuss is `sm`, 28 × 28,
   and starts 8 px further right (`button · Discuss` x +8 w -8). Show on

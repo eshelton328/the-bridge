@@ -8,7 +8,9 @@ What still differs from Figma after the last round of the fidelity loop
 Skills and Agents groups, as the frame draws them, the Skills group
 closed, and the agent writing-reviewer open beside it. D03 and D04 give
 the same results as before D07 (D03: text fail with the same four strings,
-15 of 53 layers; D04: text pass, 15 of 49 layers; both rules pass).
+15 of 53 layers; D04: text pass, 15 of 49 layers; both rules pass). The
+Checks below are from a rerun with library 1.0.0-beta.25 and the item
+tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -82,6 +84,10 @@ the same results as before D07 (D03: text fail with the same four strings,
   Path badge copy button); the preview box and bar are drawn with the
   Panel's tokens, with a 16 px file icon against 14 (gap: File preview).
   The three pass the position check.
+- **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D8, D9).
 

@@ -8,7 +8,9 @@ library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 with writer open. On a tablet the item replaces the list in the shared
 `DetailFrame` (d-107): the back row stays at the top and the item scrolls
 under it (`web/src/app/ToolkitStickyBack.test.tsx`). The other twelve
-frames give the same results as before T03.
+frames give the same results as before T03. The Checks below are from a
+rerun with library 1.0.0-beta.25 and the item tabs' `tone` and `density`
+props (2026-11-17).
 
 ## Checks
 
@@ -61,20 +63,20 @@ frames give the same results as before T03.
 - **Title width.** The title writer is 79.5 px wide and 40 high against
   Figma's 74 and 38 (`428:567` w +5.5): the `heading` glyphs and line
   height. It starts in place.
-- **Item tabs.** The tabs are 33 px high, and their panel adds 16 above
-  the description where Figma has 14; the description still starts in
-  place. As on D3, the How it works, Files, Links, Evals and Activity
-  panels are later frames.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 10 px further right,
+  as each label renders a little wider. The item adds 4 above the panel,
+  so the description stays in place. As on D3, the How it works, Files,
+  Links, Evals and Activity panels are later frames.
 - **Copy button and preview bar.** As on D3: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
   box and bar are drawn with the Panel's tokens (gap: File preview).
 
 ## Second review
 
-- **Item tabs.** The tabs are spaced wider: How it works starts about
-  10 px further right than in Figma, and Activity about 33 px.
-  `ItemTabs` pads its list 2 and each tab 12, where Figma has 0 and 10;
-  its sizes change only the height (gap: Item tab spacing).
 - **Skill evals link.** The chart icon and the chevron sit level with the
   title, about 11 px above the box's centre, as on D3 (gap: Toolkit row
   (pane)).
