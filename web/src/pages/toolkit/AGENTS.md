@@ -311,7 +311,9 @@ what each file of a page folder is for.
   the side over the rule, where its first row would be. An agent on the
   phone (M32, `agentLinksPhone`, T29's data with no `ui.from`, as on M20)
   keeps M20's header under Back to Toolkit, and a workflow (M33,
-  `workflowLinksPhone`, T30's data) M21's. Only the
+  `workflowLinksPhone`, T30's data) M21's; a hook (M34, `hookLinksPhone`,
+  T31's data) keeps M22's, with the rule it enforces over it and under it.
+  Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

@@ -367,3 +367,21 @@ describe('a workflow’s Links tab on the phone (M33)', () => {
     expect(tops[3]).toBeGreaterThan(tops[2] ?? 0)
   })
 })
+
+describe('a hook’s Links tab on the phone (M34)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the hook’s header and puts the rule it enforces over it and under it', async () => {
+    const { root } = await renderPhone('hookLinksPhone')
+    expect(root.querySelector('article[aria-label="commit-msg"] [data-figma="kind badge"]')).not.toBeNull()
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    expect(nodes.map((n) => n.textContent)).toEqual(['commits-and-prs', 'commit-msg', 'commits-and-prs'])
+    const [over, hook, under] = nodes.map((n) => n.getBoundingClientRect())
+    if (over === undefined || hook === undefined || under === undefined) throw new Error('no nodes')
+    expect(over.bottom).toBeLessThan(hook.top)
+    expect(under.top).toBeGreaterThan(hook.bottom)
+    expect(under.left).toBeCloseTo(over.left, 0)
+  })
+})

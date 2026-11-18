@@ -69,6 +69,7 @@ import { skillLinksPhone } from './skillLinksPhone.ts'
 import { ruleLinksPhone } from './ruleLinksPhone.ts'
 import { agentLinksPhone } from './agentLinksPhone.ts'
 import { workflowLinksPhone } from './workflowLinksPhone.ts'
+import { hookLinksPhone } from './hookLinksPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -139,4 +140,5 @@ export const toolkitStates = {
   ruleLinksPhone,
   agentLinksPhone,
   workflowLinksPhone,
+  hookLinksPhone,
 }

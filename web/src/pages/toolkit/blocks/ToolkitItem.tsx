@@ -268,8 +268,9 @@ const tabletLinksLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:908',
 }
 // On the Links tab of the phone: writer in M17 (482:1067), the rule skills in M31 (493:5375), writing-reviewer in M32
-// (493:5750), skill-eval-round in M33 (493:6286).
+// (493:5750), skill-eval-round in M33 (493:6286), the hook commit-msg in M34 (493:6758).
 const phoneLinksTitleLayers: Readonly<Record<string, string>> = {
+  'hooks/commit-msg': '493:6758',
   'workflows/skill-eval-round.md': '493:6286',
   'skills/writer/': '482:1067',
   'rules/skills.md': '493:5375',
