@@ -56,7 +56,7 @@ has no `exceptions.json`.
 - **Long file and line.** `agents/writing-reviewer.md:30` (482:1281)
   does not fit beside its node in the 332 px row: Figma runs it past the
   panel's edge and the frame's (it ends at x 410). The render keeps it on
-  one line, so the library `Panel`'s body scrolls sideways by 46 px; the
+  one line, so the library `Panel`'s body scrolls sideways; the
   rule check reports it as `hiddenOverflow`. The text is not cut short,
   as an ellipsis would hide its end, and wrapping it would push every
   row under it 21 px lower than Figma's.
