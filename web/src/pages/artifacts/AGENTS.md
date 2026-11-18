@@ -198,8 +198,10 @@ each file of a page folder is for.
   as the Inbox's Sort menu; picking a sort closes it). For M4:
   `SortSheet` (the phone's icon-only Sort and a `BottomSheet` titled
   Sort by with an `OptionList size="sm"` of the sorts and the note under
-  it, as the Inbox's phone Sort sheet; picking a sort closes it, and the
-  scrim and Escape close it and keep the sort). For M6: `AddLinkSheet`
+  it, as the Inbox's phone Sort sheet; an arrow key moves the sort
+  (`onValueChange`) and keeps the sheet open, picking a sort closes it
+  (`onItemSelect`), and the scrim and Escape close it and keep the sort;
+  `app/ArtifactsRoute.test.tsx` checks the arrow keys). For M6: `AddLinkSheet`
   (a `BottomSheet` titled Add a link with Cancel at the start of its
   title row and Add at the end, then the description and
   `AddLinkFields`, 16 apart; Cancel, the scrim and Escape close it). For
@@ -207,8 +209,9 @@ each file of a page folder is for.
   the artifact's title, an `OptionList selectedFill` of Not in a project
   and the projects, each with its count and a folder, cyan on the checked
   one, then under a rule Remove from the library as a `dangerText`
-  button and its note, 2 apart; picking a project sets `ui.fileProject`
-  and checks it; Done, the scrim and Escape close it; Remove does
+  button and its note, 2 apart; picking a project, also with an arrow
+  key (`onValueChange`, which `app/ArtifactsRoute.test.tsx` checks), sets
+  `ui.fileProject` and checks it; Done, the scrim and Escape close it; Remove does
   nothing yet, as the desktop's Remove (D2)). For D7:
   `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
   state or the sent messages, and `Composer`, whose draft is

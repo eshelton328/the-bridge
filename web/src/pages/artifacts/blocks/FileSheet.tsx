@@ -89,7 +89,8 @@ export function FileSheet({
           label={menu.title}
           value={project}
           selectedFill
-          onItemSelect={(value) => {
+          // A click, a tap, Enter, Space or an arrow key picks a project; `onItemSelect` misses the arrow keys.
+          onValueChange={(value) => {
             onProjectChange?.(value)
           }}
           items={[

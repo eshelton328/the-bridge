@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -16,6 +16,9 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 afterEach(() => {
   resetAllStores()
 })
+
+/** Whether OptionList draws a choice as checked: its row's state, which follows the list's value, not the input's. */
+const drawnChecked = (radio: { element: () => Element }) => radio.element().closest('label')?.dataset.state
 
 describe('the Artifacts route', () => {
   it('opens each page that has a route from the rail', async () => {
@@ -76,6 +79,53 @@ describe('the Artifacts route', () => {
     await expect.element(card).toBeVisible()
     const box = card.element().closest('[data-figma="artifact card · Hono server spike"]')
     expect(box?.textContent).toContain('Codex site')
+    await view.unmount()
+  })
+
+  it('moves the sort with an arrow key and keeps the Sort sheet open (M4)', async () => {
+    await page.viewport(390, 844)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/artifacts?state=sortPhone'] }),
+    })
+    const view = await testRender(<RouterProvider router={router} />)
+    const sheet = page.getByRole('dialog', { name: 'Sort by' })
+    const newest = sheet.getByRole('radio', { name: /Newest first/ })
+    await expect.element(newest).toBeChecked()
+    // The sheet puts the focus on itself as it opens; then the checked choice takes it.
+    await expect.poll(() => document.activeElement?.getAttribute('role')).toBe('dialog')
+    newest.element().focus()
+    await expect.poll(() => document.activeElement).toBe(newest.element())
+    await userEvent.keyboard('{ArrowDown}')
+    const oldest = sheet.getByRole('radio', { name: /Oldest first/ })
+    await expect.poll(() => drawnChecked(oldest)).toBe('checked')
+    expect(drawnChecked(newest)).toBe('unchecked')
+    // The Sort button under the sheet's scrim names the sort it set.
+    expect(document.querySelector('button[aria-label="Sort: Oldest"]')).not.toBeNull()
+    await expect.element(sheet).toBeVisible()
+    // A pick still closes the sheet.
+    await sheet.getByText('Title', { exact: true }).click()
+    await expect.element(sheet).not.toBeInTheDocument()
+    await view.unmount()
+  })
+
+  it('moves the project with an arrow key in File in a project (M7)', async () => {
+    await page.viewport(390, 844)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/artifacts?state=filePhone'] }),
+    })
+    const view = await testRender(<RouterProvider router={router} />)
+    const sheet = page.getByRole('dialog', { name: 'File in a project' })
+    const skillEvals = sheet.getByRole('radio', { name: /skill-evals/ })
+    await expect.element(skillEvals).toBeChecked()
+    await expect.poll(() => document.activeElement?.getAttribute('role')).toBe('dialog')
+    skillEvals.element().focus()
+    await expect.poll(() => document.activeElement).toBe(skillEvals.element())
+    await userEvent.keyboard('{ArrowUp}')
+    await expect.poll(() => drawnChecked(sheet.getByRole('radio', { name: /omni-brain/ }))).toBe('checked')
+    expect(drawnChecked(skillEvals)).toBe('unchecked')
+    await expect.element(sheet).toBeVisible()
     await view.unmount()
   })
 })

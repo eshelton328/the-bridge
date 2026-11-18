@@ -47,7 +47,10 @@ export type LibraryToolsProps = {
   sort?: string | undefined
   sortOpen?: boolean | undefined
   onSortOpenChange?: ((open: boolean) => void) | undefined
-  /** A sort picked in the Sort menu; the menu then closes. */
+  /**
+   * A sort picked in the Sort menu; the caller closes the menu. With `sortAs="sheet"` an arrow key also moves the
+   * sort, and the sheet closes itself on a pick through `onSortOpenChange`.
+   */
   onSortChange?: ((sort: string) => void) | undefined
   onFilterClick?: (() => void) | undefined
   /** The Filter menu (D3); without it Filter is a button that opens nothing yet. */

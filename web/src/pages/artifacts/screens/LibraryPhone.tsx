@@ -107,8 +107,9 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           onSortOpenChange={(sortOpen) => {
             onUiChange?.({ sortOpen })
           }}
+          // The sheet closes itself on a pick (onSortOpenChange); an arrow key moves the sort and keeps it open.
           onSortChange={(picked) => {
-            onUiChange?.({ sort: picked, sortOpen: false })
+            onUiChange?.({ sort: picked })
           }}
           // M4: Sort opens the Sort menu as a sheet over the tab bar, as Filter does (M3).
           sortAs="sheet"

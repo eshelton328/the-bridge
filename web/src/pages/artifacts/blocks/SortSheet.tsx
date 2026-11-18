@@ -2,8 +2,9 @@
 // opens the Sort menu as a sheet from the bottom that covers the tab bar,
 // titled Sort by, with each sort and what it does, the picked one checked,
 // and the note under them, as the Inbox's phone Sort sheet (M13) and the
-// Filter sheet (M3). Picking a sort closes the sheet; the scrim and Escape
-// close it and keep the sort. Props only.
+// Filter sheet (M3). An arrow key moves the sort and keeps the sheet open;
+// picking a sort closes it; the scrim and Escape close it and keep the
+// sort. Props only.
 import { BottomSheet, Button, OptionList, SortDescIcon, Stack } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -25,7 +26,7 @@ export type SortSheetProps = {
   sortLabel: string
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
-  /** A sort picked; the sheet then closes. */
+  /** The sort changed: a pick or an arrow key. A pick then closes the sheet through `onOpenChange`. */
   onSortChange?: ((sort: string) => void) | undefined
 }
 
@@ -55,9 +56,14 @@ export function SortSheet({ menu, sort, sortLabel, open, onOpenChange, onSortCha
           label={menu.heading}
           value={sort}
           size="sm"
-          // A click, a tap, Enter or Space picks a sort and closes the sheet, also on the sort already picked.
-          onItemSelect={(value) => {
+          // A click, a tap, Enter, Space or an arrow key sets the sort; only an arrow key leaves the sheet open, as
+          // OptionList calls `onItemSelect` for a pick and not for an arrow key (the Inbox's ListTools, M13).
+          onValueChange={(value) => {
             onSortChange?.(value)
+          }}
+          // A pick closes the sheet, also on the sort already picked.
+          onItemSelect={() => {
+            onOpenChange?.(false)
           }}
           items={menu.options.map((o) => ({ value: o.value, label: o.label, description: o.description }))}
         />
