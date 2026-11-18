@@ -18,9 +18,13 @@
 // Fork (D15) or Subtask (D17), opens over the screen for the chat shown
 // alone, and a toast over its composer confirms a move, with Undo (D20).
 // Rename chat turns the chat's name in its header into a field (D21).
+// The screen lays out by its width (ViewportFrame): a state with the phone's
+// labels draws the phone layout at a phone's width (M1, WorkspacesPhone);
+// every other width, and a state without them, draws the desktop layout.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
+import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { MainChat } from '../blocks/MainChat.tsx'
@@ -38,6 +42,7 @@ import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 
 // The rail's slot is a flex column; the rail fills it.
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -59,6 +64,29 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
+  // The ui lives here, above the layout, so a width change that swaps the layout keeps what Erik changed.
+  return (
+    <ViewportFrame initial={viewport}>
+      {(layout) => (
+        <WorkspacesLayout
+          layout={layout}
+          data={data}
+          ui={ui}
+          viewport={viewport}
+          onNavigate={onNavigate}
+          change={change}
+        />
+      )}
+    </ViewportFrame>
+  )
+}
+
+type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange'> & {
+  layout: Viewport
+  change: (next: Partial<WorkspacesUi>) => void
+}
+
+function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: WorkspacesLayoutProps) {
   // The names Erik gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
@@ -69,6 +97,8 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
   )
   const named = { ...data, workspaces, panes }
+  if (layout === 'phone' && data.phone !== undefined)
+    return <WorkspacesPhone data={named} text={data.phone} ui={ui} onNavigate={onNavigate} onUiChange={change} />
   const current = workspaces.find((w) => w.id === data.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>

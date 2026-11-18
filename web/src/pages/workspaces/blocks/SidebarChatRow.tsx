@@ -3,8 +3,10 @@
 // under the chat that started it (199:51). The row of a chat Erik drags
 // onto the chat shown alone fades (D6 158:750). A fork is indented under its
 // original too, with the branch mark before its kind mark (D16 417:697).
+// On the phone the row ends with its ⋯, after the status (M1 146:2).
 // Props only.
 import { BranchIcon, ContextMeter, Inline, KindMark, ListRow, StatusPill } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarChat } from '../types.ts'
 
@@ -20,9 +22,11 @@ export type SidebarChatRowProps = {
   /** The chat is being dragged from this row: the row fades (D6). */
   moving?: boolean | undefined
   onSelect?: (() => void) | undefined
+  /** The row's ⋯ after the status, as the phone draws it (M1 146:2); the desktop sidebar has none. */
+  menu?: ReactNode
 }
 
-export function SidebarChatRow({ chat, figma, selected, moving, onSelect }: SidebarChatRowProps) {
+export function SidebarChatRow({ chat, figma, selected, moving, onSelect, menu }: SidebarChatRowProps) {
   return (
     <div data-figma={figma} className={moving === true ? faded : undefined}>
       <ListRow
@@ -49,7 +53,17 @@ export function SidebarChatRow({ chat, figma, selected, moving, onSelect }: Side
             {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
           </Inline>
         }
-        trailing={<StatusPill label={chat.status.label} tone={chat.status.tone} dot />}
+        trailing={
+          menu === undefined ? (
+            <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
+          ) : (
+            // M1 105:2361, 146:2: the ⋯ sits 8 after the status, on its line; the trailing slot stacks its children.
+            <Inline gap="8" align="center">
+              <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
+              {menu}
+            </Inline>
+          )
+        }
         selected={selected}
         level={chat.level}
         onSelect={onSelect}

@@ -346,3 +346,17 @@ export const RenameChat: Story = {
     await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
   },
 }
+
+export const PhoneHome: Story = {
+  name: 'M1: every workspace and chat on the phone',
+  args: { data: workspacesStates.phoneHome.data, ui: workspacesStates.phoneHome.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: Storybook opens at desktop, where the state draws D2b's sidebar with bridge
+    // themes alone; the phone's menu draws M1. WorkspacesLayout.test.tsx checks the phone layout at a phone's width.
+    await expect(canvas.getByText('release notes')).toBeVisible()
+    await expect(canvas.getByText('dev server')).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+    await expect(within(document.body).queryByRole('menu')).toBeNull()
+  },
+}

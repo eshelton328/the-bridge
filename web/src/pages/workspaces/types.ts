@@ -267,6 +267,17 @@ export const SidebarText = z.object({
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
+/**
+ * The phone's labels (M1 105:2302): the page title, Edit and the accessible name of +, which opens New chat or New
+ * workspace. A state without them draws the desktop layout at a phone's width.
+ */
+export const PhoneText = z.object({
+  title: z.string(),
+  edit: z.string(),
+  add: z.string(),
+})
+export type PhoneText = z.infer<typeof PhoneText>
+
 /** The Figma layers of a chat pane's composer and entries, for the fidelity checks. */
 const PaneChatLayers = z.object({
   composer: z.string(),
@@ -323,6 +334,13 @@ export const SidebarLayers = z.object({
   toast: z.string().optional(),
   /** The field that takes the place of the chat's name in its header while Erik renames it (D21 417:2442). */
   renameField: z.string().optional(),
+  /** The phone's list of workspaces (M1 105:2327) and its header with Edit and + (105:2328, 105:2333, 105:2335). */
+  phoneList: z.string().optional(),
+  phoneHeader: z.string().optional(),
+  phoneEdit: z.string().optional(),
+  phoneAdd: z.string().optional(),
+  /** The ⋯ at the end of each chat row on the phone, by chat id (M1 146:2). */
+  rowMenus: z.record(z.string(), z.string()).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -447,6 +465,8 @@ export const WorkspacesData = z.object({
    * "Moved bridge themes to the-bridge" and Undo (D20). `ui.toastOpen` shows it.
    */
   toast: z.object({ text: z.string(), action: z.string() }).optional(),
+  /** The phone's labels (M1); with them, a phone's width draws the phone layout: the list and the tab bar. */
+  phone: PhoneText.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 

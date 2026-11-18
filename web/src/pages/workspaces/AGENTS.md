@@ -5,7 +5,16 @@ references are in `references/workspaces/`. Read [../AGENTS.md](../AGENTS.md)
 first: it says what each file of a page folder is for.
 
 - `WorkspacesPage.tsx` is the connected entry; it passes the loader's
-  state to the screen.
+  state to the screen and goes to the page Erik picks.
+- The screen lays out by its width (`ViewportFrame`, as Inbox does): a
+  state with `data.phone` (the phone's labels) draws
+  `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
+  M1 to M23: one view at a time over the shared `AppTabBar`, whose More
+  opens the shared `MoreDrawer`. M1 is its home, `PhoneWorkspaceList`.
+  Every other width, and a state without `data.phone` (D1 to D21), draws
+  the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
+  so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
+  Later phone frames add their views to `WorkspacesPhone`.
 - `screens/WorkspacesScreen.tsx`: the rail (`AppRail`) and the library's
   `Workbench`: the 52 px tab bar (`size="compact"`) with the sidebar
   toggle before the tabs and New chat after them, the current
@@ -114,8 +123,11 @@ first: it says what each file of a page folder is for.
   library's `SearchField`, 300 wide, with × as its clear button), which
   `ChatHead` draws in place of the title while `ui.renaming`: Enter or a
   click outside saves the name in `ui.names`, × or Escape undoes it; Rename
-  chat in `ChatActionsMenu` opens it. Later frames add to these
-  blocks.
+  chat in `ChatActionsMenu` opens it. M1 adds `PhoneWorkspaceList` (the
+  phone's home: the large title with Edit and +, then each workspace's
+  `SidebarGroup` without the grip), and `menu` to `SidebarChatRow` and
+  `rowMenu` to `SidebarGroup`: the ⋯ after a phone row's status. Later
+  frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -148,7 +160,10 @@ first: it says what each file of a page folder is for.
   `movedChat` (from `chatActions`, without the side chat and the menu:
   bridge themes and theme tokens moved to the-bridge, now `current`, and
   the toast with Undo), D21 `renameChat` (from `chatActions`, without the
-  side chat and the menu: the chat's name a field in its header).
+  side chat and the menu: the chat's name a field in its header), M1
+  `phoneHome` (from `chatActions`, without the side chat, the drag, the
+  hovered header and the menu, with `data.phone`; at a desktop width it
+  draws bridge themes alone beside the sidebar).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -169,7 +184,9 @@ first: it says what each file of a page folder is for.
   chat's `mark`, a pane head's `origin` and the `event` chat entry; for
   D17 `subtask`, the Subtask form; for D20 `toast`, the toast's text and
   button, and its layer in `layers.toast`; for D21 the name field's layer
-  in `layers.renameField`) and
+  in `layers.renameField`; for M1 `phone`, the phone's labels, and the
+  phone list's layers in `layers.phoneList`, `phoneHeader`, `phoneEdit`,
+  `phoneAdd` and `rowMenus`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

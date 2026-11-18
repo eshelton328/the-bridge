@@ -16,7 +16,7 @@ import {
   MoreIcon,
   Stack,
 } from '@eshelton328/component-library-1701'
-import { useId } from 'react'
+import { type ReactNode, useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarChat, SidebarLayers, Workspace } from '../types.ts'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
@@ -88,6 +88,8 @@ export type SidebarGroupProps = {
   grip?: boolean | undefined
   /** The chat dragged onto the chat shown alone: its row fades (D6). */
   moving?: string | undefined
+  /** The ⋯ at the end of a chat's row, as the phone draws it (M1); the desktop sidebar has none. */
+  rowMenu?: ((chat: SidebarChat) => ReactNode) | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
@@ -104,6 +106,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
     counts = true,
     grip = true,
     moving,
+    rowMenu,
   } = props
   const rowsId = useId()
   const name = workspace.label
@@ -160,6 +163,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
               selected={chat.id === selected}
               moving={chat.id === moving}
               onSelect={openable.includes(chat.id) ? () => onSelect?.(chat.id) : undefined}
+              menu={rowMenu?.(chat)}
             />
           ))}
         </Stack>
