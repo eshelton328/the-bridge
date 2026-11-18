@@ -5,6 +5,7 @@
 // for word from references/toolkit/D29/frame.json. The list is D37's
 // (ruleHowItWorks): D4's data with the Rules, Workflows and Hooks groups.
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { linkTargets } from './shared/linkFiles.ts'
 import type { ToolkitData, ToolkitLinks, ToolkitUi } from '../types.ts'
 import { ruleHowItWorks } from './ruleHowItWorks.ts'
 
@@ -46,6 +47,7 @@ export const ruleLinks = {
   data: {
     ...ruleHowItWorks.data,
     details: ruleHowItWorks.data.details.map((d) => (d.path === 'rules/skills.md' ? { ...d, links } : d)),
+    linkTargets,
   },
   ui: { ...ruleHowItWorks.ui, itemTab: 'links' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

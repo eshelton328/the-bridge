@@ -492,6 +492,12 @@ export const ToolkitData = z.object({
   map: ToolkitMapView.optional(),
   /** What an open item shows (D3), by path; an item with no entry opens with what the list knows of it. */
   details: z.array(ToolkitItemDetailView).optional(),
+  /**
+   * The items the open item's links name, each with its Files tab's browser (D19 482:660: a tap on a link's file and
+   * line opens that file on its item's Files tab). An item the list does not show opens from here; an item with no
+   * browser in `details` takes this one, and its Files tab. None when the state has no Links tab.
+   */
+  linkTargets: z.array(z.object({ item: ToolkitItemView, browser: ToolkitFileBrowser })).optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 

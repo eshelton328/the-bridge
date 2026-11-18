@@ -4,6 +4,7 @@
 // and it names skill-eval-cases and the agent it runs, eval-grader. Copy
 // word for word from references/toolkit/D31/frame.json; the list is D8's.
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { linkTargets } from './shared/linkFiles.ts'
 import type { ToolkitData, ToolkitLinks, ToolkitUi } from '../types.ts'
 import { workflowOpen } from './workflowOpen.ts'
 
@@ -47,6 +48,7 @@ export const workflowLinks = {
   data: {
     ...workflowOpen.data,
     details: workflowOpen.data.details.map((d) => (d.path === 'workflows/skill-eval-round.md' ? { ...d, links } : d)),
+    linkTargets,
   },
   ui: { ...workflowOpen.ui, itemTab: 'links' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

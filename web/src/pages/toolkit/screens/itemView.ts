@@ -6,9 +6,12 @@
 // node, with its link counts from the map. `showOnMap` is the ui change of
 // the item's Show on map button. Pure, so itemView.test.ts checks both
 // without rendering. `openFrom`, `backTo` and `openedFrom` are the way into an
-// item from another item's links and back (T7).
+// item from another item's links and back (T7). An item a link names that
+// the list does not show opens from `data.linkTargets`, with its Files tab
+// (D19).
 import type {
   ToolkitData,
+  ToolkitFileBrowser,
   ToolkitItemDetailView,
   ToolkitItemView,
   ToolkitMapView,
@@ -30,6 +33,21 @@ function fallback(item: ToolkitItemView): ToolkitItemDetailView {
     usedIn: { label: '', items: [] },
     files: { count: item.files, lines: [] },
   }
+}
+
+const filesTab = { value: 'files', label: 'Files' }
+
+/**
+ * An item's details with the browser of a link target (`data.linkTargets`, D19): a detail with no browser of its own
+ * takes it, and the Files tab when it has none, so a tap on a link's file and line opens a real tree with the file.
+ */
+function withLinkBrowser(
+  detail: ToolkitItemDetailView,
+  browser: ToolkitFileBrowser | undefined,
+): ToolkitItemDetailView {
+  if (browser === undefined || detail.browser !== undefined) return detail
+  const tabs = detail.tabs.some((t) => t.value === filesTab.value) ? detail.tabs : [...detail.tabs, filesTab]
+  return { ...detail, browser, tabs }
 }
 
 /** The map node with this path as a list item: no description, its link counts from the map, and one file. */
@@ -62,10 +80,11 @@ export function openFrom(path: string, from: string | null = null): Partial<Tool
 
 /**
  * The ui change that opens a file of an item on its Files tab (D19, a tap on a link's file and line): another item
- * opens from the open item (`openFrom`); the open item stays as it was opened. The file opens in its own default view.
+ * opens from the open item (`openFrom`); the open item stays as it was opened. The file opens in its own default view,
+ * on a page of its own when `page` is set (`filePage`, as `selectFile` sets it for a tablet or phone).
  */
-export function openFile(path: string, file: string, from: string): Partial<ToolkitUi> {
-  const files = { itemTab: 'files', file, fileView: undefined, filePage: undefined }
+export function openFile(path: string, file: string, from: string, page = false): Partial<ToolkitUi> {
+  const files = { itemTab: 'files', file, fileView: undefined, filePage: page ? true : undefined }
   return path === from ? files : { ...openFrom(path, from), ...files }
 }
 
@@ -87,9 +106,11 @@ export function openedFrom(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'from
 export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTab'>): ToolkitOpenItem | null {
   if (ui.open === undefined || ui.open === null) return null
   const path = ui.open
-  const item = data.groups.flatMap((g) => g.items).find((i) => i.path === path) ?? fromMap(data.map, path)
+  const target = data.linkTargets?.find((t) => t.item.path === path)
+  const item =
+    data.groups.flatMap((g) => g.items).find((i) => i.path === path) ?? fromMap(data.map, path) ?? target?.item
   if (item === undefined) return null
-  const detail = data.details?.find((d) => d.path === path) ?? fallback(item)
+  const detail = withLinkBrowser(data.details?.find((d) => d.path === path) ?? fallback(item), target?.browser)
   const first = detail.tabs[0]?.value ?? overview.value
   const tab = detail.tabs.some((t) => t.value === ui.itemTab) ? (ui.itemTab ?? first) : first
   return { item, detail, tab }

@@ -385,3 +385,28 @@ describe('a hook’s Links tab on the phone (M34)', () => {
     expect(under.left).toBeCloseTo(over.left, 0)
   })
 })
+
+// A tap on a link's file and line opens that file on its item's Files tab: the item's tree with the file selected, and
+// the file in the viewer.
+describe('a link’s file on its item’s Files tab (D19)', () => {
+  it('opens SKILL.md:8 on writer’s Files tab with the tree and SKILL.md shown', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    await userEvent.click(button(root, 'SKILL.md:8'))
+    const item = () => root.querySelector('article[aria-label="writer"]')
+    await expect.poll(() => item()?.querySelector('[data-figma="tree"] [role="treeitem"]')).not.toBeNull()
+    const selected = item()?.querySelector('[data-figma="tree"] [role="treeitem"][aria-selected="true"]')
+    expect(selected?.textContent).toContain('SKILL.md')
+    const viewer = item()?.querySelector('[data-figma="viewer"]')
+    expect(viewer?.getAttribute('aria-label')).toBe('SKILL.md')
+    expect(viewer?.textContent).toContain('The writing rules in')
+  })
+
+  it('opens agents/writer.md:11 on the agent writer’s Files tab with writer.md shown', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    await userEvent.click(button(root, 'agents/writer.md:11'))
+    await expect.poll(() => root.querySelector('article[aria-label="writer"] [data-figma="tree"]')).not.toBeNull()
+    const viewer = root.querySelector('article[aria-label="writer"] [data-figma="viewer"]')
+    expect(viewer?.getAttribute('aria-label')).toBe('writer.md')
+    expect(viewer?.querySelector('[data-figma="code"], [data-figma="rendered markdown"]')).not.toBeNull()
+  })
+})

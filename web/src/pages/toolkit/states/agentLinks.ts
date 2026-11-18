@@ -5,6 +5,7 @@
 // Copy word for word from references/toolkit/D30/frame.json; the list is
 // D7's, with Skills closed.
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { linkTargets } from './shared/linkFiles.ts'
 import type { ToolkitData, ToolkitLinks, ToolkitUi } from '../types.ts'
 import { agentOpen } from './agentOpen.ts'
 
@@ -60,6 +61,7 @@ export const agentLinks = {
   data: {
     ...agentOpen.data,
     details: agentOpen.data.details.map((d) => (d.path === 'agents/writing-reviewer.md' ? { ...d, links } : d)),
+    linkTargets,
   },
   ui: { ...agentOpen.ui, itemTab: 'links' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

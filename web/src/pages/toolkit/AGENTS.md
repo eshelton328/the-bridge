@@ -282,8 +282,13 @@ what each file of a page folder is for.
   and the note. A tap on an item opens it from the open item (`openFrom`);
   a tap on a file and line opens that file on its item's Files tab
   (`linkFile`, and `openFile` in `screens/itemView.ts`;
-  `src/app/ToolkitLinks.test.tsx`). A rule (D29, `ruleLinks`, D37's data)
-  links to one skill and nothing links to it: a side with no links has
+  `src/app/ToolkitLinks.test.tsx`). Each Links state's `linkTargets`
+  holds the browser of every item its links name, from
+  `states/shared/linkFiles.ts` (shared data, not a state): the Files
+  states' browsers (D6, D33 to D36) and one-file browsers for the other
+  items; `openItem` gives an item with no browser that one and its Files
+  tab, and opens an item the list does not show (`linksView.test.ts`).
+  A rule (D29, `ruleLinks`, D37's data) links to one skill and nothing links to it: a side with no links has
   `empty`, the reason in the graph's left column and in its panel. An
   agent (D30, `agentLinks`, D7's data) has two items named writer on one
   side, the skill and the agent: each node and row keys on the item's

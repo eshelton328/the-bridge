@@ -4,6 +4,7 @@
 // sides. Copy word for word from references/toolkit/D32/frame.json; the list
 // is D9's.
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { linkTargets } from './shared/linkFiles.ts'
 import type { ToolkitData, ToolkitLinks, ToolkitUi } from '../types.ts'
 import { hookOpen } from './hookOpen.ts'
 
@@ -41,6 +42,7 @@ export const hookLinks = {
   data: {
     ...hookOpen.data,
     details: hookOpen.data.details.map((d) => (d.path === 'hooks/commit-msg' ? { ...d, links } : d)),
+    linkTargets,
   },
   ui: { ...hookOpen.ui, itemTab: 'links' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

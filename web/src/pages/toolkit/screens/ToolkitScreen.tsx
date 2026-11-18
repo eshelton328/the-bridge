@@ -236,7 +236,12 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           onUiChange(openFrom(path, open.item.path))
         }}
         onOpenFile={(path, file) => {
-          onUiChange(openFile(path, file, open.item.path))
+          // The file opens as a tap on its row in the tree opens it: on a tablet or phone on its own page when it has
+          // one (selectFile; on the phone every file with a view does, since its Files tab has no viewer).
+          const browser = openItem(data, { open: path, itemTab: 'files' })?.detail.browser
+          const page =
+            browser !== undefined && selectFile(browser, file, !desktop, layout === 'phone').filePage === true
+          onUiChange(openFile(path, file, open.item.path, page))
         }}
       />
     )

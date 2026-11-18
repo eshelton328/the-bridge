@@ -4,6 +4,7 @@
 // two panels. Copy word for word from references/toolkit/D19/frame.json; the
 // list is D3's. The graph's columns keep Figma's order (493:84 to 493:142).
 import type { ScreenState } from '../../../lib/screenState.ts'
+import { linkTargets } from './shared/linkFiles.ts'
 import type { ToolkitData, ToolkitLinks, ToolkitUi } from '../types.ts'
 import { skillOpen } from './skillOpen.ts'
 
@@ -70,6 +71,7 @@ export const skillLinks = {
   data: {
     ...skillOpen.data,
     details: skillOpen.data.details.map((d) => (d.path === 'skills/writer/' ? { ...d, links } : d)),
+    linkTargets,
   },
   ui: { ...skillOpen.ui, itemTab: 'links' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

@@ -8,7 +8,8 @@ import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitFileBrowser, ToolkitUi } from '../types.ts'
 import { hookOpen } from './hookOpen.ts'
 
-const browser: ToolkitFileBrowser = {
+/** The item's Files tab, which its Links states share (shared/linkFiles.ts). */
+export const hookFilesBrowser: ToolkitFileBrowser = {
   tree: [
     {
       path: 'commit-msg',
@@ -58,7 +59,9 @@ export const hookFiles = {
   frames: [{ id: 'D36', node: '494:2061', viewport: 'desktop' }],
   data: {
     ...hookOpen.data,
-    details: hookOpen.data.details.map((d) => (d.path === 'hooks/commit-msg' ? { ...d, browser } : d)),
+    details: hookOpen.data.details.map((d) =>
+      d.path === 'hooks/commit-msg' ? { ...d, browser: hookFilesBrowser } : d,
+    ),
   },
   ui: { ...hookOpen.ui, itemTab: 'files' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

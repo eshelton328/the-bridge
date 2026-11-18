@@ -16,7 +16,8 @@ const file = (folder: string, name: string, count?: number) => ({
 const script = (name: string, count: number) => ({ ...file('scripts/', name, count), type: 'code' as const })
 const evalCase = (name: string) => ({ ...file('evals/', name), type: 'folder' as const, children: [] })
 
-const browser: ToolkitFileBrowser = {
+/** The item's Files tab, which its Links states share (shared/linkFiles.ts). */
+export const skillFilesBrowser: ToolkitFileBrowser = {
   tree: [
     { path: 'SKILL.md', name: 'SKILL.md', caption: 'When to use, steps, rules. Loads when the skill triggers.' },
     {
@@ -93,7 +94,9 @@ export const skillFiles = {
   frames: [{ id: 'D6', node: '432:1639', viewport: 'desktop' }],
   data: {
     ...skillOpen.data,
-    details: skillOpen.data.details.map((d) => (d.path === 'skills/writer/' ? { ...d, browser } : d)),
+    details: skillOpen.data.details.map((d) =>
+      d.path === 'skills/writer/' ? { ...d, browser: skillFilesBrowser } : d,
+    ),
   },
   ui: { ...skillOpen.ui, itemTab: 'files' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

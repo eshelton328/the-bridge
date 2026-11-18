@@ -10,7 +10,8 @@ import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitFileBrowser, ToolkitUi } from '../types.ts'
 import { ruleOpen } from './ruleOpen.ts'
 
-const browser: ToolkitFileBrowser = {
+/** The item's Files tab, which its Links states share (shared/linkFiles.ts). */
+export const ruleFilesBrowser: ToolkitFileBrowser = {
   tree: [
     {
       path: 'skills.md',
@@ -53,7 +54,7 @@ export const ruleFiles = {
   data: {
     ...ruleOpen.data,
     groups: ruleOpen.data.groups.filter((g) => g.kind === 'rule' || g.kind === 'workflow' || g.kind === 'hook'),
-    details: ruleOpen.data.details.map((d) => (d.path === 'rules/skills.md' ? { ...d, browser } : d)),
+    details: ruleOpen.data.details.map((d) => (d.path === 'rules/skills.md' ? { ...d, browser: ruleFilesBrowser } : d)),
   },
   ui: { ...ruleOpen.ui, itemTab: 'files' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

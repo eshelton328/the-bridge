@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import { openFile as openBrowserFile, findFile } from './blocks/filesView.ts'
 import { focusId, linkCount, linkFile, linksGraph, sideLabel } from './blocks/linksView.ts'
 import { openFile, openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
-import type { ToolkitLinks } from './types.ts'
+import type { ScreenState } from '../../lib/screenState.ts'
+import type { ToolkitData, ToolkitLinks, ToolkitUi } from './types.ts'
 
 const { skillLinks } = toolkitStates
 
@@ -159,4 +161,42 @@ describe('a rule’s links graph on the phone (M31)', () => {
     ])
     expect(graph.columns.map((c) => c.y)).toEqual([13, 161])
   })
+})
+
+// A tap on a link's file and line opens that file on its item's Files tab (D19 482:660). Each Links state holds the
+// browser of every item its links name, so the tab shows a real tree with the file selected and a view of it.
+describe('a link’s file on its item’s Files tab, in every Links state', () => {
+  const linkStates: [string, ScreenState<ToolkitData, ToolkitUi>][] = Object.entries(toolkitStates).filter(([id]) =>
+    id.includes('Links'),
+  )
+
+  it('covers the five Links states on each layout', () => {
+    expect(linkStates).toHaveLength(15)
+  })
+
+  for (const [id, state] of linkStates) {
+    it(`opens each link’s file with its tree and a view of it (${id})`, () => {
+      const open = openItem(state.data, state.ui)
+      if (open?.detail.links === undefined) throw new Error(`${id} has no links`)
+      const links = open.detail.links
+      const sides = [
+        ['from', links.from.links],
+        ['to', links.to.links],
+      ] as const
+      for (const [side, list] of sides)
+        for (const link of list) {
+          const target = linkFile(side, link, open.item.path)
+          const ui = { ...state.ui, ...openFile(target.item, target.file, open.item.path) }
+          const opened = openItem(state.data, ui)
+          expect(opened?.item.path, link.at).toBe(target.item)
+          expect(opened?.tab, link.at).toBe('files')
+          const browser = opened?.detail.browser
+          if (browser === undefined) throw new Error(`${id}: ${link.at} opens no file browser`)
+          expect(findFile(browser.tree, target.file), link.at).toBeDefined()
+          const shown = openBrowserFile(browser, target.file)
+          expect(shown.path, link.at).toBe(target.file)
+          expect(shown.view, link.at).toBeDefined()
+        }
+    })
+  }
 })
