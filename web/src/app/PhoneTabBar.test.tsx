@@ -125,4 +125,33 @@ describe('the tab bar over the phone page', () => {
     expect(box(toastBox).bottom).toBeLessThanOrEqual(box(tabBar).top)
     await view.unmount()
   })
+
+  it('runs the Workspaces list under the bar and scrolls its last workspace above it (Workspaces M1)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderAt('/workspaces?state=phoneHome')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('[data-figma="tab bar"]')).not.toBeNull()
+    const detail = root.querySelector<HTMLElement>('.app-shell__detail')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    const list = detail?.firstElementChild
+    if (detail === null || tabBar === null || list === null || list === undefined)
+      throw new Error('no list, detail or tab bar')
+    // A tall block at the list's start, as more workspaces would make, so the last workspace stays last.
+    const long = document.createElement('div')
+    long.style.height = '2000px'
+    long.style.flexShrink = '0'
+    list.prepend(long)
+    const last = list.lastElementChild
+    if (last === null) throw new Error('no last workspace')
+    // The list reaches the bottom of the screen, under the bar.
+    expect(box(detail).bottom).toBeGreaterThan(box(tabBar).top)
+    expect(box(detail).bottom).toBe(box(tabBar).bottom)
+    expect(box(last).top).toBeGreaterThan(box(tabBar).top)
+    detail.scrollTop = detail.scrollHeight
+    await expect.poll(() => detail.scrollTop).toBeGreaterThan(0)
+    // At the end of the scroll the last workspace sits above the bar.
+    expect(box(last).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })

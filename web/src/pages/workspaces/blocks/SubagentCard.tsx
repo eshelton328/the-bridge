@@ -1,16 +1,33 @@
 // One subagent or subtask in the subagents panel (D3 105:1322): the sparkle,
 // the title and the status, the agent's meta line, a description, the last
 // lines of its transcript when open, then Transcript and, while it runs,
-// Stop. The library has no subagent card (LIBRARY_GAPS.md: Subagent card),
-// so it is a section `Panel` with no title. Props only.
-import { Button, Inline, Panel, SparkleIcon, Stack, StatusPill, StopIcon } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
+// Stop. On the phone (M6 105:3187) a chevron after the status opens the full
+// transcript (M12). The library has no subagent card (LIBRARY_GAPS.md:
+// Subagent card), so it is a section `Panel` with no title. Props only.
+import {
+  Button,
+  ChevronRightIcon,
+  Inline,
+  Panel,
+  SparkleIcon,
+  Stack,
+  StatusPill,
+  StopIcon,
+} from '@eshelton328/component-library-1701'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Subagent } from '../types.ts'
 
 const sparkle = css({ display: 'inline-flex', color: 'accent.discuss' })
 const title = css({ textStyle: 'label', color: 'fg.default', flex: '1', minW: '[0]', m: '0' })
 const meta = css({ textStyle: 'mono', color: 'fg.muted', m: '0' })
+// On the phone Figma draws the meta line in Geist Mono 11 (M6 105:3232), so the subtask's fits on one line.
+const metaPhone = css({ textStyle: 'monoSm', color: 'fg.muted', m: '0' })
 const description = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
+// Figma draws the chevron bare and grey (M6 147:15), where a text button draws its icon in the accent colour. The
+// 24 px button reaches 2 above and below so the title row keeps the status pill's 20 px; at the end it stays inside
+// the Panel's body, which scrolls what passes its edge, so the icon ends 4 in from the button's end.
+const chevron = css({ color: 'fg.muted', my: '-2' })
+const icon = css({ display: 'flex' })
 // The transcript's last lines in mono on the well, as a terminal shows them (LIBRARY_GAPS.md: Terminal output).
 const transcript = css({
   display: 'flex',
@@ -20,20 +37,32 @@ const transcript = css({
   px: '10',
   bg: 'surface.well',
   borderRadius: 'md',
-  textStyle: 'mono',
   color: 'fg.muted',
 })
+// The lines in Geist Mono 12 (D3); on the phone Figma draws them in Geist Mono 11, as the meta line (M6 105:3210).
+const transcriptText = { pane: css({ textStyle: 'mono' }), phone: css({ textStyle: 'monoSm' }) }
+// Every Button draws the expanded border (border.active) while `aria-expanded` is true; Figma draws Hide transcript
+// with the default border (D3 105:1350, M6 105:3215), so the toggle keeps it.
+const plainToggle = css({ _expanded: { borderColor: 'border.default' } })
 
 export type SubagentCardProps = {
   item: Subagent
   labels: { showTranscript: string; hideTranscript: string; stop: string }
   transcriptOpen: boolean
   onTranscriptOpenChange?: ((open: boolean) => void) | undefined
+  /** `phone` draws the meta line in the compact mono style (M6); `pane` (the default) as the desktop panel (D3). */
+  size?: 'pane' | 'phone' | undefined
+  /** The accessible name of the chevron that opens the full transcript (M6); not set, no chevron. */
+  openLabel?: string | undefined
+  onOpen?: (() => void) | undefined
   /** The Figma layer the card stands for, for the fidelity checks. */
   figma?: string | undefined
+  /** The Figma layer of the chevron. */
+  figmaOpen?: string | undefined
 }
 
-export function SubagentCard({ item, labels, transcriptOpen, onTranscriptOpenChange, figma }: SubagentCardProps) {
+export function SubagentCard(props: SubagentCardProps) {
+  const { item, labels, transcriptOpen, onTranscriptOpenChange, size, openLabel, onOpen, figma, figmaOpen } = props
   const running = item.status.tone === 'running' || item.status.tone === 'working'
   return (
     <div data-figma={figma}>
@@ -46,11 +75,18 @@ export function SubagentCard({ item, labels, transcriptOpen, onTranscriptOpenCha
             </span>
             <h3 className={title}>{item.title}</h3>
             <StatusPill label={item.status.label} tone={item.status.tone} dot />
+            {openLabel === undefined ? null : (
+              <Button variant="text" size="xs" iconOnly className={chevron} aria-label={openLabel} onClick={onOpen}>
+                <span className={icon} data-figma={figmaOpen}>
+                  <ChevronRightIcon size="16" />
+                </span>
+              </Button>
+            )}
           </Inline>
-          <p className={meta}>{item.meta}</p>
+          <p className={size === 'phone' ? metaPhone : meta}>{item.meta}</p>
           {item.description === undefined ? null : <p className={description}>{item.description}</p>}
           {transcriptOpen ? (
-            <div className={transcript}>
+            <div className={cx(transcript, transcriptText[size ?? 'pane'])}>
               {item.transcript.map((line) => (
                 <span key={line}>{line}</span>
               ))}
@@ -60,6 +96,7 @@ export function SubagentCard({ item, labels, transcriptOpen, onTranscriptOpenCha
             <Button
               size="xs"
               textSize="xs"
+              className={plainToggle}
               aria-expanded={transcriptOpen}
               onClick={() => onTranscriptOpenChange?.(!transcriptOpen)}
             >

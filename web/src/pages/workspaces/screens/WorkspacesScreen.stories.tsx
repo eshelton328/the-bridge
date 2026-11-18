@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor, within } from 'storybook/test'
+import { expect, within } from 'storybook/test'
+import { expectTrapFocus } from '../../../lib/focusTrap.ts'
 import { workspacesStates } from '../states/index.ts'
 import { WorkspacesScreen } from './WorkspacesScreen.tsx'
 
@@ -277,8 +278,8 @@ export const SubtaskDialog: Story = {
     await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
     const task = dialog.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })
     await expect(task).toHaveValue('Draft layout notes for the three directions, one page each.')
-    // The dialog moves the focus to the task once it has opened.
-    await waitFor(() => expect(task).toHaveFocus())
+    // The dialog's focus trap moves the focus to the task in the frame after it opens.
+    await expectTrapFocus(task)
     await expect(dialog.getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
     await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
   },
@@ -337,12 +338,124 @@ export const RenameChat: Story = {
   name: 'D21: Rename chat, the name in the header as a field',
   args: { data: workspacesStates.renameChat.data, ui: workspacesStates.renameChat.ui, viewport: 'desktop' },
   play: async ({ canvas }) => {
-    // The field takes the heading's place and takes the focus once it opens.
+    // The field takes the heading's place and takes the focus in the frame after it opens (ChatNameField).
     const field = canvas.getByRole('searchbox', { name: 'Rename bridge themes' })
-    await waitFor(() => expect(field).toHaveFocus())
+    await expectTrapFocus(field)
     await expect(field).toHaveValue('bridge themes')
     await expect(canvas.queryByRole('heading', { name: 'bridge themes' })).toBeNull()
     await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
     await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+  },
+}
+
+export const PhoneHome: Story = {
+  name: 'M1: every workspace and chat on the phone',
+  args: { data: workspacesStates.phoneHome.data, ui: workspacesStates.phoneHome.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: Storybook opens at desktop, where the state draws D2b's sidebar with bridge
+    // themes alone; the phone's menu draws M1. WorkspacesLayout.test.tsx checks the phone layout at a phone's width.
+    await expect(canvas.getByText('release notes')).toBeVisible()
+    await expect(canvas.getByText('dev server')).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+    await expect(within(document.body).queryByRole('menu')).toBeNull()
+  },
+}
+
+export const PhoneEdit: Story = {
+  name: 'M2: edit mode on the phone, with a chat and a workspace renamed in place',
+  args: { data: workspacesStates.phoneEdit.data, ui: workspacesStates.phoneEdit.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M2. WorkspacesLayout.test.tsx checks edit mode at a phone's width.
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByText('theme tokens')).toBeNull()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+  },
+}
+
+export const PhoneChat: Story = {
+  name: 'M3: a chat on the phone, with the skills listed after "/"',
+  args: { data: workspacesStates.phoneChat.data, ui: workspacesStates.phoneChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // its skills open, and the phone's menu draws M3. WorkspacesPhoneChat.test.tsx checks the chat at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
+  },
+}
+
+export const PhoneChatActions: Story = {
+  name: 'M4: the actions on a chat, in a sheet on the phone',
+  args: { data: workspacesStates.phoneChatActions.data, ui: workspacesStates.phoneChatActions.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its chat actions menu open on Move to workspace; at a phone's width the sheet draws M4.
+    // WorkspacesPhoneChatActions.test.tsx checks the sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const body = within(document.body)
+    await expect(await body.findByText('Move to workspace')).toBeVisible()
+    await expect(await body.findByText('New workspace…')).toBeVisible()
+  },
+}
+
+export const PhoneSideChat: Story = {
+  name: 'M5: the side chat on the phone, in a sheet over the main chat',
+  args: { data: workspacesStates.phoneSideChat.data, ui: workspacesStates.phoneSideChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the side chat beside it; at a phone's width the sheet draws M5. WorkspacesPhoneSideChat.test.tsx checks the
+    // sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Nothing here enters bridge themes. Close it and the main chat carries on.'),
+    ).toBeVisible()
+  },
+}
+
+export const PhoneSubagents: Story = {
+  name: "M6: a chat's subagents on the phone",
+  args: { data: workspacesStates.phoneSubagents.data, ui: workspacesStates.phoneSubagents.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; at a phone's width the subagents fill the screen (M6).
+    // WorkspacesPhoneSubagents.test.tsx checks them at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
+  },
+}
+
+export const PhoneNewChat: Story = {
+  name: 'M7: New chat on the phone',
+  args: { data: workspacesStates.phoneNewChat.data, ui: workspacesStates.phoneNewChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat dialog over it; at a phone's width the form fills the screen (M7).
+    // WorkspacesPhoneNewChat.test.tsx checks it at a phone's width.
+    // The open dialog hides the screen behind it from assistive technology, so its roles need `hidden`.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes', hidden: true })).toBeVisible()
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'New chat' }))
+    await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
+    await expectTrapFocus(dialog.getByRole('textbox', { name: 'FIRST MESSAGE' }))
+  },
+}
+
+export const PhoneFolders: Story = {
+  name: "M8: the chat's folders on the phone, with the folder picker",
+  args: { data: workspacesStates.phoneFolders.data, ui: workspacesStates.phoneFolders.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with drift check alone, D4's
+    // folders list and the folder picker beside it; at a phone's width the folders sheet draws M8.
+    // WorkspacesPhoneFolders.test.tsx checks the sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    const picker = canvas.getByRole('complementary', { name: 'Add a folder' })
+    await expect(within(picker).getByText('Folders on the Mac that runs the-bridge.')).toBeVisible()
+    await expect(within(picker).getByRole('button', { name: 'Open the-bridge' })).toBeVisible()
+    // M8's picker lists the folders of ~/ without D4's Documents.
+    await expect(within(picker).queryByRole('button', { name: 'Open Documents' })).toBeNull()
   },
 }

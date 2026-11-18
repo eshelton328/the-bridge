@@ -27,6 +27,8 @@ const runsInLayers: Record<AgentKind, string> = { claude: '105:1389', codex: '10
 const folderLayers = ['128:8', '128:12']
 
 const wide = css({ w: '[100%]' })
+// Figma draws Add folder's border dashed (128:19); a Button's border is solid.
+const dashed = css({ borderStyle: 'dashed' })
 
 export type NewChatDialogProps = {
   form: NewChatForm
@@ -99,7 +101,7 @@ export function NewChatDialog({ form, workspaces, open, onOpenChange }: NewChatD
               </Button>
             ),
           )}
-          <Button size="sm" textSize="xs" data-figma="128:19">
+          <Button size="sm" textSize="xs" className={dashed} data-figma="128:19">
             <PlusIcon size="12" />
             {form.addFolder}
           </Button>

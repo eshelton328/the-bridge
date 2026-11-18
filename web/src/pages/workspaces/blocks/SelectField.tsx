@@ -13,11 +13,13 @@ export type SelectFieldProps = {
   options: readonly { value: string; label: string }[]
   value: string
   onValueChange?: ((value: string) => void) | undefined
+  /** The box's height: `lg` (36, the default), or `xl` (44), as the phone's New chat form draws it (M7 105:3309). */
+  size?: 'lg' | 'xl' | undefined
   /** The Figma layer of the box, for the fidelity checks. */
   figma?: string | undefined
 }
 
-export function SelectField({ label, options, value, onValueChange, figma }: SelectFieldProps) {
+export function SelectField({ label, options, value, onValueChange, size = 'lg', figma }: SelectFieldProps) {
   const chosen = options.find((o) => o.value === value)
   return (
     <RadioMenu
@@ -27,7 +29,7 @@ export function SelectField({ label, options, value, onValueChange, figma }: Sel
       onValueChange={onValueChange}
       width="sm"
       trigger={
-        <Button size="lg" className={trigger} aria-label={`${label}: ${chosen?.label ?? value}`} data-figma={figma}>
+        <Button size={size} className={trigger} aria-label={`${label}: ${chosen?.label ?? value}`} data-figma={figma}>
           {chosen?.label ?? value}
           <ChevronDownIcon size="16" />
         </Button>

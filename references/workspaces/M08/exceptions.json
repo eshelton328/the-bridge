@@ -1,0 +1,8 @@
+{
+  "extra": [
+    {
+      "text": "Message, or / for a skill",
+      "reason": "The chat's composer stays at the bottom of the chat (d-107), under the open folders sheet, which covers it whole. Figma leaves the composer out under its sheet (128:700 holds Erik's message alone). The text check counts a covered run as extra text; the render shows none of it."
+    }
+  ]
+}

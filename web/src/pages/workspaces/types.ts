@@ -21,6 +21,8 @@ export const SidebarChat = z.object({
   model: z.string(),
   context: z.number().optional(),
   status: PaneStatus,
+  /** `true`: the row shows no status, as M2 draws drift check (105:2556). */
+  hideStatus: z.boolean().optional(),
   /** 1 for a subtask's or a fork's chat, indented under the chat that started it. */
   level: z.union([z.literal(0), z.literal(1)]).optional(),
   /**
@@ -183,6 +185,16 @@ export const SubagentsPanel = z.object({
   hideTranscript: z.string(),
   /** The label of the button that stops a running subagent. */
   stop: z.string(),
+  /**
+   * The word after the number of running subagents on the phone, such as "running" in "3 · 2 running" (M6 105:3185);
+   * without it, the phone shows the count alone.
+   */
+  running: z.string().optional(),
+  /**
+   * The accessible name of each card's chevron, before the subagent's title, such as "Open the transcript of" (M6
+   * 147:15). The chevron opens the full transcript (M12); without it, the cards have none.
+   */
+  openTranscript: z.string().optional(),
   items: z.array(Subagent),
 })
 export type SubagentsPanel = z.infer<typeof SubagentsPanel>
@@ -207,12 +219,48 @@ export const NewChatForm = z.object({
   /** The folders the chat may read; the first is the workspace's own. */
   folders: z.array(z.string()),
   addFolder: z.string(),
-  model: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The models; `short` names a model in the summary, such as "Sonnet 5.5" for "Sonnet 5.5 · high effort". */
+  model: z.object({
+    options: z.array(z.object({ value: z.string(), label: z.string(), short: z.string().optional() })),
+    value: z.string(),
+  }),
   message: z.object({ placeholder: z.string(), skills: z.string() }),
   cancel: z.string(),
   start: z.string(),
+  /**
+   * The line over Start chat on the phone (M7 147:9) that sums up the choices: `{workspace}`, `{model}` and
+   * `{folders}` (the number of folders) are filled in. Without it, there is no line.
+   */
+  summary: z.string().optional(),
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
+
+/**
+ * The Figma layers of the New chat form on the phone (M7 105:3248), for the fidelity checks: the header (105:3273)
+ * with Cancel and the title, the scrolling fields (105:3282), each field and its box, the Runs in choices by kind,
+ * the folder chips in order and Add folder, and the start bar (147:8) with its summary and Start chat.
+ */
+export const NewChatLayers = z.object({
+  header: z.string(),
+  cancel: z.string(),
+  title: z.string(),
+  fields: z.object({
+    name: z.string(),
+    runsIn: z.string(),
+    workspace: z.string(),
+    folders: z.string(),
+    model: z.string(),
+    message: z.string(),
+  }),
+  boxes: z.object({ name: z.string(), workspace: z.string(), model: z.string(), message: z.string() }),
+  runsIn: z.partialRecord(AgentKind, z.string()),
+  folders: z.array(z.string()),
+  addFolder: z.string(),
+  startBar: z.string(),
+  summary: z.string(),
+  start: z.string(),
+})
+export type NewChatLayers = z.infer<typeof NewChatLayers>
 
 /**
  * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
@@ -267,6 +315,44 @@ export const SidebarText = z.object({
 })
 export type SidebarText = z.infer<typeof SidebarText>
 
+/**
+ * The phone's labels (M1 105:2302): the page title, Edit and the accessible name of +, which opens New chat or New
+ * workspace. A state without them draws the desktop layout at a phone's width.
+ */
+export const PhoneText = z.object({
+  title: z.string(),
+  edit: z.string(),
+  add: z.string(),
+  /** The button that ends edit mode (M2 105:2508); without it, Edit does not start edit mode. */
+  done: z.string().optional(),
+  /** The accessible name of the back button over a chat (M3 105:2750), which returns to the list. */
+  back: z.string().optional(),
+  /**
+   * The chat actions sheet behind the ⋯ of a chat on the phone (M4 105:2925), in order, with a rule before none: Fork
+   * to Close chat. `move` opens the workspaces under its row. Without it, the ⋯ draws only.
+   */
+  chatMenu: z.array(PaneAction).optional(),
+})
+export type PhoneText = z.infer<typeof PhoneText>
+
+/**
+ * The Figma layers of the folders sheet on the phone (M8 128:704), for the fidelity checks: the header's chip
+ * (128:695), the folder rows in order and Add folder, the rule over the picker, the picker's title row, search and
+ * rows, and its Add button.
+ */
+export const PhoneFoldersLayers = z.object({
+  chip: z.string(),
+  rows: z.array(z.string()),
+  add: z.string(),
+  rule: z.string(),
+  pickerTitle: z.string(),
+  search: z.string(),
+  recent: z.array(z.string()),
+  browse: z.array(z.string()),
+  addFolder: z.string(),
+})
+export type PhoneFoldersLayers = z.infer<typeof PhoneFoldersLayers>
+
 /** The Figma layers of a chat pane's composer and entries, for the fidelity checks. */
 const PaneChatLayers = z.object({
   composer: z.string(),
@@ -311,18 +397,50 @@ export const SidebarLayers = z.object({
   /** The main chat's entries, in order; an entry with no layer has none. */
   entries: z.array(z.string().optional()).optional(),
   sideChat: z.string().optional(),
+  /** The side chat's title row: its bubble, title, command and × (M5 105:3109); none when not set. */
+  sideHeader: z.string().optional(),
   sideNote: z.string().optional(),
   sideComposer: z.string().optional(),
   sideEntries: z.array(z.string().optional()).optional(),
   /** The subagents panel and its cards, by subagent id (D3). */
   subagents: z.string().optional(),
   subagentCards: z.record(z.string(), z.string()).optional(),
+  /**
+   * The subagents view on the phone (M6): its header (105:3176), the title (105:3181), the count line (105:3185) and
+   * each card's chevron, by subagent id (147:15). The back button is `phoneBack`.
+   */
+  subagentsHeader: z.string().optional(),
+  subagentsTitle: z.string().optional(),
+  subagentsCount: z.string().optional(),
+  subagentChevrons: z.record(z.string(), z.string()).optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
   toast: z.string().optional(),
   /** The field that takes the place of the chat's name in its header while Erik renames it (D21 417:2442). */
   renameField: z.string().optional(),
+  /** The phone's list of workspaces (M1 105:2327) and its header with Edit and + (105:2328, 105:2333, 105:2335). */
+  phoneList: z.string().optional(),
+  phoneHeader: z.string().optional(),
+  phoneEdit: z.string().optional(),
+  phoneAdd: z.string().optional(),
+  /** The ⋯ at the end of each chat row on the phone, by chat id (M1 146:2). */
+  rowMenus: z.record(z.string(), z.string()).optional(),
+  /** The fields that rename a chat or a workspace in the phone's list, by chat or workspace id (M2 146:37, 105:2614). */
+  renameFields: z.record(z.string(), z.string()).optional(),
+  /** The back button over a chat on the phone (M3 105:2750). */
+  phoneBack: z.string().optional(),
+  /** The skill list after "/" in the chat's composer; D1's (105:406) when not set. */
+  skills: z.string().optional(),
+  /**
+   * The icons of the phone's chat actions sheet (M4 105:2938), by action value or, under Move to workspace, by
+   * workspace id and `new`: `BottomSheet` and `OptionList` take no `data-*`, so the icons carry the rows' places.
+   */
+  sheetIcons: z.record(z.string(), z.string()).optional(),
+  /** The New chat form on the phone (M7). */
+  newChatForm: NewChatLayers.optional(),
+  /** The folders sheet on the phone (M8). */
+  phoneFolders: PhoneFoldersLayers.optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -340,6 +458,11 @@ export const ChatFolders = z.object({
   /** The accessible name of a folder's remove button; {folder} is filled in. */
   remove: z.string(),
   add: z.string(),
+  /**
+   * The chip in a phone chat's header that opens the folders sheet (M8 128:695), such as "{count} folders"; {count}
+   * is the number of folders. Without it, the phone's header has no chip.
+   */
+  chip: z.string().optional(),
 })
 export type ChatFolders = z.infer<typeof ChatFolders>
 
@@ -447,6 +570,8 @@ export const WorkspacesData = z.object({
    * "Moved bridge themes to the-bridge" and Undo (D20). `ui.toastOpen` shows it.
    */
   toast: z.object({ text: z.string(), action: z.string() }).optional(),
+  /** The phone's labels (M1); with them, a phone's width draws the phone layout: the list and the tab bar. */
+  phone: PhoneText.optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -527,6 +652,26 @@ export const WorkspacesUi = z.object({
   renaming: z.boolean().optional(),
   /** The names Erik gave chats, by chat id, in place of their titles in the data. */
   names: z.record(z.string(), z.string()).optional(),
+  /**
+   * The phone's list is in edit mode (M2): each workspace and chat has its handle, each workspace its ×, + is off and
+   * Done ends it.
+   */
+  editing: z.boolean().optional(),
+  /**
+   * The chats and the workspaces whose name is a field in the phone's list (M2), by id, with the text in the field.
+   * A tap outside a field saves it, and its × undoes the change; either closes it.
+   */
+  renamingChats: z.record(z.string(), z.string()).optional(),
+  renamingWorkspaces: z.record(z.string(), z.string()).optional(),
+  /** The names Erik gave workspaces, by workspace id, in place of their labels in the data. */
+  workspaceNames: z.record(z.string(), z.string()).optional(),
+  /**
+   * What fills the phone's screen: `list`, the workspaces (M1, the default), `chat`, the focused chat with its
+   * header and composer and no tab bar (M3), or `subagents`, the focused chat's subagents (M6). A tap on a chat in the
+   * list opens it; the chat's back button returns. Subagents in the chat actions opens the subagents, and their back
+   * button returns to the chat.
+   */
+  phoneView: z.enum(['list', 'chat', 'subagents']).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

@@ -54,16 +54,17 @@ list open over the transcript and the folder picker in the side slot
   spaces the folder icon, the path, "+1" and the chevron 6 apart, so the
   control is 146 wide against Figma's 138. Its cyan border while the list
   is open is the button's expanded border.
-- **Folder list (Folder list).** `128:410`, `128:416` and `128:424`
-  w +8, `128:424` y +5: `Popover` pads 10 against Figma's 13, so the rows
+- **Folder list (Folder list).** `128:410`, `128:416` and `128:424` w
+  +8, `128:424` y +5: `Popover` pads 10 against Figma's 13, so the rows
   are 8 px wider; the rows are 36 px (`Button size="lg"`) against 37 and
-  Add folder 28 against 30. The × of ~/omni is part of the row's button.
-  The popover opens next to its trigger, the control inside the prompt
-  box, so a `mb: 40` class (the nearest spacing token, d-100) lifts it
-  clear of the box, where Figma draws it; it ends 1 px from Figma's edge.
-  "working folder" is `fg.muted`, a little brighter than Figma's, because
-  `fg.subtle` on the row's raised fill is under the 4.5:1 contrast the
-  accessibility test asks for.
+  Add folder 28 against 30, its border dashed as in Figma (128:424). The
+  × of ~/omni is part of the row's button. The popover opens next to its
+  trigger, the control inside the prompt box, so a `mb: 40` class (the
+  nearest spacing token, d-100) lifts it clear of the box, where Figma
+  draws it; it ends 1 px from Figma's edge. "working folder" is
+  `fg.muted`, a little brighter than Figma's, because `fg.subtle` on the
+  row's raised fill is under the 4.5:1 contrast the accessibility test
+  asks for.
 - **+ in the composer (Composer add button).** Figma's composer starts its
   bottom row with a + button; `Composer` draws its attach button with a
   paperclip.

@@ -5,7 +5,31 @@ references are in `references/workspaces/`. Read [../AGENTS.md](../AGENTS.md)
 first: it says what each file of a page folder is for.
 
 - `WorkspacesPage.tsx` is the connected entry; it passes the loader's
-  state to the screen.
+  state to the screen and goes to the page Erik picks.
+- The screen lays out by its width (`ViewportFrame`, as Inbox does): a
+  state with `data.phone` (the phone's labels) draws
+  `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
+  M1 to M23: one view at a time with the shared `AppTabBar`, whose More
+  opens the shared `MoreDrawer`. The tab bar lies over the list's foot
+  (AppShell `tabBarOverlay`, as the other pages): the list runs under it
+  and its last workspace scrolls clear of it (`app/PhoneTabBar.test.tsx`).
+  The views with no tab bar keep their footers (the composer, New chat's
+  start bar) in `ScrollFrame` footers, which the library lifts above a bar.
+  The page has no tablet layout: a tablet draws the desktop layout, with
+  the rail and no tab bar. M1 is its home, `PhoneWorkspaceList`;
+  M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
+  'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
+  that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
+  the side chat, a sheet over the chat (`ui.sideChatOpen`, `PhoneSideChat`);
+  M6 is the chat's subagents (`ui.phoneView: 'subagents'`, `PhoneSubagents`),
+  with no tab bar; M7 is New chat (`ui.newChatOpen`, `PhoneNewChat`), which
+  fills the screen with no tab bar; M8 is the chat's folders, a sheet that
+  the folders chip in the chat's header opens (`ui.foldersOpen`,
+  `PhoneFolders`), with the folder picker under the folders
+  (`ui.folderPickerOpen`). Every other width, and a state without `data.phone` (D1 to D21), draws
+  the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
+  so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
+  Later phone frames add their views to `WorkspacesPhone`.
 - `screens/WorkspacesScreen.tsx`: the rail (`AppRail`) and the library's
   `Workbench`: the 52 px tab bar (`size="compact"`) with the sidebar
   toggle before the tabs and New chat after them, the current
@@ -114,8 +138,58 @@ first: it says what each file of a page folder is for.
   library's `SearchField`, 300 wide, with × as its clear button), which
   `ChatHead` draws in place of the title while `ui.renaming`: Enter or a
   click outside saves the name in `ui.names`, × or Escape undoes it; Rename
-  chat in `ChatActionsMenu` opens it. Later frames add to these
-  blocks.
+  chat in `ChatActionsMenu` opens it. M1 adds `PhoneWorkspaceList` (the
+  phone's home: the large title with Edit and +, then each workspace's
+  `SidebarGroup` without the grip), and `menu` to `SidebarChatRow` and
+  `rowMenu` to `SidebarGroup`: the ⋯ after a phone row's status. M2 adds
+  edit mode to `PhoneWorkspaceList` (Done for Edit, + off), which draws each
+  workspace as `PhoneEditGroup` (the header with its grip and × to close,
+  or its name as a field; the rows with their grip and no ⋯; a tap on a
+  chat's name opens its field), `PhoneRenameRow` (a chat row whose name is
+  a field over the meta line) and `ChatMeta` (a chat's model and context,
+  which `SidebarChatRow` uses too); it adds `grip` to `SidebarChatRow`, and
+  `draft`, `autoFocus` and `fill` to `ChatNameField`. M3 adds `PhoneChat`
+  (the chat on the phone: `ChatHead size="phone"` with the back button in
+  its `back` slot and a bare ⋯, over `ChatPane size="phone"`), `autoFocus`
+  to `ChatPane` (the focus in the message box) and `layout="phone"` to
+  `SkillPicker` (as wide as the composer, compact, and the focus stays in
+  the box); a tap on a chat in the phone's list opens it, and the back
+  button returns to the list. M4 adds `PhoneChatActions` (the chat
+  actions sheet behind the phone chat's ⋯: `BottomSheet size="sm"` titled
+  with the chat's name, the actions in `OptionList`s with no check, Move
+  to workspace's list of workspaces inline under its row) and
+  `renderMenu` to `PhoneChat` (the caller gets the ⋯ as the sheet's
+  trigger); `ChatPane`'s composer layer is optional, as M4's sheet hides
+  the composer. M5 adds `PhoneSideChat` (the side chat on the phone:
+  `BottomSheet size="sm"` with no title row, the focus in its message box),
+  `placement="sheet"` to `SideChatPanel` (the title row with the bubble,
+  `/btw` and a grey × at 20 px, the 17 px title, and `sideHeader`, its layer)
+  and `size="sheet"` to `ChatPane`; Side chat in the chat actions sheet
+  opens it, and × or the scrim closes it. M6 adds `PhoneSubagents` (the
+  chat's subagents on the phone: `BackRow` to the chat, the title in
+  `PageHeader size="phone"` and the count line, "3 · 2 running", in a
+  `ScrollFrame` header over the cards), and `size="phone"` (the meta in
+  `monoSm`) and `openLabel` (a grey chevron after the status, which opens
+  the full transcript, M12) to `SubagentCard`; Subagents in the chat
+  actions sheet opens it, and its back row returns to the chat. M7 adds
+  `PhoneNewChat` (New chat on the phone: Cancel and the title in a
+  `ScrollFrame` header, the fields between, and the start bar, the summary
+  of the choices over Start chat, as its footer; Cancel closes it) and
+  `NewChatFields` (D3's fields for a phone's width: the name, Runs in as
+  stacked rows with a check on the chosen one, the workspace, the folder
+  chips, the model and the first message), and `size` to `SelectField`
+  (`xl`, 44 high). M8 adds `PhoneFolders` (the chat's folders on the phone:
+  the chip in the header is the trigger of a `BottomSheet` titled Folders
+  with a `ScrollFrame` of the folder rows, a rule and the picker, and Add as
+  its footer; the search has the focus, its caret at the end), and moves
+  D4's parts into two blocks both layouts use: `FolderRows` (the folder
+  rows and Add folder, which `FoldersControl` draws in its popover;
+  `accent` draws the working folder's icon cyan) and `FolderPickerList`
+  (the picker's title row, note, search, recent and listed folders, which
+  `FolderPickerPane` draws; `size="sheet"` puts every part 8 apart). It
+  adds `extra` to `ChatHead` (in place of the context label) and
+  `folders` and `noActions` (no ⋯) to `PhoneChat`. Later frames add to
+  these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -148,7 +222,25 @@ first: it says what each file of a page folder is for.
   `movedChat` (from `chatActions`, without the side chat and the menu:
   bridge themes and theme tokens moved to the-bridge, now `current`, and
   the toast with Undo), D21 `renameChat` (from `chatActions`, without the
-  side chat and the menu: the chat's name a field in its header).
+  side chat and the menu: the chat's name a field in its header), M1
+  `phoneHome` (from `chatActions`, without the side chat, the drag, the
+  hovered header and the menu, with `data.phone`; at a desktop width it
+  draws bridge themes alone beside the sidebar), M2 `phoneEdit` (from
+  `phoneHome`, in edit mode: bridge themes' name a field with "theme
+  explorations", the-bridge's name a field, without theme tokens, and
+  drift check with no status), M3 `phoneChat` (from `phoneHome`, with
+  D1's bridge themes pane without the composer's model chip: "/" typed,
+  the skills listed, the chat open on the phone), M4 `phoneChatActions`
+  (from `phoneChat`, without the skills and the "/": the chat actions
+  sheet open, Move to workspace's list open on the-bridge), M5
+  `phoneSideChat` (from `phoneChatActions`, without the sheet: D2's side
+  chat with M5's note, open in a sheet over the chat), M6
+  `phoneSubagents` (from `phoneChatActions`, without the sheet: D3's
+  subagents, Layout notes' transcript open, on the phone), M7
+  `phoneNewChat` (from `phoneHome`, with D3's New chat form and its summary
+  line: the form open on the phone), M8 `phoneFolders` (from `phoneChat`,
+  with D4's drift check pane with Erik's message alone, its folders and
+  its picker without Documents: the folders sheet open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -169,7 +261,18 @@ first: it says what each file of a page folder is for.
   chat's `mark`, a pane head's `origin` and the `event` chat entry; for
   D17 `subtask`, the Subtask form; for D20 `toast`, the toast's text and
   button, and its layer in `layers.toast`; for D21 the name field's layer
-  in `layers.renameField`) and
+  in `layers.renameField`; for M1 `phone`, the phone's labels, and the
+  phone list's layers in `layers.phoneList`, `phoneHeader`, `phoneEdit`,
+  `phoneAdd` and `rowMenus`; for M2 `phone.done`, a chat's `hideStatus`
+  and the fields' layers in `layers.renameFields`; for M3 `phone.back`
+  and the layers `phoneBack` and `skills`; for M4 `phone.chatMenu`, the
+  sheet's actions, and the sheet's icons in `layers.sheetIcons`; for M5
+  the side chat's title row in `layers.sideHeader`; for M6 the subagents'
+  `running` and `openTranscript` labels and the view's layers in
+  `layers.subagentsHeader`, `subagentsTitle`, `subagentsCount` and
+  `subagentChevrons`; for M7 the New chat form's `summary` and its models'
+  `short` names, and the form's layers in `layers.newChatForm`; for M8 the
+  folders' `chip` and the sheet's layers in `layers.phoneFolders`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -182,6 +285,9 @@ first: it says what each file of a page folder is for.
   sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
-  and `names`, the names Erik gave chats), each a Zod schema.
+  and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
+  edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
+  fields with their text, and `workspaceNames`; for M3 `phoneView`, what
+  fills the phone's screen, `subagents` in M6), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

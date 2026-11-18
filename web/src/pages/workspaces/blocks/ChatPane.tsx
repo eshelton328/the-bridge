@@ -6,9 +6,11 @@
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
 // side. The composer stays at the bottom of its pane and only the transcript
-// above it scrolls (d-107, `ScrollFrame`). Props only.
+// above it scrolls (d-107, `ScrollFrame`). `size="phone"` is the chat on the
+// phone (M3 105:2784), with the skill list as wide as the composer, and
+// `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106). Props only.
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
-import { type ReactNode, useRef } from 'react'
+import { type ReactNode, useEffect, useRef } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
@@ -30,6 +32,13 @@ const sizes = {
   side: css({ px: '16', pt: '12', pb: '16' }),
   // D5 158:518: the side chat in a pane pads its parts itself, and fills the panel under its title row.
   inset: css({ px: '0', pt: '0', pb: '0' }),
+  // M3 105:2784: 16 in from the screen's sides and 14 under the header's rule (12 on the grid). The composer ends 10
+  // over Figma's 21 px home indicator band, 31 from the screen's end; `AppShell` keeps a 34 px safe area there with no
+  // tab bar, so the body pads nothing under the composer.
+  phone: css({ px: '16', pt: '12', pb: '0' }),
+  // M5 105:3106: the side chat in the phone's sheet, whose panel pads the sides; the transcript 12 under the note, and
+  // the sheet keeps the safe area under the composer.
+  sheet: css({ px: '0', pt: '12', pb: '0' }),
 }
 // The space between the entries, and between the transcript, `above` and the composer: 10 in a pane of the split
 // and the side chat in a pane (D1, D5), 12 in the chat alone and the side chat (D2).
@@ -37,6 +46,10 @@ const gaps = {
   pane: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
   full: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   side: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
+  // M3: the entries 12 apart (105:2785 to 105:2790).
+  phone: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
+  // M5: the entries 12 apart (105:3121, 105:3123).
+  sheet: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   // The side chat in a pane: in a short pane its transcript keeps two 17 px lines (`control.lg`, 36, the nearest size
   // token, d-100) and scrolls with the note; the title row and the composer stay in view (d-107).
   inset: { body: css({ gap: '10', minH: 'control.lg' }), footer: css({ gap: '10', pt: '10' }) },
@@ -45,11 +58,24 @@ const gaps = {
 // library's ScrollFrame lets its footer shrink (and scroll) so a long draft leaves the transcript room; the inline
 // composer caps its own draft, so here the footer keeps its height (`footerShrink={false}`, library beta.27) and the
 // panel scrolls instead (SideChatPanel).
-const footerShrinks = { pane: true, full: true, side: true, inset: false } satisfies Record<keyof typeof sizes, boolean>
+const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: true, inset: false } satisfies Record<
+  keyof typeof sizes,
+  boolean
+>
+// The chat on the phone ends at the screen's safe area. `ScrollFrame`'s footer pads 4 round the composer for a focus
+// ring and reaches 4 below the frame to make up for it, which would scroll the screen by 4; the composer draws its
+// focus as its border, so the footer pads nothing under it and ends with the frame (M3).
+const phoneFrame = css({ '& > .scroll-frame__footer': { pb: '0', mb: '0' } })
 const footer = css({ display: 'flex', flexDirection: 'column' })
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
-  figma: { composer: string; entries?: readonly (string | undefined)[] | undefined }
+  figma: {
+    /** The composer; none when the frame does not draw it, such as under M4's sheet. */
+    composer?: string | undefined
+    entries?: readonly (string | undefined)[] | undefined
+    /** The skill list; D1's when not set. */
+    skills?: string | undefined
+  }
   entries: readonly ChatEntry[]
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
@@ -68,6 +94,8 @@ export type ChatPaneProps = {
   above?: ReactNode
   /** Drawn over the body, such as the side chat in a pane (D5 158:518); it places itself. */
   overlay?: ReactNode
+  /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
+  autoFocus?: boolean | undefined
 }
 
 export function ChatPane(props: ChatPaneProps) {
@@ -84,10 +112,20 @@ export function ChatPane(props: ChatPaneProps) {
     lead,
     above,
     overlay,
+    autoFocus = false,
   } = props
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
   const areaRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!autoFocus) return
+    const area = areaRef.current?.querySelector('textarea')
+    // A "/" Erik types opens the list with the focus already in the box: the caret stays where he typed it.
+    if (!area || area.ownerDocument.activeElement === area) return
+    // Otherwise the caret goes after the text, where typing goes on.
+    area.focus()
+    area.setSelectionRange(area.value.length, area.value.length)
+  }, [autoFocus])
   const onValueChange = (text: string) => {
     const open = text.startsWith('/')
     if (skills === undefined || open === skills.open) return
@@ -127,13 +165,17 @@ export function ChatPane(props: ChatPaneProps) {
   )
   const composerBox =
     skills === undefined ? (
-      <div data-figma={figma.composer}>{box}</div>
+      <div ref={areaRef} data-figma={figma.composer}>
+        {box}
+      </div>
     ) : (
       <SkillPicker
         label={skills.label}
         skills={skills.items}
         value={skills.value}
         open={skills.open}
+        layout={size === 'phone' ? 'phone' : 'pane'}
+        figma={figma.skills}
         onOpenChange={(open) => {
           // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
           if (!open) onSkillsOpenChange?.(false)
@@ -154,6 +196,7 @@ export function ChatPane(props: ChatPaneProps) {
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
+        className={size === 'phone' ? phoneFrame : undefined}
         footerShrink={footerShrinks[size]}
         bodyClassName={gaps[size].body}
         footer={
