@@ -5,7 +5,8 @@
 // stages. A parallel stage stands its two steps one over the other, and a
 // single step sits level with the gap between them (`stepRows`, `arrowRows`
 // in flowLayout.ts). The library draws each connector (`columnArrow` says
-// which): a `FlowLine` between two single steps, a `FlowBranch` into and out
+// which): a `FlowLine` between two single steps or each two parallel steps
+// in a row, a `FlowBranch` into and out
 // of the parallel steps, the gate's way out (a `FlowLine` down with its
 // label, "no") to the stop under it, and the dashed `FlowLoop` from the last
 // step back to the stop, with its label under the step the state names.
@@ -140,7 +141,8 @@ export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsP
     )
   const connector = (from: number, to: number) => {
     const kind = columnArrow(from, to)
-    if (kind === 'down')
+    // Between two single steps one line; between two parallel stages a line at each pair of steps.
+    if (kind === 'down' || kind === 'pair')
       return arrowRows(from, to).map((r) => (
         <span key={r} className={cx(across, rows[r])}>
           <FlowLine />

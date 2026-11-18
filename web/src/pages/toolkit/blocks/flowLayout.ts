@@ -37,11 +37,13 @@ export function stepHeading(step: Pick<FlowPageStep, 'type' | 'mark' | 'title'>)
 /**
  * The connector between two stages (D13, T8): `fork` into a parallel stage (the library's `FlowBranch`, an arm into
  * each of its steps, 502:2), `join` out of one (its arms into one head, 502:8), `down` between two single steps (a
- * `FlowLine`, 448:223; across on the desktop, 447:74).
+ * `FlowLine`, 448:223; across on the desktop, 447:74), `pair` between two parallel stages (a `FlowLine` from each
+ * step into the one beside it in the next stage; no frame shows one, so a join there would point between the cards).
  */
-export type ColumnArrow = 'down' | 'fork' | 'join'
+export type ColumnArrow = 'down' | 'fork' | 'join' | 'pair'
 
 export function columnArrow(from: number, to: number): ColumnArrow {
+  if (from > 1 && to > 1) return 'pair'
   if (to > 1 && from === 1) return 'fork'
   if (from > 1) return 'join'
   return 'down'

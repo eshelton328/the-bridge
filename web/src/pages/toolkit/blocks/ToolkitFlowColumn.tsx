@@ -3,7 +3,8 @@
 // card (`ToolkitFlowStep variant="column"`) as wide as the column, and a
 // parallel stage's steps side by side (`parallel · 4 and 5` 448:256). The
 // library draws each connector, as `columnArrow` in flowLayout.ts says: a
-// `FlowLine` down between two stages (448:223), a `FlowBranch` fork into a
+// `FlowLine` down between two stages (448:223), or one under each step
+// between two parallel stages, a `FlowBranch` fork into a
 // parallel stage (`fork · 4 and 5` 502:2, an arm into each step) and a join
 // out of it (`join · 4 and 5` 502:8); each tip ends 2 before the card under
 // it. A gate's way out, when the page has one, is the stop box under the
@@ -25,12 +26,20 @@ const stageRow = css({ display: 'grid', gridAutoColumns: '[1fr]', gridAutoFlow: 
 // join 22 high, from 2 under the card over it. Figma's arrow heads are 14 px icons; the library's head is drawn on the
 // line (LIBRARY_GAPS.md, Workflow page flow).
 const down = css.raw({ display: 'grid', justifyContent: 'center', gridTemplateRows: '[token(spacing.16)]', pt: '2' })
+// Two parallel stages in a row (no frame shows one): a line down from each step to the one under it, in the
+// stage's columns 8 apart.
+const pair = css.raw({ gridAutoFlow: 'column', gridAutoColumns: '[1fr]', columnGap: '8', justifyItems: 'center' })
 const forkJoin = css.raw({ display: 'grid', gridTemplateRows: '[token(spacing.20)]', pt: '2' })
 // M9 464:558 and 464:560: on the phone a fork or a join is 24 high, its elbow from the card over it (464:559).
 const phoneForkJoin = css.raw({ gridTemplateRows: '[token(spacing.24)]', pt: '0' })
 const arrows: Readonly<Record<'tablet' | 'phone', Readonly<Record<ColumnArrow, string>>>> = {
-  tablet: { down: css(down), fork: css(forkJoin), join: css(forkJoin) },
-  phone: { down: css(down), fork: css(forkJoin, phoneForkJoin), join: css(forkJoin, phoneForkJoin) },
+  tablet: { down: css(down), pair: css(down, pair), fork: css(forkJoin), join: css(forkJoin) },
+  phone: {
+    down: css(down),
+    pair: css(down, pair),
+    fork: css(forkJoin, phoneForkJoin),
+    join: css(forkJoin, phoneForkJoin),
+  },
 }
 const stop = css({ mt: '12' })
 const stopLine = css({
@@ -85,7 +94,13 @@ export function ToolkitFlowColumn({ page, selected, onSelect, layout = 'tablet' 
           : undefined
     return (
       <div className={arrows[layout][kind]} data-figma={layer}>
-        {kind === 'down' ? <FlowLine direction="down" /> : <FlowBranch kind={kind} direction="down" gap="8" />}
+        {kind === 'down' ? (
+          <FlowLine direction="down" />
+        ) : kind === 'pair' ? (
+          to.map((step) => <FlowLine key={step.id} direction="down" />)
+        ) : (
+          <FlowBranch kind={kind} direction="down" gap="8" />
+        )}
       </div>
     )
   }

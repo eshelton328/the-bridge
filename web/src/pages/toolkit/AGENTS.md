@@ -130,7 +130,9 @@ what each file of a page folder is for.
   and the flow is `ToolkitFlowColumn`: no panel or header, each card a
   `ToolkitFlowStep variant="column"` as wide as the item, a `FlowLine`
   down between stages and a `FlowBranch` fork into and join out of the
-  parallel steps (`columnArrow` in `blocks/flowLayout.ts`); the selected step's panel comes
+  parallel steps (`columnArrow` in `blocks/flowLayout.ts`; two parallel
+  stages in a row get a `FlowLine` from each step, on every layout,
+  `ToolkitFlowSteps.test.tsx`); the selected step's panel comes
   under it. On the phone (M9, `workflowFullPagePhone`, T8's data) the
   breadcrumb leaves out the kind's crumb (Toolkit › the workflow), Discuss
   and Show on map are icon buttons, when it runs sits beside the kind
