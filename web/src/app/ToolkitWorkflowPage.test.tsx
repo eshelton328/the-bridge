@@ -66,3 +66,46 @@ describe('a workflow on its own page', () => {
     expect(document.querySelector('[data-figma="toolkit list"]')).toBeNull()
   })
 })
+
+// The same page on a tablet (T8, workflowFullPageTablet): the steps stand in one column as wide as the item, with no
+// panel or header over them; an arrow points at each of the parallel steps (the fork) and one arrow comes out of them
+// (the join); the breadcrumb row is the back row, and the selected step's panel comes under the column.
+async function renderTablet() {
+  await page.viewport(756, 1129)
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/toolkit?state=workflowFullPageTablet'] }),
+  })
+  ;({ unmount } = await testRender(<RouterProvider router={router} />))
+  await expect.poll(() => document.querySelectorAll('[data-figma^="step · "]').length).toBe(9)
+  const box = (key: string) => document.querySelector(`[data-figma="${key}"]`)?.getBoundingClientRect()
+  return { box }
+}
+
+describe('a workflow on its own page on a tablet', () => {
+  it('stands the steps in a column as wide as the item, forked into the parallel steps and joined out of them (T8)', async () => {
+    const { box } = await renderTablet()
+    const item = box('toolkit item')
+    const runs = box('step · Runs')
+    const facts = box('step · Facts')
+    const primary = box('step · Primary grades')
+    const second = box('step · Second grades')
+    expect(Math.round(runs?.width ?? -1)).toBe(Math.round(item?.width ?? 0))
+    expect(facts?.top ?? 0).toBeGreaterThan(runs?.bottom ?? 0)
+    expect(Math.round(primary?.top ?? -1)).toBe(Math.round(second?.top ?? 0))
+    expect(second?.left ?? 0).toBeGreaterThan(primary?.right ?? 0)
+    // The fork has an arrow over each parallel step; the join one arrow in the middle of the column.
+    const fork = document.querySelector('[data-figma="fork · 4 and 5"]')
+    const join = document.querySelector('[data-figma="join · 4 and 5"]')
+    expect(fork?.querySelectorAll('svg').length).toBe(2)
+    expect(join?.querySelectorAll('svg').length).toBe(1)
+    const forkTop = fork?.getBoundingClientRect().top ?? 0
+    expect(forkTop).toBeGreaterThanOrEqual(box('step · Blinding')?.bottom ?? Number.POSITIVE_INFINITY)
+    expect(primary?.top ?? 0).toBeGreaterThanOrEqual(fork?.getBoundingClientRect().bottom ?? Number.POSITIVE_INFINITY)
+    // No panel or header over the steps, and the selected step's panel under them.
+    expect(document.querySelector('[data-figma="panel · flow"]')).toBeNull()
+    expect(document.querySelector('[data-figma="breadcrumb row"]')).not.toBeNull()
+    expect(box('step 4 details')?.top ?? 0).toBeGreaterThan(box('step · Owner decides')?.bottom ?? 0)
+    expect(document.querySelector('[data-figma="toolkit list"]')).toBeNull()
+  })
+})

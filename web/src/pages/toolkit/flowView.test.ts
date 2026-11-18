@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { arrowRows, selectedStep, stepHeading, stepRows } from './blocks/flowLayout.ts'
+import { columnArrow } from './blocks/flowLayout.ts'
 import { isFullPage, leaveFullPage, openFullPage } from './screens/flowView.ts'
 import { openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
@@ -24,6 +25,12 @@ describe('isFullPage', () => {
 })
 
 describe('the flow layout', () => {
+  it('forks into a parallel stage and joins out of it in the tablet column (T8)', () => {
+    expect(columnArrow(1, 1)).toBe('down')
+    expect(columnArrow(1, 2)).toBe('fork')
+    expect(columnArrow(2, 1)).toBe('join')
+  })
+
   it('puts a single step across the middle rows and two parallel steps at the top and the bottom', () => {
     expect(stepRows(1)).toEqual(['2/4'])
     expect(stepRows(2)).toEqual(['1/3', '3/5'])

@@ -170,7 +170,7 @@ const ToolkitPageStep = ToolkitFlowStep.omit({ row: true, down: true }).extend({
  * flow and the steps table: the header's label and legend, the stages in order (a stage of two or more steps runs them
  * in parallel, D13 steps 4 and 5), the way out of a gate (D13 `no` 447:85 to `stop · skill-eval-cases` 447:68), the
  * loop back to it (`new failure` 447:86, under the step `under`), the hint of the selected step's panel, the gates and
- * the rounds in the ledgers.
+ * the rounds in the ledgers. On a tablet (T8) the page has no stop box, loop label, hint, gates or rounds.
  */
 const ToolkitFlowPage = z.object({
   label: z.string(),
@@ -179,14 +179,19 @@ const ToolkitFlowPage = z.object({
   /** The gate's way out: the step it leaves, the arrow's label, the stop's text and the workflow the stop runs. */
   exit: z.object({ from: z.string(), label: z.string(), text: z.string(), workflow: z.string() }).optional(),
   loop: z.object({ label: z.string(), under: z.string() }).optional(),
-  hint: z.string(),
-  gates: z.object({ label: z.string(), items: z.array(z.object({ title: z.string(), text: z.string() })) }),
-  rounds: z.object({
-    label: z.string(),
-    source: z.string(),
-    items: z.array(z.object({ name: z.string(), date: z.string() })),
-    note: z.string().optional(),
-  }),
+  /** The hint at the end of the selected step's panel (D13 446:625); T8 has none. */
+  hint: z.string().optional(),
+  /** The gates' panel (D13 446:647); T8 shows only the selected step's panel under the flow. */
+  gates: z.object({ label: z.string(), items: z.array(z.object({ title: z.string(), text: z.string() })) }).optional(),
+  /** The rounds' panel (D13 446:658); none on T8. */
+  rounds: z
+    .object({
+      label: z.string(),
+      source: z.string(),
+      items: z.array(z.object({ name: z.string(), date: z.string() })),
+      note: z.string().optional(),
+    })
+    .optional(),
 })
 
 /**

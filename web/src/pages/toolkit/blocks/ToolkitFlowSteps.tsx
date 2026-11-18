@@ -8,12 +8,11 @@
 // the stop it leads to; the loop back to the stop is its label, under the
 // step the state names. The library has no connector line (LIBRARY_GAPS.md,
 // Workflow page flow): the arrows are its arrow icons, with no line, no elbow
-// and no dashed loop. On a tablet or phone the stages stand in one column,
-// the steps of a parallel stage side by side. Props only.
+// and no dashed loop. A tablet or phone draws the column of
+// `ToolkitFlowColumn` instead. Props only.
 import { ArrowDownIcon, ArrowRightIcon, Panel, WorkflowIcon } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import type { Viewport } from '../../../lib/screenState.ts'
 import { arrowRows, type FlowPage, type FlowRows, stepRows } from './flowLayout.ts'
 import { ToolkitFlowStep } from './ToolkitFlowStep.tsx'
 
@@ -80,21 +79,15 @@ const stopLine = css({
 })
 // D13 447:86: the label 20 after the start of its stage, in amber mono, under the dashed line.
 const loopLabel = css({ ms: '20', textStyle: 'mono', color: 'status.needsYou.fg', whiteSpace: 'nowrap' })
-// A tablet or phone: the stages in one column, an arrow down between them, a parallel stage's steps side by side.
-const narrowStages = css({ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '4' })
-const narrowStage = css({ display: 'grid', gridAutoColumns: '[1fr]', gridAutoFlow: 'column', gap: '8' })
-const narrowArrow = css({ display: 'flex', justifyContent: 'center', color: 'fg.muted' })
 
 export type ToolkitFlowStepsProps = {
   page: FlowPage
   /** The id of the selected step. */
   selected?: string | undefined
   onSelect?: ((id: string) => void) | undefined
-  layout?: Viewport | undefined
 }
 
-export function ToolkitFlowSteps({ page, selected, onSelect, layout = 'desktop' }: ToolkitFlowStepsProps) {
-  const desktop = layout === 'desktop'
+export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsProps) {
   const card = (step: FlowPage['stages'][number][number], className?: string) => (
     <ToolkitFlowStep
       key={step.id}
@@ -140,68 +133,52 @@ export function ToolkitFlowSteps({ page, selected, onSelect, layout = 'desktop' 
               ))}
             </ul>
           </div>
-          {desktop ? (
-            <div className={flow} data-figma="flow">
-              <div className={stages}>
-                {page.stages.map((stage, i) => (
-                  <Fragment key={stage.map((s) => s.id).join()}>
-                    {i === 0 ? null : (
-                      <div className={arrowColumn} aria-hidden="true">
-                        {arrowRows(page.stages[i - 1]?.length ?? 1, stage.length).map((r) => (
-                          <span key={r} className={cx(arrow, rows[r])}>
-                            <ArrowRightIcon size="12" />
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className={column}>
-                      {stage.map((step, s) => card(step, rows[stepRows(stage.length)[s] ?? '2/4']))}
-                      {i === exitStage && page.exit !== undefined ? (
-                        <span className={exitCell}>
-                          <ArrowDownIcon size="12" aria-hidden="true" />
-                          {page.exit.label}
-                        </span>
-                      ) : null}
-                      {i === last && page.loop !== undefined ? (
-                        <span className={loopDown} aria-hidden="true">
-                          <ArrowDownIcon size="12" />
-                        </span>
-                      ) : null}
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-              <div className={stopRow}>
-                {page.stages.map((stage, i) => (
-                  <Fragment key={stage.map((s) => s.id).join()}>
-                    {i === 0 ? null : <span className={slotGap} />}
-                    <div className={slot}>
-                      {i === exitStage ? stopBox : null}
-                      {i === loopStage && page.loop !== undefined ? (
-                        <span className={loopLabel} data-figma={page.loop.label}>
-                          {page.loop.label}
-                        </span>
-                      ) : null}
-                    </div>
-                  </Fragment>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className={narrowStages} data-figma="flow">
+          <div className={flow} data-figma="flow">
+            <div className={stages}>
               {page.stages.map((stage, i) => (
                 <Fragment key={stage.map((s) => s.id).join()}>
                   {i === 0 ? null : (
-                    <span className={narrowArrow} aria-hidden="true">
-                      <ArrowDownIcon size="12" />
-                    </span>
+                    <div className={arrowColumn} aria-hidden="true">
+                      {arrowRows(page.stages[i - 1]?.length ?? 1, stage.length).map((r) => (
+                        <span key={r} className={cx(arrow, rows[r])}>
+                          <ArrowRightIcon size="12" />
+                        </span>
+                      ))}
+                    </div>
                   )}
-                  <div className={narrowStage}>{stage.map((step) => card(step))}</div>
+                  <div className={column}>
+                    {stage.map((step, s) => card(step, rows[stepRows(stage.length)[s] ?? '2/4']))}
+                    {i === exitStage && page.exit !== undefined ? (
+                      <span className={exitCell}>
+                        <ArrowDownIcon size="12" aria-hidden="true" />
+                        {page.exit.label}
+                      </span>
+                    ) : null}
+                    {i === last && page.loop !== undefined ? (
+                      <span className={loopDown} aria-hidden="true">
+                        <ArrowDownIcon size="12" />
+                      </span>
+                    ) : null}
+                  </div>
                 </Fragment>
               ))}
-              {stopBox}
             </div>
-          )}
+            <div className={stopRow}>
+              {page.stages.map((stage, i) => (
+                <Fragment key={stage.map((s) => s.id).join()}>
+                  {i === 0 ? null : <span className={slotGap} />}
+                  <div className={slot}>
+                    {i === exitStage ? stopBox : null}
+                    {i === loopStage && page.loop !== undefined ? (
+                      <span className={loopLabel} data-figma={page.loop.label}>
+                        {page.loop.label}
+                      </span>
+                    ) : null}
+                  </div>
+                </Fragment>
+              ))}
+            </div>
+          </div>
         </div>
       </Panel>
     </div>

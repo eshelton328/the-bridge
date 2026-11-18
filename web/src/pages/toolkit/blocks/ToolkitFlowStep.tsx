@@ -13,7 +13,8 @@
 // `step · Runs` 447:9, `variant="page"`) the card's lines wrap in its width,
 // a line in amber says what runs after the step (`then`), and the title is a
 // button that selects the step: the selected card has the selected fill and
-// border. Props only.
+// border. In a tablet's column (T8 `step · Runs` 448:226, `variant="column"`)
+// the card spans the column and is as high as its lines. Props only.
 import { Badge } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
@@ -43,6 +44,9 @@ const cardSm = css.raw({ p: '6' })
 // (447:8 ends at 539, the card at 559). The mark is 3 px taller than Figma's (a 22 px Badge), so 16 under the content
 // keeps the cards 126 high. The card is a positioned box, so its title's button can cover it.
 const cardPage = css.raw({ position: 'relative', gap: '4', pb: '16' })
+// T8 448:226: 712 × 84, the top row 11 in and 13 from the left, the lines 4 under it and 4 apart; the Card's 10 and the
+// border, with the 22 px mark, keep it 84 high (a gate 64 against 63).
+const cardColumn = css.raw({ position: 'relative', gap: '4' })
 // D13 447:31: the selected step (4) has the selected fill and border, as a selected row.
 const selectedCard = css.raw({ bg: 'surface.selected', borderColor: 'border.selected' })
 const gate = css.raw({ borderColor: 'status.needsYou.border' })
@@ -100,8 +104,11 @@ export type ToolkitFlowStepProps = {
   className?: string | undefined
   /** `md` on the desktop (D8); `sm` on a tablet (T18). */
   size?: 'md' | 'sm' | undefined
-  /** `lane` in D8's lanes; `page` on a workflow's page (D13): the lines wrap, and `then` and `onSelect` show. */
-  variant?: 'lane' | 'page' | undefined
+  /**
+   * `lane` in D8's lanes; `page` on a workflow's page (D13): the lines wrap, and `then` and `onSelect` show; `column`
+   * as `page`, in a tablet's or phone's column of steps (T8), as high as its lines.
+   */
+  variant?: 'lane' | 'page' | 'column' | undefined
   /** The selected step on a workflow's page (D13). */
   selected?: boolean | undefined
   /** Selects the step; its title is then a button. */
@@ -117,7 +124,7 @@ export function ToolkitFlowStep({
   onSelect,
 }: ToolkitFlowStepProps) {
   const marked = step.type !== 'step'
-  const page = variant === 'page'
+  const page = variant !== 'lane'
   return (
     <div
       // css() merges the raw styles, so a gate's or an end's border wins over the card's.
@@ -125,7 +132,8 @@ export function ToolkitFlowStep({
         css(
           card,
           size === 'sm' ? cardSm : {},
-          page ? cardPage : {},
+          variant === 'page' ? cardPage : {},
+          variant === 'column' ? cardColumn : {},
           step.type === 'gate' ? gate : {},
           step.type === 'end' ? end : {},
           selected ? selectedCard : {},

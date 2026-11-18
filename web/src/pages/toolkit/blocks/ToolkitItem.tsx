@@ -17,7 +17,8 @@
 // without the list: the breadcrumb row (Toolkit › Workflows › the workflow,
 // with Discuss and Show on map) tops it on the desktop too, the meta row holds
 // only the kind badge, and How it works draws the workflow's page
-// (`ToolkitFlowPage`).
+// (`ToolkitFlowPage`). On a tablet (T8) the same breadcrumb row is the
+// DetailFrame's back row, 36 high, and the item's rows start 12 under it.
 import {
   AgentIcon,
   HookIcon,
@@ -70,11 +71,16 @@ const fullPane = css({
   pb: '20',
 })
 const fullBack = css({ pb: '4' })
+// T8 448:206: on a tablet the meta row starts 12 under the breadcrumb row (448:193, 36 high, ends at 77), and the rows
+// are 12 apart.
+const fullNarrowPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
 // D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
 // 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
 const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '4' })
 // T3 428:561: on a tablet the meta row holds only the kind badge, and is as wide as it.
 const metaRowPage = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start' })
+// T8 448:206: on a workflow's own page the meta row spans the item.
+const metaRowFull = css({ display: 'flex', alignItems: 'center' })
 // M2 429:297: on the phone the meta row holds the kind badge and, 8 after it, when the item changed.
 const metaRowPhone = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '8' })
 const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.default' })
@@ -143,10 +149,17 @@ const phoneHowTitleLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '495:3255',
   'hooks/commit-msg': '495:3591',
 }
-// On a workflow's own page: skill-eval-round in D13 (446:513; the breadcrumb's last crumb has the same name).
+// On a workflow's own page: skill-eval-round in D13 (446:513; the breadcrumb's last crumb has the same name) and T8
+// (448:214).
 const fullPageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: { 'workflows/skill-eval-round.md': '446:513' },
-  tablet: {},
+  tablet: { 'workflows/skill-eval-round.md': '448:214' },
+  phone: {},
+}
+// The description on a workflow's own page is a text layer with no name of its own: D13 446:514, T8 448:215.
+const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'workflows/skill-eval-round.md': '446:514' },
+  tablet: { 'workflows/skill-eval-round.md': '448:215' },
   phone: {},
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
@@ -232,7 +245,19 @@ export function ToolkitItem({
     <article
       aria-label={item.name}
       className={
-        desktop ? (full ? fullPane : pane) : narrowHow ? (phone ? phoneHowPage : howPage) : phone ? phonePage : page
+        desktop
+          ? full
+            ? fullPane
+            : pane
+          : narrowHow
+            ? phone
+              ? phoneHowPage
+              : howPage
+            : phone
+              ? phonePage
+              : full
+                ? fullNarrowPage
+                : page
       }
       data-figma={desktop && full ? 'toolkit' : itemLayer[layout]}
     >
@@ -249,7 +274,10 @@ export function ToolkitItem({
         </div>
       ) : null}
       {narrowHow ? null : (
-        <div className={desktop && !full ? metaRow : phone ? metaRowPhone : metaRowPage} data-figma="meta row">
+        <div
+          className={desktop && !full ? metaRow : phone ? metaRowPhone : full && !desktop ? metaRowFull : metaRowPage}
+          data-figma="meta row"
+        >
           <div data-figma="kind badge">
             <KindBadge kind={item.kind} icon={kindIcons[item.kind]} />
           </div>
@@ -302,6 +330,7 @@ export function ToolkitItem({
               <ToolkitFlowPage
                 flow={detail.flowPage}
                 description={detail.description}
+                descriptionLayer={fullPageDescriptionLayers[layout][item.path]}
                 selected={fullPage.selectedStep}
                 onSelectStep={fullPage.onSelectStep}
                 layout={layout}
@@ -312,7 +341,8 @@ export function ToolkitItem({
           return {
             value: t.value,
             label: t.label,
-            content: desktop || panel === null ? panel : <div className={panelPage}>{panel}</div>,
+            // T8 448:215: a workflow's own page starts 12 under the tabs; the tabs' panel puts it 15 under them.
+            content: desktop || full || panel === null ? panel : <div className={panelPage}>{panel}</div>,
           }
         })}
       />
@@ -322,7 +352,18 @@ export function ToolkitItem({
   return (
     <DetailFrame
       layout={layout}
-      back={<ToolkitItemBack name={item.name} from={crumb} named={narrowHow} onBack={back} actions={actions} />}
+      back={
+        <ToolkitItemBack
+          name={item.name}
+          from={crumb}
+          named={narrowHow}
+          onBack={back}
+          actions={actions}
+          // T8 448:193: a workflow's own page names the row `breadcrumb row`, 36 high, as D13 does.
+          layers={full ? { row: 'breadcrumb row', trail: null } : undefined}
+          tall={full}
+        />
+      }
     >
       {article}
     </DetailFrame>

@@ -33,3 +33,16 @@ export function arrowRows(from: number, to: number): readonly FlowRows[] {
 export function stepHeading(step: Pick<FlowPageStep, 'type' | 'mark' | 'title'>): string {
   return step.type === 'step' ? `Step ${step.mark} · ${step.title}` : step.title
 }
+
+/**
+ * The arrow between two stages of the column a tablet or phone draws (T8): `fork` into a parallel stage (an arrow over
+ * each of its steps, 502:2), `join` out of one (one arrow in the middle, 502:8), `down` between two single steps
+ * (448:223).
+ */
+export type ColumnArrow = 'down' | 'fork' | 'join'
+
+export function columnArrow(from: number, to: number): ColumnArrow {
+  if (to > 1 && from === 1) return 'fork'
+  if (from > 1) return 'join'
+  return 'down'
+}
