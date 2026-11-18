@@ -4,6 +4,7 @@ import { columnArrow } from './blocks/flowLayout.ts'
 import { isFullPage, leaveFullPage, openFullPage } from './screens/flowView.ts'
 import { canOpenFullPage } from './screens/flowView.ts'
 import { openItem } from './screens/itemView.ts'
+import { openFrom } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { workflowFullPage, workflowOpen } = toolkitStates
@@ -41,6 +42,21 @@ describe('Open full page', () => {
     expect(canOpenFullPage(openItem(workflowOpen.data, workflowOpen.ui))).toBe(true)
     expect(canOpenFullPage(openItem(hookOpen.data, hookOpen.ui))).toBe(false)
     expect(canOpenFullPage(null)).toBe(false)
+  })
+})
+
+describe('leaving the full page', () => {
+  it('reopens the workflow on its Overview after a crumb, so its tab is never an empty How it works', () => {
+    const path = 'workflows/skill-eval-round.md'
+    for (const kind of [undefined, 'workflow' as const]) {
+      // Open full page from D8, leave through a crumb, then open the workflow again from the list.
+      const full = { ...workflowOpen.ui, ...openFullPage() }
+      const left = { ...full, ...leaveFullPage(kind) }
+      const reopened = { ...left, ...openFrom(path) }
+      const open = openItem(workflowOpen.data, reopened)
+      expect(isFullPage(open, reopened)).toBe(false)
+      expect(open?.tab).toBe('overview')
+    }
   })
 })
 

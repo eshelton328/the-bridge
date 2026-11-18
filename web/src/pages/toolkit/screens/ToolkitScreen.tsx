@@ -184,7 +184,9 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }}
         onCopyPath={onCopyPath}
         onShowOnMap={() => {
-          onUiChange(showOnMap(open.item.path))
+          // From the full page, Show on map leaves it as a crumb does, so the workflow reopened from the map starts on its
+          // Overview.
+          onUiChange(full ? { ...leaveFullPage(), ...showOnMap(open.item.path) } : showOnMap(open.item.path))
         }}
         // Only an item with a page of its own opens it, so Open full page never lands on an empty tab.
         onOpenFullPage={

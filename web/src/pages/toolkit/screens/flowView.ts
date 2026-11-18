@@ -21,8 +21,15 @@ export function openFullPage(): Partial<ToolkitUi> {
 
 /**
  * The ui change of a crumb on the full page: Toolkit (no kind) shows the whole list, a kind's crumb (Workflows) the
- * list narrowed to that kind.
+ * list narrowed to that kind. It clears the tab too, so the workflow reopened from the list starts on its Overview, not
+ * on a How it works that only the full page draws.
  */
 export function leaveFullPage(kind?: ToolkitKind): Partial<ToolkitUi> {
-  return { open: null, from: null, flowFullPage: false, ...(kind === undefined ? {} : { filter: kind }) }
+  return {
+    open: null,
+    from: null,
+    flowFullPage: false,
+    itemTab: undefined,
+    ...(kind === undefined ? {} : { filter: kind }),
+  }
 }
