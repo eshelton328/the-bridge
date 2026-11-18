@@ -1,0 +1,58 @@
+# D28 deviations
+
+What still differs from Figma after the fidelity loop
+(`pnpm fidelity toolkit D28`, 2026-11-18, against library 1.0.0-beta.36:
+a first run and three fix rounds), each with its reason. The library
+gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
+`web/src/pages/toolkit/states/hookEvals.ts`: D9's data (D4's list with
+only the Rules, Workflows and Hooks groups), with the hook commit-msg
+open on its Evals tab. Every other Toolkit frame (D03, D04, D06 to D10,
+D13, D14, D19 and D29 to D39 and the list frames) gives the same text,
+position and rule results as before the Evals tab. The frame has no
+`exceptions.json`.
+
+## Checks
+
+- Text: fail. Every Figma string is in the render and nothing extra
+  shows. 5 strings are not visible: `Workflows` (492:1871), `2`
+  (492:1872), `hooks/commit-msg` (492:2002), `→1 ←1` (492:2004),
+  `commit-msg` (492:2024); see List pane.
+- Position: 31 of 44 layers pass. The 13 that fail:
+  `toolkit row · commits-and-prs` y +3 h +9; `toolkit row · diagrams` y
+  +12 h +9; `toolkit row · linear` y +21 h +9; `toolkit row · readmes` y
+  +30 h +9; `toolkit row · releases` y +39 h +9; `toolkit row · skills`
+  y +48 h +9; `toolkit row · ste100` y +57 h +9; `toolkit row · writing`
+  y +66 h +9; `group · WORKFLOWS` y +75 w -0.6 h +3;
+  `toolkit row · skill-eval-cases` y +78 h +9;
+  `toolkit row · skill-eval-round` y +87 h +9; `group · HOOKS` y +96 w
+  +0.3 h +3; `toolkit row · commit-msg` y +99 h +7. Each is explained
+  below.
+- Rules: fail. 2 `hiddenOverflow` findings:
+  `[data-figma="toolkit list"]`;
+  `[data-figma="filter · chips"] > div.filter-chips__root`. Each is
+  explained below; this frame takes no exceptions.
+
+## Deviations
+
+- **Row height.** Each list row is 62 px high against Figma's 53 (h +9),
+  as on D3 and D4: `ListRow` pads 10 inside a 1 px border (gap: Toolkit
+  row (pane)). Each row after the first starts 9 px lower again, and the
+  group headers 3 px taller: `toolkit row · commits-and-prs` y +3 h +9;
+  `toolkit row · diagrams` y +12 h +9; `toolkit row · linear` y +21 h
+  +9; `toolkit row · readmes` y +30 h +9; `toolkit row · releases` y +39
+  h +9; `toolkit row · skills` y +48 h +9; `toolkit row · ste100` y +57
+  h +9; `toolkit row · writing` y +66 h +9; `group · WORKFLOWS` y +75 w
+  -0.6 h +3; `toolkit row · skill-eval-cases` y +78 h +9;
+  `toolkit row · skill-eval-round` y +87 h +9; `group · HOOKS` y +96 w
+  +0.3 h +3; `toolkit row · commit-msg` y +99 h +7. The last rows lie
+  past the frame's foot, so their text is not visible (the List pane
+  strings above).
+- **List pane.** The kind chips are wider than the list pane and scroll
+  sideways (`[data-figma="filter · chips"] > div.filter-chips__root`);
+  Figma cuts the Workflows chip at the same edge, so `Workflows` and `2`
+  are not visible in either. The list pane scrolls on its own
+  (`[data-figma="toolkit list"]`) because its rows are taller (Row
+  height). D3, D4 and D19 have the same findings.
+- **Test badge.** The badge 43 of 43 pass is the library's
+  `Badge size="sm" tone="done"` with `CheckIcon` at 12 px, against
+  Figma's 11 px icon (gap: Evals criterion badge).
