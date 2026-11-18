@@ -14,7 +14,8 @@ const name = css({
   color: 'fg.default',
 })
 const bubble = css({ display: 'inline-flex', color: 'accent.discuss' })
-const body = css({ textStyle: 'body', color: 'fg.default', m: '0' })
+// Figma sets the discussion's messages in Regular 13/19 (D15 403:1442, 403:1444): `bodySm` (13/20, d-090).
+const body = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 const check = css({ display: 'inline-flex', color: 'status.done.fg' })
 
 export type DiscussionEntryProps = {
@@ -37,7 +38,9 @@ export function DiscussionEntry({ entry, control }: DiscussionEntryProps) {
     case 'user':
       return (
         <div data-figma="message · you">
-          <Message from="user">{entry.text}</Message>
+          <Message from="user" size="sm">
+            {entry.text}
+          </Message>
         </div>
       )
     case 'reply':
