@@ -22,7 +22,11 @@ const caption = css({ ms: 'auto', textStyle: 'small', color: 'fg.muted' })
 // D19 482:547: the top row (29 high) and the line 4 under it. The node is 28 high (`control.sm`; no size token has 29),
 // so 6 under it keeps the line and every link after it at Figma's place.
 const link = css({ display: 'flex', flexDirection: 'column', gap: '6' })
-const top = css({ display: 'flex', alignItems: 'center', gap: '8' })
+// The file and line sits at the row's end (`ms: auto`), so the gap shows only on a row too full for both: on the
+// phone (M33 493:6665) Figma's file and line ends 5 px past the row, inside the panel, and the render's node is 7 px
+// wider than Figma's (LIBRARY_GAPS.md, Links panel rows); a gap of 4 keeps `skills/eval-cases/SKILL.md:97` (493:6672)
+// inside the row.
+const top = css({ display: 'flex', alignItems: 'center', gap: '4' })
 // D19 482:549: the node as wide as its name, 28 high; MapNode fills the box it is placed in.
 const node = css({ display: 'inline-grid', h: 'control.sm' })
 const at = css({

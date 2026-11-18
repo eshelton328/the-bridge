@@ -343,3 +343,27 @@ describe('an agent’s Links tab on the phone (M32)', () => {
     expect(agent.left).toBeGreaterThan(skill.right)
   })
 })
+
+describe('a workflow’s Links tab on the phone (M33)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the workflow’s header, the stage before it and the agent it runs on a row each side', async () => {
+    const { root } = await renderPhone('workflowLinksPhone')
+    expect(root.querySelector('article[aria-label="skill-eval-round"] [data-figma="kind badge"]')).not.toBeNull()
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    expect(nodes.map((n) => n.textContent)).toEqual([
+      'skill-eval-cases',
+      'eval-cases',
+      'skill-eval-round',
+      'skill-eval-cases',
+      'eval-grader',
+    ])
+    const tops = nodes.map((n) => Math.round(n.getBoundingClientRect().top))
+    expect(tops[1]).toBe(tops[0])
+    expect(tops[4]).toBe(tops[3])
+    expect(tops[2]).toBeGreaterThan(tops[0] ?? 0)
+    expect(tops[3]).toBeGreaterThan(tops[2] ?? 0)
+  })
+})
