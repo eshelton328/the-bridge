@@ -1,9 +1,11 @@
 // The graph of the Links tab (Figma `links graph`, D19 493:6): the library's
 // MapGraph with the open item in the middle, selected, the items that link to
 // it on the left and the items it links to on the right, each with its line
-// (`linksGraph` in linksView.ts places them). A tap on an item opens it. A
-// side with no links says why in its column (D29 493:895). MapGraph takes one
-// size for every node and ends each line in a dot (LIBRARY_GAPS.md, Links
+// (`linksGraph` in linksView.ts places them). The side items have a muted
+// kind border (`nodeTone="muted"`), the lines end at the node's edge with no
+// dot (`edgeEnd="none"`) and the open item's name is in the label style. A
+// tap on an item opens it. A side with no links says why in its column (D29
+// 493:895). The open item keeps the others' size (LIBRARY_GAPS.md, Links
 // graph). Props only.
 import { MapGraph } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -54,7 +56,16 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
         width={graph.width}
         height={graph.height}
         nodeSize={graph.nodeSize}
-        nodes={graph.nodes.map((n) => ({ id: n.id, label: n.label, kind: n.kind, x: n.x, y: n.y }))}
+        nodeTone={graph.nodeTone}
+        edgeEnd={graph.edgeEnd}
+        nodes={graph.nodes.map((n) => ({
+          id: n.id,
+          label: n.label,
+          kind: n.kind,
+          x: n.x,
+          y: n.y,
+          labelStyle: n.labelStyle,
+        }))}
         edges={graph.edges}
         columns={graph.columns}
         selectedId={graph.selected}

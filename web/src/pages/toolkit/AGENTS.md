@@ -280,9 +280,11 @@ what each file of a page folder is for.
   the item selected in the middle, the items that name it on the left and
   the items it names on the right, each column in the side's `graph`
   order, placed by `linksGraph` in `blocks/linksView.ts`, tested in
-  `linksView.test.ts`), the two panels side by side (`ToolkitLinksPanel`:
-  each link's item as a `MapNode`, its file and line, and the line's text)
-  and the note. A tap on an item opens it from the open item (`openFrom`);
+  `linksView.test.ts`; the side items in a muted kind border, `nodeTone`,
+  the lines with no end dot, `edgeEnd`, and the open item's name in the
+  label style), the two panels side by side (`ToolkitLinksPanel`: each
+  link's item as a `MapNode tone="faint"`, its file and line, and the
+  line's text) and the note. A tap on an item opens it from the open item (`openFrom`);
   a tap on a file and line opens that file on its item's Files tab
   (`linkFile`, and `openFile` in `screens/itemView.ts`;
   `src/app/ToolkitLinks.test.tsx`). Each Links state's `linkTargets`
