@@ -79,7 +79,8 @@ describe('the Workbench sticky bars (d-107)', () => {
     {
       name: 'the side chat in a pane (D5)',
       state: 'sideChatInPane',
-      top: '158:530',
+      // The title row; the note scrolls with the transcript.
+      top: 'css:[data-figma="158:518"] h2',
       bottom: '158:545',
       from: '158:545',
     },
@@ -170,13 +171,21 @@ describe('a short window in the Workbench (d-107)', () => {
     { name: 'the side chat in a pane (D5)', state: 'sideChatInPane' },
   ]
 
+  /** Text for screen readers only (a `Message`'s sender name): a 1 px box that a viewer does not see. */
+  const screenReaderOnly = (node: Node) => {
+    const parent = node.parentElement
+    if (parent === null) return false
+    const r = box(parent)
+    return r.width <= 1 || r.height <= 1
+  }
+
   /** The text boxes of the body's leaves that the body shows (not scrolled out or clipped away). */
   const shownText = (body: HTMLElement) => {
     const view = box(body)
     const out: DOMRect[] = []
     const walk = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
     for (let node = walk.nextNode(); node !== null; node = walk.nextNode()) {
-      if ((node.textContent ?? '').trim() === '') continue
+      if ((node.textContent ?? '').trim() === '' || screenReaderOnly(node)) continue
       const range = document.createRange()
       range.selectNodeContents(node)
       for (const r of range.getClientRects())
@@ -190,7 +199,7 @@ describe('a short window in the Workbench (d-107)', () => {
     let found: DOMRect | null = null
     const walk = document.createTreeWalker(body, NodeFilter.SHOW_TEXT)
     for (let node = walk.nextNode(); node !== null; node = walk.nextNode()) {
-      if ((node.textContent ?? '').trim() === '') continue
+      if ((node.textContent ?? '').trim() === '' || screenReaderOnly(node)) continue
       const range = document.createRange()
       range.selectNodeContents(node)
       const rects = [...range.getClientRects()].filter((r) => r.width > 0)
@@ -242,4 +251,78 @@ describe('a short window in the Workbench (d-107)', () => {
       expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
       for (const outer of root.querySelectorAll('.app-shell__detail, .pane__body')) expect(outer.scrollTop).toBe(0)
     })
+  it('keeps the side chat composer inside its panel, which does not scroll, and scrolls only its transcript (D5)', async () => {
+    await page.viewport(1512, 600)
+    const view = await renderWorkspaces('sideChatInPane')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('[data-figma="158:518"]')).not.toBeNull()
+    await document.fonts.ready
+    const panel = root.querySelector<HTMLElement>('[data-figma="158:518"]')
+    const composer = root.querySelector('[data-figma="158:545"]')
+    const body = composer?.closest('.scroll-frame__root')?.querySelector<HTMLElement>(':scope > .scroll-frame__body')
+    if (panel === null || composer === null || body == null) throw new Error('no side chat, composer or transcript')
+    expect(composer.querySelector('textarea')?.placeholder).toBe('Ask a side question')
+    /** The composer's box lies inside the panel's, and the transcript keeps a line. */
+    const fits = () => {
+      const outer = box(panel)
+      const inner = box(composer)
+      expect(inner.top).toBeGreaterThanOrEqual(outer.top - 0.5)
+      expect(inner.bottom).toBeLessThanOrEqual(outer.bottom + 0.5)
+      expect(inner.left).toBeGreaterThanOrEqual(outer.left - 0.5)
+      expect(inner.right).toBeLessThanOrEqual(outer.right + 0.5)
+      expect(body.clientHeight).toBeGreaterThanOrEqual(20)
+      // The panel itself does not scroll: its content fits it.
+      expect(panel.scrollHeight).toBe(panel.clientHeight)
+    }
+    fits()
+    // A long transcript scrolls inside the transcript; the panel still fits and its composer stays in place.
+    const long = document.createElement('div')
+    long.style.height = '3000px'
+    long.style.flexShrink = '0'
+    body.append(long)
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = box(composer).bottom
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop > 0).toBe(true)
+    fits()
+    expect(panel.scrollTop).toBe(0)
+    expect(box(composer).bottom).toBe(before)
+  })
+  it('keeps the side chat composer whole and reachable in a pane resized to 15% high (D5)', async () => {
+    const view = await renderWorkspaces('sideChatInPane')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('[data-figma="158:518"]')).not.toBeNull()
+    await document.fonts.ready
+    const panel = root.querySelector<HTMLElement>('[data-figma="158:518"]')
+    const composer = root.querySelector<HTMLElement>('[data-figma="158:545"]')
+    if (panel === null || composer === null) throw new Error('no side chat or composer')
+    expect(composer.querySelector('textarea')?.placeholder).toBe('Ask a side question')
+    // The left column's rows handle, between the side chat's pane (top left) and the pane under it: Home takes the
+    // top pane to its 10% minimum, and five steps of 1% bring it to 15%.
+    const handle = root.querySelector<HTMLElement>('button[aria-label="Resize rows"]')
+    if (handle === null) throw new Error('no rows handle')
+    const pane = panel.closest<HTMLElement>('[data-figma="158:186"]')
+    if (pane === null) throw new Error('the side chat is not in the top-left pane')
+    const tall = box(pane).height
+    handle.focus()
+    await userEvent.keyboard('{Home}{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}')
+    await expect.poll(() => box(pane).height).toBeLessThan(tall / 2)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    // The one-row composer keeps its own height (40 px or more), however short the pane.
+    expect(box(composer).height).toBeGreaterThanOrEqual(40)
+    // Where the panel cannot show its title row and composer, it scrolls; scrolled to its end, the whole composer
+    // lies inside the panel's box.
+    panel.scrollTop = panel.scrollHeight
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    const outer = box(panel)
+    const inner = box(composer)
+    expect(inner.top).toBeGreaterThanOrEqual(outer.top - 0.5)
+    expect(inner.bottom).toBeLessThanOrEqual(outer.bottom + 0.5)
+    const send = [...composer.querySelectorAll('button')].at(-1)
+    if (send === undefined) throw new Error('no Send')
+    expect(box(send).height).toBeGreaterThan(0)
+    expect(box(send).bottom).toBeLessThanOrEqual(outer.bottom + 0.5)
+  })
 })

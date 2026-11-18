@@ -28,9 +28,8 @@ const sizes = {
   full: css({ px: '24', py: '16' }),
   // D2 105:920: 17 in from the side chat's edges, 12 under its note.
   side: css({ px: '16', pt: '12', pb: '16' }),
-  // D5 158:518: the side chat in a pane pads its parts itself. It does not shrink below its content, so in a short
-  // pane its transcript keeps two lines and the side chat panel scrolls instead (d-107).
-  inset: css({ px: '0', pt: '0', pb: '0', minH: '[auto]' }),
+  // D5 158:518: the side chat in a pane pads its parts itself, and fills the panel under its title row.
+  inset: css({ px: '0', pt: '0', pb: '0' }),
 }
 // The space between the entries, and between the transcript, `above` and the composer: 10 in a pane of the split
 // and the side chat in a pane (D1, D5), 12 in the chat alone and the side chat (D2).
@@ -38,10 +37,19 @@ const gaps = {
   pane: { body: css({ gap: '10' }), footer: css({ gap: '10', pt: '10' }) },
   full: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   side: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
-  // The side chat in a pane: its transcript keeps two 17 px lines (`control.lg`, 36, the nearest size token, d-100).
-  // `contain: size` keeps the transcript's own height out of the pane's minimum, so only those two lines count.
-  inset: { body: css({ gap: '10', minH: 'control.lg', contain: 'size' }), footer: css({ gap: '10', pt: '10' }) },
+  // The side chat in a pane: in a short pane its transcript keeps two 17 px lines (`control.lg`, 36, the nearest size
+  // token, d-100) and scrolls with the note; the title row and the composer stay in view (d-107).
+  inset: { body: css({ gap: '10', minH: 'control.lg' }), footer: css({ gap: '10', pt: '10' }) },
 } satisfies Record<keyof typeof sizes, { body: string; footer: string }>
+// The side chat in a pane: its one-row composer never shrinks below its own height, however short the pane. The
+// library's ScrollFrame lets its footer shrink (and scroll) so a long draft leaves the transcript room; the inline
+// composer caps its own draft, so here the footer keeps its height and the panel scrolls instead (SideChatPanel).
+const frames = {
+  pane: undefined,
+  full: undefined,
+  side: undefined,
+  inset: css({ '& > .scroll-frame__footer': { flexShrink: '0' } }),
+} satisfies Record<keyof typeof sizes, string | undefined>
 const footer = css({ display: 'flex', flexDirection: 'column' })
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
@@ -56,6 +64,10 @@ export type ChatPaneProps = {
   folders?: ReactNode
   /** `false`: the composer has no attach button, as the side chat in a pane draws it (D5 158:545). */
   attach?: boolean | undefined
+  /** The composer's layout: `inline` is one row, as the side chat in a pane draws it (D5 158:545); `stacked` when not set. */
+  layout?: 'stacked' | 'inline' | undefined
+  /** Drawn at the top of the transcript and scrolled with it, such as the side chat's note in a pane (D5 158:530). */
+  lead?: ReactNode
   /** Drawn between the transcript and the composer, such as "Open as its own pane" (D5 158:540). */
   above?: ReactNode
   /** Drawn over the body, such as the side chat in a pane (D5 158:518); it places itself. */
@@ -72,6 +84,8 @@ export function ChatPane(props: ChatPaneProps) {
     size = 'pane',
     folders,
     attach = true,
+    layout,
+    lead,
     above,
     overlay,
   } = props
@@ -102,6 +116,7 @@ export function ChatPane(props: ChatPaneProps) {
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
       onAttach={attach ? () => undefined : undefined}
+      layout={layout}
       model={
         folders === undefined ? (
           chip
@@ -143,6 +158,7 @@ export function ChatPane(props: ChatPaneProps) {
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
+        className={frames[size]}
         bodyClassName={gaps[size].body}
         footer={
           <div className={cx(footer, gaps[size].footer)}>
@@ -151,6 +167,7 @@ export function ChatPane(props: ChatPaneProps) {
           </div>
         }
       >
+        {lead}
         {entries.map((entry, i) => (
           <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
         ))}
