@@ -287,6 +287,10 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
                   )
                 }
                 layers={data.layers}
+                draft={ui.drafts?.[chat.id]}
+                onTextChange={(text) => {
+                  change({ drafts: { ...ui.drafts, [chat.id]: text } })
+                }}
                 rename={rename}
                 above={toast}
                 overlay={dropZone}

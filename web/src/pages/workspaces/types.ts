@@ -852,6 +852,11 @@ export const WorkspacesUi = z.object({
    * handle leaves the others as they are; `resize` sets its own handle's sizes over these.
    */
   splitSizes: SplitSizes.optional(),
+  /**
+   * What Erik has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
+   * when its pane mounts again, after a visit to another page or a closed pane, so it starts from its draft here.
+   */
+  drafts: z.record(z.string(), z.string()).optional(),
   /** `data.toast` shows over the composer of the chat shown alone (D20); its button closes it. */
   toastOpen: z.boolean().optional(),
   /**

@@ -116,6 +116,8 @@ export type ChatPaneProps = {
   overlay?: ReactNode
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
+  /** Called with the message box's text as Erik types, so the caller can keep the draft when the pane unmounts. */
+  onTextChange?: ((text: string) => void) | undefined
 }
 
 export function ChatPane(props: ChatPaneProps) {
@@ -133,6 +135,7 @@ export function ChatPane(props: ChatPaneProps) {
     above,
     overlay,
     autoFocus = false,
+    onTextChange,
   } = props
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
@@ -149,6 +152,7 @@ export function ChatPane(props: ChatPaneProps) {
     area.setSelectionRange(area.value.length, area.value.length)
   }, [autoFocus])
   const onValueChange = (text: string) => {
+    onTextChange?.(text)
     const caret = areaRef.current?.querySelector('textarea')?.selectionStart ?? text.length
     const next = skillQuery(text, caret)
     setQuery(next)

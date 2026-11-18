@@ -44,4 +44,13 @@ describe('the Workspaces route', () => {
     view = await renderAt('/workspaces?state=twoPanes')
     await expect.element(columns()).toHaveAttribute('aria-valuenow', resized)
   })
+
+  it('keeps a draft typed in a pane when the page unmounts and mounts again', async () => {
+    view = await renderAt('/workspaces?state=twoPanes')
+    const draft = () => page.getByRole('region', { name: 'drift check' }).getByRole('textbox')
+    await userEvent.fill(draft(), 'keep this draft')
+    await view.unmount()
+    view = await renderAt('/workspaces?state=twoPanes')
+    await expect.element(draft()).toHaveValue('keep this draft')
+  })
 })
