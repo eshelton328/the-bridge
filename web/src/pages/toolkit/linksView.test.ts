@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { openFile as openBrowserFile, findFile, sourceAt } from './blocks/filesView.ts'
-import { focusId, linkCount, linkFile, linkLine, linksGraph, sideLabel } from './blocks/linksView.ts'
+import { focusId, linkCount, linkFile, linksGraph, sideLabel } from './blocks/linksView.ts'
+import { linkLine } from './blocks/linksView.ts'
 import { openFile, openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { ToolkitData, ToolkitLinks, ToolkitUi } from './types.ts'
+import type { ToolkitLinks } from './types.ts'
+import type { ToolkitData, ToolkitUi } from './types.ts'
 
 const { skillLinks } = toolkitStates
 
