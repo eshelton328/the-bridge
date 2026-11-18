@@ -107,7 +107,7 @@ export type ToolkitHowItWorksProps = {
 }
 
 export function ToolkitHowItWorks({ how, headerLayer, layout = 'desktop' }: ToolkitHowItWorksProps) {
-  if (layout !== 'desktop') return <ToolkitHowColumn how={how} />
+  if (layout !== 'desktop') return <ToolkitHowColumn how={how} layout={layout} />
   return (
     <div data-figma="how it works">
       <Panel>

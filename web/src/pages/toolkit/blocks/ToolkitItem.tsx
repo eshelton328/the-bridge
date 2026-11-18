@@ -10,7 +10,8 @@
 // scrolls; opened from another item's links (T7), the back row is a
 // breadcrumb back to that item (`ToolkitItemBack`). On the phone (M2) the actions are icon buttons and when the item
 // changed sits beside the kind badge. On How it works on a tablet (T10) the back row names the item (Toolkit ›
-// writer), and the kind badge and path rows are left out: the title sits over the tabs. Nothing edits the item (R35). Props
+// writer), and the kind badge and path rows are left out: the title sits over the tabs. On the phone (M12) the
+// title is smaller and the rows are 10 apart. Nothing edits the item (R35). Props
 // only.
 import {
   AgentIcon,
@@ -45,6 +46,9 @@ const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20'
 // T10 461:64: on How it works the title (461:255) starts 12 under the back row (461:244, which ends at 77), and the rows
 // are 12 apart. The BackRow is 32 high against Figma's 36, so 16 above the title keeps it in place.
 const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '16' })
+// M12 461:404: on How it works on the phone the title (461:560) starts 10 under the back row (461:550), and the title
+// and the tabs are 10 apart.
+const phoneHowPage = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '10' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
 // D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
@@ -60,6 +64,8 @@ const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.de
 // 4 above the panel keeps the description and every row under it where the default list put them, within 4 px of
 // Figma's.
 const panelPage = css({ pt: '4' })
+// M12 461:560: on How it works on the phone the title is smaller (57 × 29): the title text style, 28 high.
+const phoneHowTitle = css({ alignSelf: 'flex-start', textStyle: 'title', color: 'fg.default' })
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
@@ -110,11 +116,15 @@ const howHeaderLayers: Readonly<Record<string, string>> = {
 const tabletHowTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '461:255',
 }
+// On How it works on the phone: writer in M12 (461:560).
+const phoneHowTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '461:560',
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
   tablet: tabletHowTitleLayers,
-  phone: {},
+  phone: phoneHowTitleLayers,
 }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
 const itemLayer = { desktop: 'toolkit item', tablet: 'toolkit item', phone: 'toolkit' }
@@ -171,7 +181,7 @@ export function ToolkitItem({
   const article = (
     <article
       aria-label={item.name}
-      className={desktop ? pane : narrowHow ? howPage : phone ? phonePage : page}
+      className={desktop ? pane : narrowHow ? (phone ? phoneHowPage : howPage) : phone ? phonePage : page}
       data-figma={itemLayer[layout]}
     >
       {narrowHow ? null : (
@@ -184,7 +194,7 @@ export function ToolkitItem({
         </div>
       )}
       <h2
-        className={title}
+        className={narrowHow && phone ? phoneHowTitle : title}
         data-figma={tab === 'how' ? howTitleLayersOf[layout][item.path] : titleLayersOf[layout][item.path]}
       >
         {item.name}

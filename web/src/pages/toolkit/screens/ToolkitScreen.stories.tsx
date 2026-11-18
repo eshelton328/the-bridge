@@ -421,3 +421,22 @@ export const SkillHowItWorksTablet: Story = {
     await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
   },
 }
+
+export const SkillHowItWorksPhone: Story = {
+  name: 'M12: a skill open on the phone, on How it works',
+  args: {
+    data: toolkitStates.skillHowItWorksPhone.data,
+    ui: toolkitStates.skillHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the steps in one column under Back. The play
+  // test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the phone's back row, title and column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Only the draft, the form and the source paths.')).toBeVisible()
+    await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
+  },
+}

@@ -71,3 +71,26 @@ describe('the How it works tab on a tablet (T10)', () => {
     expect(rule?.left ?? 0).toBeGreaterThan(file?.right ?? 0)
   })
 })
+
+// M12: on the phone the tab is T10's column; the back row names the item, and the title is the smaller title style
+// with the rows under it 10 apart.
+describe('the How it works tab on the phone (M12)', () => {
+  it('draws the column under a smaller title, with the rows 10 apart', async () => {
+    await page.viewport(390, 806)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=skillHowItWorksPhone'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(8)
+    expect(document.querySelector('[aria-label="Legend"]')).toBeNull()
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')?.textContent).toContain('writer')
+    const title = document.querySelector('[data-figma="461:560"]')?.getBoundingClientRect()
+    expect(Math.round(title?.height ?? 0)).toBe(28)
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
+    expect(Math.round(trigger?.width ?? 0)).toBe(Math.round(list?.width ?? -1))
+    const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
+    expect(Math.round((tabs?.top ?? 0) - (title?.bottom ?? -1))).toBe(10)
+  })
+})

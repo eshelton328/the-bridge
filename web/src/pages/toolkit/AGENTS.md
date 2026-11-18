@@ -132,6 +132,8 @@ what each file of a page folder is for.
   (`ToolkitHowStep compact`: the number beside the text, the uses side by
   side) and the chat path follows. The back row names the item (Toolkit ›
   writer, `ToolkitItemBack named`), and the kind badge and path rows are
-  left out. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  left out. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
+  is the same column (`ToolkitHowColumn layout="phone"`), with the title in
+  the smaller title style and the rows 10 apart. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
