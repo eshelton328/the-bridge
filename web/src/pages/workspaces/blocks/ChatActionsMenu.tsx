@@ -3,8 +3,14 @@
 // and Rename chat. It is the pane menu with the header's ⋯ as its trigger,
 // pressed while the menu is open. Props only.
 import { Button, MoreIcon } from '@eshelton328/component-library-1701'
+import { css } from '../../../../styled-system/css/index.js'
 import type { PaneAction, Workspace } from '../types.ts'
 import { PaneMenu } from './PaneMenu.tsx'
+
+// A pressed or expanded Button draws the selected fill and the cyan border (border.active); Figma draws the open ⋯
+// as the closed chip, the raised fill and the default border (D19 417:1675). The trigger is pressed exactly while
+// its menu is open, and this class outranks the recipe's expanded border. The focus outline stays.
+const plainWhileOpen = css({ _pressed: { bg: 'surface.raised', borderColor: 'border.default' } })
 
 export type ChatActionsMenuProps = {
   title: string
@@ -37,6 +43,7 @@ export function ChatActionsMenu({ figma, ...props }: ChatActionsMenuProps) {
         <Button
           size="xs"
           pressed={props.open}
+          className={plainWhileOpen}
           aria-label={`${props.title} actions`}
           data-figma={figma?.trigger ?? '400:2'}
         >
