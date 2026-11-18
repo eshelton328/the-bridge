@@ -609,3 +609,17 @@ export const PhoneChatFull: Story = {
     await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
   },
 }
+
+export const PhoneFork: Story = {
+  name: 'M18: fork a chat on the phone',
+  args: { data: workspacesStates.phoneFork.data, ui: workspacesStates.phoneFork.ui, viewport: 'phone' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws D15's Fork dialog over bridge themes,
+    // with M18's note, and the phone's menu draws M18's sheet. WorkspacesPhoneFork.test.tsx checks the sheet at a
+    // phone's width.
+    const body = within(document.body)
+    await expect(await body.findByRole('dialog', { name: 'Fork bridge themes' })).toBeVisible()
+    await expect(body.getByText('Copies the messages and the context. The original keeps running.')).toBeVisible()
+    await expect(body.getByRole('button', { name: 'Whole chat', pressed: true })).toBeVisible()
+  },
+}

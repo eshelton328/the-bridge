@@ -239,7 +239,11 @@ first: it says what each file of a page folder is for.
   in edit mode.
   M17 adds `focusMessage` to `PhoneChat` (the focus in the message box
   with the skills closed, `ui.messageFocus`); Back returns to the list,
-  where the other chats keep running.
+  where the other chats keep running. M18 adds `ForkFields` (D15's name,
+  start-from choice and note, which `ForkDialog` draws too) and `PhoneFork`
+  (the Fork form on the phone: `BottomSheet` titled "Fork {chat}" with ×,
+  the fields and Fork across the sheet, no Cancel), which the chat actions'
+  Fork opens (`ui.chatDialog: 'fork'`) when the state has `data.fork`.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -309,7 +313,10 @@ first: it says what each file of a page folder is for.
   form: the menu that + opens), M16 `phoneTapChat` (from `phoneHome`,
   with M3's back label: the tap that opens bridge themes), M17
   `phoneChatFull` (from `phoneChat`, without the skills, the focus in the
-  message box: the chat full screen).
+  message box: the chat full screen), M18 `phoneFork` (from
+  `phoneChatFull`, with D15's Fork form without the hint, M18's note, M4's
+  chat actions and the message box empty and out of focus: the Fork sheet
+  open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -352,7 +359,8 @@ first: it says what each file of a page folder is for.
   dialog's text, and its layers in `layers.closeDialog`; for M14
   `phone.workspaceMenu`, a workspace's actions; for M15 `phone.addMenu`,
   the labels of the menu that + opens, and its layers in
-  `layers.addMenu`) and
+  `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
+  sheet's layers in `layers.phoneFork`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

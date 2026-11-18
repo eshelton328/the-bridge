@@ -301,8 +301,8 @@ export const ForkForm = z.object({
   title: z.string(),
   /** The field labels, as Figma writes them, in capitals. */
   labels: z.object({ name: z.string(), startFrom: z.string() }),
-  /** The name the copy gets, which Erik can change, and the hint inside the field. */
-  name: z.object({ value: z.string(), hint: z.string() }),
+  /** The name the copy gets, which Erik can change, and the hint inside the field; the phone's has none (M18). */
+  name: z.object({ value: z.string(), hint: z.string().optional() }),
   /** Where the copy starts: the whole chat, or up to a message Erik picks next. */
   startFrom: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
   /** The line under the choice that says what the fork copies. */
@@ -537,6 +537,16 @@ export const SidebarLayers = z.object({
    * no `data-*`, so the icons carry the rows' places.
    */
   addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
+  /** The Fork sheet on the phone (M18 422:217): its fields, the start-from choices in order, the note and Fork. */
+  phoneFork: z
+    .object({
+      name: z.string(),
+      startFrom: z.string(),
+      choices: z.array(z.string()),
+      note: z.string(),
+      submit: z.string(),
+    })
+    .optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 

@@ -40,6 +40,7 @@ import { phoneWorkspaceActions } from './phoneWorkspaceActions.ts'
 import { phoneAddMenu } from './phoneAddMenu.ts'
 import { phoneTapChat } from './phoneTapChat.ts'
 import { phoneChatFull } from './phoneChatFull.ts'
+import { phoneFork } from './phoneFork.ts'
 
 export const workspacesStates = {
   workbench,
@@ -81,4 +82,5 @@ export const workspacesStates = {
   phoneAddMenu,
   phoneTapChat,
   phoneChatFull,
+  phoneFork,
 }
