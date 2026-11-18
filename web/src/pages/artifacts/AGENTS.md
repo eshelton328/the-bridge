@@ -101,7 +101,8 @@ each file of a page folder is for.
   artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
   source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
-  `Thumbnail` over the link and Open artifact) and `MadeIn` (the chat
+  `Thumbnail` over the link and Open artifact), `LinkMark` (the link's
+  chain mark, 20 px in a 12 px place, also on T2's page) and `MadeIn` (the chat
   that published it and Open in workspace). For D3: `FilterPopover`
   (Filter, pressed while open and with a dot while boxes are checked, and
   the `Popover` with the footer's note and Show) and `FilterMenu` (a

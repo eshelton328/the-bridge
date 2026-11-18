@@ -3,9 +3,10 @@
 // artifact, which opens the artifact's page. The library has no framed
 // preview with a footer (LIBRARY_GAPS.md: Artifact preview frame); the box
 // takes the Card's border, radius and fill. Props only.
-import { Button, ExternalLinkIcon, Inline, LinkIcon, Thumbnail } from '@eshelton328/component-library-1701'
+import { Button, ExternalLinkIcon, Inline, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDetail } from '../types.ts'
+import { LinkMark } from './LinkMark.tsx'
 
 const box = css({
   display: 'flex',
@@ -31,7 +32,7 @@ export function ArtifactPreview({ artifact, onOpenArtifact }: ArtifactPreviewPro
     <div className={box} data-figma="preview">
       <Thumbnail kind={artifact.preview} shape="banner" framed={false} label={`${artifact.title} preview`} />
       <Inline gap="8" align="center" className={footer} data-figma="preview footer">
-        <LinkIcon size="16" />
+        <LinkMark />
         <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
           {artifact.link}
         </a>

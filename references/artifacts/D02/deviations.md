@@ -89,3 +89,8 @@ The New pill takes `Badge tone="working" size="sm"` (20 px, Figma 22), as
 D1's cards do; Remove takes `variant="secondaryDanger"` and Open artifact
 `variant="primary"`. The stack gaps are Figma's: 20 between the bar,
 title block, preview and "Made in", 8 under "MADE IN", 10 in the bar.
+The link mark in the preview's footer (403:500) is the 20 px `LinkIcon`
+(`icon.20`) in a 12 px place (`LinkMark`, -4 margins at the sides and
+-2 above and below): the library draws the links across the middle 15
+of its 24, so the mark is 12.6 px wide against Figma's 13, and the
+address starts at x 557 against 558. As T2's.

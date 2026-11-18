@@ -4,12 +4,13 @@
 // link and where it was made. The Back bar stays at the top and only the
 // page under it scrolls (d-107), in the shared DetailFrame, as the Inbox's
 // tablet task page. Back returns to the library (T1). Props only.
-import { Button, ExternalLinkIcon, Inline, LinkIcon, Stack, Thumbnail } from '@eshelton328/component-library-1701'
+import { Button, ExternalLinkIcon, Inline, Stack, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { ArtifactStatus } from '../blocks/ArtifactStatus.tsx'
 import { ArtifactTitleBlock } from '../blocks/ArtifactTitleBlock.tsx'
 import { ArtifactTopBar } from '../blocks/ArtifactTopBar.tsx'
+import { LinkMark } from '../blocks/LinkMark.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
 import type { ArtifactDetail } from '../types.ts'
 
@@ -46,7 +47,7 @@ export function ArtifactPage({ artifact, badge, backLabel, onBack, onDiscuss, on
           </Button>
         </span>
         <Inline gap="6" align="center" className={linkRow} data-figma="link">
-          <LinkIcon size="12" />
+          <LinkMark />
           <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
             {artifact.link}
           </a>
