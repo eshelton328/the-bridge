@@ -38,6 +38,8 @@ const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign:
 const name = css({ textStyle: 'body', flex: '1', textAlign: 'start' })
 // Figma's Close is the panel's grey (fg.muted, D4 128:338), not the text button's accent.
 const close = css({ color: 'fg.muted' })
+// Figma draws a listed folder's chevron grey (#8A97B8, fg.muted: D4 128:372, T5 128:610), under the row's fg.default.
+const chevron = css({ display: 'inline-flex', color: 'fg.muted' })
 
 /** The Figma layers of the picker's parts, for the fidelity checks; a part with no layer has none. */
 type FolderPickerLayers = {
@@ -129,7 +131,9 @@ export function FolderPickerList(props: FolderPickerListProps) {
             >
               <FolderIcon size="16" />
               <span className={name}>{folder}</span>
-              <ChevronRightIcon size="12" />
+              <span className={chevron}>
+                <ChevronRightIcon size="12" />
+              </span>
             </Button>
           ))}
         </Stack>
