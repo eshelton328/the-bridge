@@ -12,7 +12,8 @@ import { workflowOpen } from './workflowOpen.ts'
 
 const script = (name: string, count: number) => ({ path: `harness/${name}`, name, count, type: 'code' as const })
 
-const browser: ToolkitFileBrowser = {
+/** The item's Files tab, which its Links states share (shared/linkFiles.ts). */
+export const workflowFilesBrowser: ToolkitFileBrowser = {
   tree: [
     {
       path: 'skill-eval-round.md',
@@ -69,7 +70,9 @@ export const workflowFiles = {
   frames: [{ id: 'D35', node: '494:1267', viewport: 'desktop' }],
   data: {
     ...workflowOpen.data,
-    details: workflowOpen.data.details.map((d) => (d.path === 'workflows/skill-eval-round.md' ? { ...d, browser } : d)),
+    details: workflowOpen.data.details.map((d) =>
+      d.path === 'workflows/skill-eval-round.md' ? { ...d, browser: workflowFilesBrowser } : d,
+    ),
   },
   ui: { ...workflowOpen.ui, itemTab: 'files' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

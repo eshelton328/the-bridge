@@ -55,6 +55,21 @@ import { ruleFilesPhone } from './ruleFilesPhone.ts'
 import { agentFilesPhone } from './agentFilesPhone.ts'
 import { workflowFilesPhone } from './workflowFilesPhone.ts'
 import { hookFilesPhone } from './hookFilesPhone.ts'
+import { skillLinks } from './skillLinks.ts'
+import { ruleLinks } from './ruleLinks.ts'
+import { agentLinks } from './agentLinks.ts'
+import { workflowLinks } from './workflowLinks.ts'
+import { hookLinks } from './hookLinks.ts'
+import { skillLinksTablet } from './skillLinksTablet.ts'
+import { ruleLinksTablet } from './ruleLinksTablet.ts'
+import { agentLinksTablet } from './agentLinksTablet.ts'
+import { workflowLinksTablet } from './workflowLinksTablet.ts'
+import { hookLinksTablet } from './hookLinksTablet.ts'
+import { skillLinksPhone } from './skillLinksPhone.ts'
+import { ruleLinksPhone } from './ruleLinksPhone.ts'
+import { agentLinksPhone } from './agentLinksPhone.ts'
+import { workflowLinksPhone } from './workflowLinksPhone.ts'
+import { hookLinksPhone } from './hookLinksPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -111,4 +126,19 @@ export const toolkitStates = {
   agentFilesPhone,
   workflowFilesPhone,
   hookFilesPhone,
+  skillLinks,
+  ruleLinks,
+  agentLinks,
+  workflowLinks,
+  hookLinks,
+  skillLinksTablet,
+  ruleLinksTablet,
+  agentLinksTablet,
+  workflowLinksTablet,
+  hookLinksTablet,
+  skillLinksPhone,
+  ruleLinksPhone,
+  agentLinksPhone,
+  workflowLinksPhone,
+  hookLinksPhone,
 }

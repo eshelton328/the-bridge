@@ -53,6 +53,8 @@ import { ToolkitItemBack } from './ToolkitItemBack.tsx'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
 import { ToolkitItemPath } from './ToolkitItemPath.tsx'
+import { ToolkitLinks } from './ToolkitLinks.tsx'
+import { linkFile, linkLine } from './linksView.ts'
 
 // D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
 // the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
@@ -243,6 +245,42 @@ const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, stri
   tablet: {},
   phone: {},
 }
+// On the Links tab: writer in D19 (482:367), the rule skills in D29 (493:626), writing-reviewer in D30 (493:1201),
+// skill-eval-round in D31 (493:1984), the hook commit-msg in D32 (493:2794).
+const linksTitleLayers: Readonly<Record<string, string>> = {
+  'hooks/commit-msg': '493:2794',
+  'skills/writer/': '482:367',
+  'rules/skills.md': '493:626',
+  'agents/writing-reviewer.md': '493:1201',
+  'workflows/skill-eval-round.md': '493:1984',
+}
+// On the Links tab of a tablet: writer in T15 (482:735), the rule skills in T28 (493:3270), writing-reviewer in T29
+// (493:3697), skill-eval-round in T30 (493:4281), the hook commit-msg in T31 (493:4892).
+const tabletLinksTitleLayers: Readonly<Record<string, string>> = {
+  'hooks/commit-msg': '493:4892',
+  'skills/writer/': '482:735',
+  'rules/skills.md': '493:3270',
+  'agents/writing-reviewer.md': '493:3697',
+  'workflows/skill-eval-round.md': '493:4281',
+}
+// T15's graph has a layer named `links` too, so the tab's node id (482:908).
+const tabletLinksLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '482:908',
+}
+// On the Links tab of the phone: writer in M17 (482:1067), the rule skills in M31 (493:5375), writing-reviewer in M32
+// (493:5750), skill-eval-round in M33 (493:6286), the hook commit-msg in M34 (493:6758).
+const phoneLinksTitleLayers: Readonly<Record<string, string>> = {
+  'hooks/commit-msg': '493:6758',
+  'workflows/skill-eval-round.md': '493:6286',
+  'skills/writer/': '482:1067',
+  'rules/skills.md': '493:5375',
+  'agents/writing-reviewer.md': '493:5750',
+}
+const linksTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: linksTitleLayers,
+  tablet: tabletLinksTitleLayers,
+  phone: phoneLinksTitleLayers,
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -285,12 +323,19 @@ export type ToolkitItemProps = {
   fileView?: FileMode | undefined
   /** Called with Explain or Code when the Files tab's viewer changes its view. */
   onFileViewChange?: ((mode: FileMode) => void) | undefined
+  /** The line a link names in the selected file (`ui.line`, D19): its source opens at it. */
+  line?: number | undefined
   /** On a tablet or phone, the selected file fills the Files tab on a page of its own (T6, `ui.filePage`). */
   filePage?: boolean | undefined
   /** Leaves the file's page for the Files tab's tree (T6's Back to Files). */
   onCloseFilePage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
+  /**
+   * Opens a file of a toolkit item on its Files tab: the item's path, the file's path in it and the line the link
+   * names (D19's link lines).
+   */
+  onOpenFile?: ((item: string, file: string, line: number | undefined) => void) | undefined
   /**
    * A workflow on a page of its own (D13): the kind's crumb after Toolkit (Workflows, back to that kind's list), the
    * selected step and the way to select one. Beside the list when not set.
@@ -315,6 +360,7 @@ export function ToolkitItem({
   onDiscuss,
   onOpenFullPage,
   onOpenItem,
+  onOpenFile,
   fullPage,
   file,
   onFileChange,
@@ -322,6 +368,7 @@ export function ToolkitItem({
   onFileViewChange,
   filePage = false,
   onCloseFilePage,
+  line,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
@@ -361,8 +408,10 @@ export function ToolkitItem({
   const fullPhone = full && phone
   const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
   // How it works on a tablet or phone, when the item's `how` asks for it (T10): no kind badge or path row, and the
-  // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview.
-  const narrowHow = !desktop && tab === 'how' && detail.how?.named === true
+  // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview. The Links tab
+  // does the same when its `links` asks for it (T15); without it (T28) the item keeps its header.
+  const narrowHow =
+    !desktop && ((tab === 'how' && detail.how?.named === true) || (tab === 'links' && detail.links?.named === true))
   // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
     <ToolkitItemActions
@@ -394,7 +443,9 @@ export function ToolkitItem({
               ? howTitleLayersOf[layout][item.path]
               : tab === 'files'
                 ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
-                : titleLayersOf[layout][item.path]
+                : tab === 'links'
+                  ? linksTitleLayersOf[layout][item.path]
+                  : titleLayersOf[layout][item.path]
       }
     >
       {pageFile?.name ?? item.name}
@@ -520,6 +571,18 @@ export function ToolkitItem({
                 onSelectStep={fullPage.onSelectStep}
                 layout={layout}
               />
+            ) : t.value === 'links' && detail.links !== undefined ? (
+              <ToolkitLinks
+                links={detail.links}
+                item={item}
+                layout={layout}
+                layer={layout === 'tablet' ? tabletLinksLayers[item.path] : undefined}
+                onOpenItem={onOpenItem}
+                onOpenLine={(side, l) => {
+                  const target = linkFile(side, l, item.path)
+                  onOpenFile?.(target.item, target.file, linkLine(l))
+                }}
+              />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : t.value === 'files' && pageFile !== undefined ? (
@@ -528,6 +591,7 @@ export function ToolkitItem({
                 mode={fileMode(pageFile.view, fileView)}
                 onModeChange={onFileViewChange}
                 layout={layout}
+                line={line}
               />
             ) : t.value === 'files' && detail.browser !== undefined ? (
               <ToolkitFileBrowser
@@ -539,6 +603,7 @@ export function ToolkitItem({
                 marked={phone ? (file ?? null) : undefined}
                 mode={fileView}
                 onModeChange={onFileViewChange}
+                line={line}
                 onCopy={(path) => {
                   onCopyPath?.(filePathIn(detail.location, path))
                 }}
@@ -549,8 +614,13 @@ export function ToolkitItem({
             label: t.label,
             // T8 448:215: a workflow's own page starts 12 under the tabs; the tabs' panel puts it 15 under them.
             // T4 434:408: on the Files tab of a tablet the tree starts 14 under the tabs, where the tabs' panel puts it.
+            // T15 482:909: a named Links tab starts 12 under the tabs, so it takes no space above it either.
             content:
-              desktop || full || narrowFiles || panel === null ? panel : <div className={panelPage}>{panel}</div>,
+              desktop || full || narrowFiles || panel === null || (narrowHow && tab === 'links') ? (
+                panel
+              ) : (
+                <div className={panelPage}>{panel}</div>
+              ),
           }
         })}
       />

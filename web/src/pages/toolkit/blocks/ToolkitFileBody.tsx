@@ -8,8 +8,9 @@
 import { CodeLines, ScriptExplanation, ScrollFrame, ViewSwitch } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
-import { type FileMode, fileModes, markdownSource } from './filesView.ts'
+import { type FileMode, fileModes, markdownSource, sourceAt } from './filesView.ts'
 import { ToolkitMarkdownBlocks } from './ToolkitMarkdownBlocks.tsx'
+import { useScrollToLine } from './useScrollToLine.ts'
 
 // D6 432:2304: a line longer than the viewer runs past its edge (line 13, 432:2343). The code keeps its full width, so
 // the ScrollFrame body around it scrolls the code sideways and takes the focus (d-107), as the preview's code does.
@@ -30,9 +31,15 @@ export type ToolkitFileBodyProps = {
   onModeChange?: ((mode: FileMode) => void) | undefined
   /** Names the explanation's Figma layer (`explain`); a box around the body names it instead (T6). */
   explainLayer?: boolean | undefined
+  /**
+   * The line a link names (`ui.line`, D19 "SKILL.md:8"): the source shows the lines that hold it, numbered from the
+   * first, and scrolls it into view (`sourceAt` in blocks/filesView.ts). The file's first lines when not set.
+   */
+  line?: number | undefined
 }
 
-export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true }: ToolkitFileBodyProps) {
+export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true, line }: ToolkitFileBodyProps) {
+  const lineRef = useScrollToLine(mode === 'code' ? line : undefined, view.path)
   const modes = fileModes(view)
   const markdown = modes.some((m) => m.value === 'rendered')
   const toggle = markdown ? (
@@ -71,15 +78,18 @@ export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true 
       </div>
     )
   const code = view.code
+  // The source at a link's line, when the view holds it.
+  const at = line === undefined ? undefined : sourceAt(view, line)
   // A view with neither code nor blocks draws the empty file as the viewer always has.
-  if (code === undefined && !markdown) return <ToolkitMarkdownBlocks blocks={view.blocks} />
-  const lines = code === undefined ? markdownSource(view.blocks) : code.map((line) => line.map((p) => p.text).join(''))
+  if (code === undefined && !markdown && at === undefined) return <ToolkitMarkdownBlocks blocks={view.blocks} />
+  const lines =
+    at?.lines ?? (code === undefined ? markdownSource(view.blocks) : code.map((l) => l.map((p) => p.text).join('')))
   return (
     <>
       <div data-figma="code">
         <ScrollFrame>
-          <div className={codeWidth}>
-            <CodeLines lines={lines} segments={code} />
+          <div className={codeWidth} ref={lineRef}>
+            <CodeLines lines={lines} segments={at === undefined ? code : at.segments} start={at?.start} />
           </div>
         </ScrollFrame>
       </div>

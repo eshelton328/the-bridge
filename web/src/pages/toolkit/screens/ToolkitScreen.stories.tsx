@@ -976,3 +976,231 @@ export const HookFilesPhone: Story = {
     await expect(within(tree).getByText('97 lines · script')).toBeVisible()
   },
 }
+
+export const SkillLinks: Story = {
+  name: 'D19: a skill open beside the list, on Links',
+  args: { data: toolkitStates.skillLinks.data, ui: toolkitStates.skillLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 11' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'agents/writing-reviewer.md:30' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 7' })
+    await expect(within(to).getByText('then the audit-slop skill’s deslop steps (step 8)')).toBeInTheDocument()
+    await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
+  },
+}
+
+export const RuleLinks: Story = {
+  name: 'D29: a rule open beside the list, on Links',
+  args: { data: toolkitStates.ruleLinks.data, ui: toolkitStates.ruleLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 0' })
+    await expect(within(from).getByText(/No toolkit item names this rule/)).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'skills.md:72' })).toBeVisible()
+  },
+}
+
+export const AgentLinks: Story = {
+  name: 'D30: an agent open beside the list, on Links',
+  args: { data: toolkitStates.agentLinks.data, ui: toolkitStates.agentLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 7' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'skills/writer/SKILL.md:107' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 3' })
+    await expect(within(to).getByRole('button', { name: 'writing-reviewer.md:102' })).toBeVisible()
+  },
+}
+
+export const WorkflowLinks: Story = {
+  name: 'D31: a workflow open beside the list, on Links',
+  args: { data: toolkitStates.workflowLinks.data, ui: toolkitStates.workflowLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 4' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 2' })
+    await expect(within(from).getByRole('button', { name: 'workflows/skill-eval-cases.md:5' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 2' })
+    await expect(within(to).getByRole('button', { name: 'skill-eval-round.md:46' })).toBeVisible()
+  },
+}
+
+export const HookLinks: Story = {
+  name: 'D32: a hook open beside the list, on Links',
+  args: { data: toolkitStates.hookLinks.data, ui: toolkitStates.hookLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 2' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 1' })
+    await expect(within(from).getByRole('button', { name: 'rules/commits-and-prs.md:182' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'commit-msg:3' })).toBeVisible()
+  },
+}
+
+export const SkillLinksTablet: Story = {
+  name: 'T15: a skill’s links on a tablet, the panels under the graph',
+  args: { data: toolkitStates.skillLinksTablet.data, ui: toolkitStates.skillLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 11' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'rules/ste100.md:21' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
+  },
+}
+
+export const RuleLinksTablet: Story = {
+  name: 'T28: a rule’s links on a tablet, under the rule’s header',
+  args: { data: toolkitStates.ruleLinksTablet.data, ui: toolkitStates.ruleLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'skills.md:72' })).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+  },
+}
+
+export const AgentLinksTablet: Story = {
+  name: 'T29: an agent’s links on a tablet, opened from writer',
+  args: { data: toolkitStates.agentLinksTablet.data, ui: toolkitStates.agentLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under the
+  // breadcrumb. src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 7' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'skills/writer/SKILL.md:107' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 3' })
+    await expect(within(to).getByRole('button', { name: 'writing-reviewer.md:102' })).toBeVisible()
+  },
+}
+
+export const WorkflowLinksTablet: Story = {
+  name: 'T30: a workflow’s links on a tablet, under the workflow’s header',
+  args: {
+    data: toolkitStates.workflowLinksTablet.data,
+    ui: toolkitStates.workflowLinksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 4' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 2' })
+    await expect(within(from).getByRole('button', { name: 'workflows/skill-eval-cases.md:5' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 2' })
+    await expect(within(to).getByRole('button', { name: 'skill-eval-round.md:46' })).toBeVisible()
+  },
+}
+
+export const HookLinksTablet: Story = {
+  name: 'T31: a hook’s links on a tablet, under the hook’s header',
+  args: { data: toolkitStates.hookLinksTablet.data, ui: toolkitStates.hookLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 2' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 1' })
+    await expect(within(from).getByRole('button', { name: 'rules/commits-and-prs.md:182' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'commit-msg:3' })).toBeVisible()
+  },
+}
+
+export const SkillLinksPhone: Story = {
+  name: 'M17: a skill’s links on the phone, the graph upright',
+  args: { data: toolkitStates.skillLinksPhone.data, ui: toolkitStates.skillLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 11' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 7' })
+    await expect(within(to).getByRole('button', { name: 'SKILL.md:118' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
+  },
+}
+
+export const RuleLinksPhone: Story = {
+  name: 'M31: a rule’s links on the phone, under the rule’s header',
+  args: { data: toolkitStates.ruleLinksPhone.data, ui: toolkitStates.ruleLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'skills links' })).toBeVisible()
+  },
+}
+
+export const AgentLinksPhone: Story = {
+  name: 'M32: an agent’s links on the phone, under the agent’s header',
+  args: { data: toolkitStates.agentLinksPhone.data, ui: toolkitStates.agentLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 7' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'agents/writer.md:35' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'writing-reviewer links' })).toBeVisible()
+  },
+}
+
+export const WorkflowLinksPhone: Story = {
+  name: 'M33: a workflow’s links on the phone, under the workflow’s header',
+  args: {
+    data: toolkitStates.workflowLinksPhone.data,
+    ui: toolkitStates.workflowLinksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 4' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'skill-eval-round links' })).toBeVisible()
+  },
+}
+
+export const HookLinksPhone: Story = {
+  name: 'M34: a hook’s links on the phone, under the hook’s header',
+  args: { data: toolkitStates.hookLinksPhone.data, ui: toolkitStates.hookLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 2' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'commit-msg links' })).toBeVisible()
+  },
+}

@@ -317,6 +317,11 @@ const ToolkitFileView = z.object({
   summary: z.literal(true).optional(),
   /** A line under the source on a file's own page on the phone (M6 435:555), such as how its long lines wrap. */
   footnote: z.string().optional(),
+  /**
+   * Parts of the file's source past its first lines, each from the number of its first line: the lines that the
+   * items' links name (D19, "SKILL.md:118"), which a tap on a link opens (`sourceAt` in blocks/filesView.ts).
+   */
+  excerpts: z.array(z.object({ start: z.number().int().positive(), lines: z.array(z.string()).min(1) })).optional(),
 })
 export type ToolkitFileView = z.infer<typeof ToolkitFileView>
 
@@ -339,6 +344,52 @@ const ToolkitFileBrowser = z.object({
   badge: z.object({ path: z.string(), meta: z.string() }).optional(),
 })
 export type ToolkitFileBrowser = z.infer<typeof ToolkitFileBrowser>
+
+/**
+ * One link of the Links tab (D19 `link · writing · rules/writing.md:77` 482:547): the item at the other end (its path,
+ * name and kind), where the link is written (`at`, the file and its line, such as "rules/writing.md:77") and the line
+ * itself, cut as Figma cuts it.
+ */
+const ToolkitLink = z.object({
+  path: z.string(),
+  name: z.string(),
+  kind: ToolkitKind,
+  at: z.string(),
+  text: z.string(),
+})
+
+/**
+ * One side of the Links tab (D19 `panel · linked from` 482:542): its label ("Linked from", shown in capitals with the
+ * count after it), the caption at the header's end ("files that name writer"), the links in the file's order, and the
+ * order of the items in the graph's column (`graph`, their paths). With no links, `empty` says why, in the graph's
+ * column (`graph`, D29 493:895) and in the panel (`panel`, D29 493:901).
+ */
+const ToolkitLinkSide = z.object({
+  label: z.string(),
+  caption: z.string(),
+  links: z.array(ToolkitLink),
+  graph: z.array(z.string()),
+  empty: z.object({ graph: z.string(), panel: z.string() }).optional(),
+})
+
+/**
+ * The Links tab (D19 `links` 482:539): a line on what it shows, the header's label ("Links", with the count of the
+ * links) and hint, the items that link to this one and the items it links to, and the note under them.
+ */
+const ToolkitLinks = z.object({
+  intro: z.string(),
+  label: z.string(),
+  hint: z.string(),
+  from: ToolkitLinkSide,
+  to: ToolkitLinkSide,
+  note: z.string(),
+  /**
+   * On a tablet, the back row names the item (Toolkit › writer, T15 482:724) and the kind badge and path rows are left
+   * out, as on How it works (T10). When not set the tab keeps the item's header as on the Overview (T28 493:3264).
+   */
+  named: z.boolean().optional(),
+})
+export type ToolkitLinks = z.infer<typeof ToolkitLinks>
 
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
@@ -399,6 +450,8 @@ export const ToolkitItemDetailView = z.object({
   flowPage: ToolkitFlowPage.optional(),
   /** The Files tab (D6): the item's tree and its file viewer. None when the item has no such tab yet; its panel is then empty. */
   browser: ToolkitFileBrowser.optional(),
+  /** The Links tab (D19): what links to the item and what it links to. None when the item has no such tab yet. */
+  links: ToolkitLinks.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -444,6 +497,12 @@ export const ToolkitData = z.object({
   map: ToolkitMapView.optional(),
   /** What an open item shows (D3), by path; an item with no entry opens with what the list knows of it. */
   details: z.array(ToolkitItemDetailView).optional(),
+  /**
+   * The items the open item's links name, each with its Files tab's browser (D19 482:660: a tap on a link's file and
+   * line opens that file on its item's Files tab). An item the list does not show opens from here; an item with no
+   * browser in `details` takes this one, and its Files tab. None when the state has no Links tab.
+   */
+  linkTargets: z.array(z.object({ item: ToolkitItemView, browser: ToolkitFileBrowser })).optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 
@@ -493,6 +552,11 @@ export const ToolkitUi = z.object({
    * file opens under the tree (T4). Under the tree when not set.
    */
   filePage: z.boolean().optional(),
+  /**
+   * The line of the file on the Files tab that a link names (D19, "SKILL.md:8"): the viewer shows the file's source
+   * at that line and scrolls to it. None when the file opened from its tree row.
+   */
+  line: z.number().int().positive().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

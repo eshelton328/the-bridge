@@ -33,7 +33,7 @@ import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
 import { canOpenFullPage, isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
-import { backTo, openedFrom, openFrom, openItem, showOnMap } from './itemView.ts'
+import { backTo, openedFrom, openFile, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 import { selectFile } from '../blocks/filesView.ts'
 
@@ -190,18 +190,20 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           const browser = open.detail.browser
           onUiChange(
             browser === undefined
-              ? { file, fileView: undefined }
+              ? { file, fileView: undefined, line: undefined }
               : selectFile(browser, file, !desktop, layout === 'phone'),
           )
         }}
         filePage={ui.filePage}
         onCloseFilePage={() => {
-          onUiChange({ filePage: undefined, fileView: undefined })
+          onUiChange({ filePage: undefined, fileView: undefined, line: undefined })
         }}
         fileView={ui.fileView}
         onFileViewChange={(fileView) => {
-          onUiChange({ fileView })
+          // Another view of the file shows it whole, from its first line, not at a link's line.
+          onUiChange({ fileView, line: undefined })
         }}
+        line={ui.line}
         onCopyPath={onCopyPath}
         onShowOnMap={() => {
           // From the full page, Show on map leaves it as a crumb does, so the workflow reopened from the map starts on its
@@ -234,6 +236,14 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }
         onOpenItem={(path) => {
           onUiChange(openFrom(path, open.item.path))
+        }}
+        onOpenFile={(path, file, line) => {
+          // The file opens as a tap on its row in the tree opens it: on a tablet or phone on its own page when it has
+          // one (selectFile; on the phone every file with a view does, since its Files tab has no viewer).
+          const browser = openItem(data, { open: path, itemTab: 'files' })?.detail.browser
+          const page =
+            browser !== undefined && selectFile(browser, file, !desktop, layout === 'phone').filePage === true
+          onUiChange(openFile(path, file, open.item.path, { page, line }))
         }}
       />
     )

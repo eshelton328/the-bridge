@@ -9,7 +9,8 @@ import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitFileBrowser, ToolkitUi } from '../types.ts'
 import { agentOpen } from './agentOpen.ts'
 
-const browser: ToolkitFileBrowser = {
+/** The item's Files tab, which its Links states share (shared/linkFiles.ts). */
+export const agentFilesBrowser: ToolkitFileBrowser = {
   tree: [
     {
       path: 'writing-reviewer.md',
@@ -54,7 +55,9 @@ export const agentFiles = {
   frames: [{ id: 'D34', node: '494:639', viewport: 'desktop' }],
   data: {
     ...agentOpen.data,
-    details: agentOpen.data.details.map((d) => (d.path === 'agents/writing-reviewer.md' ? { ...d, browser } : d)),
+    details: agentOpen.data.details.map((d) =>
+      d.path === 'agents/writing-reviewer.md' ? { ...d, browser: agentFilesBrowser } : d,
+    ),
   },
   ui: { ...agentOpen.ui, itemTab: 'files' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

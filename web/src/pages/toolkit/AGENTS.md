@@ -270,7 +270,62 @@ what each file of a page folder is for.
   `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
   same under Back to Toolkit, and a workflow (M37, `workflowFilesPhone`,
   T34's files) shows its doc and the harness/ folder open; a hook (M38,
-  `hookFilesPhone`, T35's files) its script and its tests. Only the
+  `hookFilesPhone`, T35's files) its script and its tests. The Links tab
+  (D19, `skillLinks`, D3's data with `ui.itemTab` `links`) draws a detail's
+  `links` (`ToolkitLinks`): a line on what it shows, the count of links and
+  the hint, the graph (`ToolkitLinksGraph`: the library's `MapGraph` with
+  the item selected in the middle, the items that name it on the left and
+  the items it names on the right, each column in the side's `graph`
+  order, placed by `linksGraph` in `blocks/linksView.ts`, tested in
+  `linksView.test.ts`), the two panels side by side (`ToolkitLinksPanel`:
+  each link's item as a `MapNode`, its file and line, and the line's text)
+  and the note. A tap on an item opens it from the open item (`openFrom`);
+  a tap on a file and line opens that file on its item's Files tab
+  (`linkFile`, and `openFile` in `screens/itemView.ts`;
+  `src/app/ToolkitLinks.test.tsx`). Each Links state's `linkTargets`
+  holds the browser of every item its links name, from
+  `states/shared/linkFiles.ts` (shared data, not a state): the Files
+  states' browsers (D6, D33 to D36) and one-file browsers for the other
+  items; `openItem` gives an item with no browser that one and its Files
+  tab, and opens an item the list does not show (`linksView.test.ts`).
+  The link's line (`linkLine`) goes into `ui.line`, with `ui.fileView`
+  set to `code`: the viewer shows the part of the file's source that
+  holds it (a view's `excerpts`, or its first lines; `sourceAt` in
+  `blocks/filesView.ts`), numbered from its first line, and scrolls the
+  line into view (`blocks/useScrollToLine.ts`; CodeLines cannot mark it:
+  LIBRARY_GAPS.md, Code line from a link). Another file, view or page
+  clears the line.
+  A rule (D29, `ruleLinks`, D37's data) links to one skill and nothing links to it: a side with no links has
+  `empty`, the reason in the graph's left column and in its panel. An
+  agent (D30, `agentLinks`, D7's data) has two items named writer on one
+  side, the skill and the agent: each node and row keys on the item's
+  path. A workflow (D31, `workflowLinks`, D8's data) names the stage
+  before it and the agent it runs, and a hook (D32, `hookLinks`, D9's
+  data) and the rule it enforces name each other, so the rule stands on
+  both sides. On a tablet (T15, `skillLinksTablet`, D19's data) the item
+  replaces the list in `DetailFrame`; its `links` sets `named`, so the back
+  row names the item (Toolkit › writer) and the kind badge and path rows are
+  left out, as on T10. The graph is narrower (`linksGraph`'s `tablet` size)
+  and the panels stand one under the other (`ToolkitLinks` `layout`). A rule
+  on a tablet (T28, `ruleLinksTablet`, D29's data) does not set `named`, so
+  the item keeps T17's header (Toolkit, the kind badge, the name and the path
+  row) over the same tab. An agent on a tablet (T29, `agentLinksTablet`,
+  D30's data with `ui.from` set to writer, as on T7) keeps T7's breadcrumb
+  and header. A workflow on a tablet (T30, `workflowLinksTablet`, D31's
+  data) keeps T18's header, and a hook (T31, `hookLinksTablet`, D32's data)
+  T19's. The tablet's graph keeps the desktop's places in height (T29);
+  only T15's is 4 px shorter in Figma. On the phone (M17, `skillLinksPhone`,
+  T15's data) the item opens as on M12, and the graph stands upright
+  (`linksGraph`'s `phone` size): the side that names the item two to a row
+  over it, the side it names under it, with no lines and nothing selected
+  (LIBRARY_GAPS.md, Links graph (phone)). A rule on the phone (M31,
+  `ruleLinksPhone`, T28's data) keeps M19's header, and the reason stands in
+  the side over the rule, where its first row would be. An agent on the
+  phone (M32, `agentLinksPhone`, T29's data with no `ui.from`, as on M20)
+  keeps M20's header under Back to Toolkit, and a workflow (M33,
+  `workflowLinksPhone`, T30's data) M21's; a hook (M34, `hookLinksPhone`,
+  T31's data) keeps M22's, with the rule it enforces over it and under it.
+  Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

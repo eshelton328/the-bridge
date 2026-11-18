@@ -12,8 +12,9 @@ import { CodeLines, LockIcon, ViewSwitch } from '@eshelton328/component-library-
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileView } from '../types.ts'
-import { type FileMode, fileModes } from './filesView.ts'
+import { type FileMode, fileModes, sourceAt } from './filesView.ts'
 import { ToolkitFileBody } from './ToolkitFileBody.tsx'
+import { useScrollToLine } from './useScrollToLine.ts'
 
 // T6 440:1918, 440:1925: the switch's row starts 14 under the tabs and the box 14 under the row (no space token has 14:
 // 12; LIBRARY_GAPS.md, Tablet item spacing).
@@ -70,14 +71,24 @@ export type ToolkitFilePageProps = {
   /** Called with Explain or Code when the switch or a step's line link changes the view. */
   onModeChange?: ((mode: FileMode) => void) | undefined
   layout?: Viewport | undefined
+  /** The line a link names (`ui.line`, D19): the source opens at it and scrolls it into view. */
+  line?: number | undefined
 }
 
-export function ToolkitFilePage({ view, mode, onModeChange, layout = 'tablet' }: ToolkitFilePageProps) {
+export function ToolkitFilePage({ view, mode, onModeChange, layout = 'tablet', line }: ToolkitFilePageProps) {
   const modes = fileModes(view)
   const phone = layout === 'phone'
+  // The source at a link's line, when the view holds it; the file's first lines otherwise.
+  const at = line === undefined ? undefined : sourceAt(view, line)
+  const lineRef = useScrollToLine(phone && mode === 'code' ? line : undefined, view.path)
+  const source =
+    at ??
+    (view.code === undefined
+      ? undefined
+      : { start: 1, lines: view.code.map((l) => l.map((p) => p.text).join('')), segments: view.code })
   // M6 435:503: on the phone the source wraps its long lines in a box as wide as the item, with nothing to scroll.
   const phoneCode =
-    phone && mode === 'code' && view.code !== undefined ? (
+    phone && mode === 'code' && source !== undefined ? (
       <>
         {view.usedBy === undefined ? null : (
           <p className={readOnly} data-figma="read-only">
@@ -85,8 +96,8 @@ export function ToolkitFilePage({ view, mode, onModeChange, layout = 'tablet' }:
             {`Read-only. ${view.usedBy.text}`}
           </p>
         )}
-        <div className={box} data-figma="code">
-          <CodeLines lines={view.code.map((line) => line.map((p) => p.text).join(''))} segments={view.code} wrap />
+        <div className={box} data-figma="code" ref={lineRef}>
+          <CodeLines lines={source.lines} segments={source.segments} start={source.start} wrap />
         </div>
         {view.footnote === undefined ? null : <p className={footnote}>{view.footnote}</p>}
       </>
@@ -113,12 +124,12 @@ export function ToolkitFilePage({ view, mode, onModeChange, layout = 'tablet' }:
       {phone && mode === 'explain' ? (
         // M8 440:1630: on the phone the explanation has no box around it.
         <div className={phoneExplain}>
-          <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} />
+          <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} line={line} />
         </div>
       ) : (
         (phoneCode ?? (
           <div className={box} data-figma={mode === 'explain' ? 'explain' : undefined}>
-            <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} explainLayer={false} />
+            <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} explainLayer={false} line={line} />
           </div>
         ))
       )}
