@@ -123,6 +123,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   in its body and the reply box in its footer, and no element holds both
   without the task card above them. So `discussion` y +28, h -101 px.
   The page structure stays (d-107).
+- **Task card padding (2026-11-18).** The task card is now the
+  `notice` `Panel` (10 px at the top and bottom, 12 at the sides), as
+  Figma's card, not the `section` one (12 and 16): `task · discussing` y +6 px (was y +6, h +6 px); `guard` y +6 px (was x +6, y +8, w -12 px); `chevron · open task` y +6 px (was x -6, y +8 px). The
+  entries under the card start 4 px higher.
+  `proposal · REMOVE THIS TASK` now fails (y -5, w +148, h +8 px): the messages above it
+  are shorter than Figma's (`message · discussion` h -18), and the
+  4 px of card padding hid part of that offset before.
 
 ## Second review, round 2
 
