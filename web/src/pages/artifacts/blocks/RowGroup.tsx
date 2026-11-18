@@ -9,13 +9,13 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactGroup, MatchPlace } from '../types.ts'
 import { ArtifactRow } from './ArtifactRow.tsx'
 
-// Figma's rows are 58 high, 2 apart (403:193 to 403:219); `ListRow` pads 10 inside its border, so a row is 62
-// (LIBRARY_GAPS.md: List row padding). Each row after the first starts 2 up into the last one's padding, so the rows
-// keep Figma's 60 px pitch and the groups below stay where Figma has them. M1's rows are 66 high, 2 apart (406:121 to
-// 406:148), a 68 px pitch; the phone's rows, 70 high around the 48 px preview, keep that pitch the same way. M5's
-// matches are 66 and 78 high, 2 apart (408:76 to 408:329); with the match line the render's are 70 and 82, so they
-// overlap the same 2 px and each starts within 2 px of Figma's.
-const rows = css({ '& > * + *': { mt: '-2' } })
+// D2's rows are 58 high, 2 apart (403:193 to 403:219), a 60 px pitch: `ListRow padding="sm"` pads 8 inside its 1 px
+// border, so the rows are Figma's height and sit 2 apart. M1's rows are 66 high, 2 apart (406:121 to 406:148), a 68 px
+// pitch; `padding="phone"` pads 10 above and below (Figma 9 above the preview), so the phone's rows are 70 high around
+// the 48 px preview, and each after the first starts 2 up into the last one's padding to keep Figma's pitch
+// (LIBRARY_GAPS.md: List row padding and age). M5's matches are 66 and 78 high, 2 apart (408:76 to 408:329); with the
+// match line the render's are 70 and 82, so they overlap the same 2 px and each starts within 2 px of Figma's.
+const phoneRows = css({ '& > * + *': { mt: '-2' } })
 
 /** A group of rows: a library group, or the search's matches with no count or dot (M5). */
 type RowGroupData = Pick<ArtifactGroup, 'label' | 'cards'> & {
@@ -72,7 +72,11 @@ export function RowGroup({
         />
       </div>
       {open ? (
-        <Stack gap="0" id={contentId} className={rows}>
+        <Stack
+          gap={layout === 'phone' ? '0' : '2'}
+          id={contentId}
+          className={layout === 'phone' ? phoneRows : undefined}
+        >
           {group.cards.map((card) => {
             const place = search?.places.get(card.id)
             return (

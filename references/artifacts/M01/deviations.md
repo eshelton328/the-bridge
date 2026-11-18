@@ -43,14 +43,15 @@ M1 is D1's library on the phone as a list of rows
   muted bars, and the drawings take one colour set per kind. Library gap
   "Thumbnail colour".
 - **Row height and New.** The rows are 70 high against Figma's 66
-  (`ListRow` pads 10 inside its 1 px border around the 48 px preview,
-  Figma 9); each row after the first starts 2 up, so the pitch is
+  (`ListRow padding="phone"` pads 10 above and below inside its 1 px
+  border around the 48 px preview, Figma 9); each row after the first starts 2 up, so the pitch is
   Figma's 68 and each row starts where Figma's does. The age sits on the
   title line and New 4 under it in one column at the row's end. Library
   gap "List row padding and age". At the sides the row's content sits
   where Figma's does: the preview starts at x 17 and the age and New end
-  at 373 (Figma 16 and 374), because the row takes `ListRow`'s extra
-  6 px outside the list's padding, as the Inbox's phone rows do.
+  at 373 (Figma 16 and 374), because `ListRow padding="phone"` (library
+  1.0.0-beta.39) pads 4 at the sides inside its 1 px border, and the row
+  is the list's 366 px.
 - **New badge.** New is `Badge tone="working" size="xs"` with
   `SparkFilledIcon size="12"` (library 1.0.0-beta.36): 16 high with a
   filled four-point star in Figma's teal, as Figma's (406:144). It is

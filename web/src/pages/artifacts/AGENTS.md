@@ -122,11 +122,10 @@ each file of a page folder is for.
   group, each after the first 2 up into the last row's padding, whose
   `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
   the title line and New under it as `Badge size="xs"` with
-  `SparkFilledIcon`; the rows are 70 high, each after the first 2 up, so
-  they keep Figma's 68 px pitch, and each takes
-  `ListRow`'s extra 6 px at the sides outside the page's 12 px padding
-  (`mx: -6`, as the Inbox's phone rows), so its preview starts 4 in from
-  the row's side, as Figma's. The sheets over the phone's library and
+  `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 70 high,
+  each after the first 2 up, so they keep Figma's 68 px pitch, and pad 4
+  at the sides, so the preview starts 4 in from the row's border, as
+  Figma's. The sheets over the phone's library and
   artifact page (M3, M4, M6, M7) are `BottomSheet`s over the tab bar;
   a `text` Button in a sheet's title row (Clear, Cancel, Add, Done)
   reaches 8 past the row's edge, so its label lines up with the sheet's
@@ -169,8 +168,10 @@ each file of a page folder is for.
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
   source, project and age; `onOpen` makes it a button). For D2:
-  `RowGroup` and `ArtifactRow` (`ListRow` with a `Thumbnail size="sm"`,
-  the kind mark and project, the New dot and the age; the open
+  `RowGroup` (rows 2 apart) and `ArtifactRow` (`ListRow padding="sm"
+  trailingAlign="center"` with a `Thumbnail size="sm"`, the kind mark and
+  project, the New dot at the end of the title line (`dot="working"
+  dotPosition="end"`) and the age centred down the row; the open
   artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
   source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
@@ -187,12 +188,12 @@ each file of a page folder is for.
   boxes, the `FilterMenu` and Show the full width; Show applies the boxes
   and closes it, and the scrim and Escape close it and keep them, so both
   return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
-  `GroupHeader` over rows 8 apart, Figma's 104 px pitch), `LibraryRow`
-  (`ListRow` in a bordered box: a `Thumbnail size="lg" shape="wide"`, the title and the description with the match
+  `GroupHeader` over rows 6 apart, Figma's 104 px pitch) and `LibraryRow`
+  (`ListRow surface="card" padding="lg" trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the title
+  with the New dot 8 after it (`dot="working"`) and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
-  it, and at the end the New dot, the place as `Badge variant="tag"`, the
-  age and an icon-only Open) and `NewDot` (the list rows' New dot, also in
-  `ArtifactRow`). For D5: `AddLinkFields` (the form's fields: the link
+  it, and at the end, centred down the row, the place as `Badge variant="tag"`, the
+  age and an icon-only Open). For D5: `AddLinkFields` (the form's fields: the link
   and title `TextField`s, the source as a `ViewSwitch` of the two kinds
   and `ProjectPicker`, each line under a field only when the form has
   one; the link field has the focus, the caret after the link),
