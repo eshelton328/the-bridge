@@ -2,7 +2,8 @@
 
 What still differs from Figma after the first build of the side chat in
 split panes (`pnpm fidelity workspaces`, 2026-11-17, after the move to
-the library's 1.0.0-beta.16; measured on 1.0.0-beta.18), each with its reason. The
+the library's 1.0.0-beta.16; measured on 1.0.0-beta.18, the side chat's
+open-as-pane button and composer again on 1.0.0-beta.25), each with its reason. The
 library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is D01's four panes with no menu or skill list open, and the side
 chat of bridge themes drawn inside that pane, over the chat's right side
@@ -64,13 +65,14 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   taller. The /btw command is `monoSm` in `fg.muted` and the chat icon is
   `fg.accent` (Figma cyan); the D2 side chat keeps its own colours.
 - **Open as its own pane (Side chat in a pane).** `open as pane` x +12.5,
-  y -38, w +11.1: a `Button size="xs" textSize="xs"` with
-  `SplitIcon` 12, 24 px high (Figma 26) and 11 px wider. It sits 38 px
-  higher because the composer under it is taller.
-- **Side chat composer (Side chat in a pane).** `158:545` x +12.5, y -40,
-  w -14, h +38: `Composer` always draws two rows, the text over the button
-  row (78 px), where Figma draws one 40 px row with the placeholder and a
-  22 px send button. It has no attach button, as Figma's has none.
+  w +11.1: a `Button size="xs" textSize="xs"` with `SplitIcon` 12, 24 px
+  high (Figma 26) and 11 px wider. It sits 2 px higher than Figma's
+  (y -2, inside the tolerance).
+- **Side chat composer (Side chat in a pane).** `158:545` x +12.5, w -14:
+  `Composer layout="inline"` (1.0.0-beta.25) draws one row with the
+  placeholder and Send, 42 px high (Figma 40, h +2, y -4, inside the
+  tolerance), with no attach button and no model, as Figma's has none.
+  It fails on x and w only, because the panel is 320 wide and padded 16.
 - **Shell pane.** `TerminalLines` draws the block cursor after the
   prompt "$", as Figma does; the terminal ends 5 px higher (`158:347`
   h -5), as on D01.
@@ -79,7 +81,10 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   56 px against Figma's 50, as on D01.
 - **Sticky composer (d-107).** Only the transcript of each chat pane and
   of the side chat scrolls; the headers and composers stay in view. The
-  frame shows the top of the scroll, so this changes no pixel here.
+  frame shows the top of the scroll, so this changes no pixel here. The
+  side chat panel itself does not scroll: its title row and composer stay
+  fixed, and its note scrolls with the transcript, so at 1512 × 600 the
+  title row, two lines of transcript and the composer fit the panel.
 - **Approval buttons.** Deny is `variant="secondaryDanger"`: red text on
   the raised fill with a border, as Figma draws it beside Always allow.
 - **Bridge themes under the side chat.** The chat's user bubble, reply

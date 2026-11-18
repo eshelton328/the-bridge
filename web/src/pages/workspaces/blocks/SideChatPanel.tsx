@@ -2,7 +2,7 @@
 // note, the question and the answer, and its own composer. `placement="side"`
 // sits beside the main chat (D2 105:920); `placement="pane"` sits inside its
 // pane of the split, over the chat's right side, with "Open as its own
-// pane" over the composer (D5 158:518). Props only.
+// pane" over a one-row composer (D5 158:518). Props only.
 import { BubbleIcon, Button, CloseIcon, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
@@ -19,9 +19,8 @@ const placements = {
     borderLeftColor: 'border.default',
   }),
   // D5 158:518: 330 × 393, 4 in from the pane's body on the right, top and bottom, padded 15, its parts 10 apart.
-  // In a pane too short for its title, two lines of transcript and its composer, the panel scrolls (d-107).
+  // The panel does not scroll: its title row and composer stay in view, and only its note and transcript scroll (d-107).
   pane: css({
-    overflowY: 'auto',
     position: 'absolute',
     zIndex: '1',
     top: '4',
@@ -72,6 +71,13 @@ export function SideChatPanel({ chat, placement = 'side', onClose, layers }: Sid
         </Button>
       </Inline>
     )
+  // Beside the chat (D2) the note stays under the title; in a pane (D5) it scrolls with the transcript, so a short pane
+  // keeps the title, a line of transcript and the one-row composer in view (d-107).
+  const noteText = (
+    <p className={note} data-figma={layers?.sideNote ?? '105:932'}>
+      {chat.note}
+    </p>
+  )
   return (
     <aside
       data-figma={layers?.sideChat ?? '105:920'}
@@ -89,9 +95,7 @@ export function SideChatPanel({ chat, placement = 'side', onClose, layers }: Sid
             <CloseIcon size="16" />
           </Button>
         </Inline>
-        <p className={note} data-figma={layers?.sideNote ?? '105:932'}>
-          {chat.note}
-        </p>
+        {placement === 'side' && noteText}
       </div>
       <ChatPane
         size={placement === 'pane' ? 'inset' : 'side'}
@@ -102,6 +106,8 @@ export function SideChatPanel({ chat, placement = 'side', onClose, layers }: Sid
         entries={chat.entries}
         composer={chat.composer}
         attach={placement === 'side'}
+        layout={placement === 'pane' ? 'inline' : undefined}
+        lead={placement === 'pane' ? noteText : undefined}
         above={openAsPane}
       />
     </aside>
