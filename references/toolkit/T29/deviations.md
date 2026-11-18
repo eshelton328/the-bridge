@@ -66,6 +66,13 @@ before T29. The frame has no `exceptions.json`.
   Figma's `node · writing-reviewer (focus)` (493:4042) is 150 × 40 with
   its name in the label style, and each line ends in a 3 px dot (gap:
   Links graph).
+- **Node borders.** Each item at a side of the graph and at the start of
+  each link row has a border in the full colour of its kind (cyan for a
+  skill, violet for an agent, amber for a rule, green for a workflow).
+  Figma draws the same colour at about 60 % alpha in the graph and 45 %
+  in the rows, so its borders look muted; the icons are full colour in
+  both. `MapNode` has no state for a muted kind border and no token has
+  a kind colour at part alpha (gap: Links graph, Links panel rows).
 - **Panel rows.** Each link's node is 28 high against 29 and its file and
   line is a plain button in mono (gap: Links panel rows).
 - **Path badge.** The copy icon is the badge's bare `icon/copy` (gap:

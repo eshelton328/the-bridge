@@ -62,6 +62,13 @@ report's text, position and rule results are unchanged). The frame has no
   every node (gap: Links graph).
 - **Line ends.** Each line of the graph ends in a small dot; Figma's lines
   end at the node's edge (gap: Links graph).
+- **Node borders.** Each item at a side of the graph and at the start of
+  each link row has a border in the full colour of its kind (cyan for a
+  skill, violet for an agent, amber for a rule, green for a workflow).
+  Figma draws the same colour at about 60 % alpha in the graph and 45 %
+  in the rows, so its borders look muted; the icons are full colour in
+  both. `MapNode` has no state for a muted kind border and no token has
+  a kind colour at part alpha (gap: Links graph, Links panel rows).
 - **Link nodes.** The item at the start of each link row is a `MapNode`
   28 px high against Figma's 29 and a few px wider, and the file and line
   at the row's end is a plain mono button in the accent colour (gap: Links

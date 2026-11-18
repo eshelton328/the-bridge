@@ -61,6 +61,13 @@ results are unchanged). The frame has no `exceptions.json`.
   here. It loads by its paths.) is text laid over `MapGraph`, which has no
   text for an empty column (gap: Links graph). It sits where Figma puts
   it.
+- **Node borders.** Each item at a side of the graph and at the start of
+  each link row has a border in the full colour of its kind (cyan for a
+  skill, violet for an agent, amber for a rule, green for a workflow).
+  Figma draws the same colour at about 60 % alpha in the graph and 45 %
+  in the rows, so its borders look muted; the icons are full colour in
+  both. `MapNode` has no state for a muted kind border and no token has
+  a kind colour at part alpha (gap: Links graph, Links panel rows).
 - **Link node.** eval-cases in the Links to panel is a `MapNode` 28 px
   high against Figma's 29, a few px wider, and its file and line
   (`skills.md:72`) is a plain mono button in the accent colour (gap:
