@@ -103,7 +103,8 @@ what each file of a page folder is for.
   loop's label sits under the lanes (the library has no connector line:
   LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
   `ui.flowFullPage` and opens How it works (`openFullPage` in
-  `screens/flowView.ts`), and the agent buttons under the flow open the
+  `screens/flowView.ts`; D8, T18 and M21 carry the workflow's page, and
+  the button is disabled on an item with no `flowPage`), and the agent buttons under the flow open the
   agent. A workflow with a `flowPage` then fills the page without the
   list (D13, `workflowFullPage`, D8's data with `flowPage` and step 4 in
   `ui.flowStep`): the breadcrumb row Toolkit › Workflows › the workflow

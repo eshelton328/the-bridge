@@ -6,7 +6,12 @@ import type { ToolkitKind, ToolkitOpenItem, ToolkitUi } from '../types.ts'
 
 /** Whether the open item fills the page (D13): a workflow with a page, opened with Open full page. */
 export function isFullPage(open: ToolkitOpenItem | null, ui: Pick<ToolkitUi, 'flowFullPage'>): boolean {
-  return open !== null && ui.flowFullPage === true && open.detail.flowPage !== undefined
+  return ui.flowFullPage === true && canOpenFullPage(open)
+}
+
+/** Whether the open item has a page of its own, so Open full page can show it; without one the button does nothing. */
+export function canOpenFullPage(open: ToolkitOpenItem | null): boolean {
+  return open?.detail.flowPage !== undefined
 }
 
 /** The ui change of Open full page: the workflow fills the page on its How it works tab. */

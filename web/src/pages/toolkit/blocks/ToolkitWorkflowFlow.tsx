@@ -140,7 +140,7 @@ const gapColumn = (i: number) => column[columns[2 * i - 1] ?? '[2]']
 
 export type ToolkitWorkflowFlowProps = {
   flow: Flow
-  /** Opens the steps on a page of their own (D13). */
+  /** Opens the steps on a page of their own (D13); the button is disabled without it (an item with no page). */
   onOpenFullPage?: (() => void) | undefined
   /** Opens an agent the workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
@@ -167,6 +167,7 @@ export function ToolkitWorkflowFlow({
             size="sm"
             textSize="sm"
             data-figma="button · Open full page"
+            disabled={onOpenFullPage === undefined}
             onClick={onOpenFullPage}
           >
             <ExternalLinkIcon />

@@ -32,7 +32,7 @@ import { ToolkitListPane } from '../blocks/ToolkitListPane.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
-import { isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
+import { canOpenFullPage, isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
 import { backTo, openedFrom, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 
@@ -186,9 +186,14 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         onShowOnMap={() => {
           onUiChange(showOnMap(open.item.path))
         }}
-        onOpenFullPage={() => {
-          onUiChange(openFullPage())
-        }}
+        // Only an item with a page of its own opens it, so Open full page never lands on an empty tab.
+        onOpenFullPage={
+          canOpenFullPage(open)
+            ? () => {
+                onUiChange(openFullPage())
+              }
+            : undefined
+        }
         fullPage={
           full
             ? {

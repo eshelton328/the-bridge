@@ -2,18 +2,20 @@ import { describe, expect, it } from 'vitest'
 import { arrowRows, selectedStep, stepHeading, stepRows } from './blocks/flowLayout.ts'
 import { columnArrow } from './blocks/flowLayout.ts'
 import { isFullPage, leaveFullPage, openFullPage } from './screens/flowView.ts'
+import { canOpenFullPage } from './screens/flowView.ts'
 import { openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { workflowFullPage, workflowOpen } = toolkitStates
+const { hookOpen, workflowOpenTablet, workflowOpenPhone } = toolkitStates
 const page = workflowFullPage.data.details.find((d) => d.path === 'workflows/skill-eval-round.md')?.flowPage
 
 describe('isFullPage', () => {
   it('fills the page only for a workflow with a page, opened with Open full page (D13)', () => {
     expect(isFullPage(openItem(workflowFullPage.data, workflowFullPage.ui), workflowFullPage.ui)).toBe(true)
     expect(isFullPage(openItem(workflowFullPage.data, workflowFullPage.ui), { flowFullPage: false })).toBe(false)
-    // D8's workflow has no page, so Open full page leaves it beside the list.
-    expect(isFullPage(openItem(workflowOpen.data, workflowOpen.ui), { flowFullPage: true })).toBe(false)
+    // A hook has no page, so Open full page leaves it beside the list.
+    expect(isFullPage(openItem(hookOpen.data, hookOpen.ui), { flowFullPage: true })).toBe(false)
     expect(isFullPage(null, { flowFullPage: true })).toBe(false)
   })
 
@@ -21,6 +23,24 @@ describe('isFullPage', () => {
     expect(openFullPage()).toEqual({ flowFullPage: true, itemTab: 'how' })
     expect(leaveFullPage()).toEqual({ open: null, from: null, flowFullPage: false })
     expect(leaveFullPage('workflow')).toEqual({ open: null, from: null, flowFullPage: false, filter: 'workflow' })
+  })
+})
+
+describe('Open full page', () => {
+  it('shows the workflow page from the open workflow on every layout (D8, T18, M21)', () => {
+    for (const state of [workflowOpen, workflowOpenTablet, workflowOpenPhone]) {
+      const ui = { ...state.ui, ...openFullPage() }
+      const open = openItem(state.data, ui)
+      expect(isFullPage(open, ui)).toBe(true)
+      expect(open?.tab).toBe('how')
+      expect(open?.detail.flowPage?.stages.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('is unavailable for an item with no page, so it never lands on an empty tab', () => {
+    expect(canOpenFullPage(openItem(workflowOpen.data, workflowOpen.ui))).toBe(true)
+    expect(canOpenFullPage(openItem(hookOpen.data, hookOpen.ui))).toBe(false)
+    expect(canOpenFullPage(null)).toBe(false)
   })
 })
 
