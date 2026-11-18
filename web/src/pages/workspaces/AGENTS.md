@@ -220,7 +220,7 @@ first: it says what each file of a page folder is for.
   `ChatEntryView`, and the read-only note in a notice `Panel` as its
   footer), and `running` to a `tool` entry (`ToolLine state="running"`);
   the chevron of a card in `PhoneSubagents` opens it when the panel has
-  `fullTranscript`. Later frames add to these blocks.
+  `fullTranscript`, and is disabled on a subagent without `full`. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and

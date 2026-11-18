@@ -80,7 +80,8 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     ui.phoneView === 'transcript' &&
     focused?.type === 'chat' &&
     data.subagents !== undefined &&
-    fullLabels !== undefined
+    fullLabels !== undefined &&
+    transcript !== undefined
   )
     return (
       <Backdrop size="phone">
@@ -88,25 +89,28 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
           size="phone"
           view="detail"
           detail={
-            transcript === undefined ? null : (
-              <PhoneSubagentTranscript
-                item={transcript}
-                chat={focused.head.title}
-                labels={{ ...fullLabels, title: data.subagents.title, stop: data.subagents.stop }}
-                onChat={() => {
-                  onUiChange({ phoneView: 'chat', subagentFor: null })
-                }}
-                onSubagents={() => {
-                  onUiChange({ phoneView: 'subagents', subagentFor: null })
-                }}
-                layers={data.layers?.subagentTranscript}
-              />
-            )
+            <PhoneSubagentTranscript
+              item={transcript}
+              chat={focused.head.title}
+              labels={{ ...fullLabels, title: data.subagents.title, stop: data.subagents.stop }}
+              onChat={() => {
+                onUiChange({ phoneView: 'chat', subagentFor: null })
+              }}
+              onSubagents={() => {
+                onUiChange({ phoneView: 'subagents', subagentFor: null })
+              }}
+              layers={data.layers?.subagentTranscript}
+            />
           }
         />
       </Backdrop>
     )
-  if (ui.phoneView === 'subagents' && focused?.type === 'chat' && data.subagents !== undefined)
+  // A subagent with no full transcript keeps the subagents on screen, never a blank one.
+  if (
+    (ui.phoneView === 'subagents' || ui.phoneView === 'transcript') &&
+    focused?.type === 'chat' &&
+    data.subagents !== undefined
+  )
     return (
       <Backdrop size="phone">
         <AppShell

@@ -57,4 +57,20 @@ describe("a subagent's full transcript on the phone", () => {
     )
     await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
   })
+
+  it('keeps the subagents on screen when a subagent without a full transcript is opened', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSubagentTranscript
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('button', { name: 'Back to Subagents' }))
+    for (const title of ['Map requirements', 'Subtask: theme tokens']) {
+      const chevron = page.getByRole('button', { name: `Open the transcript of ${title}` })
+      // `force` clicks the chevron even when it is disabled, as a tap would land on it.
+      await userEvent.click(chevron, { force: true })
+      const list = page.getByRole('region', { name: 'Subagents' })
+      await expect.element(list.getByRole('heading', { name: 'Subagents' })).toBeVisible()
+      await expect.element(list.getByRole('button', { name: 'Back to bridge themes' })).toBeVisible()
+      await expect.element(chevron).toBeDisabled()
+    }
+  })
 })
