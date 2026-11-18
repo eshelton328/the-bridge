@@ -49,6 +49,18 @@ describe('the menu that + opens on the phone', () => {
     await expect.element(page.getByRole('button', { name: /omni-brain/ })).toBeVisible()
   })
 
+  it('keeps the current workspace chosen in New chat when the window widens', async () => {
+    await page.viewport(390, 806)
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('menuitem', { name: 'New chat' }))
+    await expect.element(page.getByRole('button', { name: /: omni-brain$/ })).toBeVisible()
+    await page.viewport(1512, 982)
+    const dialog = page.getByRole('dialog', { name: data.newChat.title })
+    await expect.element(dialog).toBeVisible()
+    await expect.element(dialog.getByRole('button', { name: /: omni-brain$/ })).toBeVisible()
+    await expect.element(dialog.getByRole('button', { name: /: the-bridge$/ })).not.toBeInTheDocument()
+  })
+
   it('adds a workspace and opens its name as a field in edit mode', async () => {
     await page.viewport(390, 806)
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)

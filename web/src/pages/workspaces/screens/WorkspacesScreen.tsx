@@ -285,7 +285,8 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         />
         {data.newChat === undefined ? null : (
           <NewChatDialog
-            form={data.newChat}
+            // The workspace New chat was picked for (M14, M15) stays chosen when the window widens past a phone's.
+            form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
             workspaces={data.workspaces}
             open={ui.newChatOpen === true}
             onOpenChange={(open) => {
