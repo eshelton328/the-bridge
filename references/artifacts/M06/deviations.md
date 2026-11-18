@@ -63,7 +63,7 @@ the Project field passes and the offsets grow towards the top.
   its fill is the raised button fill, not the input's inset fill. Library
   gap "Select field".
 - **Title row.** Cancel and Add are the library's cyan `text` buttons;
-  Figma draws Add bolder than Cancel. The title row sits about 14 px
+  Figma draws Add bolder than Cancel. The title row sits about 18 px
   lower than Figma's, as the whole sheet is shorter (above).
 - **Link focus.** The link field has the focus when the sheet opens, with
   the cyan border, as Figma draws it, and the caret after the link, as
