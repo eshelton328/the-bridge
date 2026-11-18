@@ -243,7 +243,8 @@ first: it says what each file of a page folder is for.
   start-from choice and note, which `ForkDialog` draws too) and `PhoneFork`
   (the Fork form on the phone: `BottomSheet` titled "Fork {chat}" with ×,
   the fields and Fork across the sheet, no Cancel), which the chat actions'
-  Fork opens (`ui.chatDialog: 'fork'`) when the state has `data.fork`.
+  Fork opens (`ui.chatDialog: 'fork'`) when the state has `data.fork`;
+  `ForkFields size="phone"` draws the choices' labels in `labelSm`.
   M19 needs no new block: the fork fills the screen as M17's chat does,
   `ChatHead` puts its `origin` after the workspace, `ChatEntryView` draws
   the line where it was forked as D16's `event` entry, and Back returns to
@@ -253,7 +254,8 @@ first: it says what each file of a page folder is for.
   form on the phone: `BottomSheet` titled "Start a subtask" with ×, the
   fields with the focus in the task and Start subtask across the sheet, no
   Cancel), which the chat actions' Subtask opens (`ui.chatDialog:
-  'subtask'`) when the state has `data.subtask`.
+  'subtask'`) when the state has `data.subtask`; `SubtaskFields
+  size="phone"` draws the note in `small`.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
