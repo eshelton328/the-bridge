@@ -41,9 +41,6 @@ const transcript = css({
 })
 // The lines in Geist Mono 12 (D3); on the phone Figma draws them in Geist Mono 11, as the meta line (M6 105:3210).
 const transcriptText = { pane: css({ textStyle: 'mono' }), phone: css({ textStyle: 'monoSm' }) }
-// Every Button draws the expanded border (border.active) while `aria-expanded` is true; Figma draws Hide transcript
-// with the default border (D3 105:1350, M6 105:3215), so the toggle keeps it.
-const plainToggle = css({ _expanded: { borderColor: 'border.default' } })
 
 export type SubagentCardProps = {
   item: Subagent
@@ -117,7 +114,8 @@ export function SubagentCard(props: SubagentCardProps) {
             <Button
               size="xs"
               textSize="xs"
-              className={plainToggle}
+              // A disclosure toggle keeps its own border while open (D3 105:1350, M6 105:3215).
+              expandedBorder="default"
               aria-expanded={transcriptOpen}
               onClick={() => onTranscriptOpenChange?.(!transcriptOpen)}
             >

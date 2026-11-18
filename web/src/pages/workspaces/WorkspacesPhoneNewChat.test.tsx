@@ -60,4 +60,27 @@ describe('New chat on the phone', () => {
     await expect.element(form.getByText(/^Runs in /)).not.toBeInTheDocument()
     await expect.element(form.getByRole('button', { name: 'Start chat' })).toBeVisible()
   })
+
+  it("draws Start chat's keyboard focus ring whole, inside the footer that clips it", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneNewChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const start = page.getByRole('region', { name: 'New chat' }).getByRole('button', { name: 'Start chat' })
+    await expect.element(start).toBeVisible()
+    const button = start.element()
+    if (!(button instanceof HTMLElement)) throw new Error('Start chat is not an element')
+    button.focus({ focusVisible: true })
+    await expect.element(start).toHaveFocus()
+    const style = getComputedStyle(button)
+    expect(style.outlineStyle).toBe('solid')
+    // How far the ring reaches out of the button's box; a negative offset draws it inside.
+    const reach = Math.max(0, Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset))
+    const footer = button.closest('.scroll-frame__footer')
+    if (footer === null) throw new Error('Start chat is not in the ScrollFrame footer')
+    const box = button.getBoundingClientRect()
+    const clip = footer.getBoundingClientRect()
+    expect(box.left - reach).toBeGreaterThanOrEqual(clip.left)
+    expect(box.right + reach).toBeLessThanOrEqual(clip.right)
+    expect(box.bottom + reach).toBeLessThanOrEqual(clip.bottom)
+  })
 })

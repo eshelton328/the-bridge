@@ -48,4 +48,27 @@ describe("the chat's folders on the phone", () => {
     await userEvent.click(page.getByRole('button', { name: '2 folders' }))
     await expect.element(page.getByRole('dialog', { name: 'Folders' })).toBeVisible()
   })
+
+  it("draws Add's keyboard focus ring whole, inside the footer that clips it", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneFolders
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const add = page.getByRole('dialog', { name: 'Folders' }).getByRole('button', { name: 'Add ~/the-bridge' })
+    await expect.element(add).toBeVisible()
+    const button = add.element()
+    if (!(button instanceof HTMLElement)) throw new Error('Add is not an element')
+    button.focus({ focusVisible: true })
+    await expect.element(add).toHaveFocus()
+    const style = getComputedStyle(button)
+    expect(style.outlineStyle).toBe('solid')
+    // How far the ring reaches out of the button's box; a negative offset draws it inside.
+    const reach = Math.max(0, Number.parseFloat(style.outlineWidth) + Number.parseFloat(style.outlineOffset))
+    const footer = button.closest('.scroll-frame__footer')
+    if (footer === null) throw new Error('Add is not in the ScrollFrame footer')
+    const box = button.getBoundingClientRect()
+    const clip = footer.getBoundingClientRect()
+    expect(box.left - reach).toBeGreaterThanOrEqual(clip.left)
+    expect(box.right + reach).toBeLessThanOrEqual(clip.right)
+    expect(box.bottom + reach).toBeLessThanOrEqual(clip.bottom)
+  })
 })

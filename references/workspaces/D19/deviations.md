@@ -40,6 +40,12 @@ the left of the menu (`moveToWorkspace`).
 - **Menu icons (Menu icon size).** The menu and list icons are 16 px
   (Figma 14) and drawn in `fg.muted`, where Figma draws them lighter; the
   highlighted rows' icons are in the accent colour, as in Figma.
+- **Open ⋯ draws the open trigger border (border rule).** Figma draws
+  the ⋯ (`417:1675`) with `border.default` while its menu is open. The
+  border rule for every page says a trigger that opens a menu, popover
+  or sheet draws `border.active` while open, so the ⋯ is the pressed
+  chip with the cyan border. Figma is not consistent here: D02b's open ⋯
+  is cyan, so D19's plain chip counts as a Figma inconsistency.
 - **Chat header and group headers (Chat header, Sidebar group header).**
   As on D02b and D18: the ⋯ is a `Button size="xs"` (24 px) against
   30 × 22, and the group header buttons are 24 px with 12 px icons.

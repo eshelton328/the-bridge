@@ -20,9 +20,9 @@ const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: 
 // Figma draws the back chevron and the ⋯ bare, 20 and 18 px (105:2750, 105:2765): the back in the accent colour, as a
 // text button draws its icon, and the ⋯ in the text colour. Each button is 24 square. The ⋯ is Figma's icon layer, not
 // a button, so its 20 px icon carries the layer, and the button reaches 2 into the header's end padding so the icon
-// ends where Figma's does (the icon set has no 18 px size). Every Button variant draws the expanded border while its
-// sheet is open; Figma keeps the ⋯ bare under M4's sheet (105:2891), so the border stays transparent.
-const moreButton = css({ color: 'fg.default', me: '-2', _expanded: { borderColor: 'transparent' } })
+// ends where Figma's does (the icon set has no 18 px size). Like every trigger of a menu, popover or sheet, it draws
+// border.active while its sheet is open (M4).
+const moreButton = css({ color: 'fg.default', me: '-2' })
 const icon = css({ display: 'flex' })
 // Figma's back chevron is 20 wide at the header's start (105:2750, x 16) and the kind mark 8 after it (105:2752). The
 // 24 px button reaches 2 out on each side, so the chevron is centred where Figma's is and the mark starts at x 44.

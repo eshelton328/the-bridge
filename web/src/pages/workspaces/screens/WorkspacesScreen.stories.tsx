@@ -485,7 +485,8 @@ export const PhoneKeyboard: Story = {
       'Turn the layout notes into a doc with /wri',
     )
     const body = within(document.body)
-    await expect(await body.findByText('SKILLS MATCHING /wri')).toBeInTheDocument()
+    // The label is "SKILLS MATCHING" and the query "/wri" in its own case, two spans; the group's name holds both.
+    await expect(await body.findByRole('group', { name: 'SKILLS MATCHING /wri' })).toBeInTheDocument()
     await expect(await body.findByRole('radio', { name: /\/writer/ })).toBeChecked()
     await expect(body.queryByRole('radio', { name: /\/readme/ })).toBeNull()
   },

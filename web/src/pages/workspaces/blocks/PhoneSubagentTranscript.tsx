@@ -50,10 +50,6 @@ const task = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 // M12 147:387: the note is 16 in from the sides and ends 33 over the screen's end, where `AppShell` keeps a 34 px
 // safe area with no tab bar, so the foot pads nothing under it.
 const foot = css({ px: '16' })
-// `ScrollFrame`'s footer pads 4 round its content for a focus ring and reaches 4 past the frame on each side and below,
-// which would make the screen 4 px wider and scroll it; the note takes no focus, so the footer keeps only its top
-// padding (as PhoneNewChat).
-const frame = css({ '& > .scroll-frame__footer': { px: '0', mx: '0', pb: '0', mb: '0' } })
 // Figma's tool lines are as wide as their text (147:371); a message spans the transcript (147:377).
 const hug = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 const note = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
@@ -83,7 +79,6 @@ export function PhoneSubagentTranscript({
   return (
     <section aria-label={item.title} className={column}>
       <ScrollFrame
-        className={frame}
         bodyClassName={body}
         header={
           <>

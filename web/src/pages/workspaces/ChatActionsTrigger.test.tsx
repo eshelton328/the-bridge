@@ -28,15 +28,16 @@ function tokenColor(token: string): string {
 }
 
 describe('the chat header ⋯ while its menu is open (D19)', () => {
-  it('draws the plain chip, not the cyan border, and keeps the keyboard focus ring', async () => {
+  it('draws the open trigger border (border.active) and keeps the keyboard focus ring', async () => {
     // The desktop frame's size, so that the backdrop fits the window.
     await page.viewport(1512, 982)
     view = await testRender(<WorkspacesScreen data={moveToWorkspace.data} ui={moveToWorkspace.ui} viewport="desktop" />)
     const trigger = page.getByRole('button', { name: 'bridge themes actions' })
     await expect.element(trigger).toHaveAttribute('aria-expanded', 'true')
     const open = getComputedStyle(trigger.element())
-    expect(open.borderTopColor).toBe(tokenColor('border-default'))
-    expect(open.backgroundColor).toBe(tokenColor('surface-raised'))
+    // Every trigger of a menu, popover or sheet draws border.active while open; Figma's D19 ⋯ differs (deviations.md).
+    expect(open.borderTopColor).toBe(tokenColor('border-active'))
+    expect(open.backgroundColor).toBe(tokenColor('surface-selected'))
     // Escape closes the list, then the menu, and gives the focus back to the ⋯ from the keyboard.
     await userEvent.keyboard('{Escape}')
     await userEvent.keyboard('{Escape}')

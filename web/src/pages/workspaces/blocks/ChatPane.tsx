@@ -65,10 +65,6 @@ const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: 
   keyof typeof sizes,
   boolean
 >
-// The chat on the phone ends at the screen's safe area. `ScrollFrame`'s footer pads 4 round the composer for a focus
-// ring and reaches 4 below the frame to make up for it, which would scroll the screen by 4; the composer draws its
-// focus as its border, so the footer pads nothing under it and ends with the frame (M3).
-const phoneFrame = css({ '& > .scroll-frame__footer': { pb: '0', mb: '0' } })
 const footer = css({ display: 'flex', flexDirection: 'column' })
 
 export type ChatPaneProps = {
@@ -188,11 +184,10 @@ export function ChatPane(props: ChatPaneProps) {
       </div>
     ) : (
       <SkillPicker
-        label={
-          query !== null && query.length > 1 && skills.matching !== undefined
-            ? skills.matching.replace('{query}', query)
-            : skills.label
-        }
+        // The typed part keeps its case: the label is the template's text before {query}, and the query follows it.
+        {...(query !== null && query.length > 1 && skills.matching !== undefined
+          ? { label: skills.matching.replace('{query}', '').trim(), query }
+          : { label: skills.label })}
         skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
         value={skills.value}
         open={skills.open}
@@ -218,7 +213,6 @@ export function ChatPane(props: ChatPaneProps) {
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
-        className={size === 'phone' ? phoneFrame : undefined}
         footerShrink={footerShrinks[size]}
         bodyClassName={gaps[size].body}
         footer={

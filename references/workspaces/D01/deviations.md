@@ -55,8 +55,9 @@ What still differs from Figma after moving the Workbench onto the library's
   passes: `density="compact"` puts its rows edge to edge, and the state
   highlights Move to workspace (`highlightedValue`), with its icon in the
   accent colour. Its icons are 16 px (Figma 14). The ⋯ that opens it is
-  bare, as in Figma; a class keeps the button's expanded border
-  transparent, because every `Button` variant draws it.
+  bare, but draws `border.active` while the menu is open, where Figma
+  draws no border: the border rule (2026-11-18) gives every trigger of an
+  open menu, popover or sheet that border.
 - **Move to workspace list (Submenu data attributes).** The list is the
   move action's `submenu`: 200 wide, to the right of the row at its top,
   with the-bridge highlighted, as in Figma. Its box takes no

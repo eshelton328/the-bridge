@@ -71,4 +71,22 @@ describe('the phone list in edit mode', () => {
     await expect.element(page.getByRole('button', { name: 'Done' })).toBeVisible()
     await expect.element(page.getByRole('button', { name: 'Close omni' })).toBeVisible()
   })
+
+  it("reports whether a renamed workspace's chats show, and its chevron keeps its bare border while they do", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneEdit
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const hide = page.getByRole('button', { name: 'Hide the chats of the-bridge' })
+    await expect.element(hide).toHaveAttribute('aria-expanded', 'true')
+    // A `text` button's own border is transparent; a disclosure toggle keeps it while expanded (not border.active).
+    expect(getComputedStyle(hide.element()).borderTopColor).toBe('rgba(0, 0, 0, 0)')
+    await view.unmount()
+    // A tap on the chevron also ends the rename (the field loses the focus), so the closed group is its own render.
+    view = await testRender(
+      <WorkspacesScreen data={data} ui={{ ...ui, collapsed: [...ui.collapsed, 'the-bridge'] }} viewport="phone" />,
+    )
+    const show = page.getByRole('button', { name: 'Show the chats of the-bridge' })
+    await expect.element(show).toHaveAttribute('aria-expanded', 'false')
+    expect(getComputedStyle(show.element()).borderTopColor).toBe('rgba(0, 0, 0, 0)')
+  })
 })

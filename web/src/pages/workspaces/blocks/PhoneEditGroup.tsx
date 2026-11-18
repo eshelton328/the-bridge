@@ -87,9 +87,10 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
             size="xs"
             iconOnly
             className={chevron}
-            // Every Button draws the expanded border with `aria-expanded` (LIBRARY_GAPS.md: Bare menu trigger), which
-            // Figma does not draw here (105:2612), so the label says what a tap does.
+            // A disclosure toggle: it keeps its bare look while the chats show, as Figma draws it (105:2612).
+            expandedBorder="default"
             aria-label={open ? `Hide the chats of ${name}` : `Show the chats of ${name}`}
+            aria-expanded={open}
             aria-controls={rowsId}
             onClick={toggle}
           >

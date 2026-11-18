@@ -10,6 +10,9 @@ import { SidebarGroup } from './SidebarGroup.tsx'
 
 // The list slot is a flex column; the sidebar fills it.
 const slot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
+// The open sidebar's toggle is pressed. Figma draws its border #5ee1ff at about 0.6 (D2 158:6), an alpha no token
+// has; it snaps to the nearest token, border.selected (0.5), in place of the pressed border.active (0.7).
+const openToggle = css({ _pressed: { borderColor: 'border.selected' } })
 
 export type WorkspaceSidebarProps = {
   text: SidebarText
@@ -48,6 +51,7 @@ export function WorkspaceSidebar({
             size="sm"
             iconOnly
             pressed
+            className={openToggle}
             aria-label={text.hide}
             data-figma={layers?.toggle ?? '158:6'}
             onClick={() => onUiChange?.({ sidebar: false })}

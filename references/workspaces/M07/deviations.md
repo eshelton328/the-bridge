@@ -2,7 +2,7 @@
 
 What still differs from Figma M7 · New chat (the New chat form on the
 phone, `phoneNewChat`), after the last fidelity run (`pnpm fidelity
-workspaces M07`, 2026-11-17, library 1.0.0-beta.27), each with its reason.
+workspaces M07`, 2026-11-18, library 1.0.0-beta.30), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is `PhoneNewChat` in the phone's detail with no tab bar: Cancel and
 the title in a `ScrollFrame` header, `NewChatFields` (D3's fields, the
@@ -23,9 +23,9 @@ Start chat, as the footer.
   - `128:41` (Add folder): x -6.4.
   - `105:3338` (the first message field): h -32.
   - `105:3327` (the first message box): h -33.
-  - `147:8` (the start bar): y -7, h -6.
-  - `147:9` (the summary line): y -7.
-  - `147:10` (Start chat): y -5.
+  - `147:8` (the start bar): y -11.
+  - `147:9` (the summary line): y -11.
+  - `147:10` (Start chat): y -9.
 - Rules: pass.
 
 ## Deviations
@@ -42,11 +42,14 @@ Start chat, as the footer.
   button at its end; Figma's box is 111 high with only the clip button.
   The space between the box and the start bar is larger by as much.
 - **The start bar sits higher and Start chat is shorter (Phone safe
-  area), `147:8` y -7, h -6, `147:9` y -7, `147:10` y -5.** `AppShell
+  area), `147:8` y -11, `147:9` y -11, `147:10` y -9.** `AppShell
   size="phone"` keeps 34 px under the detail for the home indicator, where
   Figma ends the bar 21 px from the screen's end, so the bar ends 13 px
-  higher. Start chat is `Button size="xl"` (44) against Figma's 48, and
-  the summary is `monoSm` (16 high) against 14.
+  higher. The bar pads 4 under Start chat, so the footer, which clips
+  what reaches past its edge, shows Start chat's focus ring whole; that
+  moves the summary and Start chat 4 px higher and makes the bar as high
+  as Figma's within 2 px. Start chat is `Button size="xl"` (44) against
+  Figma's 48, and the summary is `monoSm` (16 high) against 14.
 - **The fields are 2 px taller and 2 px closer together (Runs in choice,
   Select field, Form field label).** The name, Runs in rows, Workspace and
   Model are 44 px (`size="xl"`) against Figma's 42, and the fields are 16

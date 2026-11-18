@@ -19,11 +19,9 @@ const fill = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[
 const body = css({ px: '4', gap: '8' })
 // M8 128:735: a rule over the picker, 8 under Add folder.
 const rule = css({ borderTopWidth: 'default', borderTopStyle: 'solid', borderTopColor: 'border.default' })
-// M8 128:802: Add spans the sheet, 16 in, under a spacer. `ScrollFrame`'s footer pads 4 round its content for a
-// focus ring and reaches 4 past the frame on each side and below; the sheet's own padding holds the ring here.
-const frame = css({ '& > .scroll-frame__footer': { px: '0', mx: '0', pb: '0', mb: '0' } })
-const bar = css({ display: 'flex', px: '4', pt: '8' })
-const add = css({ w: '[100%]' })
+// M8 128:802: Add spans the sheet, 16 in (the sheet pads 12, Add 4 more), 8 under the rows. Add is the footer's
+// direct child, so `ScrollFrame` draws its focus ring inside it and the footer's clip cannot cut the ring.
+const add = css({ mx: '4', mt: '8' })
 
 // The sheet's focus trap selects the text of the field it focuses; Figma draws the caret after "~/the-" with nothing
 // selected (128:752), so the caret goes to the end once the trap is done.
@@ -73,16 +71,13 @@ export function PhoneFolders(props: PhoneFoldersProps) {
     >
       <div ref={ref} className={fill} onFocus={caretAtEnd}>
         <ScrollFrame
-          className={frame}
           bodyClassName={body}
           footer={
             showPicker ? (
-              <div className={bar}>
-                <Button variant="primary" size="xl" className={add} data-figma={layers?.addFolder}>
-                  <PlusIcon size="16" />
-                  {picker.add.replace('{folder}', picked ?? '')}
-                </Button>
-              </div>
+              <Button variant="primary" size="xl" className={add} data-figma={layers?.addFolder}>
+                <PlusIcon size="16" />
+                {picker.add.replace('{folder}', picked ?? '')}
+              </Button>
             ) : undefined
           }
         >
