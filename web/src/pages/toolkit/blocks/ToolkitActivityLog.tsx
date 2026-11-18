@@ -11,8 +11,9 @@ import { logLayer, panelLayer } from './activityPage.ts'
 import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
 import { ToolkitKindIcon } from './ToolkitKindIcon.tsx'
 
-// D11 444:520: the two panels of a row are as tall as the taller; the section's grid stretches its Panel.
-const fill = css({ display: 'grid' })
+// D11 444:520: the two panels of a row are as tall as the taller: the row's grid stretches the section,
+// and its Panel grows to fill it (a section Panel is as tall as its content).
+const fill = css({ display: 'flex', flexDirection: 'column', '& > *': { flexGrow: '1' } })
 
 const body = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 // D11 444:694 to 444:700: 17 high lines 26 apart; the text styles' lines are 16, so 10 between them.

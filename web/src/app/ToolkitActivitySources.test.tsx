@@ -83,6 +83,17 @@ describe('the Chats and Headless runs sources on the desktop (D15, D16)', () => 
     expect((metaBox?.top ?? 0) + (metaBox?.height ?? 0) / 2).toBeGreaterThan(chip.getBoundingClientRect().top)
   })
 
+  it('draws the two panels of each row as tall as each other, as Figma’s rows (D15 477:238, 477:338)', async () => {
+    const { root } = await renderToolkit('toolkitActivityChats')
+    const card = (key: string) => box(root, `[data-figma="${key}"] .panel__root`)
+    const chats = card('panel · CHATS THAT USED THE TOOLKIT')
+    const most = card('panel · MOST CALLED')
+    expect(most.top).toBeCloseTo(chats.top, 0)
+    expect(most.height).toBeCloseTo(chats.height, 0)
+    const running = card('panel · RUNNING NOW')
+    expect(card('panel · CALLS PER DAY').height).toBeCloseTo(running.height, 0)
+  })
+
   it('switches the counts between the sources, and All sessions shows the log again', async () => {
     const { root } = await renderToolkit('toolkitActivityChats')
     await userEvent.click(source(root, 'Headless runs'))

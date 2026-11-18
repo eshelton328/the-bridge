@@ -18,8 +18,9 @@ import { ToolkitChatRow } from './ToolkitChatRow.tsx'
 import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
 import { ToolkitEvalRow } from './ToolkitEvalRow.tsx'
 
-// D15 444:520: the two panels of a row are as tall as the taller; the section's grid stretches its Panel.
-const fill = css({ display: 'grid' })
+// D15 477:338: the two panels of a row are as tall as the taller: the row's grid stretches the section,
+// and its Panel grows to fill it (a section Panel is as tall as its content).
+const fill = css({ display: 'flex', flexDirection: 'column', '& > *': { flexGrow: '1' } })
 // D15 477:516 to 477:520: the rows 6 under the header and 6 apart; D16 477:1122: the evals 10 apart.
 const body = css({ display: 'flex', flexDirection: 'column', gap: '6' })
 const rows = {
