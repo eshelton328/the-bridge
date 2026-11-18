@@ -8,7 +8,8 @@
 // its date at the end, and a note on cost and live status. On a tablet or
 // phone the panels stand one under another (T8 `step 4 details` 448:300: the
 // heading 13 under the panel's top, the fields 6 under it and 23 apart); a page
-// with no gates or rounds (T8) shows only the step's panel. The library has no field list or
+// with no gates or rounds (T8) shows only the step's panel, and so does the
+// phone (M9, `panels="step"`), after a tap on a step. The library has no field list or
 // round row (LIBRARY_GAPS.md, Workflow page details): the fields are a grid of
 // small text and the rows a bordered line drawn with the card tokens. Props
 // only.
@@ -86,10 +87,14 @@ export type ToolkitFlowDetailsProps = {
   /** The selected step; the panel shows only its hint when none is selected. */
   step: FlowPageStep | null
   layout?: Viewport | undefined
+  /** `all` panels (the step's, the gates and the rounds), or only the `step`'s, as on the phone (M9). */
+  panels?: 'all' | 'step' | undefined
 }
 
-export function ToolkitFlowDetails({ page, step, layout = 'desktop' }: ToolkitFlowDetailsProps) {
+export function ToolkitFlowDetails({ page, step, layout = 'desktop', panels = 'all' }: ToolkitFlowDetailsProps) {
   const desktop = layout === 'desktop'
+  const gateList = panels === 'all' ? page.gates : undefined
+  const roundList = panels === 'all' ? page.rounds : undefined
   // D13 names the row and `panel · step 4`; T8 has no row layer and names the panel `step 4 details`.
   const stepLayer = step === null ? undefined : desktop ? `panel · step ${step.mark}` : `step ${step.mark} details`
   return (
@@ -114,12 +119,12 @@ export function ToolkitFlowDetails({ page, step, layout = 'desktop' }: ToolkitFl
           </div>
         </Panel>
       </div>
-      {page.gates === undefined ? null : (
+      {gateList === undefined ? null : (
         <div className={fill} data-figma="panel · gates">
           <Panel>
             <div className={body}>
-              <h3 className={heading}>{page.gates.label}</h3>
-              {page.gates.items.map((g) => (
+              <h3 className={heading}>{gateList.label}</h3>
+              {gateList.items.map((g) => (
                 <div key={g.title} className={gate} data-figma={`gate · ${g.title}`}>
                   <h4 className={gateTitle}>{g.title}</h4>
                   <p className={gateText}>{g.text}</p>
@@ -129,23 +134,23 @@ export function ToolkitFlowDetails({ page, step, layout = 'desktop' }: ToolkitFl
           </Panel>
         </div>
       )}
-      {page.rounds === undefined ? null : (
+      {roundList === undefined ? null : (
         <div className={fill} data-figma="panel · runs">
           <Panel>
             <div className={body}>
               <div className={header}>
-                <h3 className={heading}>{page.rounds.label}</h3>
-                <span className={meta}>{page.rounds.source}</span>
+                <h3 className={heading}>{roundList.label}</h3>
+                <span className={meta}>{roundList.source}</span>
               </div>
               <ul className={rounds}>
-                {page.rounds.items.map((r) => (
+                {roundList.items.map((r) => (
                   <li key={r.name} className={round} data-figma={`round · ${r.name}`}>
                     {r.name}
                     <span className={date}>{r.date}</span>
                   </li>
                 ))}
               </ul>
-              {page.rounds.note === undefined ? null : <p className={text}>{page.rounds.note}</p>}
+              {roundList.note === undefined ? null : <p className={text}>{roundList.note}</p>}
             </div>
           </Panel>
         </div>

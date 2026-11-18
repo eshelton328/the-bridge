@@ -133,7 +133,9 @@ what each file of a page folder is for.
   and Show on map are icon buttons, when it runs sits beside the kind
   badge, the path row is left out and the rows are 10 apart under the
   smaller title, as on M12; the column's fork and join are 24 high and the
-  page ends with the steps, with no details panel under them.
+  page ends with the steps, with no details panel under them until a step
+  is tapped; then that step's panel (`ToolkitFlowDetails panels="step"`)
+  comes under them.
   `flowView.test.ts` checks the pure parts (LIBRARY_GAPS.md, Workflow
   page flow, description and details). On a tablet (T18, `workflowOpenTablet`, D8's
   data) the flow is drawn smaller (`ToolkitWorkflowFlow size="sm"`:

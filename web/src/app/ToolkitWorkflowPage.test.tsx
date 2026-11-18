@@ -152,3 +152,29 @@ describe('a workflow on its own page on the phone', () => {
     expect(document.querySelector('[data-figma="toolkit list"]')).toBeNull()
   })
 })
+
+// M9's note: on the phone a tap on a step shows its details. The page as loaded (M9) shows none; a tap on a step puts
+// that step's panel under the column, with its fields (input, output, model, what happens when it fails), and a tap on
+// another step shows that one's.
+describe('a tap on a step of a workflow on its own page on the phone', () => {
+  it('shows the step’s details under the steps (M9)', async () => {
+    const { box } = await renderPhone()
+    expect(document.querySelector('[data-figma="step 4 details"]')).toBeNull()
+    const primary = document.querySelector('[data-figma="step · Primary grades"] button')
+    if (!(primary instanceof HTMLElement)) throw new Error('step 4 has no button')
+    await page.elementLocator(primary).click()
+    await expect.poll(() => document.querySelector('[data-figma="step 4 details"]')).not.toBeNull()
+    const details = document.querySelector('[data-figma="step 4 details"]')
+    for (const label of ['Input', 'Output', 'Model', 'If it fails'])
+      expect(details?.querySelector(`[data-figma="field · ${label}"]`)?.textContent).toContain(label)
+    expect(box('step 4 details')?.top ?? 0).toBeGreaterThan(box('step · Owner decides')?.bottom ?? 0)
+    expect(Math.round(box('step 4 details')?.width ?? -1)).toBe(Math.round(box('step · Runs')?.width ?? 0))
+    // Only the step's panel: the phone shows no gates or rounds.
+    expect(document.querySelector('[data-figma="panel · gates"]')).toBeNull()
+    const runs = document.querySelector('[data-figma="step · Runs"] button')
+    if (!(runs instanceof HTMLElement)) throw new Error('step 1 has no button')
+    await page.elementLocator(runs).click()
+    await expect.poll(() => document.querySelector('[data-figma="step 1 details"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="step 4 details"]')).toBeNull()
+  })
+})

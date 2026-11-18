@@ -4,7 +4,12 @@
 // 14 apart in Figma (12). On a tablet or phone (T8) the flow is the column of
 // `ToolkitFlowColumn` and the rows are 12 apart. On the phone (M9) the page
 // ends with the column: the selected step is marked, and its details are not
-// drawn under it. A click on a step selects it (`onSelectStep`). Props only.
+// drawn under it until a step is tapped; then the step's panel of
+// `ToolkitFlowDetails` (its input, output, model and what happens when it
+// fails) comes under the column, scrolled into view. A click on a step
+// selects it (`onSelectStep`). Props only: whether a step was tapped is the
+// block's own state.
+import { useEffect, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { type FlowPage, selectedStep } from './flowLayout.ts'
@@ -45,6 +50,17 @@ export function ToolkitFlowPage({
 }: ToolkitFlowPageProps) {
   const step = selectedStep(flow, selected)
   const desktop = layout === 'desktop'
+  const phone = layout === 'phone'
+  // M9's note: on the phone a tap on a step shows its details; the page as loaded shows none.
+  const [tapped, setTapped] = useState(false)
+  const detailsRef = useRef<HTMLDivElement>(null)
+  const select = (id: string) => {
+    setTapped(true)
+    onSelectStep?.(id)
+  }
+  useEffect(() => {
+    if (phone && tapped) detailsRef.current?.scrollIntoView({ block: 'nearest' })
+  }, [phone, tapped, step?.id])
   return (
     <div className={desktop ? page : narrowPage}>
       <p className={desktop ? description : narrowDescription} data-figma={descriptionLayer}>
@@ -53,10 +69,19 @@ export function ToolkitFlowPage({
       {desktop ? (
         <ToolkitFlowSteps page={flow} selected={step?.id} onSelect={onSelectStep} />
       ) : (
-        <ToolkitFlowColumn page={flow} selected={step?.id} onSelect={onSelectStep} layout={layout} />
+        <ToolkitFlowColumn page={flow} selected={step?.id} onSelect={phone ? select : onSelectStep} layout={layout} />
       )}
-      {/* M9 448:493: the phone's page ends with the steps; Figma has no details panel under them. */}
-      {layout === 'phone' ? null : <ToolkitFlowDetails page={flow} step={step} layout={layout} />}
+      {/* M9 448:493: the phone's page ends with the steps; Figma has no details panel under them. A tap on a step shows
+          the step's panel under them. */}
+      {phone ? (
+        tapped ? (
+          <div ref={detailsRef}>
+            <ToolkitFlowDetails page={flow} step={step} layout={layout} panels="step" />
+          </div>
+        ) : null
+      ) : (
+        <ToolkitFlowDetails page={flow} step={step} layout={layout} />
+      )}
     </div>
   )
 }
