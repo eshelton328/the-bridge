@@ -6,15 +6,18 @@ body,
   height: 100%;
 }
 
-/* Erik's decision (2026-11-18): the page never scrolls, bounces or zooms.
-   html and body fill the window and clip, so only the shell's own scroll
-   areas scroll; a pinch or a double tap does not zoom the page. */
-html,
-body {
+/* Erik's decision (2026-11-18): the running app's page never scrolls,
+   bounces or zooms. html and body fill the window and clip, so only the
+   shell's own scroll areas scroll; a pinch or a double tap does not zoom
+   the page. The lock matches only under `data-app`, which main.ts sets
+   (app/appMarker.ts): Storybook loads this file too, and a story taller
+   than its frame must still scroll the document. */
+html[data-app],
+html[data-app] body {
   overflow: hidden;
   overscroll-behavior: none;
 }
 
-html {
+html[data-app] {
   touch-action: pan-x pan-y;
 }
