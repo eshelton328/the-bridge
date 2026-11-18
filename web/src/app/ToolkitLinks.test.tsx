@@ -273,8 +273,8 @@ describe('the Links tab on the phone (M17)', () => {
     // The items that name writer over it, the items it names under it.
     const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
     expect(nodes).toHaveLength(12)
-    // The phone's graph has no lines, so it selects nothing and no node dims; writer is the fifth node, in the middle.
-    expect(nodes.filter((n) => n.getAttribute('aria-pressed') === 'true')).toHaveLength(0)
+    // The phone's graph draws writer's lines upright with writer selected; writer is the fifth node, in the middle.
+    expect(nodes.filter((n) => n.getAttribute('aria-pressed') === 'true')).toHaveLength(1)
     expect(nodes[4]?.textContent).toBe('writer')
     const focus = nodes[4]?.getBoundingClientRect()
     const first = nodes[0]?.getBoundingClientRect()
@@ -445,6 +445,112 @@ describe('a link’s line in its file (D19)', () => {
   })
 })
 
+// The graph's lines in canvas px: where each starts and ends (its path's first and last points), and whether it is lit.
+function graphLines(root: HTMLElement) {
+  return [...root.querySelectorAll('[data-figma="links graph"] path.map-graph__edge')].map((path) => {
+    const numbers = (path.getAttribute('d') ?? '').match(/-?\d+(\.\d+)?/g)?.map(Number) ?? []
+    const [x1 = Number.NaN, y1 = Number.NaN] = numbers
+    const [x2 = Number.NaN, y2 = Number.NaN] = numbers.slice(-2)
+    return { start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, lit: path.hasAttribute('data-lit') }
+  })
+}
+
+// Each node's box in canvas px (its foreignObject), with its name and its button.
+function graphNodes(root: HTMLElement) {
+  return [...root.querySelectorAll('[data-figma="links graph"] foreignObject')].map((box) => {
+    const node = box.querySelector('button')
+    if (node === null) throw new Error('no node button')
+    const [x, y, width, height] = ['x', 'y', 'width', 'height'].map((a) => Number(box.getAttribute(a)))
+    return { name: node.textContent, node, x: x ?? 0, y: y ?? 0, width: width ?? 0, height: height ?? 0 }
+  })
+}
+
+// Whether a point lies on a box's edge, within a pixel.
+function onEdge(p: { x: number; y: number }, b: { x: number; y: number; width: number; height: number }) {
+  const inside = p.x >= b.x - 1 && p.x <= b.x + b.width + 1 && p.y >= b.y - 1 && p.y <= b.y + b.height + 1
+  const near = Math.min(
+    Math.abs(p.x - b.x),
+    Math.abs(p.x - b.x - b.width),
+    Math.abs(p.y - b.y),
+    Math.abs(p.y - b.y - b.height),
+  )
+  return inside && near <= 1
+}
+
+describe('the phone’s links graph draws its lines (M17)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('draws a line from writer to each linked item, with writer selected, also under the pointer', async () => {
+    const { root } = await renderPhone('skillLinksPhone')
+    const nodes = graphNodes(root)
+    const focus = nodes[4]
+    if (focus === undefined) throw new Error('no open item')
+    expect(focus.name).toBe('writer')
+    const sides = nodes.filter((n) => n !== focus)
+    const lines = graphLines(root)
+    // One line for each of the eleven linked items, each between writer and a node of its own.
+    expect(lines).toHaveLength(11)
+    const joined = lines.map((l) => {
+      const other = onEdge(l.start, focus) ? l.end : onEdge(l.end, focus) ? l.start : null
+      expect(other).not.toBeNull()
+      return sides.findIndex((n) => other !== null && onEdge(other, n))
+    })
+    expect(joined.every((i) => i >= 0)).toBe(true)
+    expect(new Set(joined).size).toBe(11)
+    // writer is selected as the tab opens, so all its lines are lit.
+    expect(focus.node.getAttribute('aria-pressed')).toBe('true')
+    expect(lines.every((l) => l.lit)).toBe(true)
+    // The pointer over a side item lights no line of its own on the phone: writer stays selected.
+    await userEvent.hover(button(root, 'audit-slop', '[data-figma="links graph"]'))
+    expect(graphLines(root).filter((l) => l.lit)).toHaveLength(11)
+    expect(graphNodes(root)[4]?.node.getAttribute('aria-pressed')).toBe('true')
+  })
+})
+
+// On the desktop and tablet the pointer over a side item, or the keyboard focus on it, lights only its line and dims
+// the other side items; it opens nothing. When the pointer leaves and the focus goes, writer's lines all light again.
+async function expectHoverAndFocus(root: HTMLElement) {
+  const audit = () => button(root, 'audit-slop', '[data-figma="links graph"]')
+  const lit = () => graphLines(root).filter((l) => l.lit)
+  expect(lit()).toHaveLength(11)
+  const onlyAudit = async () => {
+    await expect.poll(() => lit()).toHaveLength(1)
+    const node = graphNodes(root).find((n) => n.name === 'audit-slop')
+    const line = lit()[0]
+    if (node === undefined || line === undefined) throw new Error('no audit-slop or lit line')
+    expect(onEdge(line.start, node) || onEdge(line.end, node)).toBe(true)
+    expect(graphNodes(root).filter((n) => n.node.dataset.state === 'dim')).toHaveLength(10)
+    expect(root.querySelector('article[aria-label="audit-slop"]')).toBeNull()
+  }
+  await userEvent.hover(audit())
+  await onlyAudit()
+  await userEvent.unhover(audit())
+  await expect.poll(() => lit()).toHaveLength(11)
+  audit().focus()
+  await onlyAudit()
+  audit().blur()
+  await expect.poll(() => lit()).toHaveLength(11)
+  expect(graphNodes(root)[4]?.node.getAttribute('aria-pressed')).toBe('true')
+}
+
+describe('the pointer and the focus on the links graph (D19, T15)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('lights a side item’s line on hover and on keyboard focus on the desktop (D19)', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    await expectHoverAndFocus(root)
+  })
+
+  it('lights a side item’s line on hover and on keyboard focus on a tablet (T15)', async () => {
+    const { root } = await renderTablet('skillLinksTablet', '482:908')
+    await expectHoverAndFocus(root)
+  })
+})
+
 // A colour as the browser computes it, from a CSS value such as a token's variable.
 function colourOf(root: HTMLElement, value: string) {
   const probe = document.createElement('span')
@@ -478,6 +584,15 @@ describe('the links graph’s nodes and lines (D19)', () => {
     // Eleven lines, none ending in a dot (493:89).
     expect(root.querySelectorAll('[data-figma="links graph"] path.map-graph__edge')).toHaveLength(11)
     expect(root.querySelectorAll('[data-figma="links graph"] circle')).toHaveLength(0)
+  })
+
+  it('draws the open item 150 × 40, as Figma does (493:78)', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    const focus = graphNodes(root).find((n) => n.node.getAttribute('aria-pressed') === 'true')
+    if (focus === undefined) throw new Error('no open item')
+    expect(focus.name).toBe('writer')
+    const rect = focus.node.getBoundingClientRect()
+    expect([rect.width, rect.height]).toEqual([150, 40])
   })
 
   it('draws each link row’s node in the faint kind border', async () => {
