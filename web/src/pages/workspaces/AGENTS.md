@@ -293,6 +293,10 @@ first: it says what each file of a page folder is for.
   bridge themes") and `onStartSubtask` (Start a subtask under the cards,
   with `panel.startSubtask`), which opens the Subtask form over the chat
   (`ui.chatDialog: 'subtask'`) when the state has `data.subtask`.
+  T4 needs no new block: T2's chat with "/" typed after an attachment
+  lists the skills over the composer as M3 does (`SkillPicker
+  layout="phone"`), and the screen keeps its full height under the
+  keyboard (LIBRARY_GAPS.md: Phone keyboard).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -389,7 +393,10 @@ first: it says what each file of a page folder is for.
   under the ⋯ on the tablet), T3 `tabletSubagents` (from
   `tabletChatActions`, without the menu, with M6's subagents, no chevrons,
   and D17's Subtask form: the chat's subagents on the tablet with Start a
-  subtask).
+  subtask), T4 `tabletComposing` (from `tabletChatActions`, without the
+  menu, with M3's "/" typed, requirements.md attached and the skills
+  listed, and Claude's second reply: the chat on the tablet while Erik
+  types).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
