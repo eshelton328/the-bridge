@@ -76,6 +76,12 @@ const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20'
 // T10 461:64: on How it works the title (461:255) starts 12 under the back row (461:244, which ends at 77), and the rows
 // are 12 apart. The BackRow is 32 high against Figma's 36, so 16 above the title keeps it in place.
 const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '16' })
+// T4 434:405, T6 440:1772: on the Files tab of a tablet with the browser's `badge` there is no meta row, and the title
+// starts 14 under the back row (434:394 and 440:1761 end at 77, the title starts at 91). The BackRow is 32 high against
+// Figma's 36, so 16 above the title keeps it in place, as on T10 (`page`'s 20 is sized for T3's meta row). The tabs
+// (434:512, 464:562) start 14 under the path row; no space token has 14, and 16 keeps the tabs and everything under
+// them where `page`'s 20 and 12 put them, within 3 px of Figma's (LIBRARY_GAPS.md, Tablet item spacing).
+const filesPage = css({ display: 'flex', flexDirection: 'column', gap: '16', pt: '16' })
 // M12 461:404: on How it works on the phone the title (461:560) starts 10 under the back row (461:550), and the title
 // and the tabs are 10 apart. M9 448:343, a workflow's own page on the phone, has the same spacing: the meta row
 // (448:483) 10 under the breadcrumb row (448:473, ends at 78), and the title (448:491) and the tabs (464:530) 10 apart.
@@ -392,7 +398,9 @@ export function ToolkitItem({
               ? phonePage
               : full
                 ? fullNarrowPage
-                : page
+                : folderFiles
+                  ? filesPage
+                  : page
       }
       data-figma={desktop && full ? 'toolkit' : itemLayer[layout]}
     >

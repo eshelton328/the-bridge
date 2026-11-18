@@ -210,6 +210,9 @@ describe('the Files tab on a tablet (T4)', () => {
     expect(path?.textContent).toContain('skills/writer/')
     expect(path?.textContent).toContain('11 files')
     expect(path?.textContent).not.toContain('toolkit/skills/writer/')
+    // T4 434:394, 434:405: the title starts 16 under the 32 px back row, where Figma's is 14 under its 36 px row, so
+    // the title's centre stays within a pixel of Figma's; `page`'s 20 is for the meta row it leaves out.
+    expect(box('[data-figma="title"]').top - box('[data-figma="back row"]').bottom).toBeCloseTo(16, 0)
     // The viewer's bar has no copy button on a tablet.
     expect(root.querySelector('[aria-label="Copy references/doc.md"]')).toBeNull()
     // The switch sits under the rendered text; Source shows the file's source and keeps the switch.
@@ -263,6 +266,8 @@ describe('a script explained on a tablet (T6)', () => {
     const path = root.querySelector('[data-figma="path row"]')
     expect(path?.textContent).toContain('skills/writer/scripts/check')
     expect(path?.textContent).toContain('Python · 437 lines')
+    // T6 440:1761, 440:1772: the title starts 16 under the back row, as on T4.
+    expect(box('[data-figma="title"]').top - box('[data-figma="back row"]').bottom).toBeCloseTo(16, 0)
     // T6 440:1918, 440:1925: the switch's row over the box, the box as wide as the item.
     const mode = box('[data-figma="mode row"]')
     const explain = box('[data-figma="explain"]')

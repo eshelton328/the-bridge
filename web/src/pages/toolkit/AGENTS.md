@@ -220,7 +220,8 @@ what each file of a page folder is for.
   tablet (T4, `skillFilesTablet`, D6's files with references/ alone open, doc.md
   first and selected, and each file's count in lines) the Files tab has no kind
   badge: the title and the path row, which names the item's folder and its files
-  (the browser's `badge`), sit 8 apart over the tabs, and the tree and the viewer
+  (the browser's `badge`), sit 8 apart, 16 under the back row and over the tabs
+  (`filesPage`; T3's 20 is for the kind badge), and the tree and the viewer
   are two boxes, the viewer under the tree with no copy button in its bar. A
   browser with no `badge` keeps the item's header on a tablet, as on T17: a
   rule (T32, `ruleFilesTablet`, D33's list) shows its kind badge, name and path
