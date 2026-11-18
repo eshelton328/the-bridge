@@ -119,7 +119,15 @@ what each file of a page folder is for.
   names) and `ToolkitFlowDetails` (the selected step's fields, the gates,
   the rounds). On a tablet or phone the stages stand in one column with
   the parallel steps side by side, and the panels one under another
-  (`src/app/ToolkitWorkflowPage.test.tsx`); T8 and M9 are later frames.
+  (`src/app/ToolkitWorkflowPage.test.tsx`). On a tablet (T8,
+  `workflowFullPageTablet`, D13's data with the tablet's shorter lines, five
+  fields for step 4 and no stop box, loop label, hint, gates or rounds) the
+  breadcrumb row is the `DetailFrame`'s back row (36 high, D13's `layers`),
+  and the flow is `ToolkitFlowColumn`: no panel or header, each card a
+  `ToolkitFlowStep variant="column"` as wide as the item, an arrow down
+  between stages and a fork into and a join out of the parallel steps
+  (`columnArrow` in `blocks/flowLayout.ts`); the selected step's panel comes
+  under it. M9 is a later frame.
   `flowView.test.ts` checks the pure parts (LIBRARY_GAPS.md, Workflow
   page flow, description and details). On a tablet (T18, `workflowOpenTablet`, D8's
   data) the flow is drawn smaller (`ToolkitWorkflowFlow size="sm"`:
