@@ -177,7 +177,8 @@ export function ToolkitItemOverview({
           meta={detail.preview.meta}
           blocks={detail.preview.blocks}
           code={detail.preview.code}
-          wrapRefs={layout === 'phone'}
+          wrapRefs={phone}
+          wrapCode={phone}
         />
         {desktop ? sideColumn : null}
       </div>
