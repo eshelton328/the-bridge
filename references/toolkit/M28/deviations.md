@@ -39,8 +39,13 @@ no `exceptions.json`.
   ScrollFrame body scrolls: the `hiddenOverflow` finding
   `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`,
   as on M17 and M20.
-- **Item tabs.** As on M17: Evals ends inside the screen and only
-  Activity runs past it, as in Figma; the list's sideways scroll is the
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Evals is 327.5 to
+  384.3 against Figma's 321 to 378, and the list, which ends at 378,
+  cuts 6 px of its outline at the right. The list does not scroll the
+  selected tab into view (gap: Item tab width). Activity runs past the
+  screen, as in Figma; the list's sideways scroll is the
   `hiddenOverflow` finding
   `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
   The outline stays `border.selected` at half alpha (d-050).
@@ -54,5 +59,10 @@ no `exceptions.json`.
   `round · reviewer-1` y -6 h -2 (gap: Evals panels).
 - **Open the ledger.** Figma draws Open the ledger in the accent colour.
   The ledger is in projects/skill-evals/, outside the toolkit, and no
-  frame draws it, so the render keeps the link disabled and muted, with
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
   a title that says so (gap: Evals panels).
+- **Badge icon.** The D5 Reviewer badge's check is the library's 12 px
+  `CheckIcon` against Figma's 11 px icon. Its stroke is 1 px, where
+  Figma's is about 2 px wide, so the render's check is thinner; no icon
+  takes a weight (gap: Evals criterion badge).

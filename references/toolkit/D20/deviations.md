@@ -89,15 +89,24 @@ The frame has no `exceptions.json`.
 - **Badges.** The criteria are the library's `Badge size="sm"`, each 2
   px wider than Figma's, so they sit 4 apart against Figma's 6 and each
   stays at Figma's x. The checks and the cross are the library's 12 px
-  `CheckIcon` and `CloseCircleIcon` against Figma's 11. The waiting
+  `CheckIcon` and `CloseCircleIcon` against Figma's 11, and thinner:
+  their stroke is 1 px at 12 px, where Figma's is about 2 px at 11, so
+  Figma's cross reads as a filled red circle and the render's as a ring.
+  No icon takes a weight or has a bold build. The waiting
   criterion D6 Real use · waits has its label in the badge's one style,
   112 × 20, where Figma draws it in a larger style, 120 × 21
   (`badge · D6` x +1 y -1 w -7.6 h -1; gap: Evals criterion badge).
 - **Open the ledger.** Figma draws Open the ledger in the accent colour.
   The ledger is in projects/skill-evals/, outside the toolkit, and no
-  frame draws it, so the render keeps the link disabled and muted, with
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
   a title that says so (gap: Evals panels).
 - **D5 Reviewer.** The badge opens the agent writing-reviewer on its
   Evals tab (D26; T25 on a tablet). `Badge` takes no press, so it sits
   in a plain button styled with tokens, which draws nothing of its own
   (gap: Evals panels).
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab, and the list pads 2 px
+  in the default density. So Overview starts at 526 against Figma's 524
+  and Activity ends at 998.3 against 989 (gap: Item tab width).

@@ -46,5 +46,15 @@ frame has no `exceptions.json`.
   are not visible in either. D3 and D19 have the same finding.
 - **Open the ledger.** Figma draws Open the ledger in the accent colour.
   The ledger is in projects/skill-evals/, outside the toolkit, and no
-  frame draws it, so the render keeps the link disabled and muted, with
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
   a title that says so (gap: Evals panels).
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab, and the list pads 2 px
+  in the default density. So Overview starts at 526 against Figma's 524
+  and Activity ends at 998.3 against 989 (gap: Item tab width).
+- **Badge icon.** The D5 Reviewer badge's check is the library's 12 px
+  `CheckIcon` against Figma's 11 px icon. Its stroke is 1 px, where
+  Figma's is about 2 px wide, so the render's check is thinner; no icon
+  takes a weight (gap: Evals criterion badge).

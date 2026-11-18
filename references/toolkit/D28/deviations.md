@@ -55,4 +55,16 @@ position and rule results as before the Evals tab. The frame has no
   height). D3, D4 and D19 have the same findings.
 - **Test badge.** The badge 43 of 43 pass is the library's
   `Badge size="sm" tone="done"` with `CheckIcon` at 12 px, against
-  Figma's 11 px icon (gap: Evals criterion badge).
+  Figma's 11 px icon. Its stroke is 1 px, where Figma's check is about
+  2 px wide, so the render's check is thinner; no icon takes a weight
+  (gap: Evals criterion badge).
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab, and the list pads 2 px
+  in the default density. So Overview starts at 526 against Figma's 524
+  and Activity ends at 998.3 against 989 (gap: Item tab width).
+- **Cross mark.** The test line has Figma's ballot cross ✗ (U+2717)
+  and check ✓ (U+2713), and passes the text check. Geist Variable's
+  latin subset has neither mark, so the browser draws them in the
+  system fallback font, where ✗ is an upright cross like the sign ×;
+  Figma draws it slanted (gap: Symbol glyphs).

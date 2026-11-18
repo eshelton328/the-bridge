@@ -31,8 +31,13 @@ The frame has no `exceptions.json`.
   is the ScrollFrame's header and the item is the body under it, so the
   article starts under the back row and runs to the tab's source line
   (`toolkit` y +36 h -193), as on M19 (d-107).
-- **Item tabs.** As on M17: Evals ends inside the screen and only
-  Activity runs past it, as in Figma; the list's sideways scroll is the
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Evals is 327.5 to
+  384.3 against Figma's 321 to 378, and the list, which ends at 378,
+  cuts 6 px of its outline at the right. The list does not scroll the
+  selected tab into view (gap: Item tab width). Activity runs past the
+  screen, as in Figma; the list's sideways scroll is the
   `hiddenOverflow` finding
   `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
   The outline stays `border.selected` at half alpha (d-050).
@@ -45,4 +50,17 @@ The frame has no `exceptions.json`.
   adds up down the tab: `evals` y -1 h -6 (gap: Evals panels).
 - **Test badge.** The badge 43 of 43 pass is the library's
   `Badge size="sm" tone="done"` with `CheckIcon` at 12 px, against
-  Figma's 11 px icon (gap: Evals criterion badge).
+  Figma's 11 px icon. Its stroke is 1 px, where Figma's check is about
+  2 px wide, so the render's check is thinner; no icon takes a weight
+  (gap: Evals criterion badge).
+- **Cross mark.** The test line has Figma's ballot cross ✗ (U+2717)
+  and check ✓ (U+2713), and passes the text check. Geist Variable's
+  latin subset has neither mark, so the browser draws them in the
+  system fallback font, where ✗ is an upright cross like the sign ×;
+  Figma draws it slanted (gap: Symbol glyphs).
+- **Line breaks.** The test line keeps "messages" on its first line,
+  where Figma moves it to the second. The text box is 332 px wide in
+  both, and the render's first line with "messages" is 330 px; on the
+  desktop (D28) the same text ends within 1 px of Figma's, so the
+  glyphs are as wide. Figma breaks earlier, so the three lines break at
+  other words but take the same height.

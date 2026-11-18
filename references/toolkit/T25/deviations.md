@@ -47,7 +47,21 @@ and rule results as before the Evals tab. The frame has no
   `round · reviewer-1` x +2 y -5 w -4 h -1 (gap: Evals panels).
 - **Open the ledger.** Figma draws Open the ledger in the accent colour.
   The ledger is in projects/skill-evals/, outside the toolkit, and no
-  frame draws it, so the render keeps the link disabled and muted, with
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
   a title that says so (gap: Evals panels).
-- **Item tabs.** The selected tab's outline is `border.selected` at half
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Activity ends at
+  472.3 against Figma's 463, 2 px of it the Container's 24 px side
+  (gap: Item tab width). The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (d-050).
+- **Agent badge.** Figma's Agent badge (`kind badge` 492:2704) has a
+  1 px outline in the agent colour around a raised fill, and its label
+  in a light grey. `KindBadge` takes only `kind`: it draws the tinted
+  pill with no outline and its label in the agent colour, as on T07,
+  the agent's Overview from writer (gap: Kind badge outline).
+- **Badge icon.** The D5 Reviewer badge's check is the library's 12 px
+  `CheckIcon` against Figma's 11 px icon. Its stroke is 1 px, where
+  Figma's is about 2 px wide, so the render's check is thinner; no icon
+  takes a weight (gap: Evals criterion badge).

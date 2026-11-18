@@ -57,3 +57,8 @@ no `exceptions.json`.
   in the small style and the accent colour that opens the workflow's
   Files tab on its design doc (D35); the library has no small text link
   (gap: Evals panels).
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab, and the list pads 2 px
+  in the default density. So Overview starts at 526 against Figma's 524
+  and Activity ends at 998.3 against 989 (gap: Item tab width).

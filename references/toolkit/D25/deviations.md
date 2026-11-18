@@ -59,3 +59,8 @@ has no `exceptions.json`.
   library has no round row and no text link at this size, so the rows
   are styled with tokens (gap: Evals panels). The count 4 ledgers is
   accent text with no tap.
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab, and the list pads 2 px
+  in the default density. So Overview starts at 526 against Figma's 524
+  and Activity ends at 998.3 against 989 (gap: Item tab width).

@@ -32,7 +32,11 @@ results as before the Evals tab. The frame has no `exceptions.json`.
   view, as on T17 and T28 (gap: Tablet item spacing).
 - **Back row.** The back row is 32 px high against Figma's 36 (gap: Item
   action buttons). Discuss is wider than Figma's, so it starts further
-  left (`button · Discuss` x -7.1 y -1 w +2.5 h -2).
+  left (`button · Discuss` x -7.1 y -1 w +2.5 h -2). Toolkit › writer is `BackRow`'s `labelLg` (25 high)
+  with an 18 px chevron, where Figma's is the label style (20 high)
+  with a 16 px chevron, as on T10 and T15, so the row reads about 2 px
+  larger. T25's trail, with writer's crumb, is `labelLg` in Figma too
+  (gap: Item breadcrumb).
 - **Line heights.** The tab's headers, its small and mono lines and its
   rows are 16 px high in the `monoCaps`, `small` and `mono` text styles
   against Figma's 17: the library keeps line heights on the 4 px grid
@@ -48,17 +52,25 @@ results as before the Evals tab. The frame has no `exceptions.json`.
 - **Badges.** The criteria are the library's `Badge size="sm"`, each 2
   px wider than Figma's, so they sit 4 apart against Figma's 6 and each
   stays at Figma's x. The checks and the cross are the library's 12 px
-  `CheckIcon` and `CloseCircleIcon` against Figma's 11. The waiting
+  `CheckIcon` and `CloseCircleIcon` against Figma's 11, and thinner:
+  their stroke is 1 px at 12 px, where Figma's is about 2 px at 11, so
+  Figma's cross reads as a filled red circle and the render's as a ring.
+  No icon takes a weight or has a bold build. The waiting
   criterion D6 Real use · waits has its label in the badge's one style,
   112 × 20, where Figma draws it in a larger style, 120 × 21
   (`badge · D6` x +3 y -2 w -7.6 h -1; gap: Evals criterion badge).
 - **Open the ledger.** Figma draws Open the ledger in the accent colour.
   The ledger is in projects/skill-evals/, outside the toolkit, and no
-  frame draws it, so the render keeps the link disabled and muted, with
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
   a title that says so (gap: Evals panels).
 - **D5 Reviewer.** The badge opens the agent writing-reviewer on its
   Evals tab (D26; T25 on a tablet). `Badge` takes no press, so it sits
   in a plain button styled with tokens, which draws nothing of its own
   (gap: Evals panels).
-- **Item tabs.** The selected tab's outline is `border.selected` at half
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Activity ends at
+  472.3 against Figma's 463, 2 px of it the Container's 24 px side
+  (gap: Item tab width). The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (d-050).

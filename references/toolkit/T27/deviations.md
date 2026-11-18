@@ -36,6 +36,21 @@ no `exceptions.json`.
   draws the name a little wider.
 - **Test badge.** The badge 43 of 43 pass is the library's
   `Badge size="sm" tone="done"` with `CheckIcon` at 12 px, against
-  Figma's 11 px icon (gap: Evals criterion badge).
-- **Item tabs.** The selected tab's outline is `border.selected` at half
+  Figma's 11 px icon. Its stroke is 1 px, where Figma's check is about
+  2 px wide, so the render's check is thinner; no icon takes a weight
+  (gap: Evals criterion badge).
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Activity ends at
+  472.3 against Figma's 463, 2 px of it the Container's 24 px side
+  (gap: Item tab width). The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (d-050).
+- **Cross mark.** The test line has Figma's ballot cross ✗ (U+2717)
+  and check ✓ (U+2713), and passes the text check. Geist Variable's
+  latin subset has neither mark, so the browser draws them in the
+  system fallback font, where ✗ is an upright cross like the sign ×;
+  Figma draws it slanted (gap: Symbol glyphs).
+- **Line break.** The test line breaks after "so the", where Figma's
+  breaks after "rule": the text box is 674 px wide against Figma's 678
+  (the Container's 24 px sides, d-107), and with "rule" the first line
+  is 676 px. The two lines take the same height.
