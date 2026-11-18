@@ -15,6 +15,8 @@ const d4 = { rows: ['128:410', '128:416'], add: '128:424' }
 const note = css({ textStyle: 'mono', color: 'fg.muted' })
 // A row spreads its folder and its note or remove mark over the list's width.
 const row = css({ w: '[100%]', justifyContent: 'flex-start' })
+// Figma draws Add folder's border dashed (D4 128:424, M8 128:730); a Button's border is solid.
+const addRow = css({ w: '[100%]', justifyContent: 'flex-start', borderStyle: 'dashed' })
 // M8 128:717: the working folder's icon is in the accent colour.
 const accentIcon = css({ display: 'inline-flex', color: 'accent.default' })
 const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign: 'start' })
@@ -59,7 +61,7 @@ export function FolderRows({ folders, onAdd, layers = d4, accent = false }: Fold
           </Button>
         ),
       )}
-      <Button size="sm" textSize="sm" className={row} data-figma={layers.add} onClick={onAdd}>
+      <Button size="sm" textSize="sm" className={addRow} data-figma={layers.add} onClick={onAdd}>
         <PlusIcon size="12" />
         {folders.add}
       </Button>

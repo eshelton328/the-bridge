@@ -23,6 +23,8 @@ import { FormField } from './FormField.tsx'
 import { SelectField } from './SelectField.tsx'
 
 const wide = css({ w: '[100%]' })
+// Figma draws Add folder's border dashed (M7 128:41); a Button's border is solid.
+const dashed = css({ borderStyle: 'dashed' })
 // A Runs in choice spans the form's width: the kind mark and the name at the start, the check at the end.
 const choice = css({ w: '[100%]', justifyContent: 'flex-start' })
 // M7 105:3284: the chosen name in the text colour and its check in cyan; the other names muted (105:3296, 105:3302).
@@ -94,7 +96,7 @@ export function NewChatFields({ form, workspaces, messageRef, layers }: NewChatF
               </Button>
             ),
           )}
-          <Button size="sm" textSize="xs" data-figma={layers?.addFolder}>
+          <Button size="sm" textSize="xs" className={dashed} data-figma={layers?.addFolder}>
             <PlusIcon size="12" />
             {form.addFolder}
           </Button>
