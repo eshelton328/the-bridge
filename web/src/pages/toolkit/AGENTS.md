@@ -266,7 +266,9 @@ what each file of a page folder is for.
   A browser with no `badge` keeps the item's header on the phone, as on M19
   (M35, `ruleFilesPhone`, T32's files with the phone's role line: the
   length and kind), with the folder and the tree under the tabs and no row
-  marked until a file is opened. Only the
+  marked until a file is opened. An agent on the phone (M36,
+  `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
+  same under Back to Toolkit. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

@@ -549,6 +549,14 @@ describe('a script explained on its own page on the phone (M8)', () => {
 const phoneKinds = [
   { state: 'ruleFilesPhone', item: 'skills', folder: 'toolkit/rules/', rows: 1, kind: 'Rule', file: 'skills.md' },
 ]
+phoneKinds.push({
+  state: 'agentFilesPhone',
+  item: 'writing-reviewer',
+  folder: 'toolkit/agents/',
+  rows: 1,
+  kind: 'Agent',
+  file: 'writing-reviewer.md',
+})
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on the phone (M35 to M38)', () => {
   it.each(phoneKinds)('keeps $state’s header over $folder and its $rows tree rows', async (kind) => {
