@@ -586,3 +586,25 @@ export const WorkflowFullPage: Story = {
     await expect(canvas.queryByRole('button', { name: 'agents-md' })).toBeNull()
   },
 }
+
+export const WorkflowFullPageTablet: Story = {
+  name: 'T08: a workflow on a page of its own on a tablet, its flow as a column of steps',
+  args: {
+    data: toolkitStates.workflowFullPageTablet.data,
+    ui: toolkitStates.workflowFullPageTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the steps in one column under the breadcrumb.
+  // The play test checks what every width shows; src/app/ToolkitWorkflowPage.test.tsx checks the tablet's column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(canvas.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Workflows')
+    await expect(within(item).getByRole('button', { name: 'Pre-registered in the ledger?' })).toBeVisible()
+    await expect(within(item).getByText('Each case, model and repeat. Then G1 and G6.')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeVisible()
+    await expect(within(item).getByText('one more try for each group, then by hand')).toBeInTheDocument()
+    // T8 has no stop box and no hint on the step's panel.
+    await expect(within(item).queryByText('stop: run skill-eval-cases')).toBeNull()
+    await expect(within(item).queryByText('select a step to see it')).toBeNull()
+  },
+}
