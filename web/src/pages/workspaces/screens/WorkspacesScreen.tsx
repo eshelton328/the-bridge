@@ -56,11 +56,13 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
       <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
     </div>
   )
-  const chat = data.panes.find((p) => p.id === ui.focusedPane)
-  if (ui.sidebar === true && data.sidebar !== undefined && chat?.type === 'chat') {
-    const menuOpen = ui.menuFor === chat.id
+  // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
+  const focused = data.panes.find((p) => p.id === ui.focusedPane)
+  const chat = focused?.type === 'chat' ? focused : undefined
+  if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
+    const menuOpen = ui.menuFor === chat?.id
     const chatMenu =
-      data.chatMenu === undefined ? undefined : (
+      data.chatMenu === undefined || chat === undefined ? undefined : (
         <ChatActionsMenu
           title={chat.head.title}
           actions={data.chatMenu}
@@ -124,7 +126,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
       ) : undefined
     const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
     const dropZone =
-      ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined ? undefined : (
+      ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined || chat === undefined ? undefined : (
         <PaneDropZone
           edge={ui.paneDrag.edge}
           chat={dragged}
@@ -143,7 +145,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             <WorkspaceSidebar
               text={data.sidebar}
               workspaces={data.workspaces}
-              selected={chat.id}
+              selected={ui.focusedPane}
               openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
               onUiChange={change}
@@ -151,7 +153,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             />
           }
           detail={
-            ui.workbench === true ? (
+            ui.workbench === true || chat === undefined ? (
               <WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle={false} />
             ) : (
               <MainChat

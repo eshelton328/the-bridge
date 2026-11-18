@@ -23,7 +23,8 @@ first: it says what each file of a page folder is for.
   side (D5). With `ui.paneDrag` (D6) the dragged chat's row fades in the
   sidebar and `data.paneDrop` shows as a drop zone over the chat alone.
   With `ui.workbench` (D7) the sidebar sits beside the workbench (tabs,
-  panes, status bar) in place of the chat alone; then `ui.paneDrag.pane`
+  panes, status bar) in place of the chat alone, whatever pane has the
+  focus, a shell pane too; then `ui.paneDrag.pane`
   (D8) puts the drop zone over that pane of the split.
 - `blocks/`: `WorkbenchPanes` (the split, one to four panes clockwise
   from the top left, each pane by its `type`), `PaneFrame` (a pane's
