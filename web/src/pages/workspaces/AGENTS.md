@@ -20,7 +20,8 @@ first: it says what each file of a page folder is for.
   the tablet's width (`WorkspacesPhone device="tablet"`), with the
   tablet's backdrop, shell and tab bar, whose More goes to its page; T2 is
   M3's chat at the tablet's width with M5's side chat sheet over it, with no
-  tab bar, and T2b the same chat with D2b's chat actions menu under its ⋯. M1 is its home, `PhoneWorkspaceList`;
+  tab bar, and T2b the same chat with D2b's chat actions menu under its ⋯; T3 is
+  M6's subagents at the tablet's width, with no tab bar. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
@@ -287,6 +288,11 @@ first: it says what each file of a page folder is for.
   T2b adds `trigger` to `ChatActionsMenu`: at a tablet's width the chat's
   bare ⋯ opens D2b's chat actions menu (`data.chatMenu`, `ui.menuFor`)
   in place of M4's sheet.
+  T3 adds `device` to `PhoneSubagents` (the tablet's inset, the cards 12
+  apart and no chevrons), `startedFrom` to the count line ("· started from
+  bridge themes") and `onStartSubtask` (Start a subtask under the cards,
+  with `panel.startSubtask`), which opens the Subtask form over the chat
+  (`ui.chatDialog: 'subtask'`) when the state has `data.subtask`.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -380,7 +386,10 @@ first: it says what each file of a page folder is for.
   the side chat in a sheet over the chat on the tablet), T2b
   `tabletChatActions` (from `tabletSideChat`, without the sheet, with
   D2b's chat actions and Opus 5.5 in the composer: the chat actions menu
-  under the ⋯ on the tablet).
+  under the ⋯ on the tablet), T3 `tabletSubagents` (from
+  `tabletChatActions`, without the menu, with M6's subagents, no chevrons,
+  and D17's Subtask form: the chat's subagents on the tablet with Start a
+  subtask).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -426,7 +435,9 @@ first: it says what each file of a page folder is for.
   `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
   sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
   in `layers.phoneSubtask`; for T1 `tabletList`, `phone.moveTo` and the
-  Move to… buttons' layers in `layers.rowMoves`) and
+  Move to… buttons' layers in `layers.rowMoves`; for T3 the subagents'
+  `startedFrom` and `startSubtask` labels and Start a subtask's layer in
+  `layers.subagentsStart`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
