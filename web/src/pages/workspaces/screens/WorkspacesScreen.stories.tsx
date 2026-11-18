@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor, within } from 'storybook/test'
+import { expect, within } from 'storybook/test'
+import { expectTrapFocus } from '../../../lib/focusTrap.ts'
 import { workspacesStates } from '../states/index.ts'
 import { WorkspacesScreen } from './WorkspacesScreen.tsx'
 
@@ -277,8 +278,8 @@ export const SubtaskDialog: Story = {
     await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
     const task = dialog.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })
     await expect(task).toHaveValue('Draft layout notes for the three directions, one page each.')
-    // The dialog moves the focus to the task once it has opened.
-    await waitFor(() => expect(task).toHaveFocus())
+    // The dialog's focus trap moves the focus to the task in the frame after it opens.
+    await expectTrapFocus(task)
     await expect(dialog.getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
     await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
   },
@@ -337,9 +338,9 @@ export const RenameChat: Story = {
   name: 'D21: Rename chat, the name in the header as a field',
   args: { data: workspacesStates.renameChat.data, ui: workspacesStates.renameChat.ui, viewport: 'desktop' },
   play: async ({ canvas }) => {
-    // The field takes the heading's place and takes the focus once it opens.
+    // The field takes the heading's place and takes the focus in the frame after it opens (ChatNameField).
     const field = canvas.getByRole('searchbox', { name: 'Rename bridge themes' })
-    await waitFor(() => expect(field).toHaveFocus())
+    await expectTrapFocus(field)
     await expect(field).toHaveValue('bridge themes')
     await expect(canvas.queryByRole('heading', { name: 'bridge themes' })).toBeNull()
     await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
