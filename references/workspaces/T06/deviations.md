@@ -54,6 +54,20 @@ no Artifacts tab, and no exception is needed.
   draws the library's fixed star field, not T6's own stars.
 - **No status bar.** The app draws no status bar (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **Thin icons (Icon stroke weight).** Figma draws the back chevron, the
+  model chips' chevrons and the composer's paperclip with a 2 px stroke
+  at their own size, so they look heavy; the icon set draws a 2 px
+  stroke in a 24 px box and takes no stroke weight, so at 12 to 20 px
+  they look thinner and lighter (review T06 F2, F3).
+- **The model chip's chevron is grey (Model chip chevron).** Figma draws
+  it in the text colour, as the chip's label; `ModelChip` draws its own
+  chevron in a muted grey and takes no tone (review T06 F2).
+- **Erik's message is larger (Message text).** Figma draws it in Geist
+  13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
+  is about 7% wider (review T06 F1).
 - **Actions still to build.** Attach, the attachment's ×, Stop and Send
   draw only, as in M17.
 - **No exceptions.**

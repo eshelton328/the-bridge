@@ -81,6 +81,18 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Status bar and home indicator.** Figma draws a 29 px status bar
   (9:41) and the home indicator; the app draws none (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **Thin icons (Icon stroke weight).** Figma draws the group headers'
+  chevrons (105:1539, 13 px, #8A97B8) with a 2 px stroke at their own
+  size, so they look heavy; the icon set draws a 2 px stroke in a 24 px
+  box and takes no stroke weight, so at 12 to 20 px they look thinner
+  and lighter (review T01 F2).
+- **The title is larger (Phone page header).** Figma's T1 title
+  (105:1519) is Geist SemiBold 26 (Figma read 2026-11-18); `PageHeader
+  size="phone"` draws `heading` (28), and no text style is 26, so
+  "Workspaces" is 164 wide against 155 (review T01 F1).
 - **Actions.** The handles draw only: dragging a workspace (R7) or a
   chat onto another workspace (R8) is a later frame. Move to… opens
   drift check's actions (M9's sheet) with Move to workspace's list open,

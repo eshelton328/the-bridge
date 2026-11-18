@@ -83,3 +83,22 @@ which covers them whole, and Figma leaves them out.
   draws the library's fixed star field, not T5's own stars.
 - **No status bar.** The app draws no status bar (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **Thin icons (Icon stroke weight).** Figma draws the back chevron, the
+  model chip's chevron and the picker's × (128:576, 18 px; the render's
+  is 16 px in the same grey, `fg.muted`) with a 2 px stroke at their own
+  size, so they look heavy; the icon set draws a 2 px stroke in a 24 px
+  box and takes no stroke weight, so at 12 to 20 px they look thinner
+  and lighter (review T05 F1, T06 F2).
+- **The grabber is shorter and dimmer (Tablet folders sheet).** Figma's
+  (128:539) is 40 × 5 with a 3 px radius in #8A97B8 at 0.6;
+  `BottomSheet` draws its own, 36 × 5 in `border.default` (review T05
+  F2).
+- **The model chip's chevron is grey (Model chip chevron).** Figma draws
+  it in the text colour, as the chip's label; `ModelChip` draws its own
+  chevron in a muted grey and takes no tone (review T06 F2).
+- **Erik's message is larger (Message text).** Figma draws it in Geist
+  13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
+  is about 7% wider (review T06 F1).

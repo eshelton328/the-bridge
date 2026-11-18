@@ -65,6 +65,24 @@ bar, so the render has no Artifacts tab, and no exception is needed.
   draws the library's fixed star field, not T4's own stars.
 - **No status bar.** The app draws no status bar (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **The SKILLS label is wider (Skill picker).** Figma draws it in Geist
+  Mono Regular 10 (105:2248, Figma read 2026-11-18); `PopoverSection`
+  draws `eyebrow` (Mono 11) and takes no label size, so it is 42 wide
+  against 36 (review T04 F1).
+- **Thin icons (Icon stroke weight).** Figma draws the back chevron, the
+  model chips' chevrons and the composer's paperclips with a 2 px stroke
+  at their own size, so they look heavy; the icon set draws a 2 px
+  stroke in a 24 px box and takes no stroke weight, so at 12 to 20 px
+  they look thinner and lighter (review T06 F2, F3).
+- **The model chip's chevron is grey (Model chip chevron).** Figma draws
+  it in the text colour, as the chip's label; `ModelChip` draws its own
+  chevron in a muted grey and takes no tone (review T06 F2).
+- **Erik's message is larger (Message text).** Figma draws it in Geist
+  13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
+  is about 7% wider (review T06 F1).
 - **Actions still to build.** The app does not measure the keyboard:
   the open skill list comes from the state. Attach, the attachment's ×,
   Stop, Send and a pick in the skill list draw only, as in M03.

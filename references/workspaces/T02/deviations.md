@@ -90,6 +90,25 @@ the main composer's two covered strings, as M05's does.
   draws the library's fixed star field, not T2's own stars.
 - **No status bar.** The app draws no status bar (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame) and the side chat
+  sheet's bottom corners with it; the app draws square corners, as it
+  draws no device chrome (d-089, review T02 F2).
+- **The side composer's placeholder is larger (Composer text).** Figma
+  draws "Ask a side question" in Geist 13; `Composer` draws it in `body`
+  (14/20) and takes no text size, so it is 125 wide against 116 (review
+  T02 F1).
+- **Thin icons (Icon stroke weight).** Figma draws the back chevron (20
+  px, cyan) and the model chip's chevron with a 2 px stroke at their own
+  size, so they look heavy; the icon set draws a 2 px stroke in a 24 px
+  box and takes no stroke weight, so at 12 to 20 px they look thinner
+  and lighter (review T06 F2).
+- **The model chip's chevron is grey (Model chip chevron).** Figma draws
+  it in the text colour, as the chip's label; `ModelChip` draws its own
+  chevron in a muted grey and takes no tone (review T02b F2).
+- **Erik's message is larger (Message text).** Figma draws it in Geist
+  13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
+  is about 7% wider (review T06 F1).
 - **What the side chat does not do yet.** The composer does not send; ×,
   the scrim and Escape close the sheet, and Side chat in the chat actions
   sheet opens it again.

@@ -54,6 +54,16 @@ and no chevrons, then Start a subtask.
   draws the library's stars at fixed places, not Figma's 58.
 - **No status bar or home indicator.** The app draws neither (d-089), so
   the side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **Thin icons (Icon stroke weight).** Figma draws the back row's
+  chevron and the sparkles (105:2033, 15 px, and Start a subtask's
+  105:2088, 14 px, #9B8CFF; stroked, not filled, so `SparkFilledIcon`
+  does not fit) with a 2 px stroke at their own size, so they look
+  heavy; the icon set draws a 2 px stroke in a 24 px box and takes no
+  stroke weight, so at 12 to 20 px they look thinner and lighter (review
+  T03 F1).
 - **What the view does not do yet.** Stop does not stop a subagent.
   Transcript and Hide transcript show and hide the last lines, the back
   row returns to the chat, and Start a subtask opens D17's Subtask form

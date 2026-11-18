@@ -93,6 +93,30 @@ inert, so its composer's text is not counted: no exception is needed.
   draws the library's fixed star field, not T7's own stars.
 - **No status bar.** The app draws no status bar (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square screen corners (device chrome).** Figma draws the iPad's
+  screen with rounded corners (the device frame); the app draws square
+  corners, as it draws no device chrome (d-089, review T01 F3).
+- **Cancel and Start chat are larger (Dialog footer buttons).** Figma
+  draws Cancel's label in Geist Medium 12 (420:404, Figma read
+  2026-11-18); `Button size="sm"` draws 13 px labels, and
+  `textSize="xs"` would make both buttons 3 to 5 px narrower than
+  Figma's and fail D03's position check, so the dialog keeps them
+  (review T07 F1).
+- **Stop in the chat's composer is larger (Composer text).** Figma's
+  Stop label is 11 px; `Composer` draws it as `Button size="sm"` with
+  `label` (14) (review T07 F2).
+- **Thin icons (Icon stroke weight).** Figma draws the dialog's ×
+  (420:326, 18 px), the back chevron, the model chips' chevrons and the
+  composer's paperclips with a 2 px stroke at their own size, so they
+  look heavy; the icon set draws a 2 px stroke in a 24 px box and takes
+  no stroke weight, so at 12 to 20 px they look thinner and lighter
+  (review T07 F3, T06 F2).
+- **The model chip's chevron is grey (Model chip chevron).** Figma draws
+  it in the text colour, as the chip's label; `ModelChip` draws its own
+  chevron in a muted grey and takes no tone (review T06 F2).
+- **Erik's message is larger (Message text).** Figma draws it in Geist
+  13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
+  is about 7% wider (review T06 F1).
 - **Actions still to build.** Start chat, Add folder, the folder's ×
   and the attach button draw only, as on D03.
 - **No exceptions.**
