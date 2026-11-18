@@ -307,6 +307,10 @@ first: it says what each file of a page folder is for.
   T6 needs no new block: T2's chat fills the screen with "/" typed after
   an attachment and the focus in the message box, the skills closed, as
   M17 does; the tablet has no split panes and no drop targets.
+  T7 adds `layers` to `NewChatDialog` (D3's ids when not set): at a
+  tablet's width `ui.newChatOpen` opens D3's dialog over T2's chat in
+  place of M7's full-screen form, and the chat actions' New chat opens it
+  in the current chat's workspace.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -411,7 +415,9 @@ first: it says what each file of a page folder is for.
   picker with Documents: the chat's folders on the tablet, the picker open),
   T6 `tabletOneChat` (from `tabletChatActions`, without the menu, with
   T4's composer and M17's focus in the message box: the chat full screen
-  on the tablet).
+  on the tablet), T7 `tabletNewChat` (from `tabletChatActions`, without
+  the menu, with D3's New chat form open: the form in a dialog over the
+  chat on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -460,7 +466,8 @@ first: it says what each file of a page folder is for.
   Move to… buttons' layers in `layers.rowMoves`; for T5 the tablet's title
   row and Cancel in `layers.phoneFolders` (`title`, `cancel`); for T3 the subagents'
   `startedFrom` and `startSubtask` labels and Start a subtask's layer in
-  `layers.subagentsStart`) and
+  `layers.subagentsStart`; for T7 the New chat dialog's layers in
+  `layers.newChatDialog`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
