@@ -61,7 +61,11 @@ what each file of a page folder is for.
   the file (`src/app/ToolkitStickyBack.test.tsx`). On the phone (M2,
   `skillOpenPhone`, D3's data) Discuss and Show on map are icon buttons,
   and when the item changed (`ToolkitItemChanged`) moves from the path
-  row to the kind badge's row. A rule (D4, `ruleOpen`,
+  row to the kind badge's row. An item opened from another item's links
+  (T7, `agentOpenTablet`, D7's data) records it in `ui.from`, and on a
+  tablet or phone the back row (`ToolkitItemBack`) shows the breadcrumb
+  Toolkit › that item › the open item, whose middle crumb goes back to it
+  (`openFrom`, `backTo` and `openedFrom` in `screens/itemView.ts`). A rule (D4, `ruleOpen`,
   which adds the Workflows and Hooks groups) adds `loads` to its details,
   shown as the Overview's load box, and has no side column: `usedIn` and
   `files` are optional. On a tablet (T17, `ruleOpenTablet`, D4's data) the rule
@@ -73,7 +77,9 @@ what each file of a page folder is for.
   the Skills and Agents groups and Skills closed) adds `runs` to its
   details, the How it runs cards (`ToolkitAgentRuns`) between the
   description and the columns, a `meta` after the preview's file name and
-  a file line's `meta` (its length). A hook (D9, `hookOpen`, D4's list
+  a file line's `meta` (its length). On the phone (M20, `agentOpenPhone`,
+  D7's data) the How it runs cards sit two across (`ToolkitAgentRuns`
+  `columns="2"`). A hook (D9, `hookOpen`, D4's list
   with only the Rules, Workflows and Hooks groups) uses `runs` for its
   When it runs cards (the git event, its state as a badge through a
   fact's `status`, the rule it enforces, its test; captions in small
@@ -95,10 +101,16 @@ what each file of a page folder is for.
   loop's label sits under the lanes (the library has no connector line:
   LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
   `ui.flowFullPage` (D13 is a later frame), and the agent buttons under
-  the flow open the agent. A click on a card, a row or the map card's Open
+  the flow open the agent. On a tablet (T18, `workflowOpenTablet`, D8's
+  data) the flow is drawn smaller (`ToolkitWorkflowFlow size="sm"`:
+  narrower lanes, smaller cards and text; LIBRARY_GAPS.md, Workflow flow
+  (tablet)). On the phone (M21, `workflowOpenPhone`, D8's data) the flow is
+  not drawn (`ToolkitWorkflowFlow steps={false}`): the steps' header and the
+  agents' row are one line each, cut at the item's edge and scrolled
+  sideways, and the flow's `elsewhere` line says the steps are on How it
+  works. A click on a card, a row or the map card's Open
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
   `ToolkitPage` writes to the clipboard. Later frames of the open item
-  (T7, T18, M20, M21) fill `details` and
-  the other tabs.
+  fill the other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

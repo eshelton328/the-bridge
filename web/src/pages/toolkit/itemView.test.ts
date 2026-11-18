@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { openItem } from './screens/itemView.ts'
 import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
+import { backTo, openedFrom, openFrom } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { ruleOpen, skillOpen, toolkitList } = toolkitStates
 const { workflowOpen } = toolkitStates
+const { agentOpenTablet } = toolkitStates
 
 describe('openItem', () => {
   it('opens nothing without ui.open, or for a path the list does not have', () => {
@@ -83,5 +85,34 @@ describe('showOnMap', () => {
       filter: 'all',
       query: '',
     })
+  })
+})
+
+describe('an item opened from another item (T7)', () => {
+  it('records the item it came from, and none from the list', () => {
+    expect(openFrom('agents/writing-reviewer.md', 'skills/writer/')).toEqual({
+      open: 'agents/writing-reviewer.md',
+      from: 'skills/writer/',
+    })
+    expect(openFrom('agents/writing-reviewer.md')).toEqual({ open: 'agents/writing-reviewer.md', from: null })
+  })
+
+  it('finds the item it came from for the breadcrumb', () => {
+    const from = openedFrom(agentOpenTablet.data, agentOpenTablet.ui)
+    expect(from).toMatchObject({ kind: 'skill', name: 'writer', path: 'skills/writer/' })
+  })
+
+  it('has no breadcrumb without ui.from, with nothing open, for itself or for a path the list does not have', () => {
+    const { data, ui } = agentOpenTablet
+    expect(openedFrom(data, { ...ui, from: null })).toBeNull()
+    expect(openedFrom(data, { open: ui.open })).toBeNull()
+    expect(openedFrom(data, { ...ui, open: null })).toBeNull()
+    expect(openedFrom(data, { ...ui, from: 'agents/writing-reviewer.md' })).toBeNull()
+    expect(openedFrom(data, { ...ui, from: 'skills/nothing/' })).toBeNull()
+  })
+
+  it('goes back to the item it came from, or to the list, and forgets the way back', () => {
+    expect(backTo('skills/writer/')).toEqual({ open: 'skills/writer/', from: null })
+    expect(backTo(null)).toEqual({ open: null, from: null })
   })
 })

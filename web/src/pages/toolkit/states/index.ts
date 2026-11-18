@@ -17,6 +17,10 @@ import { ruleOpenTablet } from './ruleOpenTablet.ts'
 import { ruleOpenPhone } from './ruleOpenPhone.ts'
 import { hookOpenTablet } from './hookOpenTablet.ts'
 import { hookOpenPhone } from './hookOpenPhone.ts'
+import { agentOpenTablet } from './agentOpenTablet.ts'
+import { agentOpenPhone } from './agentOpenPhone.ts'
+import { workflowOpenTablet } from './workflowOpenTablet.ts'
+import { workflowOpenPhone } from './workflowOpenPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -35,4 +39,8 @@ export const toolkitStates = {
   ruleOpenPhone,
   hookOpenTablet,
   hookOpenPhone,
+  agentOpenTablet,
+  agentOpenPhone,
+  workflowOpenTablet,
+  workflowOpenPhone,
 }

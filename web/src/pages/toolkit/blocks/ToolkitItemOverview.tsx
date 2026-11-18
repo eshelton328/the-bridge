@@ -5,7 +5,8 @@
 // (`ToolkitItemSide`). An agent (D7) shows how it runs (`ToolkitAgentRuns`)
 // between the description and the columns, and a hook (D9) when it runs, with
 // its script as code in the preview. A workflow (D8) shows its steps by phase
-// (`ToolkitWorkflowFlow`) in the same place. On a tablet or phone (T3, M2) the
+// (`ToolkitWorkflowFlow`) in the same place; on the phone (M21) only its
+// header, its agents and where the steps are. On a tablet or phone (T3, M2) the
 // side comes under the file, full width. Props only.
 import { ClockIcon, Panel } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -67,17 +68,20 @@ const descriptionLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1537',
   'workflows/skill-eval-round.md': '433:1033',
 }
-// T3: the description of writer on a tablet (487:78); T17: the rule skills's (487:501); T19: the hook commit-msg's
-// (487:1126).
+// T3: the description of writer on a tablet (487:78); T18: skill-eval-round's (487:759); T17: the rule skills's
+// (487:501); T19: the hook commit-msg's (487:1126).
 const pageDescriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '487:78',
+  'workflows/skill-eval-round.md': '487:759',
   'rules/skills.md': '487:501',
   'hooks/commit-msg': '487:1126',
 }
-// M2: the description of writer on the phone (487:142); M19: the rule skills's (487:1403); M22: the hook
-// commit-msg's (487:2182).
+// M2: the description of writer on the phone (487:142); M20: writing-reviewer's (487:1613); M21: skill-eval-round's
+// (487:1862); M19: the rule skills's (487:1403); M22: the hook commit-msg's (487:2182).
 const phoneDescriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '487:142',
+  'agents/writing-reviewer.md': '487:1613',
+  'workflows/skill-eval-round.md': '487:1862',
   'rules/skills.md': '487:1403',
   'hooks/commit-msg': '487:2182',
 }
@@ -153,12 +157,18 @@ export function ToolkitItemOverview({
         <ToolkitAgentRuns
           runs={detail.runs}
           kind={kind === 'hook' ? 'hook' : 'agent'}
-          compact={layout === 'tablet' || hookPhone}
-          columns={hookPhone ? '2' : '4'}
+          compact={(layout === 'tablet' && kind === 'hook') || hookPhone}
+          columns={phone ? '2' : '4'}
         />
       )}
       {detail.flow === undefined ? null : (
-        <ToolkitWorkflowFlow flow={detail.flow} onOpenFullPage={onOpenFullPage} onOpenItem={onOpenItem} />
+        <ToolkitWorkflowFlow
+          flow={detail.flow}
+          size={desktop ? 'md' : 'sm'}
+          steps={layout !== 'phone'}
+          onOpenFullPage={onOpenFullPage}
+          onOpenItem={onOpenItem}
+        />
       )}
       <div className={desktop ? columns : oneColumn} data-figma="columns">
         <ToolkitFilePreview
