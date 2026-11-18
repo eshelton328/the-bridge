@@ -29,8 +29,12 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   12 at the start, so its content sits at Figma's x 905, as the Inbox's
   panel. Library gaps "Discussion panel width" and "Detail column inset".
 - **Discuss.** `button · Discuss` x -4.2, w +4.8: `Button textSize="sm"`
-  pads its sides more than Figma's 11 px, as in D2. It is pressed while
-  the discussion is open, but cyan: Figma draws it violet. Library gaps
+  pads its sides more than Figma's 11 px, as in D2. It is pressed while the
+  discussion is open; since library beta.36 (#138) its border is
+  `accent.discuss` (`pressedBorder="discuss"`), the solid violet, where
+  Figma draws `border.discuss` at 50 %: that gives under 3:1 (WCAG
+  1.4.11) over the pressed fill. Figma's violet fill has no token, so the
+  fill stays `surface.selected`. Library gaps
   "Sort and Filter button widths" and "Discuss toggle".
 - **Project chip.** `chips` w -12.8, `project · File in a project` x +6,
   w -16.8, `chip · updated 12m ago` x -10.8, as in D2: the project chip
@@ -87,8 +91,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 Each value with no token is recorded in `LIBRARY_GAPS.md` and drawn with
 the nearest library part until it lands: the side width 628 (Figma's,
-on the 4 px grid; drawn 620), Discuss's pressed look in `accent.discuss`
-(the token of Figma's violet; drawn cyan), the empty state 120 px under
+on the 4 px grid; drawn 620), Discuss's pressed fill in violet (no
+token; drawn `surface.selected`, its border `accent.discuss` since
+beta.36), the empty state 120 px under
 the area's top (Figma's; drawn centred). The panel keeps the Inbox's
 paddings: 16 above and below, 12 at the start, 20 at the end, 12 between
 its rows, 6 above the discussion area.

@@ -20,9 +20,14 @@ the checks and offsets below are from the beta.9 run.
 ## Deviations
 
 - **Discuss button.** Figma draws Discuss in violet while the discussion
-  is open (403:943). The library has no discuss toggle (its button recipe
-  says it comes later), so it is a `pressed` secondary `Button`, which is
-  cyan. It is 32 px high (`md`), as Figma's.
+  is open (403:943): a 50 % violet border (`border.discuss`) over a violet
+  fill. Since library beta.36 (#138) the `pressed` secondary `Button` takes
+  `pressedBorder="discuss"`, so its border is `accent.discuss`, the solid
+  violet: the 50 % violet over the pressed fill gives only 2.26:1 to
+  2.93:1, under the 3:1 of WCAG 1.4.11, so the border is stronger than
+  Figma's. The fill stays `surface.selected`; no token has Figma's violet
+  fill (LIBRARY_GAPS.md: Discuss toggle). It is 32 px high (`md`), as
+  Figma's.
 - **Discussion panel width.** Figma's panel (403:947) is 628 px wide,
   what is left beside an 820 px task. The task is `Container
   size="detail"` (748 + 2 × 40 = 828), so the panel starts 8 px further
