@@ -7,9 +7,11 @@
 // frame (427:249), and the Rules group lies below the frame. The details hold
 // the agent writing-reviewer too (agentOpen, with its Evals results), so
 // writer's D5 Reviewer badge opens the agent's Evals tab (D26) from this
-// state and every state built on it.
+// state and every state built on it. Its Discuss button opens writer's
+// discussion (D5, T5, M7).
 import { agentOpen } from './agentOpen.ts'
 import { writerUsage } from './shared/activity.ts'
+import { writerDiscussions } from './shared/discussions.ts'
 import { writerResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
@@ -63,6 +65,8 @@ const writer: ToolkitItemDetailView = {
     ],
   },
   evals: { title: 'Skill evals', caption: '5 cases · open the Evals tab', tab: 'evals' },
+  // Discuss opens the discussion: D5 on the desktop, T5 on a tablet and M7 on the phone.
+  discuss: writerDiscussions,
 }
 
 export const skillOpen = {

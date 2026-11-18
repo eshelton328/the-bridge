@@ -1565,3 +1565,48 @@ export const HookActivityPhone: Story = {
     await expect(within(item).getByText('No commits from a session on the other 13 days.')).toBeVisible()
   },
 }
+
+export const SkillDiscuss: Story = {
+  name: 'D5: a skill with its discussion open beside it',
+  args: { data: toolkitStates.skillDiscuss.data, ui: toolkitStates.skillDiscuss.ui, viewport: 'desktop' },
+  // src/app/ToolkitDiscuss.test.tsx checks the layout and the taps through the route.
+  play: async ({ canvas }) => {
+    const panel = canvas.getByRole('complementary', { name: 'Discuss writer' })
+    await expect(within(panel).getByRole('heading', { level: 2, name: 'Discuss' })).toBeVisible()
+    await expect(within(panel).getByText('toolkit/skills/writer/ attached')).toBeVisible()
+    await expect(
+      within(panel).getByText('Why does writer hand a draft to writing-reviewer instead of checking it itself?'),
+    ).toBeVisible()
+    await expect(within(panel).getByText('skills/writer/SKILL.md:106')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: /Open in Workbench/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    await expect(canvas.getByRole('article', { name: 'writer' })).toBeVisible()
+  },
+}
+
+export const SkillDiscussTablet: Story = {
+  name: 'T5: a skill’s discussion on a tablet, in place of the item',
+  args: { data: toolkitStates.skillDiscussTablet.data, ui: toolkitStates.skillDiscussTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop, where the discussion is the side panel; pick Tablet in the viewport menu to see it as
+  // a page. The play test checks what every width shows: T5's empty state.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'Talk writer through' })).toBeVisible()
+    await expect(canvas.getByText('Explain a step, a file or a script')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Which skills link to writer?' })).toBeVisible()
+    await expect(canvas.getByText('Sonnet 5.5')).toBeVisible()
+  },
+}
+
+export const SkillDiscussPhone: Story = {
+  name: 'M7: a skill’s discussion on the phone, full screen',
+  args: { data: toolkitStates.skillDiscussPhone.data, ui: toolkitStates.skillDiscussPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop, where the discussion is the side panel; pick Phone in the viewport menu to see it full
+  // screen, with the suggestions under Try. The play test checks what every width shows.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'Talk writer through' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: /Workbench/ })).toHaveAttribute('aria-disabled', 'true')
+    await expect(canvas.getByRole('button', { name: 'What does scripts/check test?' })).toBeVisible()
+  },
+}

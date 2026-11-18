@@ -100,6 +100,9 @@ import { ruleActivityPhone } from './ruleActivityPhone.ts'
 import { agentActivityPhone } from './agentActivityPhone.ts'
 import { workflowActivityPhone } from './workflowActivityPhone.ts'
 import { hookActivityPhone } from './hookActivityPhone.ts'
+import { skillDiscuss } from './skillDiscuss.ts'
+import { skillDiscussTablet } from './skillDiscussTablet.ts'
+import { skillDiscussPhone } from './skillDiscussPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -201,4 +204,7 @@ export const toolkitStates = {
   agentActivityPhone,
   workflowActivityPhone,
   hookActivityPhone,
+  skillDiscuss,
+  skillDiscussTablet,
+  skillDiscussPhone,
 }

@@ -35,6 +35,10 @@ export function ToolkitPage() {
         // The badge's copy button; a page without clipboard access (an insecure origin) copies nothing.
         copyText(path)
       }}
+      onCopyText={(text) => {
+        // An answer's Copy in the item's discussion (D5).
+        copyText(text)
+      }}
     />
   )
 }
