@@ -17,6 +17,11 @@
 // row shows the breadcrumb back to it. A workflow opened with Open full page
 // (D13, `ui.flowFullPage`) fills the page without the list on every layout,
 // under the breadcrumb Toolkit › Workflows › the workflow (`flowView`).
+// The Activity view (D11, `ui.view` activity with `data.activity`) is
+// `ToolkitActivityPage`: in the list's place on the desktop and the phone, a
+// page of its own on a tablet (T9). A tap on a run opens it (`ui.run`, D12):
+// beside the view in the side slot on the desktop, on a page of its own on a
+// tablet or phone; a Most called item opens on its page (`activityPage`).
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -39,6 +44,10 @@ import { openEvals } from '../blocks/evalsView.ts'
 import { selectFile } from '../blocks/filesView.ts'
 import { ToolkitDiscussPage } from '../blocks/ToolkitDiscussPage.tsx'
 import { ToolkitDiscussPanel } from '../blocks/ToolkitDiscussPanel.tsx'
+import { activityCounts, changeView, closeRun, openCalled, openRun, showRun } from '../blocks/activityPage.ts'
+import { ToolkitActivityPage } from '../blocks/ToolkitActivityPage.tsx'
+import { ToolkitRunPage } from '../blocks/ToolkitRunPage.tsx'
+import { ToolkitRunPanel } from '../blocks/ToolkitRunPanel.tsx'
 import {
   closeDiscuss,
   discussEntries,
@@ -129,6 +138,76 @@ function ToolkitLayout({
   const setGroupOpen = (kind: ToolkitKind, isOpen: boolean) => {
     onUiChange({ groupsOpen: { ...ui.groupsOpen, [kind]: isOpen } })
   }
+  const kindChips = (
+    <div className={chips} data-figma="filter · chips">
+      <FilterChips
+        padding="none"
+        label="Filter by kind"
+        multiple={false}
+        items={data.chips.map((c) => ({
+          value: c.value,
+          label: c.label,
+          count: c.count,
+          kind: c.value === 'all' ? undefined : c.value,
+        }))}
+        value={[ui.filter]}
+        onValueChange={(value) => {
+          const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
+          if (parsed.success) onUiChange({ filter: parsed.data })
+        }}
+      />
+    </div>
+  )
+  // D11: the Activity view, when nothing is open; D12: the run open in it.
+  const activity = ui.view === 'activity' && open === null ? data.activity : undefined
+  const running = activity === undefined ? undefined : activityCounts(activity, ui)?.running
+  const run = activity === undefined ? null : openRun(activity, ui)
+  const activityPage =
+    activity === undefined ? null : (
+      <ToolkitActivityPage
+        view={activity}
+        ui={ui}
+        layout={layout}
+        header={
+          <ToolkitHeader
+            count={data.count}
+            view={ui.view}
+            layout={layout}
+            source={activity.readFrom}
+            layer={desktop ? run?.detail?.layers?.pageHeader : undefined}
+            onViewChange={(next) => {
+              onUiChange(changeView(next))
+            }}
+          />
+        }
+        chips={kindChips}
+        onSourceChange={(activitySource) => {
+          onUiChange({ activitySource, run: undefined })
+        }}
+        onOpenRun={(id) => {
+          onUiChange(showRun(id))
+        }}
+        onOpenItem={(path) => {
+          onUiChange(openCalled(path))
+        }}
+        onBack={() => {
+          onUiChange(changeView('list'))
+        }}
+      />
+    )
+  const runPage =
+    run === null || running === undefined || desktop || activity === undefined ? null : (
+      <ToolkitRunPage
+        run={run}
+        layout={layout}
+        backLabel={activity.title}
+        status={running.status}
+        openSession={running.openSession}
+        onBack={() => {
+          onUiChange(closeRun())
+        }}
+      />
+    )
   const list = (
     <section
       aria-label="Toolkit"
@@ -140,29 +219,10 @@ function ToolkitLayout({
         view={ui.view}
         layout={layout}
         onViewChange={(next) => {
-          onUiChange({ view: next })
+          onUiChange(changeView(next))
         }}
       />
-      {showChips ? (
-        <div className={chips} data-figma="filter · chips">
-          <FilterChips
-            padding="none"
-            label="Filter by kind"
-            multiple={false}
-            items={data.chips.map((c) => ({
-              value: c.value,
-              label: c.label,
-              count: c.count,
-              kind: c.value === 'all' ? undefined : c.value,
-            }))}
-            value={[ui.filter]}
-            onValueChange={(value) => {
-              const parsed = ToolkitKindChip.shape.value.safeParse(value[0])
-              if (parsed.success) onUiChange({ filter: parsed.data })
-            }}
-          />
-        </div>
-      ) : null}
+      {showChips ? kindChips : null}
       {showTools ? (
         <ToolkitListTools
           query={ui.query}
@@ -331,6 +391,15 @@ function ToolkitLayout({
         side={
           desktop && thread !== undefined && open !== null ? (
             <ToolkitDiscussPanel {...thread} itemName={open.item.name} onClose={closeDiscussion} />
+          ) : desktop && run !== null && running !== undefined ? (
+            <ToolkitRunPanel
+              run={run}
+              status={running.status}
+              openSession={running.openSession}
+              onClose={() => {
+                onUiChange(closeRun())
+              }}
+            />
           ) : undefined
         }
         list={
@@ -353,7 +422,7 @@ function ToolkitLayout({
               onBack={closeDiscussion}
             />
           ) : (
-            (item ?? list)
+            (item ?? runPage ?? activityPage ?? list)
           )
         }
       />

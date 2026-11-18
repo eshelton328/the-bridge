@@ -23,7 +23,7 @@ export function activityLayout(layout: Viewport): { kpiColumns: 2 | 4; captions:
 }
 
 /** A key figure's caption on a layout: none on the phone (M15). */
-export function kpiCaption(kpi: Kpi, layout: Viewport): string | undefined {
+export function kpiCaption(kpi: { caption?: string | undefined }, layout: Viewport): string | undefined {
   return activityLayout(layout).captions ? kpi.caption : undefined
 }
 
