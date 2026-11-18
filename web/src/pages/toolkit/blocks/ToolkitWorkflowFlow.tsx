@@ -5,23 +5,20 @@
 // the steps of a phase that run one after another, and an arrow comes into
 // a phase from the one before it, at the rows the state names; the loop
 // back to the start is its label under the lanes. Under the box: the agents
-// the workflow runs, each a button that opens it, and a note. The library
-// has no line between steps (LIBRARY_GAPS.md, Workflow flow by phase): the
-// arrows are its arrow icons, with no line, no elbow and no dashed loop.
+// the workflow runs, each a button that opens it, and a note. Each arrow is
+// the library's `FlowLine`, from one card's edge to the next, its tip 2
+// before the card; the library has no elbow that leaves one step and enters
+// two others at their own rows, and its `FlowLoop` points into the side of
+// the step it returns to, not up into its foot (LIBRARY_GAPS.md, Workflow
+// flow by phase), so an arrow into a phase is a straight line at each row
+// it enters, and the loop is its label alone.
 // On a tablet (T18 487:768) the box is the same flow drawn smaller
 // (`size="sm"`): narrower lanes, smaller cards and text. The phone (M21
 // 487:1863) has no room for the flow: the header and the agents' row keep
 // one line each and run past the screen's edge, and the line that says where
 // the steps are (`flow.elsewhere`) takes the box's place (`steps={false}`).
 // Props only.
-import {
-  AgentIcon,
-  ArrowDownIcon,
-  ArrowRightIcon,
-  Badge,
-  Button,
-  ExternalLinkIcon,
-} from '@eshelton328/component-library-1701'
+import { AgentIcon, Badge, Button, ExternalLinkIcon, FlowLine } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
@@ -84,11 +81,17 @@ const arrow = css({
   color: 'fg.muted',
   textStyle: 'small',
 })
-// The icon alone is padded to the column's 24 px; the label over it ("yes", 22 wide) fits inside.
-const across = css({ alignSelf: 'center' })
-// T18: the arrow columns are 16 wide and the cards of a lane 12 apart, the arrow's own height; the labels smaller.
-const acrossIcon = { md: css({ display: 'inline-flex', px: '6' }), sm: css({ display: 'inline-flex', px: '2' }) }
-const down = { md: css({ py: '2' }), sm: css({ py: '0' }) }
+// D8 466:2: an arrow across runs from the card's edge over the lane's 8 px side, the 24 px gap and the next lane's
+// side, 38 long to 2 before the next card (the label over it, "yes", 458:92). T18: the lanes' sides are 6 and the gap
+// 16.
+const across = {
+  md: css({ alignSelf: 'center', alignItems: 'stretch', w: '[token(spacing.24)]' }),
+  sm: css({ alignSelf: 'center', alignItems: 'stretch', w: '[token(spacing.16)]' }),
+}
+const acrossLine = { md: css({ mx: '-8' }), sm: css({ mx: '-6' }) }
+// D8 466:4: a line down between the cards of a lane, 14 long in the 16 between them; T18: 12 between them. A long line
+// past an empty row (466:3, "no") fills the rows it spans; out of a gate it is amber, as the gate's way out.
+const down = { md: css({ minH: '[token(spacing.16)]' }), sm: css({ minH: '[token(spacing.12)]' }) }
 const arrowText = { md: undefined, sm: css({ textStyle: 'smallXs' }) }
 // D8 466:11: the loop's label sits on the dashed line, 24 under the last row and centred on the box; the lanes end
 // 52 under the last row (458:3 ends at 675).
@@ -183,7 +186,10 @@ export function ToolkitWorkflowFlow({
               <div className={cx(lane, laneColumn(i))} />
               <h4 className={cx(laneLabel[size], laneColumn(i))}>{phase.label}</h4>
               {(phase.from ?? []).map((row, n) => (
-                <span key={row} className={cx(arrow, arrowText[size], across, gapColumn(i), rows[String(3 + 2 * row)])}>
+                <span
+                  key={row}
+                  className={cx(arrow, arrowText[size], across[size], gapColumn(i), rows[String(3 + 2 * row)])}
+                >
                   {n === 0 && phase.fromLabel !== undefined ? (
                     <span>
                       {phase.fromLabel}
@@ -192,8 +198,8 @@ export function ToolkitWorkflowFlow({
                       </span>
                     </span>
                   ) : null}
-                  <span aria-hidden="true" className={acrossIcon[size]}>
-                    <ArrowRightIcon size="12" />
+                  <span className={acrossLine[size]}>
+                    <FlowLine />
                   </span>
                 </span>
               ))}
@@ -216,13 +222,12 @@ export function ToolkitWorkflowFlow({
                           rows[`${String(4 + 2 * step.row)}/${String(3 + 2 * next.row)}`],
                         )}
                       >
-                        {step.down === undefined ? null : (
-                          <span>
-                            {step.down}
-                            <span className={srOnly}>{`, to ${next.title}`}</span>
-                          </span>
-                        )}
-                        <ArrowDownIcon size="12" aria-hidden="true" />
+                        <FlowLine
+                          direction="down"
+                          tone={step.type === 'gate' ? 'needsYou' : 'default'}
+                          label={step.down}
+                        />
+                        {step.down === undefined ? null : <span className={srOnly}>{`, to ${next.title}`}</span>}
                       </span>
                     )}
                   </Fragment>
