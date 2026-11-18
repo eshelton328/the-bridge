@@ -38,9 +38,6 @@ const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign:
 const name = css({ textStyle: 'body', flex: '1', textAlign: 'start' })
 // Figma's Close is the panel's grey (fg.muted, D4 128:338), not the text button's accent.
 const close = css({ color: 'fg.muted' })
-// M8 128:766: the sheet's chosen recent folder draws #5ee1ff at 0.5 (border.selected), not the pressed
-// border.active (0.7). `Button` has no prop for it (LIBRARY_GAPS.md: Selected toggle border).
-const chosenInSheet = css({ _pressed: { borderColor: 'border.selected' } })
 
 /** The Figma layers of the picker's parts, for the fidelity checks; a part with no layer has none. */
 type FolderPickerLayers = {
@@ -98,7 +95,9 @@ export function FolderPickerList(props: FolderPickerListProps) {
               key={f.path}
               variant={f.path === picked ? 'secondary' : 'text'}
               pressed={f.path === picked}
-              className={cx(row, plain, sheet ? chosenInSheet : undefined)}
+              // M8 128:766: the sheet's chosen recent folder draws #5ee1ff at 0.5 (border.selected), not border.active.
+              pressedBorder={sheet ? 'selected' : undefined}
+              className={cx(row, plain)}
               data-figma={layers.recent[i]}
               onClick={() => onPick?.(f.path)}
             >
