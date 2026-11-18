@@ -601,7 +601,7 @@ export const PhoneChatFull: Story = {
   args: { data: workspacesStates.phoneChatFull.data, ui: workspacesStates.phoneChatFull.ui, viewport: 'phone' },
   play: async ({ canvas }) => {
     // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
-    // "/" typed and no skill list open, and the phone's menu draws M17. WorkspacesPhoneChat.test.tsx checks the chat
+    // "/" typed and no skill list open, and the phone's menu draws M17. WorkspacesPhoneChatFull.test.tsx checks the chat
     // and its back button at a phone's width.
     await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
     await expect(canvas.getByText('requirements.md')).toBeVisible()
