@@ -432,6 +432,11 @@ export const InboxUi = z.object({
   snoozeOpen: z.boolean(),
   /** The row whose actions sheet is open: a long-press on the phone (M6) opens it; `null` when none is. */
   actionsFor: InboxItemId.nullable(),
+  /**
+   * The row Erik tapped on a tablet or phone that the mock data has no detail for: its own page, from the row's view,
+   * with Back and the row's actions behind ⋯ (screen review R11); `null` when none is open.
+   */
+  rowOpen: InboxItemId.nullable(),
   /** The whole prompt is open in its dialog. */
   promptOpen: z.boolean(),
   /** The discussion panel is open beside the task; the list hides. */
