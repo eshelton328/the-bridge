@@ -323,6 +323,11 @@ first: it says what each file of a page folder is for.
   tablet's width `ui.chatDialog: 'subtask'` opens D17's dialog over T2's
   chat in place of M20's sheet, from the chat actions' Subtask or T3's Start
   a subtask.
+  T11 needs no new block: the chat fills the screen as T6's does, still
+  Working with Stop and an empty composer in focus, D18's line where the
+  subtask started under Claude's reply, and D18's chat actions with
+  Subagents · 3; Back returns to the list, where layout notes is D18's
+  nested row under bridge themes.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -435,7 +440,10 @@ first: it says what each file of a page folder is for.
   fork under bridge themes and M19's empty composer: the fork full screen
   on the tablet, Idle with no Stop and the focus in the message box), T10
   `tabletSubtask` (from `tabletChatActions`, without the menu, with D17's
-  Subtask form open: the form in a dialog over the chat on the tablet).
+  Subtask form open: the form in a dialog over the chat on the tablet), T11
+  `tabletSubtaskRunning` (from `tabletOneChat`, with M19's empty composer
+  and D18's subtask row, line and chat actions: the chat full screen on
+  the tablet, Working, with the line where the subtask started).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

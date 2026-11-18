@@ -850,3 +850,18 @@ export const TabletSubtask: Story = {
     await expectTrapFocus(within(dialog).getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' }))
   },
 }
+
+export const TabletSubtaskRunning: Story = {
+  name: 'T11: a subtask running from a chat on the tablet',
+  args: {
+    data: workspacesStates.tabletSubtaskRunning.data,
+    ui: workspacesStates.tabletSubtaskRunning.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // layout notes under it, and the tablet's menu draws T11's chat full screen, still Working with Stop.
+    await expect(canvas.getByText('Subtask layout notes started · returns its result here')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+  },
+}
