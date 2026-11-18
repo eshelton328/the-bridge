@@ -107,6 +107,15 @@ import { toolkitActivity } from './toolkitActivity.ts'
 import { toolkitActivityRun } from './toolkitActivityRun.ts'
 import { toolkitActivityTablet } from './toolkitActivityTablet.ts'
 import { toolkitActivityPhone } from './toolkitActivityPhone.ts'
+import { toolkitActivityChats } from './toolkitActivityChats.ts'
+import { toolkitActivityHeadless } from './toolkitActivityHeadless.ts'
+import { toolkitActivityChat } from './toolkitActivityChat.ts'
+import { toolkitActivityChatsTablet } from './toolkitActivityChatsTablet.ts'
+import { toolkitActivityHeadlessTablet } from './toolkitActivityHeadlessTablet.ts'
+import { toolkitActivityChatTablet } from './toolkitActivityChatTablet.ts'
+import { toolkitActivityChatsPhone } from './toolkitActivityChatsPhone.ts'
+import { toolkitActivityHeadlessPhone } from './toolkitActivityHeadlessPhone.ts'
+import { toolkitActivityChatPhone } from './toolkitActivityChatPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -215,4 +224,13 @@ export const toolkitStates = {
   toolkitActivityRun,
   toolkitActivityTablet,
   toolkitActivityPhone,
+  toolkitActivityChats,
+  toolkitActivityHeadless,
+  toolkitActivityChat,
+  toolkitActivityChatsTablet,
+  toolkitActivityHeadlessTablet,
+  toolkitActivityChatTablet,
+  toolkitActivityChatsPhone,
+  toolkitActivityHeadlessPhone,
+  toolkitActivityChatPhone,
 }
