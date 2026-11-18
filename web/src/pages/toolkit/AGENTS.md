@@ -430,7 +430,7 @@ what each file of a page folder is for.
   view's keys), the runs (`ToolkitActivityRuns`, a `ToolkitRunRow` each)
   beside the calls per day (`ToolkitCallsPerDay`, a library `DailyBarChart`
   per source), Most called (`ToolkitMostCalled`: `HorizontalBarChart` with a
-  button over each row) beside the log (`ToolkitActivityLog`) and the source
+  button under each row) beside the log (`ToolkitActivityLog`) and the source
   line. The kind chip narrows the runs, Most called and the log. A tap on a
   run or its Open session sets `ui.run` (D12, `toolkitActivityRun`, writing-
   reviewer, with D12's keys in the run's `detail.layers`): on the desktop

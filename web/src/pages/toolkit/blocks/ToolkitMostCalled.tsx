@@ -1,9 +1,11 @@
 // The most called items of the Activity view (Figma `panel · MOST CALLED`,
 // D11 444:618; T9 `panel · most called` 449:330): a `Panel` with its header
 // over the library's `HorizontalBarChart`, each item's kind icon before its
-// row. The chart's rows are not buttons, so a column of buttons lies over
-// them, one per row and as high: a tap opens the item, and hover or focus
-// lights its line. The chart draws every bar in one colour and its labels in
+// row. The chart's rows are not buttons, so a column of buttons lies under
+// them, one per row and as high: the icons and the chart come after it, are
+// positioned and so paint above it, and let the pointer through, so a tap
+// opens the item and hover or focus lights its line behind its name, bar and
+// count. The chart draws every bar in one colour and its labels in
 // a column as wide as the longest (LIBRARY_GAPS.md, Most called bars).
 // Props only.
 import { HorizontalBarChart, Panel } from '@eshelton328/component-library-1701'
@@ -22,9 +24,15 @@ const body = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 // D11 444:624: the icon, then the name 6 after it.
 const chart = css({ position: 'relative', display: 'flex', gap: '6', minW: '[0]' })
 // The chart's rows are 8 apart, each as high as its 16 px line: the icons and the buttons keep that pitch.
-const column = css({ display: 'grid', gridAutoRows: '[1fr]', rowGap: '8' })
+const column = css({
+  position: 'relative',
+  display: 'grid',
+  gridAutoRows: '[1fr]',
+  rowGap: '8',
+  pointerEvents: 'none',
+})
 const icon = css({ display: 'flex', alignItems: 'center' })
-const bars = css({ flex: '1', minW: '[0]' })
+const bars = css({ position: 'relative', flex: '1', minW: '[0]', pointerEvents: 'none' })
 const overlay = css({ position: 'absolute', inset: '0', display: 'grid', gridAutoRows: '[1fr]', rowGap: '8' })
 const button = css({
   p: '0',
@@ -54,19 +62,6 @@ export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCal
             end={mostCalled.meta === undefined ? null : { type: 'note', label: mostCalled.meta }}
           />
           <div className={chart}>
-            <div className={column} aria-hidden="true">
-              {mostCalled.rows.map((r) => (
-                <span key={r.path} className={icon}>
-                  <ToolkitKindIcon kind={r.kind} size="12" />
-                </span>
-              ))}
-            </div>
-            <div className={bars}>
-              <HorizontalBarChart
-                label={mostCalled.label}
-                rows={mostCalled.rows.map((r) => ({ label: r.name, value: r.value }))}
-              />
-            </div>
             <div className={overlay}>
               {mostCalled.rows.map((r) => (
                 <button
@@ -80,6 +75,19 @@ export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCal
                   }}
                 />
               ))}
+            </div>
+            <div className={column} aria-hidden="true">
+              {mostCalled.rows.map((r) => (
+                <span key={r.path} className={icon}>
+                  <ToolkitKindIcon kind={r.kind} size="12" />
+                </span>
+              ))}
+            </div>
+            <div className={bars}>
+              <HorizontalBarChart
+                label={mostCalled.label}
+                rows={mostCalled.rows.map((r) => ({ label: r.name, value: r.value }))}
+              />
             </div>
           </div>
         </div>

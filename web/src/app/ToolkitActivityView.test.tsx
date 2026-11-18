@@ -123,6 +123,26 @@ describe('the Activity view on the desktop (D11)', () => {
     expect(root.querySelector('[data-figma="kpis"]')).toBeNull()
   })
 
+  it("keeps a Most called row's name, bar and count over its hover fill", async () => {
+    const { root } = await renderToolkit('toolkitActivity')
+    const writer = element(root, '[data-figma="bar · writer"]')
+    await userEvent.hover(writer)
+    await expect.poll(() => getComputedStyle(writer).backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+    const row = [...root.querySelectorAll('.horizontal-bar-chart__row')][2]
+    if (!(row instanceof HTMLElement)) throw new Error('no row')
+    // The chart lets the pointer through to the button under it, so each part takes pointer events for the probe:
+    // the part, not the button, must then be the top element at its centre, which it is only when it paints above.
+    for (const slot of ['label', 'svg', 'value']) {
+      const part = row.querySelector(`.horizontal-bar-chart__${slot}`)
+      if (!(part instanceof HTMLElement || part instanceof SVGElement)) throw new Error(`no ${slot}`)
+      part.style.pointerEvents = 'auto'
+      const b = part.getBoundingClientRect()
+      const top = document.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2)
+      part.style.pointerEvents = ''
+      expect(top === part || (top !== null && part.contains(top)), slot).toBe(true)
+    }
+  })
+
   it('keeps Chats and Headless runs disabled, and Open the session in Workbench waits with a title', async () => {
     const { root } = await renderToolkit('toolkitActivityRun')
     expect(page.getByRole('radio', { name: 'All sessions' }).element()).toBeChecked()
