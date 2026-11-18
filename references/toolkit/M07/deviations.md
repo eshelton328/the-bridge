@@ -12,10 +12,10 @@ frame has no `exceptions.json`.
 
 - Text: pass. Every Figma string is in the render and visible, and no
   render text is extra.
-- Position: 12 of 16 layers pass: `nav`, `pill · Skill`,
+- Position: 13 of 16 layers pass: `nav`, `task · discussing`, `pill · Skill`,
   `chevron · open task`, `model and context`, `guard`, `empty state`,
   `it can`, `suggestions`, the three suggestion buttons and
-  `composer · discussion`. Four fail.
+  `composer · discussion`. Three fail.
 - Rules: pass.
 
 ## Deviations
@@ -25,20 +25,27 @@ frame has no `exceptions.json`.
   start further left (`button · Open in Workbench` x -8.8 w +8.8,
   `pill · Discussion` x -9.7; gap: Discussion nav button). The button is
   disabled with a title: no Workbench state takes a toolkit chat.
-- **Card height.** The card is 146 high against Figma's 138: the
+- **Card height.** The card is 140 high against Figma's 138: the
   `ModelChip` is 26 high against 22 and the guard's three lines are 16
-  high against 15 (`task · discussing` h +8; gap: Discussion model chip).
-  The area under it starts 4 under the card, so the empty state, "It
-  can" and the suggestions keep Figma's places within 2 px.
+  high against 15, so its rows sit 2 apart against Figma's 5 (gap:
+  Discussion model chip). The area under it starts 8 under the card, as
+  in Figma.
 - **Discussion area.** Figma's `discussion` (464:184) holds the empty
   state and the reply box; in `DetailFrame` the reply box is the sticky
-  footer, so the area ends above it (`discussion` h -109). This is the
+  footer, so the area ends above it (`discussion` h -107). This is the
   d-107 structure that keeps the reply box in view.
 - **Empty state.** As on T05: the tile and title are taller than Figma's,
   the "It can" icons are 12 px, and the links icon is a chain (gaps:
   Discussion empty state, Links icon).
-- **Reply box.** Figma draws the reply box focused, with a caret; the
-  render opens with nothing focused. Attach does nothing.
+- **Reply box.** Figma draws the reply box focused, with a violet
+  #6863b0 border and a caret; the render opens with nothing focused,
+  with `Composer`'s #24314f border (gap: Composer focus). The box is 78
+  high against 75, so its placeholder sits 1.5 px lower and its buttons
+  3 px lower (gap: Composer size). The attach button is a 28 px rounded
+  square with a hairline #24314f border on the #17213a fill, as Figma's
+  (464:219), and `Composer` takes no variant for it, as on the other
+  pages; its clip is 16 px against Figma's 14 (gap: Composer size).
+  Attach does nothing.
 - **App frame.** The page hides the tab bar as the Artifacts and Inbox
   discussions do (AppShell with no `tabBar`); AppShell, the rail and the
   tab bar are unchanged.

@@ -31,7 +31,7 @@ The frame has no `exceptions.json`.
   x -5 h +4; gap: Discussion model chip).
 - **Discussion area.** Figma's `discussion` (464:349) holds the empty
   state and the reply box; in `DetailFrame` the reply box is the sticky
-  footer, so the area ends above it (`discussion` h -119). This is the
+  footer, so the area ends above it (`discussion` h -117). This is the
   d-107 structure that keeps the reply box in view while the messages
   scroll.
 - **Empty state.** The tile is `control.xl` (44) against 42 and the title
@@ -39,6 +39,13 @@ The frame has no `exceptions.json`.
   links icon is `LinkIcon`, a chain, where Figma draws a node graph (gaps:
   Discussion empty state, Links icon). The text, "It can" and the
   suggestions keep Figma's places.
-- **Reply box.** Figma draws the reply box focused, with a violet border
-  and a caret after the placeholder; the render opens with nothing
-  focused. Attach does nothing: no file flow is designed.
+- **Reply box.** Figma draws the reply box focused, with a violet
+  #6863b0 border and a caret after the placeholder; the render opens with
+  nothing focused, with `Composer`'s #24314f border (gap: Composer
+  focus). The box is 78 high against Figma's 75: its placeholder line is
+  20 high against 17, so the placeholder sits 1.5 px lower and the attach
+  and Send buttons 3 px lower, and the attach button's clip is 16 px
+  against 14 (gap: Composer size). Attach does nothing: no file flow is
+  designed.
+- **Card.** The item's card keeps Figma's 96 px: the pill and the mono
+  lines are 2 px taller than Figma's, so its rows sit 2 apart against 5.

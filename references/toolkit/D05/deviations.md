@@ -55,7 +55,14 @@ Used in workflows section. The frame has no `exceptions.json`.
 - **Model chip.** In the reply box the `ModelChip` sits 6 px nearer the
   attach button and is 26 high against 29 (`model` x -6; gap:
   Discussion model chip).
-- **Attach.** The reply box's attach button does nothing: no file flow
-  is designed, and `Composer` draws the button only with `onAttach`.
-- **Copy.** Copy writes the answer's text to the clipboard through
+- **Reply box.** Figma draws the reply box focused, with a light-blue
+  #49a8c4 border; the render opens with nothing focused, so `Composer`
+  draws its #24314f `border.default` (gap: Composer focus). The box is
+  78 high against Figma's 82, with 28 px attach and Send buttons against
+  30, so its top edge sits 3 px lower; the attach button's clip is 16 px
+  against 14 (gap: Composer size). The attach button does nothing: no
+  file flow is designed, and `Composer` draws the button only with
+  `onAttach`.
+- **Context row.** The attached path is mono 12, as Figma's (438:19).
+- **Copy. Copy writes the answer's text to the clipboard through
   `ToolkitPage`, as the path badge's copy does.
