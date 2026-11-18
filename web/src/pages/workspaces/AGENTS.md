@@ -472,6 +472,18 @@ first: it says what each file of a page folder is for.
   in the header, the focus in the field).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
+- `states/screens.ts`: the screen map (screen review R10), each screen's
+  desktop, tablet and phone state, in the order of the D frames and then
+  the screens with only tablet or phone states (the list, edit mode, the
+  skills, the subagents, the keyboard views and the phone's sheets). The
+  split panes and their drags (D1, D5, D6, D8 to D14) have no tablet or
+  phone state (R19). D3 pairs with T7 and M7 as New chat; T3 and M6, the
+  subagents, have no desktop state of their own. `states/screens.test.ts`
+  checks that every state is in one screen, on its own device.
+  `screens/WorkspacesScreens.stories.tsx` (`Pages/Workspaces/Screens`)
+  draws each screen's states side by side; the per-state stories with
+  their play tests stay in `screens/WorkspacesScreen.stories.tsx`
+  (`Pages/Workspaces/States`). A new state goes into a screen there.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
   union on `type`: chat, shell or empty, the status bar, the pane menu and
   the skills; for D2 each workspace's chats, the sidebar's labels and the
