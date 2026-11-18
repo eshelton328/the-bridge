@@ -11,7 +11,7 @@ import type { PhoneText, SidebarLayers, Workspace, WorkspacesUi } from '../types
 import { PhoneEditGroup } from './PhoneEditGroup.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
 
-// The list fills the screen above the tab bar (M1 105:2327, 38 to 767).
+// The list fills the screen, running under the tab bar that lies over its foot (M1 105:2327, 38 to 767).
 const fill = css({ flex: '1' })
 // M1 105:2329: the large title sits 4 in from the header's edge, over the group chevrons, and Edit and + end 4 in.
 // Figma's header is 44 high (105:2328) where `PageHeader size="phone"` is 40, so it pads 4 under the title.

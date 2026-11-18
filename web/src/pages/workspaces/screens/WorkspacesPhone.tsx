@@ -178,6 +178,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
       <AppShell
         size="phone"
         view="list"
+        // The list runs under the tab bar, as Figma draws the phone pages; its last workspace scrolls clear of the bar
+        // (PhoneTabBar.test.tsx). The chat, its subagents and New chat have no tab bar.
+        tabBarOverlay
         tabBar={
           <AppTabBar
             selected="workspaces"

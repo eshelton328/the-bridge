@@ -9,8 +9,14 @@ first: it says what each file of a page folder is for.
 - The screen lays out by its width (`ViewportFrame`, as Inbox does): a
   state with `data.phone` (the phone's labels) draws
   `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
-  M1 to M23: one view at a time over the shared `AppTabBar`, whose More
-  opens the shared `MoreDrawer`. M1 is its home, `PhoneWorkspaceList`;
+  M1 to M23: one view at a time with the shared `AppTabBar`, whose More
+  opens the shared `MoreDrawer`. The tab bar lies over the list's foot
+  (AppShell `tabBarOverlay`, as the other pages): the list runs under it
+  and its last workspace scrolls clear of it (`app/PhoneTabBar.test.tsx`).
+  The views with no tab bar keep their footers (the composer, New chat's
+  start bar) in `ScrollFrame` footers, which the library lifts above a bar.
+  The page has no tablet layout: a tablet draws the desktop layout, with
+  the rail and no tab bar. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
