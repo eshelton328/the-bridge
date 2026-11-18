@@ -71,4 +71,20 @@ describe('a chat on the phone', () => {
     expect(area.selectionStart).toBe(8)
     expect(area.selectionEnd).toBe(8)
   })
+
+  it('lets Erik tab from the composer into the skills after "/" and keeps the focus there', async () => {
+    await page.viewport(390, 844)
+    view = await testRender(draftChat(''))
+    const box = page.getByRole('textbox')
+    await userEvent.click(box)
+    await userEvent.keyboard('/')
+    const writer = page.getByRole('radio', { name: /\/writer/ })
+    await expect.element(writer).toBeVisible()
+    await expect.element(box).toHaveFocus()
+    // The composer's buttons, then the list.
+    await userEvent.keyboard('{Tab}{Tab}{Tab}{Tab}')
+    const list = page.getByRole('radiogroup', { name: 'SKILLS' })
+    await expect.poll(() => list.element().contains(document.activeElement)).toBe(true)
+    await expect.element(box).not.toHaveFocus()
+  })
 })

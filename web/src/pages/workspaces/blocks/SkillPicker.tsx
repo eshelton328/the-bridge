@@ -23,7 +23,8 @@ export type SkillPickerProps = {
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   onPick?: ((skill: string) => void) | undefined
-  /** The focus enters the list, as the popover moves it there when it opens. */
+  /** The focus enters the list, as the popover moves it there when it opens; not on the phone, whose popover leaves
+   * the focus in the box, so a Tab into the list stays there. */
   onListFocus?: (() => void) | undefined
   /** `pane` (the default): a pane or the chat alone (D1); `phone`: the chat on the phone (M3). */
   layout?: keyof typeof layouts | undefined
@@ -46,6 +47,8 @@ export function SkillPicker({
   children,
 }: SkillPickerProps) {
   const { width, compact } = layouts[layout]
+  // The phone's popover does not take the focus when it opens (M3), so nothing has to hand it back to the box.
+  const autoFocus = !compact
   return (
     <Popover
       data-figma={open ? (figma ?? '105:406') : undefined}
@@ -55,12 +58,12 @@ export function SkillPicker({
       placement="top-start"
       width={width}
       density={compact ? 'compact' : 'default'}
-      autoFocus={!compact}
+      autoFocus={autoFocus}
       flip={false}
       trigger={children}
     >
       <PopoverSection label={label}>
-        <div onFocus={onListFocus}>
+        <div onFocus={autoFocus ? onListFocus : undefined}>
           <OptionList
             label={label}
             size="sm"
