@@ -122,4 +122,29 @@ describe('the artifact rows', () => {
     expect(earlier?.getBoundingClientRect().height).toBe(36)
     expect(earlier?.getBoundingClientRect().top).toBe(last.getBoundingClientRect().bottom)
   })
+
+  it("ends an M5 search row's meta line with New, 48 x 16, and keeps the age alone on the title line", async () => {
+    await page.viewport(390, 844)
+    const { data, ui } = artifactsStates.searchPhone
+    view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="phone" />)
+    // The title marks the match, so its text is split; wait for Figma's row by its layer name.
+    await expect
+      .poll(() => document.querySelector('[data-figma="artifact row · Skill eval pass rates"] .list-row__root'))
+      .not.toBeNull()
+    const row = listRow('Skill eval pass rates')
+    // Figma's New (408:99) is a 48 x 16 pill at x 326 to 374, level with the meta line 408:94, after its spacer.
+    const end = slot(row, 'metaTrailing')
+    const badge = end.querySelector('.badge__root')
+    if (!(badge instanceof HTMLElement)) throw new Error('no New badge at the end of the meta line')
+    expect(badge.textContent).toBe('New')
+    const box = badge.getBoundingClientRect()
+    expect(box.height).toBe(16)
+    expect(Math.abs(box.width - 48)).toBeLessThanOrEqual(1)
+    expect(Math.abs(box.right - 374)).toBeLessThanOrEqual(1)
+    const meta = slot(row, 'meta').getBoundingClientRect()
+    expect(box.top + box.height / 2).toBeCloseTo(meta.top + meta.height / 2, 0)
+    // The age (408:93) is alone at the end of the title line: no New under it.
+    expect(slot(row, 'trailing').querySelector('.badge__root')).toBeNull()
+    expect(row.getBoundingClientRect().height).toBe(66)
+  })
 })

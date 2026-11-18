@@ -54,8 +54,8 @@ differences (`../M01/deviations.md`), and the sheet has T3's
   the rows are 66 high and 2 apart, Figma's 68 px pitch (407:76; `ListRow
   padding="phone"` pads 8 inside the border, as Figma's), each 1 below
   Figma's, as in M1. New is `Badge size="xs"` with
-  `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
-  is 12 px against 9 (407:99, 407:100; library gap "New badge"). The
+  `SparkFilledIcon` at 8 px, within 1 px of Figma's 48 × 16; its filled
+  star is 8 px against 9 (407:99, 407:100, the 4 px grid, d-100). The
   previews' colours differ as in M1 (library gap "Thumbnail colour").
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier, as T3.

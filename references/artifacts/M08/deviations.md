@@ -73,8 +73,8 @@ shorter, below Figma's status bar (d-102), and the position check adds
   are 66 high and 2 apart, Figma's 68 px pitch (415:76; `ListRow
   padding="phone"` pads 8 inside the border, as Figma's), each 1 below
   Figma's, as in M1. New is `Badge size="xs"` with
-  `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
-  is 12 px against 9 (415:99, 415:100; library gap "New badge"). The
+  `SparkFilledIcon` at 8 px, within 1 px of Figma's 48 × 16; its filled
+  star is 8 px against 9 (415:99, 415:100, the 4 px grid, d-100). The
   previews' colours differ as in M1 (library gap "Thumbnail colour").
 - **Device chrome.** The status bar (9:41), the home indicator
   (415:312) and the screen corners are not drawn (d-089); the checks
