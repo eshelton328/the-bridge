@@ -83,17 +83,17 @@ export function ArtifactPage({
           </Button>
         </span>
         {phone ? (
-          // 406:411: two 40 px buttons, 8 apart. No control height is 40 (LIBRARY_GAPS.md); 36 and 44 tie, and the
-          // 36 px `lg` keeps Made in where Figma has it, where `xl` put it 7 lower (d-100).
+          // 406:411: two 40 px buttons, 8 apart. No control height is 40 (LIBRARY_GAPS.md: Phone secondary action
+          // height); 36 and 44 tie, and the tie takes the larger, the 44 px `xl` (d-072).
           <Grid columns="2" gap="8" data-figma="secondary actions">
             <span data-figma="button · Copy link">
-              <Button size="lg" className={wide}>
+              <Button size="xl" className={wide}>
                 <CopyIcon />
                 Copy link
               </Button>
             </span>
             <span data-figma="button · Discuss">
-              <Button size="lg" className={wide} onClick={onDiscuss}>
+              <Button size="xl" className={wide} onClick={onDiscuss}>
                 <BubbleIcon />
                 Discuss
               </Button>
