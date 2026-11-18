@@ -542,6 +542,11 @@ export const WorkspacesData = z.object({
   newWorkspace: z.string(),
   /** What typing / in a composer lists. */
   skillsLabel: z.string(),
+  /**
+   * The list's label once Erik has typed more than the "/", such as "SKILLS MATCHING {query}" (M10 147:72); {query}
+   * is what he typed from the "/", and the list keeps only the skills that start with it. `skillsLabel` when not set.
+   */
+  skillsMatching: z.string().optional(),
   skills: z.array(Skill),
   /** The sidebar's labels; a state without them has no sidebar. */
   sidebar: SidebarText.optional(),
@@ -681,6 +686,12 @@ export const WorkspacesUi = z.object({
    * button returns to the chat.
    */
   phoneView: z.enum(['list', 'chat', 'subagents']).optional(),
+  /**
+   * The on-screen keyboard is up over the phone's chat (M10): the chat's header shrinks to one line, the model, the
+   * context used and the folders under the title. The app does not measure the keyboard yet, and the screen does
+   * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
+   */
+  keyboardOpen: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

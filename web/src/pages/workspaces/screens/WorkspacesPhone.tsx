@@ -13,7 +13,8 @@
 // folders chip in the chat's header opens, with the folder picker
 // (`ui.folderPickerOpen`) under the folders. M9 is a chat held in the list:
 // its actions open in the same sheet (`ui.menuFor`, PhoneChatActions with
-// `data.phone.rowMenu`) and its row lifts over the scrim.
+// `data.phone.rowMenu`) and its row lifts over the scrim. M10 is the chat
+// with the keyboard up (`ui.keyboardOpen`): its header shrinks to one line.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -90,6 +91,14 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
         />
       </Backdrop>
     )
+  // M10: with the keyboard up the chat's header is one line: the model, the context used and the folders.
+  const folderCount = data.folders?.chip?.replace('{count}', String(data.folders.items.length))
+  const meta =
+    chat === undefined || ui.keyboardOpen !== true
+      ? undefined
+      : [chat.head.model, chat.head.context === undefined ? undefined : `${String(chat.head.context)}%`, folderCount]
+          .filter((part) => part !== undefined)
+          .join(' · ')
   if (chat !== undefined)
     return (
       <Backdrop size="phone">
@@ -105,7 +114,14 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               onBack={() => {
                 onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false, sideChatOpen: false })
               }}
-              skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
+              skills={{
+                label: data.skillsLabel,
+                matching: data.skillsMatching,
+                items: data.skills,
+                value: ui.skill,
+                open: ui.skillsFor === chat.id,
+              }}
+              meta={meta}
               onSkillsOpenChange={(open) => {
                 onUiChange({ skillsFor: open ? chat.id : null })
               }}

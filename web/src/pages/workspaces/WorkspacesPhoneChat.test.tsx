@@ -87,4 +87,19 @@ describe('a chat on the phone', () => {
     await expect.poll(() => list.element().contains(document.activeElement)).toBe(true)
     await expect.element(box).not.toHaveFocus()
   })
+
+  it('shrinks the header to one line while the keyboard is up (M10)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneKeyboard
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect.element(page.getByText('Opus 5.5 · 42% · 2 folders')).toBeVisible()
+    await expect.element(page.getByText('omni-brain', { exact: true })).not.toBeInTheDocument()
+    await expect.element(page.getByText('context', { exact: true })).not.toBeInTheDocument()
+    await expect.element(page.getByText('SKILLS MATCHING /wri')).toBeVisible()
+    await expect.element(page.getByRole('radio', { name: /\/writer/ })).toBeChecked()
+    const box = page.getByRole('textbox')
+    await expect.element(box).toHaveValue('Turn the layout notes into a doc with /wri')
+    await expect.element(box).toHaveFocus()
+  })
 })

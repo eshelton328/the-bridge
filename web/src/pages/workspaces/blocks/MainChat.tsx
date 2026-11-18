@@ -23,7 +23,7 @@ export type MainChatProps = {
   pane: Extract<WorkbenchPane, { type: 'chat' }>
   workspace: string
   contextLabel: string
-  skills: { label: string; items: readonly Skill[]; value: string | null; open: boolean }
+  skills: { label: string; matching?: string | undefined; items: readonly Skill[]; value: string | null; open: boolean }
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The chat actions menu with its trigger; a plain ⋯ button when not set, and none when `null`. */
   menu?: ReactNode

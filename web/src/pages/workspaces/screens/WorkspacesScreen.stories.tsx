@@ -472,3 +472,21 @@ export const PhoneHoldChat: Story = {
     await expect(canvas.queryByRole('dialog', { name: 'drift check' })).toBeNull()
   },
 }
+
+export const PhoneKeyboard: Story = {
+  name: 'M10: a chat on the phone with the keyboard open',
+  args: { data: workspacesStates.phoneKeyboard.data, ui: workspacesStates.phoneKeyboard.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // its skills open on "/wri"; at a phone's width the header is one line (M10). WorkspacesPhoneChat.test.tsx checks
+    // the one-line header at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Message, or / for a skill' })).toHaveValue(
+      'Turn the layout notes into a doc with /wri',
+    )
+    const body = within(document.body)
+    await expect(await body.findByText('SKILLS MATCHING /wri')).toBeInTheDocument()
+    await expect(await body.findByRole('radio', { name: /\/writer/ })).toBeChecked()
+    await expect(body.queryByRole('radio', { name: /\/readme/ })).toBeNull()
+  },
+}

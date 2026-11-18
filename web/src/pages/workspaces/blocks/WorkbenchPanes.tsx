@@ -111,6 +111,7 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
             composer={pane.composer}
             skills={{
               label: data.skillsLabel,
+              matching: data.skillsMatching,
               items: data.skills,
               value: ui.skill,
               open: ui.skillsFor === pane.id,
