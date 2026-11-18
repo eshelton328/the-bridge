@@ -86,6 +86,14 @@ describe('the Activity view on the desktop (D11)', () => {
     expect(panel(root)).toBeNull()
   })
 
+  it("sets each run's Open session in the small button size with the extra small label", async () => {
+    const { root } = await renderToolkit('toolkitActivity')
+    const open = element(root, '[data-figma="run · writing-reviewer"] .list-row__trailing button')
+    // Figma's button (444:540) is 29 high with a Medium 11 label (444:543): `size="sm"` and `textSize="xs"`.
+    expect(getComputedStyle(open).height).toBe('28px')
+    expect(getComputedStyle(open).fontSize).toBe('12px')
+  })
+
   it('opens a run beside the view from its row, closes it, and opens it again from Open session (D12)', async () => {
     const { root } = await renderToolkit('toolkitActivity')
     await userEvent.click(element(root, '[data-figma="run · writing-reviewer"] .list-row__title'))

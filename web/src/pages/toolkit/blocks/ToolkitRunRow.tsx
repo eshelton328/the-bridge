@@ -59,9 +59,11 @@ export function ToolkitRunRow({ run, layout, status, open, selected = false, onO
             <span className={elapsed}>{run.elapsed}</span>
             {desktop && open !== undefined ? (
               // On the title's line with the time: the row's actions slot puts its buttons on a line of their own.
+              // D11 444:540: 29 high (`sm`, 28) with a Medium 11 label (444:543); `labelXs` (12) is the nearest.
               <Button
                 variant="secondary"
                 size="sm"
+                textSize="xs"
                 onClick={(event) => {
                   event.stopPropagation()
                   select()
