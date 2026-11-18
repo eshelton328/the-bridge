@@ -49,6 +49,7 @@ import { phoneRenameChat } from './phoneRenameChat.ts'
 import { tabletEdit } from './tabletEdit.ts'
 import { tabletSideChat } from './tabletSideChat.ts'
 import { tabletChatActions } from './tabletChatActions.ts'
+import { tabletSubagents } from './tabletSubagents.ts'
 
 export const workspacesStates = {
   workbench,
@@ -99,4 +100,5 @@ export const workspacesStates = {
   tabletEdit,
   tabletSideChat,
   tabletChatActions,
+  tabletSubagents,
 }

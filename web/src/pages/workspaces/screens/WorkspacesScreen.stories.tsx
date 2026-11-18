@@ -735,3 +735,17 @@ export const TabletChatActions: Story = {
     await expect(await body.findByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
   },
 }
+
+export const TabletSubagents: Story = {
+  name: "T3: a chat's subagents on the tablet, with Start a subtask",
+  args: { data: workspacesStates.tabletSubagents.data, ui: workspacesStates.tabletSubagents.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; the tablet's menu draws T3's subagents at a tablet's width.
+    // WorkspacesTabletSubagents.test.tsx checks them at a tablet's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
+  },
+}
