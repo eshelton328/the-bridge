@@ -372,3 +372,16 @@ export const PhoneEdit: Story = {
     await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
   },
 }
+
+export const PhoneChat: Story = {
+  name: 'M3: a chat on the phone, with the skills listed after "/"',
+  args: { data: workspacesStates.phoneChat.data, ui: workspacesStates.phoneChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // its skills open, and the phone's menu draws M3. WorkspacesPhoneChat.test.tsx checks the chat at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
+  },
+}

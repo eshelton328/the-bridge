@@ -1,7 +1,7 @@
 // The phone's home of the Workspaces page (M1 105:2327): the large title
 // with Edit and +, then every workspace with its chats, as the desktop
 // sidebar lists them (SidebarGroup), each chat row with its ⋯ after the
-// status. A tap on a row with a chat to show selects it; a workspace's
+// status. A tap on a row with a chat to show selects it and opens it (M3); a workspace's
 // chevron shows or hides its chats. Edit (with `text.done`) starts edit
 // mode (M2): each workspace is a PhoneEditGroup, + is off and Done ends it.
 // Props only.
@@ -125,7 +125,7 @@ export function PhoneWorkspaceList({
             openable={openable}
             layers={layers}
             grip={false}
-            onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
+            onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
             rowMenu={(chat) => (
               <Button
                 variant="text"

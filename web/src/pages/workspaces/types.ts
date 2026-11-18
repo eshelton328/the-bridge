@@ -279,6 +279,8 @@ export const PhoneText = z.object({
   add: z.string(),
   /** The button that ends edit mode (M2 105:2508); without it, Edit does not start edit mode. */
   done: z.string().optional(),
+  /** The accessible name of the back button over a chat (M3 105:2750), which returns to the list. */
+  back: z.string().optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -347,6 +349,10 @@ export const SidebarLayers = z.object({
   rowMenus: z.record(z.string(), z.string()).optional(),
   /** The fields that rename a chat or a workspace in the phone's list, by chat or workspace id (M2 146:37, 105:2614). */
   renameFields: z.record(z.string(), z.string()).optional(),
+  /** The back button over a chat on the phone (M3 105:2750). */
+  phoneBack: z.string().optional(),
+  /** The skill list after "/" in the chat's composer; D1's (105:406) when not set. */
+  skills: z.string().optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -566,6 +572,11 @@ export const WorkspacesUi = z.object({
   renamingWorkspaces: z.record(z.string(), z.string()).optional(),
   /** The names Erik gave workspaces, by workspace id, in place of their labels in the data. */
   workspaceNames: z.record(z.string(), z.string()).optional(),
+  /**
+   * What fills the phone's screen: `list`, the workspaces (M1, the default), or `chat`, the focused chat with its
+   * header and composer and no tab bar (M3). A tap on a chat in the list opens it; the chat's back button returns.
+   */
+  phoneView: z.enum(['list', 'chat']).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

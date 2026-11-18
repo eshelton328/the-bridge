@@ -25,6 +25,7 @@ import { movedChat } from './movedChat.ts'
 import { renameChat } from './renameChat.ts'
 import { phoneHome } from './phoneHome.ts'
 import { phoneEdit } from './phoneEdit.ts'
+import { phoneChat } from './phoneChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -51,4 +52,5 @@ export const workspacesStates = {
   renameChat,
   phoneHome,
   phoneEdit,
+  phoneChat,
 }

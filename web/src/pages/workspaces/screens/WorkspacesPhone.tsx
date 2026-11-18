@@ -1,13 +1,16 @@
 // The Workspaces page on the phone (Figma M1 to M23): one view at a time over
 // the shared tab bar, which More turns into the More drawer. M1 is the home:
-// every workspace and its chats (PhoneWorkspaceList). Later phone frames
-// (edit mode, a chat, its actions, the side chat sheet, subagents, New chat,
-// folders) add their views here. Props only; WorkspacesScreen keeps the ui
+// every workspace and its chats (PhoneWorkspaceList); M2 its edit mode. M3
+// is a chat (`ui.phoneView: 'chat'`, PhoneChat): it fills the screen with no
+// tab bar, and its back button returns to the list. Later phone frames (its
+// actions, the side chat sheet, subagents, New chat, folders) add their
+// views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
+import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
@@ -24,6 +27,33 @@ export type WorkspacesPhoneProps = {
 export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
+  const focused = data.panes.find((p) => p.id === ui.focusedPane)
+  const chat = ui.phoneView === 'chat' && focused?.type === 'chat' ? focused : undefined
+  if (chat !== undefined)
+    return (
+      <Backdrop size="phone">
+        <AppShell
+          size="phone"
+          view="detail"
+          detail={
+            <PhoneChat
+              pane={chat}
+              workspace={data.workspaces.find((w) => w.id === data.current)?.label ?? data.current}
+              contextLabel={data.sidebar?.contextLabel ?? ''}
+              backLabel={text.back ?? text.title}
+              onBack={() => {
+                onUiChange({ phoneView: 'list', skillsFor: null })
+              }}
+              skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
+              onSkillsOpenChange={(open) => {
+                onUiChange({ skillsFor: open ? chat.id : null })
+              }}
+              layers={data.layers}
+            />
+          }
+        />
+      </Backdrop>
+    )
   return (
     <Backdrop size="phone">
       <AppShell
