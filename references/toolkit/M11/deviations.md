@@ -66,11 +66,13 @@ library's SVG, so they carry no `data-figma`.
   there is no Show links (`selection · writer` h +40; gap: Map selection
   card (phone)).
 - **Window (2026-11-18).** Figma's window drags both ways and pinch
-  zooms (note). `MapGraph` has no window size, and the page does not turn
-  on the `zoom` that library beta.52 (#173) added, so the render draws
-  the map 498 px high, the window's inside: it scrolls sideways only, the
-  rows under the window (ambitious, commit-msg) cannot be reached, and
-  there is no zoom (gap: Map window). The window's box matches Figma.
+  zooms (note). The render's window pinch zooms from the whole drawing
+  fitted to it up to 3 times and drags (MapGraph `zoom`, library #173),
+  and opens at full size, as the screenshot shows. `MapGraph` has no
+  window size, so the render draws the map 498 px high, the window's
+  inside: the rows under the window (ambitious, commit-msg) are not in
+  the drawing and cannot be reached (gap: Map window). The window's box
+  matches Figma.
 - **Hint.** The hint pill is the library's quiet badge: 30 px high
   against 27, with a border where Figma draws a dark fill (gap: Map hint
   pill). Its box passes the position check.
