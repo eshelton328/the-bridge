@@ -45,7 +45,8 @@ const meta = css({ alignSelf: 'flex-start', textStyle: 'monoSm', color: 'fg.mute
 const stop = css({ alignSelf: 'flex-start' })
 // M12 147:367: the transcript is 16 in from the sides, 12 under the rule, its parts 12 apart.
 const body = css({ px: '16', pt: '12', pb: '12', gap: '12' })
-const task = css({ textStyle: 'body', color: 'fg.default', m: '0' })
+// M12 147:370: the task is Geist Regular 13 on a 19 px line; `bodySm` is 13/20, its line on the 4 px grid (d-100).
+const task = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 // M12 147:387: the note is 16 in from the sides and ends 33 over the screen's end, where `AppShell` keeps a 34 px
 // safe area with no tab bar, so the foot pads nothing under it.
 const foot = css({ px: '16' })
