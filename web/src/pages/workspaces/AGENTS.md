@@ -20,7 +20,7 @@ first: it says what each file of a page folder is for.
   the tablet's width (`WorkspacesPhone device="tablet"`), with the
   tablet's backdrop, shell and tab bar, whose More goes to its page; T2 is
   M3's chat at the tablet's width with M5's side chat sheet over it, with no
-  tab bar. M1 is its home, `PhoneWorkspaceList`;
+  tab bar, and T2b the same chat with D2b's chat actions menu under its ⋯. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
@@ -284,6 +284,9 @@ first: it says what each file of a page folder is for.
   size="tablet"`, 24 in from the sides and 16 under the rule) and to
   `PhoneSideChat` and `SideChatPanel` (in the tablet's sheet the parts sit
   23 in from its edges and the note is `bodySm`).
+  T2b adds `trigger` to `ChatActionsMenu`: at a tablet's width the chat's
+  bare ⋯ opens D2b's chat actions menu (`data.chatMenu`, `ui.menuFor`)
+  in place of M4's sheet.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -374,7 +377,10 @@ first: it says what each file of a page folder is for.
   bridge themes' name no field and M9's chat actions: edit mode on the
   tablet, the-bridge's name a field and Move to… on drift check), T2
   `tabletSideChat` (from `phoneSideChat`, with `tabletList` and T2's note:
-  the side chat in a sheet over the chat on the tablet).
+  the side chat in a sheet over the chat on the tablet), T2b
+  `tabletChatActions` (from `tabletSideChat`, without the sheet, with
+  D2b's chat actions and Opus 5.5 in the composer: the chat actions menu
+  under the ⋯ on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

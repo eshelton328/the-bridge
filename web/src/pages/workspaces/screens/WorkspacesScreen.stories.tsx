@@ -717,3 +717,21 @@ export const TabletSideChat: Story = {
     ).toBeVisible()
   },
 }
+
+export const TabletChatActions: Story = {
+  name: 'T2b: the chat actions on the tablet, in a menu under the chat’s ⋯',
+  args: {
+    data: workspacesStates.tabletChatActions.data,
+    ui: workspacesStates.tabletChatActions.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its chat actions menu open; the tablet's menu draws T2b's chat with the menu under its ⋯.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // The menu renders in a portal, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: 'Side chat (/btw)' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
+  },
+}
