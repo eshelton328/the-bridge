@@ -98,7 +98,9 @@ first: it says what each file of a page folder is for.
   Subtask form in `Dialog size="lg"`: the model in a `SelectField`, the
   task in a `Composer` with its attach button and the focus, a note,
   Cancel and Start subtask), which opens over the chat alone when
-  `ui.chatDialog` is `subtask`. Later frames add to these blocks.
+  `ui.chatDialog` is `subtask`. D18 needs no new block: the subtask's
+  chat is a nested row (`level: 1`) under its chat, and the line where it
+  started is an `event` entry. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -123,7 +125,9 @@ first: it says what each file of a page folder is for.
   open), D16 `forkedChat` (from `chatActions`, without the side chat and
   the menu: the fork under bridge themes, focused, Idle), D17
   `subtaskDialog` (from `chatActions`, without the side chat and the
-  menu, and the Subtask form open).
+  menu, and the Subtask form open), D18 `subtaskRunning` (from
+  `chatActions`, without the side chat and the menu: the subtask layout
+  notes under bridge themes, Running, and the line where it started).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

@@ -282,3 +282,16 @@ export const SubtaskDialog: Story = {
     await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
   },
 }
+
+export const SubtaskRunning: Story = {
+  name: 'D18: the subtask listed under its chat, Running, and where it started',
+  args: { data: workspacesStates.subtaskRunning.data, ui: workspacesStates.subtaskRunning.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('Subtask layout notes started · returns its result here')).toBeVisible()
+    await expect(canvas.getByText('layout notes')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'bridge themes', current: true })).toBeVisible()
+    // bridge themes keeps working: its composer has Stop.
+    await expect(canvas.getByRole('button', { name: /Stop/ })).toBeVisible()
+  },
+}
