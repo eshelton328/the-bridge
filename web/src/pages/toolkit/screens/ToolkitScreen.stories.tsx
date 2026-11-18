@@ -863,3 +863,21 @@ export const HookFilesTablet: Story = {
     await expect(within(viewer).queryByRole('radio', { name: 'Source' })).toBeNull()
   },
 }
+
+export const SkillFilesPhone: Story = {
+  name: 'M5: a skill’s files on the phone, the tree with a file per row',
+  args: { data: toolkitStates.skillFilesPhone.data, ui: toolkitStates.skillFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The phone's shorter role lines, only scripts/ open, and check marked with its count in lines.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('When to use, steps, rules')).toBeVisible()
+    await expect(within(tree).getByText('Never loaded into a session')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^check/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('437 lines')).toBeVisible()
+    await expect(within(tree).queryByRole('treeitem', { name: /^doc\.md/ })).toBeNull()
+  },
+}

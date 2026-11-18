@@ -24,7 +24,9 @@
 // phone (T4) the kind badge is left out: the title and the path row (the item's folder in the toolkit and how many
 // files it has, the browser's `badge`) sit 8 apart over the tabs; a browser with no `badge` keeps the item's header
 // (T32 to T35). A script with an explanation opens there on a page
-// of its own (T6, `filePage`): the back row goes back to Files, and the title and the path row name the file.
+// of its own (T6, `filePage`): the back row goes back to Files, and the title and the path row name the file. On the
+// phone's Files tab (M5) a browser with a `badge` leaves out the path row too: the title sits over the tabs, the item's
+// folder in the toolkit over the tree, and the copy button joins the back row's icon buttons.
 import {
   AgentIcon,
   HookIcon,
@@ -217,7 +219,8 @@ const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string
     'workflows/skill-eval-round.md': '494:3571',
     'hooks/commit-msg': '494:4073',
   },
-  phone: {},
+  // On the phone: writer in M5 (435:210).
+  phone: { 'skills/writer/': '435:210' },
 }
 // A file on a page of its own names it by the item's path and the file's: check in T6 (440:1773).
 const filePageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
@@ -336,6 +339,11 @@ export function ToolkitItem({
           view: pageView,
           location: `${browser.badge?.path ?? detail.location}${opened.path}`,
         }
+  // M5 435:203: on the phone's Files tab with no path badge (a browser with a `badge`), the copy button joins the back
+  // row's icon buttons.
+  const phoneFolder = phone && folderFiles && pageFile === undefined
+  // M5 435:212: on the phone the Files tab names the item's folder in the toolkit over the tree.
+  const folder = detail.location.slice(0, detail.location.lastIndexOf('/') + 1)
   // M9 448:473: on the phone a workflow's own page names only the workflow after Toolkit.
   const fullPhone = full && phone
   const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
@@ -349,6 +357,16 @@ export function ToolkitItem({
       iconOnly={phone}
       onDiscuss={onDiscuss}
       onShowOnMap={onShowOnMap}
+      copy={
+        phoneFolder
+          ? {
+              label: `Copy ${detail.location}`,
+              onCopy: () => {
+                onCopyPath?.(detail.location)
+              },
+            }
+          : undefined
+      }
     />
   )
   const heading = (
@@ -370,7 +388,7 @@ export function ToolkitItem({
     </h2>
   )
   const pathRow =
-    narrowHow || fullPhone ? null : (
+    narrowHow || fullPhone || phoneFolder ? null : (
       <ToolkitItemPath
         location={pageFile?.location ?? browser?.badge?.path ?? detail.location}
         changed={
@@ -438,7 +456,7 @@ export function ToolkitItem({
           {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
         </div>
       )}
-      {folderFiles ? (
+      {folderFiles && !phone ? (
         <div className={titleGroup} data-figma="title">
           {heading}
           {pathRow}
@@ -493,6 +511,8 @@ export function ToolkitItem({
                 open={openFile(detail.browser, file)}
                 layout={layout}
                 onSelect={onFileChange}
+                folder={phone ? folder : undefined}
+                marked={phone ? (file ?? null) : undefined}
                 mode={fileView}
                 onModeChange={onFileViewChange}
                 onCopy={(path) => {

@@ -60,3 +60,24 @@ describe('selectFile', () => {
     expect(selectFile(explained, 'references/doc.md', true).filePage).toBeUndefined()
   })
 })
+
+describe('selectFile on the phone (M5)', () => {
+  const phone = toolkitStates.skillFilesPhone.data.details.find((d) => d.path === 'skills/writer/')?.browser
+  if (phone === undefined) throw new Error('M5 has no file browser')
+
+  it('opens every file with a view on a page of its own, and marks a file with none', () => {
+    // check has D6's source but no explanation; on a tablet it opens under the tree, on the phone on its page.
+    expect(selectFile(phone, 'scripts/check', true).filePage).toBeUndefined()
+    expect(selectFile(phone, 'scripts/check', true, true)).toEqual({
+      file: 'scripts/check',
+      fileView: undefined,
+      filePage: true,
+    })
+    expect(selectFile(phone, 'references/doc.md', true, true).filePage).toBe(true)
+    expect(selectFile(phone, 'scripts/ste-dict', true, true)).toEqual({
+      file: 'scripts/ste-dict',
+      fileView: undefined,
+      filePage: undefined,
+    })
+  })
+})

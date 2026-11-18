@@ -245,7 +245,14 @@ what each file of a page folder is for.
   puts the Explain and Code switch in a row over the box. Back to Files shows
   the tree with the script under it, still selected; a tap on its row opens its
   page again (`opensOwnPage`; the library's FileTree reports no tap on the
-  selected row, so `ToolkitFileBrowser` handles it). Only the
+  selected row, so `ToolkitFileBrowser` handles it). On the phone (M5,
+  `skillFilesPhone`, T4's files with the phone's shorter role lines and only
+  scripts/ open) the Files tab has no viewer: the item's folder in the toolkit
+  (`ToolkitFileBrowser` `folder`) sits over the tree, the tree marks only the
+  file opened last (`ui.file`, `marked`), and every file with a view opens on
+  its page (`selectFile`'s `phone`). A browser with a `badge` leaves out the
+  path row too, and the copy button joins the back row's icon buttons
+  (`ToolkitItemActions` `copy`). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

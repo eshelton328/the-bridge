@@ -397,3 +397,56 @@ describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (
     await view.unmount()
   })
 })
+
+// The Files tab on the phone (M5): the title over the tabs with no path row, the copy button in the back row, the
+// skill's folder over the tree and no viewer under it. The tree marks the file opened last; a file with no view only
+// becomes the marked one, and a file with a view opens on a page of its own, under Back to Files.
+describe('the Files tab on the phone (M5)', () => {
+  it('shows the tree with no viewer, and opens a file with a view on its own page', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('skillFilesPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    // No kind badge, no path row and no viewer; the copy button sits in the back row and copies the skill's path.
+    expect(root.querySelector('[data-figma="kind badge"]')).toBeNull()
+    expect(root.querySelector('[data-figma="path badge"]')).toBeNull()
+    expect(root.querySelector('[data-figma="viewer"]')).toBeNull()
+    expect(root.querySelector('[data-figma="back row"] [aria-label="Copy toolkit/skills/writer/"]')).not.toBeNull()
+    // M5 435:212, 435:213: the skill's folder over the tree, the tree as wide as the item.
+    const folder = box('[data-figma="toolkit/skills/writer/"]')
+    const tree = box('[data-figma="tree"]')
+    expect(tree.top).toBeGreaterThan(folder.bottom)
+    expect(tree.width).toBeCloseTo(box('[data-figma="toolkit"]').width, 0)
+    const row = (name: string) => {
+      const el = [...root.querySelectorAll('[role="treeitem"]')].find((r) => r.textContent.startsWith(name))
+      if (el === undefined) throw new Error(`no ${name} row`)
+      return el
+    }
+    expect(row('check').getAttribute('aria-selected')).toBe('true')
+    // A file the state has no view of becomes the marked one, with no page.
+    await userEvent.click(row('ste-dict'))
+    await expect.poll(() => row('ste-dict').getAttribute('aria-selected')).toBe('true')
+    expect(root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    // check has a view: it opens on a page of its own, under Back to Files, and Back comes back to the tree.
+    await userEvent.click(row('check'))
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).toBeNull()
+    const back = [...root.querySelectorAll('[data-figma="back row"] button')].find((el) =>
+      el.textContent.includes('Files'),
+    )
+    if (back === undefined) throw new Error('no Back to Files')
+    await userEvent.click(back)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    expect(row('check').getAttribute('aria-selected')).toBe('true')
+    await view.unmount()
+  })
+})

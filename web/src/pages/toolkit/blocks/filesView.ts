@@ -97,12 +97,23 @@ export function opensOwnPage(view: ToolkitFileView | undefined): boolean {
   return fileModes(view).some((m) => m.value === 'explain')
 }
 
+/** Whether a file opens on a page of its own on this layout: on the phone any file the state has a view of (M5 to
+ * M6), since the phone shows the tree with no viewer under it; on a tablet a script with an explanation (T6). */
+export function opensPage(view: ToolkitFileView | undefined, narrow: boolean, phone = false): boolean {
+  return phone ? view !== undefined : narrow && opensOwnPage(view)
+}
+
 /**
  * The ui change that selects a file in the tree: the file on its default view. On a tablet or phone a script with an
  * explanation opens on a page of its own (T6), since Explain needs the item's width; another file opens under the
- * tree (T4).
+ * tree (T4). On the phone (`phone`) every file with a view opens on its page (M5 to M6 and M8).
  */
-export function selectFile(browser: ToolkitFileBrowser, path: string, narrow: boolean): Partial<ToolkitUi> {
-  const page = narrow && opensOwnPage(openFile(browser, path).view)
+export function selectFile(
+  browser: ToolkitFileBrowser,
+  path: string,
+  narrow: boolean,
+  phone = false,
+): Partial<ToolkitUi> {
+  const page = opensPage(openFile(browser, path).view, narrow, phone)
   return { file: path, fileView: undefined, filePage: page ? true : undefined }
 }

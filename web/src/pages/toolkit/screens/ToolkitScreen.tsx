@@ -186,9 +186,13 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         file={ui.file}
         onFileChange={(file) => {
           // Another file opens on its default view: Explain for a script with an explanation (D10). On a tablet or
-          // phone that script opens on a page of its own (T6).
+          // phone that script opens on a page of its own (T6); on the phone every file with a view does (M5).
           const browser = open.detail.browser
-          onUiChange(browser === undefined ? { file, fileView: undefined } : selectFile(browser, file, !desktop))
+          onUiChange(
+            browser === undefined
+              ? { file, fileView: undefined }
+              : selectFile(browser, file, !desktop, layout === 'phone'),
+          )
         }}
         filePage={ui.filePage}
         onCloseFilePage={() => {

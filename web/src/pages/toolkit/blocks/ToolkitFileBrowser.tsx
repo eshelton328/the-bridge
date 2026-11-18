@@ -6,13 +6,16 @@
 // desktop the tree and the viewer sit side by side and the box runs to the
 // pane's foot, as Figma's runs past the frame; on a tablet or phone (T4) the
 // tree and the viewer are two bordered boxes, the viewer under the tree, each
-// as high as its content. Props only.
+// as high as its content. On the phone (M5 435:6) the tab shows the item's
+// folder in the toolkit over the tree and no viewer: a file opens on a page of
+// its own (`ToolkitFilePage`, M6 and M8), and the tree marks only the file
+// opened last (`ui.file`). Props only.
 import { FileTree } from '@eshelton328/component-library-1701'
 import type { KeyboardEvent, MouseEvent } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileBrowser as Browser } from '../types.ts'
-import { type FileMode, fileMode, type OpenFile, opensOwnPage } from './filesView.ts'
+import { type FileMode, fileMode, type OpenFile, opensPage } from './filesView.ts'
 import { ToolkitFileViewer } from './ToolkitFileViewer.tsx'
 
 // D6 432:2141: a bordered box, as the Overview's file preview (D3 427:273). The library has no file browser frame
@@ -51,6 +54,8 @@ const tree = css({
   bg: 'surface.well',
   '& > *': { flexGrow: '1' },
 })
+// M5 435:212: the item's folder in the toolkit, in mono, muted, over the tree.
+const folderLine = css({ alignSelf: 'flex-start', textStyle: 'mono', color: 'fg.muted' })
 const treeColumn = css({ w: 'shell.sidebar', flexShrink: '0' })
 const viewerColumn = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', minW: '[0]' })
 
@@ -67,6 +72,10 @@ export type ToolkitFileBrowserProps = {
   mode?: FileMode | undefined
   /** Called with Explain or Code when the viewer's switch or a step's line link changes the view. */
   onModeChange?: ((mode: FileMode) => void) | undefined
+  /** On the phone, the item's folder in the toolkit, over the tree (M5 435:212, "toolkit/skills/writer/"). */
+  folder?: string | undefined
+  /** On the phone, the file the tree marks: the one opened last (`ui.file`, M5's check), or none (M35). */
+  marked?: string | null | undefined
 }
 
 export function ToolkitFileBrowser({
@@ -77,8 +86,11 @@ export function ToolkitFileBrowser({
   onCopy,
   mode,
   onModeChange,
+  folder,
+  marked = null,
 }: ToolkitFileBrowserProps) {
   const desktop = layout === 'desktop'
+  const phone = layout === 'phone'
   const viewer = (
     <ToolkitFileViewer
       path={open.path}
@@ -93,29 +105,50 @@ export function ToolkitFileBrowser({
     />
   )
   const files = (
-    <FileTree nodes={browser.tree} selected={open.path} defaultExpanded={browser.expanded} onSelect={onSelect} />
+    <FileTree
+      nodes={browser.tree}
+      selected={phone ? marked : open.path}
+      defaultExpanded={browser.expanded}
+      onSelect={onSelect}
+    />
   )
   // On a tablet or phone a script with an explanation leaves the tree for its own page (T6), and Back to Files comes
-  // back with it still selected. The library's FileTree reports no tap on the row that is already selected, so a tap
-  // or Enter on that row here selects it again, and the script opens its page again.
+  // back with it still selected; on the phone every file with a view does (M5). The library's FileTree reports no tap
+  // on the row that is already selected, so a tap or Enter on that row here selects it again, and the file opens its
+  // page again.
   const reopen = (event: MouseEvent | KeyboardEvent) => {
-    if (!opensOwnPage(open.view) || !(event.target instanceof Element)) return
+    if (!opensPage(open.view, true, phone) || !(event.target instanceof Element)) return
     const row = event.target.closest('[role="treeitem"]')
     if (row?.getAttribute('aria-selected') === 'true') onSelect?.(open.path)
   }
+  const treeBoxed = (
+    <div
+      className={treeBox}
+      data-figma="tree"
+      onClickCapture={reopen}
+      onKeyDownCapture={(event) => {
+        if (event.key === 'Enter') reopen(event)
+      }}
+    >
+      {files}
+    </div>
+  )
+  // M5 435:212, 435:213: the folder 12 under the tabs and the tree 12 under it, with no viewer.
+  if (phone)
+    return (
+      <div className={stacked}>
+        {folder === undefined ? null : (
+          <span className={folderLine} data-figma={folder}>
+            {folder}
+          </span>
+        )}
+        {treeBoxed}
+      </div>
+    )
   if (!desktop)
     return (
       <div className={stacked}>
-        <div
-          className={treeBox}
-          data-figma="tree"
-          onClickCapture={reopen}
-          onKeyDownCapture={(event) => {
-            if (event.key === 'Enter') reopen(event)
-          }}
-        >
-          {files}
-        </div>
+        {treeBoxed}
         {viewer}
       </div>
     )
