@@ -665,3 +665,29 @@ describe('copy on the Files tab of a rule (D33, M35)', () => {
     expect(copied).toBe('toolkit/rules/skills.md')
   })
 })
+
+// A rule's file on its own page on the phone (M35, then the file tapped): the path row names the file, as M6's does,
+// and nothing on the page names the rule's file twice (a rule's item path is the file itself).
+describe('a rule’s file on its own page on the phone (M35)', () => {
+  it('names skills.md in the path row and never the doubled path', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('ruleFilesPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    const row = [...root.querySelectorAll('[data-figma="tree"] [role="treeitem"]')].find((r) =>
+      r.textContent.startsWith('skills.md'),
+    )
+    if (row === undefined) throw new Error('no skills.md row')
+    await userEvent.click(row)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).toBeNull()
+    expect(root.querySelector('[data-figma="path badge"]')?.textContent).toBe('skills.md')
+    expect(root.textContent).not.toContain('skills.mdskills.md')
+    expect(root.innerHTML).not.toContain('skills.mdskills.md')
+    expect(root.querySelector('[data-figma="back row"] [aria-label="Copy toolkit/rules/skills.md"]')).not.toBeNull()
+    await view.unmount()
+  })
+})
