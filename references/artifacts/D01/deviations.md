@@ -56,9 +56,6 @@ artifacts`): the text, position and rules results did not change.
   the thumbnail is 186.75 high at the card's inner 332 px against Figma's
   188. The card's sides are 16 px against Figma's 14, so its text starts
   2 px further right. Library gap "Card body and line heights".
-- **New badge.** New sits 8 px after the card title; Figma puts it at the
-  end of the title row. Library gap "Card badge at the end of the title
-  row".
 - **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
   against Figma's text box of 29 px, about 24 px type, so the title and
   count are smaller. Library gap "Desktop page title size".

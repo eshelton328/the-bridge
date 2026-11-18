@@ -55,9 +55,6 @@ artifacts`): the text, position and rules results did not change.
   is 36 high against Figma's 34 (405:159), so the cards are 8 under it,
   not 10, and keep Figma's rows. Library gap "Card body and line
   heights".
-- **New badge.** New sits 8 px after the card title; Figma puts it at the
-  end of the title row. Library gap "Card badge at the end of the title
-  row".
 - **Page title.** "Artifacts" uses the library's phone title (28 px type,
   `PageHeader size="phone"`), the largest it has; Figma's text box is
   34 high and 110 wide, a little larger. Library gap "Desktop page title
