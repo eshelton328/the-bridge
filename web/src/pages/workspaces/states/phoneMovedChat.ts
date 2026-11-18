@@ -11,26 +11,20 @@
 // layers.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import { movedChat } from './movedChat.ts'
 import { phoneChatActions } from './phoneChatActions.ts'
 import { phoneChatFull } from './phoneChatFull.ts'
 import { phoneFork } from './phoneFork.ts'
-
-// D20's move: the chat and the subtask chat listed under it head the-bridge's list.
-const moved = new Set(['bridge-themes', 'theme-tokens'])
-const movedChats = phoneChatFull.data.workspaces.flatMap((w) => w.chats.filter((c) => moved.has(c.id)))
-const workspaces = phoneChatFull.data.workspaces.map((w) => {
-  const kept = w.chats.filter((c) => !moved.has(c.id))
-  const chats = w.id === 'the-bridge' ? [...movedChats, ...kept] : kept
-  return { ...w, count: w.count + chats.length - w.chats.length, chats }
-})
 
 export const phoneMovedChat = {
   title: 'Moved to another workspace on the phone',
   frames: [{ id: 'M22', node: '422:719', viewport: 'phone' }],
   data: {
     ...phoneChatFull.data,
-    workspaces,
-    current: 'the-bridge',
+    // D20's move of M1's workspaces (phoneChatFull's are D2b's, as D20's): the chat and the subtask chat listed
+    // under it head the-bridge's list, with D20's counts.
+    workspaces: movedChat.data.workspaces,
+    current: movedChat.data.current,
     panes: phoneFork.data.panes,
     phone: { ...phoneChatFull.data.phone, chatMenu: phoneChatActions.data.phone.chatMenu },
     toast: { text: 'Moved to the-bridge', action: 'Undo' },
