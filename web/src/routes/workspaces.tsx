@@ -4,7 +4,7 @@ import { WorkspacesPage, workspacesSearch, loadWorkspacesState } from '../pages/
 
 export const Route = createFileRoute('/workspaces')({
   validateSearch: workspacesSearch,
-  loaderDeps: ({ search }) => ({ state: search.state }),
-  loader: ({ deps }) => loadWorkspacesState(deps.state),
+  loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
+  loader: ({ deps }) => loadWorkspacesState(deps.state, deps.source),
   component: WorkspacesPage,
 })

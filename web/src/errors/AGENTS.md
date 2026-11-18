@@ -5,6 +5,8 @@ Every error path of the app (d-084).
 - Boundaries: `AppBoundary` at the root, `PaneBoundary` inside `PaneSlot`
   (the only place the library's `Pane` renders), `BlockBoundary` around
   rich blocks, and `RouteError` and `NotFound` as the router's defaults.
+  `NotFound` shows "Data source not built yet", with Use fixtures, when
+  a loader's miss is `notBuilt` (`lib/dataSource.ts`).
 - `ErrorState.tsx`: the one module every boundary and `NotFound` render
   through. It renders the library's `ErrorState` (d-086) and moves focus
   to the heading of a `page` state, which has no live region.

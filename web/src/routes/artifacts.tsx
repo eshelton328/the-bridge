@@ -4,7 +4,7 @@ import { ArtifactsPage, artifactsSearch, loadArtifactsState } from '../pages/art
 
 export const Route = createFileRoute('/artifacts')({
   validateSearch: artifactsSearch,
-  loaderDeps: ({ search }) => ({ state: search.state }),
-  loader: ({ deps }) => loadArtifactsState(deps.state),
+  loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
+  loader: ({ deps }) => loadArtifactsState(deps.state, deps.source),
   component: ArtifactsPage,
 })

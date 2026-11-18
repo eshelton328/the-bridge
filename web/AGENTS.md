@@ -36,7 +36,9 @@ version change, delete `node_modules/.vite`, `web/node_modules/.vite` and
 ## Commands
 
 - `pnpm dev`: the app on http://localhost:5173. `/inbox?state=nextStep`
-  picks a state in development.
+  picks a state in development; `&source=mock-api` or `&source=live`
+  picks a data source (`src/lib/dataSource.ts`), which shows "not built
+  yet" today. Fixtures is the default.
 - `pnpm storybook`: Storybook on http://localhost:6007.
 - `pnpm build`, `pnpm build:canvas`.
 

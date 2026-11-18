@@ -26,5 +26,13 @@ layer, a store or the router.
   Storybook's viewport menu also reads) and `screenMapProblems()`, which
   a page's `states/screens.test.ts` runs: every state in exactly one
   screen, on a device its Figma frame is.
+- `dataSource.ts`: the data source layer. `readState()` gives a page
+  loader its state from the source `?source=` names: `fixtures` (the
+  state files, the default), or `mock-api` and `live`, which are not
+  built yet and return a `notBuilt` miss. An unknown source or state is
+  a miss too. A production build always reads the fixtures' default
+  state. The loader throws a miss as `notFound({ data })`.
+- `searchHref.ts`: `searchHref()`, an address with some search params
+  set or removed and the rest kept, for `navigate({ href })`.
 - `containerSize.ts`: the library `Container` size of a detail column
   for each layout.

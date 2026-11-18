@@ -20,7 +20,7 @@ Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 | `states/screens.ts`               | The screen map: each screen's state per device, with `screens.test.ts` (R10)             |
 | `<page>Store.ts`                  | The page's view store, made with `createAppStore`, with a test                           |
 | `types.ts`                        | The view-model Zod schemas and their inferred types                                      |
-| `search.ts`, `load<Page>State.ts` | The URL search schema and the route loader                                               |
+| `search.ts`, `load<Page>State.ts` | The URL search schema and the route loader, which reads through `lib/dataSource.ts`      |
 | `definition.ts`                   | The page as the canvas sees it (`PageDefinition`)                                        |
 | `index.ts`                        | The public entry: routes and `design/` import only this                                  |
 
