@@ -87,6 +87,25 @@ describe('the skill list of a chat', () => {
     await expect.element(page.getByRole('radio', { name: /\/readme/ })).not.toBeInTheDocument()
   })
 
+  it('draws the typed text in its own case after the capital label: SKILLS MATCHING /wri (M10 147:72)', async () => {
+    view = await testRender(
+      <ChatPane
+        figma={{ composer: 'composer' }}
+        entries={[]}
+        composer={{ placeholder: 'Message, or / for a skill', text: '', attachments: [], running: false }}
+        skills={{ label: skillsLabel, matching: 'SKILLS MATCHING {query}', items: skills, value: null, open: true }}
+      />,
+    )
+    await userEvent.click(box())
+    await userEvent.keyboard('a doc with /wri')
+    const section = page.getByRole('group', { name: 'SKILLS MATCHING /wri' })
+    await expect.element(section).toBeInTheDocument()
+    const label = section.element().firstElementChild
+    if (!(label instanceof HTMLElement)) throw new Error('The section has no label')
+    // innerText is the text as drawn, after text-transform.
+    expect(label.innerText).toBe('SKILLS MATCHING /wri')
+  })
+
   it('stays closed while no word starts with "/"', async () => {
     view = await testRender(<Chat text="" />)
     await userEvent.click(box())

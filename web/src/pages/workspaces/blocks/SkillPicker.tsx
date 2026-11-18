@@ -17,6 +17,9 @@ const layouts = {
 
 export type SkillPickerProps = {
   label: string
+  /** What Erik typed from the "/", drawn after the section's label in its own case (M10 147:72: "SKILLS MATCHING
+   * /wri"); `label` is then the part before it. */
+  query?: string | undefined
   skills: readonly Skill[]
   /** The highlighted skill. */
   value: string | null
@@ -36,6 +39,7 @@ export type SkillPickerProps = {
 
 export function SkillPicker({
   label,
+  query,
   skills,
   value,
   open,
@@ -52,7 +56,7 @@ export function SkillPicker({
   return (
     <Popover
       data-figma={open ? (figma ?? '105:406') : undefined}
-      label={label}
+      label={query === undefined ? label : `${label} ${query}`}
       open={open}
       onOpenChange={onOpenChange}
       placement="top-start"
@@ -62,10 +66,10 @@ export function SkillPicker({
       flip={false}
       trigger={children}
     >
-      <PopoverSection label={label}>
+      <PopoverSection label={label} query={query}>
         <div onFocus={autoFocus ? onListFocus : undefined}>
           <OptionList
-            label={label}
+            label={query === undefined ? label : `${label} ${query}`}
             size="sm"
             labelStyle="mono"
             check={false}

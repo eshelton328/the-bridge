@@ -184,11 +184,10 @@ export function ChatPane(props: ChatPaneProps) {
       </div>
     ) : (
       <SkillPicker
-        label={
-          query !== null && query.length > 1 && skills.matching !== undefined
-            ? skills.matching.replace('{query}', query)
-            : skills.label
-        }
+        // The typed part keeps its case: the label is the template's text before {query}, and the query follows it.
+        {...(query !== null && query.length > 1 && skills.matching !== undefined
+          ? { label: skills.matching.replace('{query}', '').trim(), query }
+          : { label: skills.label })}
         skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
         value={skills.value}
         open={skills.open}
