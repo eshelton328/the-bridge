@@ -267,9 +267,10 @@ const tabletLinksTitleLayers: Readonly<Record<string, string>> = {
 const tabletLinksLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:908',
 }
-// On the Links tab of the phone: writer in M17 (482:1067).
+// On the Links tab of the phone: writer in M17 (482:1067), the rule skills in M31 (493:5375).
 const phoneLinksTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:1067',
+  'rules/skills.md': '493:5375',
 }
 const linksTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: linksTitleLayers,

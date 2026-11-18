@@ -292,3 +292,26 @@ describe('the Links tab on the phone (M17)', () => {
     await expect.poll(() => root.querySelector('article[aria-label="audit-slop"]')).not.toBeNull()
   })
 })
+
+describe('a rule’s Links tab on the phone (M31)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the rule’s header and puts the reason in the side over the rule', async () => {
+    const { root } = await renderPhone('ruleLinksPhone')
+    const item = root.querySelector('article[aria-label="skills"]')
+    if (item === null) throw new Error('no item')
+    expect(item.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    const reason = [...root.querySelectorAll('[data-figma="links graph"] p')].find((p) =>
+      p.textContent.startsWith('No item links here.'),
+    )
+    const rule = [...root.querySelectorAll('[data-figma="links graph"] button')].find((n) => n.textContent === 'skills')
+    if (reason === undefined || rule === undefined) throw new Error('no reason or rule')
+    expect(reason.getBoundingClientRect().bottom).toBeLessThan(rule.getBoundingClientRect().top)
+    const graph = box(root, '[data-figma="links graph"]')
+    const from = box(root, '[data-figma="panel · linked from"]')
+    expect(from.top).toBeGreaterThan(graph.bottom)
+  })
+})

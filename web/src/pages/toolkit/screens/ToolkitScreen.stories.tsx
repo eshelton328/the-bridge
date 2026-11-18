@@ -1145,3 +1145,17 @@ export const SkillLinksPhone: Story = {
     await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
   },
 }
+
+export const RuleLinksPhone: Story = {
+  name: 'M31: a rule’s links on the phone, under the rule’s header',
+  args: { data: toolkitStates.ruleLinksPhone.data, ui: toolkitStates.ruleLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'skills links' })).toBeVisible()
+  },
+}

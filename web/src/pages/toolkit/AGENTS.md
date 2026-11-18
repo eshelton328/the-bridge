@@ -306,7 +306,9 @@ what each file of a page folder is for.
   T15's data) the item opens as on M12, and the graph stands upright
   (`linksGraph`'s `phone` size): the side that names the item two to a row
   over it, the side it names under it, with no lines and nothing selected
-  (LIBRARY_GAPS.md, Links graph (phone)). Only the
+  (LIBRARY_GAPS.md, Links graph (phone)). A rule on the phone (M31,
+  `ruleLinksPhone`, T28's data) keeps M19's header, and the reason stands in
+  the side over the rule, where its first row would be. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

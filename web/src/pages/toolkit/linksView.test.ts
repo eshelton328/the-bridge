@@ -143,3 +143,20 @@ describe('the links graph on the phone (M17)', () => {
     expect(linksGraph(linksOf(skillLinks), writer).selected).toBe(focusId)
   })
 })
+
+describe('a rule’s links graph on the phone (M31)', () => {
+  it('keeps one row’s room for the reason over the rule, and places the rule and its one skill under it', () => {
+    const graph = linksGraph(
+      linksOf(toolkitStates.ruleLinks),
+      { path: 'rules/skills.md', name: 'skills', kind: 'rule' },
+      'phone',
+    )
+    // M31 493:5483: 238 high with its border; the rule 476 and the skill 550 in the frame, the graph at 363.
+    expect(graph.height).toBe(236)
+    expect(graph.nodes.map((n) => [n.label, n.x, n.y])).toEqual([
+      ['skills', 101, 117],
+      ['eval-cases', 15, 187],
+    ])
+    expect(graph.columns.map((c) => c.y)).toEqual([13, 161])
+  })
+})

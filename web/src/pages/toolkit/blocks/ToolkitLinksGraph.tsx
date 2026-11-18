@@ -23,6 +23,17 @@ const emptyBox = css({
   ps: '16',
   pointerEvents: 'none',
 })
+// M31 493:5682: on the phone the reason stands in the side over the rule, where its first row would be: 16 in and 42
+// down from the graph's top (the box's 40 and the text's own leading).
+const emptyBoxPhone = css({
+  position: 'absolute',
+  inset: '0',
+  display: 'flex',
+  alignItems: 'flex-start',
+  pt: '40',
+  ps: '16',
+  pointerEvents: 'none',
+})
 const emptyText = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre-line' })
 
 export type ToolkitLinksGraphProps = {
@@ -53,7 +64,7 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
         }}
       />
       {empty === undefined ? null : (
-        <div className={emptyBox}>
+        <div className={layout === 'phone' ? emptyBoxPhone : emptyBox}>
           <p className={emptyText}>{empty}</p>
         </div>
       )}
