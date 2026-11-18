@@ -200,6 +200,8 @@ describe('the open item on the phone (d-107)', () => {
       '0px',
       '0px',
     ])
+    // Measure the label in the app's font, not the fallback that shows until the font loads.
+    await document.fonts.ready
     expect(box(evals).right).toBeLessThanOrEqual(390)
     await view.unmount()
   })
