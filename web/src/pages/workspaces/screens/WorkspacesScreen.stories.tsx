@@ -749,3 +749,18 @@ export const TabletSubagents: Story = {
     await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
   },
 }
+
+export const TabletComposing: Story = {
+  name: 'T4: a chat on the tablet while Erik types, with the skills listed after "/"',
+  args: { data: workspacesStates.tabletComposing.data, ui: workspacesStates.tabletComposing.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its skills open; the tablet's menu draws T4's chat with the skills over the composer.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Writing the layout notes now; the subtask is drafting the theme tokens.'),
+    ).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
+  },
+}
