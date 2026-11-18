@@ -11,12 +11,11 @@ The frame has no exceptions.json.
 
 ## Checks
 
-- Text: fail. 6 strings are not visible: `claude -p and the SDK, mostly
+- Text: fail. 4 strings are not visible: `claude -p and the SDK, mostly
   skill evals` (445:227), `in chat “toolkit designs” · started by
   writer, step 7` (445:251), `step 4 of 8 · grade.py primary · 3 of 12
   groups` (445:271), `in chat “release notes” · started by
-  pr-description` (445:290), `omni-brain` (445:489), `f-005 the-bridge`
-  (445:493).
+  pr-description` (445:290).
 - Position: 6 of 68 layers pass. The 62 that fail: `toolkit` w -420 h
   -38; `445:154` w -420 h -2; `read-only` x -417.8 y -1.5 w -1.7 h +1;
   `view · List, Map or Activity` x -419.5 w -0.5 h -2; `filter · chips`
@@ -54,16 +53,12 @@ The frame has no exceptions.json.
   -5 w -19 h -14; `step · 0:21` x +20 y -7 w -19 h -14; `step · 0:24` x
   +20 y -9 w -19 h -14; `step · 0:58` x +20 y -11 w -19 h -14; `step ·
   1:42` x +20 y -13 w -19 h -14. Each is explained below.
-- Rules: fail. 6 findings: `hiddenOverflow` at `[data-figma="kpi · from
+- Rules: fail. 4 findings: `hiddenOverflow` at `[data-figma="kpi · from
   headless runs"] > dl.kpi-tile__root >
   dd.kpi-tile__caption:nth-of-type(2) > span.truncated-text`;
   `hiddenOverflow` at `[data-figma="run · writing-reviewer"] >
   div.list-row__root > div.list-row__body > div.list-row__lines > span`;
-  `hiddenOverflow` at `div.list-row__lines > div.inline >
-  span.meta-chip__root:nth-of-type(1) > span.meta-chip__label >
-  span.truncated-text`; `hiddenOverflow` at `div.list-row__lines >
-  div.inline > span.meta-chip__root:nth-of-type(2) >
-  span.meta-chip__label > span.truncated-text`; `hiddenOverflow` at
+  `hiddenOverflow` at
   `[data-figma="run · skill-eval-round"] > div.list-row__root >
   div.list-row__body > div.list-row__lines > span`; `hiddenOverflow` at
   `[data-figma="run · pr-description-checker"] > div.list-row__root >
@@ -82,16 +77,12 @@ The frame has no exceptions.json.
   420 and narrows the detail beside it, so the view is 420 px narrower
   and the source line wraps to two lines (Run side panel).
 - **Text cut by the narrower view** (not visible: `claude -p and the
-  SDK, mostly skill evals`, the three runs' lines, `omni-brain` and
-  `f-005 the-bridge`; rules: the six `hiddenOverflow` findings in `kpi ·
-  from headless runs` and the three runs). In the narrower view the
-  caption, the runs' lines and the first run's chips end with an
-  ellipsis, as `KpiTile`, `ListRow` and `MetaChip` cut a line too long
-  for them. `omni-brain` and `f-005 the-bridge` are both a chip of the
-  first run and a value of the panel; with the chips cut, the render
-  shows each whole once where Figma has it twice, so one of its two
-  layers (445:489, 445:493) counts as not visible. Figma has the room because its view keeps its
-  width (Run side panel).
+  SDK, mostly skill evals` and the three runs' lines; rules: the four
+  `hiddenOverflow` findings in `kpi · from headless runs` and the three
+  runs). In the narrower view the caption and the runs' lines end with
+  an ellipsis, as `KpiTile` and `ListRow` cut a line too long for them;
+  the first run's chips fit beside the smaller Open session. Figma has
+  the room because its view keeps its width (Run side panel).
 - **The run panel** (`side panel · run` x +20 w -20; `445:466` x +20 w
   -19; `445:478` x +20 y -6 w -19; `fields` x +20 y -8 w -19 h +8; each
   `field · …` x +20 w -19, y from -8 to -13 and +1 to +2, `field ·
@@ -126,7 +117,13 @@ The frame has no exceptions.json.
   live dot comes after the name, where Figma has it at the row's start,
   and the kind icon sits at the row's top (Activity run row). The runs'
   panel and the calls per day beside it are as tall as the taller,
-  22 px taller than Figma's.
+  22 px taller than Figma's. Open session is `Button size="sm"
+  textSize="xs"`, about 114 wide against Figma's 113, with a 12 px
+  label where Figma's is Medium 11 (444:543): `labelXs` is the
+  library's smallest button label. The agent icons are `kind.agent`
+  violet, as Figma's; the workflow icon is `kind.workflow` green where
+  Figma draws it a dim #3b7468, about 40 % of that green (500:12202),
+  and no icon token has that tone (Activity run row).
 - **Calls per day** (`chart · Chats` y -4 h +21). `DailyBarChart` draws
   the axis under the last chart inside it, where Figma's `axis` is its
   own layer (Activity daily chart).

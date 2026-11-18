@@ -45,4 +45,7 @@ view. The frame has no exceptions.json.
   Figma shows them over it; the page scrolls them into view (Activity
   daily chart). Every bar is cyan (Most called bars).
 - **Runs** are two `ListRow` cards 58 high, the dot after the name
-  (Activity run row); they pass the position check.
+  (Activity run row); they pass the position check. The agent icon is
+  `kind.agent` violet, as Figma's; the workflow icon is `kind.workflow`
+  green where Figma draws it a dim #3b7468, about 40 % of that green
+  (500:13121), and no icon token has that tone (Activity run row).

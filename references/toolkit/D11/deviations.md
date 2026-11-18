@@ -59,7 +59,13 @@ The frame has no exceptions.json.
   live dot comes after the name, where Figma has it at the row's start,
   and the kind icon sits at the row's top (Activity run row). The runs'
   panel and the calls per day beside it are as tall as the taller,
-  22 px taller than Figma's.
+  22 px taller than Figma's. Open session is `Button size="sm"
+  textSize="xs"`, about 114 wide against Figma's 113, with a 12 px
+  label where Figma's is Medium 11 (444:543): `labelXs` is the
+  library's smallest button label. The agent icons are `kind.agent`
+  violet, as Figma's; the workflow icon is `kind.workflow` green where
+  Figma draws it a dim #3b7468, about 40 % of that green (500:12061),
+  and no icon token has that tone (Activity run row).
 - **Calls per day** (`chart · Chats` y -4 h +21). `DailyBarChart` draws
   the axis under the last chart inside it, where Figma's `axis` is its
   own layer (Activity daily chart).
