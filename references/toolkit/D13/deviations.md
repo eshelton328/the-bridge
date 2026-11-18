@@ -42,14 +42,18 @@ report's text, position and rule results are unchanged). The frame has no
   (`stop · skill-eval-cases` h +7) and has the needs-you tint:
   `Panel variant="notice" tone="needsYou"` pads 10/12 where Figma has
   7/11 (gap: Workflow page flow).
-- **Connectors.** The library has no connector line (gap: Workflow page
-  flow). Between stages the render draws the 12 px `ArrowRightIcon`
-  alone, where Figma draws 20 px lines with heads; the elbows into and out
-  of steps 4 and 5 are two arrows each, level with the two cards; the
-  gate's way out is a down arrow beside `no`, not a 90 px line; the loop
-  from Owner decides back to the stop is a down arrow under Owner decides
-  and its label `new failure`, with no dashed line and no arrow into the
-  stop.
+- **Connectors.** The library draws each connector (library #133 and
+  #137): `FlowLine` between stages, `FlowBranch` into and out of steps 4
+  and 5, the gate's way out as an amber `FlowLine` down with `no` beside
+  it, and the dashed `FlowLoop` from Owner decides back into the stop's
+  side, placed by CSS anchors. Each tip ends 2 px (the loop's 4 px)
+  before its card or the stop, as Figma's. The connector columns are 20
+  wide, so the cards are 20 apart against Figma's 22 (no token has 22)
+  and each line is 18 long against 20; all nine cards pass. The loop's
+  label `new failure` is drawn by the page under the step it names, as
+  Figma's (x 992), since `FlowLoop` centres its label on the line (gap:
+  Workflow page flow). The loop meets the stop's middle, 4 px lower than
+  Figma's as the stop is 38 high against 31.
 - **Step cards.** The cards are drawn with the FlowDiagram card's tokens
   (gap: Workflow page flow): 126 px high against 128, with 14 px titles
   (`label`) against Figma's 13 and the mark a 22 px `Badge` against 19.
@@ -105,3 +109,12 @@ T07 and M19 keep their results.
   so the last one is already 3 px over Figma's. Gap: Workflow page details.
 - **F1, Show on map icon.** The library's `MapIcon` glyph against Figma's
   `icon/map`; no action.
+
+## Library connectors
+
+After the move to the library's connectors, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
+and toolkit (2026-11-18, library 1.0.0-beta.31) gives D13 the
+same results: text and rules pass, and position fails on the same three
+keys (`button · Show on map`, `446:514`, `stop · skill-eval-cases`). The
+lines, elbows, the gate's way out and the dashed loop now show where the
+render drew lone arrow icons.

@@ -54,11 +54,13 @@ results are unchanged). The frame has no `exceptions.json`.
   `hiddenOverflow` finding (`div.item-tabs__list`). The selected tab's
   outline is `border.selected` at half alpha where Figma's is solid cyan
   (d-050).
-- **Connectors.** The library has no connector line or 14 px icon (gap:
-  Workflow page flow): each arrow is the 16 px `ArrowDownIcon` with no
-  line; the fork from step 3 is one arrow over each of steps 4 and 5, and
-  the join one arrow over step 6, with no elbow lines. The arrow rows keep
-  Figma's 18 and 24 px, so every card is within 4 px of Figma's y.
+- **Connectors.** As on T08, the library draws each connector:
+  `FlowLine` down between stages and `FlowBranch` for the fork into steps
+  4 and 5 and the join out of them, 24 high from the card over them as
+  Figma's elbows (464:559, 464:561), each tip 2 before its card. Figma's
+  straight arrows are 14 px icons; the library's head is a 6 px chevron on
+  the line (gap: Workflow page flow). Every card is within 4 px of
+  Figma's y.
 - **Step cards.** The cards use the FlowDiagram card's tokens (gap:
   Workflow page flow): the mark is a 22 px `Badge` against 19 and the
   title 14 px (`label`) against 13; the lines start 13 from the card's
@@ -71,3 +73,10 @@ results are unchanged). The frame has no `exceptions.json`.
 - **Step details.** Figma's M9 has no details panel under the steps (the
   note says a tap on a step shows its details), so the phone's page ends
   with the column; the selected step is only marked.
+
+## Library connectors
+
+After the move to the library's connectors, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
+and toolkit (2026-11-18, library 1.0.0-beta.31) gives M09 the
+same results: text passes, position fails on the same three keys and
+rules on the same two `hiddenOverflow` findings.

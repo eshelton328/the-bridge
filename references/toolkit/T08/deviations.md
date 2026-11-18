@@ -58,11 +58,13 @@ unchanged). The frame has no `exceptions.json`.
   over the page, as Figma draws it (library 1.0.0-beta.26); the library's
   bar is translucent, so the fields show faintly through it, where Figma's
   bar hides them.
-- **Connectors.** The library has no connector line or 14 px icon (gap:
-  Workflow page flow): each arrow is the 16 px `ArrowDownIcon` with no line;
-  the fork from step 3 is one arrow over each of steps 4 and 5, and the
-  join one arrow over step 6, with no elbow lines. The arrow rows keep
-  Figma's 18 and 22 px, so every card is within 4 px of Figma's y.
+- **Connectors.** The library draws each connector (library #133 and
+  #137): `FlowLine` down between stages, from 2 under the card to 2 over
+  the next, and `FlowBranch` for the fork from step 3 into steps 4 and 5
+  and the join into step 6, each arm meeting its card's middle. Figma's
+  arrows are 14 px `icon/down` icons; the library's head is a 6 px chevron
+  on the line (gap: Workflow page flow). The connector rows keep Figma's
+  18 and 22 px, so every card is within 4 px of Figma's y.
 - **Step cards.** The cards use the FlowDiagram card's tokens (gap:
   Workflow page flow): 84 high as in Figma (the gates and Read within 2 px
   of Figma's 63), the mark a 22 px `Badge` against 19 and the title 14 px
@@ -73,3 +75,10 @@ unchanged). The frame has no `exceptions.json`.
   (gap: Item breadcrumb), so the crumbs are a little larger than Figma's.
 - **Item tabs.** As on D13 and T10: the selected tab's outline is
   `border.selected` at half alpha where Figma's is solid cyan (d-050).
+
+## Library connectors
+
+After the move to the library's connectors, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
+and toolkit (2026-11-18, library 1.0.0-beta.31) gives T08 the
+same results: text passes, position fails on the same eight keys and
+rules on the same `hiddenOverflow` finding.
