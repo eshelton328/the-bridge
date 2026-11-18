@@ -244,6 +244,11 @@ first: it says what each file of a page folder is for.
   (the Fork form on the phone: `BottomSheet` titled "Fork {chat}" with ×,
   the fields and Fork across the sheet, no Cancel), which the chat actions'
   Fork opens (`ui.chatDialog: 'fork'`) when the state has `data.fork`.
+  M19 needs no new block: the fork fills the screen as M17's chat does,
+  `ChatHead` puts its `origin` after the workspace, `ChatEntryView` draws
+  the line where it was forked as D16's `event` entry, and Back returns to
+  the list, where `SidebarChatRow` draws the fork under bridge themes with
+  D16's branch mark.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -316,7 +321,9 @@ first: it says what each file of a page folder is for.
   message box: the chat full screen), M18 `phoneFork` (from
   `phoneChatFull`, with D15's Fork form without the hint, M18's note, M4's
   chat actions and the message box empty and out of focus: the Fork sheet
-  open on the phone).
+  open on the phone), M19 `phoneForkedChat` (from `phoneChatFull`, with
+  D16's fork under bridge themes: the fork full screen, Idle with no Stop,
+  nothing typed and the focus in the message box).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

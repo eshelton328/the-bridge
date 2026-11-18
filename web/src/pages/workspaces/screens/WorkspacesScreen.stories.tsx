@@ -623,3 +623,15 @@ export const PhoneFork: Story = {
     await expect(body.getByRole('button', { name: 'Whole chat', pressed: true })).toBeVisible()
   },
 }
+
+export const PhoneForkedChat: Story = {
+  name: 'M19: a forked chat on the phone, Idle',
+  args: { data: workspacesStates.phoneForkedChat.data, ui: workspacesStates.phoneForkedChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with the fork alone, and the
+    // phone's menu draws M19. WorkspacesPhoneForkedChat.test.tsx checks the chat and its back button at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes · fork' })).toBeVisible()
+    await expect(canvas.getByText('Forked from bridge themes here')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Stop' })).toBeNull()
+  },
+}
