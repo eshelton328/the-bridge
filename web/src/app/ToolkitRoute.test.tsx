@@ -18,22 +18,24 @@ afterEach(() => {
 })
 
 describe('the Toolkit route', () => {
-  it('opens each page that has a route from the rail', async () => {
-    await page.viewport(1512, 982)
-    const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/toolkit'] }) })
-    const view = await testRender(<RouterProvider router={router} />)
-    for (const [name, path] of [
+  // One test for each page: under CPU load one click takes seconds to
+  // reach the page, and three clicks in one test passed its 15 s timeout.
+  describe('opens each page that has a route from the rail', () => {
+    it.each([
       ['Workspaces', '/workspaces'],
       ['Artifacts', '/artifacts'],
       ['Inbox', '/inbox'],
-    ] as const) {
+    ] as const)('%s', async (name, path) => {
+      await page.viewport(1512, 982)
+      const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/toolkit'] }) })
+      const view = await testRender(<RouterProvider router={router} />)
       await router.navigate({ to: '/toolkit' })
       await page
         .getByRole('navigation', { name: 'Main' })
         .getByRole('button', { name: new RegExp(`^${name}`) })
         .click()
       await expect.poll(() => router.state.location.pathname).toBe(path)
-    }
-    await view.unmount()
+      await view.unmount()
+    })
   })
 })
