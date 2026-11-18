@@ -47,5 +47,13 @@ Idle, with the fork line under the copied messages (`forkedChat`).
   30 × 22, and the group header buttons are 24 px with 12 px icons.
 - **Attachment remove × (Composer attachment remove).** Figma's × on
   theme-ideas.md is bold; `Composer` draws its own thin `CloseIcon`.
+- **Main pane text is a little larger (Chat header text, Composer text,
+  Message text).** The chat title is `subtitle` (SemiBold 17) against
+  Figma's SemiBold 16 (D19 417:1669), the composer's placeholder `body`
+  (14) against Regular 13 (D19 417:1719), and Erik's message `body` (14/20)
+  against `bodySm` (13/20), so each runs about 7 to 8% wider than
+  Figma's. No text style is SemiBold 16, and `Composer` and `Message`
+  take no text size. The workspace line and "context" under the title
+  are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.

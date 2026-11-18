@@ -47,3 +47,16 @@ the focus in it and × at its end (`renameChat`).
   30 × 22, and the group header buttons are 24 px with 12 px icons.
 - **Attachment remove × (Composer attachment remove).** Figma's × on
   theme-ideas.md is bold; `Composer` draws its own thin `CloseIcon`.
+- **Composer text (Composer text).** The placeholder is `body` (14)
+  against Figma's Regular 13 (417:2421), and Stop is `Button size="sm"`
+  with a 14 px label against Figma's 11 px (417:2434).
+- **Sidebar drift (Sidebar group header, Sidebar chat row).** Every
+  sidebar header and row passes the position check within 4 px; the
+  selected row and the lower headers sit 2 to 5 px off Figma's, the 2 px
+  that each row (52 against 50) and header (30 against 28) adds, as on
+  D16.
+- **Group header icons (Sidebar group header).** Figma's rename and
+  close on the OMNI header (D21 417:2326, 417:2329) are 13 px outline
+  icons with a 2 px stroke, so they look heavy; `EditIcon` and
+  `CloseIcon` at 12 px draw a 1 px stroke, and no icon takes a stroke
+  weight.

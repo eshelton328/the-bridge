@@ -62,5 +62,20 @@ open over it (`subtaskDialog`, `ui.chatDialog: 'subtask'`).
   the group header buttons are 24 px with 12 px icons.
 - **Attachment remove × (Composer attachment remove).** Figma's × on
   theme-ideas.md is bold; `Composer` draws its own thin `CloseIcon`.
+- **Main pane text is a little larger (Chat header text, Composer text,
+  Message text).** The chat title is `subtitle` (SemiBold 17) against
+  Figma's SemiBold 16 (D19 417:1669), the composer's placeholder `body`
+  (14) against Regular 13 (D19 417:1719), and Erik's message `body` (14/20)
+  against `bodySm` (13/20), so each runs about 7 to 8% wider than
+  Figma's. No text style is SemiBold 16, and `Composer` and `Message`
+  take no text size. The workspace line and "context" under the title
+  are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
+- **Task text and clip (Composer text, Composer in a form).** The task is
+  `Composer`'s `body` (14) against Figma's Regular 13 (417:1099). The clip
+  sits in the 28 px square Figma draws (417:1101), but it is the set's
+  16 px `ClipIcon` with a thin stroke, where Figma's (417:1102) is 14 px
+  with a 2 px stroke, so the square reads emptier. `TextArea` would drop
+  the send button but draws `surface.inset` with no room for the clip in
+  its box, so the form keeps `Composer`.
 - **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
   (d-105), so More sits lower than Figma's.
