@@ -8,6 +8,7 @@
 // Workflows and Hooks groups); D8 draws the same rows. The item also carries
 // its own page (D13's flow, gates and rounds, `skillEvalRoundPage`), which
 // Open full page shows.
+import { workflowResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { hookOpen } from './hookOpen.ts'
@@ -267,6 +268,8 @@ const skillEvalRound: ToolkitItemDetailView = {
     note: 'Gates in amber; G1 and G6 run after step 1.',
     elsewhere: 'The steps, gates and loop are on How it works.',
   },
+  // The Evals tab (D20, D25 to D28).
+  results: workflowResults,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },
