@@ -566,3 +566,23 @@ export const HookHowItWorksPhone: Story = {
     await expect(within(item).queryByText('Tests')).toBeNull()
   },
 }
+
+export const WorkflowFullPage: Story = {
+  name: 'D13: a workflow on a page of its own, with its flow and step 4 selected',
+  args: { data: toolkitStates.workflowFullPage.data, ui: toolkitStates.workflowFullPage.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Workflows')
+    await expect(within(item).getByText('changed 6 days ago · run by hand')).toBeVisible()
+    await expect(
+      within(item).getByRole('heading', { name: 'Steps · from the Mermaid flow and the steps table' }),
+    ).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeVisible()
+    await expect(within(item).getByRole('heading', { name: 'Step 4 · Primary grades' })).toBeVisible()
+    await expect(within(item).getByText('grade.py <round> <skill> primary')).toBeVisible()
+    await expect(within(item).getByText('stop: run skill-eval-cases')).toBeVisible()
+    await expect(within(item).getByText('writer · round 6')).toBeVisible()
+    // The page has no list beside it.
+    await expect(canvas.queryByRole('button', { name: 'agents-md' })).toBeNull()
+  },
+}
