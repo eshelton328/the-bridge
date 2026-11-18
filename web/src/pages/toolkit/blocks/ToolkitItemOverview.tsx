@@ -32,11 +32,12 @@ const ruleTabletOverview = css({ display: 'flex', flexDirection: 'column', gap: 
 // than Figma's (LIBRARY_GAPS.md, File preview): 24 under it (12 more than the rows' 12) keeps them within 1 px.
 const sideAfterCode = css({ pt: '12' })
 // M19: a rule on the phone has its description (487:1403), the load box (487:1404) and the file (487:1410) 12 apart.
-// The tabs' list is 36 high (Figma 32) and the Panel makes the box 58 high (Figma 56), so at 12 apart the file runs
-// 5 px low and its last line (487:1427, which Figma ends 1 px over the tab bar) goes under the tab bar. 8 apart keeps
-// each row within 3 px of Figma's and that line in view (LIBRARY_GAPS.md, Rule load box, Item tab spacing).
+// The tabs' list is 32 high, as Figma's, with 4 above the panel (ToolkitItem), and the Panel makes the box 58 high
+// (Figma 56), so at 12 apart the file runs 5 px low and its last line (487:1427, which Figma ends 1 px over the tab
+// bar) goes under the tab bar. 8 apart keeps each row within 3 px of Figma's and that line in view (LIBRARY_GAPS.md,
+// Rule load box).
 // M22: a hook on the phone has its description (487:2182), when it runs (487:2183) and the code (487:2219) 12 apart
-// too; with the 36 px tabs and the cards 1 to 2 px taller than Figma's 109 (LIBRARY_GAPS.md, Agent fact card), 12
+// too; with the 4 above the panel and the cards 1 to 2 px taller than Figma's 109 (LIBRARY_GAPS.md, Agent fact card), 12
 // apart runs the code 5 px low, and 8 apart keeps each row within 3 px of Figma's.
 const rulePhoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '8' })
 const description = css({ textStyle: 'body', color: 'fg.muted' })

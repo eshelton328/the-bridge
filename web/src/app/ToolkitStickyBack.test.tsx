@@ -170,6 +170,40 @@ describe('the open item on the phone (d-107)', () => {
     await view.unmount()
   })
 
+  it('draws the item tabs cyan and compact, so Evals ends inside the screen: the skill writer (M2)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderToolkit('skillOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[role="tablist"]')).not.toBeNull()
+    const list = root.querySelector('[role="tablist"]')
+    const selected = root.querySelector('[role="tab"][aria-selected="true"]')
+    const evals = [...root.querySelectorAll('[role="tab"]')].find((tab) => tab.textContent === 'Evals')
+    if (!(list instanceof HTMLElement) || selected === null || evals === undefined) throw new Error('no item tabs')
+    // M2 480:118: Figma draws the selected tab's label in the accent colour (fg.accent, cyan), not white.
+    const probe = document.createElement('span')
+    probe.style.color = 'var(--colors-fg-accent)'
+    root.append(probe)
+    const accent = getComputedStyle(probe).color
+    probe.remove()
+    expect(accent).not.toBe('')
+    expect(getComputedStyle(selected).color).toBe(accent)
+    // M2 464:521: the tabs start at the list's edge, so the list has no inset, and Evals (480:126) ends at 378,
+    // inside the 390 px screen.
+    const style = getComputedStyle(list)
+    expect([style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]).toEqual([
+      '0px',
+      '0px',
+      '0px',
+      '0px',
+    ])
+    expect(box(evals).right).toBeLessThanOrEqual(390)
+    await view.unmount()
+  })
+
   it('opens the rule skills under Back, its load box across the item and its file above the tab bar (M19)', async () => {
     await page.viewport(390, 806)
     const view = await renderToolkit('ruleOpenPhone')
