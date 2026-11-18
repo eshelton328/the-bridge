@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { type ScreenMap, screenMapProblems, screenStates } from './screenMap.ts'
+import { type Screen, type ScreenMap, screenMapProblems, screenStates } from './screenMap.ts'
 
 const frame = (viewport: 'desktop' | 'tablet' | 'phone') => [{ id: 'X1', node: '1:1', viewport }] as const
 const states = {
@@ -30,6 +30,24 @@ describe('screenMapProblems', () => {
       again: { title: 'Again', phone: 'listPhone' },
     }
     expect(screenMapProblems(states, map)).toEqual(['listPhone is in the screens list and again'])
+  })
+
+  it('lets one state with a tablet and a phone frame fill both devices of its screen', () => {
+    const both = {
+      list: {
+        frames: [
+          { id: 'T1', node: '1:1', viewport: 'tablet' },
+          { id: 'M1', node: '1:2', viewport: 'phone' },
+        ],
+      },
+    } as const
+    const list: Screen<'list'> = { title: 'List', tablet: 'list', phone: 'list' }
+    const map: ScreenMap<'list'> = { list }
+    expect(screenMapProblems(both, map)).toEqual([])
+    expect(screenStates(list)).toEqual([
+      { device: 'tablet', state: 'list' },
+      { device: 'phone', state: 'list' },
+    ])
   })
 
   it('names a state on a device its frames are not', () => {

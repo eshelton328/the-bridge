@@ -4,7 +4,10 @@
 // some devices, such as a desktop-only state (Artifacts D9) or a
 // phone-only sheet (Artifacts M8). Every state belongs to exactly one
 // screen; `screenMapProblems` checks that, and each page's
-// `states/screens.test.ts` runs it.
+// `states/screens.test.ts` runs it. One state may fill several devices of
+// its screen when it has a frame for each, such as Inbox `list` (T1 and
+// M1): its story lays out by its width, so each column shows that
+// device's layout.
 import type { FigmaFrame, Viewport } from './screenState.ts'
 
 /** The devices of a screen, in the order Storybook shows them. */
@@ -46,8 +49,8 @@ export function screenStates<State extends string>(screen: Screen<State>): { dev
 
 /**
  * What is wrong with `map` for `states`: a state in no screen or in two, or
- * a state on a device whose Figma frames are not that device. Empty when
- * the map is right.
+ * a state on a device whose Figma frames are not that device. A state on
+ * several devices of one screen is right. Empty when the map is right.
  */
 export function screenMapProblems<State extends string>(
   states: Readonly<Record<State, { readonly frames: readonly FigmaFrame[] }>>,
@@ -58,8 +61,8 @@ export function screenMapProblems<State extends string>(
   for (const [key, screen] of Object.entries(map)) {
     for (const { device, state } of screenStates(screen)) {
       const first = owner.get(state)
-      if (first !== undefined) problems.push(`${state} is in the screens ${first} and ${key}`)
-      else owner.set(state, key)
+      if (first === undefined) owner.set(state, key)
+      else if (first !== key) problems.push(`${state} is in the screens ${first} and ${key}`)
       const frames = states[state].frames
       if (!frames.some((frame) => frame.viewport === device))
         problems.push(`${key}.${device} is ${state}, whose frames are ${frames.map((f) => f.viewport).join(', ')}`)
