@@ -7,7 +7,8 @@
 // turns into the applied artifact and proposal (D9); on a tablet or phone the
 // library over the tab bar, and on a tablet an open artifact on its own page
 // under Back (T2), whose Discuss opens the discussion as a page of its own
-// with no tab bar (T4). A state file's data and ui are its props; the
+// with no tab bar (T4), and whose proposal's Apply returns to the artifact's
+// page, which shows Updated (T5). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -57,8 +58,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 draft: ui.discussDraft,
                 entries: discussionEntries(discussion, ui),
                 applied: view.applied,
+                // T5: on the tablet's page Apply returns to the artifact's page, which shows Updated.
                 onAct: (act: ProposalAct) => {
-                  onUiChange?.(proposalEffect(discussion, act))
+                  onUiChange?.(proposalEffect(discussion, act, layout === 'tablet' ? 'page' : 'panel'))
                 },
                 onDraftChange:
                   onUiChange === undefined

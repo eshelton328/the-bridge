@@ -5,9 +5,10 @@
 // artifact too. Then the empty state or the entries, and the reply box. The
 // nav and the card stay at the top and the reply box at the bottom, and only
 // the messages between them scroll (d-107): the shared DetailFrame, with the
-// reply box as its sticky footer, capped as the desktop panel's. Props only.
+// reply box as its sticky footer, capped as the desktop panel's. With entries
+// (T5 452:3841) the question, the reply and the proposal, as D8's. Props only.
 import { BackRow, Button, ChatIcon, Composer, Inline, Stack } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { ArtifactProposalProps } from '../blocks/ArtifactProposal.tsx'
 import { DiscussedArtifactCard } from '../blocks/DiscussedArtifactCard.tsx'
@@ -25,8 +26,11 @@ const page = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[
 const nav = css({ mt: '-8', py: '4' })
 const spacer = css({ flex: '1' })
 // 452:3793: the discussion area starts 8 under the card, and the empty state's tile 74 under its top (452:3795):
-// 72 on the 4 px grid, 32 here and 40 above the empty state.
-const thread = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '8', pt: '32' })
+// 72 on the 4 px grid, 32 here and 40 above the empty state. T5 (452:3927): the first entry 14 under the area's top
+// (452:3928), 12 on the 4 px grid.
+const thread = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '8' })
+const emptyPad = css({ pt: '32' })
+const entriesPad = css({ pt: '12' })
 const emptyTop = css({ pt: '40' })
 // 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px (43, 40 on the grid),
 // 22 in (24, as the page). It stays on the page's canvas, so the messages that scroll under it do not show through.
@@ -103,7 +107,7 @@ export function ArtifactDiscussionPage({
           </div>
         }
       >
-        <div className={thread} data-figma="discussion">
+        <div className={cx(thread, entries.length === 0 ? emptyPad : entriesPad)} data-figma="discussion">
           {entries.length === 0 ? (
             <div className={emptyTop}>
               <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} />
