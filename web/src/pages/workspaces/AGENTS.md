@@ -220,7 +220,13 @@ first: it says what each file of a page folder is for.
   `ChatEntryView`, and the read-only note in a notice `Panel` as its
   footer), and `running` to a `tool` entry (`ToolLine state="running"`);
   the chevron of a card in `PhoneSubagents` opens it when the panel has
-  `fullTranscript`, and is disabled on a subagent without `full`. Later frames add to these blocks.
+  `fullTranscript`, and is disabled on a subagent without `full`. M13 adds
+  `CloseWorkspaceDialog` (the library's `Dialog role="alertdialog"`: the
+  workspace's title and text, Cancel and a `dangerSoft` Close sharing the
+  row, the focus on the box) and `onClose` to `PhoneEditGroup`: × on a
+  workspace in edit mode opens the dialog (`ui.closing`) when
+  `data.phone.closeWorkspace` has its text, and Close takes the workspace
+  off the list (`ui.closedWorkspaces`). Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -280,7 +286,10 @@ first: it says what each file of a page folder is for.
   `phoneNewChatKeyboard` (from `phoneNewChat`: "theme tokens" typed in the
   name, which has the focus, Runs in without shell, omni-brain, the
   folders as one box, the keyboard up), M12 `phoneSubagentTranscript`
-  (from `phoneSubagents`: Layout notes' full transcript open).
+  (from `phoneSubagents`: Layout notes' full transcript open), M13
+  `phoneCloseWorkspace` (from `phoneEdit`, without its fields and with
+  bridge themes showing no status: the dialog that asks before omni-brain
+  closes).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -319,7 +328,8 @@ first: it says what each file of a page folder is for.
   form's `name.value`, `focus` and `foldersBox`, and the optional layers
   of `newChatForm` that M11 does not show; for M12 a subagent's `full`
   transcript, the panel's `fullTranscript` labels and the view's layers in
-  `layers.subagentTranscript`) and
+  `layers.subagentTranscript`; for M13 `phone.closeWorkspace`, the close
+  dialog's text, and its layers in `layers.closeDialog`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -337,6 +347,8 @@ first: it says what each file of a page folder is for.
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
   fills the phone's screen, `subagents` in M6, `transcript` in M12 with
   `subagentFor`; for M10 `keyboardOpen`, the
-  keyboard up over the phone's chat, and in M11 over New chat), each a Zod schema.
+  keyboard up over the phone's chat, and in M11 over New chat; for M13
+  `closing`, the workspace whose close dialog is open, and
+  `closedWorkspaces`), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

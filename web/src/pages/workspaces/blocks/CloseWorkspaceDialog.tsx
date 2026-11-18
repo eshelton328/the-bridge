@@ -1,0 +1,65 @@
+// The dialog that asks before a workspace closes (M13 208:765): × on a
+// workspace in the phone's edit mode opens it. It names the workspace and the
+// chats that end with it; Close is red and Cancel is the easy target. The
+// focus starts on the dialog's box, so Enter closes nothing. The library's
+// confirm dialog (`Dialog role="alertdialog"`) is its box. Props only.
+import { Button, Dialog, DialogClose } from '@eshelton328/component-library-1701'
+import { useRef } from 'react'
+import { css } from '../../../../styled-system/css/index.js'
+import type { CloseWorkspaceText } from '../types.ts'
+
+// M13 208:769, 208:771: Cancel and Close share the row's width, each 44 high.
+const half = css({ flex: '1' })
+
+export type CloseWorkspaceDialogProps = {
+  text: CloseWorkspaceText
+  /** The workspace the dialog asks about, by id; no dialog when it has no text in `text.workspaces`. */
+  workspace: string | null
+  onOpenChange?: ((open: boolean) => void) | undefined
+  /** Close was pressed: the workspace and its chats end. */
+  onConfirm?: ((workspace: string) => void) | undefined
+  /** The Figma layers of the dialog and its two buttons, for the fidelity checks. */
+  layers?: { dialog: string; cancel: string; close: string } | undefined
+}
+
+export function CloseWorkspaceDialog({ text, workspace, onOpenChange, onConfirm, layers }: CloseWorkspaceDialogProps) {
+  const cancelRef = useRef<HTMLButtonElement>(null)
+  const asked = workspace === null ? undefined : text.workspaces[workspace]
+  if (workspace === null || asked === undefined) return null
+  return (
+    <Dialog
+      role="alertdialog"
+      title={asked.title}
+      description={asked.text}
+      open
+      onOpenChange={onOpenChange}
+      // The box itself takes the focus, so no button shows a focus ring as it opens, as Figma draws it (208:769);
+      // Tab then reaches Cancel. Ark would otherwise focus Cancel.
+      initialFocus={() => {
+        const box = cancelRef.current?.closest('[role="alertdialog"]')
+        return box instanceof HTMLElement ? box : null
+      }}
+      data-figma={layers?.dialog}
+      actions={
+        <>
+          <DialogClose>
+            <Button ref={cancelRef} size="xl" className={half} data-figma={layers?.cancel}>
+              {text.cancel}
+            </Button>
+          </DialogClose>
+          <Button
+            variant="dangerSoft"
+            size="xl"
+            className={half}
+            data-figma={layers?.close}
+            onClick={() => {
+              onConfirm?.(workspace)
+            }}
+          >
+            {text.close}
+          </Button>
+        </>
+      }
+    />
+  )
+}

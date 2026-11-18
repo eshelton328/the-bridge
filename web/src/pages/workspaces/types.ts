@@ -347,6 +347,17 @@ export const SidebarText = z.object({
 export type SidebarText = z.infer<typeof SidebarText>
 
 /**
+ * The dialog that asks before a workspace closes (M13 208:765): Cancel, Close, and each workspace's title and text,
+ * by workspace id. × on a workspace without text here draws only.
+ */
+export const CloseWorkspaceText = z.object({
+  cancel: z.string(),
+  close: z.string(),
+  workspaces: z.record(z.string(), z.object({ title: z.string(), text: z.string() })),
+})
+export type CloseWorkspaceText = z.infer<typeof CloseWorkspaceText>
+
+/**
  * The phone's labels (M1 105:2302): the page title, Edit and the accessible name of +, which opens New chat or New
  * workspace. A state without them draws the desktop layout at a phone's width.
  */
@@ -368,6 +379,8 @@ export const PhoneText = z.object({
    * Rename first. Without it, a hold does nothing and the row's ⋯ draws only.
    */
   rowMenu: z.array(PaneAction).optional(),
+  /** The dialog that × on a workspace in edit mode opens (M13). Without it, × draws only. */
+  closeWorkspace: CloseWorkspaceText.optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -504,6 +517,8 @@ export const SidebarLayers = z.object({
   subagentTranscript: SubagentTranscriptLayers.optional(),
   /** The folders sheet on the phone (M8). */
   phoneFolders: PhoneFoldersLayers.optional(),
+  /** The dialog that asks before a workspace closes, and its Cancel and Close (M13 208:765, 208:769, 208:771). */
+  closeDialog: z.object({ dialog: z.string(), cancel: z.string(), close: z.string() }).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -751,6 +766,10 @@ export const WorkspacesUi = z.object({
    * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
    */
   keyboardOpen: z.boolean().optional(),
+  /** The workspace whose close dialog is open over the phone's list (M13), or null. */
+  closing: z.string().nullable().optional(),
+  /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
+  closedWorkspaces: z.array(z.string()).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

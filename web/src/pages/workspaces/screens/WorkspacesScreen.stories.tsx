@@ -531,3 +531,20 @@ export const PhoneSubagentTranscript: Story = {
     await expect(canvas.queryByText('Read-only: the result returns to bridge themes when it finishes.')).toBeNull()
   },
 }
+
+export const PhoneCloseWorkspace: Story = {
+  name: 'M13: the phone asks before a workspace closes',
+  args: {
+    data: workspacesStates.phoneCloseWorkspace.data,
+    ui: workspacesStates.phoneCloseWorkspace.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M13, the dialog over the list in edit mode. WorkspacesPhoneCloseWorkspace.test.tsx
+    // checks the dialog at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('alertdialog', { name: 'Close omni-brain?' })).toBeNull()
+  },
+}
