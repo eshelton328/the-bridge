@@ -2,10 +2,19 @@ import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { inboxStates } from '../states/index.ts'
 import { InboxScreen } from './InboxScreen.tsx'
+import { viewportForWidth } from '../../../lib/viewport.ts'
 
 // One story per Figma state of the Inbox, named after its state file
 // (scripts/checkStates.ts checks it). Each play test checks the state's
 // own text, so a story that renders the wrong state fails.
+/**
+ * The story laid out as the phone: a state with a tablet and a phone frame has one story, which the screen map
+ * also shows at 390 px (R10), so its play checks the phone's names there.
+ */
+function onPhone(canvasElement: HTMLElement): boolean {
+  return viewportForWidth(canvasElement.clientWidth) === 'phone'
+}
+
 const meta = {
   title: 'Pages/Inbox/States',
   component: InboxScreen,
@@ -352,9 +361,15 @@ export const PromptSheet: Story = {
 export const SortList: Story = {
   name: 'T9: sort, the list',
   args: { data: inboxStates.sortList.data, ui: inboxStates.sortList.ui, viewport: 'tablet' },
-  play: async ({ canvas }) => {
-    const menu = await within(document.body).findByRole('menu')
-    await expect(within(menu).getByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
+  play: async ({ canvas, canvasElement }) => {
+    // M13: on the phone the Sort menu is a sheet of radios.
+    if (onPhone(canvasElement)) {
+      const sheet = await within(document.body).findByRole('dialog', { name: 'Sort' })
+      await expect(within(sheet).getByRole('radio', { name: /Newest first/ })).toBeChecked()
+    } else {
+      const menu = await within(document.body).findByRole('menu')
+      await expect(within(menu).getByRole('menuitemradio', { name: 'Newest first' })).toBeChecked()
+    }
     await expect(canvas.getByText('quiet-nebula · Creating 9 issues…')).toBeVisible()
   },
 }
@@ -376,8 +391,10 @@ export const SearchList: Story = {
 export const SortedList: Story = {
   name: 'T11: sorted by project, the list',
   args: { data: inboxStates.sortedList.data, ui: inboxStates.sortedList.ui, viewport: 'tablet' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Project' })).toHaveAttribute('aria-pressed', 'true')
+  play: async ({ canvas, canvasElement }) => {
+    // M15: the phone has no sort buttons in the list; the Sort icon shows that a sort applies.
+    const sort = onPhone(canvasElement) ? 'Sort' : 'Project'
+    await expect(canvas.getByRole('button', { name: new RegExp(`^${sort}$`) })).toHaveAttribute('aria-pressed', 'true')
     await expect(canvas.getByText('skill-evals', { selector: '.group-header__label *' })).toBeVisible()
   },
 }
@@ -413,10 +430,13 @@ export const SnoozePage: Story = {
 export const FilterList: Story = {
   name: 'T14, M7: filter, the list',
   args: { data: inboxStates.filterList.data, ui: inboxStates.filterList.ui, viewport: 'tablet' },
-  play: async ({ canvas }) => {
-    const menu = await within(document.body).findByRole('dialog', { name: 'Filter the inbox' })
+  play: async ({ canvas, canvasElement }) => {
+    // M7: on the phone the menu is a sheet, and its button counts the tasks it shows.
+    const phone = onPhone(canvasElement)
+    const menu = await within(document.body).findByRole('dialog', { name: phone ? 'Filter' : 'Filter the inbox' })
     await expect(within(menu).getByRole('checkbox', { name: 'skill-evals' })).not.toBeChecked()
-    await expect(within(menu).getByText('Showing 6 of 7')).toBeVisible()
+    if (phone) await expect(within(menu).getByRole('button', { name: 'Show 6 tasks' })).toBeVisible()
+    else await expect(within(menu).getByText('Showing 6 of 7')).toBeVisible()
     // The boxes apply when the menu closes: the skill-evals next step still shows.
     await expect(canvas.getByText('Run the readme cross-family round x2')).toBeVisible()
   },
@@ -425,8 +445,11 @@ export const FilterList: Story = {
 export const FilteredList: Story = {
   name: 'T15: filtered, the list',
   args: { data: inboxStates.filteredList.data, ui: inboxStates.filteredList.ui, viewport: 'tablet' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Filter · 1' })).toBeVisible()
+  play: async ({ canvas, canvasElement }) => {
+    // M16: the phone's Filter is an icon, pressed while a filter applies.
+    if (onPhone(canvasElement))
+      await expect(canvas.getByRole('button', { name: /^Filter$/ })).toHaveAttribute('aria-pressed', 'true')
+    else await expect(canvas.getByRole('button', { name: 'Filter · 1' })).toBeVisible()
     await expect(canvas.getByText('1 task hidden by filters')).toBeVisible()
     await expect(canvas.queryByText('Run the readme cross-family round x2')).toBeNull()
   },
@@ -503,9 +526,10 @@ export const RemovalProposedPage: Story = {
 export const RemoveConfirmPage: Story = {
   name: 'T23, M24: confirm the removal, on the discussion page',
   args: { data: inboxStates.removeConfirmPage.data, ui: inboxStates.removeConfirmPage.ui, viewport: 'tablet' },
-  play: async () => {
-    // The dialog renders in a portal, outside the story's canvas.
-    const dialog = await within(document.body).findByRole('alertdialog', { name: 'Remove this task?' })
+  play: async ({ canvasElement }) => {
+    // The dialog renders in a portal, outside the story's canvas. On the phone (M24) it is a sheet.
+    const role = onPhone(canvasElement) ? 'dialog' : 'alertdialog'
+    const dialog = await within(document.body).findByRole(role, { name: 'Remove this task?' })
     await expect(within(dialog).getByRole('button', { name: 'Remove task' })).toBeVisible()
   },
 }
