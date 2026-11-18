@@ -18,9 +18,9 @@ tabs' `tone` and `density` props (2026-11-17).
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Three strings are not visible: `writing-reviewer`
-  (461:659), `until pass` (461:664) and `8`
-  (461:670), see Under the tab bar.
+  covered text. One string is not visible: `8` (461:670), see Under the
+  tab bar. `writing-reviewer` (461:659) and `until pass` (461:664) pass
+  since the tab bar lies over the page.
 - Position: 24 of 28 layers pass (`back row`, `button · map`, `461:560`,
   `steps`, `step 1` to `step 8`, the six `uses · …` chips and `tab bar`).
   The 4 that fail (`button · Discuss`, `toolkit`, `trigger`, `chat path`)
@@ -36,13 +36,13 @@ tabs' `tone` and `density` props (2026-11-17).
 - **Under the tab bar.** Figma draws the item down to the chat path's end
   (y 1229), past the tab bar at y 767: step 7's chips (`writing-reviewer`,
   `until pass`, y 769 to 792), step 8 and the chat path lie under the bar.
-  The render scrolls the item in the DetailFrame body and cuts it at the
-  top of the tab bar, so `writing-reviewer`, `until pass` and `8` are not
-  seen, as in Figma, and the rule check reports the scrolling body as
-  `hiddenOverflow`. Step 7's title and line show above the bar, as in
-  Figma. A shared app-frame change will let the phone's scroll body run
-  under the tab bar; DetailFrame and ScrollFrame stay as they are here. It
-  is not an exception.
+  The tab bar lies over the page (AppShell `tabBarOverlay`, library
+  1.0.0-beta.26): the DetailFrame body runs under the bar as Figma's item
+  does, so step 7's chips lie under the bar in both and the text check
+  passes them. Step 8's `8` (461:670) is still not visible in the
+  render; its cause is not measured yet. The rule check reports the
+  scrolling body as `hiddenOverflow`. This is
+  the scroll that Figma's own layout causes; it is not an exception.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
   beta.21) starts the tabs at the list's edge with 10 px sides and draws
   How it works' label cyan, as Figma's, so Evals ends inside the 390 px

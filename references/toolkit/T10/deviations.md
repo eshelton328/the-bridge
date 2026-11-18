@@ -17,12 +17,9 @@ from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Eight strings of the chat path's second row are not
-  visible: `5` (501:126), `Cut to the reader` (501:127), `6` (501:132),
-  `Run the lint` (501:133), `--form chat --ste` (501:134), `→` (501:139),
-  `Send the text` (501:140) and `unchanged` (501:141). See Under the tab
-  bar.
+- Text: pass (68 strings checked). The chat path's second row (501:126
+  to 501:141) lies under the tab bar and passes since the bar lies over
+  the page; see Under the tab bar.
 - Position: 25 of 29 layers pass (`back row`, `button · Show on map`,
   `461:255`, `steps`, `step 1` to `step 8`, the six `uses · …` chips and
   `tab bar`). The 4 that fail (`button · Discuss`, `toolkit item`,
@@ -37,14 +34,13 @@ from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
 
 - **Under the tab bar.** Figma draws the chat path down past the tab bar:
   its second row of steps (501:124 to 501:141, y 1062 to 1095) runs under
-  the tab bar at y 1081, and the chat path ends at 1110. The render
-  scrolls the item in the DetailFrame body and cuts it at the top of the
-  tab bar, so the second row's text (`5`, `Cut to the reader`, `6`,
-  `Run the lint`, `--form chat --ste`, `→`, `Send the text`, `unchanged`)
-  is not seen in full, as in Figma, and the rule check reports the
-  scrolling body as `hiddenOverflow`. This is the scroll that Figma's own
-  layout causes, as on M22; DetailFrame and ScrollFrame are shared and
-  stay as they are. It is not an exception.
+  the tab bar at y 1081, and the chat path ends at 1110. The tab bar lies
+  over the page (AppShell `tabBarOverlay`, library 1.0.0-beta.26): the
+  DetailFrame body runs under the bar as Figma's item does, so the second
+  row lies under the bar in both and the text check passes it. The rest
+  of the item scrolls, and the rule check reports the scrolling body as
+  `hiddenOverflow`. This is the scroll that Figma's own layout causes, as
+  on M22. It is not an exception.
 - **Chat path.** `ChatPath` is 7 px taller than Figma's box (`chat path`
   h +7), and its pills are spaced wider, so the second row starts a few
   px lower (gap: How it works steps). It starts in place.
