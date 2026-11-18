@@ -1,0 +1,46 @@
+{
+  "missing": [
+    {
+      "text": "Which devices reach the-bridge, and the owner check on writes",
+      "layers": ["414:711"],
+      "reason": "Figma draws the Filter sheet (407:1617, y 523) over this description (y 797), so frame.png does not show it; the render draws the sheet over it the same way, and the card cuts the one line with an ellipsis, as T1's Figma does (414:667)."
+    },
+    {
+      "text": "the-bridge theme ideas",
+      "layers": ["407:1433"],
+      "reason": "Figma draws the third card row's body (407:1431, y 1105) under the tab bar (407:1465, y 1081) and the Filter sheet (y 523), so frame.png does not show this title. The render scrolls the row under the tab bar the same way, as T1."
+    },
+    {
+      "text": "Viewscreen, Captain’s Log, Engineering and Console",
+      "layers": ["407:1434"],
+      "reason": "This description (y 1141) is under Figma's tab bar (y 1081) and the Filter sheet, and frame.png does not show it. The render scrolls the row under the tab bar the same way, as T1."
+    },
+    {
+      "text": "Application versioning and releases",
+      "layers": ["407:1457"],
+      "reason": "Figma draws the third card row's body (407:1455, y 1105) under the tab bar (y 1081) and the Filter sheet, so frame.png does not show this title. The render scrolls the row under the tab bar the same way, as T1."
+    },
+    {
+      "text": "Research report: versioning, changelogs and release automation",
+      "layers": ["407:1458"],
+      "reason": "This description (y 1141) is under Figma's tab bar (y 1081) and the Filter sheet, and frame.png does not show it. The render scrolls the row under the tab bar the same way, as T1."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The library scrolls on the tablet: Figma's library (407:1261) runs to y 1198, under the tab bar (y 1081) and past the frame's bottom edge (1158), and the tab bar stays pinned. The render scrolls the detail under the pinned tab bar the same way, as T1."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · Tailscale access check\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "Figma draws the Filter sheet over this description, and T1's Figma cuts it with an ellipsis too (414:667); TruncatedText shows it in full in a tooltip."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"artifact card · Application versioning and releases\"] > article.card__root > div.card__body:nth-of-type(2) > p.card__description > span.truncated-text",
+      "reason": "This description lies under the tab bar and the Filter sheet in Figma and under the tab bar in the render (y 1141 against the bar's 1081), so neither shows it; it is one line cut with an ellipsis, as the card's TruncatedText does."
+    }
+  ]
+}
