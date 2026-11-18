@@ -77,7 +77,7 @@ first: it says what each file of a page folder is for.
   four panes to `SplitPanes` (the fourth under the first) and adds two
   things to `PaneDropZone`: over a pane, `edge: 'middle'` (a drop that
   replaces the pane's chat) dims the whole pane under the zone with
-  `overlay.scrim`, and `data.paneDrop.preview: 'end'` puts the dragged
+  `surface.pane`, and `data.paneDrop.preview: 'end'` puts the dragged
   chat at the end of the room under the text. D13 adds `close` to the
   empty pane (Close pane and its shortcut at the pane's top end, 12 in);
   the split keeps its four places, so the other panes stay where they

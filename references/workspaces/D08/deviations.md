@@ -40,6 +40,9 @@ title, one line, no icon and no hint, and the dragged chat in
   The dashes are a CSS dashed border of `border.active` at
   `borderWidths.ring` (2 px), as on D06; the browser draws them a little
   shorter than Figma's. The title and the line are within the tolerance.
+  Figma's title (402:1113) is SemiBold 16; no text style is 16/600, so
+  the render uses `labelLg` (16/500), Figma's size (until 2026-11-17
+  `paneTitle`, 15/600, about 7% narrower; fidelity review D08 F3).
 - **Dragged chat (Drag preview, Drop zone).** `402:1126` w +6.4,
   h -10.1: Figma turns the chat 3°, so its box (292 × 62) is the turned
   copy's bounds; the render keeps `DragPreview`'s `tilt` off, because the
@@ -79,3 +82,5 @@ title, one line, no icon and no hint, and the dragged chat in
   (two flex spacers), which places its top at y 641 where Figma has
   640, with no length value.
 - The zone's 4 px inset from the pane: spacing `4`, Figma's value.
+- The zone's title: `labelLg` (16/500), Figma's size; no text style is
+  16/600 (`paneTitle` is 15/600, `subtitle` 17/600).

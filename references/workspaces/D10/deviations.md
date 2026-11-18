@@ -46,7 +46,7 @@ full height. No block changed: the zone is an overlay of the pane that
   `borderWidths.ring` (2 px), as on D06 and D08; the browser draws them a
   little shorter than Figma's. The title and the line are within the
   tolerance.
-- **Dragged chat (Drag preview, Drop zone).** `402:3651` x +5, y -4.7,
+- **Dragged chat (Drag preview, Drop zone).** `402:3651` x +5, y -3.3,
   w +6.4, h -10.1: Figma turns the chat 3°, so its box (292 × 62) is the
   turned copy's bounds; the render keeps `DragPreview`'s `tilt` off,
   because the text check measures a turned row against its unturned box.
@@ -54,8 +54,11 @@ full height. No block changed: the zone is an overlay of the pane that
   (`shell.popoverFilter`, d-100, as on D08) and 52 high. It sits 20 in
   from the zone's end, as on D08, where Figma's pointer holds it about 34
   in, so it is 5 px further right. Its place under the text matches
-  Figma's (288 under the zone's top, Figma 287); the y -4.7 is the zone's
-  move with the pane.
+  Figma's (about 289 under the zone's top, Figma 287); the y -3.3 is the
+  zone's move with the pane.
+- **Drop zone title (Drop zone).** Figma's title (402:3638) is SemiBold
+  16; no text style is 16/600, so the render uses `labelLg` (16/500), as
+  on D08 and D12.
 - **Transcript.** `402:3537` y -6.5 and `402:3542` y -5.5, h +8: bridge
   themes' entries move up with the pane; the reply wraps in body text
   (14/20), and Copy is 24 px (Figma 22), as on D07 to D09. `402:3612`

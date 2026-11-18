@@ -73,10 +73,17 @@ replace drift check. The dragged chat sits at the zone's bottom end
   (`shell.popover`), inside the zone's right end and 4 above its bottom
   edge, so its middle is where Figma's is. At 300 (`shell.popoverFilter`,
   D08 and D10) hono server's meta and Needs you do not fit.
-- **Dimmed pane (Drop zone).** Figma dims drift check under the zone,
-  header included. The render puts `overlay.scrim` over the whole pane
-  under the zone; drift check's Allow once button stays brighter than in
-  Figma, as its cyan fill is brighter than Figma's.
+- **Dimmed pane (Drop zone).** Figma fills the zone with
+  rgba(8, 13, 26, 0.88) under its cyan tint (402:5000), which dims drift
+  check, header included, almost to the background, so the zone's title
+  and line read alone over the approval card. The render covers the whole
+  pane under the zone with `surface.pane` (rgba(15, 22, 38, 0.85)), the
+  library's nearest fill; no token is the dimming of a pane. Until
+  2026-11-17 it used `overlay.scrim` (0.65), under which the approval
+  card, its buttons and Reply to Codex stayed readable and the zone's line
+  ran across Always allow and Deny (review D12 F1).
+- **Drop zone title (Drop zone).** Figma's title (402:5001) is SemiBold
+  16; no text style is 16/600, so the render uses `labelLg` (16/500).
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`.
 - **Empty pane rows (Empty pane rows).** `402:4972` y -8, h +6 and
@@ -90,8 +97,12 @@ replace drift check. The dragged chat sits at the zone's bottom end
 
 ## Value picks (d-100)
 
-- The dimmed pane under a replacing drop: `overlay.scrim`, the library's
-  dimming fill for dialogs, as no token dims a pane.
+- The dimmed pane under a replacing drop: `surface.pane`
+  (rgba(15, 22, 38, 0.85)), the nearest token to Figma's
+  rgba(8, 13, 26, 0.88), as no token dims a pane; `overlay.scrim` (0.65)
+  left the pane readable.
+- The zone's title over a pane: `labelLg` (16/500), Figma's size; no
+  text style is 16/600 (`subtitle` is 17/600).
 - The dragged chat at the zone's end: 4 above the zone's bottom edge
   (spacing `4`) and 320 wide (`shell.popover`), the nearest width in
   which its meta and pill fit (Figma about 289 before its turn).

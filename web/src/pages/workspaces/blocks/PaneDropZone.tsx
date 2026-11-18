@@ -30,9 +30,12 @@ const zone = css({
   borderColor: 'border.active',
   bg: 'accent.faint',
 })
-// A drop in the middle of a pane replaces its chat (D12 402:4865 under 402:5000): Figma dims the whole pane, header
-// included, under the zone. `overlay.scrim`, the library's dimming fill, covers the pane under the zone (d-100).
-const scrim = css({ position: 'absolute', inset: '0', zIndex: '1', pointerEvents: 'none', bg: 'overlay.scrim' })
+// A drop in the middle of a pane replaces its chat (D12 402:4865 under 402:5000): Figma fills the zone with
+// rgba(8, 13, 26, 0.88) under its cyan tint, which dims the pane, header included, almost to the background, so the
+// zone's text reads alone. `overlay.scrim` (0.65) leaves the approval card and its buttons readable; `surface.pane`
+// (rgba(15, 22, 38, 0.85)) is the library's nearest fill to Figma's, so it covers the pane under the zone. No token
+// is the dimming of a pane (LIBRARY_GAPS.md, Drop zone; d-100).
+const scrim = css({ position: 'absolute', inset: '0', zIndex: '1', pointerEvents: 'none', bg: 'surface.pane' })
 // Over the chat alone the zone sits 12 in from the chat's edges (158:1025 is 12 from its top, right and bottom); over
 // a pane, 4 in from the pane's (402:1112). Both start 4 past the middle (D6 957 in a chat from 394 to 1512, D8 957
 // in a pane from 404 to 1502).
@@ -64,7 +67,13 @@ const half = css({
 })
 const middle = css({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8' })
 const icon = css({ display: 'inline-flex', color: 'fg.accent' })
-const title = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0' })
+// The title is SemiBold 15 over the chat alone (D6 158:1029, 20 high) and SemiBold 16 over a pane (D8 402:1113, D10
+// 402:3638, D12 402:5001, 21 high). No text style is 16/600: `labelLg` (16/500) has Figma's size, `subtitle` (17/600)
+// its weight; the size is nearer the width Figma draws (d-100, LIBRARY_GAPS.md, Drop zone).
+const title = {
+  chat: css({ textStyle: 'paneTitle', color: 'fg.default', m: '0' }),
+  pane: css({ textStyle: 'labelLg', color: 'fg.default', m: '0' }),
+}
 const text = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
 // 158:1048: the hint in mono on a recessed box, padded 10 at the sides.
 const hints = css({
@@ -125,7 +134,7 @@ export function PaneDropZone({ edge, chat, target, drop, placement = 'chat', fig
               <SplitIcon size="24" />
             </span>
           )}
-          <p className={title}>{fill(drop.title)}</p>
+          <p className={title[placement]}>{fill(drop.title)}</p>
           <p className={text}>{fill(drop.text)}</p>
           {drop.hint === undefined ? null : (
             <p className={hints} data-figma={layers.hint}>
