@@ -22,6 +22,15 @@ describe('readState', () => {
     })
   })
 
+  it('reads a home of its own when no state is named, and the state file when one is', () => {
+    const home = { key: 'home', state: { n: 0 } }
+    expect(readState(states, { state: undefined, source: undefined }, home)).toEqual({ ok: true, value: home })
+    expect(readState(states, { state: 'first', source: undefined }, home)).toEqual({
+      ok: true,
+      value: { key: 'first', state: states.first },
+    })
+  })
+
   it('misses for a source that is not built, an unknown source and an unknown state', () => {
     expect(readState(states, { state: 'first', source: 'mock-api' })).toEqual({
       ok: false,

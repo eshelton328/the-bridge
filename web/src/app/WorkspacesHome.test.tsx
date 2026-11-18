@@ -1,0 +1,96 @@
+import '@fontsource-variable/geist'
+import '@fontsource-variable/geist-mono'
+import '../index.css'
+import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
+import { afterEach, describe, expect, it } from 'vitest'
+import { page } from 'vitest/browser'
+import { testRender } from '../lib/testRender.ts'
+import { resetAllStores } from '../state/resetStores.ts'
+import { routeTree } from './routeTree.gen.ts'
+
+// /workspaces with no ?state= opens the page's home (pages/workspaces/home.ts):
+// every overlay closed, laid out for the window's width. A ?state= still
+// draws its own frame's layout.
+document.documentElement.classList.add('dark')
+document.documentElement.dataset.pandaTheme = 'viewscreen'
+
+function renderAt(path: string) {
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
+  return testRender(<RouterProvider router={router} />)
+}
+
+const rail = () => document.querySelector('[data-figma="nav rail"]')
+const tabBar = () => document.querySelector('[data-figma="tab bar"]')
+/** Every menu, list, popover and dialog that the page can open, in the page or a portal. */
+const overlays = () =>
+  document.querySelectorAll(
+    '[role="menu"], [role="dialog"], [role="alertdialog"], [role="listbox"], [role="radiogroup"]',
+  )
+
+/** The overlays a viewer can see. */
+const visibleOverlays = () => [...overlays()].filter((el) => el.checkVisibility())
+
+let view: { unmount: () => Promise<void> } | undefined
+
+afterEach(async () => {
+  await view?.unmount()
+  view = undefined
+  resetAllStores()
+  await page.viewport(1512, 982)
+})
+
+describe('the Workspaces home', () => {
+  it('draws the phone layout at 390 with nothing open', async () => {
+    await page.viewport(390, 844)
+    view = await renderAt('/workspaces')
+    await expect.poll(tabBar).not.toBeNull()
+    expect(rail()).toBeNull()
+    await expect.element(page.getByText('release notes')).toBeVisible()
+    // The phone mounts none of them; the desktop keeps its closed menus mounted and hidden, as the library's Ark
+    // menus do, so that test counts the visible ones.
+    expect(overlays()).toHaveLength(0)
+  })
+
+  it('draws the desktop layout at 1512 with nothing open', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/workspaces')
+    await expect.poll(rail).not.toBeNull()
+    expect(tabBar()).toBeNull()
+    expect(visibleOverlays()).toHaveLength(0)
+  })
+
+  it('draws the tablet list at 756 with nothing open', async () => {
+    await page.viewport(756, 1024)
+    view = await renderAt('/workspaces')
+    await expect.poll(tabBar).not.toBeNull()
+    expect(rail()).toBeNull()
+    expect(visibleOverlays()).toHaveLength(0)
+  })
+
+  it('changes from the desktop to the phone layout and back as the window narrows and widens', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/workspaces')
+    await expect.poll(rail).not.toBeNull()
+    await page.viewport(390, 844)
+    await expect.poll(tabBar).not.toBeNull()
+    expect(rail()).toBeNull()
+    await page.viewport(1512, 982)
+    await expect.poll(rail).not.toBeNull()
+    expect(tabBar()).toBeNull()
+  })
+
+  it('keeps a ?state= on its frame layout: chatActions draws the desktop at 390', async () => {
+    await page.viewport(390, 844)
+    view = await renderAt('/workspaces?state=chatActions')
+    await expect.poll(rail).not.toBeNull()
+    expect(tabBar()).toBeNull()
+  })
+
+  it('keeps a ?state= on its frame at 1512: chatActions opens its chat menu', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/workspaces?state=chatActions')
+    await expect.poll(rail).not.toBeNull()
+    expect(tabBar()).toBeNull()
+    await expect.element(page.getByRole('menuitem', { name: 'Move to workspace' })).toBeVisible()
+  })
+})
