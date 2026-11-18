@@ -546,3 +546,23 @@ export const AgentHowItWorksPhone: Story = {
     await expect(within(steps).getByText('PASS, FAIL or NA for each, returned as JSON.')).toBeVisible()
   },
 }
+
+export const HookHowItWorksPhone: Story = {
+  name: 'M41: a hook open on the phone, on How it works',
+  args: {
+    data: toolkitStates.hookHowItWorksPhone.data,
+    ui: toolkitStates.hookHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the hook's five steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Exit 0 commits. Exit 1 prints one line for each problem.')).toBeVisible()
+    await expect(within(item).queryByText('Tests')).toBeNull()
+  },
+}
