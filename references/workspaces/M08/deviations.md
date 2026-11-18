@@ -1,0 +1,83 @@
+# M08 deviations
+
+What still differs from Figma M8 · Folders (D4's folders and folder picker
+in a sheet over drift check on the phone, `phoneFolders`), after the last
+fidelity run (`pnpm fidelity workspaces M08`, 2026-11-17, library
+1.0.0-beta.25), each with its reason. The library gaps are in
+`web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
+`PhoneChat` with drift check, no ⋯ and the folders chip in place of the
+context label; `PhoneFolders` (`BottomSheet` titled Folders with its
+close button) holds D4's `FolderRows`, a rule, `FolderPickerList
+size="sheet"` and Add ~/the-bridge in a `ScrollFrame` footer, and the
+search has the focus with its caret after "~/the-".
+
+## Checks
+
+- Text: pass. `exceptions.json` lists the composer's placeholder
+  ("Message, or / for a skill"): the composer stays at the bottom of the
+  chat (d-107) and the sheet covers it whole, but the text check counts a
+  covered run as extra text. Figma leaves the composer out under its
+  sheet.
+- Position: fail, 3 of 17 layers pass: the header (`128:671`), the back
+  button (`128:673`) and Erik's message (`128:701`). Fourteen fail:
+  - `128:695` (the folders chip): w +4.9.
+  - `128:716` (~/omni-brain): y +130.
+  - `128:722` (~/omni): y +129.
+  - `128:730` (Add folder): y +128.
+  - `128:735` (the rule over the picker): y +126.
+  - `128:736` (the picker's title row): y +126, h +6.
+  - `128:747` (the search): y +132.
+  - `128:754`, `128:760`, `128:766` (the recent folders): y +134, +133,
+    +132.
+  - `128:779`, `128:786`, `128:793` (the folders of ~/): y +132, +133,
+    +134.
+  - `128:802` (Add ~/the-bridge): y -16.
+- Rules: pass.
+
+## Deviations
+
+- **The sheet is shorter and starts much lower (Phone folders sheet),
+  `128:716` y +130, `128:722` y +129, `128:730` y +128, `128:735` y +126,
+  `128:736` y +126, `128:747` y +132, `128:754` y +134, `128:760` y +133,
+  `128:766` y +132, `128:779` y +132, `128:786` y +133, `128:793`
+  y +134.** Figma's sheet is 786 high from y 58, with a 147 px empty space
+  over Add. `BottomSheet` is as high as its content and no size token
+  gives Figma's height, so the sheet starts at about y 204: the title row,
+  the folders and the picker sit about 130 px lower, with no empty space
+  over Add, and Erik's message and the header's second row show above the
+  sheet, under the scrim.
+- **The title row is taller (Phone folders sheet).** `BottomSheet`'s title
+  row with its close button is 46 high against Figma's 22 row and its
+  8 px gaps, and its × is 16 px in a 28 px button against Figma's 18 px.
+- **Add ~/the-bridge sits 16 px higher (Phone folders sheet), `128:802`
+  y -16.** `BottomSheet` keeps the 34 px safe area
+  (`shell.safeAreaBottom`) under its content against Figma's 23, and
+  `Button size="xl"` is 44 high against Figma's 40.
+- **The folders chip is 5 px wider (Phone folders sheet), `128:695`
+  w +4.9.** `Button size="xs"` pads and spaces the folder icon and
+  "2 folders" so the chip is 88 × 24 against Figma's 83 × 22, and the icon
+  is 12 px against 13.
+- **The picker's title row is 6 px taller (Folder picker), `128:736`
+  h +6.** Close is a 24 px button against Figma's 18 px ×; the title's
+  folder icon is 16 px against 18, as in D04.
+- **Search field (Folder picker).** `SearchField` draws "~/the-" in `body`
+  (Geist 14) against Figma's Geist Mono and adds a clear × at the end,
+  which Figma has not, as in D04. The focus trap selects the field's text
+  when the sheet opens; the sheet puts the caret after the text, as Figma
+  draws it.
+- **Rows (Folder list, Folder picker).** The folder rows are 36 high
+  (`Button size="lg"`) against 37, Add folder 28 against 30 and drawn
+  solid where Figma's border is dashed, the recent rows 32 against 33 and
+  35 (the chosen ~/the-bridge), the folders of ~/ 32 against 31; all
+  within the tolerance. "working folder" is `fg.muted`, as in D04.
+- **Chat header (Chat header, Chat header text).** As in M03: the title is
+  `subtitle` (17/24) against Figma's SemiBold 16 and the model chip 26
+  high against 22; Figma's header here has no ⋯ and no "context" label,
+  and the build leaves both out.
+- **No status bar or home indicator.** The app draws no status bar
+  (d-089), so the side-by-side shows a blank band at the top.
+- **What the sheet does not do yet.** Add ~/the-bridge, a folder's × and
+  the folders of ~/ do nothing; a recent folder can be chosen, the
+  picker's × closes the picker and Add folder opens it again, and the
+  sheet's ×, the scrim and Escape close the sheet, which the chip opens
+  again.
