@@ -1,7 +1,8 @@
 // Figma Toolkit T10 "T10 · How a skill works": the skill writer open on the
 // iPad mini, on its How it works tab, as D14 (skillHowItWorks) shows it on the
 // desktop: the steps stand in one column, each with what it uses. The tablet's
-// trigger and step lines are shorter than D14's; everything else is D14's data.
+// trigger and step lines are shorter than D14's, and the back row names the
+// item in place of the kind badge and path rows; everything else is D14's data.
 // Copy word for word from references/toolkit/T10/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
@@ -24,6 +25,8 @@ const descriptions: Readonly<Record<string, string>> = {
 function tabletHow(how: How): How {
   return {
     ...how,
+    // T10 461:244: the back row names the item, with no kind badge or path row under it.
+    named: true,
     // T10 461:266.
     trigger: 'Loads when a task writes text that another person reads',
     steps: how.steps.map((s) => ({ ...s, description: descriptions[s.number] ?? s.description })),

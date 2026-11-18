@@ -94,3 +94,28 @@ describe('the How it works tab on the phone (M12)', () => {
     expect(Math.round((tabs?.top ?? 0) - (title?.bottom ?? -1))).toBe(10)
   })
 })
+
+// T36: a rule's How it works on a tablet keeps the item's header, as on its Overview (T17): the back row to Toolkit
+// with no breadcrumb, the kind badge and the path row; then T10's column, with nothing under the steps.
+describe('the How it works tab of a rule on a tablet (T36)', () => {
+  it('keeps the kind badge and path row over the column, with no breadcrumb', async () => {
+    await page.viewport(756, 1129)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=ruleHowItWorksTablet'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(4)
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="path row"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="chat path"]')).toBeNull()
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
+    expect(Math.round(trigger?.width ?? 0)).toBe(Math.round(list?.width ?? -1))
+    // Figma's trigger starts 14 under the tabs (495:1923 ends at 253, 495:1936 starts at 267); `ItemTabs` pads its
+    // list 2 below the tabs (LIBRARY_GAPS.md, Item tab spacing), so the trigger is 12 under the tab list.
+    const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
+  })
+})

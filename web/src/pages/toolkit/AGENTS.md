@@ -130,9 +130,13 @@ what each file of a page folder is for.
   step lines) the tab is `ToolkitHowColumn`: no box, header, legend or
   source line; the trigger spans the item, the steps stand in one column
   (`ToolkitHowStep compact`: the number beside the text, the uses side by
-  side) and the chat path follows. The back row names the item (Toolkit ›
-  writer, `ToolkitItemBack named`), and the kind badge and path rows are
-  left out. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
+  side) and the chat path follows. Its `how` sets `named`: the back row
+  names the item (Toolkit › writer, `ToolkitItemBack named`), and the kind
+  badge and path rows are left out. A rule on a tablet (T36,
+  `ruleHowItWorksTablet`, D37's data with no `elsewhere`) does not set
+  `named`, so the item keeps T17's header (Toolkit, the kind badge, the
+  name and the path row) and the column starts where the tabs' panel puts
+  it. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
   is the same column (`ToolkitHowColumn layout="phone"`), with the title in
   the smaller title style and the rows 10 apart. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.

@@ -10,7 +10,8 @@
 // scrolls; opened from another item's links (T7), the back row is a
 // breadcrumb back to that item (`ToolkitItemBack`). On the phone (M2) the actions are icon buttons and when the item
 // changed sits beside the kind badge. On How it works on a tablet (T10) the back row names the item (Toolkit ›
-// writer), and the kind badge and path rows are left out: the title sits over the tabs. On the phone (M12) the
+// writer), and the kind badge and path rows are left out: the title sits over the tabs. An item whose `how` is not
+// `named` (T36, a rule) keeps its Overview's header on How it works. On the phone (M12) the
 // title is smaller and the rows are 10 apart. Nothing edits the item (R35). Props
 // only.
 import {
@@ -112,9 +113,10 @@ const howHeaderLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '495:948',
   'hooks/commit-msg': '495:1574',
 }
-// On How it works on a tablet: writer in T10 (461:255).
+// On How it works on a tablet: writer in T10 (461:255), the rule skills in T36 (495:1827).
 const tabletHowTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '461:255',
+  'rules/skills.md': '495:1827',
 }
 // On How it works on the phone: writer in M12 (461:560).
 const phoneHowTitleLayers: Readonly<Record<string, string>> = {
@@ -173,8 +175,9 @@ export function ToolkitItem({
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
-  // How it works on a tablet or phone (T10): no kind badge or path row, and the back row names the item.
-  const narrowHow = !desktop && tab === 'how'
+  // How it works on a tablet or phone, when the item's `how` asks for it (T10): no kind badge or path row, and the
+  // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview.
+  const narrowHow = !desktop && tab === 'how' && detail.how?.named === true
   const actions = (
     <ToolkitItemActions gap={desktop ? '10' : '8'} iconOnly={phone} onDiscuss={onDiscuss} onShowOnMap={onShowOnMap} />
   )

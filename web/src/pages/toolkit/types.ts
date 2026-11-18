@@ -208,6 +208,11 @@ const ToolkitHowItWorks = z.object({
   elsewhere: z.object({ label: z.string(), text: z.string() }).optional(),
   /** Where the steps come from (D14 `source` 459:772), under the rest. */
   note: z.string().optional(),
+  /**
+   * On a tablet or the phone, the back row names the item (Toolkit › writer, T10 461:244) and the kind badge and path
+   * rows are left out (T10, M12). When not set the tab keeps the item's header as on the Overview (T36 495:1803).
+   */
+  named: z.boolean().optional(),
 })
 
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */

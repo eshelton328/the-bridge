@@ -3,7 +3,8 @@
 // item; the steps in one column, each card a row as wide as the item (`ToolkitHowStep compact`) with the arrow down
 // between them; then the shorter path a chat answer takes (the library's `ChatPath`) or what happens elsewhere instead
 // (one line in a notice Panel). It takes any list of steps, so a rule's, an agent's or a hook's draw the same way.
-// On the phone (M12 461:570 to 501:142) the rows are 10 apart. Props only.
+// On the phone (M12 461:570 to 501:142) the rows are 10 apart. Under the item's full header (T36, a rule) it starts
+// where the tabs' panel puts it. Props only.
 import { ArrowDownIcon, ChatPath, Panel } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -16,6 +17,9 @@ type How = NonNullable<ToolkitItemDetailView['how']>
 // T10 461:256 to 501:102: the rows 12 apart. The tabs' panel puts its content 16 under the tabs, where Figma has 12
 // (461:265 starts 12 under the tabs' end), so the column starts 4 higher.
 const column = css({ display: 'flex', flexDirection: 'column', gap: '12', mt: '-4' })
+// T36 495:1936: under the item's full header (a `how` that is not `named`) the trigger starts 14 under the tabs, as the
+// header's rows are 14 apart, so the column keeps the tabs' panel's place.
+const headedColumn = css({ display: 'flex', flexDirection: 'column', gap: '12' })
 // M12 461:561 to 501:142: on the phone the rows are 10 apart, and the trigger starts 10 under the tabs, so 6 higher.
 const phoneColumn = css({ display: 'flex', flexDirection: 'column', gap: '10', mt: '-6' })
 // T10 461:265: a green-bordered box across the item, its text 11 in and 7 above and below, with no icon. The notice
@@ -40,7 +44,7 @@ export type ToolkitHowColumnProps = {
 
 export function ToolkitHowColumn({ how, layout = 'tablet' }: ToolkitHowColumnProps) {
   return (
-    <div className={layout === 'phone' ? phoneColumn : column}>
+    <div className={layout === 'phone' ? phoneColumn : how.named === true ? column : headedColumn}>
       {how.trigger === undefined ? null : (
         <div data-figma="trigger">
           <Panel variant="notice" tone="done">

@@ -440,3 +440,25 @@ export const SkillHowItWorksPhone: Story = {
     await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
   },
 }
+
+export const RuleHowItWorksTablet: Story = {
+  name: 'T36: a rule open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.ruleHowItWorksTablet.data,
+    ui: toolkitStates.ruleHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the rule's steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('The rule has paths, so link.sh links it into .claude/rules/.')).toBeVisible()
+    await expect(
+      within(item).getByText('Loads when a file under toolkit/skills/** or skills/** changes.'),
+    ).toBeVisible()
+    await expect(within(item).queryByText('In Codex')).toBeNull()
+  },
+}
