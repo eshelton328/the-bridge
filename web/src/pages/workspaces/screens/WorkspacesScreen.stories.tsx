@@ -692,3 +692,15 @@ export const PhoneRenameChat: Story = {
     await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
   },
 }
+
+export const TabletEdit: Story = {
+  name: 'T1: edit mode on the tablet, with a workspace renamed in place and Move to…',
+  args: { data: workspacesStates.tabletEdit.data, ui: workspacesStates.tabletEdit.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the tablet's menu draws T1. WorkspacesTabletEdit.test.tsx checks edit mode at a tablet's width.
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByText('theme tokens')).toBeNull()
+    await expect(canvas.queryByText('theme explorations')).toBeNull()
+  },
+}

@@ -33,6 +33,8 @@
 // (`ui.renaming`, ChatNameField), which the actions' Rename opens: a tap
 // outside saves the name in `ui.names`, × undoes the change; either gives the
 // focus back to the message box if it had it before (`ui.refocusMessage`).
+// T1 draws the list in edit mode at a tablet's width (`device="tablet"`): the
+// tablet's backdrop, shell and tab bar, whose More goes to its page.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -54,6 +56,8 @@ import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
 export type WorkspacesPhoneProps = {
+  /** The device whose width the screen has: the phone, or a tablet in a state with `tabletList` (T1). */
+  device: 'phone' | 'tablet'
   /** The state's data, with the names Erik gave chats in place of their titles. */
   data: WorkspacesData
   /** The phone's labels. */
@@ -63,7 +67,7 @@ export type WorkspacesPhoneProps = {
   onUiChange: (change: Partial<WorkspacesUi>) => void
 }
 
-export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
+export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
@@ -104,9 +108,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   }
   if (ui.newChatOpen === true && data.newChat !== undefined)
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneNewChat
@@ -132,9 +136,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     transcript !== undefined
   )
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneSubagentTranscript
@@ -160,9 +164,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     data.subagents !== undefined
   )
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneSubagents
@@ -201,9 +205,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   if (chat !== undefined)
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneChat
@@ -354,9 +358,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
       </Backdrop>
     )
   return (
-    <Backdrop size="phone">
+    <Backdrop size={device}>
       <AppShell
-        size="phone"
+        size={device}
         view="list"
         // The list runs under the tab bar, as Figma draws the phone pages; its last workspace scrolls clear of the bar
         // (PhoneTabBar.test.tsx). The chat, its subagents and New chat have no tab bar.
@@ -364,16 +368,18 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
         tabBar={
           <AppTabBar
             selected="workspaces"
-            device="phone"
+            device={device}
             inboxBadge={data.railBadge}
             onSelect={(next) => {
-              if (next === 'more') setMoreOpen(true)
+              // The tablet has no More drawer: More goes to its page, as on the Inbox's tablet.
+              if (next === 'more' && device === 'phone') setMoreOpen(true)
               else onNavigate?.(next)
             }}
           />
         }
         list={
           <PhoneWorkspaceList
+            device={device}
             text={text}
             workspaces={data.workspaces}
             selected={ui.focusedPane}
@@ -424,7 +430,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
           layers={data.layers?.sheetIcons}
         />
       )}
-      <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} />
+      {device === 'phone' ? <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} /> : null}
     </Backdrop>
   )
 }

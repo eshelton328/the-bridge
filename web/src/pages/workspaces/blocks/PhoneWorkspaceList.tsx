@@ -13,7 +13,10 @@
 // With `text.workspaceMenu`, the ⋯ of a workspace's header opens its actions
 // (M14, `ui.workspaceMenuFor`, the sheet in WorkspacesPhone). With
 // `text.addMenu`, + opens New chat and New workspace (M15, `ui.addMenuOpen`,
-// PhoneAddMenu). Props only.
+// PhoneAddMenu). With `text.moveTo`, edit mode draws Move to… in place of
+// the status of its chats (T1 105:1594), which opens the chat's actions with
+// Move to workspace's list open. At a tablet's width (T1, `device`) the list
+// takes the tablet's inset. Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
@@ -27,6 +30,9 @@ const fill = css({ flex: '1' })
 // M1 105:2329: the large title sits 4 in from the header's edge, over the group chevrons, and Edit and + end 4 in.
 // Figma's header is 44 high (105:2328) where `PageHeader size="phone"` is 40, so it pads 4 under the title.
 const header = css({ px: '4', pb: '4' })
+// T1 105:1518: on the tablet + ends 4 in from the header (105:1525) where the Container pads 2 more than Figma's 22,
+// so the header pads 2 at its end; Done (105:1523) sits 6 before +.
+const tabletHeader = css({ ps: '4', pe: '2', pb: '4' })
 // A text button draws its icon in the accent colour; Figma draws the row's ⋯ in grey (M1 146:3). Figma's ⋯ ends 2 in
 // from the row's edge, where `ListRow` pads 10 inside its border, so the button reaches 8 into that padding and the
 // status moves with it. The button is 36 high in a 52 px row, as in Figma (146:2), so it reaches 4 into the padding
@@ -38,6 +44,8 @@ const without = (record: Readonly<Record<string, string>>, id: string) =>
   Object.fromEntries(Object.entries(record).filter(([key]) => key !== id))
 
 export type PhoneWorkspaceListProps = {
+  /** The phone, or a tablet in a state with `tabletList` (T1 105:1517): the Container's inset follows it. */
+  device?: 'phone' | 'tablet' | undefined
   text: PhoneText
   workspaces: readonly Workspace[]
   /** The chat drawn selected: the one shown last. */
@@ -53,6 +61,7 @@ export type PhoneWorkspaceListProps = {
 }
 
 export function PhoneWorkspaceList({
+  device = 'phone',
   text,
   workspaces,
   selected,
@@ -102,8 +111,8 @@ export function PhoneWorkspaceList({
   const setOpen = (id: string, open: boolean) =>
     onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
   return (
-    <Container size="phone" gap="4" className={fill} data-figma={layers?.phoneList}>
-      <div className={header} data-figma={layers?.phoneHeader}>
+    <Container size={device} gap="4" className={fill} data-figma={layers?.phoneList}>
+      <div className={device === 'tablet' ? tabletHeader : header} data-figma={layers?.phoneHeader}>
         <PageHeader size="phone" title={text.title}>
           {editing ? (
             // M2 105:2508: Done ends edit mode and closes the fields; a field with the focus saves as it blurs.
@@ -140,6 +149,7 @@ export function PhoneWorkspaceList({
         editing ? (
           <PhoneEditGroup
             key={w.id}
+            device={device}
             workspace={w}
             open={!collapsed.includes(w.id)}
             onOpenChange={(open) => setOpen(w.id, open)}
@@ -163,6 +173,12 @@ export function PhoneWorkspaceList({
               })
             }
             onClose={closeText?.workspaces[w.id] === undefined ? undefined : () => onUiChange?.({ closing: w.id })}
+            moveTo={text.moveTo}
+            onMove={
+              text.rowMenu === undefined
+                ? undefined
+                : (chat) => onUiChange?.({ menuFor: chat, moveOpen: true, menuHighlight: null })
+            }
             layers={layers}
           />
         ) : (

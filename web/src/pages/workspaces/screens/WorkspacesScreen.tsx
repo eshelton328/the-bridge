@@ -19,8 +19,9 @@
 // alone, and a toast over its composer confirms a move, with Undo (D20).
 // Rename chat turns the chat's name in its header into a field (D21).
 // The screen lays out by its width (ViewportFrame): a state with the phone's
-// labels draws the phone layout at a phone's width (M1, WorkspacesPhone);
-// every other width, and a state without them, draws the desktop layout.
+// labels draws the phone layout at a phone's width (M1, WorkspacesPhone),
+// and at a tablet's width too when it has `tabletList` (T1); every other
+// width, and a state without them, draws the desktop layout.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -109,8 +110,20 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
     p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
   )
   const named = { ...data, workspaces, panes }
-  if (layout === 'phone' && data.phone !== undefined)
-    return <WorkspacesPhone data={named} text={data.phone} ui={ui} onNavigate={onNavigate} onUiChange={change} />
+  // T1: a state with `tabletList` draws the phone's views at a tablet's width too, with the tablet's tab bar.
+  const phoneDevice =
+    layout === 'phone' ? 'phone' : layout === 'tablet' && data.tabletList === true ? 'tablet' : undefined
+  if (phoneDevice !== undefined && data.phone !== undefined)
+    return (
+      <WorkspacesPhone
+        device={phoneDevice}
+        data={named}
+        text={data.phone}
+        ui={ui}
+        onNavigate={onNavigate}
+        onUiChange={change}
+      />
+    )
   const current = workspaces.find((w) => w.id === data.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>

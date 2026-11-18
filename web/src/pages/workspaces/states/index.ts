@@ -46,6 +46,7 @@ import { phoneSubtask } from './phoneSubtask.ts'
 import { phoneSubtaskRunning } from './phoneSubtaskRunning.ts'
 import { phoneMovedChat } from './phoneMovedChat.ts'
 import { phoneRenameChat } from './phoneRenameChat.ts'
+import { tabletEdit } from './tabletEdit.ts'
 
 export const workspacesStates = {
   workbench,
@@ -93,4 +94,5 @@ export const workspacesStates = {
   phoneSubtaskRunning,
   phoneMovedChat,
   phoneRenameChat,
+  tabletEdit,
 }

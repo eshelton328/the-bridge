@@ -394,6 +394,11 @@ export const PhoneText = z.object({
    * edit mode. Without it, + draws only.
    */
   addMenu: z.object({ newChat: z.string(), newWorkspace: z.string(), untitled: z.string() }).optional(),
+  /**
+   * Move to… in edit mode (T1 105:1594): the button that takes the place of the status of each chat in `chats`. With
+   * `rowMenu`, it opens the chat's actions with Move to workspace's list open; without it, it draws only.
+   */
+  moveTo: z.object({ label: z.string(), chats: z.array(z.string()) }).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -511,6 +516,8 @@ export const SidebarLayers = z.object({
   rowMenus: z.record(z.string(), z.string()).optional(),
   /** The fields that rename a chat or a workspace in the phone's list, by chat or workspace id (M2 146:37, 105:2614). */
   renameFields: z.record(z.string(), z.string()).optional(),
+  /** Move to… in place of a chat row's status in the tablet's edit mode, by chat id (T1 105:1594). */
+  rowMoves: z.record(z.string(), z.string()).optional(),
   /** The back button over a chat on the phone (M3 105:2750). */
   phoneBack: z.string().optional(),
   /** The skill list after "/" in the chat's composer; D1's (105:406) when not set. */
@@ -694,6 +701,11 @@ export const WorkspacesData = z.object({
   toast: z.object({ text: z.string(), action: z.string() }).optional(),
   /** The phone's labels (M1); with them, a phone's width draws the phone layout: the list and the tab bar. */
   phone: PhoneText.optional(),
+  /**
+   * `true` (T1): with the phone's labels, a tablet's width draws the phone's list too, with the tablet's tab bar. When
+   * not set, a tablet's width draws the desktop layout.
+   */
+  tabletList: z.boolean().optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 

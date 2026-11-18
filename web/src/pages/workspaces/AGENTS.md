@@ -15,8 +15,10 @@ first: it says what each file of a page folder is for.
   and its last workspace scrolls clear of it (`app/PhoneTabBar.test.tsx`).
   The views with no tab bar keep their footers (the composer, New chat's
   start bar) in `ScrollFrame` footers, which the library lifts above a bar.
-  The page has no tablet layout: a tablet draws the desktop layout, with
-  the rail and no tab bar. M1 is its home, `PhoneWorkspaceList`;
+  A tablet draws the desktop layout, with the rail and no tab bar, except
+  for a state with `data.tabletList` (T1): it draws the phone's views at
+  the tablet's width (`WorkspacesPhone device="tablet"`), with the
+  tablet's backdrop, shell and tab bar, whose More goes to its page. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
@@ -269,6 +271,12 @@ first: it says what each file of a page folder is for.
   outside saves the name in `ui.names`, × undoes the change. Either
   gives the focus back to the message box if it had it before Rename
   (`ui.refocusMessage`).
+  T1 adds `MoveButton` (Move to…, a `Button size="xs"` with the move
+  mark) and `moveTo` and `onMove` to `PhoneEditGroup`: in edit mode a chat
+  in `data.phone.moveTo` shows Move to… in place of its status, which opens
+  its actions (`ui.menuFor`, M9's sheet) with Move to workspace's list
+  open; and `device` to `PhoneWorkspaceList` and `PhoneEditGroup` (the
+  tablet's Container inset and header ends).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -355,7 +363,9 @@ first: it says what each file of a page folder is for.
   "Moved to the-bridge" and Undo), M23 `phoneRenameChat` (from
   `phoneChatFull`, with M18's empty message box, M4's chat actions and
   D21's rename: the chat full screen with its name a field in the header,
-  the focus in the field).
+  the focus in the field), T1 `tabletEdit` (from `phoneEdit`, with
+  bridge themes' name no field and M9's chat actions: edit mode on the
+  tablet, the-bridge's name a field and Move to… on drift check).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -400,7 +410,8 @@ first: it says what each file of a page folder is for.
   the labels of the menu that + opens, and its layers in
   `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
   sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
-  in `layers.phoneSubtask`) and
+  in `layers.phoneSubtask`; for T1 `tabletList`, `phone.moveTo` and the
+  Move to… buttons' layers in `layers.rowMoves`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
