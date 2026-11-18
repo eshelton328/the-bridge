@@ -185,6 +185,16 @@ export const SubagentsPanel = z.object({
   hideTranscript: z.string(),
   /** The label of the button that stops a running subagent. */
   stop: z.string(),
+  /**
+   * The word after the number of running subagents on the phone, such as "running" in "3 · 2 running" (M6 105:3185);
+   * without it, the phone shows the count alone.
+   */
+  running: z.string().optional(),
+  /**
+   * The accessible name of each card's chevron, before the subagent's title, such as "Open the transcript of" (M6
+   * 147:15). The chevron opens the full transcript (M12); without it, the cards have none.
+   */
+  openTranscript: z.string().optional(),
   items: z.array(Subagent),
 })
 export type SubagentsPanel = z.infer<typeof SubagentsPanel>
@@ -341,6 +351,14 @@ export const SidebarLayers = z.object({
   /** The subagents panel and its cards, by subagent id (D3). */
   subagents: z.string().optional(),
   subagentCards: z.record(z.string(), z.string()).optional(),
+  /**
+   * The subagents view on the phone (M6): its header (105:3176), the title (105:3181), the count line (105:3185) and
+   * each card's chevron, by subagent id (147:15). The back button is `phoneBack`.
+   */
+  subagentsHeader: z.string().optional(),
+  subagentsTitle: z.string().optional(),
+  subagentsCount: z.string().optional(),
+  subagentChevrons: z.record(z.string(), z.string()).optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
@@ -585,10 +603,12 @@ export const WorkspacesUi = z.object({
   /** The names Erik gave workspaces, by workspace id, in place of their labels in the data. */
   workspaceNames: z.record(z.string(), z.string()).optional(),
   /**
-   * What fills the phone's screen: `list`, the workspaces (M1, the default), or `chat`, the focused chat with its
-   * header and composer and no tab bar (M3). A tap on a chat in the list opens it; the chat's back button returns.
+   * What fills the phone's screen: `list`, the workspaces (M1, the default), `chat`, the focused chat with its
+   * header and composer and no tab bar (M3), or `subagents`, the focused chat's subagents (M6). A tap on a chat in the
+   * list opens it; the chat's back button returns. Subagents in the chat actions opens the subagents, and their back
+   * button returns to the chat.
    */
-  phoneView: z.enum(['list', 'chat']).optional(),
+  phoneView: z.enum(['list', 'chat', 'subagents']).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

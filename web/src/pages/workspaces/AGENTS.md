@@ -14,8 +14,9 @@ first: it says what each file of a page folder is for.
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
-  the side chat, a sheet over the chat (`ui.sideChatOpen`, `PhoneSideChat`).
-  Every other width, and a state without `data.phone` (D1 to D21), draws
+  the side chat, a sheet over the chat (`ui.sideChatOpen`, `PhoneSideChat`);
+  M6 is the chat's subagents (`ui.phoneView: 'subagents'`, `PhoneSubagents`),
+  with no tab bar. Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
   Later phone frames add their views to `WorkspacesPhone`.
@@ -154,7 +155,14 @@ first: it says what each file of a page folder is for.
   `placement="sheet"` to `SideChatPanel` (the title row with the bubble,
   `/btw` and a grey × at 20 px, the 17 px title, and `sideHeader`, its layer)
   and `size="sheet"` to `ChatPane`; Side chat in the chat actions sheet
-  opens it, and × or the scrim closes it. Later frames add to these blocks.
+  opens it, and × or the scrim closes it. M6 adds `PhoneSubagents` (the
+  chat's subagents on the phone: `BackRow` to the chat, the title in
+  `PageHeader size="phone"` and the count line, "3 · 2 running", in a
+  `ScrollFrame` header over the cards), and `size="phone"` (the meta in
+  `monoSm`) and `openLabel` (a grey chevron after the status, which opens
+  the full transcript, M12) to `SubagentCard`; Subagents in the chat
+  actions sheet opens it, and its back row returns to the chat. Later
+  frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -199,7 +207,9 @@ first: it says what each file of a page folder is for.
   (from `phoneChat`, without the skills and the "/": the chat actions
   sheet open, Move to workspace's list open on the-bridge), M5
   `phoneSideChat` (from `phoneChatActions`, without the sheet: D2's side
-  chat with M5's note, open in a sheet over the chat).
+  chat with M5's note, open in a sheet over the chat), M6
+  `phoneSubagents` (from `phoneChatActions`, without the sheet: D3's
+  subagents, Layout notes' transcript open, on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -226,7 +236,10 @@ first: it says what each file of a page folder is for.
   and the fields' layers in `layers.renameFields`; for M3 `phone.back`
   and the layers `phoneBack` and `skills`; for M4 `phone.chatMenu`, the
   sheet's actions, and the sheet's icons in `layers.sheetIcons`; for M5
-  the side chat's title row in `layers.sideHeader`) and
+  the side chat's title row in `layers.sideHeader`; for M6 the subagents'
+  `running` and `openTranscript` labels and the view's layers in
+  `layers.subagentsHeader`, `subagentsTitle`, `subagentsCount` and
+  `subagentChevrons`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -242,6 +255,6 @@ first: it says what each file of a page folder is for.
   and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
-  fills the phone's screen), each a Zod schema.
+  fills the phone's screen, `subagents` in M6), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

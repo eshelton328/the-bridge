@@ -413,3 +413,17 @@ export const PhoneSideChat: Story = {
     ).toBeVisible()
   },
 }
+
+export const PhoneSubagents: Story = {
+  name: "M6: a chat's subagents on the phone",
+  args: { data: workspacesStates.phoneSubagents.data, ui: workspacesStates.phoneSubagents.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; at a phone's width the subagents fill the screen (M6).
+    // WorkspacesPhoneSubagents.test.tsx checks them at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
+  },
+}
