@@ -53,8 +53,10 @@ export type WorkspacesScreenProps = {
 export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUiChange }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
+  // Merge each change into the latest ui, not this render's: one event can report two changes, such as Rename
+  // chat's pick and then the menu's close, and the second must not drop the first.
   const change = (next: Partial<WorkspacesUi>) => {
-    setChanged({ of: stateUi, ui: { ...ui, ...next } })
+    setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
   // The names Erik gave chats (D21) take the place of their titles, in the sidebar and in the header.

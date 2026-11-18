@@ -34,9 +34,15 @@ export function ChatNameField({ name, onSave, onCancel, figma }: ChatNameFieldPr
     if (save) onSave?.(draft.trim() === '' ? name : draft.trim())
     else onCancel?.()
   }
-  // The field opens with the focus in it and the caret after the name.
+  // The field opens with the focus in it and the caret after the name. The focus waits a frame: opened from Rename
+  // chat, the closing menu gives the focus back to its ⋯ in a microtask, which would blur the field and save it.
   useEffect(() => {
-    rootRef.current?.querySelector('input')?.focus()
+    const frame = requestAnimationFrame(() => {
+      rootRef.current?.querySelector('input')?.focus()
+    })
+    return () => {
+      cancelAnimationFrame(frame)
+    }
   }, [])
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.nativeEvent.isComposing) return
