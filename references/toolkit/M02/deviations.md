@@ -15,9 +15,9 @@ and the item tabs' `tone` and `density` props (2026-11-17).
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Four strings are not visible: `FILES 11` (487:166),
-  `SKILL.md` (487:171), `references/` (487:175) and `6` (487:176), see
-  Under the tab bar.
+  covered text. `FILES 11` (487:166), `SKILL.md` (487:171), `references/`
+  (487:175) and `6` (487:176) pass since the tab bar lies over the page
+  (see Under the tab bar).
 - Position: 21 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `429:303`, `path badge`, `487:142`,
   `file preview`, `preview bar`, `rendered markdown`,
@@ -34,16 +34,16 @@ and the item tabs' `tone` and `density` props (2026-11-17).
 
 - **Under the tab bar.** Figma draws the item down to the evals link
   (y 1002), past the tab bar at y 767, so the Files heading is cut by
-  the bar's top edge and the first file lines lie under it. The render
-  scrolls the item in the DetailFrame body and cuts it at the same
-  place: `files` passes the position check, and `FILES 11`,
-  `SKILL.md` (487:171), `references/` and `6` are cut or scrolled
-  away, as in Figma. The text check counts them as not visible, and the
-  rule check reports the scrolling body as `hiddenOverflow`. The render
-  is right here, as on Inbox M15 and Toolkit M01; the builder's write of
-  `exceptions.json` for these four strings and this rule was refused by
-  the session's permission check, so they stay as failures for Erik to
-  accept.
+  the bar's top edge and the first file lines lie under it. The tab bar
+  lies over the page (AppShell `tabBarOverlay`, library 1.0.0-beta.26):
+  the DetailFrame body runs under the bar as Figma's item does, so
+  `FILES 11`, `SKILL.md` (487:171), `references/` and `6` lie under the
+  bar in both and the text check passes them. `files` passes the
+  position check. The rest of the item scrolls, and the rule check
+  reports the scrolling body as `hiddenOverflow`. The render is right
+  here, as on Inbox M15 and Toolkit M01; the builder's write of
+  `exceptions.json` for this rule was refused by the session's
+  permission check, so it stays as a failure for Erik to accept.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's, so Evals ends inside the

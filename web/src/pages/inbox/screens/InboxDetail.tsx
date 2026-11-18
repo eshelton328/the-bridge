@@ -113,11 +113,15 @@ export function InboxDetail({
       ) : null}
     </>
   )
+  // On a tablet or phone the item's ScrollFrame is the shell detail's own child, so it reaches under the tab bar and
+  // lifts its pinned bar and the end of its content above it (AppShell `tabBarOverlay`).
   if (side === undefined)
-    return (
-      <article className={pane} data-figma={layout === 'desktop' ? 'task pane' : undefined}>
+    return layout === 'desktop' ? (
+      <article className={pane} data-figma="task pane">
         {item}
       </article>
+    ) : (
+      item
     )
   return (
     <article className={withSide} data-figma="task pane">

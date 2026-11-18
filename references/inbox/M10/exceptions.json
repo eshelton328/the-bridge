@@ -24,7 +24,7 @@
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "div.app-shell__root > main.app-shell__detail > article > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
       "reason": "The task page scrolls on the phone, as in M2 and T4: Figma cuts the task (346:10960, 554 high) under the run card's bar (346:11085 at y 631); the render scrolls the page under the bar the same way."
     },
     {

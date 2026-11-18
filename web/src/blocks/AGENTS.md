@@ -12,7 +12,10 @@ here when a second page needs it.
   `onNavigate` for Artifacts and Toolkit.
 - `DetailFrame`: a detail pane (d-107) in the library's `ScrollFrame`:
   Back in its header on a tablet or phone, the content in the layout's
-  `Container`, and a footer that stays sticky at the end. The Inbox
+  `Container`, and a footer that stays sticky at the end, at
+  `bottom: var(--scroll-frame-inset, 0px)`. On a tablet or phone it is
+  the AppShell detail's own child, so with `tabBarOverlay` it reaches
+  under the tab bar and lifts the footer and the item's end above it. The Inbox
   details use it first; Toolkit and Artifacts use it for an open item.
 - `ViewportFrame`: fills its parent, measures its width and renders a
   page screen for that width's layout (`lib/viewport.ts`). A screen lays

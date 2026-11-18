@@ -7,7 +7,13 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (56 strings checked; 1 Figma strings under exceptions.json).
+- Text: pass (57 strings checked; none under exceptions.json). The list
+  runs under the tab bar (AppShell `tabBarOverlay`, library
+  1.0.0-beta.26), so "1 task hidden by filters" lies under the bar as
+  Figma draws it, and the check counts the covered line as shown.
+  `frame.json` holds that line's characters (layer 359:252), read with
+  a read-only `use_figma` call and saved with `pnpm fidelity:refs
+  --characters` (Erik's decision, 2026-11-17).
 - Position: 13 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
@@ -66,8 +72,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   chip.
 - **Hidden count.** "1 task hidden by filters" ends the list, under the
   tab bar, as in Figma; the rows and group headers above it put it a
-  little lower (`hidden count` y +10). Figma's metadata gives the text by
-  its layer name, and the exception says why.
+  little lower (`hidden count` y +10).
 - **Running row below the fold.** The checks render 806 px high, the
   screen below the status bar (d-102). The Running group starts 7 px
   lower than Figma's (`group · RUNNING` y +7), and its row's meta line

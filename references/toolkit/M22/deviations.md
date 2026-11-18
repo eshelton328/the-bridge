@@ -16,12 +16,12 @@ the item tabs' `tone` and `density` props (2026-11-17).
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Five strings are not visible: the code lines `# Checks a commit message against
+  covered text. Three strings are not visible: the code lines `# Checks a commit message against
   toolkit/rules/commits-and-prs.md and` (487:2240), `# exits 1 with one
   line per problem. Git runs it from the top of the work` (487:2243) and
   ``# tree once `core.hooksPath` is `toolkit/hooks` (link.sh sets that).``
-  (487:2246), see Code lines; and `6` (487:2248) and `set -u` (487:2249),
-  see Under the tab bar.
+  (487:2246), see Code lines. `6` (487:2248) and `set -u` (487:2249)
+  pass since the tab bar lies over the page (see Under the tab bar).
 - Position: 21 of 30 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:2043`, `path badge`, `487:2182`,
   `kind section · hook`, `facts`, `fact · Event`, `fact · State`,
@@ -42,10 +42,12 @@ the item tabs' `tone` and `density` props (2026-11-17).
 - **Under the tab bar.** Figma draws the script down past the frame's
   foot: line 4 (487:2241) runs under the tab bar at y 767, lines 5 and 6
   (`6`, `set -u`) are under it, and lines 7 to 10 and the files (487:2263)
-  are below the frame. The render scrolls the item in the DetailFrame
-  body and cuts it at the top of the tab bar, so line 6 (`6`, `set -u`) is
-  not visible, as in Figma, and the rule check reports the scrolling body
-  as `hiddenOverflow`. This is the scroll that Figma's own layout causes,
+  are below the frame. The tab bar lies over the page (AppShell
+  `tabBarOverlay`, library 1.0.0-beta.26): the DetailFrame body runs
+  under the bar as Figma's script does, so line 6 (`6`, `set -u`) lies
+  under the bar in both and the text check passes it. The rest of the
+  item scrolls, and the rule check reports the scrolling body as
+  `hiddenOverflow`. This is the scroll that Figma's own layout causes,
   as on M02 and M19; it is not an exception.
 - **Code lines.** Figma wraps a long line of the script under itself on
   the phone: lines 3, 4, 5 and 8 are two lines each, so the code box

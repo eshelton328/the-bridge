@@ -7,7 +7,7 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (61 strings checked; 5 Figma strings under exceptions.json).
+- Text: pass (64 strings checked; 2 Figma strings under exceptions.json).
 - Position: 12 of 14 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
@@ -73,8 +73,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   attribute.
 - **Sort button.** While the sheet is open the Sort icon shows pressed
   (cyan), as on the tablet (T9); Figma dims it under the scrim.
-- **Running row.** As in M11, its chat line and Working pill lie under
-  the tab bar in Figma and in the render (the exceptions say why).
+- **Running row.** As in M11, its meta line, chat line and Working pill
+  lie under the tab bar in Figma and in the render; the list runs under
+  the bar (AppShell `tabBarOverlay`), so the text check passes them with
+  no exception.
 - **Running row under the sheet.** The checks render 806 px high
   (d-102). The Running row lies under the Sort sheet in Figma and in the
   render (the exceptions say why).

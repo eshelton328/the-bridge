@@ -10,10 +10,12 @@ iPad mini; most differences are D1's (`../D01/deviations.md`).
 ## Checks
 
 - Text: passes. Hono server spike's description (405:220) shows whole,
-  as in Figma. The four strings of the third card row's body (405:278,
-  405:279, 405:302, 405:303) lie under the tab bar in Figma and in the
-  render, and Figma cuts the Tailscale description (414:667) with an
-  ellipsis; they are `missing` exceptions (`exceptions.json`).
+  as in Figma. The third card row's body lies under the tab bar in Figma
+  and in the render: the library runs under the bar (AppShell
+  `tabBarOverlay`, library 1.0.0-beta.26), so its first three strings
+  (405:278, 405:279, 405:302) pass. The fourth (405:303) is still not
+  seen in full, and Figma cuts the Tailscale description (414:667) with
+  an ellipsis; those two are `missing` exceptions (`exceptions.json`).
 - Position: 18 of 24 layers pass (`header`, `found status`, `list tools`,
   both groups, the six cards and `tab bar`). `button · Add a link`,
   `filter · chips`, `search`, `button · Sort`, `button · Filter` and

@@ -84,6 +84,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                   <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} />
                 ) : undefined
               }
+              // The library and the tablet's artifact page (T2) run under the tab bar, as Figma draws them; their
+              // end scrolls clear of it (ArtifactsStickyBars.test.tsx, PhoneTabBar.test.tsx).
+              tabBarOverlay
               tabBar={
                 layout === 'desktop' || (layout === 'tablet' && discussing) ? undefined : (
                   <AppTabBar

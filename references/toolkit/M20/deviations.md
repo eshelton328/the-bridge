@@ -19,11 +19,9 @@ delta and rule finding). The Checks below are from a rerun with library
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Two strings are not visible: the prompt's first
-  paragraph `You review one draft for
-  a reader who has none of its author’s context. You see what that reader
-  will see: the draft, and the sources a careful reader could open to
-  check it.` (487:1663) and `Inputs` (487:1664), see Under the tab bar.
+  covered text. The prompt's first paragraph (487:1663) and `Inputs`
+  (487:1664) pass since the tab bar lies over the page (see Under the
+  tab bar).
 - Position: 20 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1474`, `path badge`, `487:1613`,
   `kind section · agent`, `facts`, `fact · Claude`, `fact · Codex`,
@@ -42,12 +40,13 @@ delta and rule finding). The Checks below are from a rerun with library
 - **Under the tab bar.** Figma draws the item down to the file line
   (y 995), past the tab bar at y 767, so the prompt's first paragraph is
   cut by the bar's top edge and `Inputs`, its paragraph, Used in
-  workflows and Files lie under it. The render scrolls the item in the
-  DetailFrame body and cuts it at the same place: the paragraph
-  (487:1663) and `Inputs` (487:1664) are cut or scrolled away, as in
-  Figma, so the text check counts them as not visible, and the rule check
-  reports the scrolling body as `hiddenOverflow`. These stay as failures
-  for Erik to accept (no `exceptions.json`), as on M02.
+  workflows and Files lie under it. The tab bar lies over the page
+  (AppShell `tabBarOverlay`, library 1.0.0-beta.26): the DetailFrame
+  body runs under the bar as Figma's item does, so the paragraph
+  (487:1663) and `Inputs` (487:1664) lie under the bar in both and the
+  text check passes them. The rest of the item scrolls, and the rule
+  check reports the scrolling body as `hiddenOverflow`; it stays as a
+  failure for Erik to accept (no `exceptions.json`), as on M02.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's, so Evals ends inside the

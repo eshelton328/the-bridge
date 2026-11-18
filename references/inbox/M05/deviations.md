@@ -8,7 +8,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 
 ## Checks
 
-- Text: pass (28 strings checked; 2 Figma strings under exceptions.json).
+- Text: pass (29 strings checked; 1 Figma string under exceptions.json). Since the tab bar lies over the page (AppShell `tabBarOverlay`, library 1.0.0-beta.26), the note to the chat (346:9937) passes under the bar, and its exception is gone.
 - Position: 10 of 15 layers pass (`nav`, `task bar`, `title block`, `sticky action`, `tab bar`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.

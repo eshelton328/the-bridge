@@ -32,9 +32,10 @@ const tabletTask = css({ pt: '6', pb: '32' })
 // M3 346:9434: the title on one line, cut with an ellipsis, over the prompt.
 const scrolledTitle = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0', display: 'grid' })
 // T4 346:6281: the run card 11 below the bar's top edge and 10 above the tab bar, 22 in (24, d-072), on the chrome.
+// It sticks the ScrollFrame's inset above the bottom, so it stays above the tab bar that lies over the page.
 const footer = css({
   position: 'sticky',
-  bottom: '0',
+  bottom: '[var(--scroll-frame-inset, 0px)]',
   pt: '10',
   pb: '10',
   // Opaque, as PinnedAction: the chrome over the canvas, so the page that scrolls under it does not show through.
