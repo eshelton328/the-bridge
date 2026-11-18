@@ -259,6 +259,10 @@ first: it says what each file of a page folder is for.
   chat fills the screen as M17's does, still Working with Stop, the line
   where the subtask started is D18's `event` entry, and Back returns to
   the list, where layout notes is D18's nested row under bridge themes.
+  M22 adds `above` to `PhoneChat` (drawn over the composer, in
+  `ChatPane`'s `above` slot): D20's `ChatToast` while `ui.toastOpen`, whose
+  Undo closes it; the header names the workspace the chat moved to, and
+  Back returns to the list, where the chat heads that workspace.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -338,7 +342,11 @@ first: it says what each file of a page folder is for.
   M20's task: the Subtask sheet open on the phone), M21
   `phoneSubtaskRunning` (from `phoneChatFull`, with M18's empty message
   box, M4's chat actions with Subagents · 3 and D18's layout notes row:
-  the chat full screen, Working, with the line where the subtask started).
+  the chat full screen, Working, with the line where the subtask started),
+  M22 `phoneMovedChat` (from `phoneChatFull`, with M18's empty message
+  box, M4's chat actions and D20's move of bridge themes and theme tokens
+  to the-bridge, now `current`: the chat full screen with the toast
+  "Moved to the-bridge" and Undo).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

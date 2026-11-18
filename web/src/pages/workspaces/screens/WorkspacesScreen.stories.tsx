@@ -666,3 +666,16 @@ export const PhoneSubtaskRunning: Story = {
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }
+
+export const PhoneMovedChat: Story = {
+  name: 'M22: the chat moved to the-bridge on the phone, with a toast and Undo',
+  args: { data: workspacesStates.phoneMovedChat.data, ui: workspacesStates.phoneMovedChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D20's toast over its composer, and the phone's menu draws M22. WorkspacesPhoneMovedChat.test.tsx checks the chat
+    // at a phone's width. The toast stays open: the fidelity check renders the story after its play test.
+    const toast = canvas.getByRole('status')
+    await expect(toast).toHaveTextContent('Moved to the-bridge')
+    await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
+  },
+}
