@@ -15,6 +15,7 @@ import { sortOpen } from './sortOpen.ts'
 import { filterTablet } from './filterTablet.ts'
 import { discussTablet } from './discussTablet.ts'
 import { changeProposedTablet } from './changeProposedTablet.ts'
+import { libraryPhone } from './libraryPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -31,4 +32,5 @@ export const artifactsStates = {
   filterTablet,
   discussTablet,
   changeProposedTablet,
+  libraryPhone,
 }

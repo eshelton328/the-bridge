@@ -211,3 +211,15 @@ export const ChangeProposedTablet: Story = {
     await expect(canvasElement.querySelector('[data-figma="452:3978"]')).not.toBeNull()
   },
 }
+
+export const LibraryPhone: Story = {
+  name: 'M1: the library on a phone, as a list with small previews',
+  args: { data: artifactsStates.libraryPhone.data, ui: artifactsStates.libraryPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it; pnpm fidelity checks M1's list at the phone's width.
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Artifacts' })).toBeVisible()
+    await expect(canvas.getByRole('searchbox', { name: /Search artifacts/i })).toBeVisible()
+    await expect(canvas.getByText('Brain map prototype')).toBeInTheDocument()
+    await expect(canvas.queryByText('Type safety in agentic systems')).toBeNull()
+  },
+}

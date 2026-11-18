@@ -4,7 +4,8 @@
 // search takes the free width. With a Filter menu (D3) Filter opens it,
 // and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
 // controls are 36 high, 8 apart, and the search takes the free width, and
-// Filter opens its menu as a sheet over the tab bar (T3).
+// Filter opens its menu as a sheet over the tab bar (T3). On a phone (M1
+// 406:90) Sort and Filter are 36 px icon-only buttons.
 // Props only.
 import {
   Button,
@@ -56,6 +57,10 @@ export type LibraryToolsProps = {
   filterAs?: 'popover' | 'sheet' | undefined
   /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
   size?: 'md' | 'lg' | undefined
+  /** Sort and Filter as icon-only buttons, named by their labels (the phone, M1 406:97, 406:104). */
+  iconOnly?: boolean | undefined
+  /** Extra classes for the row, such as the phone's space above the controls (M1 406:90). */
+  className?: string | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
@@ -81,12 +86,14 @@ export function LibraryTools({
   onFilterApply,
   filterAs = 'popover',
   size = 'md',
+  iconOnly = false,
+  className,
   view,
   onViewChange,
 }: LibraryToolsProps) {
   const large = size === 'lg'
   return (
-    <Inline gap={large ? '8' : '6'} align="center" data-figma="list tools">
+    <Inline gap={large && !iconOnly ? '8' : '6'} align="center" className={className} data-figma="list tools">
       <div className={grow} data-figma="search">
         <SearchField
           label={placeholder}
@@ -102,11 +109,17 @@ export function LibraryTools({
       </div>
       {sortMenu === undefined ? (
         <span data-figma="button · Sort">
-          <Button size={size} textSize="sm" onClick={onSortClick}>
-            <SortDescIcon />
-            {sortLabel}
-            <ChevronDownIcon size="12" />
-          </Button>
+          {iconOnly ? (
+            <Button size={size} iconOnly aria-label={`Sort: ${sortLabel}`} onClick={onSortClick}>
+              <SortDescIcon />
+            </Button>
+          ) : (
+            <Button size={size} textSize="sm" onClick={onSortClick}>
+              <SortDescIcon />
+              {sortLabel}
+              <ChevronDownIcon size="12" />
+            </Button>
+          )}
         </span>
       ) : (
         <SortMenu
@@ -120,10 +133,16 @@ export function LibraryTools({
       )}
       {filterMenu === undefined ? (
         <span data-figma="button · Filter">
-          <Button size={size} textSize="sm" onClick={onFilterClick}>
-            <FilterIcon />
-            Filter
-          </Button>
+          {iconOnly ? (
+            <Button size={size} iconOnly aria-label="Filter" onClick={onFilterClick}>
+              <FilterIcon />
+            </Button>
+          ) : (
+            <Button size={size} textSize="sm" onClick={onFilterClick}>
+              <FilterIcon />
+              Filter
+            </Button>
+          )}
         </span>
       ) : filterAs === 'sheet' ? (
         <FilterSheet

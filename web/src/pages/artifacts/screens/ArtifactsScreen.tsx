@@ -8,7 +8,8 @@
 // library over the tab bar, and on a tablet an open artifact on its own page
 // under Back (T2), whose Discuss opens the discussion as a page of its own
 // with no tab bar (T4), and whose proposal's Apply returns to the artifact's
-// page, which shows Updated (T5). A state file's data and ui are its props; the
+// page, which shows Updated (T5); on a phone the library as a list of rows
+// (M1, LibraryPhone). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -24,6 +25,7 @@ import { ArtifactPage } from './ArtifactPage.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
+import { LibraryPhone } from './LibraryPhone.tsx'
 
 export type ArtifactsScreenProps = {
   data: ArtifactsData
@@ -104,7 +106,10 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 )
               }
               detail={
-                open === undefined || view === undefined ? (
+                (open === undefined || view === undefined) && layout === 'phone' ? (
+                  // M1: on a phone the library is a list of rows with small previews.
+                  <LibraryPhone data={data} ui={ui} onUiChange={onUiChange} />
+                ) : open === undefined || view === undefined ? (
                   <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
                 ) : layout === 'tablet' && discussing && thread !== undefined ? (
                   <ArtifactDiscussionPage
