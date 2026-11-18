@@ -50,15 +50,17 @@ describe('a subtask running on the phone', () => {
     // tokens, as in D18.
     const header = page.getByRole('button', { name: /omni-brain/i, expanded: true })
     await expect.element(header).toBeVisible()
-    const rows = page.elementLocator(
-      document.getElementById(header.element().getAttribute('aria-controls') ?? '') ?? document.body,
-    )
-    const rowElements = [...rows.element().children]
+    const rowsElement = document.getElementById(header.element().getAttribute('aria-controls') ?? '')
+    if (rowsElement === null) throw new Error("omni-brain's header controls no rows")
+    const rows = page.elementLocator(rowsElement)
+    const rowElements = [...rowsElement.children]
     // The row of a chat in omni-brain's rows, and where it stands among them.
     const row = (title: string) => {
       const text = rows.getByText(title, { exact: true }).element()
       const at = rowElements.findIndex((r) => r.contains(text))
-      return { at, element: rowElements[at] as HTMLElement }
+      const element = rowElements[at]
+      if (!(element instanceof HTMLElement)) throw new Error(`omni-brain has no row ${title}`)
+      return { at, element }
     }
     const parent = row('bridge themes')
     const sibling = row('theme tokens')
