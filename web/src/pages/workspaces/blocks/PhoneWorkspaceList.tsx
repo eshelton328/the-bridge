@@ -192,7 +192,7 @@ export function PhoneWorkspaceList({
       {closeText === undefined ? null : (
         <CloseWorkspaceDialog
           text={closeText}
-          workspace={ui.closing ?? null}
+          workspace={workspaces.find((w) => w.id === ui.closing) ?? null}
           onOpenChange={(open) => {
             if (!open) onUiChange?.({ closing: null })
           }}

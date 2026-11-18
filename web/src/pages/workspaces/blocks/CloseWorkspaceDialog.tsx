@@ -1,12 +1,13 @@
 // The dialog that asks before a workspace closes (M13 208:765): × on a
 // workspace in the phone's edit mode opens it. It names the workspace and the
-// chats that end with it; Close is red and Cancel is the easy target. The
+// chats that end with it, by its current name ("{workspace}" in its text), so
+// a renamed workspace is asked about by the name Erik gave it; Close is red and Cancel is the easy target. The
 // focus starts on the dialog's box, so Enter closes nothing. The library's
 // confirm dialog (`Dialog role="alertdialog"`) is its box. Props only.
 import { Button, Dialog, DialogClose } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { CloseWorkspaceText } from '../types.ts'
+import type { CloseWorkspaceText, Workspace } from '../types.ts'
 
 // M13 208:769, 208:771: Cancel and Close share the row's width, each 44 high.
 const half = css({ flex: '1' })
@@ -17,8 +18,8 @@ const buttons = css({ display: 'flex', flex: '1', gap: '10', pt: '8' })
 
 export type CloseWorkspaceDialogProps = {
   text: CloseWorkspaceText
-  /** The workspace the dialog asks about, by id; no dialog when it has no text in `text.workspaces`. */
-  workspace: string | null
+  /** The workspace the dialog asks about, with its current name; no dialog when it has no text in `text.workspaces`. */
+  workspace: Pick<Workspace, 'id' | 'label'> | null
   onOpenChange?: ((open: boolean) => void) | undefined
   /** Close was pressed: the workspace and its chats end. */
   onConfirm?: ((workspace: string) => void) | undefined
@@ -28,13 +29,14 @@ export type CloseWorkspaceDialogProps = {
 
 export function CloseWorkspaceDialog({ text, workspace, onOpenChange, onConfirm, layers }: CloseWorkspaceDialogProps) {
   const cancelRef = useRef<HTMLButtonElement>(null)
-  const asked = workspace === null ? undefined : text.workspaces[workspace]
+  const asked = workspace === null ? undefined : text.workspaces[workspace.id]
   if (workspace === null || asked === undefined) return null
+  const named = (line: string) => line.replaceAll('{workspace}', workspace.label)
   return (
     <Dialog
       role="alertdialog"
-      title={asked.title}
-      description={asked.text}
+      title={named(asked.title)}
+      description={named(asked.text)}
       open
       onOpenChange={onOpenChange}
       // The box itself takes the focus, so no button shows a focus ring as it opens, as Figma draws it (208:769);
@@ -58,7 +60,7 @@ export function CloseWorkspaceDialog({ text, workspace, onOpenChange, onConfirm,
             className={half}
             data-figma={layers?.close}
             onClick={() => {
-              onConfirm?.(workspace)
+              onConfirm?.(workspace.id)
             }}
           >
             {text.close}

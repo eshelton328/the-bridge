@@ -26,7 +26,7 @@ export const phoneCloseWorkspace = {
         close: 'Close',
         workspaces: {
           'omni-brain': {
-            title: 'Close omni-brain?',
+            title: 'Close {workspace}?',
             text: 'bridge themes and its subtask, drift check and the brain git shell all end with it. This can’t be undone.',
           },
         },

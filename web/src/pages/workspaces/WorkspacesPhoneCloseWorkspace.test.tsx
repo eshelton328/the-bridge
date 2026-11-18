@@ -56,4 +56,24 @@ describe('closing a workspace on the phone', () => {
     await expect.element(page.getByText('drift check')).not.toBeInTheDocument()
     await expect.element(page.getByRole('button', { name: 'Close the-bridge' })).toBeVisible()
   })
+
+  it('asks about a renamed workspace by its new name', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneCloseWorkspace
+    view = await testRender(
+      <WorkspacesScreen
+        data={data}
+        ui={{ ...ui, closing: null, renamingWorkspaces: { 'omni-brain': 'omni-brain' } }}
+        viewport="phone"
+      />,
+    )
+    const field = page.getByRole('searchbox', { name: 'Rename omni-brain' })
+    await userEvent.clear(field)
+    await userEvent.type(field, 'brain notes{Enter}')
+    await userEvent.click(page.getByRole('button', { name: 'Close brain notes' }))
+    const dialog = page.getByRole('alertdialog', { name: 'Close brain notes?' })
+    await expect.element(dialog).toBeVisible()
+    await expect.element(dialog.getByRole('heading', { name: 'Close brain notes?' })).toBeVisible()
+    expect(dialog.element().textContent).not.toContain('omni-brain')
+  })
 })

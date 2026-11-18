@@ -348,7 +348,8 @@ export type SidebarText = z.infer<typeof SidebarText>
 
 /**
  * The dialog that asks before a workspace closes (M13 208:765): Cancel, Close, and each workspace's title and text,
- * by workspace id. × on a workspace without text here draws only.
+ * by workspace id. "{workspace}" in the title or text is the workspace's current name, so a renamed workspace is
+ * asked about by its new name. × on a workspace without text here draws only.
  */
 export const CloseWorkspaceText = z.object({
   cancel: z.string(),
