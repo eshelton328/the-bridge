@@ -33,7 +33,10 @@ view. The frame has no exceptions.json.
   bar, as in Figma.
 - **Source switch and key figures** (`source · segmented` y -1 w -15.7
   h -2; `kpis` y -3 h +8). The switch is `ViewSwitch` 36 high and 16 px
-  narrower (View switch 38 px); each tile is 68 high where Figma's is 64
+  narrower (View switch 38 px). Chats and Headless are enabled, as Erik
+  approved on 2026-11-18: their labels are drawn in the switch's full
+  colour, no longer dimmed as disabled, and a tap opens M13's or M14's
+  view; each tile is 68 high where Figma's is 64
   (Activity KPI tile), and the values are in one colour.
 - **Calls per day** (`panel · calls per day` h +64). The library's chart
   is 78 high where the phone's bars are 44 (Activity daily chart).

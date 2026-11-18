@@ -1674,3 +1674,132 @@ export const ToolkitActivityPhone: Story = {
     await expect(canvas.queryByText('pr-description-checker', { selector: '.list-row__title' })).toBeNull()
   },
 }
+
+export const ToolkitActivityChats: Story = {
+  name: 'D15: the Activity view, chats',
+  args: {
+    data: toolkitStates.toolkitActivityChats.data,
+    ui: toolkitStates.toolkitActivityChats.ui,
+    viewport: 'desktop',
+  },
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole('region', { name: 'Chats that used the toolkit' })
+    await expect(within(list).getByText('Deep research on evals')).toBeVisible()
+    await expect(canvas.getByText('Most called in chats')).toBeVisible()
+  },
+}
+
+export const ToolkitActivityHeadless: Story = {
+  name: 'D16: the Activity view, headless runs',
+  args: {
+    data: toolkitStates.toolkitActivityHeadless.data,
+    ui: toolkitStates.toolkitActivityHeadless.ui,
+    viewport: 'desktop',
+  },
+  play: async ({ canvas }) => {
+    const list = canvas.getByRole('region', { name: 'By skill eval' })
+    await expect(within(list).getByText('945 sessions · 348 loaded an item · Nov 8–9')).toBeVisible()
+    await expect(canvas.getByText('readme-cold-reader')).toBeVisible()
+  },
+}
+
+export const ToolkitActivityChat: Story = {
+  name: 'D18: the Activity view with a chat open beside it',
+  args: { data: toolkitStates.toolkitActivityChat.data, ui: toolkitStates.toolkitActivityChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const panel = canvas.getByRole('complementary', { name: 'Writer rules, skills, and agents' })
+    await expect(within(panel).getByText('122 from Erik · 991 replies')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: /Open the session in Workbench/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  },
+}
+
+export const ToolkitActivityChatsTablet: Story = {
+  name: 'T11: the Activity view on a tablet, chats',
+  args: {
+    data: toolkitStates.toolkitActivityChatsTablet.data,
+    ui: toolkitStates.toolkitActivityChatsTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Back.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Harness status in omni brain')).toBeVisible()
+    // At any width Show all 8 chats waits with a title: the data knows five of the eight chats.
+    await expect(canvas.getByRole('button', { name: 'Show all 8 chats' }).getAttribute('title')).toContain('5 of the 8')
+  },
+}
+
+export const ToolkitActivityHeadlessTablet: Story = {
+  name: 'T12: the Activity view on a tablet, headless runs',
+  args: {
+    data: toolkitStates.toolkitActivityHeadlessTablet.data,
+    ui: toolkitStates.toolkitActivityHeadlessTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Back.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('404 sessions · 55 loaded an item · Oct 31 to Nov 9')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Show all 7 evals' })).toBeNull()
+  },
+}
+
+export const ToolkitActivityChatTablet: Story = {
+  name: 'T14: a chat open on a tablet',
+  args: {
+    data: toolkitStates.toolkitActivityChatTablet.data,
+    ui: toolkitStates.toolkitActivityChatTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Activity › Chats.
+  play: async ({ canvas }) => {
+    // At the desktop width the chat opens in the side panel; at the tablet's, on its own page.
+    await expect(canvas.getByText('the session’s folder and branch')).toBeVisible()
+    await expect(canvas.getByText('SendMessage')).toBeVisible()
+  },
+}
+
+export const ToolkitActivityChatsPhone: Story = {
+  name: 'M13: the Activity view on the phone, chats',
+  args: {
+    data: toolkitStates.toolkitActivityChatsPhone.data,
+    ui: toolkitStates.toolkitActivityChatsPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the phone's header.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Linear workflow setup for NCC team')).toBeVisible()
+    await expect(canvas.queryByText('pr-description-checker', { selector: '.list-row__title' })).toBeNull()
+  },
+}
+
+export const ToolkitActivityHeadlessPhone: Story = {
+  name: 'M14: the Activity view on the phone, headless runs',
+  args: {
+    data: toolkitStates.toolkitActivityHeadlessPhone.data,
+    ui: toolkitStates.toolkitActivityHeadlessPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the phone's header.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('step 4 of 8 · writer round 7')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show all 7 evals' })).toBeVisible()
+  },
+}
+
+export const ToolkitActivityChatPhone: Story = {
+  name: 'M16: a chat open on the phone',
+  args: {
+    data: toolkitStates.toolkitActivityChatPhone.data,
+    ui: toolkitStates.toolkitActivityChatPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the page under Activity › Chats.
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('A chat from the Claude Code CLI. Every value is real, from its session file.'),
+    ).toBeVisible()
+    await expect(canvas.queryByText('hook messages')).toBeNull()
+  },
+}

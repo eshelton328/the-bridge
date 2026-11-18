@@ -374,8 +374,9 @@ what each file of a page folder is for.
   a tap on one opens its skill on its Evals tab (`rowTap` and `openEvals`;
   writer's Evals as D20 draws it, a skill with no Evals tab on its
   Overview), from D8's `evalTargets` and writer's details
-  (`states/shared/activityTargets.ts`). A chat row takes no tap: a chat
-  opens in the Activity view's chat panel (D18), which no state draws yet.
+  (`states/shared/activityTargets.ts`). A chat row on the Activity tab takes
+  no tap: the Activity view's chat panel (D18) opens from the view's Chats
+  list.
   On a tablet (T13, T20 to T23) the bar panels stand one under the other;
   writer's `activity` sets `named` (Toolkit › writer, no kind badge or path
   row), and the agent keeps T7's breadcrumb (T21). On the phone (M15, M23
@@ -424,8 +425,8 @@ what each file of a page folder is for.
   `ToolkitActivityPage`: the header says the counts come from the session
   files, the kind chips, the source switch (`ToolkitActivitySources`: All
   sessions, Chats and Headless runs as a `ViewSwitch`, since at the row's
-  end; a source with no counts in `counts` is disabled, so only All works
-  until T11 and T12 add theirs; `ui.activitySource` keeps the pick) and
+  end; a source with no counts in `counts` is disabled; `ui.activitySource`
+  keeps the pick) and
   `ToolkitActivityBody`: the key figures (`ToolkitActivityKpis` with the
   view's keys), the runs (`ToolkitActivityRuns`, a `ToolkitRunRow` each)
   beside the calls per day (`ToolkitCallsPerDay`, a library `DailyBarChart`
@@ -447,4 +448,33 @@ what each file of a page folder is for.
   and the taps in `src/app/ToolkitActivityView.test.tsx` (LIBRARY_GAPS.md,
   Activity KPI tile, Activity daily chart, Most called bars, Activity log
   line, Activity run row, Run side panel, Run panel).
+  Chats and Headless runs (D15, `toolkitActivityChats`; D16,
+  `toolkitActivityHeadless`; their views from
+  `states/shared/activitySources.ts`, D11's, T9's and M10's with the two
+  sources' counts) are enabled in every Activity state: D11, D12, T9 and
+  M10 show the same views, so their switch opens D15 or D16 (T11, T12 on
+  a tablet, M13, M14 on the phone). A source's counts add its `list`,
+  drawn in the log's place beside Most called on the desktop and over it elsewhere
+  (`ToolkitActivitySourceList`): the chats that used the toolkit
+  (`ToolkitChatRow`, a `ListRow` with the items it used as `MapNode` chips,
+  `ToolkitChatItems`; a chip opens its item's page, the row opens the chat)
+  or the sessions by skill eval (`ToolkitEvalRow`: the skill's chip opens its
+  page, the row opens the skill on its Evals tab, `openEvalGroup`; writer's
+  details are D20's; a folder with no skill takes no tap). Show all shows
+  every row (`ui.activityShowAll`), and waits with a title while the data
+  knows fewer rows than it names (8 chats, 5 known; `showAllLink`). Under
+  a kind chip it shows every row the chip leaves when the data knows all
+  the rows (`narrowList`). A chat's
+  row sets `ui.chat` (D18, `toolkitActivityChat`): on the desktop
+  `ToolkitChatPanel` takes the side slot as a run's panel does (its header
+  with the Chat ended badge and close, Open the session in Workbench
+  disabled with a title, the fields, the items, the tools,
+  `ToolkitChatDetail`); on a tablet (T14, `toolkitActivityChatTablet`) and
+  the phone (M16, `toolkitActivityChatPhone`, no source column)
+  `ToolkitChatPage` under the trail Activity › Chats. A run and a chat
+  replace each other; the switch, a view change or an item's page closes
+  both. The pure parts are in `blocks/activitySources.ts`
+  (`activitySources.test.ts`); the layout and the taps in
+  `src/app/ToolkitActivitySources.test.tsx` (LIBRARY_GAPS.md, Activity item
+  chip, Eval share bar, Show all link, Activity chat row).
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

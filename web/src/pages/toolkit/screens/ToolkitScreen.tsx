@@ -22,6 +22,9 @@
 // page of its own on a tablet (T9). A tap on a run opens it (`ui.run`, D12):
 // beside the view in the side slot on the desktop, on a page of its own on a
 // tablet or phone; a Most called item opens on its page (`activityPage`).
+// Chats and Headless runs (D15, D16) add their own list: a chat's row opens
+// the chat (`ui.chat`, D18) as a run opens, and an item, an eval's chip or
+// an eval's row opens on its page (`activitySources`).
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -48,6 +51,9 @@ import { activityCounts, changeView, closeRun, openCalled, openRun, showRun } fr
 import { ToolkitActivityPage } from '../blocks/ToolkitActivityPage.tsx'
 import { ToolkitRunPage } from '../blocks/ToolkitRunPage.tsx'
 import { ToolkitRunPanel } from '../blocks/ToolkitRunPanel.tsx'
+import { changeSource, closeChat, openChat, openEvalGroup, showAllRows, showChat } from '../blocks/activitySources.ts'
+import { ToolkitChatPage } from '../blocks/ToolkitChatPage.tsx'
+import { ToolkitChatPanel } from '../blocks/ToolkitChatPanel.tsx'
 import {
   closeDiscuss,
   discussEntries,
@@ -162,6 +168,9 @@ function ToolkitLayout({
   const activity = ui.view === 'activity' && open === null ? data.activity : undefined
   const running = activity === undefined ? undefined : activityCounts(activity, ui)?.running
   const run = activity === undefined ? null : openRun(activity, ui)
+  const chat = activity === undefined ? null : openChat(activity, ui)
+  const chatList = activity === undefined ? undefined : activityCounts(activity, ui)?.list
+  const openSession = chatList?.type === 'chats' ? chatList.openSession : undefined
   const activityPage =
     activity === undefined ? null : (
       <ToolkitActivityPage
@@ -174,7 +183,7 @@ function ToolkitLayout({
             view={ui.view}
             layout={layout}
             source={activity.readFrom}
-            layer={desktop ? run?.detail?.layers?.pageHeader : undefined}
+            layer={desktop ? (run?.detail?.layers?.pageHeader ?? chat?.detail?.layers?.pageHeader) : undefined}
             onViewChange={(next) => {
               onUiChange(changeView(next))
             }}
@@ -182,7 +191,16 @@ function ToolkitLayout({
         }
         chips={kindChips}
         onSourceChange={(activitySource) => {
-          onUiChange({ activitySource, run: undefined })
+          onUiChange(changeSource(activitySource))
+        }}
+        onShowAll={() => {
+          onUiChange(showAllRows())
+        }}
+        onOpenChat={(id) => {
+          onUiChange(showChat(id))
+        }}
+        onOpenEvals={(path) => {
+          onUiChange(openEvalGroup(path))
         }}
         onOpenRun={(id) => {
           onUiChange(showRun(id))
@@ -205,6 +223,22 @@ function ToolkitLayout({
         openSession={running.openSession}
         onBack={() => {
           onUiChange(closeRun())
+        }}
+      />
+    )
+  const chatPage =
+    chat === null || openSession === undefined || desktop || activity === undefined ? null : (
+      <ToolkitChatPage
+        chat={chat}
+        layout={layout}
+        backLabel={activity.title}
+        source={activity.sources.find((s) => s.value === 'chats')?.label ?? activity.title}
+        openSession={openSession}
+        onBack={() => {
+          onUiChange(closeChat())
+        }}
+        onOpenItem={(path) => {
+          onUiChange(openCalled(path))
         }}
       />
     )
@@ -391,6 +425,17 @@ function ToolkitLayout({
         side={
           desktop && thread !== undefined && open !== null ? (
             <ToolkitDiscussPanel {...thread} itemName={open.item.name} onClose={closeDiscussion} />
+          ) : desktop && chat !== null && openSession !== undefined ? (
+            <ToolkitChatPanel
+              chat={chat}
+              openSession={openSession}
+              onClose={() => {
+                onUiChange(closeChat())
+              }}
+              onOpenItem={(path) => {
+                onUiChange(openCalled(path))
+              }}
+            />
           ) : desktop && run !== null && running !== undefined ? (
             <ToolkitRunPanel
               run={run}
@@ -422,7 +467,7 @@ function ToolkitLayout({
               onBack={closeDiscussion}
             />
           ) : (
-            (item ?? runPage ?? activityPage ?? list)
+            (item ?? runPage ?? chatPage ?? activityPage ?? list)
           )
         }
       />

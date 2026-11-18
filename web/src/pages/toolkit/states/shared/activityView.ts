@@ -1,9 +1,9 @@
 // The Activity view of the page (D11, D12, T9, M10): shared data, not a
 // state. The desktop's counts (D11 `activity` 444:498), the tablet's (T9
 // 449:64: no captions, shorter lines, no log and five most called items) and
-// the phone's (M10 449:395: T9's with two runs and shorter lines). Only All
-// sessions has counts yet; Chats and Headless runs (T11, T12) come with
-// their frames. Copy word for word from references/toolkit/D11, D12, T09
+// the phone's (M10 449:395: T9's with two runs and shorter lines). These
+// views count All sessions only; shared/activitySources.ts adds Chats and
+// Headless runs (D15, D16) for their states. Copy word for word from references/toolkit/D11, D12, T09
 // and M10/frame.json. The runs and the log are sample data, as the frames
 // say.
 import type { ToolkitActivityCounts, ToolkitActivityView, ToolkitRun } from '../../types.ts'

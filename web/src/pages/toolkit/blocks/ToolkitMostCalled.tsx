@@ -16,8 +16,9 @@ import { calledLayer, panelLayer } from './activityPage.ts'
 import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
 import { ToolkitKindIcon } from './ToolkitKindIcon.tsx'
 
-// D11 444:520: the two panels of a row are as tall as the taller; the section's grid stretches its Panel.
-const fill = css({ display: 'grid' })
+// D11 444:520: the two panels of a row are as tall as the taller: the row's grid stretches the section,
+// and its Panel grows to fill it (a section Panel is as tall as its content); no wider content widens it.
+const fill = css({ display: 'flex', flexDirection: 'column', minW: '[0]', '& > *': { flexGrow: '1' } })
 
 // D11 444:619 to 444:623: the rows 8 under the header.
 const body = css({ display: 'flex', flexDirection: 'column', gap: '8' })
@@ -53,7 +54,11 @@ export type ToolkitMostCalledProps = {
 
 export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCalledProps) {
   return (
-    <section className={fill} aria-label={mostCalled.label} data-figma={panelLayer(mostCalled.label, layout)}>
+    <section
+      className={fill}
+      aria-label={mostCalled.label}
+      data-figma={panelLayer(mostCalled.layer ?? mostCalled.label, layout)}
+    >
       <Panel>
         <div className={body}>
           <ToolkitEvalsHeader

@@ -505,8 +505,8 @@ const ToolkitActivityBars = z.object({
  * A row of the Activity tab's list (D17 `row · Linear workflow setup for NCC team` 474:650): a chat that loaded the
  * item (`chat`, after the chat icon) or a round from a ledger (`round`, D23 `row · readme · cross-family x1`, no icon),
  * its title and the line under it. `open` is the path of the toolkit item the row names (a round's skill): a tap opens
- * that item on its Evals tab. A chat opens in the chat panel of the Activity view (D18), which no state draws yet, so a
- * chat row has no `open` and takes no tap.
+ * that item on its Evals tab. A chat's panel (D18) opens from the Activity view's Chats list; the tab's chat row has
+ * no link to it, so it has no `open` and takes no tap.
  */
 const ToolkitActivityRow = z.object({
   type: z.enum(['chat', 'round']),
@@ -762,6 +762,99 @@ const ToolkitCalledItem = z.object({ kind: ToolkitKind, name: z.string(), path: 
 /** A line of the log (D11 `log · 01:16:40` 444:694): when, the kind of the item, and what happened. */
 const ToolkitLogLine = z.object({ time: z.string(), kind: ToolkitKind, text: z.string() })
 
+/** A toolkit item a chat used (D15 `link · writing-reviewer` 477:544): the item and how many times, when more than once. */
+const ToolkitChatItem = z.object({
+  kind: ToolkitKind,
+  name: z.string(),
+  path: z.string(),
+  times: z.number().int().optional(),
+})
+export type ToolkitChatItem = z.infer<typeof ToolkitChatItem>
+
+/** A tool a chat called (D18 `tool · Bash` 475:429): how many times and its name. */
+const ToolkitChatTool = z.object({ count: z.number().int().nonnegative(), name: z.string() })
+
+/**
+ * What an open chat shows (D18 `side panel · chat` 475:373): its status badge, the line under its name, its values
+ * (each with where it comes from, except on the phone, M16 475:1144), the label over the items it used and the label
+ * over the tools it used, with their counts. `layers` are the Figma keys D18 gives the page's header and the panel's
+ * header and button, whose names the frame uses more than once.
+ */
+const ToolkitChatDetail = z.object({
+  status: z.string(),
+  summary: z.string(),
+  fields: z.array(z.object({ label: z.string(), value: z.string(), source: z.string().optional() })).min(1),
+  itemsLabel: z.string(),
+  toolsLabel: z.string(),
+  tools: z.array(ToolkitChatTool).min(1),
+  layers: z
+    .object({
+      pageHeader: z.string(),
+      header: z.string(),
+      openSession: z.string(),
+      /** The keys of the item chips, in order: D18 names the list's chips the same (`link · writing-reviewer` 478:485). */
+      items: z.array(z.string()),
+    })
+    .optional(),
+})
+export type ToolkitChatDetail = z.infer<typeof ToolkitChatDetail>
+
+/**
+ * A chat that used the toolkit (D15 `chat · Linear workflow setup for NCC team` 477:520): its title, when and where it
+ * ran, the items it used (each opens its page) and what its panel shows (D18); a chat with no `detail` opens with what
+ * its row says. `id` keys it in `ui.chat`.
+ */
+const ToolkitActivityChat = z.object({
+  id: z.string(),
+  title: z.string(),
+  meta: z.string(),
+  items: z.array(ToolkitChatItem).min(1),
+  detail: ToolkitChatDetail.optional(),
+})
+export type ToolkitActivityChat = z.infer<typeof ToolkitActivityChat>
+
+/**
+ * The headless sessions one skill eval started (D16 `eval · writer` 477:1122): the skill (its chip opens its page; a
+ * folder with no skill has none, T12 `eval · readme-reads folder` 477:1936), the word after the chip, its toolkit
+ * calls, its sessions and how many loaded an item (the bar is that share) and the line under the bar.
+ */
+const ToolkitEvalGroup = z.object({
+  name: z.string(),
+  skill: z.object({ kind: ToolkitKind, path: z.string() }).optional(),
+  after: z.string().optional(),
+  calls: z.string(),
+  sessions: z.number().int().positive(),
+  loaded: z.number().int().nonnegative(),
+  meta: z.string(),
+})
+export type ToolkitEvalGroup = z.infer<typeof ToolkitEvalGroup>
+
+/**
+ * The list of a source of the Activity view, beside Most called on the desktop: the chats that used the toolkit
+ * (D15 477:515) or the headless sessions by skill eval (D16 477:1117). `shown` rows show at first; Show all, in the
+ * header on the desktop and under the rows elsewhere, shows every row, and waits (disabled) while the state knows
+ * fewer rows than its `count`.
+ */
+const ToolkitActivityList = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('chats'),
+    label: z.string(),
+    shown: z.number().int().positive(),
+    showAll: z.object({ label: z.string(), count: z.number().int().positive() }).optional(),
+    /** The button of an open chat, such as "Open the session in Workbench" (D18 475:386). */
+    openSession: z.string(),
+    rows: z.array(ToolkitActivityChat).min(1),
+  }),
+  z.object({
+    type: z.literal('evals'),
+    label: z.string(),
+    shown: z.number().int().positive(),
+    showAll: z.object({ label: z.string(), count: z.number().int().positive() }).optional(),
+    rows: z.array(ToolkitEvalGroup).min(1),
+  }),
+])
+export type ToolkitActivityList = z.infer<typeof ToolkitActivityList>
+
 /**
  * What the Activity view counts for one source (All, Chats or Headless): four key figures (a caption under each on the
  * desktop only), the runs in progress, the calls per day (one chart per series, the days under the last), the most
@@ -790,8 +883,16 @@ const ToolkitActivityCounts = z.object({
     days: z.array(z.object({ date: z.string(), label: z.string() })).min(1),
     series: z.array(ToolkitDailySeries).min(1),
   }),
-  mostCalled: z.object({ label: z.string(), meta: z.string().optional(), rows: z.array(ToolkitCalledItem) }),
+  mostCalled: z.object({
+    label: z.string(),
+    meta: z.string().optional(),
+    /** The label in the panel's Figma key when it differs from the label (D15 `panel · MOST CALLED` 477:339). */
+    layer: z.string().optional(),
+    rows: z.array(ToolkitCalledItem),
+  }),
   log: z.object({ label: z.string(), meta: z.string(), rows: z.array(ToolkitLogLine) }).optional(),
+  /** The source's own list (Chats D15, Headless runs D16), in the log's place; All sessions has none. */
+  list: ToolkitActivityList.optional(),
   source: z.string().optional(),
 })
 export type ToolkitActivityCounts = z.infer<typeof ToolkitActivityCounts>
@@ -904,6 +1005,13 @@ export const ToolkitUi = z.object({
    * tablet or phone. None when not set.
    */
   run: z.string().optional(),
+  /**
+   * The id of the chat open in the Activity view (D18): beside the view on the desktop, on a page of its own on a
+   * tablet or phone (T14, M16). None when not set.
+   */
+  chat: z.string().optional(),
+  /** Show all under the Activity view's list was pressed: every row of the list shows. */
+  activityShowAll: z.boolean().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

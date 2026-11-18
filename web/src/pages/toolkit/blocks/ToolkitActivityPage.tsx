@@ -29,7 +29,7 @@ const since = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap', 
 
 export type ToolkitActivityPageProps = {
   view: ToolkitActivityView
-  ui: Pick<ToolkitUi, 'activitySource' | 'filter' | 'run'>
+  ui: Pick<ToolkitUi, 'activitySource' | 'filter' | 'run' | 'chat' | 'activityShowAll'>
   layout: Viewport
   /** The page's header on the desktop and the phone (`ToolkitHeader`). */
   header: ReactNode
@@ -38,6 +38,9 @@ export type ToolkitActivityPageProps = {
   onSourceChange?: ((source: ToolkitActivitySource) => void) | undefined
   onOpenRun?: ((id: string) => void) | undefined
   onOpenItem?: ((path: string) => void) | undefined
+  onShowAll?: (() => void) | undefined
+  onOpenChat?: ((id: string) => void) | undefined
+  onOpenEvals?: ((path: string) => void) | undefined
   /** The tablet's Back to Toolkit: the list. */
   onBack?: (() => void) | undefined
 }
@@ -51,6 +54,9 @@ export function ToolkitActivityPage({
   onSourceChange,
   onOpenRun,
   onOpenItem,
+  onShowAll,
+  onOpenChat,
+  onOpenEvals,
   onBack,
 }: ToolkitActivityPageProps) {
   const counts = activityCounts(view, ui)
@@ -65,6 +71,11 @@ export function ToolkitActivityPage({
         openRun={ui.run}
         onOpenRun={onOpenRun}
         onOpenItem={onOpenItem}
+        showAll={ui.activityShowAll}
+        onShowAll={onShowAll}
+        openChat={ui.chat}
+        onOpenChat={onOpenChat}
+        onOpenEvals={onOpenEvals}
       />
     )
   if (layout === 'tablet') {

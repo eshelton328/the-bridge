@@ -13,6 +13,7 @@ import type {
   ToolkitUi,
   ToolkitView,
 } from '../types.ts'
+import { narrowList } from './activitySources.ts'
 
 /** The source the view counts: `ui.activitySource`, or All when not set or when that source has no counts yet. */
 export function activitySource(
@@ -25,8 +26,8 @@ export function activitySource(
 
 /**
  * The counts the view shows for the picked source, narrowed by the kind chip: a kind other than All keeps only its
- * runs, its most called items and its log lines (the key figures and the calls per day count every kind). None when
- * the view has no counts for All.
+ * runs, its most called items, its log lines and the rows of its list that name it (the key figures and the calls per
+ * day count every kind). None when the view has no counts for All.
  */
 export function activityCounts(
   view: ToolkitActivityView,
@@ -42,6 +43,7 @@ export function activityCounts(
     ...(counts.log === undefined
       ? {}
       : { log: { ...counts.log, rows: counts.log.rows.filter((r) => r.kind === kind) } }),
+    ...(counts.list === undefined ? {} : { list: narrowList(counts.list, kind) }),
   }
 }
 
@@ -59,9 +61,9 @@ export function openRun(view: ToolkitActivityView, ui: Pick<ToolkitUi, 'activity
   return counts?.running.rows.find((r) => r.id === ui.run) ?? null
 }
 
-/** A tap on a run or its Open session (D11 to D12): the run opens. */
+/** A tap on a run or its Open session (D11 to D12): the run opens, in the open chat's place. */
 export function showRun(id: string): Partial<ToolkitUi> {
-  return { run: id }
+  return { run: id, chat: undefined }
 }
 
 /** Close on the run's panel, or Back on its page: the view again (D12 to D11). */
@@ -71,12 +73,12 @@ export function closeRun(): Partial<ToolkitUi> {
 
 /** A tap on a Most called item: it opens on its page, as a tap on its card in the list opens it (D3). */
 export function openCalled(path: string): Partial<ToolkitUi> {
-  return { view: 'list', open: path, from: null, run: undefined }
+  return { view: 'list', open: path, from: null, run: undefined, chat: undefined }
 }
 
-/** Another view from the switch, or the tablet's Back to Toolkit (T9): no run stays open. */
+/** Another view from the switch, or the tablet's Back to Toolkit (T9): no run or chat stays open, and the list folds. */
 export function changeView(view: ToolkitView): Partial<ToolkitUi> {
-  return { view, run: undefined }
+  return { view, run: undefined, chat: undefined, activityShowAll: undefined }
 }
 
 /** The days of one series as the library's DailyBarChart takes them: each day's date, label and count. */

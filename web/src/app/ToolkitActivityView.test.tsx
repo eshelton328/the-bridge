@@ -11,8 +11,8 @@ import { routeTree } from './routeTree.gen.ts'
 // The Activity view of the Toolkit through the real route (D11 `activity` 444:498, D12, T9, M10): the layout on each
 // width and each tap: a run's row or its Open session opens its panel beside the view on the desktop (D12) and its own
 // page on a tablet or phone, close and Back return to the view, a Most called item opens on its page, Open the session
-// in Workbench waits with a title, Chats and Headless runs wait for their frames, and the tablet's Back to Toolkit goes
-// to the list. The app's styles and fonts load as in main.ts, so the test measures the real layout.
+// in Workbench waits with a title, Chats and Headless runs switch to the D15 and D16 views (T11, M13 on a tablet and
+// the phone), and the tablet's Back to Toolkit goes to the list. The app's styles and fonts load as in main.ts, so the test measures the real layout.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -53,6 +53,15 @@ const runButton = (root: HTMLElement, name: string) =>
   element(root, `[data-figma="run · ${name}"] .list-row__title button, [data-figma="run · ${name}"] button`)
 
 const panel = (root: HTMLElement) => root.querySelector('[data-figma="side panel · run"]')
+
+/** The source switch's item with that label, in this render. */
+function source(root: HTMLElement, label: string): HTMLElement {
+  const item = [...root.querySelectorAll('[data-figma="source · segmented"] label')].find(
+    (l) => l.textContent === label,
+  )
+  if (!(item instanceof HTMLElement)) throw new Error(`no source ${label}`)
+  return item
+}
 
 afterEach(() => {
   resetAllStores()
@@ -143,17 +152,29 @@ describe('the Activity view on the desktop (D11)', () => {
     }
   })
 
-  it('keeps Chats and Headless runs disabled, and Open the session in Workbench waits with a title', async () => {
+  it('enables Chats and Headless runs, and Open the session in Workbench waits with a title', async () => {
     const { root } = await renderToolkit('toolkitActivityRun')
     expect(page.getByRole('radio', { name: 'All sessions' }).element()).toBeChecked()
-    expect(page.getByRole('radio', { name: 'Chats' }).element()).toBeDisabled()
-    expect(page.getByRole('radio', { name: 'Headless runs' }).element()).toBeDisabled()
+    expect(page.getByRole('radio', { name: 'Chats' }).element()).toBeEnabled()
+    expect(page.getByRole('radio', { name: 'Headless runs' }).element()).toBeEnabled()
     const open = element(root, '[data-figma="445:478"]')
     expect(open.getAttribute('aria-disabled')).toBe('true')
     expect(open.title).not.toBe('')
     // aria-disabled keeps it in the tab order; a press does nothing, so the panel stays.
     open.click()
     expect(panel(root)).not.toBeNull()
+  })
+
+  it('switches to the D15 view from Chats and the D16 view from Headless runs (D11)', async () => {
+    const { root } = await renderToolkit('toolkitActivity')
+    await userEvent.click(source(root, 'Chats'))
+    await expect.poll(() => root.querySelector('[data-figma="panel · CHATS THAT USED THE TOOLKIT"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="panel · LOG"]')).toBeNull()
+    expect(root.querySelectorAll('[data-figma^="chat · "]')).toHaveLength(4)
+    expect(root.querySelector('[data-figma="kpi · chats"]')).not.toBeNull()
+    await userEvent.click(source(root, 'Headless runs'))
+    await expect.poll(() => root.querySelector('[data-figma="panel · BY SKILL EVAL"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="run · readme-cold-reader"]')).not.toBeNull()
   })
 
   it('narrows the runs, Most called and the log by the kind chip', async () => {
@@ -227,6 +248,23 @@ describe('the Activity view on a tablet (T9) and the phone (M10)', () => {
     expect(open).toHaveAttribute('aria-disabled', 'true')
     await userEvent.click(page.getByRole('button', { name: 'Back to Activity' }))
     await expect.poll(() => root.querySelectorAll('[data-figma^="run · "]').length).toBe(2)
+  })
+
+  it('switches to the T11 view from Chats on a tablet', async () => {
+    const { root } = await renderToolkit('toolkitActivityTablet', 'tablet')
+    await userEvent.click(source(root, 'Chats'))
+    await expect.poll(() => root.querySelector('[data-figma="panel · CHATS THAT USED THE TOOLKIT"]')).not.toBeNull()
+    expect(root.querySelectorAll('[data-figma^="chat · "]')).toHaveLength(5)
+  })
+
+  it('switches to the M13 view from Chats on the phone, and M14 from Headless', async () => {
+    const { root } = await renderToolkit('toolkitActivityPhone', 'phone')
+    await userEvent.click(source(root, 'Chats'))
+    await expect.poll(() => root.querySelector('[data-figma="panel · CHATS THAT USED THE TOOLKIT"]')).not.toBeNull()
+    expect(root.querySelectorAll('[data-figma^="chat · "]')).toHaveLength(4)
+    expect(root.querySelectorAll('[data-figma^="run · "]')).toHaveLength(1)
+    await userEvent.click(source(root, 'Headless'))
+    await expect.poll(() => root.querySelector('[data-figma="panel · BY SKILL EVAL"]')).not.toBeNull()
   })
 
   it('opens a Most called item on its page on the phone', async () => {

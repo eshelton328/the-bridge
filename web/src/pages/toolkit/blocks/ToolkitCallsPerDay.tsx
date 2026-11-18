@@ -13,8 +13,9 @@ import type { ToolkitActivityCounts } from '../types.ts'
 import { axisLabels, dailyBars, panelLayer, seriesTone } from './activityPage.ts'
 import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
 
-// D11 444:520: the two panels of a row are as tall as the taller; the section's grid stretches its Panel.
-const fill = css({ display: 'grid' })
+// D11 444:520: the two panels of a row are as tall as the taller: the row's grid stretches the section,
+// and its Panel grows to fill it (a section Panel is as tall as its content); no wider content widens it.
+const fill = css({ display: 'flex', flexDirection: 'column', minW: '[0]', '& > *': { flexGrow: '1' } })
 
 // D11 444:582 to 444:597: the header, then each chart 12 under the one before; T9 449:299 to 449:313 6 apart.
 const body = {
