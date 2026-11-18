@@ -35,6 +35,11 @@ export function ToolkitRow({ item, figma, size = 'phone', selected, onSelect }: 
         meta={item.path}
         selected={selected}
         onSelect={onSelect}
+        // M1 429:96: 4 in at the sides and 8 above and below, the body 12 after the tile, and the counts and chevron
+        // centred down the row. The pane's row (D3) keeps the default inset, gap and placement.
+        padding={phone ? 'phone' : undefined}
+        trailingAlign={phone ? 'center' : undefined}
+        leadingGap={phone ? '12' : undefined}
         trailing={
           <span className={end}>
             {`→${String(item.linksTo)} ←${String(item.linkedFrom)}`}
