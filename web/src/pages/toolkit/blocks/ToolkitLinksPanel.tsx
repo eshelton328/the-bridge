@@ -2,8 +2,9 @@
 // section Panel with the side's label and count and its caption, then each
 // link: the item at the other end, where the link is written (its file and
 // line) and the line itself. The item is the library's `MapNode`, as the
-// graph draws it; a tap on it opens the item, and a tap on the file and line
-// opens that file. The library has no link row and no text link in mono
+// graph draws it, in the faint kind border of a link row (`tone="faint"`); a
+// tap on it opens the item, and a tap on the file and line opens that file.
+// The library has no link row and no text link in mono
 // (LIBRARY_GAPS.md, Links panel rows): the file and line is a plain button
 // styled with tokens. A side with no links says why. Props only.
 import { MapNode, Panel } from '@eshelton328/component-library-1701'
@@ -67,6 +68,7 @@ export function ToolkitLinksPanel({ side, layer, onOpenItem, onOpenLine }: Toolk
                 <MapNode
                   label={l.name}
                   kind={l.kind}
+                  tone="faint"
                   onClick={() => {
                     onOpenItem?.(l.path)
                   }}

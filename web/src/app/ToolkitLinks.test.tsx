@@ -444,3 +444,46 @@ describe('a link’s line in its file (D19)', () => {
     expect(shownLine(root, 8)).toBeNull()
   })
 })
+
+// A colour as the browser computes it, from a CSS value such as a token's variable.
+function colourOf(root: HTMLElement, value: string) {
+  const probe = document.createElement('span')
+  probe.style.color = value
+  root.append(probe)
+  const colour = getComputedStyle(probe).color
+  probe.remove()
+  return colour
+}
+
+describe('the links graph’s nodes and lines (D19)', () => {
+  it('draws the side items in a muted kind border with the icon in the kind colour, and no dot at a line’s end', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    // audit-slop is a skill writer names; it is not selected.
+    const side = nodes.find((n) => n.textContent === 'audit-slop')
+    const icon = side?.firstElementChild
+    if (side === undefined || icon === null || icon === undefined) throw new Error('no audit-slop')
+    expect(side.getAttribute('aria-pressed')).toBe('false')
+    expect(getComputedStyle(side).borderTopColor).toBe(colourOf(root, 'var(--colors-kind-border-skill)'))
+    expect(getComputedStyle(side).borderTopColor).not.toBe(colourOf(root, 'var(--colors-kind-skill)'))
+    expect(getComputedStyle(icon).color).toBe(colourOf(root, 'var(--colors-kind-skill)'))
+    // The open item's name is in the label style (14/20, 493:81), not the side items' mono.
+    const focus = nodes.find((n) => n.getAttribute('aria-pressed') === 'true')
+    const name = focus?.lastElementChild
+    const sideName = side.lastElementChild
+    if (name === null || name === undefined || sideName === null) throw new Error('no names')
+    expect(getComputedStyle(name).fontSize).toBe('14px')
+    expect(Number.parseFloat(getComputedStyle(name).lineHeight)).toBeCloseTo(20, 2)
+    expect(getComputedStyle(name).fontFamily).not.toBe(getComputedStyle(sideName).fontFamily)
+    // Eleven lines, none ending in a dot (493:89).
+    expect(root.querySelectorAll('[data-figma="links graph"] path.map-graph__edge')).toHaveLength(11)
+    expect(root.querySelectorAll('[data-figma="links graph"] circle')).toHaveLength(0)
+  })
+
+  it('draws each link row’s node in the faint kind border', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    const row = root.querySelector('[data-figma="link · audit-slop · SKILL.md:118"] button')
+    if (!(row instanceof HTMLElement)) throw new Error('no audit-slop row')
+    expect(getComputedStyle(row).borderTopColor).toBe(colourOf(root, 'var(--colors-kind-border-faint-skill)'))
+  })
+})

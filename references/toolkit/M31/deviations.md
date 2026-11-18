@@ -15,6 +15,12 @@ under the other. D19, D29 to D32, T15, T28 to T31, M12, M22, M05, M35
 and M17 give the same results as before M31. The frame has no
 `exceptions.json`.
 
+The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
+2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
+Text passes, 18 of 21 position layers pass and the rules fail: the
+same results, failing keys and findings as the run on beta.39 before
+this change, so the checks below still hold.
+
 ## Checks
 
 - Text: pass. Every Figma string is in the render and visible where
@@ -32,18 +38,24 @@ and M17 give the same results as before M31. The frame has no
 ## Deviations
 
 - **Graph line.** Figma draws a curve from the foot of skills down into
-  the top of eval-cases. The render draws no line: `MapGraph` draws each
-  line from one node's side to another's, so on the upright graph it
-  would cross the nodes (gap: Links graph (phone)).
+  the top of eval-cases. The render draws no lines. Library beta.39
+  (#148) draws upright lines (`MapGraph orientation="vertical"`), but
+  `linksView.test.ts` asserts that the phone graph has no edges and
+  selects nothing, and `ToolkitLinks.test.tsx` that no node of M17's
+  graph is pressed; a change to those lines waits for Erik (gap: Links
+  graph (phone)).
 - **Open rule.** skills in the middle of the graph is 162 × 32 with a
   plain border in the rule's colour and its name in mono, against Figma's
   150 × 40 with an accent ring, a selected fill and its name in the label
   style. With no lines a selected node would dim the other node, so
   nothing is selected; skills is centred where Figma centres it (gap:
   Links graph (phone), Links graph).
-- **Node borders.** eval-cases in the graph and in the Links to row has a
-  border in the skill's full colour; Figma draws it at about 60 % alpha
-  in the graph and 45 % in the row (gap: Links graph, Links panel rows).
+- **Node borders.** Since library beta.39 (#151) each item of the graph
+  has its kind's colour at 60 % alpha (`MapGraph nodeTone="muted"`) and
+  each link row's node at 45 % (`MapNode tone="faint"`), with the icons
+  in the full kind colour, as in Figma. With nothing selected on the
+  phone, the open item has the muted border too. The icons are 16 px
+  against Figma's 13 (gap: Links graph, Links panel rows).
 - **Link node.** eval-cases in the Links to panel is a `MapNode` 28 px
   high against Figma's 29, and its file and line is a plain mono button
   in the accent colour (gap: Links panel rows). The row passes the

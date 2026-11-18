@@ -267,3 +267,15 @@ describe('a link’s line', () => {
     }
   })
 })
+
+describe('the links graph’s looks on each layout (D19, T15, M17)', () => {
+  it('draws the side items muted, the lines with no end dot, and the open item’s name in the label style', () => {
+    for (const layout of ['desktop', 'tablet', 'phone'] as const) {
+      const graph = linksGraph(linksOf(skillLinks), writer, layout)
+      expect(graph.nodeTone).toBe('muted')
+      expect(graph.edgeEnd).toBe('none')
+      expect(graph.nodes.find((n) => n.id === focusId)?.labelStyle).toBe('label')
+      expect(graph.nodes.filter((n) => n.id !== focusId).every((n) => n.labelStyle === undefined)).toBe(true)
+    }
+  })
+})

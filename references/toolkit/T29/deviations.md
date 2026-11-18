@@ -13,6 +13,12 @@ is narrower and the two panels stand one under the other. D19, D29 to
 D32, T03, T04, T07, T10, T15, T17, T19 and T28 give the same results as
 before T29. The frame has no `exceptions.json`.
 
+The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
+2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
+Text passes, 24 of 30 position layers pass and the rules fail: the
+same results, failing keys and findings as the run on beta.39 before
+this change, so the checks below still hold.
+
 ## Checks
 
 - Text: pass. Every Figma string in the frame is in the render and
@@ -65,17 +71,19 @@ before T29. The frame has no `exceptions.json`.
 - **Title.** The name writing-reviewer renders 220.7 px wide against 206
   (`493:3697` w +14.7), as on T07: the heading text style draws the name
   wider.
-- **Graph.** The open agent is 180 × 32 with its name in mono, where
-  Figma's `node · writing-reviewer (focus)` (493:4042) is 150 × 40 with
-  its name in the label style, and each line ends in a 3 px dot (gap:
-  Links graph).
-- **Node borders.** Each item at a side of the graph and at the start of
-  each link row has a border in the full colour of its kind (cyan for a
-  skill, violet for an agent, amber for a rule, green for a workflow).
-  Figma draws the same colour at about 60 % alpha in the graph and 45 %
-  in the rows, so its borders look muted; the icons are full colour in
-  both. `MapNode` has no state for a muted kind border and no token has
-  a kind colour at part alpha (gap: Links graph, Links panel rows).
+- **Graph.** The open agent has its name in the label style, as Figma's,
+  and the lines end at the node's edge with no dot, since library
+  beta.39 (#151). It is 180 × 32, where Figma's `node · writing-reviewer
+  (focus)` (493:4042) is 150 × 40 with a 15 px icon: beta.39 gives a
+  node its own `size`, but four tests of `linksView.test.ts` assert the
+  open item at 180 × 32, and a change to those lines waits for Erik
+  (gap: Links graph).
+- **Node borders.** Since library beta.39 (#151) each item at a side of
+  the graph has its kind's colour at 60 % alpha (`MapGraph
+  nodeTone="muted"`, `kindBorder.*`) and each link row's node at 45 %
+  (`MapNode tone="faint"`, `kindBorderFaint.*`), with the icons in the
+  full kind colour, as in Figma. The icons are 16 px against Figma's 13:
+  `MapNode` takes no icon size (gap: Links graph, Links panel rows).
 - **Panel rows.** Each link's node is 28 high against 29 and its file and
   line is a plain button in mono (gap: Links panel rows).
 - **Path badge.** The copy icon is the badge's bare `icon/copy` (gap:

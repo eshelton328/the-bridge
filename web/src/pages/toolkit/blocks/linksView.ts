@@ -16,8 +16,16 @@ export function sideLabel(side: Side): string {
   return `${side.label} ${String(side.links.length)}`
 }
 
-/** One node of the links graph, at its place inside the graph's border. */
-type LinksGraphNode = { id: string; path: string; label: string; kind: ToolkitKind; x: number; y: number }
+/** One node of the links graph, at its place inside the graph's border; the open item draws its name in the label style. */
+type LinksGraphNode = {
+  id: string
+  path: string
+  label: string
+  kind: ToolkitKind
+  x: number
+  y: number
+  labelStyle?: 'label' | undefined
+}
 
 export type LinksGraph = {
   width: number
@@ -30,6 +38,10 @@ export type LinksGraph = {
   selected: string | null
   edges: { from: string; to: string }[]
   columns: { label: string; x: number; y: number }[]
+  /** The nodes at the sides have a muted kind border (D19 493:84). */
+  nodeTone: 'muted'
+  /** Each line ends at the node's edge, with no dot (D19 493:89). */
+  edgeEnd: 'none'
 }
 
 export const focusId = 'item'
@@ -52,6 +64,7 @@ const node = { width: 180, height: 32 }
 const inset = 15
 const labelTop = 13
 const step = 38
+const looks = { nodeTone: 'muted', edgeEnd: 'none' } as const
 
 /** The items of a side in the graph's order, each once: the paths of `graph` first, then any other item it links. */
 function graphItems(side: Side): Link[] {
@@ -101,6 +114,7 @@ export function linksGraph(
     kind: item.kind,
     x: width / 2 - node.width / 2,
     y: centre - node.height / 2,
+    labelStyle: 'label',
   }
   return {
     width,
@@ -113,6 +127,7 @@ export function linksGraph(
       { label: sideLabel(links.from), x: inset, y: labelTop },
       { label: sideLabel(links.to), x: width - inset - node.width, y: labelTop },
     ],
+    ...looks,
   }
 }
 
@@ -167,6 +182,7 @@ function phoneGraph(links: ToolkitLinks, item: { path: string; name: string; kin
     kind: item.kind,
     x: width / 2 - size.width / 2,
     y: focusTop + phone.focusHeight / 2 - size.height / 2,
+    labelStyle: 'label',
   }
   return {
     width,
@@ -179,6 +195,7 @@ function phoneGraph(links: ToolkitLinks, item: { path: string; name: string; kin
       { label: sideLabel(links.from), x: inset, y: phone.labelTop },
       { label: sideLabel(links.to), x: inset, y: toLabel },
     ],
+    ...looks,
   }
 }
 

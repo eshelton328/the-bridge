@@ -14,6 +14,12 @@ panels stand one under the other, as on T15. D19, D29 to D32, T15, T28 to
 T31, M12, M22, M05 and M35 give the same results as before M17. The frame
 has no `exceptions.json`.
 
+The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
+2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
+Text passes, 25 of 28 position layers pass and the rules fail: the
+same results, failing keys and findings as the run on beta.39 before
+this change, so the checks below still hold.
+
 ## Checks
 
 - Text: pass. Every Figma string is in the render and visible where
@@ -35,20 +41,25 @@ has no `exceptions.json`.
 
 - **Graph lines.** Figma draws a curve from the foot of each item over
   writer down into writer's top, and from writer's foot down into each
-  item under it. The render draws no lines: `MapGraph` draws each line
-  from one node's side to another's, so on the upright graph its lines
-  would cross the nodes and run past the graph's right edge (gap: Links
+  item under it. The render draws no lines. Library beta.39 (#148) draws
+  upright lines (`MapGraph orientation="vertical"`), but
+  `linksView.test.ts` asserts that the phone graph has no edges and
+  selects nothing, and `ToolkitLinks.test.tsx` that no node of M17's
+  graph is pressed; a change to those lines waits for Erik (gap: Links
   graph (phone)).
-- **Open item.** writer in the middle of the graph is 162 × 32 with a
-  plain border in the skill's colour and its name in mono, as the other
-  items are, against Figma's 150 × 40 with an accent ring, a selected
-  fill and its name in the label style. With no lines a selected node
-  would dim every other node, so nothing is selected; writer is centred
-  where Figma centres it (gap: Links graph (phone), Links graph).
-- **Node borders.** Each item of the graph and of the link rows has a
-  border in the full colour of its kind; Figma draws the same colour at
-  about 60 % alpha in the graph and 45 % in the rows, so its borders look
-  muted (gap: Links graph, Links panel rows).
+- **Open item.** writer in the middle of the graph has its name in the
+  label style, as Figma's, since library beta.39 (`labelStyle: 'label'`,
+  #151). It is 162 × 32 with the muted kind border, as the other items
+  are, against Figma's 150 × 40 with an accent ring and a selected fill:
+  the graph selects nothing and uses no node `size` while the tests
+  above assert it; writer is centred where Figma centres it (gap: Links
+  graph (phone), Links graph).
+- **Node borders.** Since library beta.39 (#151) each item of the graph
+  has its kind's colour at 60 % alpha (`MapGraph nodeTone="muted"`) and
+  each link row's node at 45 % (`MapNode tone="faint"`), with the icons
+  in the full kind colour, as in Figma. With nothing selected on the
+  phone, the open item has the muted border too. The icons are 16 px
+  against Figma's 13 (gap: Links graph, Links panel rows).
 - **Link nodes.** The item at the start of each link row is a `MapNode`
   28 px high against Figma's 29, and the file and line at the row's end
   is a plain mono button in the accent colour (gap: Links panel rows).
@@ -89,3 +100,9 @@ has no `exceptions.json`.
 - **Back row.** Toolkit and its chevron are `BackRow`'s: `labelLg` and an
   18 px chevron, where Figma has label text and 16 px (gap: Item
   breadcrumb). The row passes the position check.
+- **Item tab gaps.** How it works starts about 2 px and Files and Links
+  about 4 px right of Figma's, because every library tab has a 1 px
+  border. Library #153 removes it from idle tabs; it comes with a later
+  version move (gap: Item tab width).
+- **Linked from heading.** LINKED FROM 4 sits about 3 px nearer the
+  panel's top than Figma's; the rows under it stay within 1 px.
