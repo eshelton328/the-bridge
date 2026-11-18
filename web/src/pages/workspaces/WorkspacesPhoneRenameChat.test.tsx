@@ -64,4 +64,17 @@ describe('a chat renamed on the phone', () => {
     await expect.element(field).toBeInTheDocument()
     await expect.element(field).toHaveFocus()
   })
+
+  it('opens the field from Rename in the actions sheet of another phone chat (M4)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneChatActions
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Rename', { exact: true }))
+    const field = page.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect.element(field).toHaveFocus()
+    await expect.element(field).toHaveValue('bridge themes')
+    // The field takes the title's place in the chat's header.
+    expect(field.element().closest('header')).not.toBeNull()
+    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).not.toBeInTheDocument()
+  })
 })
