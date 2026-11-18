@@ -46,6 +46,12 @@ The frame has no `exceptions.json`.
   Figma pads 11 and 13 with 17 px lines, so each tile is 3 px shorter
   (86 against 89; every `panel · kpi` key is within the tolerance) and
   the panels under them start 3 px higher (gap: KPI tile).
+  Each value is as high as Figma's (the `title` style, 20 px), but
+  `KpiTile` draws it with tabular figures, so a value with a 1 draws 2
+  to 4 px wider than Figma's proportional figures (on M23 `18` is 23 px
+  against 21, `Nov 14` 66 against 62) and looks a size larger; the tile
+  has no prop for proportional figures or a smaller value (gap: KPI
+  tile).
 - **Bar panels.** Each bar panel is the library's `Panel` with its title
   in capitals and its note at the header's end, over the library's
   `HorizontalBarChart`. Its rows are 24 px apart against Figma's 25,
@@ -71,6 +77,14 @@ The frame has no `exceptions.json`.
   +11; `row · README effectiveness research and rule` x +2 y -12 w -4 h
   +11; `row · Deep research on evals` x +2 y -9 w -4 h +11; `row ·
   Writer rules, skills, and agents` x +2 y -6 w -4 h +11.
+  The row's content also starts 11 px right of the panel's title, and
+  its chevron ends 11 px left of the end of the header's note (12 to 13
+  px with the larger icons), where Figma's row has no side padding and
+  its icon, or a round's title, lines up with the title and its chevron
+  with the note. The rows sit straight in the `Panel` body, which adds
+  no padding, so each row box starts at the panel title's edge; the
+  inset is `ListRow`'s 10 px padding inside its 1 px border (gap:
+  Activity chat row).
 - **Chat taps.** Figma's note says each chat opens as in D18, the chat
   panel of the Activity view. No state draws the Activity view or D18
   yet, so a chat row is not a button: it takes no tap and no focus, and

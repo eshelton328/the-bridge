@@ -46,6 +46,12 @@ results as before it, layer by layer. The frame has no
   Figma pads 11 and 13 with 17 px lines, so each tile is 3 px shorter
   (86 against 89; every `panel · kpi` key is within the tolerance) and
   the panels under them start 3 px higher (gap: KPI tile).
+  Each value is as high as Figma's (the `title` style, 20 px), but
+  `KpiTile` draws it with tabular figures, so a value with a 1 draws 2
+  to 4 px wider than Figma's proportional figures (on M23 `18` is 23 px
+  against 21, `Nov 14` 66 against 62) and looks a size larger; the tile
+  has no prop for proportional figures or a smaller value (gap: KPI
+  tile).
 - **Bar panels.** Each bar panel is the library's `Panel` with its title
   in capitals and its note at the header's end, over the library's
   `HorizontalBarChart`. Its rows are 24 px apart against Figma's 25,
@@ -70,6 +76,14 @@ results as before it, layer by layer. The frame has no
   cross-family x1` x +2 y -11 w -4 h +11; `row · ambitious ·
   cross-family x1` x +2 y -8 w -4 h +11; `row · pr-description · round
   4` x +2 y -5 w -4 h +11.
+  The row's content also starts 11 px right of the panel's title, and
+  its chevron ends 11 px left of the end of the header's note (12 to 13
+  px with the larger icons), where Figma's row has no side padding and
+  its icon, or a round's title, lines up with the title and its chevron
+  with the note. The rows sit straight in the `Panel` body, which adds
+  no padding, so each row box starts at the panel title's edge; the
+  inset is `ListRow`'s 10 px padding inside its 1 px border (gap:
+  Activity chat row).
 - **Round taps.** A tap on a round opens its skill on its Evals tab:
   writer as D20 draws it, with its results, and readme, ambitious and
   pr-description, which have no Evals tab yet, on their Overview, from

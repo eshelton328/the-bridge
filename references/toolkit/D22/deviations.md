@@ -44,11 +44,21 @@ by layer. The frame has no `exceptions.json`.
   Figma cuts the Workflows chip at the same edge, so `Workflows` and `2`
   are not visible in either. Not visible: `Workflows` `2`. D3, D20 and
   D25 to D28 have the same findings.
+  Figma draws the cut Workflows chip at full strength up to the pane's
+  edge; the library's `FilterChips` fades an end that overflows over 24
+  px (its `data-overflow-end` mask), so the cut chip fades out (gap:
+  Toolkit row (pane)).
 - **Key figures.** The four figures are the library's `KpiTile`, which
   pads 10 and 12 inside a 1 px border with 16 px lines (d-072), where
   Figma pads 11 and 13 with 17 px lines, so each tile is 3 px shorter
   (86 against 89; every `panel · kpi` key is within the tolerance) and
   the panels under them start 3 px higher (gap: KPI tile).
+  Each value is as high as Figma's (the `title` style, 20 px), but
+  `KpiTile` draws it with tabular figures, so a value with a 1 draws 2
+  to 4 px wider than Figma's proportional figures (on M23 `18` is 23 px
+  against 21, `Nov 14` 66 against 62) and looks a size larger; the tile
+  has no prop for proportional figures or a smaller value (gap: KPI
+  tile).
 - **Bar panels.** Each bar panel is the library's `Panel` with its title
   in capitals and its note at the header's end, over the library's
   `HorizontalBarChart`. Its rows are 24 px apart against Figma's 25,
@@ -70,6 +80,14 @@ by layer. The frame has no `exceptions.json`.
   chats` y -9 h +19; `row · NCC-1701 Figma toolkit page` y -10 h +11;
   `row · Brain NC1701 project` y -7 h +11; `row · Writer rules, skills,
   and agents` y -4 h +11; `row · Deep research on evals` y -1 h +11.
+  The row's content also starts 11 px right of the panel's title, and
+  its chevron ends 11 px left of the end of the header's note (12 to 13
+  px with the larger icons), where Figma's row has no side padding and
+  its icon, or a round's title, lines up with the title and its chevron
+  with the note. The rows sit straight in the `Panel` body, which adds
+  no padding, so each row box starts at the panel title's edge; the
+  inset is `ListRow`'s 10 px padding inside its 1 px border (gap:
+  Activity chat row).
 - **Chat taps.** Figma's note says each chat opens as in D18, the chat
   panel of the Activity view. No state draws the Activity view or D18
   yet, so a chat row is not a button: it takes no tap and no focus, and
