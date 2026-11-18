@@ -84,3 +84,9 @@ M02, T17 and M19 give the same results as before T19.
   Figma groups them in the centre. The tab bar is the shared `AppTabBar`
   (d-105), as on T01, T02, T03 and T17. Its box passes the position check,
   and a change to it needs the app-frame lock.
+
+## Second review
+
+- **Cross glyph.** The Test card's "✗" looks like an upright "×", where
+  Figma's is slanted. The text is the same character (U+2717) in both;
+  only the font's glyph differs.
