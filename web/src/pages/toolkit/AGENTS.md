@@ -282,7 +282,9 @@ what each file of a page folder is for.
   and the note. A tap on an item opens it from the open item (`openFrom`);
   a tap on a file and line opens that file on its item's Files tab
   (`linkFile`, and `openFile` in `screens/itemView.ts`;
-  `src/app/ToolkitLinks.test.tsx`). Only the
+  `src/app/ToolkitLinks.test.tsx`). A rule (D29, `ruleLinks`, D37's data)
+  links to one skill and nothing links to it: a side with no links has
+  `empty`, the reason in the graph's left column and in its panel. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

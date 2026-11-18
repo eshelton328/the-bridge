@@ -991,3 +991,18 @@ export const SkillLinks: Story = {
     await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
   },
 }
+
+export const RuleLinks: Story = {
+  name: 'D29: a rule open beside the list, on Links',
+  args: { data: toolkitStates.ruleLinks.data, ui: toolkitStates.ruleLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 0' })
+    await expect(within(from).getByText(/No toolkit item names this rule/)).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'skills.md:72' })).toBeVisible()
+  },
+}

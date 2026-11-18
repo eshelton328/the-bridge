@@ -245,9 +245,10 @@ const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, stri
   tablet: {},
   phone: {},
 }
-// On the Links tab: writer in D19 (482:367).
+// On the Links tab: writer in D19 (482:367), the rule skills in D29 (493:626).
 const linksTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:367',
+  'rules/skills.md': '493:626',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
