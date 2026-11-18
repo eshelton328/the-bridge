@@ -47,7 +47,9 @@ each file of a page folder is for.
   status on its own row under a 44 px header with the phone title size and
   a 36 px Add a link, `LibraryTools size="lg"` gives 36 px controls 8 apart
   with no space before the view switch, and `CardGroup` draws two columns
-  of cards whose meta line has the source mark without its name. In
+  of cards whose meta line has the source mark without its name. There
+  Filter opens the Filter menu as a sheet from the bottom over the tab
+  bar (T3, `LibraryTools filterAs="sheet"`). In
   the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
   with a search, one `ListGroup` of the matches ("3 matches for “eval”"),
   each `LibraryRow` with where it matched, and the search's hint under it;
@@ -87,7 +89,13 @@ each file of a page folder is for.
   (Filter, pressed while open and with a dot while boxes are checked, and
   the `Popover` with the footer's note and Show) and `FilterMenu` (a
   `PopoverSection` per section, a `Checkbox size="compact"` with its count
-  per box, as the Inbox's Filter menu). For D4: `ListGroup` (a
+  per box, as the Inbox's Filter menu; with `sheet`, each section's label
+  is a `GroupHeader` above its rows). For T3: `FilterSheet` (Filter, 36 px
+  and pressed while open, with a dot once the sheet closes on checked
+  boxes, and a `BottomSheet` titled Filter with Clear, which clears the
+  boxes, the `FilterMenu` and Show the full width; Show applies the boxes
+  and closes it, and the scrim and Escape close it and keep them, so both
+  return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
   `GroupHeader` over rows 6 apart), `LibraryRow` (`ListRow` in a bordered
   box: a wide `Thumbnail`, the title and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
@@ -137,7 +145,10 @@ each file of a page folder is for.
   shows D9) and D9 `changeApplied` (D8's data after Apply) and T1
   `libraryTablet` (D1's data on the tablet: "Search artifacts", two
   shorter Earlier descriptions, and only Earlier's two cards in the frame) and T2
-  `artifactTablet` (T1's data with D2's open artifact, no discussion yet). `library` stays first in `states/index.ts`: the app
+  `artifactTablet` (T1's data with D2's open artifact, no discussion yet)
+  and T3 `filterTablet` (T1's data with the Filter sheet open and D3's two
+  boxes checked; `libraryTablet` holds the sheet's menu, D3's with Clear
+  and "Show 7 artifacts", so T1's Filter opens it). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -146,7 +157,7 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, `filterMenu`, `addLinkForm`, `sortMenu` and the
+  `ArtifactDetail`, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu` and the
   open artifact's `discussion`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
