@@ -371,6 +371,19 @@ export const SubtaskForm = z.object({
 })
 export type SubtaskForm = z.infer<typeof SubtaskForm>
 
+/** The Subtask dialog's layers in a frame other than D17, whose ids `SubtaskDialog` keeps as its defaults (T10). */
+export const SubtaskDialogLayers = z.object({
+  dialog: z.string(),
+  model: z.string(),
+  modelBox: z.string(),
+  task: z.string(),
+  taskBox: z.string(),
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type SubtaskDialogLayers = z.infer<typeof SubtaskDialogLayers>
+
 /** The workspace sidebar's labels (D2 105:611). */
 export const SidebarText = z.object({
   title: z.string(),
@@ -595,6 +608,8 @@ export const SidebarLayers = z.object({
   addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
   /** The Fork dialog over the tablet's chat (T8); D15's layers when not set. */
   forkDialog: ForkDialogLayers.optional(),
+  /** The Subtask dialog over the tablet's chat (T10); D17's layers when not set. */
+  subtaskDialog: SubtaskDialogLayers.optional(),
   /** The Fork sheet on the phone (M18 422:217): its fields, the start-from choices in order, the note and Fork. */
   phoneFork: z
     .object({
