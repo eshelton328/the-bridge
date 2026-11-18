@@ -59,11 +59,16 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  // The names Erik gave chats (D21) take the place of their titles, in the sidebar and in the header.
+  // The names Erik gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
+  // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
   const workspaces = data.workspaces.map((w) =>
     w.chats === undefined ? w : { ...w, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) },
   )
+  const panes = data.panes.map((p) =>
+    p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
+  )
+  const named = { ...data, workspaces, panes }
   const current = workspaces.find((w) => w.id === data.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
@@ -71,11 +76,8 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     </div>
   )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
-  const focused = data.panes.find((p) => p.id === ui.focusedPane)
-  const chat =
-    focused?.type === 'chat'
-      ? { ...focused, head: { ...focused.head, title: names[focused.id] ?? focused.head.title } }
-      : undefined
+  const focused = panes.find((p) => p.id === ui.focusedPane)
+  const chat = focused?.type === 'chat' ? focused : undefined
   if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
     const menuOpen = ui.menuFor === chat?.id
     const chatMenu =
@@ -198,7 +200,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           }
           detail={
             ui.workbench === true || chat === undefined ? (
-              <WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle={false} />
+              <WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle={false} />
             ) : (
               <MainChat
                 pane={chat}
@@ -272,7 +274,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
   }
   return (
     <Backdrop size={viewport}>
-      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle />} />
+      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle />} />
     </Backdrop>
   )
 }
