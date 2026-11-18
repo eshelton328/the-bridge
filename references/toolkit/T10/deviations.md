@@ -11,7 +11,9 @@ T03's does, and the How it works tab is `ToolkitHowColumn`: no box, header,
 legend or source line, the trigger across the item, the steps in one column
 (`ToolkitHowStep compact`) and the chat path. The back row names the item
 (Toolkit › writer), and the kind badge and path rows are left out. D14, D37,
-D38, D39 and T03 give the same results as before T10.
+D38, D39 and T03 give the same results as before T10. The Checks below are
+from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 ## Checks
 
@@ -21,10 +23,13 @@ D38, D39 and T03 give the same results as before T10.
   `Run the lint` (501:133), `--form chat --ste` (501:134), `→` (501:139),
   `Send the text` (501:140) and `unchanged` (501:141). See Under the tab
   bar.
-- Position: 19 of 23 layers pass (`back row`, `button · Show on map`,
+- Position: 25 of 29 layers pass (`back row`, `button · Show on map`,
   `461:255`, `steps`, `step 1` to `step 8`, the six `uses · …` chips and
   `tab bar`). The 4 that fail (`button · Discuss`, `toolkit item`,
   `trigger`, `chat path`) are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts`
+  and `tab · More`.
 - Rules: fail. One `hiddenOverflow` finding: the item's ScrollFrame body
   (`div.scroll-frame__body`), see Under the tab bar.
 
@@ -64,12 +69,12 @@ D38, D39 and T03 give the same results as before T10.
   further in, so it starts 7 px further left (`button · Discuss` x -7.1,
   h -2). Toolkit and its chevron are `BackRow`'s: `labelLg` and an 18 px
   chevron, where Figma has label text and 16 px (gap: Item breadcrumb).
-- **Item tabs.** The selected tab (How it works) is white where Figma's is
-  cyan (gap: Item tab selected tone), and the tabs are spaced wider:
-  Activity ends about 30 px further right (gap: Item tab spacing). The
-  tabs' panel puts its content 16 under the tabs against Figma's 12; the
-  column starts 4 higher, so the trigger is in place.
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T01 to T03; its box passes the position check, and a
-  change to it needs the app-frame lock.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
+  beta.21) starts the tabs at the list's edge with 10 px sides and draws
+  How it works' label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 8 px further right, as
+  each label renders a little wider. The compact list is 4 px shorter and
+  the item adds 4 above the panel, so the panel starts where it did; the
+  column starts 4 higher than the panel puts it (16 under the tabs against
+  Figma's 12), so the trigger is in place.

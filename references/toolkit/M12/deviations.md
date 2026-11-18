@@ -11,18 +11,22 @@ lines). On the phone the item replaces the list in the shared `DetailFrame`
 `ToolkitHowColumn` with `layout="phone"`: the rows 10 apart. The back row
 names the item (Toolkit › writer) with M02's icon buttons, the title is in
 the `title` text style, and the kind badge and path rows are left out.
-D14, D37, D38, D39, T10 and M02 give the same results as before M12.
+D14, D37, D38, D39, T10 and M02 give the same results as before M12. The
+Checks below are from a rerun with library 1.0.0-beta.25 and the item
+tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Four strings are not visible: `Evals` (480:175, see Item
-  tabs) and `writing-reviewer` (461:659), `until pass` (461:664) and `8`
+  covered text. Three strings are not visible: `writing-reviewer`
+  (461:659), `until pass` (461:664) and `8`
   (461:670), see Under the tab bar.
-- Position: 19 of 23 layers pass (`back row`, `button · map`, `461:560`,
+- Position: 24 of 28 layers pass (`back row`, `button · map`, `461:560`,
   `steps`, `step 1` to `step 8`, the six `uses · …` chips and `tab bar`).
   The 4 that fail (`button · Discuss`, `toolkit`, `trigger`, `chat path`)
   are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the item's ScrollFrame body
   (`div.scroll-frame__body`) and the item tabs' list
   (`div.item-tabs__list`); see Under the tab bar and Item tabs.
@@ -39,12 +43,13 @@ D14, D37, D38, D39, T10 and M02 give the same results as before M12.
   Figma. A shared app-frame change will let the phone's scroll body run
   under the tab bar; DetailFrame and ScrollFrame stay as they are here. It
   is not an exception.
-- **Item tabs.** The selected tab (How it works) is white where Figma's is
-  cyan (gap: Item tab selected tone). `ItemTabs` pads its list 2 and each
-  tab 12, where Figma's tabs are 10 in with no list padding, so the row is
-  wider and Evals is cut at the screen's edge (`Evals` not visible; the
-  list's sideways scroll is the second `hiddenOverflow`, which Figma's row
-  has too, with Activity past the edge). Gap: Item tab spacing.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
+  beta.21) starts the tabs at the list's edge with 10 px sides and draws
+  How it works' label cyan, as Figma's, so Evals ends inside the 390 px
+  screen and only Activity runs past it (the list's sideways scroll is the
+  second `hiddenOverflow` finding, which Figma's row has too). The outline
+  stays `border.selected` at half alpha where Figma's is solid cyan (no
+  solid selected token, d-050).
 - **Discuss button.** Figma's Discuss is an icon button 36 × 28; an
   icon-only `Button` is square, so Discuss is `sm`, 28 × 28, and starts
   6 px further right (`button · Discuss` x +6, w -8). Show on map is

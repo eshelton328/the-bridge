@@ -13,18 +13,22 @@ item keeps T19's header (the back row to Toolkit, the kind badge, the name
 and the path row; its `how` does not set `named`), and the How it works tab
 is T10's `ToolkitHowColumn`: the trigger across the item, then the five
 steps in one column. D14, D37, D38, D39, T10, M12, T36, T37 and T19 give the
-same results as before T38.
+same results as before T38. The Checks below are from a rerun with library
+1.0.0-beta.25 and the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
 - Text: pass. Every Figma string is in the render and visible; no extra
   text and no covered text. No text runs under the tab bar: step 5 ends at
   y 727, far above it.
-- Position: 15 of 18 layers pass (`back row`, `button · Show on map`,
+- Position: 21 of 24 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `steps`, `step 1` to
   `step 5`, `uses · commits-and-prs`, `uses · git commit` and `tab bar`).
   The 3 that fail (`button · Discuss`, `toolkit item`, `trigger`) are
   listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts`
+  and `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -54,15 +58,13 @@ same results as before T38.
 - **Copy button.** The path badge's copy icon is a plain button with
   `CopyIcon` (gap: Path badge copy button); the path row passes the
   position check.
-- **Item tabs.** The selected tab (How it works) is white with a grey
-  outline where Figma's is cyan with a cyan outline (gap: Item tab selected
-  tone), and the tabs are spaced wider: How it works starts about 10 px and
-  Activity about 33 px further right (gap: Item tab spacing). Neither is
-  styled by hand.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
+  beta.21) starts the tabs at the list's edge with 10 px sides and draws
+  How it works' label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 8 px further right, as
+  each label renders a little wider. The item adds 4 above the panel, so
+  the trigger stays in place.
 - **Tests line.** D39 draws the hook's tests under the steps; T38 draws
   nothing there, so the state leaves `elsewhere` out and the render shows
   nothing under step 5, as in Figma.
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T19, T36 and T37; its box passes the position check, and
-  a change to it needs the app-frame lock.
