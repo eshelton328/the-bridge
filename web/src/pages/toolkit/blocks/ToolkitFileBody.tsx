@@ -36,9 +36,21 @@ export type ToolkitFileBodyProps = {
    * first, and scrolls it into view (`sourceAt` in blocks/filesView.ts). The file's first lines when not set.
    */
   line?: number | undefined
+  /**
+   * The explanation's layout (`ScriptExplanation` `layout`): `narrow` on the phone (M8 440:1630: no padding, the parts
+   * 12 apart, the steps 10 apart, each line link under its step's text), `wide` on the desktop and a tablet (D10, T6).
+   */
+  explainLayout?: 'wide' | 'narrow' | undefined
 }
 
-export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true, line }: ToolkitFileBodyProps) {
+export function ToolkitFileBody({
+  view,
+  mode,
+  onModeChange,
+  explainLayer = true,
+  line,
+  explainLayout = 'wide',
+}: ToolkitFileBodyProps) {
   const lineRef = useScrollToLine(mode === 'code' ? line : undefined, view.path)
   const modes = fileModes(view)
   const markdown = modes.some((m) => m.value === 'rendered')
@@ -64,6 +76,7 @@ export function ToolkitFileBody({ view, mode, onModeChange, explainLayer = true,
           facts={view.explain.facts}
           steps={view.explain.steps}
           note={view.explain.note}
+          layout={explainLayout}
           onLineSelect={() => {
             onModeChange?.('code')
           }}
