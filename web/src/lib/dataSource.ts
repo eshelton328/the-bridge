@@ -5,8 +5,17 @@
 // pick the source and the state; a production build always reads the
 // fixtures' default state.
 import { err, ok, type Result } from '@bridge/shared'
+import { z } from 'zod'
 
 const dataSourceKinds = ['fixtures', 'mock-api', 'live'] as const
+
+/**
+ * The `?source=` search param of every page. The router parses a value such
+ * as `123` into a number, so it is coerced to a string here; `readState`
+ * then turns any value it does not know into the unknown-source miss, and
+ * ignores it in a production build.
+ */
+export const dataSourceParam = z.coerce.string().optional()
 
 type DataSourceKind = (typeof dataSourceKinds)[number]
 

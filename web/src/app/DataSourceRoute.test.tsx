@@ -60,4 +60,12 @@ describe('the data source', () => {
     await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
     await view.unmount()
   })
+
+  it('shows Page not found for a source the router parses as a number', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const { rendered } = renderAt('/inbox?source=123')
+    const view = await rendered
+    await expect.element(page.getByRole('heading', { name: 'Page not found' })).toBeVisible()
+    await view.unmount()
+  })
 })

@@ -2,10 +2,11 @@
 // input). `state` picks a Figma state in development; `filter` is the
 // selected filter chip.
 import { z } from 'zod'
+import { dataSourceParam } from '../../lib/dataSource.ts'
 
 export const inboxSearch = z.object({
   state: z.string().optional(),
   /** The data source in development (lib/dataSource.ts); fixtures when not set. */
-  source: z.string().optional(),
+  source: dataSourceParam,
   filter: z.string().optional(),
 })
