@@ -485,6 +485,6 @@ what each file of a page folder is for.
   checks that every state is in one screen, on its own device.
   `screens/ToolkitScreens.stories.tsx` (`Pages/Toolkit/Screens`) draws
   each screen's devices side by side. `toolkitListTablet` (T1, M1) and
-  `toolkitMapTablet` (T2, M11) stand on the tablet only, as a state
-  belongs to one screen.
+  `toolkitMapTablet` (T2, M11) each have a tablet and a phone frame, so
+  each fills both its screen's Tablet and Phone columns (#114).
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
