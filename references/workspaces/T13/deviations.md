@@ -2,7 +2,7 @@
 
 What still differs from Figma T13 · Moved (the chat moved to the-bridge
 on the iPad mini, `tabletMovedChat`), after the last fidelity run
-(`pnpm fidelity workspaces T13`, 2026-11-18, library 1.0.0-beta.39),
+(`pnpm fidelity workspaces T13`, 2026-11-18, library 1.0.0-beta.42),
 each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T6's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`):
@@ -19,12 +19,11 @@ needed.
 
 - Text: pass. Every Figma string is in the render and visible, the
   toast's text and Undo included; the render has no extra text.
-- Position: fail, 4 of 7 layers pass: the header (`420:1422`), the back
-  button (`420:1424`), the ⋯ (`420:1435`) and Erik's message
-  (`420:1451`). Three fail:
+- Position: fail, 5 of 7 layers pass: the header (`420:1422`), the back
+  button (`420:1424`), the ⋯ (`420:1435`), Erik's message (`420:1451`)
+  and the composer (`420:1468`). Two fail:
   - `420:1456` (Claude's reply with Copy): h +8.
-  - `toast` (the toast, 420:1491): x +24.2, y +40, w -48.4 (h -2).
-  - `420:1468` (the composer): y +30.
+  - `toast` (the toast, 420:1491): x +24.2, y +6, w -48.4 (h -2).
 - Rules: pass.
 
 Render minus Figma, in px. All three checks render the page 29 px
@@ -33,20 +32,19 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Deviations
 
-- **The composer sits at the screen's end (Tablet safe area),
-  `420:1468` y +30.** Figma ends T13's composer 33 over the screen's end
-  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b, T06 and T08 to T12. It is measured again
-  after the rebase on library beta.42.
+- **The composer ends 1 px higher (Tablet safe area, closed by
+  beta.42).** `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`)
+  under the detail with no tab bar, so the composer ends 34 over the
+  screen's end, at y 1124, against Figma's 33 (y 1125 of 1158): y -4,
+  h +3, within the tolerance, as on T07.
 - **The toast is narrower, its text smaller and it sits lower (Toast
-  size, Tablet safe area), `toast` x +24.2, y +40, w -48.4.** Figma's
+  size), `toast` x +24.2, y +6, w -48.4.** Figma's
   toast (420:1491) is 306 × 40, its message and Undo in 14 px text, 17 px
   in from each side and 16 px between them. The library's `Toast` has one
   size: 12 px text, 12 px sides and an 8 px gap, so it is about 258 × 38,
-  as on D20. It is centred over the composer, as in Figma. It is 40 px
-  lower: 30 px because the composer is 30 px lower (above), and 8 px
-  because `ChatPane`'s `above` slot keeps 12 px between the toast and the
+  as on D20. It is centred over the composer, as in Figma. It is 6 px
+  lower: the composer is 4 px higher (above), the toast is 2 px
+  shorter, and it is 8 px lower because `ChatPane`'s `above` slot keeps 12 px between the toast and the
   composer, where Figma keeps 20 here (D20's and M22's toasts share the
   slot, and M22 keeps Figma's 12 there).
 - **Claude's reply is taller (Message text), `420:1456` h +8.**

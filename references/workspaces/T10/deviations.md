@@ -3,7 +3,7 @@
 What still differs from Figma T10 · Start a subtask (D17's Subtask form
 in a dialog over bridge themes on the iPad mini, `tabletSubtask`), after
 the last fidelity run (`pnpm fidelity workspaces`, 2026-11-18, library
-1.0.0-beta.39), each with its reason. The library gaps are in
+1.0.0-beta.42), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`)
 with D17's `SubtaskDialog` (`Dialog size="lg"`, 540) open over it in
@@ -15,11 +15,10 @@ makes the chat under it inert: no exception is needed.
 
 - Text: pass. Every Figma string is in the render and visible; the
   render has no extra text.
-- Position: fail, 4 of 14 layers pass: the header (`420:837`), the back
-  button (`420:839`), the ⋯ (`420:850`) and Erik's message (`420:866`).
-  10 fail:
+- Position: fail, 5 of 14 layers pass: the header (`420:837`), the back
+  button (`420:839`), the ⋯ (`420:850`), Erik's message (`420:866`) and
+  the chat's composer (`420:883`). 9 fail:
   - `420:871` (Claude's reply with Copy): h +8.
-  - `420:883` (the chat's composer): y +30.
   - `420:907` (the dialog): y +23, h -17.
   - `420:968` (Model field): y +23.
   - `420:971` (the model's box): y +26.
@@ -38,7 +37,7 @@ makes the chat under it inert: no exception is needed.
   its text area to one line (78 px in all) and always draws the send
   button, so a cyan ↑ shows at the box's end, as on D17. The library
   value to add is a `Composer` prop that drops the send button
-  (`send={false}`); beta.39 does not have it.
+  (`send={false}`); beta.42 does not have it.
 - **The dialog is 17 px shorter and sits 23 px lower, `420:907` y +23,
   h -17.** The dialog is shorter by the task box (above). `Dialog`
   centres in the app's screen, which starts under Figma's 29 px status
@@ -62,12 +61,11 @@ makes the chat under it inert: no exception is needed.
   draws Start subtask's label in SemiBold 13, as T07's footer draws
   Start chat, so it is 6 px wider and starts 4 px further left, as on
   D17.
-- **The chat's composer sits at the screen's end (Tablet safe area),
-  `420:883` y +30.** Figma ends T10's composer 33 over the screen's end
-  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b, T06 to T09. Library beta.42 adds the tablet
-  safe area.
+- **The chat's composer ends 1 px higher (Tablet safe area, closed by
+  beta.42).** `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`)
+  under the detail with no tab bar, so the composer ends 34 over the
+  screen's end, at y 1124, against Figma's 33 (y 1125 of 1158): y -4,
+  h +3, within the tolerance, as on T07.
 - **Claude's reply is taller (Message text), `420:871` h +8.** `Message`
   draws the text in `body` (14/20) and the name in `label` against
   Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high

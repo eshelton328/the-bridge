@@ -4,7 +4,7 @@ What still differs from Figma T12 · Move to workspace (T2b's chat on the
 iPad mini, with the chat actions menu open under the ⋯ and Move to
 workspace's list open beside it, `tabletMoveToWorkspace`), after the last
 fidelity run (`pnpm fidelity workspaces`, 2026-11-18, library
-1.0.0-beta.39), each with its reason. The library gaps are in
+1.0.0-beta.42), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T02b's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`):
 the ⋯ is the trigger of D2b's `ChatActionsMenu` (`PaneMenu`, `Menu
@@ -21,21 +21,20 @@ has no Artifacts tab, and no exception is needed.
   list's `the-bridge`, `omni`, `skill-evals` and `New workspace…`
   included. The end of Claude's reply that the menu covers is covered in
   Figma too.
-- Position: fail, 5 of 7 layers pass: the header (`420:1197`), the back
-  button (`420:1199`), the ⋯ (`420:1210`), Erik's message (`420:1226`)
-  and the menu (`420:1266`). Two fail:
+- Position: fail, 6 of 7 layers pass: the header (`420:1197`), the back
+  button (`420:1199`), the ⋯ (`420:1210`), Erik's message (`420:1226`),
+  the menu (`420:1266`) and the composer (`420:1243`). One fails:
   - `420:1231` (Claude's reply with Copy): h +8.
-  - `420:1243` (the composer): y +30.
 - Rules: pass.
 
 ## Deviations
 
-- **The composer sits at the screen's end (Tablet safe area),
-  `420:1243` y +30.** Figma ends T12's composer 33 over the screen's end
-  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b, T06, T08, T09 and T11. The composer is also
-  78 high against Figma's 75 (Composer text), within the tolerance.
+- **The composer ends 1 px higher (Tablet safe area, closed by
+  beta.42).** `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`)
+  under the detail with no tab bar, so the composer ends 34 over the
+  screen's end, at y 1124, against Figma's 33 (y 1125 of 1158): y -4,
+  h +3, within the tolerance, as on T07. The composer is
+  78 high against Figma's 75 (Composer text).
 - **Claude's reply is taller (Message text), `420:1231` h +8.** `Message`
   draws the text in `body` (14/20) and the name in `label` against
   Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high

@@ -3,7 +3,7 @@
 What still differs from Figma T8 · Fork a chat (D15's Fork form in a
 dialog over bridge themes on the iPad mini, `tabletFork`), after the last
 fidelity run (`pnpm fidelity workspaces`, 2026-11-18, library
-1.0.0-beta.39), each with its reason. The library gaps are in
+1.0.0-beta.42), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`)
 with D15's `ForkDialog` (`Dialog size="lg"`, 540) open over it in place
@@ -16,11 +16,10 @@ chat under it inert: no exception is needed.
 - Text: pass. Every Figma string is in the render and visible, the name
   field's value `bridge themes · fork` included; the render has no extra
   text.
-- Position: fail, 4 of 14 layers pass: the header (`420:474`), the back
-  button (`420:476`), the ⋯ (`420:487`) and Erik's message (`420:503`).
-  10 fail:
+- Position: fail, 5 of 14 layers pass: the header (`420:474`), the back
+  button (`420:476`), the ⋯ (`420:487`), Erik's message (`420:503`) and
+  the chat's composer (`420:520`). 9 fail:
   - `420:508` (Claude's reply with Copy): h +8.
-  - `420:520` (the chat's composer): y +30.
   - `420:544` (the dialog): y +14.
   - `420:551` (Name field): y +14.
   - `420:558` (Start from field): y +14.
@@ -54,12 +53,11 @@ chat under it inert: no exception is needed.
   draws the hint inside the name field at its end; `TextField` has no
   slot there, so the hint is at the end of the NAME label row, about
   20 px higher, as on D15.
-- **The chat's composer sits at the screen's end (Tablet safe area),
-  `420:520` y +30.** Figma ends T8's composer 33 over the screen's end
-  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b, T06 and T07. Library beta.42 adds the tablet
-  safe area.
+- **The chat's composer ends 1 px higher (Tablet safe area, closed by
+  beta.42).** `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`)
+  under the detail with no tab bar, so the composer ends 34 over the
+  screen's end, at y 1124, against Figma's 33 (y 1125 of 1158): y -4,
+  h +3, within the tolerance, as on T07.
 - **Claude's reply is taller (Message text), `420:508` h +8.** `Message`
   draws the text in `body` (14/20) and the name in `label` against
   Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high
