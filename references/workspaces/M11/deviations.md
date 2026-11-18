@@ -2,23 +2,29 @@
 
 What still differs from Figma M11 · New chat, keyboard open (the New chat
 form on the phone while Erik types its name, `phoneNewChatKeyboard`),
-after the last fidelity run (`pnpm fidelity workspaces M11`, 2026-11-17,
+after the last fidelity run (`pnpm fidelity workspaces`, 2026-11-18,
 library 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M7's
 `PhoneNewChat` with `ui.keyboardOpen`: Cancel and the title in a
 `ScrollFrame` header, `NewChatFields` in the body and Start chat alone in
 the footer. The name field has the focus with "theme tokens" typed, so its
 hint is gone; Runs in has Claude Code and Codex; the folders are one box,
-"~/omni-brain  +1".
+"~/omni-brain +1".
 
 ## Checks
 
 - Text: fail. Every Figma string shows; four render strings are extra,
-  because the screen keeps its full height under the keyboard:
-  - `MODEL`
-  - `Sonnet 5.5 · high effort`
-  - `FIRST MESSAGE`
-  - `What should it do? Type / for a skill.`
+  because the screen keeps its full height under the keyboard. Each is
+  covered by the system keyboard in Figma:
+  - `MODEL`: covered by the system keyboard in Figma.
+  - `Sonnet 5.5 · high effort`: covered by the system keyboard in Figma.
+  - `FIRST MESSAGE`: covered by the system keyboard in Figma.
+  - `What should it do? Type / for a skill.`: covered by the system
+    keyboard in Figma.
+
+  They stay known text failures until the screen sizes itself to the
+  visible area (Phone keyboard); no exception covers them, as the render
+  has no keyboard over them.
 - Position: fail, 10 of 14 layers pass: the header (`147:199`), Cancel
   (`147:200`), the title (`147:202`), the name field and its box
   (`147:206`, `147:211`), Runs in and its two rows (`147:214`, `147:216`,
@@ -60,7 +66,7 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
 - **The workspace box has a chevron (Select field).** Figma's omni-brain
   box (148:78) draws the text alone; `SelectField` keeps its chevron, as
   in M07, since the box still opens the workspaces.
-- **The folders box text is Medium 14 (Select field).** "~/omni-brain  +1"
+- **The folders box text is Medium 14 (Select field).** "~/omni-brain +1"
   (148:83) and "omni-brain" are in `label` (Medium 14) against Figma's
   Regular 14; the two spaces before "+1" are kept. The box is a secondary
   `Button`; it does nothing yet.

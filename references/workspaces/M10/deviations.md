@@ -2,7 +2,7 @@
 
 What still differs from Figma M10 · Chat, keyboard open (bridge themes on
 the phone while Erik types, `phoneKeyboard`), after the last fidelity run
-(`pnpm fidelity workspaces M10`, 2026-11-17, library 1.0.0-beta.27), each
+(`pnpm fidelity workspaces`, 2026-11-18, library 1.0.0-beta.27), each
 with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's `PhoneChat`
 with `ui.keyboardOpen`: `ChatHead size="phone"` with `meta` (one row) over
@@ -15,7 +15,12 @@ the skill list keeps /writer alone under `data.skillsMatching`.
 - Text: fail. Every Figma string shows but one:
   - `SKILLS MATCHING /wri` (147:72) is not visible as Figma writes it: the
     render shows "SKILLS MATCHING /WRI", which the check also reports as
-    extra text.
+    extra text. The fix comes with `PopoverSection query` (library #136,
+    1.0.0-beta.30); see Deviations.
+
+  No render string is extra under the keyboard: the skill list and the
+  composer, which show where Figma has the keyboard (`147:70`, `147:79`),
+  hold only Figma's own strings.
 - Position: fail, 3 of 7 layers pass: the header (`147:46`), the back
   button (`147:47`) and the ⋯ (`147:58`). Four fail:
   - `148:84` (Erik's message): y -36, h +2.
@@ -39,10 +44,17 @@ the skill list keeps /writer alone under `data.skillsMatching`.
   full height of the screen: the transcript starts 12 under the header,
   the skill list and the composer sit at the bottom of the screen over
   M3's safe area, and the band where Figma has the keyboard shows the
-  backdrop.
+  backdrop. The skill list and the composer are where the system keyboard
+  covers the screen in Figma; they hold only Figma's strings, so the text
+  check reports no extra text there.
 - **The skill list's label is in capitals (Skill picker), text
-  `SKILLS MATCHING /wri`.** `PopoverSection` shows its label in capitals,
-  so "/wri", which Figma keeps in the case Erik typed it, shows as "/WRI".
+  `SKILLS MATCHING /wri`.** Figma draws the label (147:72) in Geist Mono
+  Regular 10 with "/wri" in the case Erik typed it. `PopoverSection` shows
+  its whole label in capitals, so the render shows "/WRI". The fix comes
+  with `PopoverSection query` (library #136, 1.0.0-beta.30, not yet
+  released), which keeps the part of the label that `query` names in its
+  own case; until then the text check fails on this label, and no
+  exception covers it.
   The list is `Popover width="lg"`, 360 wide against Figma's 358 (`147:70`
   w +2), and /writer is white on its filled row where Figma draws it in the
   accent colour, as in M03.
