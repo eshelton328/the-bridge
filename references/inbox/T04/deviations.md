@@ -8,7 +8,7 @@ library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with librar
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 7 of 11 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `running`, `running card`, `tab bar`).
+- Position: 7 of 17 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `running`, `running card`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -57,10 +57,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Hidden Figma text.** Figma keeps Reset and Edit as hidden layers in
   the SENT PROMPT header (346:6202, 346:6207); `exceptions.json` lists
   them, as D06 does.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width
-  (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
-  x 150 (346:5574). The bar itself (`tab bar`) is in place. Library gap:
-  Tablet tab bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Snooze and Dismiss take `Button textSize="xs"`
   (`labelXs`, Medium 12/16), Figma's Medium 12 (d-100). The run card's
   Reply here is `textSize="smStrong"` (SemiBold 13/16) and Open in

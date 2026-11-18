@@ -9,7 +9,7 @@ with its reason. The library gaps are in
 ## Checks
 
 - Text: pass (62 strings).
-- Position: 7 of 9 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
+- Position: 7 of 15 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -43,9 +43,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   headers above, the later groups still start a little lower
   (`group · SNOOZED` y +6, `group · RUNNING` y +8); `group · NEXT
   STEPS` and the list's box (`inbox list`) are within the tolerance.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width;
-  Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
-  Library gap: Tablet tab bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Sort (here "Project") and Filter use
   `Button textSize="sm"` (Medium 13), as Figma's Newest and Filter
   (beta.5, #105). The approval row's Allow once, Deny and Open chat

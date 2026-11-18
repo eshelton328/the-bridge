@@ -16,12 +16,15 @@ M02, T17 and M19 give the same results as before T19.
 - Text: pass. Every Figma string is in the render and visible; no extra
   text, and no covered text. No string is drawn under the tab bar, and
   the item does not scroll at this size.
-- Position: 18 of 26 layers pass (`back row`, `button · Show on map`,
+- Position: 24 of 32 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `487:1126`,
   `kind section · hook`, `facts`, `fact · Event`, `fact · State`,
   `badge · Enabled · icon`, `fact · Enforces`, `fact · Test`,
   `preview bar`, `file · commit-msg`, `file · test-commit-msg`,
   `tab bar`). The 8 that fail are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -80,10 +83,6 @@ M02, T17 and M19 give the same results as before T19.
   plain button with `CopyIcon` (gap: Path badge copy button), and the
   preview box and bar are drawn with the Panel's tokens, with a 16 px code
   icon against 14 (gap: File preview).
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T01, T02, T03 and T17. Its box passes the position check,
-  and a change to it needs the app-frame lock.
 
 ## Second review
 

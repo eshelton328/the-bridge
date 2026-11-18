@@ -14,9 +14,12 @@ frames give the same results as before T03.
 
 - Text: pass. Every Figma string is in the render and visible; no extra
   text, and no covered text.
-- Position: 9 of 25 layers pass (`back row`, `button · Show on map`,
+- Position: 15 of 31 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `487:78`,
   `preview bar`, `tab bar`). The 16 that fail are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -65,10 +68,6 @@ frames give the same results as before T03.
 - **Copy button and preview bar.** As on D3: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
   box and bar are drawn with the Panel's tokens (gap: File preview).
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T01 and T02; its box passes the position check, and a
-  change to it needs the app-frame lock.
 
 ## Second review
 

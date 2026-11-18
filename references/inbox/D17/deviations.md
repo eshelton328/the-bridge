@@ -12,7 +12,9 @@ the checks and offsets below are from the beta.9 run.
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` by their layer ids (one entry per string, d-101), so the same text in the task pane is still checked.
-- Position: 6 of 17 layers pass (`task pane`, `task bar`, `title block`, `guard`, `message · you`, `composer · discussion`).
+- Position: 9 of 23 layers pass (`task pane`, `task bar`, `title block`, `guard`, `message · you`, `composer · discussion`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Failing layers
@@ -130,6 +132,11 @@ Render minus Figma, in px.
   remove this task" on a 16 px `inline` row in `fg.muted` (was 32 px,
   `fg.default`). This moves one layer: `proposal · CREATE 3 TASKS` x +0,
   y +26, w +0, h +2 (was x +0, y +26, w +0, h +18).
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

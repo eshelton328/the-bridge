@@ -8,9 +8,11 @@ library 1.0.0-beta.15), each with its reason. The library gaps are in
 ## Checks
 
 - Text: passes. `Toolkit` is an `extra` exception (`exceptions.json`).
-- Position: 30 of 39 layers pass, among them every artifact row, both
+- Position: 34 of 45 layers pass, among them every artifact row, both
   group headers, the header, the artifact pane, its bar, title block,
   preview and "Made in". Nine fail; each is listed below.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass.
 
 ## Deviations
@@ -73,9 +75,10 @@ library 1.0.0-beta.15), each with its reason. The library gaps are in
   Figma's note, but D7's state does not exist on this branch, so it is
   not wired. Open artifact is a button with no action, and the link under
   the preview opens the artifact's address in a new tab.
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower.
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 
 ## Values picked (d-100)
 

@@ -11,7 +11,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 ## Checks
 
 - Text: pass.
-- Position: 9 of 18 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+- Position: 13 of 24 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -78,6 +80,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   this frame moved. The dialog's Edit prompt and Copy are
   `textSize="sm"` (Medium 13), as T8 sets them in Figma (346:7187,
   346:7193); D8's text boxes (346:3556, 346:3562) have the same size.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

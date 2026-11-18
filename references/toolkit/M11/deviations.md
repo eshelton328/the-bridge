@@ -41,9 +41,11 @@ library's SVG, so they carry no `data-figma`.
     `mermaid-diagrams` (461:985), which Figma also cuts with an ellipsis,
     and `commit-msg` (461:965) and `ambitious` (461:1001), whose nodes
     lie below the window's bottom edge, where Figma's window clips them.
-- Position: 7 of 9 layers pass (`header`, the three view buttons,
+- Position: 12 of 14 layers pass (`header`, the three view buttons,
   `map viewport`, `hint`, `tab bar`); `toolkit` and `selection · writer`
   fail.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass. The window's sideways scroll (`hiddenOverflow` on the
   `MapGraph` scroller) is in `exceptions.json`: Figma's window cuts the
   drawing at the same edge.

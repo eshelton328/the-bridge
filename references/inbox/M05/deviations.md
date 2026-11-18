@@ -9,7 +9,9 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 ## Checks
 
 - Text: pass (28 strings checked; 2 Figma strings under exceptions.json).
-- Position: 5 of 10 layers pass (`nav`, `task bar`, `title block`, `sticky action`, `tab bar`).
+- Position: 10 of 15 layers pass (`nav`, `task bar`, `title block`, `sticky action`, `tab bar`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass (1 findings under exceptions.json).
 
 ## Failing layers

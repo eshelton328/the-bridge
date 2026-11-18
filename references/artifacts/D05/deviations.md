@@ -13,10 +13,12 @@ is D01's, so its deviations are D01's.
   `Toolkit` is an `extra` exception, and the four card descriptions that
   Figma cuts with an ellipsis are `missing` exceptions (`exceptions.json`),
   as D01's.
-- Position: 7 of 31 layers pass (`header`, `found status`,
+- Position: 11 of 37 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`). Twenty-four
   fail; each is listed below.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as D01's. The link and title inputs
   are `scrollBar` exceptions: they draw no scroll bar (`D05.render.png`),
@@ -103,7 +105,10 @@ is D01's, so its deviations are D01's.
   holds the navigation) has a Toolkit item after Artifacts (d-105), which
   this frame does not draw, so More sits one item lower. Its items are
   50 high and 56 apart, as Figma's (library #115).
-
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 ## Values picked (d-100)
 
 Each value with no token is recorded for the library in

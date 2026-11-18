@@ -14,10 +14,12 @@ list open over the transcript and the folder picker in the side slot
   header's `23%`) pass without an
   exception: `ContextMeter` draws each as one text node. `Artifacts` and
   `Toolkit` (rail, d-105) are excepted as on D01 to D03.
-- Position: 16 of 35 layers pass. `128:272`, `128:273`, `128:304`,
+- Position: 19 of 41 layers pass. `128:272`, `128:273`, `128:304`,
   `128:306`, `137:2`, `137:9`, `128:330`, `128:342`, `128:349`,
   `128:355`, `128:361`, `128:367`, `128:374`, `128:381`, `128:388`,
   `128:400`, `128:410`, `128:416` and `128:424` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -74,5 +76,8 @@ list open over the transcript and the folder picker in the side slot
 - **Chat header (Chat header).** Figma's header in D04 has no ⋯, and the
   build leaves it out (`chatActions: false`); the header is 91 px against
   89, within the tolerance.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

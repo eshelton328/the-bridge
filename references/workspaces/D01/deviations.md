@@ -13,13 +13,15 @@ What still differs from Figma after moving the Workbench onto the library's
   context percentages pass without an exception: `ContextMeter` draws
   each as one text node. Artifacts and Toolkit on the rail are excepted
   as on the Inbox frames (d-105).
-- Position: 9 of 17 layers pass (`nav rail`, `158:2`, `105:177`,
+- Position: 12 of 23 layers pass (`nav rail`, `158:2`, `105:177`,
   `105:210`, `105:316`, `105:262`, `105:304`, `105:347`, `105:421`);
   `150:2`, `105:215`, `105:230`, `105:337`, `105:291`, `105:370`,
   `105:384` and `105:406` fail. Move to workspace's list (105:473) and
   the empty pane's list (105:368) are not measured, as their library
   parts take no `data-figma` (Submenu data attributes, Empty pane rows);
   the list's two rows (105:370, 105:384) are.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -86,5 +88,8 @@ What still differs from Figma after moving the Workbench onto the library's
 - **Sticky composer (d-107).** Only the transcript of each chat pane
   scrolls; the pane header and the composer stay in view. The frame
   shows the top of the scroll, so this changes no pixel here.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

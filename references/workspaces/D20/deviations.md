@@ -15,9 +15,11 @@ with Undo over the composer (`movedChat`).
 - Text: pass. Every Figma string shows, `Moved bridge themes to the-bridge`
   and `Undo` included. `Artifacts` and `Toolkit` (rail, d-105) are
   excepted as on D01 to D19.
-- Position: 19 of 22 layers pass; `417:2092`, `toast · moved` and
+- Position: 22 of 28 layers pass; `417:2092`, `toast · moved` and
   `417:2105` fail. Every sidebar row and group header, the chat header
   (`417:2059`), the ⋯ (`417:2070`) and Erik's message (`417:2087`) pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -61,5 +63,8 @@ with Undo over the composer (`movedChat`).
   icons with a 2 px stroke, so they look heavy; `EditIcon` and
   `CloseIcon` at 12 px draw a 1 px stroke, and no icon takes a stroke
   weight.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

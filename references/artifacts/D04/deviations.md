@@ -11,10 +11,12 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   (`ViewSwitch iconOnly`, library #121). Every string is visible. Each
   "eval" mark counts in its title, description or link. `Toolkit` is an
   `extra` exception (`exceptions.json`).
-- Position: 6 of 15 layers pass (`header`, `found status`,
+- Position: 10 of 21 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · matches`). Nine fail;
   each is listed below.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass.
 
 ## Deviations
@@ -61,10 +63,10 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 - **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
   against Figma's about 24 px, so the title and "3 of 24" are smaller.
   Library gap "Desktop page title size".
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower. Its items are
-  50 high and 56 apart, as Figma's (library #115).
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 - **Buttons with no screen yet.** Open on each row, Add a link, Sort and
   Filter are buttons with no action on this page yet.
 

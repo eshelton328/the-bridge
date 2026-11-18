@@ -11,7 +11,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` by their layer ids (one entry per string, d-101), so the same text in the task pane is still checked.
-- Position: 5 of 17 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
+- Position: 8 of 23 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -81,6 +83,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +3); `start` x +4, y +15, h -1 (was x +4, y +24, h -1). The cause is
   the 20 px pills (`Badge size="sm"`; Figma's pills are 20, beta.4 drew
   24) and the prompt's 20 px lines (see "Detail text").
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

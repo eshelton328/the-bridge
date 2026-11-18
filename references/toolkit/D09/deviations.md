@@ -27,12 +27,15 @@ apart as Figma's), which fits D9 better than beta.16's `TerminalLines`
   chip's label and count (433:1315, 433:1316), which Figma cuts at the
   list pane's edge too, and line 4 of the script (433:1595), which
   Figma cuts at the preview's edge too.
-- Position: 21 of 43 layers pass (`toolkit list`, `header`, `read-only`,
+- Position: 27 of 49 layers pass (`toolkit list`, `header`, `read-only`,
   `filter · chips`, `search`, `group · RULES`, `toolkit item`,
   `meta row`, `kind badge`, `button · Discuss`, `button · Show on map`,
   `433:1536`, `path row`, `path badge`, `kind section · hook`, `facts`,
   `fact · Event`, `fact · State`, `badge · Enabled · icon`,
   `fact · Enforces`, `fact · Test`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. One `hiddenOverflow` finding: the list pane
   (`[data-figma="toolkit list"]`) is 1066 px high in a 982 px frame and
   scrolls, because of the taller rows (see Row height). In

@@ -14,9 +14,11 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   menu place"). `Toolkit` is an `extra` exception, and the four
   descriptions that Figma cuts with an ellipsis are `missing` exceptions
   (`exceptions.json`), as in D01 and D03.
-- Position: 7 of 24 layers pass (`header`, `found status`,
+- Position: 11 of 30 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as in D01.
 
@@ -63,10 +65,10 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower. Its items are
-  50 high and 56 apart, as Figma's (library #115).
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 - **Sorting.** Picking a sort closes the menu and orders the cards inside
   each group (`sortCards` in `libraryView.ts`); the groups keep their
   order, so Found since you last looked stays at the top, as the frame's

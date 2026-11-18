@@ -12,9 +12,11 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   `Toolkit` is an `extra` exception, and the
   four descriptions that Figma cuts with an ellipsis are `missing`
   exceptions (`exceptions.json`).
-- Position: 7 of 23 layers pass (`header`, `found status`,
+- Position: 11 of 29 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions: Figma draws the third card row past the
   frame's bottom edge and cuts the same descriptions.
@@ -63,10 +65,10 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   colour or tone prop. Library gap "Thumbnail colour".
 - **Card kind mark.** The Claude and Codex marks in the meta line are
   12 px against Figma's 14. Library gap "Card kind mark size".
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower. The rest of the
-  rail matches.
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 
 ## Values picked (d-100)
 

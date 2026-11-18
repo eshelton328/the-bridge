@@ -17,12 +17,15 @@ as on main (every text, position delta and rule finding).
 - Text: pass. Every Figma string is in the render and visible, with the
   breadcrumb's two `›` and writing-reviewer twice (breadcrumb and title);
   no extra text, and no covered text.
-- Position: 20 of 25 layers pass, among them `back row`,
+- Position: 26 of 31 layers pass, among them `back row`,
   `breadcrumb · Toolkit › writer › writing-reviewer`,
   `button · Show on map`, `meta row`, `kind badge`, `path row`,
   `path badge`, `columns`, `file preview`, `preview bar`,
   `rendered markdown`, `used in workflows`, `file · writing-reviewer.md`
   and `tab bar`. The five that fail are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -71,10 +74,6 @@ as on main (every text, position delta and rule finding).
 - **Copy button and preview bar.** As on D07: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
   box and bar are drawn with the Panel's tokens (gap: File preview).
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T01 to T03; its box passes the position check, and a
-  change to it needs the app-frame lock.
 
 ## Second review
 

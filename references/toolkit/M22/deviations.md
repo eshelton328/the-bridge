@@ -21,13 +21,15 @@ D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
   ``# tree once `core.hooksPath` is `toolkit/hooks` (link.sh sets that).``
   (487:2246), see Code lines; and `6` (487:2248) and `set -u` (487:2249),
   see Under the tab bar.
-- Position: 16 of 25 layers pass (`back row`, `button · map`,
+- Position: 21 of 30 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:2043`, `path badge`, `487:2182`,
   `kind section · hook`, `facts`, `fact · Event`, `fact · State`,
   `badge · Enabled · icon`, `fact · Enforces`, `fact · Test`,
   `preview bar`, `tab bar`). The 9 that fail (`button · Discuss`,
   `toolkit`, `columns`, `file preview`, `code`, `side`, `files`,
   `file · commit-msg`, `file · test-commit-msg`) are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Three `hiddenOverflow` findings: the item's ScrollFrame
   body (`div.scroll-frame__body`, see Under the tab bar), the item tabs'
   list (`div.item-tabs__list`, see Item tabs) and the code's ScrollFrame

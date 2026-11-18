@@ -8,7 +8,7 @@ against the installed library 1.0.0-beta.7, which has #107 and #108), each with 
 ## Checks
 
 - Text: pass (67 strings checked; 0 Figma strings under exceptions.json).
-- Position: 7 of 8 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
+- Position: 7 of 14 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -51,10 +51,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Library gap: Toast width on the tablet. Undo takes the new tasks out,
   as on the phone (M22): the state names the rows it draws as created,
   and Undo clears its applied Create (`InboxRoute.test.tsx`).
-- **Tab bar.** `TabBar` spreads its five tabs over the full width
-  (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
-  x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
-  bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **List fits.** The checks render 1129 px high, the screen below the
   status bar (d-102). With 56 px rows and 36 px group headers (library
   #108) the list fits the screen above the tab bar, as Figma's does, so

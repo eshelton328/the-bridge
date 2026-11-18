@@ -21,11 +21,14 @@ are unchanged). The frame has no `exceptions.json`.
   495:1420; the check names 495:1443). These three are the open hook's
   list row, which the render draws below the frame's bottom edge (see Row
   height), as in D09.
-- Position: 19 of 44 layers pass, among them the title (`495:1443`), the
+- Position: 25 of 50 layers pass, among them the title (`495:1443`), the
   How it works header (`495:1574`), the four legend items and the
   `uses · commits-and-prs` chip; and `toolkit list`, `read-only`,
   `filter · chips`, `search`, `group · RULES`, `toolkit item`, `meta row`,
   `kind badge`, both buttons, `path row` and `path badge`.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the list pane
   (`[data-figma="toolkit list"]`) is 1066 px high in a 982 px frame and
   scrolls, because of the taller rows (see Row height), as in D09; and the

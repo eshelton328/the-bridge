@@ -11,12 +11,14 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   preview's chart has no median line or label (see Preview chart below).
   `Toolkit` is an `extra` exception (`exceptions.json`). The context
   meter's `49%` (454:366) matches with no exception, as in D07 and D08.
-- Position: 18 of 29 layers pass, among them the artifact bar,
+- Position: 22 of 35 layers pass, among them the artifact bar,
   `pill · New` (which says Updated), the title block, preview, "Made
   in", both Open in workspace buttons (`452:3634`, `452:3644`), the
   panel's `header`, `button · x`, `guard`, `message · you` and
   `composer · discussion`. Eleven fail, the same layers as in D08; each
   is listed below.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass.
 - D01 to D08 give the same results as before this frame
   (`pnpm fidelity artifacts D01 … D08 --skip-build`).
@@ -80,10 +82,10 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   and the chip "updated just now", the meter 49%, and the proposal its
   applied form (`appliedView` in `screens/discussionView.ts`). The link,
   the "Made in" line and the library entry stay, as the note says.
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower. Its items are
-  50 high and 56 apart, as Figma's (library #115).
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 
 ## Values picked (d-100)
 

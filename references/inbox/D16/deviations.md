@@ -11,7 +11,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 ## Checks
 
 - Text: pass; the list's text, which the task pane covers in Figma, and the context meter's value are excepted in `exceptions.json` by their layer ids (one entry per string, d-101), so the same text in the task pane is still checked.
-- Position: 5 of 18 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
+- Position: 8 of 24 layers pass (`task pane`, `task bar`, `title block`, `guard`, `composer · discussion`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -112,6 +114,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   +0, y +46, w +0, h +8 (was x +0, y +50, w +0, h +8). The cause is
   the discussion reply's author name in `labelXsStrong` (SemiBold
   12/16, Figma's; was `label`, Medium 14/20), a 4 px shorter line.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

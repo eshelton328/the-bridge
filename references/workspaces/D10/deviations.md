@@ -19,10 +19,12 @@ full height. No block changed: the zone is an overlay of the pane that
   chat's `brain git`, `shell · zsh` and `Idle` and the hono server row's
   `78%` (402:3284) included. `Artifacts` and `Toolkit` (rail, d-105) are
   excepted as on D01 to D09.
-- Position: 15 of 25 layers pass; `402:3497`, `402:3512`, `402:3537`,
+- Position: 18 of 31 layers pass; `402:3497`, `402:3512`, `402:3537`,
   `402:3542`, `402:3555`, `402:3583`, `402:3612`, `402:3625`, `402:3637`
   and `402:3651` fail. The panes' x and width, and the zone's x and width,
   match Figma's within 2 px.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 - Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
   results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
@@ -86,8 +88,11 @@ full height. No block changed: the zone is an overlay of the pane that
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against
   Figma's 14 px icons with no button box, as on D07 to D09.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Value picks (d-100)
 

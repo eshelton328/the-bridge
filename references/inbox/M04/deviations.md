@@ -9,7 +9,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 ## Checks
 
 - Text: pass (45 strings checked; 3 Figma strings under exceptions.json).
-- Position: 3 of 14 layers pass (`nav`, `task bar`, `title block`).
+- Position: 3 of 19 layers pass (`nav`, `task bar`, `title block`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -105,3 +105,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `GroupHeader` (36 px, was 38): the sheet's three section labels
   (`MenuSection`) are 2 px shorter each. The choices are `OptionList`
   rows, which #108 did not change.
+- **Tabs under the sheet.** The frame draws no tab bar (see Under the
+  sheet); the app keeps the page's tab bar under the sheet, so its tabs
+  (`tab · Home`, `tab · Inbox`, `tab · Workspaces`, `tab · Projects` and
+  `tab · More`) have no layer, as `tab bar`.

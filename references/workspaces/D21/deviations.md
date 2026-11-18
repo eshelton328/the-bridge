@@ -15,17 +15,21 @@ the focus in it and × at its end (`renameChat`).
   build could not write D21's, because the permission to add an
   exception was denied, so the caller or Erik adds it. Every Figma string
   shows, the field's `bridge themes` included.
-- Position: 20 of 22 layers pass; `417:2399` and `417:2412` fail. The
+- Position: 23 of 28 layers pass; `417:2399` and `417:2412` fail. The
   rename field (`rename field · chat`), the chat header (`417:2366`), the
   ⋯ (`417:2377`), Erik's message (`417:2394`), every sidebar row and group
   header pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
 
-- **Rail (`Artifacts`, `Toolkit`).** The shared `AppRail` adds Artifacts
-  and Toolkit before More (d-105), so More sits lower than Figma's, as on
-  D01 to D20.
+- **Nav rail (`Artifacts`, `Toolkit`).** Figma's rail has no Artifacts
+  or Toolkit item, so `rail · Artifacts` and `rail · Toolkit` have no
+  layer, and `rail · More` sits 108 px lower (y +108). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 - **Rename field text and × (Rename field).** The library has no rename
   field; `ChatNameField` is `SearchField size="sm"`, 300 wide. Its name is
   14 px body text where Figma's is 16 px (`subtitle`), it starts 10 px in

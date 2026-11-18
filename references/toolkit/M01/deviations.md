@@ -16,9 +16,11 @@ added: `Button pressedTone="accent"` and `FilterChips padding="none"`.
   visible, because the taller rows push them under the tab bar (see Row
   height): `readme`, `skills/readme/` and `→2 ←2` (429:181), `writer`,
   `skills/writer/`, `→7 ←4`, `AGENTS` and `7` (429:199).
-- Position: 7 of 25 layers pass (`header`, `button · list`, `button · map`,
+- Position: 12 of 39 layers pass (`header`, `button · list`, `button · map`,
   `button · activity`, `filter · chips`, `search`, `tab bar`). The Rules group and its rows are in `exceptions.json`: the
   frame ends at the last Agents row, and the render draws Rules below it.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`: the
   list scrolls under the pinned tab bar (`main.app-shell__detail`), and
   the kind chips scroll sideways, with Workflows cut at the right edge as

@@ -17,9 +17,12 @@ check measures only the canvas, the legend and the card.
 
 - Text: pass. Every string of the map, the legend and the card is on
   screen.
-- Position: 8 of 11 layers pass (`toolkit`, `header`, `read-only`,
+- Position: 14 of 17 layers pass (`toolkit`, `header`, `read-only`,
   `view · List, Map or Activity`, `list tools`, `counts legend`,
   `map canvas`, `legend`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: pass.
 
 ## Deviations

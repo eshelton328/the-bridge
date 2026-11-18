@@ -15,7 +15,9 @@ the checks and offsets below are from the beta.9 run.
   radio, checkbox, hidden and password inputs, so the option ids inside
   `Checkbox` rows no longer count as visible text.
   The hidden "Run the readme" row is excepted in `exceptions.json`.
-- Position: 10 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `task pane`, `task bar`, `title block`).
+- Position: 14 of 22 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -88,6 +90,11 @@ the checks and offsets below are from the beta.9 run.
   0.98). No layer of this frame moved. On `surface.raised`, `fg.subtle`
   is 4.39:1, below WCAG AA (d-055), so the counts are `fg.muted`
   (#8a97b8), brighter than Figma's #4a5675.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

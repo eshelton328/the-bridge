@@ -17,12 +17,14 @@ before M02.
   covered text. Five strings are not visible: `Evals` (480:127, see Item
   tabs) and `FILES 11` (487:166), `SKILL.md` (487:171), `references/`
   (487:175) and `6` (487:176), see Under the tab bar.
-- Position: 16 of 24 layers pass (`back row`, `button · map`,
+- Position: 21 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `429:303`, `path badge`, `487:142`,
   `file preview`, `preview bar`, `rendered markdown`,
   `used in workflows`, `file · SKILL.md`, `file · references/`,
   `file · scripts/`, `evals link`, `tab bar`). The 8 that fail are
   listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the item's ScrollFrame
   body (`div.scroll-frame__body`) and the item tabs' list
   (`div.item-tabs__list`); see Under the tab bar and Item tabs.

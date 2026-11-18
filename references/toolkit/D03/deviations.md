@@ -18,12 +18,15 @@ numbers below are from the run with library 1.0.0-beta.15 and
   and `eval-grader`, `agents/eval-grader.md` and `→0 ←2` (427:200). The
   Workflows chip's label and count (427:82, 427:83) are in
   `exceptions.json`: Figma cuts them at the list pane's edge too.
-- Position: 15 of 53 layers pass (`toolkit list`, `header`, `read-only`,
+- Position: 21 of 59 layers pass (`toolkit list`, `header`, `read-only`,
   `filter · chips`, `search`, `group · SKILLS`, `toolkit item`,
   `meta row`, `kind badge`, `button · Discuss`, `button · Show on map`,
   `427:270`, `path row`, `path badge`, `columns`). The Rules group and
   its eight rows (9 layers) are in `exceptions.json`: the frame has no
   layer for them.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`:
   the list pane scrolls on its own (`[data-figma="toolkit list"]`), and
   the kind chips scroll sideways, cut at the pane's edge as in Figma

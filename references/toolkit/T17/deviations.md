@@ -14,10 +14,13 @@ D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
 
 - Text: pass. Every Figma string is in the render and visible; no extra
   text, and no covered text.
-- Position: 13 of 16 layers pass (`back row`, `button · Show on map`,
+- Position: 19 of 22 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `487:501`,
   `when it loads`, `columns`, `file preview`, `preview bar`,
   `rendered markdown`, `tab bar`). The 3 that fail are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -58,10 +61,6 @@ D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
   preview).
 - **Side.** Figma has an empty `side` layer (487:526, 712 × 1) under the
   file; a rule has no side column (D4), so the render draws nothing there.
-- **Tab bar.** The six tab bar items spread across the full width, where
-  Figma groups them in the centre. The tab bar is the shared `AppTabBar`
-  (d-105), as on T01, T02 and T03; its box passes the position check, and
-  a change to it needs the app-frame lock.
 
 ## Second review
 
