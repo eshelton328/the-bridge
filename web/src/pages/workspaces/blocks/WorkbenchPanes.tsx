@@ -110,6 +110,8 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
       >
         {pane.type === 'chat' ? (
           <ChatPane
+            // Each chat its own composer, whose text is its state: a pane that shows another chat starts from its draft.
+            key={pane.id}
             figma={layers}
             entries={pane.entries}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}

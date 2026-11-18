@@ -71,6 +71,9 @@ export function MainChat(props: MainChatProps) {
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
+        // The composer keeps what Erik types in its own state, so each chat gets its own: switching the chat shown
+        // alone (a fork and its original) mounts the other chat's composer from its draft.
+        key={pane.id}
         size="full"
         figma={{
           composer: layers?.composer ?? '105:889',

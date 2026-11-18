@@ -128,6 +128,8 @@ export function PhoneChat(props: PhoneChatProps) {
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
+        // Each chat its own composer, whose text is its state, so a typed message never carries to another chat.
+        key={pane.id}
         size={device}
         figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
         entries={pane.entries}

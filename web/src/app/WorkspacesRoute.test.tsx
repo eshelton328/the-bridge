@@ -53,4 +53,18 @@ describe('the Workspaces route', () => {
     view = await renderAt('/workspaces?state=twoPanes')
     await expect.element(draft()).toHaveValue('keep this draft')
   })
+
+  it('keeps each draft with its chat when the sidebar switches the chat shown alone', async () => {
+    view = await renderAt('/workspaces?state=forkedChat')
+    const composer = (chat: string) => page.getByRole('region', { name: chat, exact: true }).getByRole('textbox')
+    const open = (chat: string) => userEvent.click(page.getByRole('button', { name: chat, exact: true }))
+    await userEvent.fill(composer('bridge themes · fork'), 'fork draft')
+    await open('bridge themes')
+    await expect.element(composer('bridge themes')).not.toHaveValue('fork draft')
+    await userEvent.fill(composer('bridge themes'), 'original draft')
+    await open('bridge themes · fork')
+    await expect.element(composer('bridge themes · fork')).toHaveValue('fork draft')
+    await open('bridge themes')
+    await expect.element(composer('bridge themes')).toHaveValue('original draft')
+  })
 })
