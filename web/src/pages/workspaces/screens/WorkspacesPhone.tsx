@@ -278,7 +278,11 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         highlight={ui.menuHighlight}
                         onSelect={(action) => {
                           if (action === 'rename')
-                            onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
+                            onUiChange({
+                              renaming: true,
+                              messageFocus: false,
+                              refocusMessage: ui.messageFocus === true,
+                            })
                           if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
                           if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
                           if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
