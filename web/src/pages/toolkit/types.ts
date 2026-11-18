@@ -142,7 +142,10 @@ const ToolkitFlowStep = z.object({
 /**
  * One phase of a workflow's flow (D8 `lane` 458:3, with its label 458:7): its label ("Check", "Grade · in parallel")
  * and its steps. `from` lists the rows an arrow from the phase before comes in at, and `fromLabel` the label over
- * the first of them, such as "yes" (458:92).
+ * the first of them, such as "yes" (458:92). `sources` lists the rows of the phase before that the arrows leave from:
+ * an arrow goes from each of them into each row of `from`, straight when the rows are the same and an elbow when they
+ * differ (466:6 from Blinding, row 2, up into steps 4 and 5; 466:7 from steps 4 and 5 into step 6). Each arrow leaves
+ * at the row it comes in at when not set.
  */
 const ToolkitFlowPhase = z.object({
   label: z.string(),
@@ -151,6 +154,7 @@ const ToolkitFlowPhase = z.object({
   parallel: z.boolean().optional(),
   from: z.array(z.number().int().nonnegative()).optional(),
   fromLabel: z.string().optional(),
+  sources: z.array(z.number().int().nonnegative()).optional(),
 })
 
 /**

@@ -69,9 +69,9 @@ has no `exceptions.json`.
 - **Explanation spacing.** The library's `ScriptExplanation` pads 20
   where Figma pads 18, and its overview card pads 16 by 12 where Figma's
   pads 15 by 13, so the overview, the walkthrough label and the steps sit
-  about 2 px further in and lower. The facts' values start 10 px after the
-  widest key (Exit), about 8 px left of Figma's, which puts each value 50
-  after its key. The step numbers are 24 px circles against Figma's 22,
+  about 2 px further in and lower. The facts put the keys in a 40 px
+  column (library #141, beta.36), so the In, Out and Exit values start 50
+  after their keys, as Figma's. The step numbers are 24 px circles against Figma's 22,
   and the note's spark icon is 12 px against 13. Step 2's text wraps one
   word earlier ("stop" moves to the second line). The `explain` box and
   the `used by` line under it pass the position check (gap: Script
@@ -104,3 +104,11 @@ has no `exceptions.json`.
   higher than Figma's. The rail is the shared app frame, not the
   Toolkit page; D14's second review found the same and sent it to the
   coordinator.
+
+## Library beta.36 parts
+
+The desktop keeps `ScriptExplanation`'s `wide` layout (its default); the
+phone takes the library's `narrow` layout (library #141).
+`pnpm fidelity toolkit` on every Toolkit frame before and after the change
+(2026-11-18) gives D10 the same results: the same text and rule findings
+and the same 27 of 51 passing layers.

@@ -215,6 +215,7 @@ const skillEvalRound: ToolkitItemDetailView = {
         label: 'Grade · in parallel',
         parallel: true,
         from: [0, 1],
+        sources: [2],
         steps: [
           {
             row: 0,
@@ -237,6 +238,7 @@ const skillEvalRound: ToolkitItemDetailView = {
       {
         label: 'Decide',
         from: [0],
+        sources: [0, 1],
         steps: [
           {
             row: 0,

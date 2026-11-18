@@ -17,7 +17,9 @@ with each line link at the step's end, so the steps were taller and step 3
 (440:1665), its number and step 4 (440:1672) ran under the tab bar or
 below the screen (three `notVisible` texts). The phone now clears the
 padding and puts each line link under its text (see Explanation), and the
-text check passes.
+text check passes. Since library 1.0.0-beta.36 that layout is the
+library's own (`ScriptExplanation layout="narrow"`, library #141), with no
+page restyle.
 
 ## Checks
 
@@ -33,14 +35,27 @@ text check passes.
 
 ## Deviations
 
-- **Explanation.** `ScriptExplanation` has no narrow layout. On the phone
-  `ToolkitFilePage` restyles its slots with tokens so it starts at the
-  item's edge, its parts 12 apart, its steps 10 apart and each line link
-  under its text, as in Figma. What remains: the step numbers are 24 px
-  against 22, so the step text starts 2 px further right; the card pads 16
-  by 12 against 15 by 13, so the summary breaks after "in" where Figma's
-  breaks after "rules/"; and the explanation ends 10 px higher (`explain`
-  y -2, h -10). Gap: Script explanation.
+- **Explanation.** On the phone `ToolkitFilePage` draws
+  `ScriptExplanation layout="narrow"` (library #141, beta.36): it starts
+  at the item's edge, its parts 12 apart, its steps 10 apart and each line
+  link 4 under its step's text, at the text's start, as in Figma. The
+  facts put the keys in a 40 px column, so the In, Out and Exit values
+  start 50 after their keys, as Figma's. What remains: the step numbers
+  are 24 px against 22, so the step text starts 2 px further right; the
+  card pads 16 by 12 against 15 by 13, so the summary breaks after "in"
+  where Figma's breaks after "rules/"; and the explanation ends 14 px
+  higher (`explain` h -14). Gap: Script explanation.
+- **Overview card spacing.** In the narrow layout OVERVIEW sits about
+  3 px nearer the card's top than Figma's, and the In row about 3 px
+  nearer the summary, so the card is about 7 px shorter. This is the
+  library's own spacing inside `ScriptExplanation`, which the page must
+  not restyle. Gap: Script explanation.
+- **Item tab spacing.** Each item tab starts about 1 px further right
+  than the one before it, so Evals starts about 5 px right of Figma's.
+  `ItemTabs` sets the gap; this branch does not change it.
+- **Status bar and corners (not real).** Figma's 9:41 status bar and the
+  rounded device corners are design-only chrome (d-089); the app draws
+  neither.
 - **Under the tab bar.** Figma draws the walkthrough down past the
   frame's foot (`explain` 440:1630 ends at 1088); step 4 starts above the
   tab bar and runs under it. The tab bar lies over the page (AppShell
@@ -59,7 +74,7 @@ text check passes.
   page, from y 42 to the tab bar. In `DetailFrame` the back row is the
   ScrollFrame's header and the item is the body under it, so the article
   starts under the back row and runs to the explanation's end (`toolkit`
-  y +36, h +273), as on M22 (d-107).
+  y +36, h +269), as on M22 (d-107).
 - **Item tabs.** Activity runs past the screen's edge as in Figma; the
   compact list scrolls sideways (`hiddenOverflow` on the item tabs'
   list), as on M12 and M22. The selected tab's outline is
@@ -81,4 +96,22 @@ values. The checks give the same results as before.
   start about 38 px from the keys' start and Exit nearly touches
   "0 pass". `ToolkitFilePage`'s phone override restyles only the root,
   the steps, each step and the line link, not the facts, so it does not
-  cause this. Gap: Script explanation.
+  cause this. Gap: Script explanation. Fixed in the library (beta.36):
+  the facts' key column is at least 40 px wide on every layout, so the
+  values start 50 from the keys' start, as Figma's.
+
+## Library beta.36 parts
+
+The phone's explanation moved from `ToolkitFilePage`'s restyle of the
+library's `root`, `steps`, `step` and `lineLink` slots to
+`ScriptExplanation layout="narrow"` (library #141, beta.36).
+`pnpm fidelity toolkit` on every Toolkit frame before and after the change
+(2026-11-18) gives M08 the same text and rule results (text pass; rules
+fail with the same two `hiddenOverflow` findings) and the same 9 of 14
+passing layers. One thing moves, toward Figma: the narrow layout's step
+number spans the step's two rows, so a step whose text is one line puts
+its line link 4 under the text, where the restyle put it 4 under the
+24 px number. Step 7 is 46 px high against the restyle's 50 and Figma's
+47 (440:1687, its line link 440:1690 24 under the text's top), so the
+explanation ends 4 px higher (`explain` h -14, was -10) and the item
+4 px shorter (`toolkit` h +269, was +273).

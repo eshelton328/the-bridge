@@ -543,6 +543,36 @@ describe('a script explained on its own page on the phone (M8)', () => {
   })
 })
 
+// M8 440:1630: the phone's explanation is the library's narrow layout (`ScriptExplanation layout="narrow"`), and no
+// element around it restyles the library's slots. Its facts keep the keys in a 40 px column (`In` 440:1635, `Out`
+// 440:1638, `Exit` 440:1641), so the In, Out and Exit values (440:1636, 440:1639, 440:1642) start at one x, 50 after
+// the keys' start.
+describe('the explanation’s narrow layout on the phone (M8)', () => {
+  it('draws the library’s narrow layout with no page restyle, and the fact values at one x', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('scriptExplainedPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('[data-figma="explain"] .script-explanation__root')).not.toBeNull()
+    await document.fonts.ready
+    const explanation = document.querySelector('[data-figma="explain"] .script-explanation__root')
+    if (explanation === null) throw new Error('no explanation')
+    expect(explanation.classList.contains('script-explanation__root--layout_narrow')).toBe(true)
+    // No element between the item and the explanation carries a class that names one of the library's slots.
+    const item = explanation.closest('[data-figma="toolkit"]')
+    expect(item).not.toBeNull()
+    for (let el = explanation.parentElement; el !== null && el !== item; el = el.parentElement) {
+      expect([...el.classList].filter((name) => name.includes('script-explanation'))).toEqual([])
+    }
+    const keys = [...explanation.querySelectorAll('.script-explanation__factKey')]
+    const values = [...explanation.querySelectorAll('.script-explanation__factValue')]
+    expect(keys.map((el) => el.textContent)).toEqual(['In', 'Out', 'Exit'])
+    expect(values).toHaveLength(3)
+    const keyStart = keys[0]?.getBoundingClientRect().left ?? Number.NaN
+    for (const value of values) expect(value.getBoundingClientRect().left - keyStart).toBeCloseTo(50, 0)
+    await view.unmount()
+  })
+})
+
 // The Files tab of the other kinds on the phone (M35 to M38): the item keeps its header (the kind badge with when it
 // changed, the name and the path badge with its copy button), and under the tabs the item's folder in the toolkit and
 // the tree with no viewer and no row marked. A file with a view opens on a page of its own.

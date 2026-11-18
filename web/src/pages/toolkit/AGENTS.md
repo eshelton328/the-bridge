@@ -101,9 +101,11 @@ what each file of a page folder is for.
   whose card rows are equal, so every card has one size; a phase's
   `from` rows take an arrow from the phase before, a `parallel` phase
   has no arrow between its steps, gates and ends are amber, and the
-  loop's label sits under the lanes (each arrow is the library's
-  `FlowLine`; it has no elbow for these rows and no loop into a step's
-  foot: LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
+  loop runs under the lanes with its label on it (each straight arrow is
+  the library's `FlowLine`, an arrow from one row into another its
+  `FlowElbow`, by the phase's `sources`, and the loop its
+  `FlowLoop end="up"` into the stop's foot; LIBRARY_GAPS.md, Workflow flow
+  by phase). Open full page sets
   `ui.flowFullPage` and opens How it works (`openFullPage` in
   `screens/flowView.ts`; D8, T18 and M21 carry the workflow's page, and
   the button is disabled on an item with no `flowPage`), and the agent buttons under the flow open the
@@ -260,9 +262,10 @@ what each file of a page folder is for.
   line over the switch, and on Code the line on what runs it after
   Read-only, the source wrapped (`CodeLines` `wrap`) in a box and the view's
   `footnote` under it. On Explain (M8, `scriptExplainedPhone`, M6's data)
-  the explanation has no box: `ToolkitFilePage` restyles the library's
-  `ScriptExplanation` slots so it starts at the item's edge and each line
-  link sits under its step's text (LIBRARY_GAPS.md, Script explanation).
+  the explanation has no box: `ToolkitFilePage` draws the library's
+  `ScriptExplanation layout="narrow"` (`ToolkitFileBody` `explainLayout`),
+  so it starts at the item's edge and each line link sits under its step's
+  text (LIBRARY_GAPS.md, Script explanation).
   A browser with no `badge` keeps the item's header on the phone, as on M19
   (M35, `ruleFilesPhone`, T32's files with the phone's role line: the
   length and kind), with the folder and the tree under the tabs and no row
