@@ -6,11 +6,11 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { findBoards, renderRegistry } from './genRegistry.ts'
 
-void test('finds each page with states, sorted, and skips index.ts and tests', () => {
+void test('finds each page with states, sorted, and skips index.ts, screens.ts and tests', () => {
   const dir = mkdtempSync(join(tmpdir(), 'registry-'))
   try {
     for (const [page, files] of [
-      ['inbox', ['index.ts', 'nextStep.ts', 'approval.ts', 'nextStep.test.ts']],
+      ['inbox', ['index.ts', 'screens.ts', 'screens.test.ts', 'nextStep.ts', 'approval.ts', 'nextStep.test.ts']],
       ['home', ['index.ts']],
     ] as const) {
       mkdirSync(join(dir, page, 'states'), { recursive: true })

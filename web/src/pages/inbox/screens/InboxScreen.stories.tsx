@@ -7,7 +7,7 @@ import { InboxScreen } from './InboxScreen.tsx'
 // (scripts/checkStates.ts checks it). Each play test checks the state's
 // own text, so a story that renders the wrong state fails.
 const meta = {
-  title: 'Pages/Inbox',
+  title: 'Pages/Inbox/States',
   component: InboxScreen,
 } satisfies Meta<typeof InboxScreen>
 

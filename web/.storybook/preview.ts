@@ -5,6 +5,7 @@ import '../src/index.css'
 import './preview.css'
 import { resetAllStores } from '../src/state/resetStores.ts'
 import { resetRetries } from '../src/errors/retryGuard.ts'
+import { frameSizes } from '../src/lib/screenMap.ts'
 
 // The library's theme and mode, as the app sets them in index.html:
 // Panda reads `data-panda-theme` and the `dark` class.
@@ -19,10 +20,24 @@ const withThemeAndMode: Decorator = (Story, { globals }) => {
 // desktop, the size of most frames; the toolbar's viewport menu switches
 // it, and a link can pick one with `&globals=viewport.value:phone`. A
 // story must not set `globals.viewport`: that locks the menu and the link.
+const px = (n: number) => `${String(n)}px`
+const { desktop, tablet, phone } = frameSizes
 export const viewports = {
-  desktop: { name: 'Desktop (Figma 1512 × 982)', styles: { width: '1512px', height: '982px' }, type: 'desktop' },
-  tablet: { name: 'Tablet (Figma 756 × 1158)', styles: { width: '756px', height: '1158px' }, type: 'tablet' },
-  phone: { name: 'iPhone 14 (390 × 844)', styles: { width: '390px', height: '844px' }, type: 'mobile' },
+  desktop: {
+    name: `Desktop (Figma ${String(desktop.width)} × ${String(desktop.height)})`,
+    styles: { width: px(desktop.width), height: px(desktop.height) },
+    type: 'desktop',
+  },
+  tablet: {
+    name: `Tablet (Figma ${String(tablet.width)} × ${String(tablet.height)})`,
+    styles: { width: px(tablet.width), height: px(tablet.height) },
+    type: 'tablet',
+  },
+  phone: {
+    name: `iPhone 14 (${String(phone.width)} × ${String(phone.height)})`,
+    styles: { width: px(phone.width), height: px(phone.height) },
+    type: 'mobile',
+  },
 } as const
 
 const preview: Preview = {
@@ -44,8 +59,10 @@ const preview: Preview = {
     layout: 'fullscreen',
     viewport: { options: viewports },
     // Pages first, so Storybook opens on a screen, not on the error
-    // boundary demos (Errors/*), which crash on purpose.
-    options: { storySort: { order: ['Pages', '*', 'Errors'] } },
+    // boundary demos (Errors/*), which crash on purpose. In each page the
+    // side-by-side Screens come first, then the per-state States, then
+    // the page's Blocks (screen review R10).
+    options: { storySort: { order: ['Pages', ['*', ['Screens', 'States', 'Blocks']], '*', 'Errors'] } },
   },
 }
 

@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { pages } from '../web/src/structure.ts'
+import { isStateFile } from './genRegistry.ts'
 import { addStateToIndex } from './stateIndex.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -62,7 +63,7 @@ function stateIds(page: string): string[] {
   const dir = join(src, 'pages', page, 'states')
   return existsSync(dir)
     ? readdirSync(dir)
-        .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
+        .filter(isStateFile)
         .map((f) => f.slice(0, -3))
         .sort()
     : []

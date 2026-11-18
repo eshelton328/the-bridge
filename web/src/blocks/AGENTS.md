@@ -17,6 +17,12 @@ here when a second page needs it.
   the AppShell detail's own child, so with `tabBarOverlay` it reaches
   under the tab bar and lifts the footer and the item's end above it. The Inbox
   details use it first; Toolkit and Artifacts use it for an open item.
+- `ScreenVariants`: Storybook only. One screen of a page with its
+  Desktop, Tablet and Phone states side by side (screen review R10):
+  each device's state story in an iframe of the Figma frame size
+  (`frameSizes`), all at one scale that fits the row. A page's
+  `screens/<Page>Screens.stories.tsx` renders one per screen of its
+  `states/screens.ts`.
 - `ViewportFrame`: fills its parent, measures its width and renders a
   page screen for that width's layout (`lib/viewport.ts`). A screen lays
   out by its width, never by a story's prop or `globals.viewport`.

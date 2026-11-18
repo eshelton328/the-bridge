@@ -40,7 +40,7 @@ Inbox.
 ## First use
 
 - `pnpm storybook` opens Storybook on http://localhost:6007, with the
-  Inbox's D1 story under Pages/Inbox and a crash story per error
+  Inbox's D1 story under Pages/Inbox/States and a crash story per error
   boundary.
 - `pnpm build:canvas` writes `web/dist-canvas/bridge.js`. On a canvas
   page that has React 18 and the library's bundle, it sets

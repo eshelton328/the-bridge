@@ -7,7 +7,7 @@ import { ToolkitScreen } from './ToolkitScreen.tsx'
 // (scripts/checkStates.ts checks it). Each play test checks the state's
 // own text, so a story that renders the wrong state fails.
 const meta = {
-  title: 'Pages/Toolkit',
+  title: 'Pages/Toolkit/States',
   component: ToolkitScreen,
 } satisfies Meta<typeof ToolkitScreen>
 
