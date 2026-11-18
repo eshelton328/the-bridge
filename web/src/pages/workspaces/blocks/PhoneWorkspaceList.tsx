@@ -2,10 +2,13 @@
 // with Edit and +, then every workspace with its chats, as the desktop
 // sidebar lists them (SidebarGroup), each chat row with its ⋯ after the
 // status. A tap on a row with a chat to show selects it; a workspace's
-// chevron shows or hides its chats. Props only.
+// chevron shows or hides its chats. Edit (with `text.done`) starts edit
+// mode (M2): each workspace is a PhoneEditGroup, + is off and Done ends it.
+// Props only.
 import { Button, Container, MoreIcon, PageHeader, PlusIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
+import { PhoneEditGroup } from './PhoneEditGroup.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
 
 // The list fills the screen above the tab bar (M1 105:2327, 38 to 767).
@@ -18,6 +21,10 @@ const header = css({ px: '4', pb: '4' })
 // status moves with it. The button is 36 high in a 52 px row, as in Figma (146:2), so it reaches 4 into the padding
 // above and below too, and the row keeps the height of its two lines (LIBRARY_GAPS.md: Phone chat row).
 const rowMenu = css({ color: 'fg.muted', me: '-8', my: '-4' })
+
+/** The record without the entry of `id`. */
+const without = (record: Readonly<Record<string, string>>, id: string) =>
+  Object.fromEntries(Object.entries(record).filter(([key]) => key !== id))
 
 export type PhoneWorkspaceListProps = {
   text: PhoneText
@@ -42,47 +49,98 @@ export function PhoneWorkspaceList({
   layers,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
+  const editing = ui.editing === true && text.done !== undefined
+  const renamingChats = ui.renamingChats ?? {}
+  const renamingWorkspaces = ui.renamingWorkspaces ?? {}
+  // One field takes the focus as it opens: the first chat's, else the first workspace's; a second field that took
+  // it would blur the first, which saves and closes it.
+  const focus = Object.keys(renamingChats)[0] ?? Object.keys(renamingWorkspaces)[0]
+  const setOpen = (id: string, open: boolean) =>
+    onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
   return (
     <Container size="phone" gap="4" className={fill} data-figma={layers?.phoneList}>
       <div className={header} data-figma={layers?.phoneHeader}>
         <PageHeader size="phone" title={text.title}>
-          <Button size="sm" data-figma={layers?.phoneEdit}>
-            {text.edit}
-          </Button>
-          {/* M1 105:2335: + is 36 wide and 28 high, so not a square icon button. */}
-          <Button size="sm" aria-label={text.add} data-figma={layers?.phoneAdd}>
+          {editing ? (
+            // M2 105:2508: Done ends edit mode and closes the fields; a field with the focus saves as it blurs.
+            <Button
+              variant="primary"
+              size="sm"
+              data-figma={layers?.phoneEdit}
+              onClick={() => onUiChange?.({ editing: false, renamingChats: {}, renamingWorkspaces: {} })}
+            >
+              {text.done}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              data-figma={layers?.phoneEdit}
+              onClick={text.done === undefined ? undefined : () => onUiChange?.({ editing: true })}
+            >
+              {text.edit}
+            </Button>
+          )}
+          {/* M1 105:2335: + is 36 wide and 28 high, so not a square icon button. M2 105:2510: off in edit mode. */}
+          <Button size="sm" aria-label={text.add} disabled={editing} data-figma={layers?.phoneAdd}>
             <PlusIcon size="16" />
           </Button>
         </PageHeader>
       </div>
-      {workspaces.map((w) => (
-        <SidebarGroup
-          key={w.id}
-          workspace={w}
-          open={!collapsed.includes(w.id)}
-          onOpenChange={(open) =>
-            onUiChange?.({ collapsed: open ? collapsed.filter((id) => id !== w.id) : [...collapsed, w.id] })
-          }
-          hovered={false}
-          selected={selected}
-          openable={openable}
-          layers={layers}
-          grip={false}
-          onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
-          rowMenu={(chat) => (
-            <Button
-              variant="text"
-              size="lg"
-              iconOnly
-              className={rowMenu}
-              aria-label={`${chat.title} actions`}
-              data-figma={layers?.rowMenus?.[chat.id]}
-            >
-              <MoreIcon size="20" />
-            </Button>
-          )}
-        />
-      ))}
+      {workspaces.map((w) =>
+        editing ? (
+          <PhoneEditGroup
+            key={w.id}
+            workspace={w}
+            open={!collapsed.includes(w.id)}
+            onOpenChange={(open) => setOpen(w.id, open)}
+            renaming={renamingWorkspaces[w.id]}
+            renamingChats={renamingChats}
+            focus={focus}
+            onRenameChat={(chat) => {
+              const title = w.chats?.find((c) => c.id === chat)?.title ?? ''
+              onUiChange?.({ renamingChats: { ...renamingChats, [chat]: title } })
+            }}
+            onChatRenamed={(chat, name) =>
+              onUiChange?.({
+                renamingChats: without(renamingChats, chat),
+                ...(name === undefined ? {} : { names: { ...ui.names, [chat]: name } }),
+              })
+            }
+            onRenamed={(name) =>
+              onUiChange?.({
+                renamingWorkspaces: without(renamingWorkspaces, w.id),
+                ...(name === undefined ? {} : { workspaceNames: { ...ui.workspaceNames, [w.id]: name } }),
+              })
+            }
+            layers={layers}
+          />
+        ) : (
+          <SidebarGroup
+            key={w.id}
+            workspace={w}
+            open={!collapsed.includes(w.id)}
+            onOpenChange={(open) => setOpen(w.id, open)}
+            hovered={false}
+            selected={selected}
+            openable={openable}
+            layers={layers}
+            grip={false}
+            onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
+            rowMenu={(chat) => (
+              <Button
+                variant="text"
+                size="lg"
+                iconOnly
+                className={rowMenu}
+                aria-label={`${chat.title} actions`}
+                data-figma={layers?.rowMenus?.[chat.id]}
+              >
+                <MoreIcon size="20" />
+              </Button>
+            )}
+          />
+        ),
+      )}
     </Container>
   )
 }

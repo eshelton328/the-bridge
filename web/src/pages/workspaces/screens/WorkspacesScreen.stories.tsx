@@ -360,3 +360,15 @@ export const PhoneHome: Story = {
     await expect(within(document.body).queryByRole('menu')).toBeNull()
   },
 }
+
+export const PhoneEdit: Story = {
+  name: 'M2: edit mode on the phone, with a chat and a workspace renamed in place',
+  args: { data: workspacesStates.phoneEdit.data, ui: workspacesStates.phoneEdit.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M2. WorkspacesLayout.test.tsx checks edit mode at a phone's width.
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByText('theme tokens')).toBeNull()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+  },
+}

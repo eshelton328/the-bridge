@@ -21,6 +21,8 @@ export const SidebarChat = z.object({
   model: z.string(),
   context: z.number().optional(),
   status: PaneStatus,
+  /** `true`: the row shows no status, as M2 draws drift check (105:2556). */
+  hideStatus: z.boolean().optional(),
   /** 1 for a subtask's or a fork's chat, indented under the chat that started it. */
   level: z.union([z.literal(0), z.literal(1)]).optional(),
   /**
@@ -275,6 +277,8 @@ export const PhoneText = z.object({
   title: z.string(),
   edit: z.string(),
   add: z.string(),
+  /** The button that ends edit mode (M2 105:2508); without it, Edit does not start edit mode. */
+  done: z.string().optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -341,6 +345,8 @@ export const SidebarLayers = z.object({
   phoneAdd: z.string().optional(),
   /** The ⋯ at the end of each chat row on the phone, by chat id (M1 146:2). */
   rowMenus: z.record(z.string(), z.string()).optional(),
+  /** The fields that rename a chat or a workspace in the phone's list, by chat or workspace id (M2 146:37, 105:2614). */
+  renameFields: z.record(z.string(), z.string()).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -547,6 +553,19 @@ export const WorkspacesUi = z.object({
   renaming: z.boolean().optional(),
   /** The names Erik gave chats, by chat id, in place of their titles in the data. */
   names: z.record(z.string(), z.string()).optional(),
+  /**
+   * The phone's list is in edit mode (M2): each workspace and chat has its handle, each workspace its ×, + is off and
+   * Done ends it.
+   */
+  editing: z.boolean().optional(),
+  /**
+   * The chats and the workspaces whose name is a field in the phone's list (M2), by id, with the text in the field.
+   * A tap outside a field saves it, and its × undoes the change; either closes it.
+   */
+  renamingChats: z.record(z.string(), z.string()).optional(),
+  renamingWorkspaces: z.record(z.string(), z.string()).optional(),
+  /** The names Erik gave workspaces, by workspace id, in place of their labels in the data. */
+  workspaceNames: z.record(z.string(), z.string()).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

@@ -90,9 +90,14 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
   // The names Erik gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
-  const workspaces = data.workspaces.map((w) =>
-    w.chats === undefined ? w : { ...w, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) },
-  )
+  // The names Erik gave workspaces in the phone's edit mode (M2) take the place of their labels.
+  const workspaceNames = ui.workspaceNames ?? {}
+  const workspaces = data.workspaces.map((w) => {
+    const label = workspaceNames[w.id] ?? w.label
+    return w.chats === undefined
+      ? { ...w, label }
+      : { ...w, label, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) }
+  })
   const panes = data.panes.map((p) =>
     p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
   )
