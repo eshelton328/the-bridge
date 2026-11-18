@@ -402,3 +402,167 @@ export const HookHowItWorks: Story = {
     await expect(within(item).queryByText('When it runs')).toBeNull()
   },
 }
+
+export const SkillHowItWorksTablet: Story = {
+  name: 'T10: a skill open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.skillHowItWorksTablet.data,
+    ui: toolkitStates.skillHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the steps in one column under Back. The play
+  // test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Who reads it and what they do next.')).toBeVisible()
+    await expect(within(steps).getByText('Fix every fail; run it again after an edit.')).toBeVisible()
+    await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
+  },
+}
+
+export const SkillHowItWorksPhone: Story = {
+  name: 'M12: a skill open on the phone, on How it works',
+  args: {
+    data: toolkitStates.skillHowItWorksPhone.data,
+    ui: toolkitStates.skillHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the steps in one column under Back. The play
+  // test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the phone's back row, title and column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Only the draft, the form and the source paths.')).toBeVisible()
+    await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
+  },
+}
+
+export const RuleHowItWorksTablet: Story = {
+  name: 'T36: a rule open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.ruleHowItWorksTablet.data,
+    ui: toolkitStates.ruleHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the rule's steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('The rule has paths, so link.sh links it into .claude/rules/.')).toBeVisible()
+    await expect(
+      within(item).getByText('Loads when a file under toolkit/skills/** or skills/** changes.'),
+    ).toBeVisible()
+    await expect(within(item).queryByText('In Codex')).toBeNull()
+  },
+}
+
+export const AgentHowItWorksTablet: Story = {
+  name: 'T37: an agent open on a tablet from a skill, on How it works',
+  args: {
+    data: toolkitStates.agentHowItWorksTablet.data,
+    ui: toolkitStates.agentHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the agent's steps in one column under its
+  // header and the breadcrumb. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx
+  // checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Each fail is a lead for W1. Read the sentence to confirm it.')).toBeVisible()
+    await expect(
+      within(item).getByText('Starts when step 7 of the writer skill runs it, or when a task asks to review a draft.'),
+    ).toBeVisible()
+    await expect(within(item).queryByText('It gets only')).toBeNull()
+  },
+}
+
+export const HookHowItWorksTablet: Story = {
+  name: 'T38: a hook open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.hookHowItWorksTablet.data,
+    ui: toolkitStates.hookHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the hook's five steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getAllByRole('heading', { level: 4 })).toHaveLength(5)
+    await expect(within(steps).getByText('Exit 0 commits. Exit 1 prints one line for each problem.')).toBeVisible()
+    await expect(within(item).getByText(/^Runs on every git commit in the brain/)).toBeVisible()
+    // T38 draws nothing under the steps: no tests line.
+    await expect(within(item).queryByText('Tests')).toBeNull()
+  },
+}
+
+export const RuleHowItWorksPhone: Story = {
+  name: 'M39: a rule open on the phone, on How it works',
+  args: {
+    data: toolkitStates.ruleHowItWorksPhone.data,
+    ui: toolkitStates.ruleHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the rule's steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Layout, description, evals and baselines apply to the skill.')).toBeVisible()
+    await expect(within(item).queryByText('In Codex')).toBeNull()
+  },
+}
+
+export const AgentHowItWorksPhone: Story = {
+  name: 'M40: an agent open on the phone, on How it works',
+  args: {
+    data: toolkitStates.agentHowItWorksPhone.data,
+    ui: toolkitStates.agentHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the agent's steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('PASS, FAIL or NA for each, returned as JSON.')).toBeVisible()
+  },
+}
+
+export const HookHowItWorksPhone: Story = {
+  name: 'M41: a hook open on the phone, on How it works',
+  args: {
+    data: toolkitStates.hookHowItWorksPhone.data,
+    ui: toolkitStates.hookHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the hook's five steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Exit 0 commits. Exit 1 prints one line for each problem.')).toBeVisible()
+    await expect(within(item).queryByText('Tests')).toBeNull()
+  },
+}

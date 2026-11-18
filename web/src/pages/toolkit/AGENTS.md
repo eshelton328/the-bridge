@@ -125,6 +125,32 @@ what each file of a page folder is for.
   file in the label, so it shows in capitals, and uses `elsewhere` for the
   only inputs it gets. A hook (D39, `hookHowItWorks`, D9's data) names its
   script's comments in the label, has five steps (the fifth starts a second
-  row) and uses `elsewhere` for its tests. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  row) and uses `elsewhere` for its tests. On a tablet (T10,
+  `skillHowItWorksTablet`, D14's data with the tablet's shorter trigger and
+  step lines) the tab is `ToolkitHowColumn`: no box, header, legend or
+  source line; the trigger spans the item, the steps stand in one column
+  (`ToolkitHowStep compact`: the number beside the text, the uses side by
+  side) and the chat path follows. Its `how` sets `named`: the back row
+  names the item (Toolkit › writer, `ToolkitItemBack named`), and the kind
+  badge and path rows are left out. A rule on a tablet (T36,
+  `ruleHowItWorksTablet`, D37's data with no `elsewhere`) does not set
+  `named`, so the item keeps T17's header (Toolkit, the kind badge, the
+  name and the path row) and the column starts where the tabs' panel puts
+  it. An agent on a tablet (T37, `agentHowItWorksTablet`, D38's data with
+  no `elsewhere` and `ui.from` set to writer, as on T7) keeps the same
+  header under the breadcrumb Toolkit › writer › writing-reviewer. A hook
+  on a tablet (T38, `hookHowItWorksTablet`, D39's data with no
+  `elsewhere`, step 3's use shown as a file) keeps T19's header over the
+  five steps. Under
+  the full header the steps start 14 under the trigger, where T10's start
+  12 under it. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
+  is the same column (`ToolkitHowColumn layout="phone"`), with the title in
+  the smaller title style and the rows 10 apart. A rule on the phone (M39,
+  `ruleHowItWorksPhone`, T36's data) keeps M19's header over the same column,
+  whose rows are then 12 apart, as the header's are. An agent on the phone
+  (M40, `agentHowItWorksPhone`, T37's data with no `ui.from`, as on M20)
+  keeps M20's header, with no breadcrumb, over the same column. A hook on the phone (M41,
+  `hookHowItWorksPhone`, T38's data) keeps M22's header over the same column
+  and its five steps. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
