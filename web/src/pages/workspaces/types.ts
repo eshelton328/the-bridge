@@ -779,6 +779,15 @@ export type WorkspacesData = z.infer<typeof WorkspacesData>
 export const ResizePart = z.enum(['rows', 'top', 'bottom'])
 export type ResizePart = z.infer<typeof ResizePart>
 
+/**
+ * A handle of the split: a rows-first split's (`ResizePart`), or the library `SplitPanes`' handle between the columns
+ * (`columns`) and between the rows of the left or right column.
+ */
+const SplitHandle = z.enum([...ResizePart.options, 'columns', 'left', 'right'])
+
+/** The sizes of each handle of the split, in percent; a handle with none shares its panes equally. */
+const SplitSizes = z.partialRecord(SplitHandle, z.array(z.number()))
+
 /** The view state a Figma frame shows. */
 export const WorkspacesUi = z.object({
   /** The pane keyboard shortcuts act on; it has the cyan border. */
@@ -839,10 +848,10 @@ export const WorkspacesUi = z.object({
     .nullable()
     .optional(),
   /**
-   * The sizes of each handle of a rows-first split, in percent, kept apart so that a drag of one handle leaves the
-   * others as they are; `resize` sets its own handle's sizes over these.
+   * The sizes of each handle of the split, rows first or columns first, in percent, kept apart so that a drag of one
+   * handle leaves the others as they are; `resize` sets its own handle's sizes over these.
    */
-  splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
+  splitSizes: SplitSizes.optional(),
   /** `data.toast` shows over the composer of the chat shown alone (D20); its button closes it. */
   toastOpen: z.boolean().optional(),
   /**

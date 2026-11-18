@@ -4,8 +4,13 @@ The Workspaces page: the Workbench of Figma page 89:2, whose
 references are in `references/workspaces/`. Read [../AGENTS.md](../AGENTS.md)
 first: it says what each file of a page folder is for.
 
-- `WorkspacesPage.tsx` is the connected entry; it passes the loader's
-  state to the screen and goes to the page Erik picks.
+- `WorkspacesPage.tsx` is the connected entry; it merges the loader's
+  state with what Erik changed in it (`workspacesStore.ts`), passes it to
+  the screen and goes to the page Erik picks.
+- `workspacesStore.ts`: the page's view store (`createAppStore`, as
+  Inbox's). It holds the changes to the shown state's `ui`, so a visit to
+  another page keeps them (`app/WorkspacesRoute.test.tsx`), and drops
+  them when another `?state=` is shown.
 - The screen lays out by its width (`ViewportFrame`, as Inbox does): a
   state with `data.phone` (the phone's labels) draws
   `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
@@ -526,7 +531,8 @@ first: it says what each file of a page folder is for.
   workbench beside the sidebar; for D8 `paneDrag.pane`, the pane of the
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
   of a rows-first split and its sizes, and `splitSizes`, each handle's
-  sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
+  sizes, so a drag of one handle leaves the others (the columns-first
+  `SplitPanes`' handles too: `columns`, `left`, `right`); for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
   and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
