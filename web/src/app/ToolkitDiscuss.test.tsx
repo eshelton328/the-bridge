@@ -132,6 +132,18 @@ describe('the discussion on the desktop (D5)', () => {
     expect(workbench.title).not.toBe('')
   })
 
+  it('keeps the line breaks and indents of a sent message', async () => {
+    const root = await renderToolkit('skillDiscuss', 'desktop', panel)
+    await userEvent.click(find(root, `${panel} textarea`))
+    await userEvent.keyboard('a{Shift>}{Enter}{/Shift}  b{Enter}')
+    await expect.poll(() => root.querySelectorAll(`${panel} [data-figma="message · Erik"]`).length).toBe(2)
+    const sent = [...root.querySelectorAll<HTMLElement>(`${panel} [data-figma="message · Erik"]`)].at(-1)
+    if (sent === undefined) throw new Error('no sent message')
+    const text = [...sent.querySelectorAll<HTMLElement>('*')].find((el) => el.textContent === 'a\n  b')
+    if (text === undefined) throw new Error('no message text')
+    expect(text.innerText).toBe('a\n  b')
+  })
+
   it('closes when another item opens, so it opens without the last one’s discussion', async () => {
     const root = await renderToolkit('skillDiscuss', 'desktop', panel)
     await userEvent.click(find(root, '[data-figma="button · Show on map"]'))

@@ -8,6 +8,8 @@ import type { ToolkitDiscussEntry as Entry } from '../types.ts'
 
 // 438:32: Regular 14/20, four lines in the 378 px panel: `body`.
 const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
+// Erik's message keeps the line breaks and indents he typed in the reply box.
+const typed = css({ whiteSpace: 'pre-wrap' })
 // 438:33: the cites stand one under the other, 6 apart, each as wide as its text. Figma's chips are 25 high with the
 // text 17 high; `MetaChip size="sm"` (24 high, `monoSm`) keeps their height, `md` would be 30 (LIBRARY_GAPS.md, Cite chip).
 const sources = css({ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '6' })
@@ -22,7 +24,9 @@ export function ToolkitDiscussEntry({ entry, onCopy }: ToolkitDiscussEntryProps)
   if (entry.type === 'user')
     return (
       <div data-figma="message · Erik">
-        <Message from="user">{entry.text}</Message>
+        <Message from="user">
+          <span className={typed}>{entry.text}</span>
+        </Message>
       </div>
     )
   return (
