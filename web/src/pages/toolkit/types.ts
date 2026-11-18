@@ -174,14 +174,17 @@ const ToolkitHowStep = z.object({
 /**
  * How an item works, step by step, from its main file (D14 `how it works` 459:598): a skill's steps from SKILL.md;
  * later an agent's procedure or a hook's checks. The header's label and the file it names, the legend of what a step
- * reads, runs, starts and repeats, when the item loads, the steps in order, an optional shorter path through them and
- * a note on where the steps come from.
+ * reads, runs, starts and repeats, when the item loads, the steps in order, an optional shorter path through them,
+ * what happens elsewhere instead (a rule in Codex, D37) and a note on where the steps come from.
  */
 const ToolkitHowItWorks = z.object({
   /** The header, such as "How it works · from the 8 steps in"; it shows in capitals. */
   label: z.string(),
-  /** The file the steps come from, after the label as it is written, such as "SKILL.md". */
-  file: z.string(),
+  /**
+   * The file the steps come from, after the label as it is written, such as "SKILL.md". None when the label names its
+   * sources itself (D37 495:399, "… from the paths frontmatter and link.sh", all in capitals).
+   */
+  file: z.string().optional(),
   /** The legend at the header's end (D14 `legend · reads` 459:602): what each icon of a step means. */
   legend: z.array(z.object({ type: z.enum(['reads', 'runs', 'starts', 'repeats']), label: z.string() })),
   /** When the item loads (D14 `trigger` 459:621), such as "Loads when a task writes a doc…". None when not set. */
@@ -198,6 +201,11 @@ const ToolkitHowItWorks = z.object({
       steps: z.array(z.object({ number: z.string(), label: z.string(), note: z.string().optional() })).min(1),
     })
     .optional(),
+  /**
+   * What happens elsewhere instead of the steps, in one line under them (D37 `chat path` 495:525): a label in capitals,
+   * such as "In Codex", and the text after it.
+   */
+  elsewhere: z.object({ label: z.string(), text: z.string() }).optional(),
   /** Where the steps come from (D14 `source` 459:772), under the rest. */
   note: z.string().optional(),
 })

@@ -3,8 +3,10 @@
 // legend of what a step reads, runs, starts and repeats), when the item loads,
 // the steps, four to a row, left to right with an arrow between them and one
 // down into the next row, then the shorter path a chat answer takes (the
-// library's `ChatPath`) and where the steps come from. It takes any list of
-// steps, so an agent's procedure or a hook's checks draw the same way. The
+// library's `ChatPath`) or, for a rule (D37), what happens elsewhere instead
+// (one line in a notice Panel), and where the steps come from. It takes any
+// list of steps, so a rule's, an agent's procedure or a hook's checks draw the
+// same way. The
 // library has no line between steps (LIBRARY_GAPS.md, How it works steps): the
 // arrows are its arrow icons, and the elbow from the end of a row to the start
 // of the next is the down arrow alone. Props only.
@@ -80,6 +82,11 @@ const downRest = css({ gridColumn: '[2 / -1]' })
 // LIBRARY_GAPS.md, How it works steps), so the source sits 8 under it, not 12, and stays within 4 px of Figma's. The
 // chat path is 14 under the steps in Figma: 2 more than the rows' 12.
 const foot = css({ display: 'flex', flexDirection: 'column', gap: '8', mt: '2' })
+// D37 495:525: what happens elsewhere instead, in a bordered box 910 × 35 under the steps: the label in mono capitals
+// and the text, 8 apart, 13 in from the box's edge (12 and the border). `Panel variant="notice"` pads it 10/12, so it
+// is 39 high.
+const elsewhereLine = css({ display: 'flex', alignItems: 'center', gap: '8' })
+const elsewhereText = css({ textStyle: 'small', color: 'fg.muted' })
 // D14 459:773: as wide as its line.
 const note = css({ alignSelf: 'flex-start', textStyle: 'small', color: 'fg.muted' })
 
@@ -87,17 +94,28 @@ const perRow = 4
 
 export type ToolkitHowItWorksProps = {
   how: How
+  /**
+   * The header's Figma key. Its layer is named `header`, as the list's header is, so the node id of the frame: D14
+   * 459:599, D37 495:398.
+   */
+  headerLayer?: string | undefined
 }
 
-export function ToolkitHowItWorks({ how }: ToolkitHowItWorksProps) {
+export function ToolkitHowItWorks({ how, headerLayer }: ToolkitHowItWorksProps) {
   return (
     <div data-figma="how it works">
       <Panel>
         <div className={body}>
-          <div className={header} data-figma="459:599">
+          <div className={header} data-figma={headerLayer}>
             {/* The tab's heading, under the item's h2; the steps' titles and ChatPath's title are h4. */}
             <h3 className={label}>
-              {how.label} <span className={file}>{how.file}</span>
+              {how.label}
+              {how.file === undefined ? null : (
+                <>
+                  {' '}
+                  <span className={file}>{how.file}</span>
+                </>
+              )}
             </h3>
             <ul className={legend} aria-label="Legend">
               {how.legend.map((l) => (
@@ -149,6 +167,16 @@ export function ToolkitHowItWorks({ how }: ToolkitHowItWorksProps) {
                   description={how.shortPath.description}
                   steps={how.shortPath.steps}
                 />
+              </div>
+            )}
+            {how.elsewhere === undefined ? null : (
+              <div data-figma="chat path">
+                <Panel variant="notice">
+                  <p className={elsewhereLine}>
+                    <span className={label}>{how.elsewhere.label}</span>
+                    <span className={elsewhereText}>{how.elsewhere.text}</span>
+                  </p>
+                </Panel>
               </div>
             )}
             {how.note === undefined ? null : (

@@ -81,9 +81,16 @@ const phoneTitleLayers: Readonly<Record<string, string>> = {
   'rules/skills.md': '487:1264',
   'hooks/commit-msg': '487:2043',
 }
-// On the How it works tab the frame is another one, so another node id: writer in D14 (459:367).
+// On the How it works tab the frame is another one, so another node id: writer in D14 (459:367), the rule skills in
+// D37 (495:334).
 const howTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '459:367',
+  'rules/skills.md': '495:334',
+}
+// The How it works header is a layer named `header`, as the list's header is, so its node id: D14 459:599, D37 495:398.
+const howHeaderLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '459:599',
+  'rules/skills.md': '495:398',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
@@ -181,7 +188,7 @@ export function ToolkitItem({
                 onOpenItem={onOpenItem}
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
-              <ToolkitHowItWorks how={detail.how} />
+              <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} />
             ) : null,
         }))}
       />

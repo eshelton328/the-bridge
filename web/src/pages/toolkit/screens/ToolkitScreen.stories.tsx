@@ -345,3 +345,22 @@ export const SkillHowItWorks: Story = {
     await expect(within(item).queryByText('Used in workflows')).toBeNull()
   },
 }
+
+export const RuleHowItWorks: Story = {
+  name: 'D37: a rule open beside the list, on How it works',
+  args: { data: toolkitStates.ruleHowItWorks.data, ui: toolkitStates.ruleHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'link.sh links it' })).toBeVisible()
+    await expect(within(steps).getByText('paths:')).toBeVisible()
+    // What Codex does instead takes the chat path's place.
+    await expect(within(item).getByText('In Codex')).toBeVisible()
+    await expect(
+      within(item).getByText('Codex has no scoped rules, so skills/AGENTS.md tells the agent to read this rule.'),
+    ).toBeVisible()
+    // The rule's Overview is not drawn: no load box.
+    await expect(within(item).queryByText('Loads when')).toBeNull()
+  },
+}
