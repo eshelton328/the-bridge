@@ -53,9 +53,11 @@ export function ToolkitDiscussCard({
 }: ToolkitDiscussCardProps) {
   return (
     <div className={card} data-figma="task · discussing">
-      {/* 464:334 pads 11 above and below and 13 at the sides: `notice` pads 10 and 12. */}
+      {/* 464:334 pads 11 above and below and 13 at the sides: `notice` pads 10 and 12. Its rows are 5 apart, but the
+          pill is 22 high against 20 and the mono lines 16 against 14 and 15, so the rows sit 2 apart and the card
+          keeps Figma's 96 (T5) and its text Figma's places. */}
       <Panel variant="notice">
-        <Stack gap="4">
+        <Stack gap="2">
           <Inline gap="8" align="center">
             <h1 className={title}>{name}</h1>
             <span data-figma={`pill · ${kind}`}>

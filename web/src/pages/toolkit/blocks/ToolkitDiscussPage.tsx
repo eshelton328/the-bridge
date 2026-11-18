@@ -31,11 +31,9 @@ const navs = { tablet: css({ mt: '-6' }), phone: undefined }
 const spacer = css({ flex: '1' })
 // T5 464:349: the discussion area starts 8 under the card, and the empty state 14 under its top (12 on the grid).
 const threads = {
-  // The nav sits 2 lower than Figma's (its Back row is 2 taller), so the area starts 6 under the card.
-  tablet: css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '6', pt: '12' }),
-  // M7 464:184: on the phone the card is 8 taller than Figma's (the model chip and the guard's 16 px lines), so the
-  // area starts 4 under it and the empty state, "It can" and the suggestions keep Figma's places (within 4 px).
-  phone: css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '4', pt: '12' }),
+  tablet: css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '8', pt: '12' }),
+  // M7 464:184: on the phone too the area starts 8 under the card, which is 2 taller than Figma's (the model chip).
+  phone: css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '8', pt: '12' }),
 }
 // T5 464:350: the empty state's tile is 60 under its top and its text ends 8 over its foot. The library's tile (44
 // against 42) and title (28 high against 22) are 8 taller than Figma's, so the tile sits 52 under the top (20 and 32)
