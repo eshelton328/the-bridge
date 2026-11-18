@@ -664,3 +664,26 @@ export const ScriptExplained: Story = {
     await expect(within(viewer).getByRole('button', { name: 'line 433' })).toBeVisible()
   },
 }
+
+export const RuleFiles: Story = {
+  name: 'D33: a rule open beside the list, on Files',
+  args: { data: toolkitStates.ruleFiles.data, ui: toolkitStates.ruleFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // A rule is one file: the tree has its one row, selected, with what it is.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByRole('treeitem', { name: /skills\.md/, selected: true })).toBeVisible()
+    await expect(
+      within(tree).getByText('The rule. Claude Code loads it by the paths in its frontmatter.'),
+    ).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'skills.md' })
+    await expect(within(viewer).getByText('Markdown · 104 lines · the rule')).toBeVisible()
+    // The file's first lines as written: the paths frontmatter, then the rule's text.
+    await expect(within(viewer).getByText(/^\s*- "toolkit\/skills\/\*\*"$/)).toBeVisible()
+    await expect(
+      within(viewer).getByText('Loads when a file under toolkit/skills/** or skills/** changes.'),
+    ).toBeVisible()
+  },
+}

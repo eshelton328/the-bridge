@@ -38,6 +38,7 @@ import { workflowFullPageTablet } from './workflowFullPageTablet.ts'
 import { workflowFullPagePhone } from './workflowFullPagePhone.ts'
 import { skillFiles } from './skillFiles.ts'
 import { scriptExplained } from './scriptExplained.ts'
+import { ruleFiles } from './ruleFiles.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -77,4 +78,5 @@ export const toolkitStates = {
   workflowFullPagePhone,
   skillFiles,
   scriptExplained,
+  ruleFiles,
 }

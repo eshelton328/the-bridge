@@ -209,6 +209,9 @@ what each file of a page folder is for.
   viewer draws the library's `ScriptExplanation` (the overview with its facts,
   the steps with their line links, the note); a line link or Code shows the
   source. `ui.fileView` keeps the choice, and another file opens on its own
-  default (`fileMode` in `blocks/filesView.ts`). Only the selected tab's panel is drawn. Later frames of the open item fill the
+  default (`fileMode` in `blocks/filesView.ts`). The other kinds fill the same
+  browser with their own files: a rule (D33, `ruleFiles`, D37's list) is one
+  file, a one-row tree with its role line, its first lines as code and when it
+  loads. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

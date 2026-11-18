@@ -138,3 +138,39 @@ describe('a script explained on the Files tab (D10)', () => {
     await view.unmount()
   })
 })
+
+// The Files tab of the other kinds (D33 to D36): the same browser with each item's own files, the selected one in the
+// viewer. Each lays out as D6's does: the tree and the viewer side by side, down to the item pane's foot.
+const otherKinds = [{ state: 'ruleFiles', item: 'skills', file: 'skills.md', rows: 1 }]
+
+describe('the Files tab of a rule, an agent, a workflow and a hook (D33 to D36)', () => {
+  it.each(otherKinds)('draws $state’s $rows tree rows beside $file, down to the pane’s foot', async (kind) => {
+    await page.viewport(1512, 982)
+    const view = await renderToolkit(kind.state)
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="file browser"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    expect(root.querySelector(`article[aria-label="${kind.item}"] [data-figma="file browser"]`)).not.toBeNull()
+    const tree = box('[data-figma="tree"]')
+    const viewer = box('[data-figma="viewer"]')
+    expect(viewer.left).toBeCloseTo(tree.right, 0)
+    expect(tree.height).toBeCloseTo(viewer.height, 0)
+    expect(box('[data-figma="file browser"]').bottom).toBeCloseTo(box('[data-figma="toolkit item"]').bottom, 0)
+    const detail = root.querySelector('main.app-shell__detail')
+    if (detail === null) throw new Error('no detail')
+    expect(detail.scrollHeight).toBeLessThanOrEqual(detail.clientHeight)
+    // The visible rows (a closed folder hides its files) and the selected file in the viewer.
+    expect(root.querySelectorAll('[data-figma="tree"] [role="treeitem"]')).toHaveLength(kind.rows)
+    expect(root.querySelector(`[data-figma="viewer"][aria-label="${kind.file}"]`)).not.toBeNull()
+    await view.unmount()
+  })
+})
