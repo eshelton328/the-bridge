@@ -2,14 +2,14 @@
 // each screen on the desktop, the tablet and the phone, for the side-by-side
 // stories in screens/ToolkitScreens.stories.tsx. Every state is in
 // exactly one screen (states/screens.test.ts). toolkitListTablet (T1, M1)
-// and toolkitMapTablet (T2, M11) each draw two devices, so each stands on
-// the tablet and the list and the map have no phone state of their own.
+// and toolkitMapTablet (T2, M11) each have a tablet and a phone frame, so
+// each fills both its screen's Tablet and Phone columns.
 import type { ScreenMap } from '../../../lib/screenMap.ts'
 import type { toolkitStates } from './index.ts'
 
 export const toolkitScreens = {
-  list: { title: 'The list', desktop: 'toolkitList', tablet: 'toolkitListTablet' },
-  map: { title: 'The map', desktop: 'toolkitMap', tablet: 'toolkitMapTablet' },
+  list: { title: 'The list', desktop: 'toolkitList', tablet: 'toolkitListTablet', phone: 'toolkitListTablet' },
+  map: { title: 'The map', desktop: 'toolkitMap', tablet: 'toolkitMapTablet', phone: 'toolkitMapTablet' },
   more: { title: 'The More drawer', phone: 'moreDrawer' },
   skillOverview: { title: 'A skill', desktop: 'skillOpen', tablet: 'skillOpenTablet', phone: 'skillOpenPhone' },
   ruleOverview: { title: 'A rule', desktop: 'ruleOpen', tablet: 'ruleOpenTablet', phone: 'ruleOpenPhone' },
