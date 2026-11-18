@@ -15,8 +15,6 @@ import type { ProposalControl } from './ProposalCard.tsx'
 
 const entries = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1' })
 const middle = css({ justifyContent: 'center' })
-// A long draft grows the reply box; past half the window it scrolls inside, so Send stays in reach (d-107).
-const reply = css({ maxH: '[50vh]', overflowY: 'auto' })
 // The space between the header, the content and the reply box, and between the content's parts.
 const bodyGap = { '8': css({ gap: '8' }), '12': css({ gap: '12' }) } as const
 
@@ -61,7 +59,10 @@ export function DiscussionThread({
       bodyClassName={bodyGap[gap]}
       header={header}
       footer={
-        <div className={reply} data-figma="composer · discussion">
+        // A long draft grows the reply box; the library Composer stops it at 30% of the nearest size container
+        // (the desktop panel; on the tablet and phone page, the window) and scrolls inside, so Send stays in reach
+        // and the entries keep room (d-107).
+        <div data-figma="composer · discussion">
           <Composer
             label={discussion.placeholder}
             placeholder={discussion.placeholder}

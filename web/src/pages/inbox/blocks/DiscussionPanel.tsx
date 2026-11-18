@@ -28,6 +28,8 @@ const panel = css({
   borderLeftWidth: 'default',
   borderLeftStyle: 'solid',
   borderLeftColor: 'border.default',
+  // A size container: the library Composer caps a long draft at 30% of it (d-107).
+  containerType: 'size',
 })
 const heading = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0', flex: '1' })
 const bubble = css({ display: 'inline-flex', color: 'accent.discuss' })
