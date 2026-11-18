@@ -14,6 +14,15 @@ export function findFile(nodes: readonly ToolkitFileNode[], path: string): Toolk
   return undefined
 }
 
+/**
+ * The path in the toolkit of a file on an item's Files tab: the file in the item's folder. A skill's `location` is that
+ * folder (`toolkit/skills/writer/`); a rule's, an agent's, a workflow's or a hook's is the item's own file
+ * (`toolkit/rules/skills.md`), whose folder holds its files.
+ */
+export function filePathIn(location: string, path: string): string {
+  return `${location.slice(0, location.lastIndexOf('/') + 1)}${path}`
+}
+
 export type OpenFile = {
   /** The selected node's path. */
   path: string

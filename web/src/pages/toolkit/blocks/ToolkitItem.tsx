@@ -43,7 +43,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
-import { type FileMode, fileMode, findFile, openFile } from './filesView.ts'
+import { type FileMode, fileMode, filePathIn, findFile, openFile } from './filesView.ts'
 import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
 import { ToolkitFilePage } from './ToolkitFilePage.tsx'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
@@ -354,7 +354,7 @@ export function ToolkitItem({
   const phoneFolder = phone && folderFiles && pageFile === undefined
   // M6 435:493: a file on its own page on the phone has no title; the path badge names the file in the item.
   const phoneFile = phone && pageFile !== undefined
-  const copied = phoneFile ? `${detail.location}${pageFile.path}` : detail.location
+  const copied = phoneFile ? filePathIn(detail.location, pageFile.path) : detail.location
   // M5 435:212: on the phone the Files tab names the item's folder in the toolkit over the tree.
   const folder = detail.location.slice(0, detail.location.lastIndexOf('/') + 1)
   // M9 448:473: on the phone a workflow's own page names only the workflow after Toolkit.
@@ -540,7 +540,7 @@ export function ToolkitItem({
                 mode={fileView}
                 onModeChange={onFileViewChange}
                 onCopy={(path) => {
-                  onCopyPath?.(`${detail.location}${path}`)
+                  onCopyPath?.(filePathIn(detail.location, path))
                 }}
               />
             ) : null

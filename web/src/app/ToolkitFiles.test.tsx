@@ -612,3 +612,56 @@ describe('the Files tab of a rule, an agent, a workflow and a hook on the phone 
     await view.unmount()
   })
 })
+
+// Copy on a rule's Files tab (D33, M35) puts the file's path in the toolkit on the clipboard. A rule's item path is
+// the file itself, so the file's name is not added to it a second time.
+describe('copy on the Files tab of a rule (D33, M35)', () => {
+  async function copiedBy(state: string, width: number, height: number, press: (root: HTMLElement) => Promise<void>) {
+    const copied: string[] = []
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = (text) => {
+      copied.push(text)
+      return Promise.resolve()
+    }
+    onTestFinished(() => {
+      clipboard.writeText = writeText
+    })
+    await page.viewport(width, height)
+    const view = await renderToolkit(state)
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    await press(root)
+    await expect.poll(() => copied).toHaveLength(1)
+    await view.unmount()
+    return copied[0]
+  }
+
+  it('copies the rule’s file from the viewer’s bar on the desktop (D33)', async () => {
+    const copied = await copiedBy('ruleFiles', 1512, 982, async (root) => {
+      const copy = root.querySelector('[data-figma="viewer"] [aria-label="Copy skills.md"]')
+      if (copy === null) throw new Error('no copy button in the viewer')
+      await userEvent.click(copy)
+    })
+    expect(copied).toBe('toolkit/rules/skills.md')
+  })
+
+  it('copies the rule’s file from the back row of its own page on the phone (M35)', async () => {
+    const copied = await copiedBy('ruleFilesPhone', 390, 806, async (root) => {
+      const row = [...root.querySelectorAll('[data-figma="tree"] [role="treeitem"]')].find((r) =>
+        r.textContent.startsWith('skills.md'),
+      )
+      if (row === undefined) throw new Error('no skills.md row')
+      await userEvent.click(row)
+      await expect.poll(() => root.querySelector('[data-figma="tree"]')).toBeNull()
+      const copy = root.querySelector('[data-figma="back row"] button[aria-label^="Copy "]')
+      if (copy === null) throw new Error('no copy button in the back row')
+      await userEvent.click(copy)
+    })
+    expect(copied).toBe('toolkit/rules/skills.md')
+  })
+})
