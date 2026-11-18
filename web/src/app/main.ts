@@ -11,12 +11,14 @@ import { AppBoundary } from '../errors/AppBoundary.tsx'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { installGlobalHandlers } from '../errors/globalHandlers.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
+import { blockPageZoom } from './pageZoom.ts'
 import { router } from './router.ts'
 
 const container = document.getElementById('root')
 if (container === null) throw new Error('index.html has no #root element')
 
 installGlobalHandlers()
+blockPageZoom()
 createRoot(container, rootErrorOptions).render(
   createElement(
     StrictMode,

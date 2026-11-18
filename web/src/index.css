@@ -5,3 +5,16 @@ body,
 #root {
   height: 100%;
 }
+
+/* Erik's decision (2026-11-18): the page never scrolls, bounces or zooms.
+   html and body fill the window and clip, so only the shell's own scroll
+   areas scroll; a pinch or a double tap does not zoom the page. */
+html,
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+html {
+  touch-action: pan-x pan-y;
+}
