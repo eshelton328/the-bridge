@@ -46,7 +46,8 @@ export function ChatNameField({ name, onSave, onCancel, figma }: ChatNameFieldPr
   }, [])
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.nativeEvent.isComposing) return
-    if (e.key === 'Enter') close(true)
+    // Enter saves from the box only: on the × it presses the button, which undoes the change.
+    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) close(true)
     if (e.key === 'Escape') close(false)
   }
   const onBlur = (e: FocusEvent) => {
