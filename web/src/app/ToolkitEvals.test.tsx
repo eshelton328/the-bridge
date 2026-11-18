@@ -49,6 +49,24 @@ function button(root: HTMLElement, name: string, within = '[data-figma="evals"]'
   return found
 }
 
+// The colour a token resolves to, as the browser computes it.
+function tokenColor(token: string): string {
+  const probe = document.createElement('div')
+  probe.style.color = `var(--colors-${token})`
+  document.body.append(probe)
+  const color = getComputedStyle(probe).color
+  probe.remove()
+  return color
+}
+
+function textIn(root: HTMLElement, text: string, within = '[data-figma="evals"]') {
+  const found = [...root.querySelectorAll(`${within} span, ${within} button`)].find(
+    (el) => el.textContent.trim() === text,
+  )
+  if (!(found instanceof HTMLElement)) throw new Error(`no ${text}`)
+  return found
+}
+
 const selectedTab = (root: HTMLElement, item: string) =>
   root.querySelector(`article[aria-label="${item}"] [role="tab"][aria-selected="true"]`)?.textContent
 
@@ -138,6 +156,27 @@ describe('the Evals tab of an item with no eval cases (D25, D27, D28)', () => {
     expect(root.querySelector('[data-figma="badge · 43 of 43 pass"]')).not.toBeNull()
     expect(root.querySelectorAll('[data-figma^="case · "]')).toHaveLength(5)
     expect(root.querySelector('[data-figma="panel · opus by round"]')).toBeNull()
+  })
+})
+
+describe('the accent text and the symbols of the Evals tab', () => {
+  it('draws a rule’s ledger count in the accent colour, not muted (D25 492:489)', async () => {
+    const { root } = await renderToolkit('ruleEvals')
+    const count = textIn(root, '4 ledgers')
+    expect(getComputedStyle(count).color).toBe(tokenColor('fg-accent'))
+    expect(getComputedStyle(count).color).not.toBe(tokenColor('fg-muted'))
+  })
+
+  it('draws the workflow’s "from the file" link in the accent colour (D27 492:1660)', async () => {
+    const { root } = await renderToolkit('workflowEvals')
+    expect(getComputedStyle(button(root, 'from the file')).color).toBe(tokenColor('fg-accent'))
+  })
+
+  it('keeps Figma’s ballot cross ✗ (U+2717) in the hook’s test line, not the sign × (D28, T27, M30)', async () => {
+    const { root } = await renderToolkit('hookEvals')
+    const status = root.querySelector('[data-figma="panel · status"]')?.textContent ?? ''
+    expect(status).toContain('the rule’s \u2717 and \u2713 examples')
+    expect(status).not.toContain('\u00d7')
   })
 })
 

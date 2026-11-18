@@ -13,7 +13,10 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 const header = css({ display: 'flex', alignItems: 'center', gap: '8' })
 const label = css({ textStyle: 'monoCaps', color: 'fg.muted' })
 const meta = css({ ms: 'auto', textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' })
-const accent = css({ color: 'fg.accent' })
+// A count or a link in the accent colour (D25 492:489, D27 492:1660). It is its own class, not `meta` and an accent
+// class together: two colour classes on one element take the colour that comes later in the style sheet, which was
+// the muted one.
+const accent = css({ ms: 'auto', textStyle: 'small', color: 'fg.accent', whiteSpace: 'nowrap' })
 const link = css({
   p: '0',
   bg: 'transparent',
@@ -43,7 +46,7 @@ export function ToolkitEvalsHeader({ label: text, end }: ToolkitEvalsHeaderProps
       {end === undefined || end === null || end.label === '' ? null : end.type === 'link' ? (
         <button
           type="button"
-          className={cx(meta, accent, link)}
+          className={cx(accent, link)}
           disabled={end.waits !== undefined}
           title={end.waits}
           onClick={end.onPress}
@@ -51,7 +54,7 @@ export function ToolkitEvalsHeader({ label: text, end }: ToolkitEvalsHeaderProps
           {end.label}
         </button>
       ) : (
-        <span className={end.type === 'count' ? cx(meta, accent) : meta}>{end.label}</span>
+        <span className={end.type === 'count' ? accent : meta}>{end.label}</span>
       )}
     </div>
   )
