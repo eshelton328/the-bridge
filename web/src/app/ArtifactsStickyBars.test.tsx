@@ -357,6 +357,20 @@ describe('the discussion page on the phone (d-107)', () => {
     expect(root.querySelector('[data-figma="tab bar"]')).not.toBeNull()
     await view.unmount()
   })
+
+  it("opens File in a project from the artifact page's ⋯ (M2 to M7)", async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('artifactPhone')
+    await expect.poll(() => root.querySelector('button[aria-label="File in a project"]')).not.toBeNull()
+    const more = root.querySelector('button[aria-label="File in a project"]')
+    if (!(more instanceof HTMLElement)) throw new Error('no ⋯')
+    await userEvent.click(more)
+    await expect.element(page.getByRole('dialog', { name: 'File in a project' })).toBeVisible()
+    await expect
+      .element(page.getByRole('dialog', { name: 'File in a project' }).getByRole('radio', { name: /skill-evals/ }))
+      .toBeChecked()
+    await view.unmount()
+  })
 })
 
 describe('the proposed update on the tablet (T5)', () => {

@@ -88,7 +88,8 @@ each file of a page folder is for.
   it scrolls T5's page the same way and checks that Apply returns to T2,
   Updated, and that Discuss then shows the applied proposal; and it
   scrolls M2's page and checks the Back bar and the tab bar stay put, and
-  that Back shows M1's library; and it scrolls M9's page and checks the
+  that Back shows M1's library, and that its ⋯ opens File in a project
+  (M7); and it scrolls M9's page and checks the
   nav, the card and the reply box stay put, that a long draft keeps Send
   in reach, and that M2's Discuss opens M9 and its Back returns to M2;
   it scrolls M10's page as T5's and checks that Apply returns to M2,
@@ -260,7 +261,8 @@ each file of a page folder is for.
   workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
   artifacts", and only Earlier's five rows in the frame) and M2
   `artifactPhone` (M1's data with D2's open artifact in the phone's
-  shorter words and D7's discussion) and M3 `filterPhone` (M1's data with
+  shorter words, M7's File in a project menu, so its ⋯ opens the sheet,
+  and D7's discussion) and M3 `filterPhone` (M1's data with
   T3's sheet open and its two boxes checked; the menu's `footLayer` is
   M3's node id of the footer around Show; `libraryPhone` does not hold the
   menu, so M1's Filter opens nothing yet) and M4 `sortPhone` (M1's data
@@ -270,7 +272,7 @@ each file of a page folder is for.
   Writer round's preview as a chart) and M6 `addLinkPhone` (M1's data
   with D5's form in the phone's shorter words, the sheet open, Codex site
   picked) and M7 `filePhone` (M2's data with the File in a project
-  menu, the sheet open, skill-evals checked) and M8 `morePhone` (M1's data
+  sheet open, skill-evals checked; `artifactPhone` holds its menu) and M8 `morePhone` (M1's data
   with the More drawer open) and M9 `discussPhone` (M2's data with its
   discussion open; `artifactPhone` holds D7's discussion with M9's Back
   label, the card's source, "Try" and node id, so M2's Discuss opens it)
