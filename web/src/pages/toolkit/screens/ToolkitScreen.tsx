@@ -14,7 +14,9 @@
 // the item (`ToolkitItem`) fills the rest; on a tablet or phone (T3) the item
 // replaces the list, in the shared DetailFrame under its back row. An item
 // opened from another item's links records it (`ui.from`, T7), and the back
-// row shows the breadcrumb back to it.
+// row shows the breadcrumb back to it. A workflow opened with Open full page
+// (D13, `ui.flowFullPage`) fills the page without the list on every layout,
+// under the breadcrumb Toolkit › Workflows › the workflow (`flowView`).
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -30,6 +32,7 @@ import { ToolkitListPane } from '../blocks/ToolkitListPane.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
+import { isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
 import { backTo, openedFrom, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 
@@ -70,6 +73,8 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
     onUiChange(openFrom(path))
   }
   const from = openedFrom(data, ui)
+  const full = isFullPage(open, ui)
+  const kindGroup = open === null ? undefined : data.groups.find((g) => g.kind === open.item.kind)
   const map = ui.view === 'map'
   // M11 461:709: the phone's map comes straight under the header; T2 428:348: the tablet's under the chips.
   const showChips = !(map && layout === 'phone')
@@ -154,11 +159,15 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         open={open}
         layout={layout}
         back={
-          desktop
-            ? undefined
-            : () => {
-                onUiChange(backTo(null))
+          full
+            ? () => {
+                onUiChange(leaveFullPage())
               }
+            : desktop
+              ? undefined
+              : () => {
+                  onUiChange(backTo(null))
+                }
         }
         from={
           from === null
@@ -178,9 +187,24 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           onUiChange(showOnMap(open.item.path))
         }}
         onOpenFullPage={() => {
-          // D13 shows the steps on a page of their own; until it is built the item stays as it is.
-          onUiChange({ flowFullPage: true })
+          onUiChange(openFullPage())
         }}
+        fullPage={
+          full
+            ? {
+                crumb: {
+                  name: kindGroup?.label ?? open.item.kind,
+                  onOpen: () => {
+                    onUiChange(leaveFullPage(open.item.kind))
+                  },
+                },
+                selectedStep: ui.flowStep,
+                onSelectStep: (flowStep) => {
+                  onUiChange({ flowStep })
+                },
+              }
+            : undefined
+        }
         onOpenItem={(path) => {
           onUiChange(openFrom(path, open.item.path))
         }}
@@ -208,7 +232,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           )
         }
         list={
-          item !== null && desktop ? (
+          item !== null && desktop && !full ? (
             <ToolkitListPane
               data={data}
               ui={ui}

@@ -5,13 +5,17 @@
 // back to it. On a tab other than the Overview (T10 461:244) the row names the
 // open item after Toolkit: Toolkit › the open item. The library has no breadcrumb (LIBRARY_GAPS.md, Item
 // breadcrumb), so the crumbs after the BackRow are text in its label style
-// and the item's crumb a plain button. Props only.
+// and the item's crumb a plain button. A workflow on a page of its own (D13
+// `breadcrumb row` 446:481) shows the same row on the desktop too: Toolkit ›
+// Workflows › the workflow, the kind's crumb going back to the list of that
+// kind; its Figma keys differ (`layers`). Props only.
 import { BackRow } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 
 // T7 441:65: the breadcrumb at the start, the actions at the end (their own `ms: auto`).
 const row = css({ display: 'flex', alignItems: 'center', minW: '[0]' })
+const tallRow = css({ minH: 'control.lg' })
 // T7 441:66: each crumb and separator 6 after the one before; the BackRow's button ends 6 after Toolkit (its `pe`).
 const trail = css({ display: 'flex', alignItems: 'center', gap: '6', minW: '[0]' })
 const separator = css({ textStyle: 'labelLg', color: 'fg.subtle' })
@@ -40,13 +44,29 @@ export type ToolkitItemBackProps = {
   onBack?: (() => void) | undefined
   /** Discuss and Show on map. */
   actions: ReactNode
+  /**
+   * The Figma keys of the row and the breadcrumb: `back row` and the trail's name when not set; D13 names the row
+   * `breadcrumb row` and has no layer for the trail alone.
+   */
+  layers?: { row: string; trail: string | null } | undefined
+  /** D13 446:481: the row is 38 high on a workflow's own page (its Show on map); the tablet control height, 36. */
+  tall?: boolean | undefined
 }
 
-export function ToolkitItemBack({ name, from, named = false, onBack, actions }: ToolkitItemBackProps) {
+export function ToolkitItemBack({
+  name,
+  from,
+  named = false,
+  onBack,
+  actions,
+  layers,
+  tall = false,
+}: ToolkitItemBackProps) {
   const hasFrom = from !== undefined && from !== null
+  const rowLayer = layers?.row ?? 'back row'
   if (!hasFrom && !named) {
     return (
-      <div data-figma="back row">
+      <div data-figma={rowLayer}>
         <BackRow label="Toolkit" onBack={onBack}>
           {actions}
         </BackRow>
@@ -54,11 +74,17 @@ export function ToolkitItemBack({ name, from, named = false, onBack, actions }: 
     )
   }
   return (
-    <div className={row} data-figma="back row">
+    <div className={tall ? cx(row, tallRow) : row} data-figma={rowLayer}>
       <nav
         aria-label="Breadcrumb"
         className={trail}
-        data-figma={hasFrom ? `breadcrumb · Toolkit › ${from.name} › ${name}` : undefined}
+        data-figma={
+          layers === undefined
+            ? hasFrom
+              ? `breadcrumb · Toolkit › ${from.name} › ${name}`
+              : undefined
+            : (layers.trail ?? undefined)
+        }
       >
         <BackRow label="Toolkit" onBack={onBack} />
         {hasFrom ? (

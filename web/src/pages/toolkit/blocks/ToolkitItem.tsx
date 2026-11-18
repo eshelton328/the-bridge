@@ -13,7 +13,11 @@
 // writer), and the kind badge and path rows are left out: the title sits over the tabs. An item whose `how` is not
 // `named` (T36, a rule) keeps its Overview's header on How it works. On the phone (M12) the
 // title is smaller and the rows are 10 apart. Nothing edits the item (R35). Props
-// only.
+// only. A workflow on a page of its own (D13, `fullPage`) fills the page
+// without the list: the breadcrumb row (Toolkit › Workflows › the workflow,
+// with Discuss and Show on map) tops it on the desktop too, the meta row holds
+// only the kind badge, and How it works draws the workflow's page
+// (`ToolkitFlowPage`).
 import {
   AgentIcon,
   HookIcon,
@@ -27,6 +31,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
+import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
 import { ToolkitItemBack } from './ToolkitItemBack.tsx'
@@ -52,6 +57,19 @@ const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '
 const phoneHowPage = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '10' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
+// D13 446:153: the page starts 32 in from the rail and the window's edge and 24 down; its rows are 14 apart (12; no
+// space token has 14). The breadcrumb row is 38 high in Figma (Show on map, 446:494), the render's 36: 4 under it puts
+// the meta row at Figma's 76. Figma's page ends 24 under the details row; the tabs' panel adds 4 under it, so 20.
+const fullPane = css({
+  display: 'flex',
+  flexDirection: 'column',
+  flexGrow: '1',
+  gap: '12',
+  px: '32',
+  pt: '24',
+  pb: '20',
+})
+const fullBack = css({ pb: '4' })
 // D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
 // 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
 const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '4' })
@@ -125,6 +143,12 @@ const phoneHowTitleLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '495:3255',
   'hooks/commit-msg': '495:3591',
 }
+// On a workflow's own page: skill-eval-round in D13 (446:513; the breadcrumb's last crumb has the same name).
+const fullPageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'workflows/skill-eval-round.md': '446:513' },
+  tablet: {},
+  phone: {},
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -161,6 +185,17 @@ export type ToolkitItemProps = {
   onOpenFullPage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
+  /**
+   * A workflow on a page of its own (D13): the kind's crumb after Toolkit (Workflows, back to that kind's list), the
+   * selected step and the way to select one. Beside the list when not set.
+   */
+  fullPage?:
+    | {
+        crumb: { name: string; onOpen?: (() => void) | undefined }
+        selectedStep?: string | undefined
+        onSelectStep?: ((id: string) => void) | undefined
+      }
+    | undefined
 }
 
 export function ToolkitItem({
@@ -174,34 +209,63 @@ export function ToolkitItem({
   onDiscuss,
   onOpenFullPage,
   onOpenItem,
+  fullPage,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
+  const full = fullPage !== undefined
+  const crumb = fullPage?.crumb ?? from
   // How it works on a tablet or phone, when the item's `how` asks for it (T10): no kind badge or path row, and the
   // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview.
   const narrowHow = !desktop && tab === 'how' && detail.how?.named === true
+  // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
-    <ToolkitItemActions gap={desktop ? '10' : '8'} iconOnly={phone} onDiscuss={onDiscuss} onShowOnMap={onShowOnMap} />
+    <ToolkitItemActions
+      gap={desktop && !full ? '10' : '8'}
+      iconOnly={phone}
+      onDiscuss={onDiscuss}
+      onShowOnMap={onShowOnMap}
+    />
   )
   const article = (
     <article
       aria-label={item.name}
-      className={desktop ? pane : narrowHow ? (phone ? phoneHowPage : howPage) : phone ? phonePage : page}
-      data-figma={itemLayer[layout]}
+      className={
+        desktop ? (full ? fullPane : pane) : narrowHow ? (phone ? phoneHowPage : howPage) : phone ? phonePage : page
+      }
+      data-figma={desktop && full ? 'toolkit' : itemLayer[layout]}
     >
+      {desktop && full ? (
+        <div className={fullBack}>
+          <ToolkitItemBack
+            name={item.name}
+            from={crumb}
+            onBack={back}
+            actions={actions}
+            layers={{ row: 'breadcrumb row', trail: null }}
+            tall
+          />
+        </div>
+      ) : null}
       {narrowHow ? null : (
-        <div className={desktop ? metaRow : phone ? metaRowPhone : metaRowPage} data-figma="meta row">
+        <div className={desktop && !full ? metaRow : phone ? metaRowPhone : metaRowPage} data-figma="meta row">
           <div data-figma="kind badge">
             <KindBadge kind={item.kind} icon={kindIcons[item.kind]} />
           </div>
-          {desktop ? actions : null}
+          {desktop && !full ? actions : null}
           {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
         </div>
       )}
       <h2
         className={narrowHow && phone ? phoneHowTitle : title}
-        data-figma={tab === 'how' ? howTitleLayersOf[layout][item.path] : titleLayersOf[layout][item.path]}
+        data-figma={
+          full
+            ? fullPageTitleLayers[layout][item.path]
+            : tab === 'how'
+              ? howTitleLayersOf[layout][item.path]
+              : titleLayersOf[layout][item.path]
+        }
       >
         {item.name}
       </h2>
@@ -234,6 +298,14 @@ export function ToolkitItem({
                 onOpenFullPage={onOpenFullPage}
                 onOpenItem={onOpenItem}
               />
+            ) : t.value === 'how' && full && detail.flowPage !== undefined ? (
+              <ToolkitFlowPage
+                flow={detail.flowPage}
+                description={detail.description}
+                selected={fullPage.selectedStep}
+                onSelectStep={fullPage.onSelectStep}
+                layout={layout}
+              />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : null
@@ -250,7 +322,7 @@ export function ToolkitItem({
   return (
     <DetailFrame
       layout={layout}
-      back={<ToolkitItemBack name={item.name} from={from} named={narrowHow} onBack={back} actions={actions} />}
+      back={<ToolkitItemBack name={item.name} from={crumb} named={narrowHow} onBack={back} actions={actions} />}
     >
       {article}
     </DetailFrame>
