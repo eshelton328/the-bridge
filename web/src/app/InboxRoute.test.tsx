@@ -797,6 +797,20 @@ describe('the Inbox on the phone', () => {
     await expect.element(rowPage('Pick the header logo')).toBeVisible()
   })
 
+  it('opens a row Erik dismissed from Done with its outcome and no actions', async () => {
+    await phone('list')
+    await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
+    row('Pick the header logo').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
+    await sheet('Pick the header logo').getByText('Dismiss with a reason…').click()
+    await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
+    await page.getByRole('radio', { name: 'Done 5' }).click()
+    await page.getByRole('button', { name: 'Today 1' }).click()
+    await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
+    await page.getByText('Pick the header logo', { exact: true }).click()
+    await expect.element(rowPage('Pick the header logo')).toBeVisible()
+    expect(page.getByRole('button', { name: 'More actions for Pick the header logo' }).elements()).toHaveLength(0)
+  })
+
   it('opens the row’s actions from ⋯ on its page and snoozes it', async () => {
     await phone('list')
     await page.getByText('Pick the header logo', { exact: true }).click()

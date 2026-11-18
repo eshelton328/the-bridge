@@ -34,6 +34,7 @@ import {
 } from './discussionView.ts'
 import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
+import { listView } from './listView.ts'
 import { startView } from './startView.ts'
 
 export type InboxScreenProps = {
@@ -106,11 +107,14 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           if (ui.chatOpen || ui.rowOpen !== null) onUiChange?.({ chatOpen: false, rowOpen: null })
           onSelectItem(id)
         }
-  // R11: on a tablet or phone a tap on a row the state has no detail for opens the row's own page, from its view.
+  // R11: on a tablet or phone a tap on a row the state has no detail for opens the row's own page, from the rows the
+  // list shows (`listView`): a row Erik finished keeps its outcome, and a search's Done matches open too.
   const rowOpened =
     desktop || open !== null || ui.rowOpen === null
       ? undefined
-      : data.groups.flatMap((g) => g.rows).find((r) => r.id === ui.rowOpen)
+      : listView(data, ui, props.query ?? data.search?.query ?? '')
+          .groups.flatMap((g) => g.rows)
+          .find((r) => r.id === ui.rowOpen)
   const closeRow = () => {
     onUiChange?.({ rowOpen: null, actionsFor: null })
   }
