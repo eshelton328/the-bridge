@@ -9,7 +9,8 @@
 // under Back (T2), whose Discuss opens the discussion as a page of its own
 // with no tab bar (T4), and whose proposal's Apply returns to the artifact's
 // page, which shows Updated (T5); on a phone the library as a list of rows
-// (M1, LibraryPhone). A state file's data and ui are its props; the
+// (M1, LibraryPhone), and an open artifact on its own page under Back, as
+// on a tablet, with the ⋯ button for File in a project (M2). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -41,13 +42,14 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
-        // D2: the desktop opens an artifact beside the list; T2: the tablet on its own page, until Back closes it.
-        // A phone frame of it comes later.
-        const open = layout === 'desktop' || (layout === 'tablet' && ui.artifactClosed !== true) ? data.open : undefined
+        // D2: the desktop opens an artifact beside the list; T2 and M2: a tablet or phone on its own page, until Back
+        // closes it.
+        const open = layout === 'desktop' || ui.artifactClosed !== true ? data.open : undefined
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
         const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
         // D7: Discuss opens the artifact's discussion beside it, and the list closes. T4: on a tablet it opens as a
-        // page of its own, and the tab bar hides. A phone frame of it comes later.
+        // page of its own, and the tab bar hides. The phone's discussion page comes with M9; there Discuss sets
+        // `discussOpen` and the artifact's page stays.
         const discussion = layout === 'phone' ? undefined : view?.discussion
         const discussing = discussion !== undefined && ui.discussOpen === true
         const sent = ui.discussSent ?? []
@@ -86,7 +88,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                   <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} />
                 ) : undefined
               }
-              // The library and the tablet's artifact page (T2) run under the tab bar, as Figma draws them; their
+              // The library and the artifact's page on a tablet or phone (T2, M2) run under the tab bar, as Figma draws them; their
               // end scrolls clear of it (ArtifactsStickyBars.test.tsx, PhoneTabBar.test.tsx).
               tabBarOverlay
               tabBar={
@@ -118,21 +120,26 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                     badge={view.badge}
                     onBack={closeDiscussion}
                   />
-                ) : layout === 'tablet' ? (
+                ) : layout !== 'desktop' ? (
                   <ArtifactPage
                     artifact={view.artifact}
+                    layout={layout}
                     badge={view.badge}
                     backLabel={data.title}
                     onBack={() => {
                       onUiChange?.({ artifactClosed: true })
                     }}
                     onDiscuss={
-                      discussion === undefined
+                      view.discussion === undefined
                         ? undefined
                         : () => {
                             onUiChange?.({ discussOpen: true })
                           }
                     }
+                    // M2: the ⋯ button opens File in a project (M7).
+                    onMore={() => {
+                      onUiChange?.({ fileOpen: true })
+                    }}
                   />
                 ) : (
                   <ArtifactDetail

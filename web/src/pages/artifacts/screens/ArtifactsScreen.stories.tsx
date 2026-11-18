@@ -223,3 +223,14 @@ export const LibraryPhone: Story = {
     await expect(canvas.queryByText('Type safety in agentic systems')).toBeNull()
   },
 }
+
+export const ArtifactPhone: Story = {
+  name: 'M2: an artifact on its own page on a phone',
+  args: { data: artifactsStates.artifactPhone.data, ui: artifactsStates.artifactPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's detail.
+    // app/ArtifactsStickyBars.test.tsx checks M2's Back bar at the phone's width.
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
+    await expect(canvas.getByText('Chat quiet-nebula')).toBeVisible()
+  },
+}

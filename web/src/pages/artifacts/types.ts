@@ -69,6 +69,11 @@ const ArtifactMadeIn = z.object({
   title: z.string(),
   /** The workspace, model and age as one line, such as "workspace skill-evals · Opus 5.5 · 12m ago". */
   meta: z.string(),
+  /**
+   * Open in workspace as a link under the meta line, as the phone writes it, such as "Open in workspace ›" (M2); without
+   * it the section ends with the Open in workspace button (D2, T2).
+   */
+  action: z.string().optional(),
 })
 
 /** The artifact open beside the list (D2): its bar, title block, preview and the chat that made it. */
@@ -306,8 +311,10 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
-  /** Back closed the open artifact on a tablet (T2), and the library shows (T1). */
+  /** Back closed the open artifact on a tablet (T2) or a phone (M2), and the library shows (T1, M1). */
   artifactClosed: z.boolean().optional(),
+  /** The phone's ⋯ button or project chip opened File in a project (M2 to M7); its sheet comes with M7. */
+  fileOpen: z.boolean().optional(),
   /**
    * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
    * its own page in the artifact's place, with no tab bar (T4).

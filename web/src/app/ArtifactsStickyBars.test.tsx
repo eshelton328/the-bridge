@@ -143,6 +143,60 @@ describe('the Back bar on the tablet (d-107)', () => {
   })
 })
 
+describe('the Back bar on the phone (d-107)', () => {
+  it('keeps the Back bar at the top and the tab bar at the bottom while the artifact page scrolls (M2)', async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('artifactPhone')
+    await expect.poll(() => root.querySelector('[data-figma="top bar"]')).not.toBeNull()
+    const top = root.querySelector('[data-figma="top bar"]')
+    const back = root.querySelector('button[aria-label="Back to Artifacts"]')
+    const bottom = root.querySelector('[data-figma="tab bar"]')
+    if (top === null || back === null || bottom === null) throw new Error('no artifact page')
+    // The page under the Back bar: one ScrollFrame body, made to overflow as a long artifact page would.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')]
+    expect(bodies).toHaveLength(1)
+    const [body] = bodies
+    if (body === undefined) throw new Error('no page body')
+    const long = document.createElement('div')
+    long.style.height = '3000px'
+    long.style.flexShrink = '0'
+    ;(body.firstElementChild ?? body).append(long)
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = { top: box(top).top, back: box(back).top, bottom: box(bottom).bottom }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop > 0).toBe(true)
+    // The page and the AppShell detail do not scroll; only the artifact page under the Back bar.
+    expect(root.querySelector('.app-shell__detail')?.scrollTop ?? 0).toBe(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(top).top).toBe(before.top)
+    expect(box(back).top).toBe(before.back)
+    expect(box(top).top).toBeGreaterThanOrEqual(0)
+    expect(box(bottom).bottom).toBe(before.bottom)
+    expect(box(bottom).bottom).toBeLessThanOrEqual(window.innerHeight)
+    // The scrolled page starts under the Back bar and runs under the tab bar to the bottom of the screen, as
+    // Figma draws the phone pages (AppShell tabBarOverlay); scrolled to its end, the whole page sits above the bar.
+    expect(box(body).top).toBeGreaterThanOrEqual(box(top).bottom)
+    expect(box(body).bottom).toBeGreaterThan(box(bottom).top)
+    const content = body.firstElementChild
+    if (content === null) throw new Error('no page content')
+    // Half a pixel for the subpixel scroll position, as WorkspacesStickyBars.test.tsx allows.
+    expect(box(content).bottom).toBeLessThanOrEqual(box(bottom).top + 0.5)
+    await view.unmount()
+  })
+
+  it('returns to the library when Back is pressed (M2 to M1)', async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('artifactPhone')
+    await expect.poll(() => root.querySelector('button[aria-label="Back to Artifacts"]')).not.toBeNull()
+    const back = root.querySelector('button[aria-label="Back to Artifacts"]')
+    if (!(back instanceof HTMLElement)) throw new Error('no Back')
+    await userEvent.click(back)
+    await expect.poll(() => root.querySelector('h1')?.textContent).toBe('Artifacts')
+    expect(root.querySelector('[data-figma="top bar"]')).toBeNull()
+    await view.unmount()
+  })
+})
+
 describe('the discussion page on the tablet (d-107)', () => {
   it('keeps the nav and the card at the top and the reply box at the bottom while the messages scroll (T4)', async () => {
     await page.viewport(756, 1158)

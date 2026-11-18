@@ -44,8 +44,17 @@ each file of a page folder is for.
   entries (T5) the page shows D8's question, reply and proposal; there
   Apply also closes the page (`proposalEffect(…, 'page')`), so the
   artifact's page shows Updated, as D9 does on the desktop, and Discuss
-  reopens the discussion with the applied proposal. A phone frame of the
-  artifact comes later.
+  reopens the discussion with the applied proposal. On a phone (M2) the
+  artifact opens on the same page (`ArtifactPage layout="phone"`), under
+  the tab bar with More selected: `ArtifactTopBar layout="phone"` has
+  only the ⋯ button, which sets `ui.fileOpen` (File in a project, M7);
+  `ArtifactTitleBlock layout="phone"` puts its rows 8 apart with the
+  source and project chips only; Copy link and Discuss sit side by side
+  under Open artifact in place of the link; and `MadeIn` draws the chat
+  with no box and Open in workspace as a link (`madeIn.action`); the
+  sections are 16 apart. Back sets `ui.artifactClosed` and M1 shows.
+  Discuss sets `ui.discussOpen`; the phone's discussion page comes with
+  M9, so until then the artifact's page stays.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
   as the Inbox's task and discussion (D14); Discuss toggles it. The
@@ -60,7 +69,9 @@ each file of a page folder is for.
   nav, the card and the reply box stay put, that a long draft keeps Send
   in reach, and that T2's Discuss opens T4 and its card returns to T2;
   it scrolls T5's page the same way and checks that Apply returns to T2,
-  Updated, and that Discuss then shows the applied proposal.
+  Updated, and that Discuss then shows the applied proposal; and it
+  scrolls M2's page and checks the Back bar and the tab bar stay put, and
+  that Back shows M1's library.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
@@ -189,7 +200,9 @@ each file of a page folder is for.
   and T5 `changeProposedTablet` (T4's data with D8's discussion and open
   artifact, so its Apply shows T2 Updated; T5's node id of Open in
   workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
-  artifacts", and only Earlier's five rows in the frame). `library` stays first in `states/index.ts`: the app
+  artifacts", and only Earlier's five rows in the frame) and M2
+  `artifactPhone` (M1's data with D2's open artifact in the phone's
+  shorter words and D7's discussion). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -203,7 +216,8 @@ each file of a page folder is for.
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu,
-  whether Back closed the open artifact (T2), and the open discussion, its draft, the sent messages and what Erik did to
+  whether Back closed the open artifact (T2, M2), whether the phone's ⋯
+  opened File in a project (M2), and the open discussion, its draft, the sent messages and what Erik did to
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
