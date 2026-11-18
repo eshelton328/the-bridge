@@ -8,21 +8,24 @@ What still differs from Figma after round 1 of the fidelity loop
 Rules group, with writing-reviewer at →3 as T1 shows it. The numbers
 below are from the run with library 1.0.0-beta.15 and the props that
 library #115 added: `ViewSwitch tone="accent"` and
-`FilterChips padding="none"`.
+`FilterChips padding="none"`. A rerun with library 1.0.0-beta.26
+(the-bridge #60: the tab bar lies over the page) gives the Checks below
+(2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render. Thirteen strings of
   the Rules rows are not visible, because the taller rows push those rows
-  under the tab bar (see Row height): `rules/commits-and-prs.md`,
-  `rules/diagrams.md`, `linear`, `rules/linear.md`, `→0 ←0` (428:251),
-  `readmes`, `rules/readmes.md`, `→1 ←4`, `releases`,
-  `rules/releases.md`, `skills`, `rules/skills.md` and `→1 ←0`. The
-  ste100 and writing names and counts (428:288, 428:291, 428:298,
-  428:301) lie under Figma's tab bar too; `exceptions.json` names them.
-  Since the tab bar lies over the page (AppShell `tabBarOverlay`,
-  library 1.0.0-beta.26), the list runs under the bar as Figma's does,
-  and `→0 ←0` (428:271) passes.
+  down (see Row height). The tab bar lies over the list (AppShell
+  `tabBarOverlay`, library 1.0.0-beta.26), so six of them lie under it
+  and the check counts them as covered: `rules/commits-and-prs.md`,
+  `rules/diagrams.md`, `linear`, `→0 ←0` (428:251), `readmes` and
+  `→1 ←4`. Seven run past the screen's foot: `rules/linear.md`,
+  `rules/readmes.md`, `releases`, `rules/releases.md`, `skills`,
+  `rules/skills.md` and `→1 ←0`. The ste100 and writing names and counts
+  (428:288, 428:291, 428:298, 428:301) lie under Figma's tab bar too;
+  `exceptions.json` names them. Since the list runs under the bar as
+  Figma's does, `→0 ←0` (428:271) passes.
 - Position: 13 of 38 layers pass (`header`, `read-only`,
   `view · List, Map or Activity`, `filter · chips`, `search`,
   `group · SKILLS`, `tab bar`).

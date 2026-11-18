@@ -35,7 +35,7 @@ with library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
   the item, from y 41 to the tab bar. In `DetailFrame` the back row is the
   ScrollFrame's header and the item is the body under it, so the article
   starts under the back row and ends at its content (`toolkit item` y +32,
-  h -438, x +2, w -4: the Container pads 24 at the sides against 22). This
+  h -436, x +2, w -4: the Container pads 24 at the sides against 22). This
   is the d-107 structure that keeps Back in view, as on T17 (gap: Tablet
   item spacing).
 - **Discuss button.** The back row's buttons are the library's `md`

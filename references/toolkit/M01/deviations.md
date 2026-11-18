@@ -8,14 +8,21 @@ library 1.0.0-beta.8), each with its reason. The library gaps are in
 same items and counts (writing-reviewer at →3 ←4), in one column of rows.
 D01 and T01 give the same results as before M01. The numbers below are
 from the run with library 1.0.0-beta.15 and the props that library #115
-added: `Button pressedTone="accent"` and `FilterChips padding="none"`.
+added: `Button pressedTone="accent"` and `FilterChips padding="none"`. A
+rerun with library 1.0.0-beta.26 (the-bridge #60: the tab bar lies over
+the page) gives the same counts (2026-11-17); the Text line says what
+changed.
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render. Eight strings are not
-  visible, because the taller rows push them under the tab bar (see Row
-  height): `readme`, `skills/readme/` and `→2 ←2` (429:181), `writer`,
-  `skills/writer/`, `→7 ←4`, `AGENTS` and `7` (429:199).
+  visible, because the taller rows push them down (see Row height). The
+  readme row's `readme`, `skills/readme/` and `→2 ←2` (429:181) lie under
+  the tab bar, which lies over the list (AppShell `tabBarOverlay`,
+  library 1.0.0-beta.26), so the check counts them as covered; Figma
+  draws that row above the bar. `writer`, `skills/writer/`, `→7 ←4`,
+  `AGENTS` and `7` (429:199) lie under the bar too and run past the
+  screen's foot.
 - Position: 12 of 39 layers pass (`header`, `button · list`, `button · map`,
   `button · activity`, `filter · chips`, `search`, `tab bar`). The Rules group and its rows are in `exceptions.json`: the
   frame ends at the last Agents row, and the render draws Rules below it.

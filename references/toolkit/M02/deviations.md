@@ -9,14 +9,16 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 in the shared `DetailFrame` (d-107): the back row stays at the top and
 the item scrolls under it (`web/src/app/ToolkitStickyBack.test.tsx`, the
 phone case). T03, D03, D04, D07, D08 and D09 give the same results as
-before M02. The Checks below are from a rerun with library 1.0.0-beta.25
-and the item tabs' `tone` and `density` props (2026-11-17).
+before M02. The Checks below are from a rerun with library 1.0.0-beta.26
+(the-bridge #60: the tab bar lies over the page) and the item tabs'
+`tone` and `density` props (2026-11-17).
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. `FILES 11` (487:166), `SKILL.md` (487:171), `references/`
-  (487:175) and `6` (487:176) pass since the tab bar lies over the page
+- Text: pass (38 strings checked). Every Figma string is in the render
+  and visible; no extra text and no covered text. `FILES 11` (487:166),
+  `SKILL.md` (487:171), `references/` (487:175) and `6` (487:176) lie
+  under the tab bar in both and pass since the bar lies over the page
   (see Under the tab bar).
 - Position: 21 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `429:303`, `path badge`, `487:142`,
