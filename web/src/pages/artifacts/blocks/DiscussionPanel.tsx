@@ -11,6 +11,7 @@ import { Composer, ScrollFrame, Stack } from '@eshelton328/component-library-170
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
 import type { ArtifactProposalProps } from './ArtifactProposal.tsx'
+import { discussionReply } from './discussionReply.ts'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
 import { DiscussionEntry } from './DiscussionEntry.tsx'
 import { DiscussionHeader } from './DiscussionHeader.tsx'
@@ -43,10 +44,6 @@ const thread = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: 
 const middle = css({ justifyContent: 'center' })
 // The space between the header, the discussion and the reply box, as the panel's 12 before (D7).
 const bodyGap = css({ gap: '12' })
-// A long draft grows the reply box; past half the window it scrolls inside, so Send stays in reach (d-107), as the
-// Inbox's discussion. In a short window it also stops at 30% of the panel, so the header and the box leave the
-// messages room to read.
-const reply = css({ maxH: '[min(50vh, 30cqh)]', overflowY: 'auto' })
 
 export type DiscussionPanelProps = {
   discussion: ArtifactDiscussion
@@ -83,7 +80,7 @@ export function DiscussionPanel({
         bodyClassName={bodyGap}
         header={<DiscussionHeader discussion={discussion} onOpenInWorkspace={onOpenInWorkspace} onClose={onClose} />}
         footer={
-          <div className={reply} data-figma="composer · discussion">
+          <div className={discussionReply} data-figma="composer · discussion">
             <Composer
               label={discussion.placeholder}
               placeholder={discussion.placeholder}
