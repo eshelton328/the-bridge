@@ -557,6 +557,14 @@ phoneKinds.push({
   kind: 'Agent',
   file: 'writing-reviewer.md',
 })
+phoneKinds.push({
+  state: 'workflowFilesPhone',
+  item: 'skill-eval-round',
+  folder: 'toolkit/workflows/',
+  rows: 8,
+  kind: 'Workflow',
+  file: 'skill-eval-round.md',
+})
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on the phone (M35 to M38)', () => {
   it.each(phoneKinds)('keeps $state’s header over $folder and its $rows tree rows', async (kind) => {

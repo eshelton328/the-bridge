@@ -268,7 +268,8 @@ what each file of a page folder is for.
   length and kind), with the folder and the tree under the tabs and no row
   marked until a file is opened. An agent on the phone (M36,
   `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
-  same under Back to Toolkit. Only the
+  same under Back to Toolkit, and a workflow (M37, `workflowFilesPhone`,
+  T34's files) shows its doc and the harness/ folder open. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
