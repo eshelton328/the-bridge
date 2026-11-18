@@ -38,9 +38,12 @@ export type RemoveDialogProps = {
   layout?: Viewport | undefined
 }
 
+// Figma's reason box (D20 403:3919, M24 402:7846) has its 14 px label line 11 under its border and 13 in from its
+// side. The label's `eyebrow` line is 16 (d-100), so the notice Panel's 10/12 keeps the label's centre where Figma's
+// is (11 + 7 = 10 + 8) and the box 80 high against Figma's 78; the section Panel (12/16) made it 86.
 function Reason({ proposal }: { proposal: RemoveDialogProps['proposal'] }) {
   return (
-    <Panel>
+    <Panel variant="notice">
       {/* ProposalSection sets its text in `small` (12), the size of a proposal; the dialog's reason is 13 (403:3921). */}
       <Stack gap="4">
         <p className={label}>{proposal.reasonLabel}</p>
