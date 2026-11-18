@@ -56,6 +56,16 @@ describe('a chat on the phone', () => {
     await expect.element(page.getByRole('radio', { name: /\/writer/ })).not.toBeInTheDocument()
   })
 
+  it('keeps a typed draft after Back and a tap on the chat', async () => {
+    await page.viewport(390, 844)
+    view = await testRender(draftChat(''))
+    await userEvent.click(page.getByRole('textbox'))
+    await userEvent.keyboard('half a thought')
+    await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }))
+    await userEvent.click(page.getByRole('button', { name: 'bridge themes', exact: true }))
+    await expect.element(page.getByRole('textbox')).toHaveValue('half a thought')
+  })
+
   it('keeps the caret where Erik put it when "/" at the start of a draft lists the skills', async () => {
     await page.viewport(390, 844)
     view = await testRender(draftChat('layouts'))

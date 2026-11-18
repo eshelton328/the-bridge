@@ -19,6 +19,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import { ChatPane } from './ChatPane.tsx'
+import { withDraft } from './chatDraft.ts'
 
 // The detail slot is a flex column; the chat fills it.
 const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]', minH: '[0]' })
@@ -72,6 +73,10 @@ export type PhoneChatProps = {
   device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
+  /** Erik's draft in the composer, in place of the data's text (`ui.drafts`), so Back and a tap on the chat keep it. */
+  draft?: string | undefined
+  /** Called with the composer's text as Erik types. */
+  onTextChange?: ((text: string) => void) | undefined
 }
 
 export function PhoneChat(props: PhoneChatProps) {
@@ -92,6 +97,8 @@ export function PhoneChat(props: PhoneChatProps) {
     rename,
     device = 'phone',
     layers,
+    draft,
+    onTextChange,
   } = props
   const more = (
     <Button variant="text" size="xs" iconOnly className={moreButton} aria-label={`${pane.head.title} actions`}>
@@ -133,7 +140,8 @@ export function PhoneChat(props: PhoneChatProps) {
         size={device}
         figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
         entries={pane.entries}
-        composer={pane.composer}
+        composer={withDraft(pane.composer, draft)}
+        onTextChange={onTextChange}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         autoFocus={skills.open || focusMessage}
