@@ -88,6 +88,7 @@ function newPage(page: string): void {
   const vars = {
     ...base,
     Name: `${base.Page}Screen`,
+    storiesTitle: `Pages/${base.Title}/States`,
     up: '../../../',
     id,
     frame,
@@ -126,7 +127,7 @@ function newScreen(screen: string): void {
   if (first === undefined)
     fail(`pages/${page.page} has no state yet. Add one first: pnpm new state <id> --page ${page.page} --frame <D1>`)
   const stories = `\nexport const ${pascal(first)}: Story = {\n  args: { data: ${page.page}States.${first}.data, ui: ${page.page}States.${first}.ui, viewport: 'desktop' },\n  play: async ({ canvas }) => {\n    // TODO: check text this screen shows.\n    await expect(canvas.getByText('TODO: text this screen shows')).toBeVisible()\n  },\n}\n`
-  const vars = { ...page, Name: screen, up: '../../../', stories }
+  const vars = { ...page, Name: screen, storiesTitle: `Pages/${page.Title}/${screen}`, up: '../../../', stories }
   const dir = join(src, 'pages', vars.page, 'screens')
   write(join(dir, `${screen}.tsx`), fill('screen.tsx.tpl', vars))
   write(join(dir, `${screen}.stories.tsx`), fill('screen.stories.tsx.tpl', vars))
