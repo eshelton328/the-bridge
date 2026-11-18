@@ -16,7 +16,11 @@ selected tab's label is cyan as Figma's, and `density="compact"` on a
 tablet and the phone, so the tabs start at the list's edge with 10 px
 sides and Evals ends inside the phone's screen. The selected tab's
 outline stays `border.selected` at half alpha, since no solid selected
-token exists (d-050). The workspace installs `1.0.0-beta.25`.
+token exists (d-050). Library #130 (beta.26) added AppShell
+`tabBarOverlay`: on a tablet and the phone the tab bar lies over the
+page, so text that Figma draws under the bar (M02, M12, M20, M22, T01,
+T10) is under it in the render too and passes the text check. The
+workspace installs `1.0.0-beta.26`.
 
 ## Gaps
 
