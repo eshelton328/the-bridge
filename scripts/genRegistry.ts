@@ -14,6 +14,14 @@ const src = fileURLToPath(new URL('../web/src/', import.meta.url))
 const out = join(src, 'design', 'registry.gen.ts')
 const check = process.argv.includes('--check')
 
+/**
+ * Whether a file in a page's states/ is a state file: not the index, a
+ * test or the page's screen map (`screens.ts`, screen review R10).
+ */
+export function isStateFile(name: string): boolean {
+  return name.endsWith('.ts') && name !== 'index.ts' && name !== 'screens.ts' && !name.includes('.test')
+}
+
 /** The pages that have states, each with its state ids, sorted. */
 export function findBoards(pagesDir: string): { page: string; states: string[] }[] {
   if (!existsSync(pagesDir)) return []
@@ -22,7 +30,7 @@ export function findBoards(pagesDir: string): { page: string; states: string[] }
     .map((d) => ({
       page: d.name,
       states: readdirSync(join(pagesDir, d.name, 'states'))
-        .filter((f) => f.endsWith('.ts') && f !== 'index.ts' && !f.includes('.test'))
+        .filter(isStateFile)
         .map((f) => f.slice(0, -3))
         .sort(),
     }))

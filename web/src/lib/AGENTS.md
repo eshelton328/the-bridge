@@ -21,5 +21,10 @@ layer, a store or the router.
 - `skillQuery.ts`: `skillQuery()`, the word before the caret when it
   starts with "/", which opens and filters the skill list. Its speed
   after a long paste is tested in Node (`scripts/skillQuery.test.ts`).
+- `screenMap.ts`: a page's screen map type (`ScreenMap`, each screen's
+  state per device), `frameSizes` (the Figma frame of each device, which
+  Storybook's viewport menu also reads) and `screenMapProblems()`, which
+  a page's `states/screens.test.ts` runs: every state in exactly one
+  screen, on a device its Figma frame is.
 - `containerSize.ts`: the library `Container` size of a detail column
   for each layout.

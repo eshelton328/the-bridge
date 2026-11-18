@@ -13,6 +13,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { pages } from '../web/src/structure.ts'
+import { isStateFile } from './genRegistry.ts'
 import { addStateToIndex } from './stateIndex.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
@@ -62,7 +63,7 @@ function stateIds(page: string): string[] {
   const dir = join(src, 'pages', page, 'states')
   return existsSync(dir)
     ? readdirSync(dir)
-        .filter((f) => f.endsWith('.ts') && f !== 'index.ts')
+        .filter(isStateFile)
         .map((f) => f.slice(0, -3))
         .sort()
     : []
@@ -87,6 +88,7 @@ function newPage(page: string): void {
   const vars = {
     ...base,
     Name: `${base.Page}Screen`,
+    storiesTitle: `Pages/${base.Title}/States`,
     up: '../../../',
     id,
     frame,
@@ -125,7 +127,7 @@ function newScreen(screen: string): void {
   if (first === undefined)
     fail(`pages/${page.page} has no state yet. Add one first: pnpm new state <id> --page ${page.page} --frame <D1>`)
   const stories = `\nexport const ${pascal(first)}: Story = {\n  args: { data: ${page.page}States.${first}.data, ui: ${page.page}States.${first}.ui, viewport: 'desktop' },\n  play: async ({ canvas }) => {\n    // TODO: check text this screen shows.\n    await expect(canvas.getByText('TODO: text this screen shows')).toBeVisible()\n  },\n}\n`
-  const vars = { ...page, Name: screen, up: '../../../', stories }
+  const vars = { ...page, Name: screen, storiesTitle: `Pages/${page.Title}/${screen}`, up: '../../../', stories }
   const dir = join(src, 'pages', vars.page, 'screens')
   write(join(dir, `${screen}.tsx`), fill('screen.tsx.tpl', vars))
   write(join(dir, `${screen}.stories.tsx`), fill('screen.stories.tsx.tpl', vars))

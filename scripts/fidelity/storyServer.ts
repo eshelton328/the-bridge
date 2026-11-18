@@ -6,6 +6,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { createServer, type Server } from 'node:http'
 import { extname, join, normalize } from 'node:path'
 import { z } from 'zod'
+import { isStateFile } from '../genRegistry.ts'
 import { repoRoot } from './references.ts'
 
 export const storybookDir = join(repoRoot, 'web', 'storybook-static')
@@ -65,7 +66,7 @@ export function stateForFrame(page: string, code: string, dir = pagesDir): strin
   if (!existsSync(statesDir)) return undefined
   const re = new RegExp(`\\bid:\\s*['"]${code}['"]`)
   return readdirSync(statesDir)
-    .filter((f) => f.endsWith('.ts') && f !== 'index.ts' && !f.endsWith('.test.ts'))
+    .filter(isStateFile)
     .find((f) => re.test(readFileSync(join(statesDir, f), 'utf8')))
     ?.replace(/\.ts$/, '')
 }

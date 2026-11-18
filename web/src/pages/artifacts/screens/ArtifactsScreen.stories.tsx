@@ -8,7 +8,7 @@ import { ArtifactsScreen } from './ArtifactsScreen.tsx'
 // file (scripts/checkStates.ts checks it). Each play test checks the
 // state's own text, so a story that renders the wrong state fails.
 const meta = {
-  title: 'Pages/Artifacts/ArtifactsScreen',
+  title: 'Pages/Artifacts/States',
   component: ArtifactsScreen,
 } satisfies Meta<typeof ArtifactsScreen>
 
