@@ -13,7 +13,8 @@
 // pane (D5). A chat dragged from the sidebar onto the chat shown alone
 // fades in the sidebar, and the drop zone shows where it would open (D6).
 // A chat opened from the sidebar can show in the workbench beside it, in
-// place of the chat alone (D7).
+// place of the chat alone (D7), and a chat dragged over one of its panes
+// shows the drop zone over that pane (D8).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -55,11 +56,13 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
       <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
     </div>
   )
-  const chat = data.panes.find((p) => p.id === ui.focusedPane)
-  if (ui.sidebar === true && data.sidebar !== undefined && chat?.type === 'chat') {
-    const menuOpen = ui.menuFor === chat.id
+  // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
+  const focused = data.panes.find((p) => p.id === ui.focusedPane)
+  const chat = focused?.type === 'chat' ? focused : undefined
+  if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
+    const menuOpen = ui.menuFor === chat?.id
     const chatMenu =
-      data.chatMenu === undefined ? undefined : (
+      data.chatMenu === undefined || chat === undefined ? undefined : (
         <ChatActionsMenu
           title={chat.head.title}
           actions={data.chatMenu}
@@ -123,13 +126,13 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
       ) : undefined
     const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
     const dropZone =
-      ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined ? undefined : (
+      ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined || chat === undefined ? undefined : (
         <PaneDropZone
           edge={ui.paneDrag.edge}
           chat={dragged}
-          title={data.paneDrop.title.replace('{chat}', dragged.title).replace('{target}', chat.head.title)}
-          text={data.paneDrop.text}
-          hint={data.paneDrop.hint}
+          target={chat.head.title}
+          drop={data.paneDrop}
+          figma={data.layers?.dropZone}
         />
       )
     return (
@@ -142,7 +145,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             <WorkspaceSidebar
               text={data.sidebar}
               workspaces={data.workspaces}
-              selected={chat.id}
+              selected={ui.focusedPane}
               openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
               onUiChange={change}
@@ -150,7 +153,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             />
           }
           detail={
-            ui.workbench === true ? (
+            ui.workbench === true || chat === undefined ? (
               <WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle={false} />
             ) : (
               <MainChat

@@ -141,3 +141,94 @@ export const ChatInWorkbench: Story = {
     await expect(canvas.queryByText('Codex wants to run a command')).toBeNull()
   },
 }
+
+export const DragOverPane: Story = {
+  name: 'D8: a chat dragged over a pane of the workbench',
+  args: { data: workspacesStates.dragOverPane.data, ui: workspacesStates.dragOverPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 1 pane')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Open drift check to the right')
+    await expect(zone).toHaveTextContent('splits bridge themes into two panes side by side')
+    // The drop zone over a pane has no hint on where to drop, unlike D6's.
+    await expect(canvas.queryByText(/edge: split beside/)).toBeNull()
+  },
+}
+
+export const TwoPanes: Story = {
+  name: 'D9: two panes side by side, with the resize handle between them',
+  args: { data: workspacesStates.twoPanes.data, ui: workspacesStates.twoPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 2 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    await expect(canvas.getByText('Codex wants to run a command')).toBeVisible()
+    // The two panes share the width; the handle between them resizes them (D14).
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+  },
+}
+
+export const DragBelowPane: Story = {
+  name: 'D10: a third chat dragged below one pane of two',
+  args: { data: workspacesStates.dragBelowPane.data, ui: workspacesStates.dragBelowPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 2 panes')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Open brain git below drift check')
+    await expect(zone).toHaveTextContent('splits drift check into two panes, one above the other')
+    // The zone is in drift check's pane alone, so bridge themes keeps its full height.
+    await expect(zone).not.toHaveTextContent('bridge themes')
+  },
+}
+
+export const ThreePanes: Story = {
+  name: 'D11: three panes, bridge themes on the left and two stacked on the right',
+  args: { data: workspacesStates.threePanes.data, ui: workspacesStates.threePanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 3 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'drift check' })).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'brain git' })).toBeVisible()
+    // Each gap has its own handle: one between the columns, one between the right column's rows.
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
+  },
+}
+
+export const FourPanes: Story = {
+  name: 'D12: four panes, the most, and a chat dragged over one replaces it',
+  args: { data: workspacesStates.fourPanes.data, ui: workspacesStates.fourPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 4 panes')).toBeVisible()
+    await expect(canvas.getByRole('heading', { name: 'brain git' })).toBeVisible()
+    await expect(canvas.getByText('Empty pane')).toBeVisible()
+    const zone = canvas.getByRole('status')
+    await expect(zone).toHaveTextContent('Replace drift check with hono server')
+    await expect(zone).toHaveTextContent('Four panes is the most. drift check keeps running in the sidebar.')
+  },
+}
+
+export const EmptiedPane: Story = {
+  name: 'D13: an emptied pane keeps its place and offers Close pane',
+  args: { data: workspacesStates.emptiedPane.data, ui: workspacesStates.emptiedPane.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 4 panes')).toBeVisible()
+    await expect(canvas.getByText('Empty pane')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Close pane' })).toBeVisible()
+    await expect(canvas.getByText('Cmd+W', { selector: 'button' })).toBeVisible()
+    await expect(canvas.queryByRole('status')).toBeNull()
+  },
+}
+
+export const ResizedPanes: Story = {
+  name: 'D14: brain git takes the bottom row and the top row resizes 60 : 40',
+  args: { data: workspacesStates.resizedPanes.data, ui: workspacesStates.resizedPanes.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · 3 panes')).toBeVisible()
+    await expect(canvas.getByRole('status')).toHaveTextContent('60 : 40 · double-click for 50 : 50')
+    // Rows first: one handle between the top row's panes and one between the rows; brain git's row has none.
+    await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
+    await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
+  },
+}

@@ -18,6 +18,11 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
 
 ## Deviations
 
+- **Text sizes (Message text).** Figma draws Erik's message in 13/19 and
+  an agent's name in SemiBold 12 (D08 402:1066, 402:1072). The library's
+  `Message` draws `body` (14/20) and `label` (14/500) and takes no text
+  size, so both are about one size larger than Figma's (fidelity review
+  D08 F2, F4).
 - **Chat actions menu (Menu icon size).** `402:5486` passes:
   `density="compact"` puts the rows edge to edge, as Figma's. Its icons
   are 16 px (Figma 14), as in the pane menu of D01. The menu is 240 wide

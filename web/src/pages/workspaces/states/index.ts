@@ -9,6 +9,13 @@ import { sideChat } from './sideChat.ts'
 import { sideChatInPane } from './sideChatInPane.ts'
 import { subagents } from './subagents.ts'
 import { workbench } from './workbench.ts'
+import { dragOverPane } from './dragOverPane.ts'
+import { twoPanes } from './twoPanes.ts'
+import { dragBelowPane } from './dragBelowPane.ts'
+import { threePanes } from './threePanes.ts'
+import { fourPanes } from './fourPanes.ts'
+import { emptiedPane } from './emptiedPane.ts'
+import { resizedPanes } from './resizedPanes.ts'
 
 export const workspacesStates = {
   workbench,
@@ -19,4 +26,11 @@ export const workspacesStates = {
   sideChatInPane,
   dragIntoPane,
   chatInWorkbench,
+  dragOverPane,
+  twoPanes,
+  dragBelowPane,
+  threePanes,
+  fourPanes,
+  emptiedPane,
+  resizedPanes,
 }

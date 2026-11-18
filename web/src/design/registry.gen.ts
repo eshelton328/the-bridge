@@ -6,7 +6,7 @@ import { toolkitPage } from '../pages/toolkit/index.ts'
 import { workspacesPage } from '../pages/workspaces/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'artifacts/addLink' | 'artifacts/artifactOpen' | 'artifacts/changeApplied' | 'artifacts/changeProposed' | 'artifacts/discussOpen' | 'artifacts/filterOpen' | 'artifacts/library' | 'artifacts/searchList' | 'artifacts/sortOpen' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/agentOpen' | 'toolkit/agentOpenPhone' | 'toolkit/agentOpenTablet' | 'toolkit/hookOpen' | 'toolkit/hookOpenPhone' | 'toolkit/hookOpenTablet' | 'toolkit/moreDrawer' | 'toolkit/ruleOpen' | 'toolkit/ruleOpenPhone' | 'toolkit/ruleOpenTablet' | 'toolkit/skillOpen' | 'toolkit/skillOpenPhone' | 'toolkit/skillOpenTablet' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet' | 'toolkit/toolkitMap' | 'toolkit/toolkitMapTablet' | 'toolkit/workflowOpen' | 'toolkit/workflowOpenPhone' | 'toolkit/workflowOpenTablet' | 'workspaces/chatActions' | 'workspaces/chatInWorkbench' | 'workspaces/dragIntoPane' | 'workspaces/folders' | 'workspaces/sideChat' | 'workspaces/sideChatInPane' | 'workspaces/subagents' | 'workspaces/workbench'
+export type BoardId = 'artifacts/addLink' | 'artifacts/artifactOpen' | 'artifacts/changeApplied' | 'artifacts/changeProposed' | 'artifacts/discussOpen' | 'artifacts/filterOpen' | 'artifacts/library' | 'artifacts/searchList' | 'artifacts/sortOpen' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/agentOpen' | 'toolkit/agentOpenPhone' | 'toolkit/agentOpenTablet' | 'toolkit/hookOpen' | 'toolkit/hookOpenPhone' | 'toolkit/hookOpenTablet' | 'toolkit/moreDrawer' | 'toolkit/ruleOpen' | 'toolkit/ruleOpenPhone' | 'toolkit/ruleOpenTablet' | 'toolkit/skillOpen' | 'toolkit/skillOpenPhone' | 'toolkit/skillOpenTablet' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet' | 'toolkit/toolkitMap' | 'toolkit/toolkitMapTablet' | 'toolkit/workflowOpen' | 'toolkit/workflowOpenPhone' | 'toolkit/workflowOpenTablet' | 'workspaces/chatActions' | 'workspaces/chatInWorkbench' | 'workspaces/dragBelowPane' | 'workspaces/dragIntoPane' | 'workspaces/dragOverPane' | 'workspaces/emptiedPane' | 'workspaces/folders' | 'workspaces/fourPanes' | 'workspaces/resizedPanes' | 'workspaces/sideChat' | 'workspaces/sideChatInPane' | 'workspaces/subagents' | 'workspaces/threePanes' | 'workspaces/twoPanes' | 'workspaces/workbench'
 
 export const boards: readonly Board[] = [
   board(artifactsPage, 'addLink'),
@@ -90,10 +90,17 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'workflowOpenTablet'),
   board(workspacesPage, 'chatActions'),
   board(workspacesPage, 'chatInWorkbench'),
+  board(workspacesPage, 'dragBelowPane'),
   board(workspacesPage, 'dragIntoPane'),
+  board(workspacesPage, 'dragOverPane'),
+  board(workspacesPage, 'emptiedPane'),
   board(workspacesPage, 'folders'),
+  board(workspacesPage, 'fourPanes'),
+  board(workspacesPage, 'resizedPanes'),
   board(workspacesPage, 'sideChat'),
   board(workspacesPage, 'sideChatInPane'),
   board(workspacesPage, 'subagents'),
+  board(workspacesPage, 'threePanes'),
+  board(workspacesPage, 'twoPanes'),
   board(workspacesPage, 'workbench'),
 ]

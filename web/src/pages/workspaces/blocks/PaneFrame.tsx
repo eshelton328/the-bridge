@@ -1,6 +1,8 @@
 // One pane of the split with its header: the kind mark, the title, the model
 // and context used, the status, Maximise and the pane menu (D1 105:178).
 // Props only; the screen decides which pane is focused and which menu is open.
+// An overlay, such as the drop zone of a chat dragged over the pane (D8),
+// covers the whole pane, header included.
 import { ContextMeter, KindMark, MaximizeIcon, StatusPill, Button } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -8,8 +10,10 @@ import { PaneSlot } from '../../../errors/PaneSlot.tsx'
 import type { PaneHead } from '../types.ts'
 
 // The split's panel is a flex column; the pane fills it. The pane is a size container, so a chat's long draft
-// stops at half the pane (`ChatPane`); the split sets its size, so the containment changes no layout.
+// stops at half the pane (`ChatPane`); the split sets its size, so the containment changes no layout. It places the
+// overlay.
 const slot = css({
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   flex: '1',
@@ -27,9 +31,11 @@ export type PaneFrameProps = {
   /** The pane menu, with its trigger. */
   menu: ReactNode
   children: ReactNode
+  /** Drawn over the whole pane, such as the drop zone of a dragged chat (D8 402:1112). */
+  overlay?: ReactNode
 }
 
-export function PaneFrame({ head, figma, focused, onActivate, menu, children }: PaneFrameProps) {
+export function PaneFrame({ head, figma, focused, onActivate, menu, children, overlay }: PaneFrameProps) {
   return (
     <div data-figma={figma} className={slot}>
       <PaneSlot
@@ -56,6 +62,7 @@ export function PaneFrame({ head, figma, focused, onActivate, menu, children }: 
       >
         {children}
       </PaneSlot>
+      {overlay}
     </div>
   )
 }

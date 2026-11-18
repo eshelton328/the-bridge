@@ -22,6 +22,11 @@ list open over the transcript and the folder picker in the side slot
 
 ## Deviations
 
+- **Text sizes (Message text).** Figma draws Erik's message in 13/19 and
+  an agent's name in SemiBold 12 (D08 402:1066, 402:1072). The library's
+  `Message` draws `body` (14/20) and `label` (14/500) and takes no text
+  size, so both are about one size larger than Figma's (fidelity review
+  D08 F2, F4).
 - **Folder picker is 20 px narrower (Folder picker).** `128:330` x +20,
   w -20: `AppShell` has side widths 380 and 420 and Figma's picker is 400;
   the build uses 380, the width of the side chat (d-100). So the main chat

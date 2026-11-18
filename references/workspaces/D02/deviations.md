@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of Workspaces and side
 chat (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.18), each with its reason. The library gaps are
+1.0.0-beta.18; measured on 1.0.0-beta.20), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -22,6 +22,11 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Deviations
 
+- **Text sizes (Message text).** Figma draws Erik's message in 13/19 and
+  an agent's name in SemiBold 12 (D08 402:1066, 402:1072). The library's
+  `Message` draws `body` (14/20) and `label` (14/500) and takes no text
+  size, so both are about one size larger than Figma's (fidelity review
+  D08 F2, F4).
 - **Dragged chat (Drag preview).** `105:960` w -26.3, h -15.1: the chat
   is `DragPreview` (cyan border and shadow) around its row, not turned.
   Figma turns it about 3° and lets it pass the sidebar's right edge. The
@@ -29,7 +34,7 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   each run against the clip box of every DOM ancestor, so with `tilt` or
   past the sidebar's scrolling body it reports the row's text as cut,
   though nothing cuts it on screen. So the row is straight and ends at
-  the rows' end (266 wide). Its meta is 132 px in 112, so "23%" is cut
+  the rows' end (266 wide). Its meta is 132 px in 116, so "23%" is cut
   off (`hiddenOverflow`). It starts 50 in and 12 under the group header,
   Figma's place, in spacing tokens (40 and 10, 12; d-100).
 - **Drop hint (Drag preview).** The hint is `DragPreview`'s pill: cyan

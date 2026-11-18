@@ -117,6 +117,8 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     start: z.array(z.object({ kind: AgentKind, label: z.string() })),
     openLabel: z.string(),
     open: z.array(OpenableChat),
+    /** Close pane and its shortcut at the pane's top end (D13), which remove the pane; none when not set. */
+    close: z.object({ label: z.string(), shortcut: z.string() }).optional(),
   }),
 ])
 export type WorkbenchPane = z.infer<typeof WorkbenchPane>
@@ -242,6 +244,10 @@ export const SidebarLayers = z.object({
    */
   shell: z.string().optional(),
   emptyRows: z.array(z.string()).optional(),
+  /** The empty pane's Close pane button and its shortcut (D13 402:6502, 402:6504). */
+  emptyClose: z.object({ close: z.string(), shortcut: z.string() }).optional(),
+  /** The split's readout while a handle is dragged (D14 402:7151). */
+  resizeHint: z.string().optional(),
   newWorkspace: z.string().optional(),
   /** The group headers, by workspace id. */
   headers: z.record(z.string(), z.string()).optional(),
@@ -262,6 +268,8 @@ export const SidebarLayers = z.object({
   /** The subagents panel and its cards, by subagent id (D3). */
   subagents: z.string().optional(),
   subagentCards: z.record(z.string(), z.string()).optional(),
+  /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
+  dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -310,15 +318,26 @@ export type FolderPicker = z.infer<typeof FolderPicker>
 export const DropEdge = z.enum(['left', 'right', 'top', 'bottom', 'middle'])
 export type DropEdge = z.infer<typeof DropEdge>
 
-/** The drop zone a chat dragged from the sidebar shows over the chat shown alone (D6 158:1025). */
+/**
+ * The drop zone a chat dragged from the sidebar shows over the chat shown alone (D6 158:1025) or over a pane of the
+ * workbench (D8 402:1112).
+ */
 const PaneDrop = z.object({
   /** What the drop does, such as "Open {chat} beside {target}"; {chat} and {target} are filled in. */
   title: z.string(),
-  /** The line under it, such as "splits the view into two panes". */
+  /** The line under it, such as "splits {target} into two panes side by side"; {chat} and {target} are filled in. */
   text: z.string(),
-  /** The hint on where to drop, in one line. */
-  hint: z.string(),
+  /** The hint on where to drop, in one line; none when not set (D8). */
+  hint: z.string().optional(),
+  /** `false`: no split icon over the title (D8). */
+  icon: z.boolean().optional(),
+  /**
+   * Over a pane, where the dragged chat sits in the room under the text: a third of the way down (the default, D8,
+   * D10) or at its end, where the pointer is near the pane's bottom (D12).
+   */
+  preview: z.enum(['third', 'end']).optional(),
 })
+export type PaneDrop = z.infer<typeof PaneDrop>
 
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
@@ -357,10 +376,21 @@ export const WorkspacesData = z.object({
   folders: ChatFolders.optional(),
   /** The folder picker (D4). */
   folderPicker: FolderPicker.optional(),
-  /** The drop zone's text while a chat is dragged onto the chat shown alone (D6). */
+  /** The drop zone's text while a chat is dragged onto the chat shown alone (D6) or a pane of the workbench (D8). */
   paneDrop: PaneDrop.optional(),
+  /**
+   * `rows` (D14): the split puts the first two panes side by side in the top row and the others in the bottom row,
+   * each row with its own column handle. When not set, the library's `SplitPanes` splits the columns first.
+   */
+  split: z.enum(['rows']).optional(),
+  /** The readout beside a handle while Erik drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
+  resizeHint: z.string().optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
+
+/** A handle of a rows-first split (D14): between the rows, or between the columns of the top or bottom row. */
+export const ResizePart = z.enum(['rows', 'top', 'bottom'])
+export type ResizePart = z.infer<typeof ResizePart>
 
 /** The view state a Figma frame shows. */
 export const WorkspacesUi = z.object({
@@ -402,14 +432,28 @@ export const WorkspacesUi = z.object({
   pickedFolder: z.string().nullable().optional(),
   /**
    * A chat Erik drags from the sidebar onto the chat shown alone, and where it would land (D6): its row in the
-   * sidebar fades and the drop zone shows over that part of the chat.
+   * sidebar fades and the drop zone shows over that part of the chat. With the workbench (D8), `pane` is the pane
+   * it is over, and the drop zone shows over that part of the pane.
    */
-  paneDrag: z.object({ chat: z.string(), edge: DropEdge }).nullable().optional(),
+  paneDrag: z.object({ chat: z.string(), edge: DropEdge, pane: z.string().optional() }).nullable().optional(),
   /**
    * With the sidebar, the workbench (the tabs, the panes and the status bar) shows beside it in place of the chat
    * alone (D7): a chat opened from the sidebar fills the panes area.
    */
   workbench: z.boolean().optional(),
+  /**
+   * The handle of a rows-first split that Erik drags and the sizes it gives, in percent (D14): `rows` between the
+   * rows, `top` and `bottom` between a row's columns. The readout shows the sizes as a ratio.
+   */
+  resize: z
+    .object({ part: ResizePart, sizes: z.array(z.number()) })
+    .nullable()
+    .optional(),
+  /**
+   * The sizes of each handle of a rows-first split, in percent, kept apart so that a drag of one handle leaves the
+   * others as they are; `resize` sets its own handle's sizes over these.
+   */
+  splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

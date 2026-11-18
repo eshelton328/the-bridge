@@ -1,20 +1,22 @@
-// The drop zone over the chat shown alone while Erik drags a chat from the
-// sidebar onto it (D6 158:1025): a dashed cyan box over the part of the chat
-// where the chat would open (an edge: beside, above or below; the middle:
-// in its place), with the split icon, what the drop does, a line and the
-// hint on where to drop, and the dragged chat under them where the pointer
-// holds it (158:1034). The library has no drop zone (LIBRARY_GAPS.md): the
-// box is a dashed `border.active` outline on the faint accent tint. The
-// dragged chat is its sidebar row in the library's `DragPreview`. Props only.
+// The drop zone while Erik drags a chat from the sidebar: over the chat shown
+// alone (D6 158:1025) or over a pane of the workbench (D8 402:1112; D12 402:5000,
+// the whole pane, where the chat would replace it). A dashed
+// cyan box over the part of the chat or pane where the chat would open (an
+// edge: beside, above or below; the middle: in its place), with the split
+// icon unless the drop turns it off, what the drop does, a line and, when
+// set, the hint on where to drop, and the dragged chat under them where the
+// pointer holds it (158:1034, 402:1126). The library has no drop zone
+// (LIBRARY_GAPS.md): the box is a dashed `border.active` outline on the faint
+// accent tint. The dragged chat is its sidebar row in the library's
+// `DragPreview`. Props only.
 import { DragPreview, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import type { DropEdge, SidebarChat } from '../types.ts'
+import type { DropEdge, PaneDrop, SidebarChat } from '../types.ts'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
 
-// The zone sits 12 in from the chat's edges (158:1025 is 12 from its top, right and bottom). It shows a drag and
-// takes no pointer, so the transcript under it stays readable and the drop reaches the chat. Figma's dashes are
-// about 2 px wide, brighter and longer than a 1 px line of border.active, so they are drawn at borderWidths.ring
-// (2, d-100).
+// The zone shows a drag and takes no pointer, so the transcript under it stays readable and the drop reaches the
+// chat. Figma's dashes are about 2 px wide, brighter and longer than a 1 px line of border.active, so they are drawn
+// at borderWidths.ring (2, d-100).
 const zone = css({
   position: 'absolute',
   zIndex: '1',
@@ -28,19 +30,50 @@ const zone = css({
   borderColor: 'border.active',
   bg: 'accent.faint',
 })
-// Figma's right zone starts 4 past the chat's middle (957 in a chat from 394 to 1512).
-const edges: Record<DropEdge, string> = {
-  right: css({ top: '12', right: '12', bottom: '12', left: '[50%]', ms: '4' }),
-  left: css({ top: '12', left: '12', bottom: '12', right: '[50%]', me: '4' }),
-  top: css({ top: '12', left: '12', right: '12', bottom: '[50%]', mb: '4' }),
-  bottom: css({ bottom: '12', left: '12', right: '12', top: '[50%]', mt: '4' }),
-  middle: css({ top: '12', left: '12', right: '12', bottom: '12' }),
+// A drop in the middle of a pane replaces its chat (D12 402:4865 under 402:5000): Figma fills the zone with
+// rgba(8, 13, 26, 0.88) under its cyan tint, which dims the pane, header included, almost to the background, so the
+// zone's text reads alone. `overlay.scrim` (0.65) leaves the approval card and its buttons readable; `surface.pane`
+// (rgba(15, 22, 38, 0.85)) is the library's nearest fill to Figma's, so it covers the pane under the zone. No token
+// is the dimming of a pane (LIBRARY_GAPS.md, Drop zone; d-100).
+const scrim = css({ position: 'absolute', inset: '0', zIndex: '1', pointerEvents: 'none', bg: 'surface.pane' })
+// Over the chat alone the zone sits 12 in from the chat's edges (158:1025 is 12 from its top, right and bottom); over
+// a pane, 4 in from the pane's (402:1112). Both start 4 past the middle (D6 957 in a chat from 394 to 1512, D8 957
+// in a pane from 404 to 1502).
+const edges: Record<'chat' | 'pane', Record<DropEdge, string>> = {
+  chat: {
+    right: css({ top: '12', right: '12', bottom: '12', left: '[50%]', ms: '4' }),
+    left: css({ top: '12', left: '12', bottom: '12', right: '[50%]', me: '4' }),
+    top: css({ top: '12', left: '12', right: '12', bottom: '[50%]', mb: '4' }),
+    bottom: css({ bottom: '12', left: '12', right: '12', top: '[50%]', mt: '4' }),
+    middle: css({ top: '12', left: '12', right: '12', bottom: '12' }),
+  },
+  pane: {
+    right: css({ top: '4', right: '4', bottom: '4', left: '[50%]', ms: '4' }),
+    left: css({ top: '4', left: '4', bottom: '4', right: '[50%]', me: '4' }),
+    top: css({ top: '4', left: '4', right: '4', bottom: '[50%]', mb: '4' }),
+    bottom: css({ bottom: '4', left: '4', right: '4', top: '[50%]', mt: '4' }),
+    middle: css({ top: '4', left: '4', right: '4', bottom: '4' }),
+  },
 }
-// The two halves around the text take the same room, so the text sits in the zone's middle (158:1026 to 158:1048).
-const half = css({ flex: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', minH: '[0]' })
+// The two halves around the text take the same room, so the text sits in the zone's middle (158:1026 to 158:1048,
+// 402:1113 and 402:1114). Each is as wide as the zone, so the dragged chat can sit at its end.
+const half = css({
+  flex: '1',
+  alignSelf: 'stretch',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  minH: '[0]',
+})
 const middle = css({ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8' })
 const icon = css({ display: 'inline-flex', color: 'fg.accent' })
-const title = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0' })
+// The title is SemiBold 15 over the chat alone (D6 158:1029, 20 high) and SemiBold 16 over a pane (D8 402:1113, D10
+// 402:3638, D12 402:5001, 21 high). No text style is 16/600: `labelLg` (16/500) has Figma's size, `subtitle` (17/600)
+// its weight; the size is nearer the width Figma draws (d-100, LIBRARY_GAPS.md, Drop zone).
+const title = {
+  chat: css({ textStyle: 'paneTitle', color: 'fg.default', m: '0' }),
+  pane: css({ textStyle: 'labelLg', color: 'fg.default', m: '0' }),
+}
 const text = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
 // 158:1048: the hint in mono on a recessed box, padded 10 at the sides.
 const hints = css({
@@ -55,41 +88,70 @@ const hints = css({
   borderStyle: 'solid',
   borderColor: 'border.default',
 })
-// The dragged chat (158:1034, 310 wide), where the pointer holds it: Figma puts it 111 under the hint; 40 is the
-// largest spacing token (d-100), and 320 the nearest width token.
-const preview = css({ mt: '40', w: 'shell.popover' })
+// The dragged chat, where the pointer holds it. Over the chat alone Figma puts it 111 under the hint (158:1034); 40
+// is the largest spacing token (d-100), and it is centred and 320 wide (shell.popover, nearest to 310). Over a pane
+// (402:1126) it is a third of the way down the room under the text (115 of about 350 left over), so that room is
+// split 1 : 2 around it with no length, and it sits 20 in from the zone's end (Figma 26) and is 300 wide
+// (shell.popoverFilter, nearest to its 289 before its 3° turn) (d-100). With `drop.preview: 'end'` (D12 402:5014) it
+// sits at the end of that room, 4 above the zone's bottom edge, which puts its middle where Figma's turned box has
+// its middle, and at the zone's right end; it is 320 wide (shell.popover), as hono server's meta and Needs you do
+// not fit in 300 (d-100).
+const preview = {
+  chat: css({ mt: '40', w: 'shell.popover' }),
+  pane: css({ w: 'shell.popoverFilter', alignSelf: 'flex-end', me: '20' }),
+  end: css({ w: 'shell.popover', alignSelf: 'flex-end', mb: '4' }),
+}
+const above = css({ flex: '1' })
+const below = css({ flex: '[2]' })
 
 export type PaneDropZoneProps = {
   /** Where the chat would land. */
   edge: DropEdge
   /** The dragged chat. */
   chat: SidebarChat
-  title: string
-  text: string
-  hint: string
+  /** The title of the chat or pane it is dragged over. */
+  target: string
+  /** The zone's text; {chat} and {target} are filled in. */
+  drop: PaneDrop
+  /** Over the chat shown alone (D6) or a pane of the workbench (D8). */
+  placement?: 'chat' | 'pane' | undefined
+  /** The Figma layers of the zone, the dragged chat and the hint; D6's when not set. */
+  figma?: { zone: string; preview: string; hint?: string | undefined } | undefined
 }
 
-export function PaneDropZone({ edge, chat, title: heading, text: line, hint }: PaneDropZoneProps) {
+export function PaneDropZone({ edge, chat, target, drop, placement = 'chat', figma }: PaneDropZoneProps) {
+  const fill = (s: string) => s.replace('{chat}', chat.title).replace('{target}', target)
+  const layers = figma ?? { zone: '158:1025', preview: '158:1034', hint: '158:1048' }
+  const end = placement === 'pane' && drop.preview === 'end'
   return (
-    <div data-figma="158:1025" role="status" className={cx(zone, edges[edge])}>
-      <div className={half} />
-      <div className={middle}>
-        <span className={icon} aria-hidden="true">
-          <SplitIcon size="24" />
-        </span>
-        <p className={title}>{heading}</p>
-        <p className={text}>{line}</p>
-        <p className={hints} data-figma="158:1048">
-          {hint}
-        </p>
-      </div>
-      <div className={half}>
-        <div className={preview}>
-          <DragPreview>
-            <SidebarChatRow chat={chat} figma="158:1034" />
-          </DragPreview>
+    <>
+      {placement === 'pane' && edge === 'middle' ? <div className={scrim} /> : null}
+      <div data-figma={layers.zone} role="status" className={cx(zone, edges[placement][edge])}>
+        <div className={half} />
+        <div className={middle}>
+          {drop.icon === false ? null : (
+            <span className={icon} aria-hidden="true">
+              <SplitIcon size="24" />
+            </span>
+          )}
+          <p className={title[placement]}>{fill(drop.title)}</p>
+          <p className={text}>{fill(drop.text)}</p>
+          {drop.hint === undefined ? null : (
+            <p className={hints} data-figma={layers.hint}>
+              {drop.hint}
+            </p>
+          )}
+        </div>
+        <div className={half}>
+          {placement === 'pane' ? <div className={above} /> : null}
+          <div className={preview[end ? 'end' : placement]}>
+            <DragPreview>
+              <SidebarChatRow chat={chat} figma={layers.preview} />
+            </DragPreview>
+          </div>
+          {placement === 'pane' && !end ? <div className={below} /> : null}
         </div>
       </div>
-    </div>
+    </>
   )
 }
