@@ -102,8 +102,26 @@ what each file of a page folder is for.
   has no arrow between its steps, gates and ends are amber, and the
   loop's label sits under the lanes (the library has no connector line:
   LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
-  `ui.flowFullPage` (D13 is a later frame), and the agent buttons under
-  the flow open the agent. On a tablet (T18, `workflowOpenTablet`, D8's
+  `ui.flowFullPage` and opens How it works (`openFullPage` in
+  `screens/flowView.ts`), and the agent buttons under the flow open the
+  agent. A workflow with a `flowPage` then fills the page without the
+  list (D13, `workflowFullPage`, D8's data with `flowPage` and step 4 in
+  `ui.flowStep`): the breadcrumb row Toolkit › Workflows › the workflow
+  with Discuss and Show on map tops it on the desktop too
+  (`ToolkitItemBack` with D13's `layers` and `tall`; Workflows goes back
+  to the list narrowed to workflows), and How it works is
+  `ToolkitFlowPage`: the description, the flow (`ToolkitFlowSteps`: the
+  stages left to right, each a column of four equal rows, a parallel
+  stage's two steps at the top and the bottom and a single step across
+  the middle, `blocks/flowLayout.ts`; each card a
+  `ToolkitFlowStep variant="page"` whose title selects the step; the
+  gate's way out to the stop and the loop's label under the step it
+  names) and `ToolkitFlowDetails` (the selected step's fields, the gates,
+  the rounds). On a tablet or phone the stages stand in one column with
+  the parallel steps side by side, and the panels one under another
+  (`src/app/ToolkitWorkflowPage.test.tsx`); T8 and M9 are later frames.
+  `flowView.test.ts` checks the pure parts (LIBRARY_GAPS.md, Workflow
+  page flow, description and details). On a tablet (T18, `workflowOpenTablet`, D8's
   data) the flow is drawn smaller (`ToolkitWorkflowFlow size="sm"`:
   narrower lanes, smaller cards and text; LIBRARY_GAPS.md, Workflow flow
   (tablet)). On the phone (M21, `workflowOpenPhone`, D8's data) the flow is
