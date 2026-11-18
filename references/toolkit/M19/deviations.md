@@ -10,8 +10,8 @@ shared `DetailFrame` (d-107), as M2's skill does: the back row stays at the
 top and the item scrolls under it (`web/src/app/ToolkitStickyBack.test.tsx`,
 the M19 case). D03, D04, D07, D08, D09, T03, M02 and T17 give the same
 results as before M19. The Checks below are from a rerun with library
-1.0.0-beta.25 and the item tabs' `tone` and `density` props
-(2026-11-17).
+1.0.0-beta.26 (the-bridge #60: the tab bar lies over the page) and the
+item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -32,11 +32,14 @@ results as before M19. The Checks below are from a rerun with library
 
 - **Under the tab bar.** Figma draws the file preview down to y 785,
   past the tab bar at y 767; its last text line (487:1427) ends at 766,
-  just over the bar. The render scrolls the item in the DetailFrame body
-  and cuts the preview's foot at the same place, so the rule check reports
-  the scrolling body as `hiddenOverflow`. No string is under the tab bar:
-  the file's last line ends above it, as in Figma. This is the scroll
-  that Figma's own layout causes, as on M02; it is not an exception yet.
+  just over the bar. The tab bar lies over the page (AppShell
+  `tabBarOverlay`, library 1.0.0-beta.26): the DetailFrame body runs
+  under the bar as Figma's preview does, so the preview's foot lies under
+  the bar in both. The rest of the item scrolls, and the rule check
+  reports the scrolling body as `hiddenOverflow`. No string is under the
+  tab bar: the file's last line ends above it, as in Figma. This is the
+  scroll that Figma's own layout causes, as on M02; it is not an
+  exception yet.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's, so Evals ends inside the

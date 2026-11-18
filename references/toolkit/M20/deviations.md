@@ -13,15 +13,16 @@ it runs cards sit two across (`ToolkitAgentRuns` `columns="2"`);
 Back stays in view while the agent scrolls. D03, D04, D07, D08, D09, T03,
 M02 and T07 give the same results as before M20 (every text, position
 delta and rule finding). The Checks below are from a rerun with library
-1.0.0-beta.25 and the item tabs' `tone` and `density` props
-(2026-11-17).
+1.0.0-beta.26 (the-bridge #60: the tab bar lies over the page) and the
+item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. The prompt's first paragraph (487:1663) and `Inputs`
-  (487:1664) pass since the tab bar lies over the page (see Under the
-  tab bar).
+- Text: pass (42 strings checked). Every Figma string is in the render
+  and visible; no extra text and no covered text. The prompt's first
+  paragraph (487:1663) and `Inputs` (487:1664) lie under the tab bar in
+  both and pass since the bar lies over the page (see Under the tab
+  bar).
 - Position: 20 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1474`, `path badge`, `487:1613`,
   `kind section · agent`, `facts`, `fact · Claude`, `fact · Codex`,

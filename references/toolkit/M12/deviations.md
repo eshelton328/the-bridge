@@ -12,15 +12,17 @@ lines). On the phone the item replaces the list in the shared `DetailFrame`
 names the item (Toolkit › writer) with M02's icon buttons, the title is in
 the `title` text style, and the kind badge and path rows are left out.
 D14, D37, D38, D39, T10 and M02 give the same results as before M12. The
-Checks below are from a rerun with library 1.0.0-beta.25 and the item
-tabs' `tone` and `density` props (2026-11-17).
+Checks below are from a rerun with library 1.0.0-beta.26 (the-bridge
+#60: the tab bar lies over the page) and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. One string is not visible: `8` (461:670), see Under the
-  tab bar. `writing-reviewer` (461:659) and `until pass` (461:664) pass
-  since the tab bar lies over the page.
+  covered text. One string is not visible: step 8's number `8`
+  (461:670), which runs past the screen's foot (see Under the tab bar).
+  `writing-reviewer` (461:659) and `until pass` (461:664) pass since the
+  tab bar lies over the page.
 - Position: 24 of 28 layers pass (`back row`, `button · map`, `461:560`,
   `steps`, `step 1` to `step 8`, the six `uses · …` chips and `tab bar`).
   The 4 that fail (`button · Discuss`, `toolkit`, `trigger`, `chat path`)
@@ -39,8 +41,12 @@ tabs' `tone` and `density` props (2026-11-17).
   The tab bar lies over the page (AppShell `tabBarOverlay`, library
   1.0.0-beta.26): the DetailFrame body runs under the bar as Figma's item
   does, so step 7's chips lie under the bar in both and the text check
-  passes them. Step 8's `8` (461:670) is still not visible in the
-  render; its cause is not measured yet. The rule check reports the
+  passes them. Step 8's `8` (461:670) is still not visible: Figma's
+  ends at y 844, the frame's foot. The render's step number is a
+  `Badge variant="outline"` 22 high against Figma's 19, and step 8
+  starts 2 px lower (within the tolerance), so the `8` runs from y 832 to
+  848 and its last 4 px lie past the screen's foot (gap: How it works
+  steps). The rule check reports the
   scrolling body as `hiddenOverflow`. This is
   the scroll that Figma's own layout causes; it is not an exception.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
