@@ -18,7 +18,9 @@
 // with Discuss and Show on map) tops it on the desktop too, the meta row holds
 // only the kind badge, and How it works draws the workflow's page
 // (`ToolkitFlowPage`). On a tablet (T8) the same breadcrumb row is the
-// DetailFrame's back row, 36 high, and the item's rows start 12 under it.
+// DetailFrame's back row, 36 high, and the item's rows start 12 under it. On the phone (M9) the breadcrumb leaves out
+// the kind's crumb (Toolkit › the workflow), the actions are icon buttons, when it runs sits beside the kind badge, the
+// path row is left out and the rows are 10 apart under the smaller title, as on M12.
 import {
   AgentIcon,
   HookIcon,
@@ -54,7 +56,8 @@ const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20'
 // are 12 apart. The BackRow is 32 high against Figma's 36, so 16 above the title keeps it in place.
 const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '16' })
 // M12 461:404: on How it works on the phone the title (461:560) starts 10 under the back row (461:550), and the title
-// and the tabs are 10 apart.
+// and the tabs are 10 apart. M9 448:343, a workflow's own page on the phone, has the same spacing: the meta row
+// (448:483) 10 under the breadcrumb row (448:473, ends at 78), and the title (448:491) and the tabs (464:530) 10 apart.
 const phoneHowPage = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '10' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
@@ -83,6 +86,9 @@ const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '4' 
 const metaRowPage = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start' })
 // T8 448:206: on a workflow's own page the meta row spans the item.
 const metaRowFull = css({ display: 'flex', alignItems: 'center' })
+// M9 448:483: on a workflow's own page on the phone the meta row spans the item: the kind badge and, 8 after it, when
+// it runs.
+const metaRowFullPhone = css({ display: 'flex', alignItems: 'center', gap: '8' })
 // M2 429:297: on the phone the meta row holds the kind badge and, 8 after it, when the item changed.
 const metaRowPhone = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '8' })
 const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.default' })
@@ -156,13 +162,13 @@ const phoneHowTitleLayers: Readonly<Record<string, string>> = {
 const fullPageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: { 'workflows/skill-eval-round.md': '446:513' },
   tablet: { 'workflows/skill-eval-round.md': '448:214' },
-  phone: {},
+  phone: { 'workflows/skill-eval-round.md': '448:491' },
 }
 // The description on a workflow's own page is a text layer with no name of its own: D13 446:514, T8 448:215.
 const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: { 'workflows/skill-eval-round.md': '446:514' },
   tablet: { 'workflows/skill-eval-round.md': '448:215' },
-  phone: {},
+  phone: { 'workflows/skill-eval-round.md': '448:492' },
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
@@ -230,7 +236,9 @@ export function ToolkitItem({
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const full = fullPage !== undefined
-  const crumb = fullPage?.crumb ?? from
+  // M9 448:473: on the phone a workflow's own page names only the workflow after Toolkit.
+  const fullPhone = full && phone
+  const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
   // How it works on a tablet or phone, when the item's `how` asks for it (T10): no kind badge or path row, and the
   // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview.
   const narrowHow = !desktop && tab === 'how' && detail.how?.named === true
@@ -251,7 +259,7 @@ export function ToolkitItem({
           ? full
             ? fullPane
             : pane
-          : narrowHow
+          : narrowHow || fullPhone
             ? phone
               ? phoneHowPage
               : howPage
@@ -277,7 +285,17 @@ export function ToolkitItem({
       ) : null}
       {narrowHow ? null : (
         <div
-          className={desktop && !full ? metaRow : phone ? metaRowPhone : full && !desktop ? metaRowFull : metaRowPage}
+          className={
+            desktop && !full
+              ? metaRow
+              : fullPhone
+                ? metaRowFullPhone
+                : phone
+                  ? metaRowPhone
+                  : full && !desktop
+                    ? metaRowFull
+                    : metaRowPage
+          }
           data-figma="meta row"
         >
           <div data-figma="kind badge">
@@ -288,7 +306,7 @@ export function ToolkitItem({
         </div>
       )}
       <h2
-        className={narrowHow && phone ? phoneHowTitle : title}
+        className={(narrowHow || fullPhone) && phone ? phoneHowTitle : title}
         data-figma={
           full
             ? fullPageTitleLayers[layout][item.path]
@@ -299,7 +317,7 @@ export function ToolkitItem({
       >
         {item.name}
       </h2>
-      {narrowHow ? null : (
+      {narrowHow || fullPhone ? null : (
         <ToolkitItemPath
           location={detail.location}
           changed={phone ? '' : detail.changed}
@@ -358,7 +376,7 @@ export function ToolkitItem({
         <ToolkitItemBack
           name={item.name}
           from={crumb}
-          named={narrowHow}
+          named={narrowHow || fullPhone}
           onBack={back}
           actions={actions}
           // T8 448:193: a workflow's own page names the row `breadcrumb row`, 36 high, as D13 does.

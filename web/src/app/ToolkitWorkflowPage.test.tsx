@@ -109,3 +109,46 @@ describe('a workflow on its own page on a tablet', () => {
     expect(document.querySelector('[data-figma="toolkit list"]')).toBeNull()
   })
 })
+
+// The same page on the phone (M9, workflowFullPagePhone, T8's data): the steps stand in one column as wide as the
+// phone's item, with an arrow over each parallel step and one out of them; the breadcrumb names only the workflow after
+// Toolkit, and the page ends with the steps, with no details panel under them.
+async function renderPhone() {
+  await page.viewport(390, 806)
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/toolkit?state=workflowFullPagePhone'] }),
+  })
+  ;({ unmount } = await testRender(<RouterProvider router={router} />))
+  await expect.poll(() => document.querySelectorAll('[data-figma^="step · "]').length).toBe(9)
+  const box = (key: string) => document.querySelector(`[data-figma="${key}"]`)?.getBoundingClientRect()
+  return { box }
+}
+
+describe('a workflow on its own page on the phone', () => {
+  it('stands the steps in a column as wide as the item, with no details panel under them (M9)', async () => {
+    const { box } = await renderPhone()
+    const item = box('toolkit')
+    const runs = box('step · Runs')
+    const primary = box('step · Primary grades')
+    const second = box('step · Second grades')
+    expect(Math.round(runs?.width ?? -1)).toBe(Math.round(item?.width ?? 0))
+    expect(Math.round(primary?.top ?? -1)).toBe(Math.round(second?.top ?? 0))
+    expect(second?.left ?? 0).toBeGreaterThan(primary?.right ?? 0)
+    // The parallel cards are as high as the taller one, whose note wraps.
+    expect(Math.round(primary?.height ?? -1)).toBe(Math.round(second?.height ?? 0))
+    expect(second?.height ?? 0).toBeGreaterThan(runs?.height ?? Number.POSITIVE_INFINITY)
+    const fork = document.querySelector('[data-figma="arrows · into 4 and 5"]')
+    const join = document.querySelector('[data-figma="arrows · out of 4 and 5"]')
+    expect(fork?.querySelectorAll('svg').length).toBe(2)
+    expect(join?.querySelectorAll('svg').length).toBe(1)
+    expect(Math.round(fork?.getBoundingClientRect().height ?? -1)).toBe(24)
+    // The breadcrumb is Toolkit › skill-eval-round; the page has no path row, details panel or list.
+    const trail = document.querySelector('nav[aria-label="Breadcrumb"]')
+    expect(trail?.textContent).toContain('skill-eval-round')
+    expect(trail?.textContent).not.toContain('Workflows')
+    expect(document.querySelector('[data-figma="path row"]')).toBeNull()
+    expect(document.querySelector('[data-figma="step 4 details"]')).toBeNull()
+    expect(document.querySelector('[data-figma="toolkit list"]')).toBeNull()
+  })
+})

@@ -45,8 +45,9 @@ const cardSm = css.raw({ p: '6' })
 // keeps the cards 126 high. The card is a positioned box, so its title's button can cover it.
 const cardPage = css.raw({ position: 'relative', gap: '4', pb: '16' })
 // T8 448:226: 712 × 84, the top row 11 in and 13 from the left, the lines 4 under it and 4 apart; the Card's 10 and the
-// border, with the 22 px mark, keep it 84 high (a gate 64 against 63).
-const cardColumn = css.raw({ position: 'relative', gap: '4' })
+// border, with the 22 px mark, keep it 84 high (a gate 64 against 63), and 12 at the sides with the border put the
+// lines 13 in. M9 448:534: on the phone the parallel cards are 179 wide, so the lines wrap in Figma's 153.
+const cardColumn = css.raw({ position: 'relative', gap: '4', px: '12' })
 // D13 447:31: the selected step (4) has the selected fill and border, as a selected row.
 const selectedCard = css.raw({ bg: 'surface.selected', borderColor: 'border.selected' })
 const gate = css.raw({ borderColor: 'status.needsYou.border' })
