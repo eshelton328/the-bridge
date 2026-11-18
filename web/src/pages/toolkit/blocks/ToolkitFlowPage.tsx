@@ -11,14 +11,15 @@ import { ToolkitFlowColumn } from './ToolkitFlowColumn.tsx'
 import { ToolkitFlowDetails } from './ToolkitFlowDetails.tsx'
 import { ToolkitFlowSteps } from './ToolkitFlowSteps.tsx'
 
-// D13: the description starts 14 under the tabs (the tabs' panel puts it 4 higher, so 4 more), and the rows are 14
-// apart (16).
-const page = css({ display: 'flex', flexDirection: 'column', gap: '16', pt: '4' })
+// D13: the description starts 14 under the tabs (the tabs' panel puts it 12 under them), and the rows are 14 apart
+// (16: the flow's panel is 390 high against Figma's 393, so 16 under it keeps the details row at Figma's 716).
+const page = css({ display: 'flex', flexDirection: 'column', gap: '16' })
 // T8 448:215: the description 12 under the tabs (244 to 256), the steps 12 under it and the details 12 under them.
 const narrowPage = css({ display: 'flex', flexDirection: 'column', gap: '12' })
 // D13 446:514: the description in the body style, muted, in two lines 1100 wide. No size token has 1100, so it runs
-// the page's width on one line (LIBRARY_GAPS.md, Workflow page description); 20 under it keeps the flow at Figma's y.
-const description = css({ textStyle: 'body', color: 'fg.muted', pb: '20' })
+// the page's width on one line (LIBRARY_GAPS.md, Workflow page description); 20 under it keeps its box Figma's 40 high,
+// and 2 less after it puts the flow 14 under it, at Figma's 309.
+const description = css({ textStyle: 'body', color: 'fg.muted', pb: '20', mb: '-2' })
 // T8 448:215: the description in small text, muted, wrapping in the item's width.
 const narrowDescription = css({ textStyle: 'small', color: 'fg.muted' })
 

@@ -58,9 +58,10 @@ const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '
 const phoneHowPage = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '10' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
-// D13 446:153: the page starts 32 in from the rail and the window's edge and 24 down; its rows are 14 apart (12; no
-// space token has 14). The breadcrumb row is 38 high in Figma (Show on map, 446:494), the render's 36: 4 under it puts
-// the meta row at Figma's 76. Figma's page ends 24 under the details row; the tabs' panel adds 4 under it, so 20.
+// D13 446:153: the page starts 32 in from the rail and the window's edge and 24 down; its rows are 14 apart (no space
+// token has 14: the gap's 12 and 2 more above each row after the first), so the path row is at Figma's 168 and the tabs
+// at 208. The breadcrumb row is 38 high in Figma (Show on map, 446:494), the render's 36: 2 under it and the 14 put the
+// meta row at Figma's 76. Figma's page ends 24 under the details row; the tabs' panel adds 4 under it, so 20.
 const fullPane = css({
   display: 'flex',
   flexDirection: 'column',
@@ -69,8 +70,9 @@ const fullPane = css({
   px: '32',
   pt: '24',
   pb: '20',
+  '& > * + *': { mt: '2' },
 })
-const fullBack = css({ pb: '4' })
+const fullBack = css({ pb: '2' })
 // T8 448:206: on a tablet the meta row starts 12 under the breadcrumb row (448:193, 36 high, ends at 77), and the rows
 // are 12 apart.
 const fullNarrowPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })

@@ -24,6 +24,8 @@ const row = {
 }
 const fill = css({ display: 'flex', flexDirection: 'column', '& > section': { flex: '1' } })
 // D13 446:622: the header 15 under the panel's top (the Panel's 12, 2 more and the border), the rows under it 10 apart.
+// Figma's panels are 242 high: the step's last field (446:644) ends 4 over the panel's foot, where the Panel pads 12
+// and scrolls content that runs into that space, so the panels are 246 high (LIBRARY_GAPS.md, Workflow page details).
 const body = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '2' })
 // T8 448:301: the heading 13 under the panel's top (the Panel's 12 and the border), the fields 6 under it (448:302);
 // the render's rows are 22 apart against 23, so 8 under it keeps every row within 3 px.
