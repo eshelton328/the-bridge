@@ -237,6 +237,9 @@ first: it says what each file of a page folder is for.
   workspace chosen (`ui.newChatWorkspace`), and New workspace adds one
   (`ui.addedWorkspaces`, after the others) and opens its name as a field
   in edit mode.
+  M17 adds `focusMessage` to `PhoneChat` (the focus in the message box
+  with the skills closed, `ui.messageFocus`); Back returns to the list,
+  where the other chats keep running.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -303,7 +306,10 @@ first: it says what each file of a page folder is for.
   closes), M14 `phoneWorkspaceActions` (from `phoneHome`, with M2's Done
   and M13's dialog text: omni-brain's actions open in a sheet), M15
   `phoneAddMenu` (from `phoneHome`, with M2's Done and M7's New chat
-  form: the menu that + opens).
+  form: the menu that + opens), M16 `phoneTapChat` (from `phoneHome`,
+  with M3's back label: the tap that opens bridge themes), M17
+  `phoneChatFull` (from `phoneChat`, without the skills, the focus in the
+  message box: the chat full screen).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -368,6 +374,7 @@ first: it says what each file of a page folder is for.
   `closing`, the workspace whose close dialog is open, and
   `closedWorkspaces`; for M14 `workspaceMenuFor`, the workspace whose
   actions are open; for M15 `addMenuOpen`, `addedWorkspaces` and
-  `newChatWorkspace`), each a Zod schema.
+  `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
+  box in focus with the skills closed), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

@@ -595,3 +595,17 @@ export const PhoneTapChat: Story = {
     await expect(within(document.body).queryByRole('dialog')).toBeNull()
   },
 }
+
+export const PhoneChatFull: Story = {
+  name: 'M17: a chat full screen on the phone, with no tab bar',
+  args: { data: workspacesStates.phoneChatFull.data, ui: workspacesStates.phoneChatFull.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // "/" typed and no skill list open, and the phone's menu draws M17. WorkspacesPhoneChat.test.tsx checks the chat
+    // and its back button at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
+  },
+}

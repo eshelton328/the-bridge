@@ -207,6 +207,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                 open: ui.skillsFor === chat.id,
               }}
               meta={meta}
+              focusMessage={ui.messageFocus}
               onSkillsOpenChange={(open) => {
                 onUiChange({ skillsFor: open ? chat.id : null })
               }}

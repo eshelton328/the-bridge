@@ -6,7 +6,8 @@
 // scrolls (d-107). The chat actions behind the ⋯ come from the caller, which
 // gets the ⋯ as their trigger (M4), and the folders chip with its sheet
 // (M8). While the keyboard is up the header shrinks to one line, `meta`
-// under the title (M10).
+// under the title (M10). `focusMessage` puts the focus in the message box with
+// the skills closed (M17).
 // Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -54,6 +55,8 @@ export type PhoneChatProps = {
    * 42% · 2 folders" while the keyboard is up (M10 147:53).
    */
   meta?: string | undefined
+  /** Put the focus in the message box even with the skills closed (M17 402:10841). */
+  focusMessage?: boolean | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
@@ -71,6 +74,7 @@ export function PhoneChat(props: PhoneChatProps) {
     noActions,
     folders,
     meta,
+    focusMessage = false,
     layers,
   } = props
   const more = (
@@ -112,7 +116,7 @@ export function PhoneChat(props: PhoneChatProps) {
         composer={pane.composer}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
-        autoFocus={skills.open}
+        autoFocus={skills.open || focusMessage}
       />
     </section>
   )

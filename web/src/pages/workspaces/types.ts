@@ -784,6 +784,11 @@ export const WorkspacesUi = z.object({
    * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
    */
   keyboardOpen: z.boolean().optional(),
+  /**
+   * The phone chat's message box has the focus with no skill list open, the caret after the text (M17 402:10841).
+   * With the skills open (M3) the box has the focus anyway.
+   */
+  messageFocus: z.boolean().optional(),
   /** The workspace whose close dialog is open over the phone's list (M13), or null. */
   closing: z.string().nullable().optional(),
   /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
