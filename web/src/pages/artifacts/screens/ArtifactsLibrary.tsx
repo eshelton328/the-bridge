@@ -22,8 +22,9 @@ import { libraryView } from './libraryView.ts'
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
 const page = {
   desktop: css({ pt: '24', pb: '32', px: '32' }),
-  // T1 405:105: the header starts 24 under the status bar and 22 in (24 on the 4 px grid, d-100); rows 10 apart.
-  tablet: css({ pt: '24', pb: '20', px: '24' }),
+  // T1 405:105: the header starts 24 under the status bar and 22 in (20 on the 4 px grid, d-100, so the two card
+  // columns are wide enough for Figma's whole descriptions; see CardGroup); rows 10 apart.
+  tablet: css({ pt: '24', pb: '20', px: '20' }),
   phone: css({ pt: '4', pb: '12', px: '12' }),
 }
 // The chips take their own width (402:15384), not the row's. FilterChips pads its row 2 (for the focus ring);
