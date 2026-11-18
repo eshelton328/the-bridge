@@ -290,7 +290,11 @@ what each file of a page folder is for.
   path. A workflow (D31, `workflowLinks`, D8's data) names the stage
   before it and the agent it runs, and a hook (D32, `hookLinks`, D9's
   data) and the rule it enforces name each other, so the rule stands on
-  both sides. Only the
+  both sides. On a tablet (T15, `skillLinksTablet`, D19's data) the item
+  replaces the list in `DetailFrame`; its `links` sets `named`, so the back
+  row names the item (Toolkit › writer) and the kind badge and path rows are
+  left out, as on T10. The graph is narrower (`linksGraph`'s `tablet` size)
+  and the panels stand one under the other (`ToolkitLinks` `layout`). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

@@ -7,6 +7,7 @@
 // graph). Props only.
 import { MapGraph } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitKind, ToolkitLinks } from '../types.ts'
 import { focusId, linksGraph } from './linksView.ts'
 
@@ -27,11 +28,13 @@ const emptyText = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre-l
 export type ToolkitLinksGraphProps = {
   links: ToolkitLinks
   item: { path: string; name: string; kind: ToolkitKind }
+  /** A tablet draws the graph narrower (T15 487:6). */
+  layout?: Viewport | undefined
   onOpenItem?: ((path: string) => void) | undefined
 }
 
-export function ToolkitLinksGraph({ links, item, onOpenItem }: ToolkitLinksGraphProps) {
-  const graph = linksGraph(links, item)
+export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem }: ToolkitLinksGraphProps) {
+  const graph = linksGraph(links, item, layout === 'desktop' ? 'desktop' : 'tablet')
   const empty = links.from.links.length === 0 ? links.from.empty?.graph : undefined
   return (
     <div className={root} data-figma="links graph">

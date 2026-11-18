@@ -97,3 +97,60 @@ describe('the Links tab of an open item (D19)', () => {
     expect(pressed?.textContent).toContain('writer')
   })
 })
+
+// The Links tab on a tablet (T15 and on): the item replaces the list in the DetailFrame, the graph is narrower and the
+// two panels stand one under the other.
+async function renderTablet(state: string, tab: string) {
+  await page.viewport(756, 1158)
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
+  })
+  const view = await testRender(<RouterProvider router={router} />)
+  onTestFinished(view.unmount)
+  await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+  const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+  if (!(root instanceof HTMLElement)) throw new Error('no root')
+  root.style.height = '100%'
+  await expect.poll(() => root.querySelector(`[data-figma="${tab}"]`)).not.toBeNull()
+  await document.fonts.ready
+  return { root, router }
+}
+
+describe('the Links tab on a tablet', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('stands the panels under the graph, each as wide as the item, with no sideways scroll (T15)', async () => {
+    const { root } = await renderTablet('skillLinksTablet', '482:908')
+    const tab = box(root, '[data-figma="482:908"]')
+    const graph = box(root, '[data-figma="links graph"]')
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(from.top).toBeGreaterThan(graph.bottom)
+    expect(to.top).toBeGreaterThan(from.bottom)
+    for (const b of [graph, from, to]) {
+      expect(b.left).toBeCloseTo(tab.left, 0)
+      expect(b.width).toBeCloseTo(tab.width, 0)
+    }
+    const scroller = root.querySelector('[data-figma="links graph"] .map-graph__scroller')
+    if (scroller === null) throw new Error('no graph scroller')
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth)
+    expect(root.querySelectorAll('[data-figma="links graph"] button')).toHaveLength(12)
+    expect(root.querySelectorAll('[data-figma^="link · "]')).toHaveLength(11)
+  })
+
+  it('names writer in the back row, with no kind badge or path row (T15)', async () => {
+    const { root } = await renderTablet('skillLinksTablet', '482:908')
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')?.textContent).toContain('writer')
+    expect(root.querySelector('article[aria-label="writer"] [data-figma="kind badge"]')).toBeNull()
+    expect(root.querySelector('article[aria-label="writer"] [data-figma="path row"]')).toBeNull()
+  })
+
+  it('opens an item tapped in the graph on a tablet, from writer (T15)', async () => {
+    const { root } = await renderTablet('skillLinksTablet', '482:908')
+    await userEvent.click(button(root, 'audit-slop', '[data-figma="links graph"]'))
+    await expect.poll(() => root.querySelector('article[aria-label="audit-slop"]')).not.toBeNull()
+  })
+})

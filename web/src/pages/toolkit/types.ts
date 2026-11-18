@@ -378,6 +378,11 @@ const ToolkitLinks = z.object({
   from: ToolkitLinkSide,
   to: ToolkitLinkSide,
   note: z.string(),
+  /**
+   * On a tablet, the back row names the item (Toolkit › writer, T15 482:724) and the kind badge and path rows are left
+   * out, as on How it works (T10). When not set the tab keeps the item's header as on the Overview (T28 493:3264).
+   */
+  named: z.boolean().optional(),
 })
 export type ToolkitLinks = z.infer<typeof ToolkitLinks>
 

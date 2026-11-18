@@ -37,14 +37,19 @@ export const focusId = 'item'
 // tallest column starts 46 down (493:108) and ends 12 over the foot (493:142); a shorter column is centred on it, as
 // is the open item. With one or two items the graph is 148 high inside its border (D29 493:695, D31 493:2163): the
 // columns centre on a box 90 high.
-const width = 946
+// T15 `links graph` 487:6 is 712 wide (710 inside its border) and its tallest column starts 43 down and ends 11 over the
+// foot; with one item (T28 493:3385) the columns centre on a box 94 high, so the graph is 148 high inside its border, as
+// on the desktop. The tablet's Container pads the item 24 at the sides against Figma's 22 (LIBRARY_GAPS.md, Tablet item
+// spacing), so the graph is 706 wide inside its border: MapGraph draws a canvas of a fixed width, and a wider one would
+// scroll sideways.
+const sizes = {
+  desktop: { width: 946, top: 46, foot: 12, minHeight: 90 },
+  tablet: { width: 706, top: 43, foot: 11, minHeight: 94 },
+}
 const node = { width: 180, height: 32 }
 const inset = 15
 const labelTop = 13
-const top = 46
-const foot = 12
 const step = 38
-const minHeight = 90
 
 /** The items of a side in the graph's order, each once: the paths of `graph` first, then any other item it links. */
 function graphItems(side: Side): Link[] {
@@ -65,7 +70,12 @@ const span = (n: number) => (n === 0 ? 0 : n * step - (step - node.height))
  * The graph of the Links tab: the open item in the middle, the items that link to it on the left with a line into it,
  * and the items it links to on the right with a line out to each.
  */
-export function linksGraph(links: ToolkitLinks, item: { path: string; name: string; kind: ToolkitKind }): LinksGraph {
+export function linksGraph(
+  links: ToolkitLinks,
+  item: { path: string; name: string; kind: ToolkitKind },
+  size: keyof typeof sizes = 'desktop',
+): LinksGraph {
+  const { width, top, foot, minHeight } = sizes[size]
   const left = graphItems(links.from)
   const right = graphItems(links.to)
   const content = Math.max(span(left.length), span(right.length), minHeight)

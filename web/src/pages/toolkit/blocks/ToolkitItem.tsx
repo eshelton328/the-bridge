@@ -254,6 +254,19 @@ const linksTitleLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '493:1201',
   'workflows/skill-eval-round.md': '493:1984',
 }
+// On the Links tab of a tablet: writer in T15 (482:735).
+const tabletLinksTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '482:735',
+}
+// T15's graph has a layer named `links` too, so the tab's node id (482:908).
+const tabletLinksLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '482:908',
+}
+const linksTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: linksTitleLayers,
+  tablet: tabletLinksTitleLayers,
+  phone: {},
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -375,8 +388,10 @@ export function ToolkitItem({
   const fullPhone = full && phone
   const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
   // How it works on a tablet or phone, when the item's `how` asks for it (T10): no kind badge or path row, and the
-  // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview.
-  const narrowHow = !desktop && tab === 'how' && detail.how?.named === true
+  // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview. The Links tab
+  // does the same when its `links` asks for it (T15); without it (T28) the item keeps its header.
+  const narrowHow =
+    !desktop && ((tab === 'how' && detail.how?.named === true) || (tab === 'links' && detail.links?.named === true))
   // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
     <ToolkitItemActions
@@ -408,8 +423,8 @@ export function ToolkitItem({
               ? howTitleLayersOf[layout][item.path]
               : tab === 'files'
                 ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
-                : tab === 'links' && desktop
-                  ? linksTitleLayers[item.path]
+                : tab === 'links'
+                  ? linksTitleLayersOf[layout][item.path]
                   : titleLayersOf[layout][item.path]
       }
     >
@@ -540,6 +555,8 @@ export function ToolkitItem({
               <ToolkitLinks
                 links={detail.links}
                 item={item}
+                layout={layout}
+                layer={layout === 'tablet' ? tabletLinksLayers[item.path] : undefined}
                 onOpenItem={onOpenItem}
                 onOpenLine={(side, l) => {
                   const target = linkFile(side, l, item.path)
