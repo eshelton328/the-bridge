@@ -37,6 +37,17 @@ import { backTo, openedFrom, openFile, openFrom, openItem, showOnMap } from './i
 import { listView, mapView } from './listView.ts'
 import { openEvals } from '../blocks/evalsView.ts'
 import { selectFile } from '../blocks/filesView.ts'
+import { ToolkitDiscussPage } from '../blocks/ToolkitDiscussPage.tsx'
+import { ToolkitDiscussPanel } from '../blocks/ToolkitDiscussPanel.tsx'
+import {
+  closeDiscuss,
+  discussEntries,
+  discussionOf,
+  openDiscussion,
+  sendDiscuss,
+  toggleDiscuss,
+  withDiscussReset,
+} from './discussView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
 const page = {
@@ -60,6 +71,8 @@ export type ToolkitScreenProps = {
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
   /** Copies an open item's path, from its path badge. */
   onCopyPath?: ((path: string) => void) | undefined
+  /** Copies an answer of the item's discussion, from its Copy button (D5). */
+  onCopyText?: ((text: string) => void) | undefined
 }
 
 type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & {
@@ -67,10 +80,42 @@ type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & 
   onUiChange: (change: Partial<ToolkitUi>) => void
 }
 
-function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }: ToolkitLayoutProps) {
+function ToolkitLayout({
+  data,
+  ui,
+  layout,
+  onNavigate,
+  onUiChange: report,
+  onCopyPath,
+  onCopyText,
+}: ToolkitLayoutProps) {
+  // Opening another item, or none, closes the discussion (D5, T5, M7).
+  const onUiChange = (change: Partial<ToolkitUi>) => {
+    report(withDiscussReset(ui, change))
+  }
   const desktop = layout === 'desktop'
   const view = listView(data, ui)
   const open = openItem(data, ui)
+  // The item's discussion (D5): beside the item on the desktop, in its place on a tablet or phone (T5, M7).
+  const discussion = openDiscussion(open, ui, layout)
+  const thread =
+    discussion === undefined || open === null
+      ? undefined
+      : {
+          discussion,
+          entries: discussEntries(discussion, ui),
+          draft: ui.discussDraft ?? '',
+          onDraftChange: (discussDraft: string) => {
+            onUiChange({ discussDraft })
+          },
+          onSend: (text: string) => {
+            onUiChange(sendDiscuss(ui, text))
+          },
+          onCopy: onCopyText,
+        }
+  const closeDiscussion = () => {
+    onUiChange(closeDiscuss())
+  }
   const openPath = (path: string) => {
     onUiChange(openFrom(path))
   }
@@ -206,6 +251,14 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }}
         line={ui.line}
         onCopyPath={onCopyPath}
+        onDiscuss={
+          discussionOf(open, layout) === undefined
+            ? undefined
+            : () => {
+                onUiChange(toggleDiscuss(ui, layout))
+              }
+        }
+        layers={discussion?.itemLayers}
         onShowOnMap={() => {
           // From the full page, Show on map leaves it as a crumb does, so the workflow reopened from the map starts on its
           // Overview.
@@ -258,8 +311,9 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         view="detail"
         rail={desktop ? <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
         tabBarOverlay
+        // T5, M7: the discussion's page has no tab bar, as the Artifacts discussion's (T4, M9 there).
         tabBar={
-          desktop ? undefined : (
+          desktop || thread !== undefined ? undefined : (
             <AppTabBar
               selected="more"
               device={layout === 'tablet' ? 'tablet' : 'phone'}
@@ -272,8 +326,15 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
             />
           )
         }
+        // D5: the discussion takes the list's place, beside the item at the window's end.
+        sideWidth="wide"
+        side={
+          desktop && thread !== undefined && open !== null ? (
+            <ToolkitDiscussPanel {...thread} itemName={open.item.name} onClose={closeDiscussion} />
+          ) : undefined
+        }
         list={
-          item !== null && desktop && !full ? (
+          item !== null && desktop && !full && thread === undefined ? (
             <ToolkitListPane
               data={data}
               ui={ui}
@@ -283,7 +344,18 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
             />
           ) : undefined
         }
-        detail={item ?? list}
+        detail={
+          !desktop && thread !== undefined && open !== null ? (
+            <ToolkitDiscussPage
+              {...thread}
+              layout={layout}
+              item={{ name: open.item.name, kind: thread.discussion.card.kind }}
+              onBack={closeDiscussion}
+            />
+          ) : (
+            (item ?? list)
+          )
+        }
       />
       {/* Only the phone's More opens it; a state with `moreOpen` (M4) shows it at any width, as a story renders it. */}
       <MoreDrawer

@@ -108,6 +108,8 @@ export type ToolkitItemOverviewProps = {
   onOpenFullPage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
+  /** The description's Figma layer in a frame that draws the item again, such as D5's beside the discussion. */
+  descriptionLayer?: string | undefined
 }
 
 export function ToolkitItemOverview({
@@ -117,6 +119,7 @@ export function ToolkitItemOverview({
   onTabChange,
   onOpenFullPage,
   onOpenItem,
+  descriptionLayer,
 }: ToolkitItemOverviewProps) {
   const side = detail.usedIn !== undefined || detail.files !== undefined || detail.evals !== undefined
   const desktop = layout === 'desktop'
@@ -138,7 +141,7 @@ export function ToolkitItemOverview({
             : overview
       }
     >
-      <p className={description} data-figma={descriptionLayersOf[layout][detail.path]}>
+      <p className={description} data-figma={descriptionLayer ?? descriptionLayersOf[layout][detail.path]}>
         {detail.description}
       </p>
       {detail.loads === undefined ? null : (

@@ -544,6 +544,70 @@ const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: Tool
  * An open item (D3, a rule in D4, an agent in D7, a hook in D9): what the page shows beside the list for one item. Its kind, name and link counts come from
  * the list's `ToolkitItemView` with the same path.
  */
+/** One message of an item's discussion (D5): Erik's question, or Claude's answer with the files it cites. */
+export const ToolkitDiscussEntry = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('user'), text: z.string() }),
+  z.object({
+    type: z.literal('reply'),
+    /** Who answers, such as "Claude". */
+    name: z.string(),
+    text: z.string(),
+    /** The files and lines the answer cites, such as "skills/writer/SKILL.md:106". */
+    sources: z.array(z.string()),
+    /** The label of the button that copies the answer, such as "Copy". */
+    copy: z.string(),
+  }),
+])
+export type ToolkitDiscussEntry = z.infer<typeof ToolkitDiscussEntry>
+
+/**
+ * An item's discussion (D5, T5, M7): a read-only chat about the item. Nothing in it changes the toolkit; Open in
+ * Workbench moves the chat to a workspace, where it can change files.
+ */
+export const ToolkitDiscussion = z.object({
+  /** The title, such as "Discuss" (D5 438:6). */
+  title: z.string(),
+  /** The label of the button that moves the chat to the Workbench: "Open in Workbench", or "Workbench" (M7). */
+  openInWorkbench: z.string(),
+  /** What the discussion is for, under the desktop panel's title (D5 438:15); none on a tablet or phone. */
+  note: z.string().optional(),
+  /** The item's folder, attached read-only (D5 `context` 438:16); none on a tablet or phone. */
+  attached: z.object({ text: z.string(), readOnly: z.string() }).optional(),
+  /** The pill that says what the chat is, such as "Discussion" (T5 464:331). */
+  badge: z.string(),
+  /** The model the chat runs, such as "Opus 5.5". */
+  model: z.string(),
+  /** How much of the context window it uses, in per cent (T5 464:316); none when the frame does not show it. */
+  context: z.number().int().min(0).max(100).optional(),
+  /** The label after the meter, such as "context". */
+  contextLabel: z.string(),
+  /**
+   * The item's card on a tablet or phone (T5 `task · discussing`): its kind's pill ("Skill"), its meta line and what
+   * the chat may do.
+   */
+  card: z.object({ kind: z.string(), meta: z.string(), guard: z.string() }),
+  /**
+   * The open item's title and description layers in the frame that draws it beside the discussion (D5 432:1461 and
+   * 432:1462); the item's own frame's layers when not set.
+   */
+  itemLayers: z.object({ title: z.string(), description: z.string() }).optional(),
+  /** The reply box's placeholder, such as "Ask about writer". */
+  placeholder: z.string(),
+  /** The messages; with none, the empty state. */
+  entries: z.array(ToolkitDiscussEntry),
+  /** Before the first message (T5 `empty state` 464:350): what to ask, what the chat can do and questions to start with. */
+  empty: z.object({
+    title: z.string(),
+    text: z.string(),
+    canLabel: z.string(),
+    can: z.array(z.object({ icon: z.enum(['book', 'links', 'external']), text: z.string() })),
+    /** The label over the suggestions when they stack, such as "Try" (M7 464:206). */
+    tryLabel: z.string().optional(),
+    suggestions: z.array(z.string()),
+  }),
+})
+export type ToolkitDiscussion = z.infer<typeof ToolkitDiscussion>
+
 export const ToolkitItemDetailView = z.object({
   /** The item's path in toolkit/, as in `ToolkitItemView.path`. */
   path: z.string(),
@@ -623,6 +687,12 @@ export const ToolkitItemDetailView = z.object({
   files: z.object({ count: z.number().int().nonnegative(), lines: z.array(ToolkitFileLine) }).optional(),
   /** The link to the item's evals, with its caption, such as "5 cases · open the Evals tab"; none when not set. */
   evals: z.object({ title: z.string(), caption: z.string(), tab: z.string() }).optional(),
+  /**
+   * The item's discussion, which its Discuss button opens, by layout: the desktop's side panel (D5), the tablet's page
+   * (T5) and the phone's (M7) each have their own text. A layout with none takes the desktop's; an item with none has
+   * no discussion, and Discuss does nothing.
+   */
+  discuss: z.partialRecord(z.enum(['desktop', 'tablet', 'phone']), ToolkitDiscussion).optional(),
 })
 export type ToolkitItemDetailView = z.infer<typeof ToolkitItemDetailView>
 
@@ -713,6 +783,12 @@ export const ToolkitUi = z.object({
    * at that line and scrolls to it. None when the file opened from its tree row.
    */
   line: z.number().int().positive().optional(),
+  /** Whether the open item's discussion shows (D5, T5, M7): beside the item on the desktop, in its place elsewhere. */
+  discussOpen: z.boolean().optional(),
+  /** What Erik has typed in the discussion's reply box; empty when not set. */
+  discussDraft: z.string().optional(),
+  /** The messages Erik sent in the discussion, after its entries. Nothing answers them in this mock-up. */
+  discussSent: z.array(z.string()).optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

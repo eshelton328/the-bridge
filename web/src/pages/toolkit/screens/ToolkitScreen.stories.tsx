@@ -1565,3 +1565,64 @@ export const HookActivityPhone: Story = {
     await expect(within(item).getByText('No commits from a session on the other 13 days.')).toBeVisible()
   },
 }
+
+export const SkillDiscuss: Story = {
+  name: 'D5: a skill with its discussion open beside it',
+  args: { data: toolkitStates.skillDiscuss.data, ui: toolkitStates.skillDiscuss.ui, viewport: 'desktop' },
+  // src/app/ToolkitDiscuss.test.tsx checks the layout and the taps through the route.
+  play: async ({ canvas }) => {
+    const panel = canvas.getByRole('complementary', { name: 'Discuss writer' })
+    await expect(within(panel).getByRole('heading', { level: 2, name: 'Discuss' })).toBeVisible()
+    await expect(within(panel).getByText('toolkit/skills/writer/ attached')).toBeVisible()
+    await expect(
+      within(panel).getByText('Why does writer hand a draft to writing-reviewer instead of checking it itself?'),
+    ).toBeVisible()
+    await expect(within(panel).getByText('skills/writer/SKILL.md:106')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: /Open in Workbench/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+    await expect(canvas.getByRole('article', { name: 'writer' })).toBeVisible()
+    // Figma draws the reply box focused (438:50, its light-blue border), as Erik sees it after Discuss. The story
+    // puts the focus there; the screen's props do not hold focus.
+    const reply = within(panel).getByRole('textbox', { name: 'Ask about writer' })
+    reply.focus()
+    await expect(reply).toHaveFocus()
+  },
+}
+
+export const SkillDiscussTablet: Story = {
+  name: 'T5: a skill’s discussion on a tablet, in place of the item',
+  args: { data: toolkitStates.skillDiscussTablet.data, ui: toolkitStates.skillDiscussTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop, where the discussion is D5's side panel; pick Tablet in the viewport menu to see T5's
+  // page with its empty state. The play test checks what every width shows; src/app/ToolkitDiscuss.test.tsx checks
+  // the tablet's page.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
+    // Figma draws the reply box focused (464:379, its border and a caret), as Erik sees it after Discuss.
+    // It comes first: on a tablet or phone two buttons match the Back check below.
+    const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
+    reply.focus()
+    await expect(reply).toHaveFocus()
+    await expect(canvas.getByRole('button', { name: /Open in Workbench/ })).toHaveAttribute('aria-disabled', 'true')
+    await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+  },
+}
+
+export const SkillDiscussPhone: Story = {
+  name: 'M7: a skill’s discussion on the phone, full screen',
+  args: { data: toolkitStates.skillDiscussPhone.data, ui: toolkitStates.skillDiscussPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop, where the discussion is D5's side panel; pick Phone in the viewport menu to see M7's
+  // full-screen page, with the suggestions under Try. The play test checks what every width shows;
+  // src/app/ToolkitDiscuss.test.tsx checks the phone's page.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
+    // Figma draws the reply box focused (464:214, its border and a caret), as Erik sees it after Discuss.
+    // It comes first: on a tablet or phone two buttons match the Back check below.
+    const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
+    reply.focus()
+    await expect(reply).toHaveFocus()
+    await expect(canvas.getByRole('button', { name: /Workbench/ })).toHaveAttribute('aria-disabled', 'true')
+    await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+  },
+}

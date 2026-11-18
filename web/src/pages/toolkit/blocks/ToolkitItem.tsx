@@ -401,6 +401,11 @@ export type ToolkitItemProps = {
    * A workflow on a page of its own (D13): the kind's crumb after Toolkit (Workflows, back to that kind's list), the
    * selected step and the way to select one. Beside the list when not set.
    */
+  /**
+   * The title's and the description's Figma layers in a frame that draws the item again, such as D5, where the item
+   * stands beside its discussion (432:1461, 432:1462). The frame's own layers when not set.
+   */
+  layers?: { title?: string | undefined; description?: string | undefined } | undefined
   fullPage?:
     | {
         crumb: { name: string; onOpen?: (() => void) | undefined }
@@ -431,6 +436,7 @@ export function ToolkitItem({
   filePage = false,
   onCloseFilePage,
   line,
+  layers,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   // M15 474:1050: on the phone the tabs scroll sideways so the selected tab shows.
@@ -503,7 +509,8 @@ export function ToolkitItem({
     <h2
       className={(narrowHow || fullPhone) && phone ? phoneHowTitle : title}
       data-figma={
-        pageFile !== undefined
+        layers?.title ??
+        (pageFile !== undefined
           ? filePageTitleLayers[layout][pageFile.location]
           : full
             ? fullPageTitleLayers[layout][item.path]
@@ -517,7 +524,7 @@ export function ToolkitItem({
                     ? evalsTitleLayersOf[layout][item.path]
                     : tab === 'activity'
                       ? activityTitleLayersOf[layout][item.path]
-                      : titleLayersOf[layout][item.path]
+                      : titleLayersOf[layout][item.path])
       }
     >
       {pageFile?.name ?? item.name}
@@ -634,6 +641,7 @@ export function ToolkitItem({
                 onTabChange={onTabChange}
                 onOpenFullPage={onOpenFullPage}
                 onOpenItem={onOpenItem}
+                descriptionLayer={layers?.description}
               />
             ) : t.value === 'how' && full && detail.flowPage !== undefined ? (
               <ToolkitFlowPage

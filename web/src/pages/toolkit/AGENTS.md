@@ -387,6 +387,34 @@ what each file of a page folder is for.
   the data its taps need; `src/app/ToolkitActivity.test.tsx` the layout and
   the taps (LIBRARY_GAPS.md, Activity bar chart, Activity chat row, KPI
   tile).
+  Discuss opens the item's discussion (`ui.discussOpen`; a detail's
+  `discuss`, one discussion per layout, the desktop's when a layout has
+  none, from `states/shared/discussions.ts` for writer; `screens/discussView.ts`,
+  tested in `discussView.test.ts`). On the desktop (D5, `skillDiscuss`, D3's
+  data with no Used in workflows) the list closes and `ToolkitDiscussPanel`
+  takes the AppShell's 420 px side slot (`sideWidth="wide"`): the header
+  (`ToolkitDiscussHeader`: Discuss and the item's name, Open in Workbench,
+  close, the note and the folder attached read-only), the messages
+  (`ToolkitDiscussThread`, each a `ToolkitDiscussEntry`: Erik's question,
+  its line breaks kept, and Claude's answer with its cited files and Copy,
+  which calls `onCopyText`; a message sent scrolls into view) and the reply box
+  (`ToolkitDiscussComposer`, with the model chip) in a `ScrollFrame`; the
+  item keeps its Overview and D5's title and description layers (the
+  discussion's `itemLayers`). Discuss toggles the panel and close shuts it.
+  On a tablet (T5, `skillDiscussTablet`) and the phone (M7,
+  `skillDiscussPhone`) the discussion is a page of its own in the item's
+  place with no tab bar (`ToolkitDiscussPage` in the shared `DetailFrame`):
+  the nav (Back to the item, `ToolkitDiscussModel` on the tablet, the
+  Discussion pill, Open in Workbench), the item's card (`ToolkitDiscussCard`,
+  with the model on the phone; a press returns to the item), the empty state
+  (`ToolkitDiscussEmpty`: the suggestions in a row on the tablet, stacked
+  under Try on the phone; a press puts the question in the reply box) and
+  the reply box as the sticky footer. Back and the card close it, and
+  opening another item, or none, closes it and empties it
+  (`withDiscussReset`). Open in Workbench (`ToolkitOpenInWorkbench`) is
+  disabled with a title: no Workbench state takes a toolkit chat. Attach
+  does nothing: no file flow is designed (`src/app/ToolkitDiscuss.test.tsx`;
+  LIBRARY_GAPS.md, Discussion empty state to Composer size).
   Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
