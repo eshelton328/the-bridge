@@ -4,7 +4,9 @@
 // search takes the free width. With a Filter menu (D3) Filter opens it,
 // and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
 // controls are 36 high, 8 apart, and the search takes the free width, and
-// Filter opens its menu as a sheet over the tab bar (T3).
+// Filter opens its menu as a sheet over the tab bar (T3). On a phone (M1
+// 406:90) Sort and Filter are 36 px icon-only buttons, and Sort opens its
+// menu as a sheet over the tab bar (M4).
 // Props only.
 import {
   Button,
@@ -24,9 +26,13 @@ import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../ty
 import { FilterPopover } from './FilterPopover.tsx'
 import { FilterSheet } from './FilterSheet.tsx'
 import { SortMenu } from './SortMenu.tsx'
+import { SortSheet } from './SortSheet.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
 const grow = css({ flex: '1', overflow: 'hidden' })
+// M1 406:100, 406:107: the phone's icon-only Sort and Filter draw their icons in the muted grey (`fg.muted`), also
+// while pressed (M3 407:61); a secondary Button draws its content in `fg.default`.
+const mutedIcon = css({ display: 'inline-flex', color: 'fg.muted' })
 
 export type LibraryToolsProps = {
   placeholder: string
@@ -41,7 +47,10 @@ export type LibraryToolsProps = {
   sort?: string | undefined
   sortOpen?: boolean | undefined
   onSortOpenChange?: ((open: boolean) => void) | undefined
-  /** A sort picked in the Sort menu; the menu then closes. */
+  /**
+   * A sort picked in the Sort menu; the caller closes the menu. With `sortAs="sheet"` an arrow key also moves the
+   * sort, and the sheet closes itself on a pick through `onSortOpenChange`.
+   */
   onSortChange?: ((sort: string) => void) | undefined
   onFilterClick?: (() => void) | undefined
   /** The Filter menu (D3); without it Filter is a button that opens nothing yet. */
@@ -54,8 +63,16 @@ export type LibraryToolsProps = {
   onFilterApply?: (() => void) | undefined
   /** `sheet` opens the Filter menu as a sheet from the bottom (the tablet, T3); `popover` (the default) under Filter. */
   filterAs?: 'popover' | 'sheet' | undefined
+  /** `sheet` opens the Sort menu as a sheet from the bottom (the phone, M4); `popover` (the default) under Sort. */
+  sortAs?: 'popover' | 'sheet' | undefined
   /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
   size?: 'md' | 'lg' | undefined
+  /** Sort and Filter as icon-only buttons, named by their labels (the phone, M1 406:97, 406:104). */
+  iconOnly?: boolean | undefined
+  /** The search field's Figma layer; "search" when not set (M5 names it by its node id). */
+  searchFigma?: string | undefined
+  /** Extra classes for the row, such as the phone's space above the controls (M1 406:90). */
+  className?: string | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
@@ -80,14 +97,18 @@ export function LibraryTools({
   onFilterChecksChange,
   onFilterApply,
   filterAs = 'popover',
+  sortAs = 'popover',
   size = 'md',
+  iconOnly = false,
+  searchFigma = 'search',
+  className,
   view,
   onViewChange,
 }: LibraryToolsProps) {
   const large = size === 'lg'
   return (
-    <Inline gap={large ? '8' : '6'} align="center" data-figma="list tools">
-      <div className={grow} data-figma="search">
+    <Inline gap={large && !iconOnly ? '8' : '6'} align="center" className={className} data-figma="list tools">
+      <div className={grow} data-figma={searchFigma}>
         <SearchField
           label={placeholder}
           size={size}
@@ -102,12 +123,29 @@ export function LibraryTools({
       </div>
       {sortMenu === undefined ? (
         <span data-figma="button · Sort">
-          <Button size={size} textSize="sm" onClick={onSortClick}>
-            <SortDescIcon />
-            {sortLabel}
-            <ChevronDownIcon size="12" />
-          </Button>
+          {iconOnly ? (
+            <Button size={size} iconOnly aria-label={`Sort: ${sortLabel}`} onClick={onSortClick}>
+              <span className={mutedIcon}>
+                <SortDescIcon />
+              </span>
+            </Button>
+          ) : (
+            <Button size={size} textSize="sm" onClick={onSortClick}>
+              <SortDescIcon />
+              {sortLabel}
+              <ChevronDownIcon size="12" />
+            </Button>
+          )}
         </span>
+      ) : sortAs === 'sheet' ? (
+        <SortSheet
+          menu={sortMenu}
+          sort={sort}
+          sortLabel={sortLabel}
+          open={sortOpen}
+          onOpenChange={onSortOpenChange}
+          onSortChange={onSortChange}
+        />
       ) : (
         <SortMenu
           menu={sortMenu}
@@ -120,10 +158,18 @@ export function LibraryTools({
       )}
       {filterMenu === undefined ? (
         <span data-figma="button · Filter">
-          <Button size={size} textSize="sm" onClick={onFilterClick}>
-            <FilterIcon />
-            Filter
-          </Button>
+          {iconOnly ? (
+            <Button size={size} iconOnly aria-label="Filter" onClick={onFilterClick}>
+              <span className={mutedIcon}>
+                <FilterIcon />
+              </span>
+            </Button>
+          ) : (
+            <Button size={size} textSize="sm" onClick={onFilterClick}>
+              <FilterIcon />
+              Filter
+            </Button>
+          )}
         </span>
       ) : filterAs === 'sheet' ? (
         <FilterSheet
@@ -133,6 +179,7 @@ export function LibraryTools({
           onOpenChange={onFilterOpenChange}
           onChecksChange={onFilterChecksChange}
           onApply={onFilterApply}
+          iconOnly={iconOnly}
         />
       ) : (
         <FilterPopover

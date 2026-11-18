@@ -3,7 +3,9 @@
 // in its title row and Show the full width under the boxes, as the Inbox's
 // phone Filter sheet (M7). The button is pressed while the sheet is open
 // and, once it closes, shows a dot while boxes are checked. Show applies the boxes and
-// closes the sheet; the scrim and Escape close it and keep them. Props only.
+// closes the sheet; the scrim and Escape close it and keep them. On a phone
+// (M3 407:61, 407:399) Filter is the 36 px icon-only button of M1 and the
+// sheet is the same. Props only.
 import { BottomSheet, BottomSheetClose, Button, FilterIcon } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -15,6 +17,13 @@ const foot = css({ px: '4', pt: '8' })
 const wide = css({ w: '[100%]' })
 // T3 407:1624: the sheet's body runs 8 past its last row (1059 to 1067), so Show sits 18 under the boxes.
 const body = css({ pb: '8' })
+// M1 406:100, 406:107: the phone's icon-only Sort and Filter draw their icons in the muted grey (`fg.muted`), also
+// while pressed (M3 407:61); a secondary Button draws its content in `fg.default`.
+const mutedIcon = css({ display: 'inline-flex', color: 'fg.muted' })
+// M3 407:405, M6 408:707 and 408:711, M7 407:1100: Figma lines a header text button's label up with the sheet's
+// content edge (17 from the screen's side). A `text` Button pads its label 8 inside a 1 px border, so the button
+// reaches 8 past the header's edge on that side and its label sits 1 px inside Figma's.
+const headerEnd = css({ me: '-8' })
 
 export type FilterSheetProps = {
   menu: ArtifactFilterMenu
@@ -25,9 +34,19 @@ export type FilterSheetProps = {
   onChecksChange?: ((checks: string[]) => void) | undefined
   /** Show: applies the checked boxes. The sheet closes. */
   onApply?: (() => void) | undefined
+  /** Filter as an icon-only button, named Filter (the phone, M1 406:104, M3 407:61). */
+  iconOnly?: boolean | undefined
 }
 
-export function FilterSheet({ menu, checks, open, onOpenChange, onChecksChange, onApply }: FilterSheetProps) {
+export function FilterSheet({
+  menu,
+  checks,
+  open,
+  onOpenChange,
+  onChecksChange,
+  onApply,
+  iconOnly = false,
+}: FilterSheetProps) {
   // The sheet opens with the focus on the sheet itself: Figma draws Clear with no focus ring (T3 407:1623).
   const bodyRef = useRef<HTMLDivElement>(null)
   return (
@@ -38,13 +57,21 @@ export function FilterSheet({ menu, checks, open, onOpenChange, onChecksChange, 
         <Button
           size="lg"
           textSize="sm"
+          iconOnly={iconOnly}
+          aria-label={iconOnly ? 'Filter' : undefined}
           pressed={open ? true : undefined}
           // T3 draws no dot on Filter while the sheet shows the checked boxes (407:1303); T1 shows it after Show.
           indicator={checks.length > 0 && !open}
           data-figma="button · Filter"
         >
-          <FilterIcon />
-          Filter
+          {iconOnly ? (
+            <span className={mutedIcon}>
+              <FilterIcon />
+            </span>
+          ) : (
+            <FilterIcon />
+          )}
+          {iconOnly ? null : 'Filter'}
         </Button>
       }
       open={open}
@@ -56,6 +83,7 @@ export function FilterSheet({ menu, checks, open, onOpenChange, onChecksChange, 
           <Button
             variant="text"
             size="sm"
+            className={headerEnd}
             onClick={() => {
               onChecksChange?.([])
             }}
@@ -68,7 +96,7 @@ export function FilterSheet({ menu, checks, open, onOpenChange, onChecksChange, 
       <div className={body} data-figma="sheet body" ref={bodyRef}>
         <FilterMenu menu={menu} checks={checks} onChecksChange={onChecksChange} sheet />
       </div>
-      <div className={foot} data-figma="407:1719">
+      <div className={foot} data-figma={menu.footLayer ?? '407:1719'}>
         <BottomSheetClose>
           <Button variant="primary" size="xl" className={wide} data-figma={`button · ${menu.show}`} onClick={onApply}>
             {menu.show}

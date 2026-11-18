@@ -5,7 +5,15 @@
 // cards the mock data draws. The sort (D6) orders the cards inside each
 // group; the groups keep their order, so what the library found since Erik
 // last looked stays at the top. Pure; tested in libraryView.test.ts.
-import type { ArtifactCard, ArtifactFilter, ArtifactGroup, ArtifactsData, ArtifactsUi, MatchPlace } from '../types.ts'
+import type {
+  ArtifactCard,
+  ArtifactFilter,
+  ArtifactGroup,
+  ArtifactSearch,
+  ArtifactsData,
+  ArtifactsUi,
+  MatchPlace,
+} from '../types.ts'
 
 const passes = (card: ArtifactCard, filter: ArtifactFilter) =>
   filter === 'all' ? true : filter === 'new' ? card.isNew : card.source === filter
@@ -23,6 +31,24 @@ export function matchPlace(card: ArtifactCard, query: string): MatchPlace | unde
   const q = query.trim().toLowerCase()
   if (q === '') return undefined
   return places(card).find(([, text]) => text.toLowerCase().includes(q))?.[0]
+}
+
+/**
+ * The line a phone row shows under its meta line for a search match (M5): for a description match, the state's
+ * excerpt of it when the excerpt holds the query, or else the whole description, so the match mark finds the query;
+ * for a link match, the link; none for a title or project match.
+ */
+export function matchLine(
+  card: ArtifactCard,
+  place: MatchPlace | undefined,
+  query: string,
+  excerpts?: ArtifactSearch['excerpts'],
+): string | undefined {
+  if (place === 'link') return card.link
+  if (place !== 'description') return undefined
+  const excerpt = excerpts?.[card.id]
+  const q = query.trim().toLowerCase()
+  return excerpt?.toLowerCase().includes(q) === true ? excerpt : card.description
 }
 
 const matches = (card: ArtifactCard, query: string) => query.trim() === '' || matchPlace(card, query) !== undefined

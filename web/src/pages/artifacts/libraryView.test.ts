@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { libraryView, matchPlace, searchMatches } from './screens/libraryView.ts'
+import { libraryView, matchLine, matchPlace, searchMatches } from './screens/libraryView.ts'
 import { artifactsStates } from './states/index.ts'
 import type { ArtifactCard, ArtifactsUi } from './types.ts'
 
@@ -108,5 +108,27 @@ describe('the sort (D6)', () => {
       'found',
       ['Hono server spike', 'Inbox task lifecycle', 'Tailscale access check', 'Skill eval pass rates'],
     ])
+  })
+})
+
+describe('the phone match line (M5)', () => {
+  const { searchPhone } = artifactsStates
+  const card = searchPhone.data.groups.flatMap((g) => g.cards).find((c) => c.id === 'readme-cold-reader-run')
+  if (card === undefined) throw new Error('no readme cold-reader run')
+  const excerpts = searchPhone.data.search.excerpts
+
+  it('shows the state’s excerpt of a description match when it holds the query, in any case', () => {
+    expect(matchLine(card, 'description', 'EVAL', excerpts)).toBe('…the cold-reader eval of the readme skill…')
+  })
+
+  it('shows the whole description when the excerpt does not hold the query', () => {
+    expect(matchLine(card, 'description', 'stranger', excerpts)).toBe(card.description)
+    expect(card.description).toContain('stranger')
+  })
+
+  it('shows the link for a link match and nothing for a title or project match', () => {
+    expect(matchLine({ ...card, link: 'example.com/evals' }, 'link', 'evals', excerpts)).toBe('example.com/evals')
+    expect(matchLine(card, 'title', 'readme', excerpts)).toBeUndefined()
+    expect(matchLine(card, 'project', 'skill', excerpts)).toBeUndefined()
   })
 })

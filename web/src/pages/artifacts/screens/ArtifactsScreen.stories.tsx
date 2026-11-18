@@ -211,3 +211,140 @@ export const ChangeProposedTablet: Story = {
     await expect(canvasElement.querySelector('[data-figma="452:3978"]')).not.toBeNull()
   },
 }
+
+export const LibraryPhone: Story = {
+  name: 'M1: the library on a phone, as a list with small previews',
+  args: { data: artifactsStates.libraryPhone.data, ui: artifactsStates.libraryPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it; pnpm fidelity checks M1's list at the phone's width.
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Artifacts' })).toBeVisible()
+    await expect(canvas.getByRole('searchbox', { name: /Search artifacts/i })).toBeVisible()
+    await expect(canvas.getByText('Brain map prototype')).toBeInTheDocument()
+    await expect(canvas.queryByText('Type safety in agentic systems')).toBeNull()
+  },
+}
+
+export const ArtifactPhone: Story = {
+  name: 'M2: an artifact on its own page on a phone',
+  args: { data: artifactsStates.artifactPhone.data, ui: artifactsStates.artifactPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's detail.
+    // app/ArtifactsStickyBars.test.tsx checks M2's Back bar at the phone's width.
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
+    await expect(canvas.getByText('Chat quiet-nebula')).toBeVisible()
+  },
+}
+
+export const FilterPhone: Story = {
+  name: 'M3: the Filter sheet open over the library on a phone',
+  args: { data: artifactsStates.filterPhone.data, ui: artifactsStates.filterPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the phone's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; pnpm fidelity checks M3's sheet at the phone's width).
+    const menu = within(await within(document.body).findByRole('dialog', { name: /^Filter/ }))
+    await expect(menu.getByRole('button', { name: 'Show 7 artifacts' })).toBeVisible()
+    await expect(menu.getByRole('checkbox', { name: 'ncc-1701' })).toBeChecked()
+    await expect(menu.getByRole('checkbox', { name: 'omni' })).not.toBeChecked()
+  },
+}
+
+export const SortPhone: Story = {
+  name: 'M4: the Sort sheet open over the library on a phone',
+  args: { data: artifactsStates.sortPhone.data, ui: artifactsStates.sortPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the phone's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; pnpm fidelity checks M4's sheet at the phone's width).
+    const page = within(document.body)
+    await expect(await page.findByText('Grouped by project, then newest')).toBeVisible()
+    await expect(page.getByText('Least recently updated at the top')).toBeVisible()
+    await expect(page.getByText('Found since you last looked stays at the top.')).toBeVisible()
+  },
+}
+
+export const SearchPhone: Story = {
+  name: 'M5: a search on a phone, each match with the line that matched',
+  args: { data: artifactsStates.searchPhone.data, ui: artifactsStates.searchPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it; pnpm fidelity checks M5's rows at the phone's width.
+    await expect(canvas.getByText('Writer cross-family round x1')).toBeVisible()
+    // Figma draws the search focused (its cyan border), with the keyboard open.
+    const search = canvas.getByRole('searchbox', { name: /Search artifacts/i })
+    search.focus()
+    await expect(search).toHaveFocus()
+  },
+}
+
+export const AddLinkPhone: Story = {
+  name: 'M6: the Add a link sheet open over the library on a phone',
+  args: { data: artifactsStates.addLinkPhone.data, ui: artifactsStates.addLinkPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The form is portalled outside the story's root: a sheet at the phone's width, a dialog at a wider one (the story
+    // renders at the width Storybook gives it; pnpm fidelity checks M6's sheet at the phone's width).
+    const page = within(document.body)
+    const form = within(await page.findByRole('dialog', { name: 'Add a link' }))
+    await expect(form.getByText('For an artifact the library did not find.')).toBeVisible()
+    await expect(form.getByRole('button', { name: /^Add$/ })).toBeVisible()
+    await expect(form.getByRole('radio', { name: 'Codex site' })).toBeChecked()
+    await expect(form.queryByText('Chosen from the link; change it if it is wrong.')).toBeNull()
+    // The focus trap moves the focus to the link in the frame after it opens.
+    await expectTrapFocus(form.getByRole('textbox', { name: 'Link' }))
+  },
+}
+
+export const FilePhone: Story = {
+  name: 'M7: File in a project open over an artifact on a phone',
+  args: { data: artifactsStates.filePhone.data, ui: artifactsStates.filePhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The sheet is portalled outside the story's root. It opens over the artifact at any width (the story renders at
+    // the width Storybook gives it; pnpm fidelity checks M7's sheet over the phone's page).
+    const sheet = within(await within(document.body).findByRole('dialog', { name: 'File in a project' }))
+    await expect(sheet.getByRole('radio', { name: /skill-evals/ })).toBeChecked()
+    await expect(sheet.getByRole('button', { name: 'Remove from the library' })).toBeVisible()
+    await expect(
+      sheet.getByText('Removing takes the link out of the library only; the artifact stays where it was published.'),
+    ).toBeVisible()
+  },
+}
+
+export const MorePhone: Story = {
+  name: 'M8: the More drawer open over the library on a phone',
+  args: { data: artifactsStates.morePhone.data, ui: artifactsStates.morePhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The drawer is portalled outside the story's root. It opens at any width (the story renders at the width Storybook
+    // gives it; pnpm fidelity checks M8's drawer at the phone's width).
+    const drawer = within(await within(document.body).findByRole('dialog', { name: 'More' }))
+    await expect(drawer.getByText('Every Claude artifact and Codex site')).toBeVisible()
+    await expect(drawer.getByRole('button', { name: /Artifacts/ })).toHaveAttribute('aria-current', 'page')
+    await expect(drawer.getByRole('button', { name: /Workflows/ })).toBeDisabled()
+  },
+}
+
+export const DiscussPhone: Story = {
+  name: 'M9: the open artifact’s discussion on its own page on a phone',
+  args: { data: artifactsStates.discussPhone.data, ui: artifactsStates.discussPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks M9's page at the phone's width.
+    await expect(canvas.getByText('Talk this artifact through')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Ask about this artifact' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
+  },
+}
+
+export const ChangeProposedPhone: Story = {
+  name: 'M10: a proposed update to the artifact in its discussion page on a phone',
+  args: {
+    data: artifactsStates.changeProposedPhone.data,
+    ui: artifactsStates.changeProposedPhone.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks M10's page at the phone's width, and that Apply shows M2 Updated.
+    await expect(canvas.getByText('A dashed line at the median pass rate, 71%')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '48')
+    // M10's own node id of its one Open in workspace.
+    await expect(canvasElement.querySelector('[data-figma="452:4181"]')).not.toBeNull()
+  },
+}

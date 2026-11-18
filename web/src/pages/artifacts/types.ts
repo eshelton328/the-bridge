@@ -69,6 +69,11 @@ const ArtifactMadeIn = z.object({
   title: z.string(),
   /** The workspace, model and age as one line, such as "workspace skill-evals · Opus 5.5 · 12m ago". */
   meta: z.string(),
+  /**
+   * Open in workspace as a link under the meta line, as the phone writes it, such as "Open in workspace ›" (M2); without
+   * it the section ends with the Open in workspace button (D2, T2).
+   */
+  action: z.string().optional(),
 })
 
 /** The artifact open beside the list (D2): its bar, title block, preview and the chat that made it. */
@@ -118,7 +123,7 @@ const ArtifactFilterItem = z.object({
 })
 
 /**
- * The Filter menu under the list tools (D3), or the sheet over the tab bar on a tablet (T3): sections of
+ * The Filter menu under the list tools (D3), or the sheet over the tab bar on a tablet or phone (T3, M3): sections of
  * checkboxes with counts, and a footer that names the checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
  */
 export const ArtifactFilterMenu = z.object({
@@ -131,6 +136,11 @@ export const ArtifactFilterMenu = z.object({
   show: z.string(),
   /** The tablet sheet's Clear (T3), which clears the boxes; the desktop menu has none (D3). */
   clear: z.string().optional(),
+  /**
+   * The Figma node id of the sheet's unnamed footer frame around Show, which each frame has its own: T3's 407:1719
+   * when left out, M3's 407:501.
+   */
+  footLayer: z.string().optional(),
 })
 export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
 
@@ -158,13 +168,44 @@ const ArtifactSearch = z.object({
   places: z.record(MatchPlace, z.string()),
   /** What search reads, under the results. */
   hint: z.string(),
+  /**
+   * The phone's match line for a match in a description, by the card's id, such as "…the cold-reader eval of the
+   * readme skill…" (M5): the words around the match, as Figma writes them. A link match shows the link.
+   */
+  excerpts: z.record(z.string(), z.string()).optional(),
+  /** The search field's Figma node id, where another layer of the frame is named "search" too (M5's keyboard key). */
+  fieldLayer: z.string().optional(),
 })
+export type ArtifactSearch = z.infer<typeof ArtifactSearch>
+
+/**
+ * File in a project (M7): the phone's ⋯ button opens it as a sheet over the artifact's page. The artifact's title under
+ * the sheet's title, a choice per project with how many artifacts it holds (the artifact's own project checked), and
+ * Remove from the library with its note: Remove takes only the link out of the library, and the artifact stays where
+ * it was published.
+ */
+const ArtifactFileMenu = z.object({
+  /** Such as "File in a project". */
+  title: z.string(),
+  /** The title row's Done, which closes the sheet. */
+  done: z.string(),
+  /** The first choice, such as "Not in a project", with how many artifacts are in no project, such as "1". */
+  none: z.object({ label: z.string(), count: z.string() }),
+  /** One choice per project, such as ncc-1701, with how many artifacts it holds, such as "9 artifacts". */
+  projects: z.array(z.object({ value: z.string(), count: z.string() })),
+  /** Such as "Remove from the library". */
+  remove: z.string(),
+  /** What Remove does, under it. */
+  note: z.string(),
+})
+export type ArtifactFileMenu = z.infer<typeof ArtifactFileMenu>
 
 /** A field of the Add a link dialog (D5): its label, its value and the line under it. */
 const AddLinkField = z.object({
   label: z.string(),
   value: z.string(),
-  hint: z.string(),
+  /** The line under the field; the phone's sheet (M6) leaves it out under the project. */
+  hint: z.string().optional(),
 })
 
 /**
@@ -180,7 +221,8 @@ export const AddLinkForm = z.object({
     label: z.string(),
     /** One choice per source, labelled as the dialog names it, such as "Codex site". */
     options: z.array(z.object({ value: ArtifactSource, label: z.string() })),
-    hint: z.string(),
+    /** The line under the choice; the phone's sheet (M6) leaves it out. */
+    hint: z.string().optional(),
   }),
   name: AddLinkField,
   /** The project, picked from a menu of `projects`; it may be left out. */
@@ -241,16 +283,26 @@ const ArtifactDiscussion = z.object({
     canLabel: z.string(),
     can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
     suggestions: z.array(z.string()),
+    /** The label over the suggestions where they stack one under the other, such as "Try" (the phone's page, M9). */
+    tryLabel: z.string().optional(),
   }),
   placeholder: z.string(),
   /** What was said and proposed so far (D8); with none the discussion shows `empty`. */
   entries: z.array(ArtifactDiscussionEntry),
-  /** The label of Back on the tablet's discussion page (T4), such as "Artifact": it returns to the artifact. */
+  /**
+   * The label of Back on the tablet's and the phone's discussion page (T4, M9), such as "Artifact": it returns to
+   * the artifact.
+   */
   back: z.string().optional(),
   /**
+   * The source in the artifact's card on the discussion page, where the open artifact's own is shorter: the phone's
+   * chip says "Claude" (M2) and its discussion's card "Claude artifact" (M9). The open artifact's without it.
+   */
+  sourceLabel: z.string().optional(),
+  /**
    * The Figma node ids of the two layers named "button · Open in workspace" in the frame that shows the discussion:
-   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's
-   * discussion page (T4 452:3837) has no "Made in", so `madeIn` is left out there.
+   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's and the
+   * phone's discussion pages (T4 452:3837, M9 452:4076) have no "Made in", so `madeIn` is left out there.
    */
   layers: z.object({ header: z.string(), madeIn: z.string().optional() }),
 })
@@ -282,6 +334,8 @@ export const ArtifactsData = z.object({
   addLinkForm: AddLinkForm.optional(),
   /** The open artifact's discussion (D7), which Discuss opens; without it Discuss opens nothing. */
   discussion: ArtifactDiscussion.optional(),
+  /** File in a project (M7), which the phone's ⋯ button opens; without it the button opens nothing. */
+  fileMenu: ArtifactFileMenu.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -306,11 +360,17 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
-  /** Back closed the open artifact on a tablet (T2), and the library shows (T1). */
+  /** Back closed the open artifact on a tablet (T2) or a phone (M2), and the library shows (T1, M1). */
   artifactClosed: z.boolean().optional(),
+  /** The phone's ⋯ button opened File in a project (M7). */
+  fileOpen: z.boolean().optional(),
+  /** The project picked in File in a project, or `none` (M7); the open artifact's own project when not set. */
+  fileProject: z.string().optional(),
+  /** The phone's More opened the More drawer over the tab bar (M8). */
+  moreOpen: z.boolean().optional(),
   /**
    * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
-   * its own page in the artifact's place, with no tab bar (T4).
+   * its own page in the artifact's place, with no tab bar (T4); on a phone the same (M9).
    */
   discussOpen: z.boolean().optional(),
   /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */

@@ -15,6 +15,16 @@ import { sortOpen } from './sortOpen.ts'
 import { filterTablet } from './filterTablet.ts'
 import { discussTablet } from './discussTablet.ts'
 import { changeProposedTablet } from './changeProposedTablet.ts'
+import { libraryPhone } from './libraryPhone.ts'
+import { artifactPhone } from './artifactPhone.ts'
+import { filterPhone } from './filterPhone.ts'
+import { sortPhone } from './sortPhone.ts'
+import { searchPhone } from './searchPhone.ts'
+import { addLinkPhone } from './addLinkPhone.ts'
+import { filePhone } from './filePhone.ts'
+import { morePhone } from './morePhone.ts'
+import { discussPhone } from './discussPhone.ts'
+import { changeProposedPhone } from './changeProposedPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -31,4 +41,14 @@ export const artifactsStates = {
   filterTablet,
   discussTablet,
   changeProposedTablet,
+  libraryPhone,
+  artifactPhone,
+  filterPhone,
+  sortPhone,
+  searchPhone,
+  addLinkPhone,
+  filePhone,
+  morePhone,
+  discussPhone,
+  changeProposedPhone,
 }

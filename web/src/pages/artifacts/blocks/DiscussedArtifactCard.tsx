@@ -2,14 +2,19 @@
 // (Figma "artifact · discussing", T4 452:3778): its title with New and a
 // chevron, its source, project and age, and what the discussion may do. A
 // press anywhere on the card returns to the artifact (T2), as the Inbox's
-// task card does (Inbox T17). Props only.
+// task card does (Inbox T17). On the phone's page (M9 452:4017) the model
+// and context sit under the meta line, as the Inbox's (M18). Props only.
 import { ChevronRightIcon, Inline, Panel, Stack, StatusPill } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDetail } from '../types.ts'
 import { DiscussionGuard } from './DiscussionGuard.tsx'
 
 // The chevron's button covers the card, as the library Card's action does, so the whole card is one press.
 const card = css({ position: 'relative' })
+// The phone's model picker (M9) sits inside the card. Positioned, it paints after the chevron's overlay, so a press on
+// it opens the model menu instead of returning to the artifact.
+const above = css({ position: 'relative' })
 // 452:3780: SemiBold 15, as the Inbox's task card (T17 402:11176).
 const title = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0', flex: '1', minW: '[0]' })
 const meta = css({ textStyle: 'monoSm', color: 'fg.muted', m: '0' })
@@ -33,9 +38,11 @@ export type DiscussedArtifactCardProps = {
   guard: string
   /** The card was pressed: the artifact shows again. */
   onOpen?: (() => void) | undefined
+  /** The model and context, under the meta line on the phone (M9); none on the tablet, whose nav has them. */
+  model?: ReactNode
 }
 
-export function DiscussedArtifactCard({ artifact, badge, guard, onOpen }: DiscussedArtifactCardProps) {
+export function DiscussedArtifactCard({ artifact, badge, guard, onOpen, model }: DiscussedArtifactCardProps) {
   return (
     <div className={card} data-figma="artifact · discussing">
       {/* 452:3778 pads 11 above and below and 13 at the sides: `notice` pads 10 and 12. */}
@@ -59,6 +66,7 @@ export function DiscussedArtifactCard({ artifact, badge, guard, onOpen }: Discus
             </button>
           </Inline>
           <p className={meta}>{[artifact.sourceLabel, artifact.project, artifact.updated].join(' · ')}</p>
+          {model === undefined ? null : <div className={above}>{model}</div>}
           <DiscussionGuard text={guard} />
         </Stack>
       </Panel>
