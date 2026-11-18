@@ -42,12 +42,12 @@ M1 is D1's library on the phone as a list of rows
 - **Preview colours.** The chart's bars are brighter cyan than Figma's
   muted bars, and the drawings take one colour set per kind. Library gap
   "Thumbnail colour".
-- **Row height and New.** The rows are 70 high against Figma's 66
-  (406:121): `ListRow padding="phone"` pads 10 above and below inside
-  its 1 px border around the 48 px preview, where Figma has 8 inside the
-  border (its 9 from the row's edge). `RowGroup`'s `mt: -2` starts each row after the first 2 up, so the
-  pitch is Figma's 68 and each row starts where Figma's does. Library gap
-  "ListRow phone height 70 vs 66". The age sits on the title line and
+- **Row height and New.** The rows are 66 high and 2 apart, Figma's
+  68 px pitch (406:121 to 406:148): `ListRow padding="phone"` (library
+  1.0.0-beta.41) pads 8 above and below inside its 1 px border around the
+  48 px preview, as Figma's. Each row starts 1 below Figma's (Found's at
+  y 230, 298, 366 and 434 against 229, 297, 365 and 433), as the group
+  header above them is 36 high against Figma's 34. The age sits on the title line and
   New 4 under it in one column at the row's end. At the sides the row's content sits
   where Figma's does: the preview starts at x 17 and the age and New end
   at 373 (Figma 16 and 374), because `ListRow padding="phone"` (library
@@ -64,9 +64,10 @@ M1 is D1's library on the phone as a list of rows
 - Rows 2 apart from the header to the groups, as Figma's frames
   (406:70 to 406:114); the search row is padded 8 above its controls
   (406:90, 44 high) and the status 6 above its text (406:110).
-- Earlier's group starts 2 up into Found's last row (Figma's header is
-  2 under it): the phone's rows are 70 high at Figma's 68 px pitch, so
-  Found's last row ends 4 lower than Figma's, and the header is at
-  y 501, as Figma's.
+- Earlier's group starts right under Found's last row (Figma's 34 px
+  header is 2 under it, 406:196): the render's group header is 36 high,
+  1 more above and below its label, so the header is at y 500 (Figma
+  501), its label centred at Figma's y 518, and Earlier's rows start at
+  y 538, 1 below Figma's 537, as Found's do.
 - Sort and Filter draw their icons in `fg.muted`, as Figma's grey
   (406:100, 406:107).

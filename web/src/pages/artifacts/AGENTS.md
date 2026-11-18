@@ -119,7 +119,8 @@ each file of a page folder is for.
   `LibraryTools iconOnly` (icon-only 36 px Sort and Filter with their
   icons in `fg.muted`, also while pressed, and no view switch),
   `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
-  group, each after the first 2 up into the last row's padding, whose
+  group, each after the first right under the last row (its 36 px
+  header, Figma's 34, then puts the label where Figma's is), whose
   `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
   the title line and New under it as `Badge size="xs"` with
   `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 66 high

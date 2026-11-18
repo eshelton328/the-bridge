@@ -104,4 +104,22 @@ describe('the artifact rows', () => {
     expect(body.top - box.top).toBeCloseTo(box.bottom - body.bottom, 0)
     expect(body.top - box.top).toBeGreaterThan(13)
   })
+
+  it('draws an M1 phone row 66 high 2 above the next, at Figma 68 px pitch', async () => {
+    await page.viewport(390, 844)
+    const { data, ui } = artifactsStates.libraryPhone
+    view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="phone" />)
+    await expect.element(page.getByText('Hono server spike', { exact: true })).toBeVisible()
+    // Figma's rows 406:121 and 406:148 are 66 high, 2 apart.
+    const row = listRow('Skill eval pass rates')
+    const next = listRow('Hono server spike')
+    expect(row.getBoundingClientRect().height).toBe(66)
+    expect(next.getBoundingClientRect().top - row.getBoundingClientRect().bottom).toBe(2)
+    // Earlier's 34 px header (406:196) sits 2 under Found's last row (414:772); the render's 36 px header starts
+    // right under it, so its label is where Figma's is, not 2 up into the row.
+    const last = listRow('Tailscale access check')
+    const earlier = document.querySelector('[data-figma="group · EARLIER"]')
+    expect(earlier?.getBoundingClientRect().height).toBe(36)
+    expect(earlier?.getBoundingClientRect().top).toBe(last.getBoundingClientRect().bottom)
+  })
 })

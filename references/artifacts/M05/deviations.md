@@ -38,12 +38,15 @@ under its meta line, the match marked (`Highlight`).
   "Phone row preview drawing"). The three previews are charts, as
   Figma's (408:77, 408:298, 408:330), with brighter bars (library gap
   "Thumbnail colour").
-- **Row height and New.** As M1: the rows are 70 and 82 high against
-  Figma's 66 and 78 (`ListRow padding=\"phone\"` pads 10 where Figma
-  has 8 inside the border), and `RowGroup`'s `mt: -2` starts each match after the
-  first 2 up, so the 68 px pitch holds and each starts within 2 px of
-  Figma's. Library gap "ListRow phone height 70 vs 66". New sits under
-  the age against Figma's badge at the end of the meta line (408:99).
+- **Row height and New.** As M1: the rows are 66, 78 and 78 high and
+  2 apart, as Figma's (408:76, 408:297, 408:329; `ListRow
+  padding="phone"` pads 8 inside the border), and each starts 2 below
+  Figma's (y 206, 274 and 354 against 204, 272 and 352), as the matches'
+  header above them is 36 high against Figma's 34 (408:290). New sits
+  under the age, at x 321.7, y 235, 51.3 × 16, against Figma's badge at
+  the end of the meta line (408:99: x 326, y 240.5, 48 × 16), level
+  with the meta line: the render's is 5.5 higher and ends at x 373
+  against 374. Library gap "New badge position".
   The row's content sits 4 in from the row's sides, as
   Figma's (M1).
 - **New badge.** As M1: `Badge size="xs"` with `SparkFilledIcon`, 16 high
