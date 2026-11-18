@@ -9,6 +9,7 @@
 // writer's D5 Reviewer badge opens the agent's Evals tab (D26) from this
 // state and every state built on it.
 import { agentOpen } from './agentOpen.ts'
+import { writerUsage } from './shared/activity.ts'
 import { writerResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
@@ -22,6 +23,8 @@ const writer: ToolkitItemDetailView = {
     'Use before writing, rewriting or editing any doc, ticket, issue, PRD, spec, report, explainer, note, the text of an artifact or HTML page, or a chat answer that explains from records or logs why something happened.',
   // The Evals tab (D20, D25 to D28).
   results: writerResults,
+  // The Activity tab (D17, D21 to D24).
+  activity: writerUsage,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },

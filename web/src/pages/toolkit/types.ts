@@ -489,6 +489,51 @@ const ToolkitEvals = z.object({
 })
 export type ToolkitEvals = z.infer<typeof ToolkitEvals>
 
+/**
+ * A panel of bars on the Activity tab (D17 `panel · by day` 474:602, `panel · where` 474:620): its label in capitals,
+ * the note at its header's end ("Oct 31 to Nov 15", "from the session folder"), one row for each day or place with
+ * its count, and an optional line under the rows ("No calls on the other 13 days.").
+ */
+const ToolkitActivityBars = z.object({
+  label: z.string(),
+  meta: z.string(),
+  rows: z.array(z.object({ label: z.string(), value: z.number().int().nonnegative() })).min(1),
+  note: z.string().optional(),
+})
+
+/**
+ * A row of the Activity tab's list (D17 `row · Linear workflow setup for NCC team` 474:650): a chat that loaded the
+ * item (`chat`, after the chat icon) or a round from a ledger (`round`, D23 `row · readme · cross-family x1`, no icon),
+ * its title and the line under it. `open` is the path of the toolkit item the row names (a round's skill): a tap opens
+ * that item on its Evals tab. A chat opens in the chat panel of the Activity view (D18), which no state draws yet, so a
+ * chat row has no `open` and takes no tap.
+ */
+const ToolkitActivityRow = z.object({
+  type: z.enum(['chat', 'round']),
+  title: z.string(),
+  meta: z.string(),
+  open: z.string().optional(),
+})
+
+/**
+ * The Activity tab of an open item (D17 `activity` 474:583), from the Claude Code session files: four key figures
+ * (`kpis`, each its value, label and caption), the counts by day (`byDay`), where it ran (`where`; a hook's reasons it
+ * rejected, D24), the chats that loaded it or the ledgers' rounds (`list`) and the source under them.
+ */
+const ToolkitActivity = z.object({
+  kpis: z.array(z.object({ value: z.string(), label: z.string(), caption: z.string() })).length(4),
+  byDay: ToolkitActivityBars,
+  where: ToolkitActivityBars,
+  list: z.object({ label: z.string(), meta: z.string(), rows: z.array(ToolkitActivityRow).min(1) }),
+  source: z.string(),
+  /**
+   * On a tablet or the phone, the back row names the item (Toolkit › writer, T13 474:738) and the kind badge and path
+   * rows are left out, as on How it works (T10). When not set the tab keeps the item's header (T20 491:6668).
+   */
+  named: z.boolean().optional(),
+})
+export type ToolkitActivity = z.infer<typeof ToolkitActivity>
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -555,6 +600,8 @@ export const ToolkitItemDetailView = z.object({
    * to D28). None when the item has no such tab yet; its panel is then empty. The Overview's `evals` is the link to it.
    */
   results: ToolkitEvals.optional(),
+  /** The Activity tab (D17): how often the item ran, where, and the chats that loaded it. None when not drawn yet. */
+  activity: ToolkitActivity.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -607,8 +654,9 @@ export const ToolkitData = z.object({
    */
   linkTargets: z.array(z.object({ item: ToolkitItemView, browser: ToolkitFileBrowser })).optional(),
   /**
-   * The items an Evals tab's rows name that the list does not show (D25 `round · writer` 492:506: a rule's ledgers are
-   * skills, and D25's list has no Skills group); a tap on one opens it from here. None when the state has none.
+   * The items an Evals or Activity tab's rows name that the list does not show (D25 `round · writer` 492:506: a rule's
+   * ledgers are skills, and D25's list has no Skills group; D23 `row · readme · cross-family x1`: a workflow's rounds
+   * name skills, and D23's list has none); a tap on one opens it from here. None when the state has none.
    */
   evalTargets: z.array(ToolkitItemView).optional(),
 })

@@ -8,11 +8,13 @@
 // Workflows and Hooks groups); D8 draws the same rows. The item also carries
 // its own page (D13's flow, gates and rounds, `skillEvalRoundPage`), which
 // Open full page shows.
+import { workflowUsage } from './shared/activity.ts'
 import { workflowResults } from './shared/evalResults.ts'
 import { workflowFilesBrowser } from './shared/workflowBrowser.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { hookOpen } from './hookOpen.ts'
+import { roundDetails, roundSkills } from './shared/activityTargets.ts'
 
 /**
  * The workflow's own page (D13, workflowFullPage): its flow from the Mermaid flow and the steps table, step 4's fields,
@@ -271,6 +273,8 @@ const skillEvalRound: ToolkitItemDetailView = {
   },
   // The Evals tab (D20, D25 to D28).
   results: workflowResults,
+  // The Activity tab (D17, D21 to D24).
+  activity: workflowUsage,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },
@@ -301,6 +305,7 @@ const skillEvalRound: ToolkitItemDetailView = {
 export const workflowOpen = {
   title: 'a workflow open beside the list, with its steps by phase',
   frames: [{ id: 'D8', node: '433:631', viewport: 'desktop' }],
-  data: { ...hookOpen.data, details: [skillEvalRound] },
+  // The Activity tab's rounds (D23) open their skills, which D9's list does not show, from `evalTargets`.
+  data: { ...hookOpen.data, details: [skillEvalRound, ...roundDetails], evalTargets: roundSkills },
   ui: { ...hookOpen.ui, open: 'workflows/skill-eval-round.md' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>
