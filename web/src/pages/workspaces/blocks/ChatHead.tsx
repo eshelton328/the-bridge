@@ -28,9 +28,11 @@ const head = css({
   borderBottomColor: 'border.default',
 })
 const titles = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]' })
+// Figma's title is Geist SemiBold 16 (D19 417:1669), which no text style draws (LIBRARY_GAPS.md: Chat header text);
+// the workspace is Geist Mono 11 (417:1670) and "context" Geist Regular 11 (417:1689).
 const title = css({ textStyle: 'subtitle', color: 'fg.default', m: '0' })
-const where = css({ textStyle: 'mono', color: 'fg.muted' })
-const label = css({ textStyle: 'mono', color: 'fg.muted' })
+const where = css({ textStyle: 'monoSm', color: 'fg.muted' })
+const label = css({ textStyle: 'smallXs', color: 'fg.muted' })
 
 export type ChatHeadProps = {
   head: PaneHead
