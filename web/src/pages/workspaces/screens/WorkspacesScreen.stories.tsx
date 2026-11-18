@@ -679,3 +679,16 @@ export const PhoneMovedChat: Story = {
     await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
   },
 }
+
+export const PhoneRenameChat: Story = {
+  name: 'M23: a chat renamed on the phone, its name a field in the header',
+  args: { data: workspacesStates.phoneRenameChat.data, ui: workspacesStates.phoneRenameChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D21's field in its header, and the phone's menu draws M23. WorkspacesPhoneRenameChat.test.tsx checks the field at
+    // a phone's width. The field stays open: the fidelity check renders the story after its play test.
+    const field = await canvas.findByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect(field).toHaveValue('bridge themes')
+    await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
+  },
+}

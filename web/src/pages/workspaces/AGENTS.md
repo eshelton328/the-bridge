@@ -263,6 +263,10 @@ first: it says what each file of a page folder is for.
   `ChatPane`'s `above` slot): D20's `ChatToast` while `ui.toastOpen`, whose
   Undo closes it; the header names the workspace the chat moved to, and
   Back returns to the list, where the chat heads that workspace.
+  M23 adds `rename` to `PhoneChat` (in `ChatHead`'s title place) and
+  `size="phone"` to `ChatNameField` (160 wide): D21's field while
+  `ui.renaming`, which Rename in the chat actions sheet opens; a tap
+  outside saves the name in `ui.names`, × undoes the change.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -346,7 +350,10 @@ first: it says what each file of a page folder is for.
   M22 `phoneMovedChat` (from `phoneChatFull`, with M18's empty message
   box, M4's chat actions and D20's move of bridge themes and theme tokens
   to the-bridge, now `current`: the chat full screen with the toast
-  "Moved to the-bridge" and Undo).
+  "Moved to the-bridge" and Undo), M23 `phoneRenameChat` (from
+  `phoneChatFull`, with M18's empty message box, M4's chat actions and
+  D21's rename: the chat full screen with its name a field in the header,
+  the focus in the field).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

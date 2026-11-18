@@ -8,7 +8,8 @@
 // (M8). While the keyboard is up the header shrinks to one line, `meta`
 // under the title (M10). `focusMessage` puts the focus in the message box with
 // the skills closed (M17). `above` sits over the composer, such as the toast
-// after a move (M22).
+// after a move (M22). `rename` takes the title's place while Erik renames the
+// chat, such as the name field (M23).
 // Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -60,6 +61,8 @@ export type PhoneChatProps = {
   focusMessage?: boolean | undefined
   /** Drawn between the transcript and the composer, such as the toast after a move (M22 422:819). */
   above?: ReactNode
+  /** Drawn in the header in place of the title while Erik renames the chat, such as the name field (M23 422:925). */
+  rename?: ReactNode
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
@@ -79,6 +82,7 @@ export function PhoneChat(props: PhoneChatProps) {
     meta,
     focusMessage = false,
     above,
+    rename,
     layers,
   } = props
   const more = (
@@ -111,6 +115,7 @@ export function PhoneChat(props: PhoneChatProps) {
         menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
         extra={folders}
         meta={meta}
+        rename={rename}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
