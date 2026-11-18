@@ -449,6 +449,11 @@ export const WorkspacesUi = z.object({
     .object({ part: ResizePart, sizes: z.array(z.number()) })
     .nullable()
     .optional(),
+  /**
+   * The sizes of each handle of a rows-first split, in percent, kept apart so that a drag of one handle leaves the
+   * others as they are; `resize` sets its own handle's sizes over these.
+   */
+  splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

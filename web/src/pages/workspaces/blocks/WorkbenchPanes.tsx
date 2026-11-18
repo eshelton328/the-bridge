@@ -47,6 +47,8 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
   const drag = ui.paneDrag
   const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === drag?.chat)
   const resize = data.split === 'rows' ? (ui.resize ?? undefined) : undefined
+  // Each handle keeps its own sizes; the dragged one's are the latest.
+  const sizes = resize === undefined ? ui.splitSizes : { ...ui.splitSizes, [resize.part]: resize.sizes }
   const readout =
     resize !== undefined && data.resizeHint !== undefined
       ? {
@@ -136,8 +138,10 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
     return (
       <RowsSplit
         panes={shown}
-        sizes={resize === undefined ? undefined : { [resize.part]: resize.sizes }}
-        onSizeChange={(part, sizes) => onUiChange?.({ resize: { part, sizes } })}
+        sizes={sizes}
+        onSizeChange={(part, next) =>
+          onUiChange?.({ resize: { part, sizes: next }, splitSizes: { ...sizes, [part]: next } })
+        }
       />
     )
   return <SplitPanes panes={shown} />

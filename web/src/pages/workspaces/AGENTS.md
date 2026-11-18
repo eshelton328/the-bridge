@@ -133,6 +133,7 @@ first: it says what each file of a page folder is for.
   dragged onto the chat alone and its edge; for D7 `workbench`, the
   workbench beside the sidebar; for D8 `paneDrag.pane`, the pane of the
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
-  of a rows-first split and its sizes), each a Zod schema.
+  of a rows-first split and its sizes, and `splitSizes`, each handle's
+  sizes, so a drag of one handle leaves the others), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
