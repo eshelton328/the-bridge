@@ -385,3 +385,17 @@ export const PhoneChat: Story = {
     await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
   },
 }
+
+export const PhoneChatActions: Story = {
+  name: 'M4: the actions on a chat, in a sheet on the phone',
+  args: { data: workspacesStates.phoneChatActions.data, ui: workspacesStates.phoneChatActions.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its chat actions menu open on Move to workspace; at a phone's width the sheet draws M4.
+    // WorkspacesPhoneChatActions.test.tsx checks the sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const body = within(document.body)
+    await expect(await body.findByText('Move to workspace')).toBeVisible()
+    await expect(await body.findByText('New workspace…')).toBeVisible()
+  },
+}

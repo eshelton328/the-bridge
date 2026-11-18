@@ -281,6 +281,11 @@ export const PhoneText = z.object({
   done: z.string().optional(),
   /** The accessible name of the back button over a chat (M3 105:2750), which returns to the list. */
   back: z.string().optional(),
+  /**
+   * The chat actions sheet behind the ⋯ of a chat on the phone (M4 105:2925), in order, with a rule before none: Fork
+   * to Close chat. `move` opens the workspaces under its row. Without it, the ⋯ draws only.
+   */
+  chatMenu: z.array(PaneAction).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -353,6 +358,11 @@ export const SidebarLayers = z.object({
   phoneBack: z.string().optional(),
   /** The skill list after "/" in the chat's composer; D1's (105:406) when not set. */
   skills: z.string().optional(),
+  /**
+   * The icons of the phone's chat actions sheet (M4 105:2938), by action value or, under Move to workspace, by
+   * workspace id and `new`: `BottomSheet` and `OptionList` take no `data-*`, so the icons carry the rows' places.
+   */
+  sheetIcons: z.record(z.string(), z.string()).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 

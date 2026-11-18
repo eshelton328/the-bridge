@@ -57,7 +57,8 @@ const footer = css({ display: 'flex', flexDirection: 'column' })
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
   figma: {
-    composer: string
+    /** The composer; none when the frame does not draw it, such as under M4's sheet. */
+    composer?: string | undefined
     entries?: readonly (string | undefined)[] | undefined
     /** The skill list; D1's when not set. */
     skills?: string | undefined

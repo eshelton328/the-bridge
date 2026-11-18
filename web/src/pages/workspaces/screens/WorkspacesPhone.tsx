@@ -2,8 +2,9 @@
 // the shared tab bar, which More turns into the More drawer. M1 is the home:
 // every workspace and its chats (PhoneWorkspaceList); M2 its edit mode. M3
 // is a chat (`ui.phoneView: 'chat'`, PhoneChat): it fills the screen with no
-// tab bar, and its back button returns to the list. Later phone frames (its
-// actions, the side chat sheet, subagents, New chat, folders) add their
+// tab bar, and its back button returns to the list. M4 is the chat's actions
+// (`ui.menuFor`, PhoneChatActions), a sheet that its ⋯ opens. Later phone
+// frames (the side chat sheet, subagents, New chat, folders) add their
 // views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -11,6 +12,7 @@ import { useState } from 'react'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
+import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
@@ -42,12 +44,38 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               contextLabel={data.sidebar?.contextLabel ?? ''}
               backLabel={text.back ?? text.title}
               onBack={() => {
-                onUiChange({ phoneView: 'list', skillsFor: null })
+                onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false })
               }}
               skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
               onSkillsOpenChange={(open) => {
                 onUiChange({ skillsFor: open ? chat.id : null })
               }}
+              renderMenu={
+                text.chatMenu === undefined
+                  ? undefined
+                  : (trigger) => (
+                      <PhoneChatActions
+                        title={chat.head.title}
+                        actions={text.chatMenu ?? []}
+                        targets={data.workspaces.filter((w) => w.id !== data.current)}
+                        newWorkspace={data.newWorkspace}
+                        trigger={trigger}
+                        open={ui.menuFor === chat.id}
+                        onOpenChange={(open) => {
+                          onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })
+                        }}
+                        moveOpen={ui.menuFor === chat.id && ui.moveOpen}
+                        onMoveOpenChange={(moveOpen) => {
+                          onUiChange({ moveOpen })
+                        }}
+                        moveTarget={ui.moveTarget}
+                        onMoveTargetChange={(moveTarget) => {
+                          onUiChange({ moveTarget })
+                        }}
+                        layers={data.layers?.sheetIcons}
+                      />
+                    )
+              }
               layers={data.layers}
             />
           }
