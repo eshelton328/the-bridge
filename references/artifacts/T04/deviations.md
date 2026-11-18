@@ -1,6 +1,6 @@
 # T04 deviations
 
-What still differs from Figma after round 1 of the fidelity loop
+What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts T04`, 2026-11-17, against the installed
 library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. T4 is D7's discussion
@@ -29,14 +29,20 @@ three checks render the page 29 px shorter, below Figma's status bar
   the bottom while the messages scroll (d-107), and the element marked
   `discussion` is the messages' area only, which ends 20 above the reply
   box. The reply box itself (`composer · discussion`) passes.
-- **Empty state.** `empty state` y +62, h +105: Figma's `empty state`
+- **Empty state.** `empty state` y +54, h +115: Figma's `empty state`
   frame (452:3794) starts 60 above its tile and holds the tile, the
   title and the text, and a second frame (`center`, 452:3800) holds "It
   can" and the suggestions. The library-built `DiscussionEmpty`, shared
   with D7, is one stack from the tile to the suggestions, so its box
-  starts at the tile and ends under the suggestions. The tile is at
-  y 261 against Figma's 259, the title, the text and the suggestions
-  within 3 px of Figma's. Library gap "Empty state with an icon tile".
+  starts at the tile and ends under the suggestions. The library's tile
+  (44 against 42) and title (28 high against Figma's 22) are 8 px taller
+  than Figma's, so the tile sits 8 higher to keep the text, "It can" and
+  the suggestions at Figma's places: the tile is at y 253 against
+  Figma's 259, the title about 3 px higher, and the text, "It can"
+  (y 421 against 420) and the suggestions within 2 px of Figma's. "It
+  can" is 20 under the text, as Figma's (452:3799 to 452:3801);
+  D7's panel keeps its 10 (`DiscussionEmpty place="page"`). Library
+  gap "Empty state with an icon tile".
 - **"It can" column.** `it can` x -74, w +148: Figma sets the panel in a
   560 px column, centred (452:3801, x 98 to 658). No size token is 560,
   so the panel takes the page's 708 px; the suggestions under it are
@@ -74,8 +80,10 @@ three checks render the page 29 px shorter, below Figma's status bar
   apart (Figma 5); the card is 100 high against 96. The title is
   `paneTitle` (SemiBold 15), as the Inbox's task card; New is
   `StatusPill tone="working"` with its dot, as Figma's pill.
-- Discussion: 8 under the card, as Figma; the empty state's tile 72
-  under the area's top (Figma 74; 32 and 40, on the 4 px grid).
+- Discussion: 8 under the card, as Figma; the empty state's tile 64
+  under the area's top (Figma 74; 32 and 32, on the 4 px grid), so the
+  taller tile and title end where Figma's do.
+- "It can": 20 under the text, as Figma (the stack's 10 and `mt` 10).
 - Reply box: 12 under the messages, as Figma, and 40 above the bottom
   (Figma 22 and the home indicator's 21, 43; 40 is the nearest token).
   Its cap is the desktop panel's, `min(50vh, 30cqh)`

@@ -25,13 +25,14 @@ const page = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[
 // the top; the nav takes 8 of it back and pads its 32 px buttons 4 above and below.
 const nav = css({ mt: '-8', py: '4' })
 const spacer = css({ flex: '1' })
-// 452:3793: the discussion area starts 8 under the card, and the empty state's tile 74 under its top (452:3795):
-// 72 on the 4 px grid, 32 here and 40 above the empty state. T5 (452:3927): the first entry 14 under the area's top
-// (452:3928), 12 on the 4 px grid.
+// 452:3793: the discussion area starts 8 under the card, and the empty state's tile 74 under its top (452:3795).
+// The library's tile (44 against 42) and title (28 high against 22) are 8 taller than Figma's, so the tile sits 64
+// under the top, 32 here and 32 above the empty state, and the text, "It can" and the suggestions keep Figma's
+// places. T5 (452:3927): the first entry 14 under the area's top (452:3928), 12 on the 4 px grid.
 const thread = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1', mt: '8' })
 const emptyPad = css({ pt: '32' })
 const entriesPad = css({ pt: '12' })
-const emptyTop = css({ pt: '40' })
+const emptyTop = css({ pt: '32' })
 // 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px (43, 40 on the grid),
 // 22 in (24, as the page). It stays on the page's canvas, so the messages that scroll under it do not show through.
 const footer = css({ position: 'sticky', bottom: '0', pt: '12', pb: '40', px: '24', bg: 'bg.canvas' })
@@ -110,7 +111,7 @@ export function ArtifactDiscussionPage({
         <div className={cx(thread, entries.length === 0 ? emptyPad : entriesPad)} data-figma="discussion">
           {entries.length === 0 ? (
             <div className={emptyTop}>
-              <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} />
+              <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} place="page" />
             </div>
           ) : (
             <Stack gap="12">

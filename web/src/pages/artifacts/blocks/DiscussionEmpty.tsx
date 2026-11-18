@@ -42,6 +42,9 @@ const text = css({
 const can = css({ textStyle: 'small', color: 'fg.default' })
 // Figma tints the three icons violet (452:2434 to 452:2442): `accent.discuss`.
 const canIcon = css({ display: 'inline-flex', color: 'accent.discuss' })
+// T4 452:3800: on the tablet page "It can" sits 20 under the text (Figma's 20), against D7's 10 (452:2431):
+// the stack's 10 and 10 more.
+const canOnPage = css({ mt: '10' })
 // 452:2445: the suggestions' row hugs its buttons, centred in the column.
 const suggestions = css({ alignSelf: 'center' })
 
@@ -55,9 +58,11 @@ export type DiscussionEmptyProps = {
   empty: ArtifactDiscussion['empty']
   /** A suggestion was pressed: its question goes in the reply box. */
   onPick?: ((text: string) => void) | undefined
+  /** Where it shows: in D7's panel (the default) or on T4's tablet page, which puts "It can" 20 under the text. */
+  place?: 'panel' | 'page' | undefined
 }
 
-export function DiscussionEmpty({ empty, onPick }: DiscussionEmptyProps) {
+export function DiscussionEmpty({ empty, onPick, place = 'panel' }: DiscussionEmptyProps) {
   return (
     <Stack gap="10" data-figma="empty state">
       <span className={tile}>
@@ -65,7 +70,7 @@ export function DiscussionEmpty({ empty, onPick }: DiscussionEmptyProps) {
       </span>
       <h3 className={title}>{empty.title}</h3>
       <p className={text}>{empty.text}</p>
-      <div data-figma="it can">
+      <div className={place === 'page' ? canOnPage : undefined} data-figma="it can">
         <Panel title={empty.canLabel}>
           <Stack gap="8">
             {empty.can.map((c) => (
