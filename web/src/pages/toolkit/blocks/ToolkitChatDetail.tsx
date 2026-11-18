@@ -88,7 +88,12 @@ export function ToolkitChatDetail({ chat, layout, openSession, onOpenItem }: Too
             ))}
           </dl>
           <h3 className={heading}>{detail.itemsLabel}</h3>
-          <ToolkitChatItems items={chat.items} onOpen={onOpenItem} layer="toolkit items" />
+          <ToolkitChatItems
+            items={chat.items}
+            onOpen={onOpenItem}
+            layer="toolkit items"
+            layers={detail.layers?.items}
+          />
           <h3 className={heading}>{detail.toolsLabel}</h3>
           <ul className={tools} aria-label={detail.toolsLabel} data-figma="steps">
             {detail.tools.map((t) => (

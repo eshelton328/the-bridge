@@ -149,6 +149,7 @@ describe('the chat taps', () => {
       pageHeader: '478:192',
       header: '475:374',
       openSession: '475:386',
+      items: ['478:485'],
     })
     expect(
       openChat(viewOf(toolkitActivityChatTablet.data), toolkitActivityChatTablet.ui)?.detail?.layers,

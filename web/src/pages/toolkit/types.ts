@@ -787,7 +787,15 @@ const ToolkitChatDetail = z.object({
   itemsLabel: z.string(),
   toolsLabel: z.string(),
   tools: z.array(ToolkitChatTool).min(1),
-  layers: z.object({ pageHeader: z.string(), header: z.string(), openSession: z.string() }).optional(),
+  layers: z
+    .object({
+      pageHeader: z.string(),
+      header: z.string(),
+      openSession: z.string(),
+      /** The keys of the item chips, in order: D18 names the list's chips the same (`link · writing-reviewer` 478:485). */
+      items: z.array(z.string()),
+    })
+    .optional(),
 })
 export type ToolkitChatDetail = z.infer<typeof ToolkitChatDetail>
 

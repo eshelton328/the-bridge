@@ -249,7 +249,7 @@ export const activityChatOpen: ToolkitActivityView = {
     ...activitySourcesDesktop.counts,
     chats: desktopChats({
       ...writerRulesChat,
-      layers: { pageHeader: '478:192', header: '475:374', openSession: '475:386' },
+      layers: { pageHeader: '478:192', header: '475:374', openSession: '475:386', items: ['478:485'] },
     }),
   },
 }

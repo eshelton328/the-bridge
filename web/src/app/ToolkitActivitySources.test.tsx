@@ -124,7 +124,7 @@ describe('the Chats and Headless runs sources on the desktop (D15, D16)', () => 
     await expect.poll(() => root.querySelector('article[aria-label="readme"]')).not.toBeNull()
     expect(chatPanel(root)).toBeNull()
     const { root: open } = await renderToolkit('toolkitActivityChat')
-    await userEvent.click(element(open, 'aside [data-figma="link · writing-reviewer"] button'))
+    await userEvent.click(element(open, 'aside [data-figma="478:485"] button'))
     await expect.poll(() => open.querySelector('article[aria-label="writing-reviewer"]')).not.toBeNull()
   })
 

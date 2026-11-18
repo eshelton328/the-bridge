@@ -35,14 +35,20 @@ export type ToolkitChatItemsProps = {
    * every chat's row and chips have the same names.
    */
   layer?: string | undefined
+  /** The chips' own keys, in order, where the frame names chips the same (D18 478:485). */
+  layers?: readonly string[] | undefined
 }
 
-export function ToolkitChatItems({ items, lead, onOpen, layer }: ToolkitChatItemsProps) {
+export function ToolkitChatItems({ items, lead, onOpen, layer, layers }: ToolkitChatItemsProps) {
   return (
     <div className={row} data-figma={layer}>
       {lead}
-      {items.map((i) => (
-        <span key={i.path} className={node} data-figma={layer === undefined ? undefined : linkLayer(i)}>
+      {items.map((i, n) => (
+        <span
+          key={i.path}
+          className={node}
+          data-figma={layer === undefined ? undefined : (layers?.[n] ?? linkLayer(i))}
+        >
           <MapNode
             label={chatItemLabel(i)}
             kind={i.kind}
