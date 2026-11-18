@@ -142,3 +142,28 @@ describe('the How it works tab of an agent on a tablet (T37)', () => {
     expect(Math.round((list?.top ?? 0) - (trigger?.bottom ?? -1))).toBe(6)
   })
 })
+
+// T38: a hook's How it works on a tablet keeps the item's header, as on its Overview (T19), then T10's column with
+// the five checks, with nothing under the steps; the last step ends above the tab bar.
+describe('the How it works tab of a hook on a tablet (T38)', () => {
+  it('keeps the header over five steps in one column, all above the tab bar', async () => {
+    await page.viewport(756, 1129)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=hookHowItWorksTablet'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(5)
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="path row"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="chat path"]')).toBeNull()
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    const cards = [...document.querySelectorAll('[data-figma^="step "]')].map((c) => c.getBoundingClientRect())
+    // One column: every card as wide as the list.
+    for (const card of cards) expect(Math.round(card.width)).toBe(Math.round(list?.width ?? -1))
+    // Figma's step 5 (495:2796) ends at 727, far above the tab bar (495:2687 at 1081).
+    const tabBar = document.querySelector('[data-figma="tab bar"]')?.getBoundingClientRect()
+    expect(list?.bottom ?? Number.POSITIVE_INFINITY).toBeLessThan(tabBar?.top ?? 0)
+  })
+})

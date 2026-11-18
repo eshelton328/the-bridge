@@ -138,7 +138,10 @@ what each file of a page folder is for.
   name and the path row) and the column starts where the tabs' panel puts
   it. An agent on a tablet (T37, `agentHowItWorksTablet`, D38's data with
   no `elsewhere` and `ui.from` set to writer, as on T7) keeps the same
-  header under the breadcrumb Toolkit › writer › writing-reviewer. Under
+  header under the breadcrumb Toolkit › writer › writing-reviewer. A hook
+  on a tablet (T38, `hookHowItWorksTablet`, D39's data with no
+  `elsewhere`, step 3's use shown as a file) keeps T19's header over the
+  five steps. Under
   the full header the steps start 14 under the trigger, where T10's start
   12 under it. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
   is the same column (`ToolkitHowColumn layout="phone"`), with the title in

@@ -484,3 +484,25 @@ export const AgentHowItWorksTablet: Story = {
     await expect(within(item).queryByText('It gets only')).toBeNull()
   },
 }
+
+export const HookHowItWorksTablet: Story = {
+  name: 'T38: a hook open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.hookHowItWorksTablet.data,
+    ui: toolkitStates.hookHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the hook's five steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getAllByRole('heading', { level: 4 })).toHaveLength(5)
+    await expect(within(steps).getByText('Exit 0 commits. Exit 1 prints one line for each problem.')).toBeVisible()
+    await expect(within(item).getByText(/^Runs on every git commit in the brain/)).toBeVisible()
+    // T38 draws nothing under the steps: no tests line.
+    await expect(within(item).queryByText('Tests')).toBeNull()
+  },
+}
