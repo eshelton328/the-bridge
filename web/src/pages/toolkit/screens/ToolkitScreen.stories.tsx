@@ -1020,3 +1020,17 @@ export const AgentLinks: Story = {
     await expect(within(to).getByRole('button', { name: 'writing-reviewer.md:102' })).toBeVisible()
   },
 }
+
+export const WorkflowLinks: Story = {
+  name: 'D31: a workflow open beside the list, on Links',
+  args: { data: toolkitStates.workflowLinks.data, ui: toolkitStates.workflowLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 4' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 2' })
+    await expect(within(from).getByRole('button', { name: 'workflows/skill-eval-cases.md:5' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 2' })
+    await expect(within(to).getByRole('button', { name: 'skill-eval-round.md:46' })).toBeVisible()
+  },
+}

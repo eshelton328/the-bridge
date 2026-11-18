@@ -287,7 +287,8 @@ what each file of a page folder is for.
   `empty`, the reason in the graph's left column and in its panel. An
   agent (D30, `agentLinks`, D7's data) has two items named writer on one
   side, the skill and the agent: each node and row keys on the item's
-  path. Only the
+  path. A workflow (D31, `workflowLinks`, D8's data) names the stage
+  before it and the agent it runs. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
