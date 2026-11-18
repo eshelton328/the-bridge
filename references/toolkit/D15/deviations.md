@@ -72,6 +72,16 @@ frame has no exceptions.json.
   longest, and every bar is cyan where Figma draws the agents violet
   (Most called bars). On a tablet the rows are 8 px narrower: the panel
   pads 16 at the sides where Figma pads 15 and 16.
+- **Most called bars' length** (each `bar · …`). The bars are about
+  45 % longer than Figma's: writing-reviewer's bar runs from x 928 to
+  its 15 at the panel's edge, about 520 px, where Figma's is 360 px
+  and ends about halfway across the panel (477:471, x 1021 to 1381).
+  Figma scales the bars by the chats' own largest count, as the render
+  does (writer's 3 is a fifth of it in both), but puts them after a
+  200 px label column; `HorizontalBarChart` takes no label width and
+  makes its column as wide as the longest label, so the bars start
+  about 90 px further left and fill the rest of the row (Most called
+  bars).
 - **Show all 8 chats** waits, disabled with a title: the data knows five
   of the eight chats, and no frame lists the other three.
 - **Page and source line** (`toolkit` h -10; `activity` y -6 h +34;

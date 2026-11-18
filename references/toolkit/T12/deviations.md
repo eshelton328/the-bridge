@@ -37,6 +37,10 @@ frame has no exceptions.json.
 
 ## Differences
 
+- **Source switch** (`source · segmented` y -5, w -15.7). The switch is
+  `ViewSwitch size="lg" tone="accent"`, 36 high and about 16 px
+  narrower than Figma's 202 × 38 (View switch 38 px): the library has
+  no 38 px size.
 - **Back row** (`back row` h +8). `BackRow`'s label is `labelLg` with an
   18 px chevron, 28 high, where Figma's row is 20 (Item breadcrumb).
 - **Key figures** (`kpis` and each `kpi · …`: y -6 h +6 on the desktop,
@@ -55,12 +59,18 @@ frame has no exceptions.json.
   `panel · calls per day` h +19 on a tablet, h +31 on the phone).
   `DailyBarChart` draws its own axis and is 78 high on every layout,
   where Figma's bars are 56 on a tablet and 44 on the phone (Activity
-  daily chart). Every part under it starts that much lower.
+  daily chart). Every part under it starts that much lower. Each bar
+  is about 27 px wide, where Figma's are 22 (477:1701 to 477:1703): the
+  chart sets a bar's width as a fixed share of a day and takes no bar
+  width (Activity daily chart).
 - **Evals** (each `eval · …` and `link · …` w +6.2 or +6.8;
   `panel · BY SKILL EVAL`). The skill's chip is a `MapNode` 28 high and
   about 6 px wider (Activity item chip). The share bar is
   `HorizontalBarChart` with one row: 10 high with no track, where
   Figma's is 6 high on a dark track as wide as the row (Eval share bar).
+  The bar starts 8 px right of the row's left edge, of the chip's and
+  of the sessions line, where Figma's starts at that edge: the chart's
+  empty label column keeps its 8 px column gap (Eval share bar).
   A tap on the row opens the skill's Evals tab and a tap on the chip its
   page; the fill of a hovered row lies behind its text.
 - **Most called** (`panel · MOST CALLED` or `panel · most called` and

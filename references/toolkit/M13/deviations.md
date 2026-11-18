@@ -30,6 +30,10 @@ frame has no exceptions.json.
 
 ## Differences
 
+- **Source switch** (`source · segmented` w -15.7). The switch is
+  `ViewSwitch size="lg" tone="accent"`, 36 high and about 16 px
+  narrower than Figma's 202 × 38 (View switch 38 px): the library has
+  no 38 px size.
 - **Key figures** (`kpis` and each `kpi · …`: y -6 h +6 on the desktop,
   y -7 on a tablet, h +8 two by two on the phone). `KpiTile` stacks the
   label under the value in one colour, where Figma puts the label on the
@@ -56,6 +60,13 @@ frame has no exceptions.json.
   `MapNode` 28 high, with the library's icon, about 6 px wider than
   Figma's (Activity item chip). Hover fills the row's line behind its
   content; the selected chat has `ListRow`'s selected colours.
+- **Chat rows' inset**. The chat icon, the title and the chips sit
+  about 11 px right of the panel heading's left edge, and the chevron
+  about 11 px left of the panel's inner edge, where Figma's start and
+  end level with the heading (`icon/chat` 477:2210 and
+  `CHATS THAT USED THE TOOLKIT` 477:2208 both at x 27). The rows sit
+  2 px in, and `ListRow padding="sm"` pads 8 inside its 1 px border; it
+  has no variant with no side padding (Activity chat row).
 - **Most called** (`panel · MOST CALLED` or `panel · most called` and
   each `bar · …`). `HorizontalBarChart` puts its rows 24 apart where
   Figma's desktop rows are 26, so each row is 2 px closer to the one

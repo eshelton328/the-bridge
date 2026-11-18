@@ -125,7 +125,14 @@ The frame has no exceptions.json.
 - **Chat rows** (`chat · Deep research on evals` h +29,
   `chat · Writer rules, skills, and agents` y +57 h +27). In the
   narrower view Brain NC1701 project and Deep research on evals wrap
-  their chips to a second line.
+  their chips to a second line, and the selected row, Writer rules,
+  skills, and agents, puts its writing-reviewer ×9 chip on a third line
+  under Nov 8 · omni-brain · 4 hook blocks, where Figma has it on that
+  line. Figma lays the 440 px chat panel over a full-width view, so
+  the row is 650 wide (`chat · Writer rules, skills, and agents`
+  478:412); AppShell's 420 side slot narrows the view beside it, so
+  the row is about 440 wide and the line and the chip do not fit side
+  by side (Run side panel, Activity chat row).
 - **Header, chips and source switch** (`filter · chips` w -14.2;
   `source · segmented` w -15.6, y -4 or -5 on a tablet; `counts legend`
   y -4.5). The chips are D1's, 2 px shorter in the library (Kind chip

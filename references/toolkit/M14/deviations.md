@@ -31,6 +31,10 @@ frame has no exceptions.json.
 
 ## Differences
 
+- **Source switch** (`source · segmented` w -15.7). The switch is
+  `ViewSwitch size="lg" tone="accent"`, 36 high and about 16 px
+  narrower than Figma's 202 × 38 (View switch 38 px): the library has
+  no 38 px size.
 - **Key figures** (`kpis` and each `kpi · …`: y -6 h +6 on the desktop,
   y -7 on a tablet, h +8 two by two on the phone). `KpiTile` stacks the
   label under the value in one colour, where Figma puts the label on the
@@ -53,6 +57,9 @@ frame has no exceptions.json.
   about 6 px wider (Activity item chip). The share bar is
   `HorizontalBarChart` with one row: 10 high with no track, where
   Figma's is 6 high on a dark track as wide as the row (Eval share bar).
+  The bar starts 8 px right of the row's left edge, of the chip's and
+  of the sessions line, where Figma's starts at that edge: the chart's
+  empty label column keeps its 8 px column gap (Eval share bar).
   A tap on the row opens the skill's Evals tab and a tap on the chip its
   page; the fill of a hovered row lies behind its text.
 - **Most called** (`panel · MOST CALLED` or `panel · most called` and

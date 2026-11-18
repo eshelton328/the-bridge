@@ -36,6 +36,10 @@ frame has no exceptions.json.
 
 ## Differences
 
+- **Source switch** (`source · segmented` y -5, w -15.7). The switch is
+  `ViewSwitch size="lg" tone="accent"`, 36 high and about 16 px
+  narrower than Figma's 202 × 38 (View switch 38 px): the library has
+  no 38 px size.
 - **Back row** (`back row` h +8). `BackRow`'s label is `labelLg` with an
   18 px chevron, 28 high, where Figma's row is 20 (Item breadcrumb).
 - **Key figures** (`kpis` and each `kpi · …`: y -6 h +6 on the desktop,
@@ -76,7 +80,12 @@ frame has no exceptions.json.
   link), disabled with a title: the data knows five of the eight chats.
   Under the taller chart and rows it lies under the tab bar.
 - **Under the tab bar** (`Harness status in omni brain`,
-  `Nov 8 · omni-brain · 2 hook blocks`, `agents-md` not visible).
+  `Nov 8 · omni-brain · 2 hook blocks`, `agents-md` not visible). The
+  last chat Figma shows over the tab bar, Harness status in omni brain,
+  has its title cut in half at the bar's top edge: under the taller
+  chart and rows it starts lower, and the opaque tab bar overlay
+  (AppShell `tabBarOverlay`) covers the title's lower half and the
+  line and chips under it (Activity daily chart, Activity chat row).
 - **Rules and text under the tab bar** (`hiddenOverflow` at
   `main.app-shell__detail` or its `scroll-frame__body`). The page runs
   under the tab bar, as in Figma (AppShell `tabBarOverlay`), and
