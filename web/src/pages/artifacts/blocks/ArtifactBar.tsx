@@ -27,8 +27,8 @@ export function ArtifactBar({ badge, found: text, discussOpen, onDiscuss, onCopy
       )}
       <span className={found}>{text}</span>
       <span data-figma="button · Discuss">
-        {/* Figma draws Discuss violet while the discussion is open; the library's pressed button is cyan. */}
-        <Button textSize="sm" pressed={discussOpen} onClick={onDiscuss}>
+        {/* Open, its border is accent.discuss; Figma's violet fill has no token (LIBRARY_GAPS.md). */}
+        <Button textSize="sm" pressed={discussOpen} pressedBorder="discuss" onClick={onDiscuss}>
           <BubbleIcon />
           Discuss
         </Button>
