@@ -64,3 +64,9 @@ the left of the menu (`moveToWorkspace`).
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **The reply shows through the menu (Menu surface opacity).** Figma's
+  chat actions menu (417:1740) is #0f1626 at 0.95 with a 12 px background
+  blur, so nothing under it shows. `Menu` draws `surface.overlay`
+  (rgba(15, 22, 38, 0.98)) with no backdrop blur, so Claude's reply under
+  it shows through, sharp, between Subagents · 2 and Folders…; the menu
+  is on top of the reply (review T12 F1).
