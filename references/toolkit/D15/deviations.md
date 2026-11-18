@@ -1,13 +1,13 @@
 # D15 deviations
 
 What still differs from Figma after the fidelity loop (pnpm fidelity
-  toolkit D15, 2026-11-18, against library 1.0.0-beta.42: a first run
-  and three fix rounds), each with its reason. The state is
-  web/src/pages/toolkit/states/toolkitActivityChats.ts: D11's view with
-  Chats picked. The library gaps are in
-  web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame gives
-  the same text, position and rule results as before these frames. The
-  frame has no exceptions.json.
+toolkit D15, 2026-11-18, against library 1.0.0-beta.42: a first run
+and three fix rounds), each with its reason. The state is
+web/src/pages/toolkit/states/toolkitActivityChats.ts: D11's view with
+Chats picked. The library gaps are in
+web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame gives
+the same text, position and rule results as before these frames. The
+frame has no exceptions.json.
 
 ## Checks
 
