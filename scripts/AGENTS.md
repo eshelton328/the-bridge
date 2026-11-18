@@ -34,6 +34,8 @@ It leaves `TODO` markers; the tests fail until each is filled in.
 - A generator writes only `*.gen.ts` files and has a `--check` mode that
   `pnpm verify` runs.
 - Test pure functions in a `*.test.ts` beside the script (`node --test`).
+- `skillQuery.test.ts` tests a web helper's speed in Node, as Chromium's
+  regex engine hides the backtracking that Safari and Node show.
 - Change a template and its use in `new.ts` together, and run each
   `pnpm new` kind once in a scratch copy to prove the result passes
   `tsc` and the lint.

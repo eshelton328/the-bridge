@@ -14,6 +14,7 @@
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
+import { skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { SkillPicker } from './SkillPicker.tsx'
@@ -69,13 +70,6 @@ const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: 
 // focus as its border, so the footer pads nothing under it and ends with the frame (M3).
 const phoneFrame = css({ '& > .scroll-frame__footer': { pb: '0', mb: '0' } })
 const footer = css({ display: 'flex', flexDirection: 'column' })
-
-/** The word before the caret when it starts with "/", such as "/wri" at the end of M10's message; null otherwise. */
-function skillQuery(text: string, caret: number): string | null {
-  const before = text.slice(0, caret)
-  const word = before.slice(before.search(/\S*$/))
-  return word.startsWith('/') ? word : null
-}
 
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
