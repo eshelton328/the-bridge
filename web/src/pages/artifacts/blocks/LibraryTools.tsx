@@ -152,6 +152,7 @@ export function LibraryTools({
           onOpenChange={onFilterOpenChange}
           onChecksChange={onFilterChecksChange}
           onApply={onFilterApply}
+          iconOnly={iconOnly}
         />
       ) : (
         <FilterPopover

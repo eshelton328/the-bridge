@@ -234,3 +234,16 @@ export const ArtifactPhone: Story = {
     await expect(canvas.getByText('Chat quiet-nebula')).toBeVisible()
   },
 }
+
+export const FilterPhone: Story = {
+  name: 'M3: the Filter sheet open over the library on a phone',
+  args: { data: artifactsStates.filterPhone.data, ui: artifactsStates.filterPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the phone's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; pnpm fidelity checks M3's sheet at the phone's width).
+    const menu = within(await within(document.body).findByRole('dialog', { name: /^Filter/ }))
+    await expect(menu.getByRole('button', { name: 'Show 7 artifacts' })).toBeVisible()
+    await expect(menu.getByRole('checkbox', { name: 'ncc-1701' })).toBeChecked()
+    await expect(menu.getByRole('checkbox', { name: 'omni' })).not.toBeChecked()
+  },
+}

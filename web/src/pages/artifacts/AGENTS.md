@@ -94,7 +94,9 @@ each file of a page folder is for.
   `LibraryTools iconOnly` (icon-only Sort and Filter, no view switch),
   `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
   group, whose `ArtifactRow`s put the age on the title line and New as a
-  badge under it; the rows are 6 apart.
+  badge under it; the rows are 6 apart. With `data.filterMenu` the
+  icon-only Filter opens T3's sheet over the tab bar (M3, `FilterSheet
+  iconOnly`).
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -202,7 +204,10 @@ each file of a page folder is for.
   workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
   artifacts", and only Earlier's five rows in the frame) and M2
   `artifactPhone` (M1's data with D2's open artifact in the phone's
-  shorter words and D7's discussion). `library` stays first in `states/index.ts`: the app
+  shorter words and D7's discussion) and M3 `filterPhone` (M1's data with
+  T3's sheet open and its two boxes checked; the menu's `footLayer` is
+  M3's node id of the footer around Show; `libraryPhone` does not hold the
+  menu, so M1's Filter opens nothing yet). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips

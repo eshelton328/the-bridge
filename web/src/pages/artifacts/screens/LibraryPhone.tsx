@@ -2,7 +2,8 @@
 // a plus button for Add a link, the source chips, the search with
 // icon-only Sort and Filter, when the library last checked its sources,
 // and a RowGroup per group: a list of rows with small previews, the age
-// and New at each row's end. The rows come from libraryView, as the
+// and New at each row's end. With a Filter menu, Filter opens it as a
+// sheet over the tab bar (M3), as on a tablet. The rows come from libraryView, as the
 // grid's cards do. Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -69,6 +70,20 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             onUiChange?.({ query })
           }}
           sortLabel={sort?.label ?? ''}
+          filterMenu={data.filterMenu}
+          filterChecks={ui.filterChecks}
+          filterOpen={ui.filterOpen}
+          onFilterOpenChange={(filterOpen) => {
+            onUiChange?.({ filterOpen })
+          }}
+          onFilterChecksChange={(filterChecks) => {
+            onUiChange?.({ filterChecks })
+          }}
+          onFilterApply={() => {
+            onUiChange?.({ filterOpen: false })
+          }}
+          // M3: Filter opens the Filter menu as a sheet over the tab bar, as on a tablet (T3).
+          filterAs="sheet"
           size="lg"
           iconOnly
           className={toolsRow}
