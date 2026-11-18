@@ -381,7 +381,8 @@ what each file of a page folder is for.
   row), and the agent keeps T7's breadcrumb (T21). On the phone (M15, M23
   to M26) the key figures sit two by two with no caption, and the item's
   tabs scroll so the selected tab shows (`tabScroll` in
-  `blocks/activityView.ts`, `blocks/useTabInView.ts`).
+  `blocks/activityView.ts`, `blocks/useTabInView.ts`), again when the
+  tab list's width changes (`ToolkitTabInView.test.tsx`).
   `activityView.test.ts` checks the view logic and that every state has
   the data its taps need; `src/app/ToolkitActivity.test.tsx` the layout and
   the taps (LIBRARY_GAPS.md, Activity bar chart, Activity chat row, KPI
