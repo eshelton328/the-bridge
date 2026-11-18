@@ -12,8 +12,8 @@ bar.
 
 ## Checks
 
-- Text: fails on one extra string, `Artifacts` (the tablet tab bar's
-  Artifacts tab). Every Figma string shows, the field value
+- Text: passes. The one extra string, `Artifacts` (the tablet tab bar's
+  Artifacts tab), is in `exceptions.json`. Every Figma string shows, the field value
   "the-bridge" and both Done strings included.
 - Position: 13 of 23 layers pass: the list (`105:1517`), the header
   (`105:1518`), + (`105:1525`), Done (`105:1523`), omni-brain's header
@@ -47,9 +47,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   and `TabBar size="tablet"` draws each tab 76 wide. So the render shows
   `Artifacts` (the extra text) and each of Figma's tabs sits 15 to 46 px
   from Figma's place (`tab · Home` to `tab · More`, `tab · Artifacts`).
-  `AppTabBar` is a shared block that this frame may not change. No
-  exception: the Inbox's tablet frames accept the same Artifacts tab
-  with one, but this build adds none, so the text check fails on it.
+  `AppTabBar` is a shared block that this frame may not change.
+  `exceptions.json` accepts the extra `Artifacts` text with the d-105
+  reason, as the Inbox's tablet frames do.
 - **Lower headers sit 5 to 6 px low (Phone chat row, Sidebar group
   header).** Each chat row is 52 high against Figma's 50, and each group
   header 30 against 29 (the 4 px grid, d-072, d-100). M2 has the same
@@ -87,4 +87,5 @@ shorter, below Figma's status bar (d-102), and the position check adds
   as the drag's alternative; Figma does not show what it opens.
 - **Data as Figma draws it.** theme tokens is not listed, and drift check
   shows Move to… in place of its status (`hideStatus`, `phone.moveTo`).
-- **No exceptions.**
+- **Exceptions:** `exceptions.json` accepts the extra text `Artifacts`
+  (d-105).
