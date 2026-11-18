@@ -99,4 +99,30 @@ describe('the tab bar over the phone page', () => {
     expect(box(lastLine).bottom).toBeLessThanOrEqual(box(start).top)
     await view.unmount()
   })
+  it('keeps the Undo toast above the bar while a long list scrolls (M22)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderAt('/inbox?state=tasksCreatedPhone')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('[data-figma="toast · created"]')).not.toBeNull()
+    const toastBox = root.querySelector('[data-figma="toast · created"]')
+    const list = toastBox?.parentElement
+    const detail = root.querySelector<HTMLElement>('.app-shell__detail')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (toastBox === null || list === null || list === undefined || detail === null || tabBar === null)
+      throw new Error('no toast, list, detail or tab bar')
+    // A tall block at the list's start, as an open Needs you group with the new tasks would make, so the list overflows.
+    const long = document.createElement('div')
+    long.style.height = '2000px'
+    long.style.flexShrink = '0'
+    list.prepend(long)
+    expect(detail.scrollHeight).toBeGreaterThan(detail.clientHeight)
+    // At rest and at the end of the scroll the toast sits above the bar, where Undo can be pressed: the toast sticks
+    // inside the detail's bottom padding, which the shell sets to the bar's height.
+    expect(box(toastBox).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    detail.scrollTop = detail.scrollHeight
+    await expect.poll(() => detail.scrollTop).toBeGreaterThan(0)
+    expect(box(toastBox).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })
