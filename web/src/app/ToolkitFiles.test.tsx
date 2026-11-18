@@ -343,6 +343,13 @@ describe('the selected script tapped again after Back to Files (T6)', () => {
 // The Files tab of the other kinds on a tablet (T32 to T35): the item keeps its header (the kind badge, the name and the
 // path row with where the item is), and the tree and the viewer are two boxes, the viewer under the tree, as on T4.
 const tabletKinds = [{ state: 'ruleFilesTablet', item: 'skills', file: 'skills.md', rows: 1, kind: 'Rule' }]
+tabletKinds.push({
+  state: 'agentFilesTablet',
+  item: 'writing-reviewer',
+  file: 'writing-reviewer.md',
+  rows: 1,
+  kind: 'Agent',
+})
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (T32 to T35)', () => {
   it.each(tabletKinds)('keeps $state’s header and puts $file under its $rows tree rows', async (kind) => {

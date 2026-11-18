@@ -45,6 +45,7 @@ import { hookFiles } from './hookFiles.ts'
 import { skillFilesTablet } from './skillFilesTablet.ts'
 import { scriptExplainedTablet } from './scriptExplainedTablet.ts'
 import { ruleFilesTablet } from './ruleFilesTablet.ts'
+import { agentFilesTablet } from './agentFilesTablet.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -91,4 +92,5 @@ export const toolkitStates = {
   skillFilesTablet,
   scriptExplainedTablet,
   ruleFilesTablet,
+  agentFilesTablet,
 }

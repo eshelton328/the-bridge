@@ -806,3 +806,24 @@ export const RuleFilesTablet: Story = {
     await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
   },
 }
+
+export const AgentFilesTablet: Story = {
+  name: 'T33: an agent’s files on a tablet, from the links of a skill',
+  args: { data: toolkitStates.agentFilesTablet.data, ui: toolkitStates.agentFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under the
+  // breadcrumb. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(
+      within(tree).getByText('The prompt. Its model and tools are in the frontmatter. 137 lines.'),
+    ).toBeVisible()
+    // The prompt opens rendered, with the Rendered and Source switch under its text.
+    const viewer = within(item).getByRole('region', { name: 'writing-reviewer.md' })
+    await expect(
+      within(viewer).getByText('You review one draft for a reader who has none of its author’s context.'),
+    ).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+  },
+}

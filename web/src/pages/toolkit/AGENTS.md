@@ -225,7 +225,8 @@ what each file of a page folder is for.
   browser with no `badge` keeps the item's header on a tablet, as on T17: a
   rule (T32, `ruleFilesTablet`, D33's list) shows its kind badge, name and path
   row over the tabs, its one file's role line ending with its length, and the
-  rule rendered under the tree. A
+  rule rendered under the tree; an agent (T33, `agentFilesTablet`, D34's list,
+  opened from writer as on T7) does the same under T7's breadcrumb. A
   Markdown file (a view with blocks and no code) opens rendered
   (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
   shows the source written back from the blocks (`markdownSource`), and
