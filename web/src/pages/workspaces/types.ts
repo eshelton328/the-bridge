@@ -387,6 +387,12 @@ export const PhoneText = z.object({
    * `closeWorkspace` (M13). Without it, the header's ⋯ draws only.
    */
   workspaceMenu: z.array(PaneAction).optional(),
+  /**
+   * The menu that + at the top of the phone's list opens (M15 208:515): New chat, which opens New chat (M7) in the
+   * current workspace, and New workspace, which adds a workspace named `untitled` and opens its name as a field in
+   * edit mode. Without it, + draws only.
+   */
+  addMenu: z.object({ newChat: z.string(), newWorkspace: z.string(), untitled: z.string() }).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -525,6 +531,11 @@ export const SidebarLayers = z.object({
   phoneFolders: PhoneFoldersLayers.optional(),
   /** The dialog that asks before a workspace closes, and its Cancel and Close (M13 208:765, 208:769, 208:771). */
   closeDialog: z.object({ dialog: z.string(), cancel: z.string(), close: z.string() }).optional(),
+  /**
+   * The menu that + opens on the phone (M15 208:515) and its icons, by action (208:521, 208:529): `Menu`'s rows take
+   * no `data-*`, so the icons carry the rows' places.
+   */
+  addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -778,6 +789,12 @@ export const WorkspacesUi = z.object({
   closedWorkspaces: z.array(z.string()).optional(),
   /** The workspace whose actions sheet is open over the phone's list (M14), or null. */
   workspaceMenuFor: z.string().nullable().optional(),
+  /** The menu that + opens at the top of the phone's list is open (M15). */
+  addMenuOpen: z.boolean().optional(),
+  /** The workspaces Erik added with that menu's New workspace, by id, with the name each started with. */
+  addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+  /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
+  newChatWorkspace: z.string().nullable().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

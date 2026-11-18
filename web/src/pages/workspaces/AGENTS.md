@@ -231,6 +231,12 @@ first: it says what each file of a page folder is for.
   the workspace's actions (`ui.workspaceMenuFor`), `PhoneChatActions` with
   no trigger, titled with the workspace: New chat in it, Rename workspace
   (edit mode with its name a field) and Close workspace (M13's dialog).
+  M15 adds `PhoneAddMenu` (+ at the top of the list and, with
+  `data.phone.addMenu`, the `Menu size="lg"` it opens under it, while
+  `ui.addMenuOpen`): New chat opens New chat (M7) with the current
+  workspace chosen (`ui.newChatWorkspace`), and New workspace adds one
+  (`ui.addedWorkspaces`, after the others) and opens its name as a field
+  in edit mode.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -295,7 +301,9 @@ first: it says what each file of a page folder is for.
   `phoneCloseWorkspace` (from `phoneEdit`, without its fields and with
   bridge themes showing no status: the dialog that asks before omni-brain
   closes), M14 `phoneWorkspaceActions` (from `phoneHome`, with M2's Done
-  and M13's dialog text: omni-brain's actions open in a sheet).
+  and M13's dialog text: omni-brain's actions open in a sheet), M15
+  `phoneAddMenu` (from `phoneHome`, with M2's Done and M7's New chat
+  form: the menu that + opens).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -336,7 +344,9 @@ first: it says what each file of a page folder is for.
   transcript, the panel's `fullTranscript` labels and the view's layers in
   `layers.subagentTranscript`; for M13 `phone.closeWorkspace`, the close
   dialog's text, and its layers in `layers.closeDialog`; for M14
-  `phone.workspaceMenu`, a workspace's actions) and
+  `phone.workspaceMenu`, a workspace's actions; for M15 `phone.addMenu`,
+  the labels of the menu that + opens, and its layers in
+  `layers.addMenu`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -357,6 +367,7 @@ first: it says what each file of a page folder is for.
   keyboard up over the phone's chat, and in M11 over New chat; for M13
   `closing`, the workspace whose close dialog is open, and
   `closedWorkspaces`; for M14 `workspaceMenuFor`, the workspace whose
-  actions are open), each a Zod schema.
+  actions are open; for M15 `addMenuOpen`, `addedWorkspaces` and
+  `newChatWorkspace`), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

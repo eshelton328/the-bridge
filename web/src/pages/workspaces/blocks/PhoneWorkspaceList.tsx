@@ -10,11 +10,14 @@
 // With `text.closeWorkspace`, × on a workspace in edit mode asks before it
 // closes (M13, `ui.closing`); Close takes the workspace off the list.
 // With `text.workspaceMenu`, the ⋯ of a workspace's header opens its actions
-// (M14, `ui.workspaceMenuFor`, the sheet in WorkspacesPhone). Props only.
-import { Button, Container, MoreIcon, PageHeader, PlusIcon } from '@eshelton328/component-library-1701'
+// (M14, `ui.workspaceMenuFor`, the sheet in WorkspacesPhone). With
+// `text.addMenu`, + opens New chat and New workspace (M15, `ui.addMenuOpen`,
+// PhoneAddMenu). Props only.
+import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
+import { PhoneAddMenu } from './PhoneAddMenu.tsx'
 import { PhoneEditGroup } from './PhoneEditGroup.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
 
@@ -42,6 +45,8 @@ export type PhoneWorkspaceListProps = {
   openable: readonly string[]
   ui: WorkspacesUi
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
+  /** A pick in the menu that + opens (M15); WorkspacesPhone opens New chat or adds the workspace. */
+  onAdd?: ((action: 'newChat' | 'newWorkspace') => void) | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
@@ -53,6 +58,7 @@ export function PhoneWorkspaceList({
   openable,
   ui,
   onUiChange,
+  onAdd,
   layers,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
@@ -117,10 +123,16 @@ export function PhoneWorkspaceList({
               {text.edit}
             </Button>
           )}
-          {/* M1 105:2335: + is 36 wide and 28 high, so not a square icon button. M2 105:2510: off in edit mode. */}
-          <Button size="sm" aria-label={text.add} disabled={editing} data-figma={layers?.phoneAdd}>
-            <PlusIcon size="16" />
-          </Button>
+          {/* M2 105:2510: + is off in edit mode. M15: with `text.addMenu` it opens New chat and New workspace. */}
+          <PhoneAddMenu
+            label={text.add}
+            text={text.addMenu}
+            disabled={editing}
+            open={ui.addMenuOpen === true}
+            onOpenChange={(addMenuOpen) => onUiChange?.({ addMenuOpen })}
+            onSelect={onAdd}
+            figma={{ trigger: layers?.phoneAdd, menu: layers?.addMenu?.menu, icons: layers?.addMenu?.icons }}
+          />
         </PageHeader>
       </div>
       {workspaces

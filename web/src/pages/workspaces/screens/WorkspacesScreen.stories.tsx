@@ -565,3 +565,20 @@ export const PhoneWorkspaceActions: Story = {
     await expect(within(document.body).queryByRole('dialog', { name: 'omni-brain' })).toBeNull()
   },
 }
+
+export const PhoneAddMenu: Story = {
+  name: 'M15: the menu that + opens over the phone list',
+  args: {
+    data: workspacesStates.phoneAddMenu.data,
+    ui: workspacesStates.phoneAddMenu.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width + opens New chat and New workspace (M15). WorkspacesPhoneAddMenu.test.tsx checks the menu
+    // and what each action does at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('menuitem', { name: 'New workspace' })).toBeNull()
+  },
+}

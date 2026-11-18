@@ -92,7 +92,9 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
   const names = ui.names ?? {}
   // The names Erik gave workspaces in the phone's edit mode (M2) take the place of their labels.
   const workspaceNames = ui.workspaceNames ?? {}
-  const workspaces = data.workspaces.map((w) => {
+  // The workspaces Erik added with the phone's New workspace (M15) follow the others, with no chats yet.
+  const added = (ui.addedWorkspaces ?? []).map((w) => ({ ...w, count: 0, needsYou: false, chats: [] }))
+  const workspaces = [...data.workspaces, ...added].map((w) => {
     const label = workspaceNames[w.id] ?? w.label
     return w.chats === undefined
       ? { ...w, label }

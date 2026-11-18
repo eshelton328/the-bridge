@@ -22,7 +22,9 @@
 // M14 is a workspace's actions (`ui.workspaceMenuFor`, PhoneChatActions with
 // `data.phone.workspaceMenu`), a sheet that the ⋯ of its header opens: New
 // chat in it, Rename (edit mode with its name a field) and Close (M13's
-// dialog).
+// dialog). M15 is the menu that + opens over the list (`ui.addMenuOpen`,
+// PhoneAddMenu): New chat opens M7 in the current workspace, and New
+// workspace adds one (`ui.addedWorkspaces`) with its name a field in edit mode.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -61,11 +63,32 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   // M14: the workspace of the list whose actions are open.
   const actionsFor = data.workspaces.find((w) => w.id === ui.workspaceMenuFor)
   const pickWorkspaceAction = (workspace: string, label: string, action: string) => {
-    if (action === 'newChat' && data.newChat !== undefined) onUiChange({ newChatOpen: true })
+    if (action === 'newChat' && data.newChat !== undefined)
+      onUiChange({ newChatOpen: true, newChatWorkspace: workspace })
     if (action === 'rename' && text.done !== undefined)
       onUiChange({ editing: true, renamingChats: {}, renamingWorkspaces: { [workspace]: label } })
     if (action === 'close' && text.closeWorkspace?.workspaces[workspace] !== undefined)
       onUiChange({ closing: workspace })
+  }
+  // M15: the menu that + opens. New chat opens New chat in the current workspace; New workspace adds one and opens
+  // its name as a field in edit mode.
+  const add = (action: 'newChat' | 'newWorkspace') => {
+    if (action === 'newChat') {
+      if (data.newChat !== undefined)
+        onUiChange({ addMenuOpen: false, newChatOpen: true, newChatWorkspace: data.current })
+      return
+    }
+    const untitled = text.addMenu?.untitled
+    if (untitled === undefined || text.done === undefined) return
+    const added = ui.addedWorkspaces ?? []
+    const id = `new-workspace-${String(added.length + 1)}`
+    onUiChange({
+      addMenuOpen: false,
+      addedWorkspaces: [...added, { id, label: untitled }],
+      editing: true,
+      renamingChats: {},
+      renamingWorkspaces: { [id]: untitled },
+    })
   }
   if (ui.newChatOpen === true && data.newChat !== undefined)
     return (
@@ -75,7 +98,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
           view="detail"
           detail={
             <PhoneNewChat
-              form={data.newChat}
+              form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
               workspaces={data.workspaces}
               onCancel={() => {
                 onUiChange({ newChatOpen: false, keyboardOpen: false })
@@ -285,6 +308,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
             openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
             ui={ui}
             onUiChange={onUiChange}
+            onAdd={add}
             layers={data.layers}
           />
         }
