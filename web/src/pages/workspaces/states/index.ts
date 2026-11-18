@@ -58,6 +58,7 @@ import { tabletFork } from './tabletFork.ts'
 import { tabletForkedChat } from './tabletForkedChat.ts'
 import { tabletSubtask } from './tabletSubtask.ts'
 import { tabletSubtaskRunning } from './tabletSubtaskRunning.ts'
+import { tabletMoveToWorkspace } from './tabletMoveToWorkspace.ts'
 
 export const workspacesStates = {
   workbench,
@@ -117,4 +118,5 @@ export const workspacesStates = {
   tabletForkedChat,
   tabletSubtask,
   tabletSubtaskRunning,
+  tabletMoveToWorkspace,
 }

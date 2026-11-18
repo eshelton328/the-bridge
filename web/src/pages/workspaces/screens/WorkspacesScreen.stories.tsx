@@ -865,3 +865,26 @@ export const TabletSubtaskRunning: Story = {
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }
+
+export const TabletMoveToWorkspace: Story = {
+  name: 'T12: Move to workspace on the tablet, its list beside the chat actions menu',
+  args: {
+    data: workspacesStates.tabletMoveToWorkspace.data,
+    ui: workspacesStates.tabletMoveToWorkspace.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its chat actions menu open on Move to workspace; the tablet's menu draws T12's chat with the menu under its ⋯ and
+    // Move to workspace's list beside it.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // The menu and its list render in portals, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: /Move to workspace/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await expect(await body.findByRole('menuitem', { name: 'skill-evals' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'New workspace…' })).toBeVisible()
+  },
+}

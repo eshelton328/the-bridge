@@ -328,6 +328,9 @@ first: it says what each file of a page folder is for.
   subtask started under Claude's reply, and D18's chat actions with
   Subagents · 3; Back returns to the list, where layout notes is D18's
   nested row under bridge themes.
+  T12 needs no new block: T2b's `ChatActionsMenu` under the tablet's ⋯
+  opens Move to workspace's list (`ui.moveOpen`, the-bridge in
+  `ui.moveTarget`) as D19 does, which the library puts on the menu's left.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -443,7 +446,9 @@ first: it says what each file of a page folder is for.
   Subtask form open: the form in a dialog over the chat on the tablet), T11
   `tabletSubtaskRunning` (from `tabletOneChat`, with M19's empty composer
   and D18's subtask row, line and chat actions: the chat full screen on
-  the tablet, Working, with the line where the subtask started).
+  the tablet, Working, with the line where the subtask started), T12
+  `tabletMoveToWorkspace` (from `tabletChatActions`, with D19's list
+  open on the-bridge: Move to workspace on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
