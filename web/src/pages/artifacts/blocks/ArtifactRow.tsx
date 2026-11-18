@@ -28,6 +28,11 @@ const end = css({ alignSelf: 'center' })
 // M1: the age over New (406:138, 406:144); one column 4 apart, so with the 20 px badge it is no taller than the title
 // and meta, and the row keeps D2's height (LIBRARY_GAPS.md: List row padding and age).
 const phoneEnd = css({ alignItems: 'flex-end' })
+// M1 406:121: the phone's rows pad their content 4 at the sides (the preview at 16, the age and New ending at 374),
+// against `ListRow`'s 10 inside its 1 px border. The row takes the 6 px difference outside the list's padding, as the
+// Inbox's phone rows do (Inbox M1), so its content sits 1 px inside Figma's; the element marked as the Figma row
+// keeps the row's 366 px (LIBRARY_GAPS.md: List row padding and age).
+const phoneRow = css({ mx: '-6' })
 
 export type ArtifactRowProps = {
   card: ArtifactCard
@@ -64,40 +69,43 @@ export function ArtifactRow({
             </span>
           ),
         }
+  const row = (
+    <ListRow
+      title={card.title}
+      highlight={titleMatch ? query : undefined}
+      leading={
+        <span className={thumb}>
+          <Thumbnail kind={card.preview} shape="compact" />
+        </span>
+      }
+      meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
+      trailing={
+        layout === 'phone' ? (
+          <Stack gap="4" className={phoneEnd}>
+            {card.age}
+            {card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : null}
+          </Stack>
+        ) : (
+          <Inline gap="12" align="center" className={end}>
+            {card.isNew ? <NewDot label="New" /> : null}
+            {card.age}
+          </Inline>
+        )
+      }
+      selected={selected}
+      onSelect={
+        onOpen === undefined
+          ? undefined
+          : () => {
+              onOpen(card.id)
+            }
+      }
+      {...line}
+    />
+  )
   return (
     <div data-figma={`artifact row · ${card.title}`}>
-      <ListRow
-        title={card.title}
-        highlight={titleMatch ? query : undefined}
-        leading={
-          <span className={thumb}>
-            <Thumbnail kind={card.preview} shape="compact" />
-          </span>
-        }
-        meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
-        trailing={
-          layout === 'phone' ? (
-            <Stack gap="4" className={phoneEnd}>
-              {card.age}
-              {card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : null}
-            </Stack>
-          ) : (
-            <Inline gap="12" align="center" className={end}>
-              {card.isNew ? <NewDot label="New" /> : null}
-              {card.age}
-            </Inline>
-          )
-        }
-        selected={selected}
-        onSelect={
-          onOpen === undefined
-            ? undefined
-            : () => {
-                onOpen(card.id)
-              }
-        }
-        {...line}
-      />
+      {layout === 'phone' ? <div className={phoneRow}>{row}</div> : row}
     </div>
   )
 }
