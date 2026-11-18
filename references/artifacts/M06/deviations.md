@@ -2,11 +2,11 @@
 
 What still differs from Figma after fix round 3 of the fidelity loop
 (`pnpm fidelity artifacts M06`, 2026-11-18, against the installed library
-1.0.0-beta.27), each with its reason. The library gaps are in
-`web/src/pages/artifacts/LIBRARY_GAPS.md`. M6 is M1's library on the
-phone with D5's Add a link form open as a sheet over the tab bar
-(`AddLinkSheet`, which holds the same `AddLinkFields` as D5's
-`AddLinkDialog`); the library under the scrim has M1's differences
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+M6 is M1's library on the phone with D5's Add a link form open as a sheet
+over the tab bar (`AddLinkSheet`, which holds the same `AddLinkFields` as
+D5's `AddLinkDialog`); the library under the scrim has M1's differences
 (`../M01/deviations.md`), and the form has D5's (`../D05/deviations.md`).
 
 ## Checks
@@ -74,18 +74,16 @@ the Project field passes and the offsets grow towards the top.
 ## Deviations: the library under the scrim (as M1)
 
 - **Source chips.** `filter · chips` w +4.2, as M1, M3 and M4: the chips
-  are 6 apart with 8 px sides against Figma's 5 and 9. Library gap
-  "Compact chip spacing".
-- **Rows.** The previews are smaller and drawn by `Thumbnail
-  shape="compact"` in one colour set per kind, and the rows are 62 high.
-  Library gaps "List row thumbnail", "List row padding and age" and
-  "Thumbnail colour".
-- **New badge.** New is a 57 × 20 pill with a 12 px outline spark
-  against Figma's 48 × 16 pill with a filled four-point star (408:513,
-  408:514). The badge has no border (the library's `pill` badge sets
-  none); under the scrim its larger rounded edge reads as an outline
-  next to Figma's smaller pill. The fill is Figma's teal. Library gap
-  "New badge".
+  are 6 apart against Figma's 5 (d-072), with Figma's 9 px sides.
+  Library gap "Compact chip spacing".
+- **Rows.** As M1: the previews are `Thumbnail size="md"`, 76 × 48 as
+  Figma's, but drawn as D2's row drawing scaled up, with window dots and
+  smaller cells (library gap "Phone row preview drawing"), and the rows
+  are 70 high against Figma's 66, at Figma's 68 px pitch (library gap
+  "List row padding and age"). New is `Badge size="xs"` with
+  `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
+  is 12 px against 9 (408:513, 408:514; library gap "New badge"). The
+  previews' colours differ as in M1 (library gap "Thumbnail colour").
 - **Device chrome.** The status bar (9:41), the home indicator (408:700)
   and the screen corners are not drawn (d-089); the checks measure the
   render 38 px shorter, under Figma's status bar (d-102). Figma draws no

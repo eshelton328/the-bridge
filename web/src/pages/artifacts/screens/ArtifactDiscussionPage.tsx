@@ -65,8 +65,6 @@ const phoneFooter = css({
   px: '12',
   bg: 'bg.canvas',
 })
-// M9 454:408: the model and context hug their width in the card, under the meta line.
-const cardModel = css({ alignSelf: 'flex-start' })
 
 export type ArtifactDiscussionPageProps = {
   /** The tablet's page (T4, the default) or the phone's (M9). */
@@ -104,7 +102,7 @@ export function ArtifactDiscussionPage({
 }: ArtifactDiscussionPageProps) {
   const back = discussion.back ?? artifact.title
   const phone = layout === 'phone'
-  const model = <ModelContext discussion={discussion} className={phone ? cardModel : undefined} />
+  const model = <ModelContext discussion={discussion} />
   return (
     <div className={page}>
       <DetailFrame

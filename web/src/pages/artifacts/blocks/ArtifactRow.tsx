@@ -13,7 +13,7 @@ import {
   KindMark,
   ListRow,
   MetaLine,
-  SparkIcon,
+  SparkFilledIcon,
   Stack,
   Thumbnail,
 } from '@eshelton328/component-library-1701'
@@ -21,12 +21,13 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactCard } from '../types.ts'
 import { NewDot } from './NewDot.tsx'
 
-// Figma's row preview is 64 × 40 (403:194). No size token is 64 (LIBRARY_GAPS.md: List row thumbnail);
-// `control.xl` (44) is the nearest, and the compact thumbnail keeps its 8:5 shape, so it is 27.5 high.
-const thumb = css({ w: 'control.xl', alignSelf: 'center' })
+// Figma's row preview is 64 × 40 on the desktop (403:194, `Thumbnail size="sm"`) and 76 × 48 on the phone (406:122,
+// `size="md"`), each centred down the row. The phone's drawing is D2's scaled up; Figma draws its own (LIBRARY_GAPS.md:
+// Phone row preview drawing).
+const thumb = css({ alignSelf: 'center' })
 const end = css({ alignSelf: 'center' })
-// M1: the age over New (406:138, 406:144); one column 4 apart, so with the 20 px badge it is no taller than the title
-// and meta, and the row keeps D2's height (LIBRARY_GAPS.md: List row padding and age).
+// M1: the age over New (406:138, 406:144), one column 4 apart; New is Figma's 48 × 16 pill with its filled star
+// (`Badge size="xs"`, `SparkFilledIcon`).
 const phoneEnd = css({ alignItems: 'flex-end' })
 // M1 406:121: the phone's rows pad their content 4 at the sides (the preview at 16, the age and New ending at 374),
 // against `ListRow`'s 10 inside its 1 px border. The row takes the 6 px difference outside the list's padding, as the
@@ -75,7 +76,7 @@ export function ArtifactRow({
       highlight={titleMatch ? query : undefined}
       leading={
         <span className={thumb}>
-          <Thumbnail kind={card.preview} shape="compact" />
+          <Thumbnail kind={card.preview} size={layout === 'phone' ? 'md' : 'sm'} />
         </span>
       }
       meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
@@ -83,7 +84,7 @@ export function ArtifactRow({
         layout === 'phone' ? (
           <Stack gap="4" className={phoneEnd}>
             {card.age}
-            {card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : null}
+            {card.isNew ? <Badge label="New" tone="working" size="xs" icon={<SparkFilledIcon size="12" />} /> : null}
           </Stack>
         ) : (
           <Inline gap="12" align="center" className={end}>

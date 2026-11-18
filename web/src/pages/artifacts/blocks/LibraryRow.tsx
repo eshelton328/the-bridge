@@ -27,9 +27,6 @@ const box = css({
   borderStyle: 'solid',
   borderColor: 'border.default',
 })
-// Figma's preview is 128 × 72 (403:8217). No size token is 128 (LIBRARY_GAPS.md: List row thumbnail); `control.xl`
-// (44) is the nearest content size, as the D2 row's, and the wide thumbnail keeps its 16:9 shape.
-const thumb = css({ w: 'control.xl' })
 
 export type LibraryRowProps = {
   card: ArtifactCard
@@ -49,11 +46,8 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
       <ListRow
         title={card.title}
         highlight={place === 'title' ? query : undefined}
-        leading={
-          <span className={thumb}>
-            <Thumbnail kind={card.preview} shape="wide" />
-          </span>
-        }
+        // Figma's preview is 128 × 72 (403:8217): the card's drawing at 16:9.
+        leading={<Thumbnail kind={card.preview} size="lg" shape="wide" />}
         trailing={
           <Inline gap="16" align="center">
             {card.isNew ? <NewDot label="New" /> : null}

@@ -113,12 +113,17 @@ each file of a page folder is for.
   says how many show, such as "3 of 24". With `data.addLinkForm` (D5)
   Add a link opens `AddLinkDialog`.
   `screens/LibraryPhone.tsx`: the library on a phone (M1): `LibraryHeader
-  layout="phone"` (a 36 px plus button for Add a link), the chips,
+  layout="phone"` (a 36 px plus button for Add a link), the chips (with
+  FilterChips' 2 px focus room below them taken back, `mb: '-2'`, as
+  `LibraryList` does on every side),
   `LibraryTools iconOnly` (icon-only 36 px Sort and Filter with their
   icons in `fg.muted`, also while pressed, and no view switch),
   `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
-  group, 6 apart, whose `ArtifactRow`s put the age on the title line and
-  New as a badge under it; the rows are 6 apart, and each takes
+  group, each after the first 2 up into the last row's padding, whose
+  `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
+  the title line and New under it as `Badge size="xs"` with
+  `SparkFilledIcon`; the rows are 70 high, each after the first 2 up, so
+  they keep Figma's 68 px pitch, and each takes
   `ListRow`'s extra 6 px at the sides outside the page's 12 px padding
   (`mx: -6`, as the Inbox's phone rows), so its preview starts 4 in from
   the row's side, as Figma's. The sheets over the phone's library and
@@ -164,7 +169,7 @@ each file of a page folder is for.
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
   source, project and age; `onOpen` makes it a button). For D2:
-  `RowGroup` and `ArtifactRow` (`ListRow` with a compact `Thumbnail`,
+  `RowGroup` and `ArtifactRow` (`ListRow` with a `Thumbnail size="sm"`,
   the kind mark and project, the New dot and the age; the open
   artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
@@ -182,8 +187,8 @@ each file of a page folder is for.
   boxes, the `FilterMenu` and Show the full width; Show applies the boxes
   and closes it, and the scrim and Escape close it and keep them, so both
   return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
-  `GroupHeader` over rows 6 apart), `LibraryRow` (`ListRow` in a bordered
-  box: a wide `Thumbnail`, the title and the description with the match
+  `GroupHeader` over rows 8 apart, Figma's 104 px pitch), `LibraryRow`
+  (`ListRow` in a bordered box: a `Thumbnail size="lg" shape="wide"`, the title and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
   it, and at the end the New dot, the place as `Badge variant="tag"`, the
   age and an icon-only Open) and `NewDot` (the list rows' New dot, also in
@@ -219,7 +224,9 @@ each file of a page folder is for.
   state or the sent messages, and `Composer`, whose draft is
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
   workspace and Close, `ModelContext` and `DiscussionGuard`),
-  `ModelContext` (`ModelChip`, `ContextMeter` and "context"),
+  `ModelContext` (`ModelChip`, `ContextMeter` and "context" in
+  `smallXs`, Figma's 11 px sans; on the phone it hugs its width in the
+  card),
   `DiscussionGuard` (the lock and what the discussion may do) and
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the

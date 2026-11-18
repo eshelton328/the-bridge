@@ -2,11 +2,12 @@
 
 What still differs from Figma after fix round 2 of the fidelity loop
 (`pnpm fidelity artifacts M03`, 2026-11-18, against the installed library
-1.0.0-beta.27), each with its reason. The library gaps are in
-`web/src/pages/artifacts/LIBRARY_GAPS.md`. M3 is M1's library on the
-phone with T3's Filter sheet open over the tab bar (`FilterSheet
-iconOnly`); the library under the scrim has M1's differences
-(`../M01/deviations.md`), and the sheet has T3's (`../T03/deviations.md`).
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+M3 is M1's library on the phone with T3's Filter sheet open over the tab
+bar (`FilterSheet iconOnly`); the library under the scrim has M1's
+differences (`../M01/deviations.md`), and the sheet has T3's
+(`../T03/deviations.md`).
 
 ## Checks
 
@@ -45,15 +46,16 @@ iconOnly`); the library under the scrim has M1's differences
   `Checkbox` takes only a text label. Library gap "Checkbox leading
   icon".
 - **Source chips.** `filter · chips` w +4.2, as M1: the chips are 6 apart
-  with 8 px sides against Figma's 5 and 9. Library gap "Compact chip
-  spacing".
-- **Rows under the scrim.** As M1: the previews are 44 × 27.5 against
-  Figma's 76 × 48 and drawn by `Thumbnail shape="compact"`, and the rows
-  are 62 high, 6 apart. New is a 57 × 20 badge with an outline spark
-  against Figma's 48 × 16 pill with a filled four-point star (407:99,
-  407:100); the fill is Figma's teal. Library gaps "List row
-  thumbnail", "List row padding and age", "Thumbnail colour" and "New
-  badge".
+  against Figma's 5 (d-072), with Figma's 9 px sides. Library gap
+  "Compact chip spacing".
+- **Rows under the scrim.** As M1: the previews are `Thumbnail size="md"`,
+  76 × 48 as Figma's, but drawn as D2's row drawing scaled up, with window
+  dots and smaller cells (library gap "Phone row preview drawing"), and
+  the rows are 70 high against Figma's 66, at Figma's 68 px pitch (library
+  gap "List row padding and age"). New is `Badge size="xs"` with
+  `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
+  is 12 px against 9 (407:99, 407:100; library gap "New badge"). The
+  previews' colours differ as in M1 (library gap "Thumbnail colour").
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier, as T3.
 - **Device chrome.** The status bar (9:41), the home indicator (407:287)

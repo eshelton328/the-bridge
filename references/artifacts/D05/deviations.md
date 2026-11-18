@@ -6,6 +6,9 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. The library behind the dialog
 is D01's, so its deviations are D01's.
 
+Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
+artifacts`): the text, position and rules results did not change.
+
 ## Checks
 
 - Text: passes, as D01: the view switch draws its icons alone
@@ -78,8 +81,11 @@ is D01's, so its deviations are D01's.
   their sides more than Figma's 11 px, and the search and the space
   before the view switch share the free width equally where Figma gives
   the search 22 px more. Library gap "Sort and Filter button widths".
-- **Source chips.** `filter · chips` w +7.2: the chips are 6 apart with
-  8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
+- **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
+  draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
+  chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
+  tie takes the larger (d-072), so no library change closes it. Library
+  gap "Compact chip spacing".
 - **Cards.** `artifact card · Skill eval pass rates`,
   `artifact card · Hono server spike`, `artifact card · Inbox task lifecycle`,
   `artifact card · Tailscale access check`,
