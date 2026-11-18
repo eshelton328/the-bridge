@@ -5,6 +5,7 @@
 // border.active while open (D19's Figma ⋯ differs; see its deviations.md).
 // Props only.
 import { Button, MoreIcon } from '@eshelton328/component-library-1701'
+import type { ReactElement } from 'react'
 import type { PaneAction, Workspace } from '../types.ts'
 import { PaneMenu } from './PaneMenu.tsx'
 
@@ -27,23 +28,27 @@ export type ChatActionsMenuProps = {
   onMoveTargetChange?: ((workspace: string | null) => void) | undefined
   /** The Figma layers of the ⋯ and of the open menu, for the fidelity checks; D2's ⋯ when not set. */
   figma?: { trigger?: string | undefined; menu?: string | undefined } | undefined
+  /** The button that opens the menu, such as the tablet chat's bare ⋯ (T2b); the header's ⋯ button when not set. */
+  trigger?: ReactElement | undefined
 }
 
-export function ChatActionsMenu({ figma, ...props }: ChatActionsMenuProps) {
+export function ChatActionsMenu({ figma, trigger, ...props }: ChatActionsMenuProps) {
   return (
     <PaneMenu
       {...props}
       separatorBefore="subagents"
       figma={{ menu: figma?.menu }}
       trigger={
-        <Button
-          size="xs"
-          pressed={props.open}
-          aria-label={`${props.title} actions`}
-          data-figma={figma?.trigger ?? '400:2'}
-        >
-          <MoreIcon size="12" />
-        </Button>
+        trigger ?? (
+          <Button
+            size="xs"
+            pressed={props.open}
+            aria-label={`${props.title} actions`}
+            data-figma={figma?.trigger ?? '400:2'}
+          >
+            <MoreIcon size="12" />
+          </Button>
+        )
       }
     />
   )
