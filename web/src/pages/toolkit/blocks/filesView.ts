@@ -89,13 +89,17 @@ export function markdownSource(blocks: readonly ToolkitMarkdownBlock[]): string[
   })
 }
 
+/** Whether a file opens on a page of its own on a tablet or phone (T6): a script with an explanation. */
+export function opensOwnPage(view: ToolkitFileView | undefined): boolean {
+  return fileModes(view).some((m) => m.value === 'explain')
+}
+
 /**
  * The ui change that selects a file in the tree: the file on its default view. On a tablet or phone a script with an
  * explanation opens on a page of its own (T6), since Explain needs the item's width; another file opens under the
  * tree (T4).
  */
 export function selectFile(browser: ToolkitFileBrowser, path: string, narrow: boolean): Partial<ToolkitUi> {
-  const view = openFile(browser, path).view
-  const page = narrow && fileModes(view).some((m) => m.value === 'explain')
+  const page = narrow && opensOwnPage(openFile(browser, path).view)
   return { file: path, fileView: undefined, filePage: page ? true : undefined }
 }

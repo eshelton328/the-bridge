@@ -8,10 +8,11 @@
 // tree and the viewer are two bordered boxes, the viewer under the tree, each
 // as high as its content. Props only.
 import { FileTree } from '@eshelton328/component-library-1701'
+import type { KeyboardEvent, MouseEvent } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileBrowser as Browser } from '../types.ts'
-import { type FileMode, fileMode, type OpenFile } from './filesView.ts'
+import { type FileMode, fileMode, type OpenFile, opensOwnPage } from './filesView.ts'
 import { ToolkitFileViewer } from './ToolkitFileViewer.tsx'
 
 // D6 432:2141: a bordered box, as the Overview's file preview (D3 427:273). The library has no file browser frame
@@ -94,10 +95,25 @@ export function ToolkitFileBrowser({
   const files = (
     <FileTree nodes={browser.tree} selected={open.path} defaultExpanded={browser.expanded} onSelect={onSelect} />
   )
+  // On a tablet or phone a script with an explanation leaves the tree for its own page (T6), and Back to Files comes
+  // back with it still selected. The library's FileTree reports no tap on the row that is already selected, so a tap
+  // or Enter on that row here selects it again, and the script opens its page again.
+  const reopen = (event: MouseEvent | KeyboardEvent) => {
+    if (!opensOwnPage(open.view) || !(event.target instanceof Element)) return
+    const row = event.target.closest('[role="treeitem"]')
+    if (row?.getAttribute('aria-selected') === 'true') onSelect?.(open.path)
+  }
   if (!desktop)
     return (
       <div className={stacked}>
-        <div className={treeBox} data-figma="tree">
+        <div
+          className={treeBox}
+          data-figma="tree"
+          onClickCapture={reopen}
+          onKeyDownCapture={(event) => {
+            if (event.key === 'Enter') reopen(event)
+          }}
+        >
           {files}
         </div>
         {viewer}

@@ -309,3 +309,33 @@ describe('a script explained on a tablet (T6)', () => {
     await view.unmount()
   })
 })
+
+// A script explained on a tablet, tapped again (T6): Back to Files shows the tree with the script still selected; the
+// library's FileTree reports no click on the row that is already selected, so the Files tab handles that tap itself
+// and the script opens its page again.
+describe('the selected script tapped again after Back to Files (T6)', () => {
+  it('opens the script’s page again from its selected row', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('scriptExplainedTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="mode row"]')).not.toBeNull()
+    const back = [...root.querySelectorAll('[data-figma="back row"] button')].find((el) =>
+      el.textContent.includes('Files'),
+    )
+    if (back === undefined) throw new Error('no Back to Files')
+    await userEvent.click(back)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    const check = [...root.querySelectorAll('[role="treeitem"]')].find((r) => r.textContent.startsWith('check'))
+    if (check === undefined) throw new Error('no check row')
+    expect(check.getAttribute('aria-selected')).toBe('true')
+    await userEvent.click(check)
+    await expect.poll(() => root.querySelector('[data-figma="mode row"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="tree"]')).toBeNull()
+    expect(root.querySelector('article h2')?.textContent).toBe('check')
+    await view.unmount()
+  })
+})

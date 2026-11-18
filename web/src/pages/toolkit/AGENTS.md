@@ -232,7 +232,9 @@ what each file of a page folder is for.
   sets it): the back row goes back to Files, the title and the path badge name
   the script (the badge's folder and the file's path), and `ToolkitFilePage`
   puts the Explain and Code switch in a row over the box. Back to Files shows
-  the tree with the script under it. Only the
+  the tree with the script under it, still selected; a tap on its row opens its
+  page again (`opensOwnPage`; the library's FileTree reports no tap on the
+  selected row, so `ToolkitFileBrowser` handles it). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
