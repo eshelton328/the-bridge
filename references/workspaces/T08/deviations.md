@@ -100,6 +100,8 @@ chat under it inert: no exception is needed.
 - **The name hint is brighter (Field hint).** Figma draws "you can
   rename it later" in #4a5675 (420:557); `FormField` draws it in
   `fg.subtle` (#7986a6), the faintest dark text token (review T08 F3).
+  The hint keeps `fg.subtle`: #4a5675 on the dark surface is under
+  4.5:1 and fails WCAG 1.4.3 (coordinator, d-100).
 - **The chat's composer shows no outline under the dialog (Composer
   under a dialog).** Figma draws it with the cyan focus border (420:520:
   #5ee1ff at 0.6), which reads teal-grey under the scrim (#070b14 at

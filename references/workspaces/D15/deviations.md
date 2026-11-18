@@ -74,3 +74,5 @@ it (`forkDialog`, `ui.chatDialog: 'fork'`).
 - **The name hint is brighter (Field hint).** Figma draws "you can
   rename it later" in #4a5675 (417:318); `FormField` draws it in
   `fg.subtle` (#7986a6), the faintest dark text token, as on T08.
+  The hint keeps `fg.subtle`: #4a5675 on the dark surface is under
+  4.5:1 and fails WCAG 1.4.3 (coordinator, d-100).
