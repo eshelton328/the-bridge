@@ -154,3 +154,26 @@ describe('the Links tab on a tablet', () => {
     await expect.poll(() => root.querySelector('article[aria-label="audit-slop"]')).not.toBeNull()
   })
 })
+
+describe('a rule’s Links tab on a tablet (T28)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the rule’s header and says why nothing links to it, the panels under the graph', async () => {
+    const { root } = await renderTablet('ruleLinksTablet', 'links')
+    const item = root.querySelector('article[aria-label="skills"]')
+    if (item === null) throw new Error('no item')
+    expect(item.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(item.querySelector('[data-figma="path row"]')).not.toBeNull()
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    const graph = box(root, '[data-figma="links graph"]')
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(from.top).toBeGreaterThan(graph.bottom)
+    expect(to.top).toBeGreaterThan(from.bottom)
+    expect(root.querySelector('[data-figma="links graph"]')?.textContent).toContain('No item links here.')
+    // The graph holds the rule and the one skill it names.
+    expect(root.querySelectorAll('[data-figma="links graph"] button')).toHaveLength(2)
+  })
+})

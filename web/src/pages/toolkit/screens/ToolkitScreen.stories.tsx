@@ -1063,3 +1063,18 @@ export const SkillLinksTablet: Story = {
     await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
   },
 }
+
+export const RuleLinksTablet: Story = {
+  name: 'T28: a rule’s links on a tablet, under the rule’s header',
+  args: { data: toolkitStates.ruleLinksTablet.data, ui: toolkitStates.ruleLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 1' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'skills.md:72' })).toBeVisible()
+    await expect(within(item).getByText(/No item links here/)).toBeVisible()
+  },
+}

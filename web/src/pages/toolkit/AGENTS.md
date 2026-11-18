@@ -294,7 +294,10 @@ what each file of a page folder is for.
   replaces the list in `DetailFrame`; its `links` sets `named`, so the back
   row names the item (Toolkit › writer) and the kind badge and path rows are
   left out, as on T10. The graph is narrower (`linksGraph`'s `tablet` size)
-  and the panels stand one under the other (`ToolkitLinks` `layout`). Only the
+  and the panels stand one under the other (`ToolkitLinks` `layout`). A rule
+  on a tablet (T28, `ruleLinksTablet`, D29's data) does not set `named`, so
+  the item keeps T17's header (Toolkit, the kind badge, the name and the path
+  row) over the same tab. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
