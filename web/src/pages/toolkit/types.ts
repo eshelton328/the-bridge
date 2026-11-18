@@ -154,6 +154,47 @@ const ToolkitFlowPhase = z.object({
 })
 
 /**
+ * One step of a workflow's page (D13 `step · Primary grades` 447:31): D8's step card with no row, and an id that the
+ * page selects it by. `then` is a line in amber after the notes, such as "Then G1 and G6" (447:16): what runs after the
+ * step. `fields` is what the selected step's panel shows (D13 `panel · step 4` 446:621): each field's label and value,
+ * the value in mono for a command (446:628). A step with no fields shows only the panel's hint.
+ */
+const ToolkitPageStep = ToolkitFlowStep.omit({ row: true, down: true }).extend({
+  id: z.string(),
+  then: z.string().optional(),
+  fields: z.array(z.object({ label: z.string(), value: z.string(), mono: z.boolean().optional() })).optional(),
+})
+
+/**
+ * A workflow's steps on a page of their own (D13 `panel · flow` 446:515 and `row · details` 446:620), from the Mermaid
+ * flow and the steps table: the header's label and legend, the stages in order (a stage of two or more steps runs them
+ * in parallel, D13 steps 4 and 5), the way out of a gate (D13 `no` 447:85 to `stop · skill-eval-cases` 447:68), the
+ * loop back to it (`new failure` 447:86, under the step `under`), the hint of the selected step's panel, the gates and
+ * the rounds in the ledgers. On a tablet (T8) the page has no stop box, loop label, hint, gates or rounds.
+ */
+const ToolkitFlowPage = z.object({
+  label: z.string(),
+  legend: z.array(z.object({ type: z.enum(['gate', 'script', 'agent', 'person']), label: z.string() })),
+  stages: z.array(z.array(ToolkitPageStep).min(1).max(2)).min(1),
+  /** The gate's way out: the step it leaves, the arrow's label, the stop's text and the workflow the stop runs. */
+  exit: z.object({ from: z.string(), label: z.string(), text: z.string(), workflow: z.string() }).optional(),
+  loop: z.object({ label: z.string(), under: z.string() }).optional(),
+  /** The hint at the end of the selected step's panel (D13 446:625); T8 has none. */
+  hint: z.string().optional(),
+  /** The gates' panel (D13 446:647); T8 shows only the selected step's panel under the flow. */
+  gates: z.object({ label: z.string(), items: z.array(z.object({ title: z.string(), text: z.string() })) }).optional(),
+  /** The rounds' panel (D13 446:658); none on T8. */
+  rounds: z
+    .object({
+      label: z.string(),
+      source: z.string(),
+      items: z.array(z.object({ name: z.string(), date: z.string() })),
+      note: z.string().optional(),
+    })
+    .optional(),
+})
+
+/**
  * What a step of How it works uses (D14 `uses · scripts/check` 460:55): a file it reads, a script it runs (`code`) or
  * a toolkit item it starts or loads, by kind. The kind picks the chip's icon.
  */
@@ -267,6 +308,11 @@ export const ToolkitItemDetailView = z.object({
     .optional(),
   /** The How it works tab (D14): the item's steps. None when the item has no such tab yet; its panel is then empty. */
   how: ToolkitHowItWorks.optional(),
+  /**
+   * A workflow's page (D13): its How it works tab when the workflow opens on a page of its own, without the list
+   * (`ui.flowFullPage`). None for an item that is not a workflow.
+   */
+  flowPage: ToolkitFlowPage.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -342,10 +388,12 @@ export const ToolkitUi = z.object({
    */
   from: z.string().nullable().optional(),
   /**
-   * Whether the open workflow's steps fill the page (D8's Open full page; the page is D13, a later frame). Until D13
-   * is built the screen shows the item as before. Not open when not set.
+   * Whether the open workflow fills the page, without the list (D8's Open full page, D13). Only an item with a
+   * `flowPage` opens so; another item opens beside the list. Not open when not set.
    */
   flowFullPage: z.boolean().optional(),
+  /** The id of the step selected on a workflow's page (D13); its first step with fields when not set. */
+  flowStep: z.string().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

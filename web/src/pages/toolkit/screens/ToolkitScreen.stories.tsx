@@ -566,3 +566,64 @@ export const HookHowItWorksPhone: Story = {
     await expect(within(item).queryByText('Tests')).toBeNull()
   },
 }
+
+export const WorkflowFullPage: Story = {
+  name: 'D13: a workflow on a page of its own, with its flow and step 4 selected',
+  args: { data: toolkitStates.workflowFullPage.data, ui: toolkitStates.workflowFullPage.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Workflows')
+    await expect(within(item).getByText('changed 6 days ago · run by hand')).toBeVisible()
+    await expect(
+      within(item).getByRole('heading', { name: 'Steps · from the Mermaid flow and the steps table' }),
+    ).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeVisible()
+    await expect(within(item).getByRole('heading', { name: 'Step 4 · Primary grades' })).toBeVisible()
+    await expect(within(item).getByText('grade.py <round> <skill> primary')).toBeVisible()
+    await expect(within(item).getByText('stop: run skill-eval-cases')).toBeVisible()
+    await expect(within(item).getByText('writer · round 6')).toBeVisible()
+    // The page has no list beside it.
+    await expect(canvas.queryByRole('button', { name: 'agents-md' })).toBeNull()
+  },
+}
+
+export const WorkflowFullPageTablet: Story = {
+  name: 'T08: a workflow on a page of its own on a tablet, its flow as a column of steps',
+  args: {
+    data: toolkitStates.workflowFullPageTablet.data,
+    ui: toolkitStates.workflowFullPageTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the steps in one column under the breadcrumb.
+  // The play test checks what every width shows; src/app/ToolkitWorkflowPage.test.tsx checks the tablet's column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(canvas.getByRole('navigation', { name: 'Breadcrumb' })).toHaveTextContent('Workflows')
+    await expect(within(item).getByRole('button', { name: 'Pre-registered in the ledger?' })).toBeVisible()
+    await expect(within(item).getByText('Each case, model and repeat. Then G1 and G6.')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeVisible()
+    await expect(within(item).getByText('one more try for each group, then by hand')).toBeInTheDocument()
+    // T8 has no stop box and no hint on the step's panel.
+    await expect(within(item).queryByText('stop: run skill-eval-cases')).toBeNull()
+    await expect(within(item).queryByText('select a step to see it')).toBeNull()
+  },
+}
+
+export const WorkflowFullPagePhone: Story = {
+  name: 'M09: a workflow on a page of its own on the phone, its flow as a column of steps',
+  args: {
+    data: toolkitStates.workflowFullPagePhone.data,
+    ui: toolkitStates.workflowFullPagePhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the column under the breadcrumb Toolkit ›
+  // skill-eval-round. The play test checks what every width shows; src/app/ToolkitWorkflowPage.test.tsx checks the
+  // phone's breadcrumb, meta row and column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByText('Hides which runs had the skill.')).toBeVisible()
+    await expect(within(item).getByText('Own family, 20 runs or more.')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Blinding' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeInTheDocument()
+  },
+}
