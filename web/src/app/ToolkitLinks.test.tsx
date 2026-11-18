@@ -315,3 +315,31 @@ describe('a rule’s Links tab on the phone (M31)', () => {
     expect(from.top).toBeGreaterThan(graph.bottom)
   })
 })
+
+describe('an agent’s Links tab on the phone (M32)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('opens under Back to Toolkit with the agent’s header, the two writers over it, each with its own node', async () => {
+    const { root } = await renderPhone('agentLinksPhone')
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    expect(root.querySelector('article[aria-label="writing-reviewer"] [data-figma="kind badge"]')).not.toBeNull()
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    expect(nodes.map((n) => n.textContent)).toEqual([
+      'writer',
+      'writer',
+      'writing',
+      'ste100',
+      'writing-reviewer',
+      'writer',
+      'writing',
+      'ste100',
+    ])
+    // The two writers over the agent sit side by side, on one row.
+    const [skill, agent] = nodes.map((n) => n.getBoundingClientRect())
+    if (skill === undefined || agent === undefined) throw new Error('no writers')
+    expect(agent.top).toBeCloseTo(skill.top, 0)
+    expect(agent.left).toBeGreaterThan(skill.right)
+  })
+})

@@ -1159,3 +1159,18 @@ export const RuleLinksPhone: Story = {
     await expect(within(item).getByRole('group', { name: 'skills links' })).toBeVisible()
   },
 }
+
+export const AgentLinksPhone: Story = {
+  name: 'M32: an agent’s links on the phone, under the agent’s header',
+  args: { data: toolkitStates.agentLinksPhone.data, ui: toolkitStates.agentLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 7' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'agents/writer.md:35' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'writing-reviewer links' })).toBeVisible()
+  },
+}

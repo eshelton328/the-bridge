@@ -308,7 +308,9 @@ what each file of a page folder is for.
   over it, the side it names under it, with no lines and nothing selected
   (LIBRARY_GAPS.md, Links graph (phone)). A rule on the phone (M31,
   `ruleLinksPhone`, T28's data) keeps M19's header, and the reason stands in
-  the side over the rule, where its first row would be. Only the
+  the side over the rule, where its first row would be. An agent on the
+  phone (M32, `agentLinksPhone`, T29's data with no `ui.from`, as on M20)
+  keeps M20's header under Back to Toolkit. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
