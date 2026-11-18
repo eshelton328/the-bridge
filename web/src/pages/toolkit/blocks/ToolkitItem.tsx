@@ -3,7 +3,8 @@
 // the name, the path badge that copies the path and when the item changed,
 // then the item's tabs; the Overview tab (`ToolkitItemOverview`) shows the
 // description, the main file rendered read-only, what uses the item, its
-// files and its evals. On a tablet or phone (T3) the item replaces the list
+// files and its evals, and the How it works tab (`ToolkitHowItWorks`, D14)
+// its steps. Only the selected tab's panel is drawn. On a tablet or phone (T3) the item replaces the list
 // in the shared DetailFrame (d-107): the back row to Toolkit, with Discuss and
 // Show on map at its end, stays at the top, and only the item under it
 // scrolls; opened from another item's links (T7), the back row is a
@@ -23,6 +24,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
+import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
 import { ToolkitItemBack } from './ToolkitItemBack.tsx'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
@@ -78,6 +80,22 @@ const phoneTitleLayers: Readonly<Record<string, string>> = {
   'workflows/skill-eval-round.md': '487:1722',
   'rules/skills.md': '487:1264',
   'hooks/commit-msg': '487:2043',
+}
+// On the How it works tab the frame is another one, so another node id: writer in D14 (459:367), the rule skills in
+// D37 (495:334), the agent writing-reviewer in D38 (495:846), the hook commit-msg in D39 (495:1443).
+const howTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '459:367',
+  'rules/skills.md': '495:334',
+  'agents/writing-reviewer.md': '495:846',
+  'hooks/commit-msg': '495:1443',
+}
+// The How it works header is a layer named `header`, as the list's header is, so its node id: D14 459:599, D37 495:398,
+// D38 495:948, D39 495:1574.
+const howHeaderLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '459:599',
+  'rules/skills.md': '495:398',
+  'agents/writing-reviewer.md': '495:948',
+  'hooks/commit-msg': '495:1574',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
@@ -143,7 +161,10 @@ export function ToolkitItem({
         {desktop ? actions : null}
         {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
       </div>
-      <h2 className={title} data-figma={titleLayersOf[layout][item.path]}>
+      <h2
+        className={title}
+        data-figma={desktop && tab === 'how' ? howTitleLayers[item.path] : titleLayersOf[layout][item.path]}
+      >
         {item.name}
       </h2>
       <ToolkitItemPath
@@ -160,8 +181,9 @@ export function ToolkitItem({
           value: t.value,
           label: t.label,
           content:
-            // The other tabs are later frames (D4, D7 to D9); until then their panels are empty.
-            t.value === 'overview' ? (
+            // Only the selected tab's panel is drawn. The other tabs are later frames; until then their panels are
+            // empty, as How it works is for an item with no `how`.
+            t.value !== tab ? null : t.value === 'overview' ? (
               <ToolkitItemOverview
                 detail={detail}
                 kind={item.kind}
@@ -170,6 +192,8 @@ export function ToolkitItem({
                 onOpenFullPage={onOpenFullPage}
                 onOpenItem={onOpenItem}
               />
+            ) : t.value === 'how' && detail.how !== undefined ? (
+              <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : null,
         }))}
       />

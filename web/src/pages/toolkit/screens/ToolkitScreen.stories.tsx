@@ -328,3 +328,77 @@ export const WorkflowOpenPhone: Story = {
     await expect(within(flow).getByRole('button', { name: 'eval-grader' })).toBeVisible()
   },
 }
+
+export const SkillHowItWorks: Story = {
+  name: 'D14: a skill open beside the list, on How it works',
+  args: { data: toolkitStates.skillHowItWorks.data, ui: toolkitStates.skillHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'Draft the point first' })).toBeVisible()
+    await expect(within(steps).getByText('until no fail')).toBeVisible()
+    await expect(within(steps).getByText('writing-reviewer')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'A chat answer takes a shorter path' })).toBeVisible()
+    await expect(within(item).getByText('--form chat --ste')).toBeVisible()
+    // Only the selected tab's panel is drawn: the Overview's side column is not there.
+    await expect(within(item).queryByText('Used in workflows')).toBeNull()
+  },
+}
+
+export const RuleHowItWorks: Story = {
+  name: 'D37: a rule open beside the list, on How it works',
+  args: { data: toolkitStates.ruleHowItWorks.data, ui: toolkitStates.ruleHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'link.sh links it' })).toBeVisible()
+    await expect(within(steps).getByText('paths:')).toBeVisible()
+    // What Codex does instead takes the chat path's place.
+    await expect(within(item).getByText('In Codex')).toBeVisible()
+    await expect(
+      within(item).getByText('Codex has no scoped rules, so skills/AGENTS.md tells the agent to read this rule.'),
+    ).toBeVisible()
+    // The rule's Overview is not drawn: no load box.
+    await expect(within(item).queryByText('Loads when')).toBeNull()
+  },
+}
+
+export const AgentHowItWorks: Story = {
+  name: 'D38: an agent open beside the list, on How it works',
+  args: { data: toolkitStates.agentHowItWorks.data, ui: toolkitStates.agentHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'Grade W1 to W7' })).toBeVisible()
+    await expect(within(steps).getByText('ls, grep, git ls-files')).toBeVisible()
+    // The only inputs it gets take the chat path's place.
+    await expect(within(item).getByText('It gets only')).toBeVisible()
+    // The agent's Overview is not drawn: no How it runs cards.
+    await expect(within(item).queryByText('How it runs')).toBeNull()
+  },
+}
+
+export const HookHowItWorks: Story = {
+  name: 'D39: a hook open beside the list, on How it works',
+  args: { data: toolkitStates.hookHowItWorks.data, ui: toolkitStates.hookHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    // Five steps: the fifth starts a second row.
+    await expect(within(steps).getAllByRole('heading', { level: 4 })).toHaveLength(5)
+    await expect(within(steps).getByRole('heading', { name: 'Pass or block' })).toBeVisible()
+    await expect(within(steps).getByText('commits-and-prs')).toBeVisible()
+    await expect(within(steps).getByText('git commit')).toBeVisible()
+    // Its tests take the chat path's place.
+    await expect(within(item).getByText('Tests')).toBeVisible()
+    await expect(
+      within(item).getByText('test-commit-msg runs 43 cases through the hook. The last run passed all 43.'),
+    ).toBeVisible()
+    // The hook's Overview is not drawn: no When it runs cards.
+    await expect(within(item).queryByText('When it runs')).toBeNull()
+  },
+}
