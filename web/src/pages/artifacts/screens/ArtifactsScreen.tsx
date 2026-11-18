@@ -6,16 +6,19 @@
 // proposed change with Apply, Discard and Edit first (D8), which Apply
 // turns into the applied artifact and proposal (D9); on a tablet or phone the
 // library over the tab bar, and on a tablet an open artifact on its own page
-// under Back (T2). A state file's data and ui are its props; the callbacks are
-// optional, so a story or a canvas board needs none.
+// under Back (T2), whose Discuss opens the discussion as a page of its own
+// with no tab bar (T4). A state file's data and ui are its props; the
+// callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
+import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { ArtifactDetail } from './ArtifactDetail.tsx'
+import { ArtifactDiscussionPage } from './ArtifactDiscussionPage.tsx'
 import { ArtifactPage } from './ArtifactPage.tsx'
 import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
@@ -40,10 +43,36 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
         const open = layout === 'desktop' || (layout === 'tablet' && ui.artifactClosed !== true) ? data.open : undefined
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
         const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
-        // D7: Discuss opens the artifact's discussion beside it, and the list closes. The tablet's comes with T4.
-        const discussion = layout === 'desktop' ? view?.discussion : undefined
+        // D7: Discuss opens the artifact's discussion beside it, and the list closes. T4: on a tablet it opens as a
+        // page of its own, and the tab bar hides. A phone frame of it comes later.
+        const discussion = layout === 'phone' ? undefined : view?.discussion
         const discussing = discussion !== undefined && ui.discussOpen === true
         const sent = ui.discussSent ?? []
+        // What the desktop panel and the tablet page share: the draft, the entries and where Erik's presses go.
+        const thread =
+          discussion === undefined || view === undefined
+            ? undefined
+            : {
+                discussion,
+                draft: ui.discussDraft,
+                entries: discussionEntries(discussion, ui),
+                applied: view.applied,
+                onAct: (act: ProposalAct) => {
+                  onUiChange?.(proposalEffect(discussion, act))
+                },
+                onDraftChange:
+                  onUiChange === undefined
+                    ? undefined
+                    : (text: string) => {
+                        onUiChange({ discussDraft: text })
+                      },
+                onSend: (text: string) => {
+                  onUiChange?.({ discussSent: [...sent, text], discussDraft: '' })
+                },
+              }
+        const closeDiscussion = () => {
+          onUiChange?.({ discussOpen: false })
+        }
         return (
           <Backdrop size={layout}>
             <AppShell
@@ -54,7 +83,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 ) : undefined
               }
               tabBar={
-                layout === 'desktop' ? undefined : (
+                layout === 'desktop' || (layout === 'tablet' && discussing) ? undefined : (
                   <AppTabBar
                     // The phone opens Artifacts from More (d-105).
                     selected={layout === 'tablet' ? 'artifacts' : 'more'}
@@ -72,6 +101,13 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
               detail={
                 open === undefined || view === undefined ? (
                   <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
+                ) : layout === 'tablet' && discussing && thread !== undefined ? (
+                  <ArtifactDiscussionPage
+                    {...thread}
+                    artifact={view.artifact}
+                    badge={view.badge}
+                    onBack={closeDiscussion}
+                  />
                 ) : layout === 'tablet' ? (
                   <ArtifactPage
                     artifact={view.artifact}
@@ -80,6 +116,13 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                     onBack={() => {
                       onUiChange?.({ artifactClosed: true })
                     }}
+                    onDiscuss={
+                      discussion === undefined
+                        ? undefined
+                        : () => {
+                            onUiChange?.({ discussOpen: true })
+                          }
+                    }
                   />
                 ) : (
                   <ArtifactDetail
@@ -94,29 +137,8 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                     }
                     madeInLayer={discussion?.layers.madeIn}
                     side={
-                      discussing ? (
-                        <DiscussionPanel
-                          discussion={discussion}
-                          draft={ui.discussDraft}
-                          entries={discussionEntries(discussion, ui)}
-                          applied={view.applied}
-                          onAct={(act) => {
-                            onUiChange?.(proposalEffect(discussion, act))
-                          }}
-                          onDraftChange={
-                            onUiChange === undefined
-                              ? undefined
-                              : (text) => {
-                                  onUiChange({ discussDraft: text })
-                                }
-                          }
-                          onSend={(text) => {
-                            onUiChange?.({ discussSent: [...sent, text], discussDraft: '' })
-                          }}
-                          onClose={() => {
-                            onUiChange?.({ discussOpen: false })
-                          }}
-                        />
+                      discussing && thread !== undefined ? (
+                        <DiscussionPanel {...thread} onClose={closeDiscussion} />
                       ) : undefined
                     }
                   />

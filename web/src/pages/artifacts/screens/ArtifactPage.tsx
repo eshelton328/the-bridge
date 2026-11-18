@@ -25,7 +25,7 @@ export type ArtifactPageProps = {
   /** The list Back returns to, such as "Artifacts". */
   backLabel: string
   onBack?: (() => void) | undefined
-  /** Discuss was pressed; without it Discuss does nothing (the tablet's discussion comes with T4). */
+  /** Discuss was pressed: the discussion opens as its own page (T4); without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
   onOpenArtifact?: (() => void) | undefined
 }

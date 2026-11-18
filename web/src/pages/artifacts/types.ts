@@ -245,11 +245,14 @@ const ArtifactDiscussion = z.object({
   placeholder: z.string(),
   /** What was said and proposed so far (D8); with none the discussion shows `empty`. */
   entries: z.array(ArtifactDiscussionEntry),
+  /** The label of Back on the tablet's discussion page (T4), such as "Artifact": it returns to the artifact. */
+  back: z.string().optional(),
   /**
    * The Figma node ids of the two layers named "button · Open in workspace" in the frame that shows the discussion:
-   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own.
+   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's
+   * discussion page (T4 452:3837) has no "Made in", so `madeIn` is left out there.
    */
-  layers: z.object({ header: z.string(), madeIn: z.string() }),
+  layers: z.object({ header: z.string(), madeIn: z.string().optional() }),
 })
 export type ArtifactDiscussion = z.infer<typeof ArtifactDiscussion>
 
@@ -305,7 +308,10 @@ export const ArtifactsUi = z.object({
   addLinkSource: ArtifactSource.optional(),
   /** Back closed the open artifact on a tablet (T2), and the library shows (T1). */
   artifactClosed: z.boolean().optional(),
-  /** The open artifact's discussion is open beside it, and the library list closes (D7). */
+  /**
+   * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
+   * its own page in the artifact's place, with no tab bar (T4).
+   */
   discussOpen: z.boolean().optional(),
   /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */
   discussDraft: z.string().optional(),
