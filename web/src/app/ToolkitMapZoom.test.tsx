@@ -104,3 +104,22 @@ describe('the Toolkit map on the desktop and the tablet (D2, T2)', () => {
     expect(root.querySelector('[data-allow-pinch]')).toBeNull()
   })
 })
+
+describe('the Toolkit map on a 320 px phone', () => {
+  it('fits the whole drawing in the narrower window when pinched in fully', async () => {
+    const { scroller, svg } = await renderMap('toolkitMapTablet', 320, 844)
+    const w = scroller.getBoundingClientRect()
+    expect(w.width).toBeLessThan(366)
+    const y = w.top + w.height / 2
+    const mid = w.left + w.width / 2
+    touch(scroller, 'pointerdown', 1, mid - 100, y)
+    touch(scroller, 'pointerdown', 2, mid + 100, y)
+    touch(scroller, 'pointermove', 1, mid - 1, y)
+    touch(scroller, 'pointermove', 2, mid + 1, y)
+    touch(scroller, 'pointerup', 1, mid - 1, y)
+    touch(scroller, 'pointerup', 2, mid + 1, y)
+    // The pointers end a hundredth as far apart, far past the smallest scale, so the drawing stops at the window's
+    // inside width.
+    await expect.poll(() => svg.getBoundingClientRect().width).toBeLessThanOrEqual(scroller.clientWidth + 0.5)
+  })
+})

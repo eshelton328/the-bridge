@@ -13,6 +13,7 @@
 // page zoom block lets the gesture through); the desktop's and tablet's
 // maps do not zoom, as Figma's D2 and T2 notes say nothing of it. Props only.
 import { Badge, MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
+import { type RefObject, useEffect, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
@@ -31,8 +32,9 @@ import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
 // 7 px in and 51 down (node · writing 461:921 at 20, 145), 178 and 58 apart; a heading (461:868) is 2 px right of
 // its nodes and 36 above them, so its capitals start at y 19. The drawing is 705 wide, to the right edge of the
 // last column; it is 498 high, the window's height, so the window scrolls sideways only (no size token has 500).
-// The phone's map zooms from the whole drawing fitted to the window (705 wide in a 364 wide inside, so a little over
-// half size) up to MapGraph's default 3 times; it opens at 1, the drawing at its own size, as before.
+// The phone's map zooms from the whole drawing fitted to the window up to MapGraph's default 3 times; it opens at 1,
+// the drawing at its own size, as before. The window's inside is measured (useInside), since a phone narrower than
+// Figma's has a narrower window; Figma's 364 × 498 is only the first value, before the first measure.
 const GEOMETRY = {
   desktop: {
     canvas: { width: 1382, height: 740 },
@@ -67,6 +69,34 @@ const GEOMETRY = {
 const srOnly = css({ srOnly: true })
 // M11: the phone's window holds the hint over the map's bottom left corner.
 const mapWindow = css({ position: 'relative' })
+
+type Size = { width: number; height: number }
+
+/**
+ * The inside of the map's window (MapGraph's scroller, the element it marks `data-allow-pinch`), read each time the
+ * page's own wrapper changes size. It reads sizes only. Until the first measure, and with no `first`, it is `first`.
+ */
+function useInside(wrapperRef: RefObject<HTMLDivElement | null>, first: Size | undefined): Size | undefined {
+  const [inside, setInside] = useState(first)
+  const measure = first !== undefined
+  useEffect(() => {
+    const el = wrapperRef.current
+    if (!measure || el === null) return
+    const read = () => {
+      const scroller = el.querySelector('[data-allow-pinch]')
+      if (scroller === null || scroller.clientWidth === 0 || scroller.clientHeight === 0) return
+      const next = { width: scroller.clientWidth, height: scroller.clientHeight }
+      setInside((now) => (now?.width === next.width && now.height === next.height ? now : next))
+    }
+    read()
+    const observer = new ResizeObserver(read)
+    observer.observe(el)
+    return () => {
+      observer.disconnect()
+    }
+  }, [wrapperRef, measure])
+  return first === undefined ? undefined : inside
+}
 const hint = css({ position: 'absolute', left: '10', bottom: '10' })
 
 export type ToolkitMapProps = {
@@ -87,7 +117,9 @@ export type ToolkitMapProps = {
 }
 
 export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layout = 'desktop' }: ToolkitMapProps) {
-  const { canvas, nodes, heading, nodeSize, legend, description, inside } = GEOMETRY[layout]
+  const { canvas, nodes, heading, nodeSize, legend, description } = GEOMETRY[layout]
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const inside = useInside(wrapperRef, GEOMETRY[layout].inside)
   const phone = layout === 'phone'
   // The smallest scale fits the whole drawing in the window, and never goes over 1 when the drawing already fits.
   const zoom =
@@ -119,7 +151,7 @@ export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layo
     </div>
   ) : null
   const graph = (
-    <div className={phone ? mapWindow : undefined} data-figma={phone ? 'map viewport' : 'map canvas'}>
+    <div ref={wrapperRef} className={phone ? mapWindow : undefined} data-figma={phone ? 'map viewport' : 'map canvas'}>
       <h2 className={srOnly}>Toolkit map</h2>
       <MapGraph
         label="Toolkit map"
