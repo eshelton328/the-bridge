@@ -23,9 +23,8 @@ each file of a page folder is for.
   With an artifact open (`data.open`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
   `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
-  `screens/ArtifactPage.tsx`, above the tab bar (the shell sets no
-  `tabBarOverlay` while an artifact is open, as
-  `ArtifactsStickyBars.test.tsx` checks that the page ends at the bar):
+  `screens/ArtifactPage.tsx`, which runs under the tab bar as the library
+  does, its end scrolled clear of the bar (`ArtifactsStickyBars.test.tsx`):
   the shared `DetailFrame`
   with `ArtifactTopBar` (Back, Discuss, and Copy link and Remove as icons)
   in its header, so the Back bar stays at the top and only the page under

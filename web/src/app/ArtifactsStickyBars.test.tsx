@@ -119,9 +119,14 @@ describe('the Back bar on the tablet (d-107)', () => {
     expect(box(top).top).toBeGreaterThanOrEqual(0)
     expect(box(bottom).bottom).toBe(before.bottom)
     expect(box(bottom).bottom).toBeLessThanOrEqual(window.innerHeight)
-    // The scrolled page stays between the bars.
+    // The scrolled page starts under the Back bar and runs under the tab bar to the bottom of the screen, as
+    // Figma draws the tablet pages (AppShell tabBarOverlay); scrolled to its end, the whole page sits above the bar.
     expect(box(body).top).toBeGreaterThanOrEqual(box(top).bottom)
-    expect(box(body).bottom).toBeLessThanOrEqual(box(bottom).top)
+    expect(box(body).bottom).toBeGreaterThan(box(bottom).top)
+    const content = body.firstElementChild
+    if (content === null) throw new Error('no page content')
+    // Half a pixel for the subpixel scroll position, as WorkspacesStickyBars.test.tsx allows.
+    expect(box(content).bottom).toBeLessThanOrEqual(box(bottom).top + 0.5)
     await view.unmount()
   })
 
