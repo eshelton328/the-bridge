@@ -69,8 +69,10 @@ artifacts`): the text, position and rules results did not change.
   under the lines; and the grid preview's tiles have coloured bars.
   `Thumbnail` draws its own content per kind and takes no colour. Library
   gap "Thumbnail colour".
-- **Card kind mark.** The Claude and Codex marks are 12 px against
-  Figma's 14. Library gap "Card kind mark size".
+- **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
+  leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
+  marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties
+  12 and 16 on the 4 px icon scale, and the tie takes 16). They were 12.
 
 ## Values picked (d-100)
 

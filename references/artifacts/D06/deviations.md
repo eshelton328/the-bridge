@@ -67,10 +67,12 @@ artifacts`): the text, position and rules results did not change.
   cold-reader chart are cyan and violet, not green and amber, the Type
   safety doc's title bar is cyan, not violet, and the chart bars are a
   brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
-  prop); the meta
-  line's marks are 12 px against 14. Library gaps "Card badge at the end
-  of the title row", "Desktop page title size", "Thumbnail colour" and
-  "Card kind mark size".
+  prop). Library gaps "Card badge at the end of the title row",
+  "Desktop page title size" and "Thumbnail colour".
+- **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
+  leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
+  marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties
+  12 and 16 on the 4 px icon scale, and the tie takes 16). They were 12.
 - **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
   has no layer, and `rail · More` sits 52 px lower (y +52). The design
   predates d-105, which adds the Toolkit (and Artifacts) item; the app

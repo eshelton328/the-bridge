@@ -99,9 +99,12 @@ artifacts`): the text, position and rules results did not change.
   `artifact card · readme cold-reader run` are each h -5.2 (280.8 high
   against 286), as D01's: `Card` pads 16 at the sides, keeps 16 px lines
   and draws a 186.75 px thumbnail. New sits 8 px after the title, not at
-  the end of the row, and the kind marks are 12 px against 14. Library
-  gaps "Card body and line heights", "Card badge at the end of the title
-  row" and "Card kind mark size".
+  the end of the row. Library gaps "Card body and line heights" and
+  "Card badge at the end of the title row".
+- **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
+  leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
+  marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties
+  12 and 16 on the 4 px icon scale, and the tie takes 16). They were 12.
 - **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
   not amber, and the Agent factory doc's bar is not green. Library gap
   "Thumbnail colour".
