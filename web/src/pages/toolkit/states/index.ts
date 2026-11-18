@@ -103,6 +103,10 @@ import { hookActivityPhone } from './hookActivityPhone.ts'
 import { skillDiscuss } from './skillDiscuss.ts'
 import { skillDiscussTablet } from './skillDiscussTablet.ts'
 import { skillDiscussPhone } from './skillDiscussPhone.ts'
+import { toolkitActivity } from './toolkitActivity.ts'
+import { toolkitActivityRun } from './toolkitActivityRun.ts'
+import { toolkitActivityTablet } from './toolkitActivityTablet.ts'
+import { toolkitActivityPhone } from './toolkitActivityPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -207,4 +211,8 @@ export const toolkitStates = {
   skillDiscuss,
   skillDiscussTablet,
   skillDiscussPhone,
+  toolkitActivity,
+  toolkitActivityRun,
+  toolkitActivityTablet,
+  toolkitActivityPhone,
 }

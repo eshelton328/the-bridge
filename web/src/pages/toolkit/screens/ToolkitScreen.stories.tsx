@@ -1626,3 +1626,51 @@ export const SkillDiscussPhone: Story = {
     await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
   },
 }
+
+export const ToolkitActivity: Story = {
+  name: 'D11: the Activity view, all sessions',
+  args: { data: toolkitStates.toolkitActivity.data, ui: toolkitStates.toolkitActivity.ui, viewport: 'desktop' },
+  // src/app/ToolkitActivityView.test.tsx checks the layout and the taps through the route.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('radio', { name: 'All sessions' })).toBeChecked()
+    await expect(canvas.getByText('Read from session files on this Mac')).toBeVisible()
+    await expect(canvas.getByText('skill-eval-round started · writer round 7')).toBeVisible()
+  },
+}
+
+export const ToolkitActivityRun: Story = {
+  name: 'D12: the Activity view with a run open beside it',
+  args: { data: toolkitStates.toolkitActivityRun.data, ui: toolkitStates.toolkitActivityRun.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const panel = canvas.getByRole('complementary', { name: 'writing-reviewer' })
+    await expect(within(panel).getByText('the workspace, or the branch name')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: /Open the session in Workbench/ })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
+  },
+}
+
+export const ToolkitActivityTablet: Story = {
+  name: 'T9: the Activity view on a tablet',
+  args: {
+    data: toolkitStates.toolkitActivityTablet.data,
+    ui: toolkitStates.toolkitActivityTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Back to Toolkit.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('radio', { name: 'Headless' })).toBeVisible()
+    await expect(canvas.getByText('started by writer, step 7 · omni-brain · f-005 the-bridge')).toBeVisible()
+  },
+}
+
+export const ToolkitActivityPhone: Story = {
+  name: 'M10: the Activity view on the phone',
+  args: { data: toolkitStates.toolkitActivityPhone.data, ui: toolkitStates.toolkitActivityPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the phone's header.
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('omni-brain · f-005')).toBeVisible()
+    await expect(canvas.queryByText('pr-description-checker', { selector: '.list-row__title' })).toBeNull()
+  },
+}
