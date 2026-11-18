@@ -75,11 +75,13 @@ export type ToolkitMarkdownBlocksProps = {
   blocks: readonly ToolkitMarkdownBlock[]
   /** Lets the file references wrap as one line of text, as on the phone (M2); a row of separate paths when not set. */
   wrapRefs?: boolean | undefined
+  /** `none` draws the text flush, for a box that sets its own padding (T4's viewer); the view's 20 by 24 when not set. */
+  padding?: 'default' | 'none' | undefined
 }
 
-export function ToolkitMarkdownBlocks({ blocks, wrapRefs = false }: ToolkitMarkdownBlocksProps) {
+export function ToolkitMarkdownBlocks({ blocks, wrapRefs = false, padding }: ToolkitMarkdownBlocksProps) {
   return (
-    <MarkdownView>
+    <MarkdownView padding={padding}>
       {blocks.map((block) => (
         <Block key={blockKey(block)} block={block} wrapRefs={wrapRefs} />
       ))}

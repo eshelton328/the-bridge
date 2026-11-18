@@ -177,3 +177,61 @@ describe('the Files tab of a rule, an agent, a workflow and a hook (D33 to D36)'
     await view.unmount()
   })
 })
+
+// The Files tab on a tablet (T4): no kind badge, the path row names the skill's folder and its files, and the tree and
+// the viewer are two boxes, the viewer under the tree. A Markdown file opens rendered, with the Rendered and Source
+// switch under its text and no copy button in the bar.
+describe('the Files tab on a tablet (T4)', () => {
+  it('puts the viewer under the tree, renders doc.md, shows its source and opens another file', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('skillFilesTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="rendered markdown"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    const tree = box('[data-figma="tree"]')
+    const viewer = box('[data-figma="viewer"]')
+    // T4 434:408, 434:485: two boxes as wide as the item, the viewer under the tree.
+    expect(viewer.left).toBeCloseTo(tree.left, 0)
+    expect(viewer.width).toBeCloseTo(tree.width, 0)
+    expect(viewer.top).toBeGreaterThan(tree.bottom)
+    expect(root.querySelector('[data-figma="file browser"]')).toBeNull()
+    // No kind badge; the path row names the skill's folder and its files.
+    expect(root.querySelector('[data-figma="kind badge"]')).toBeNull()
+    const path = root.querySelector('[data-figma="path row"]')
+    expect(path?.textContent).toContain('skills/writer/')
+    expect(path?.textContent).toContain('11 files')
+    expect(path?.textContent).not.toContain('toolkit/skills/writer/')
+    // The viewer's bar has no copy button on a tablet.
+    expect(root.querySelector('[aria-label="Copy references/doc.md"]')).toBeNull()
+    // The switch sits under the rendered text; Source shows the file's source and keeps the switch.
+    const toggle = box('[data-figma="view toggle"]')
+    expect(toggle.top).toBeGreaterThan(box('[data-figma="rendered markdown"] p').bottom)
+    const item = (name: string) => {
+      const label = [...root.querySelectorAll('[data-figma="view toggle"] label')].find((el) => el.textContent === name)
+      if (label === undefined) throw new Error(`no ${name} item`)
+      return label
+    }
+    await userEvent.click(item('Source'))
+    await expect.poll(() => root.querySelector('[data-figma="viewer"] [data-figma="code"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="viewer"] [data-figma="code"]')?.textContent).toContain('# Docs')
+    expect(root.querySelector('[data-figma="rendered markdown"]')).toBeNull()
+    await userEvent.click(item('Rendered'))
+    await expect.poll(() => root.querySelector('[data-figma="rendered markdown"]')).not.toBeNull()
+    // Another file opens under the tree, with its bar only.
+    const ticket = [...root.querySelectorAll('[role="treeitem"]')].find((el) => el.textContent.startsWith('ticket.md'))
+    if (ticket === undefined) throw new Error('no ticket.md row')
+    await userEvent.click(ticket)
+    await expect.poll(() => root.querySelector('[aria-label="references/ticket.md"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    await view.unmount()
+  })
+})

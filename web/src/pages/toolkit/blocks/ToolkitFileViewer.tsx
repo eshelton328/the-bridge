@@ -7,30 +7,43 @@
 // 432:2347). A script with an explanation (D10 `explain` 440:1423) has the
 // Explain and Code switch in its bar (`toggle · Explain | Code` 440:1418) and
 // opens on Explain (the library's ScriptExplanation); a step's line link
-// switches to Code. A file the state has no view of shows its bar only. Props
-// only.
+// switches to Code. A Markdown file (T4 `viewer` 434:485) shows rendered, with
+// the Rendered and Source switch under its text (`ToolkitFileBody`). On a tablet
+// or phone (T4) the viewer is a bordered box of its own under the tree, and its
+// bar has no copy button. A file the state has no view of shows its bar only.
+// Props only.
 import {
   AgentIcon,
   CodeIcon,
-  CodeLines,
   CopyIcon,
   FileIcon,
   HookIcon,
   LockIcon,
   RuleIcon,
-  ScriptExplanation,
-  ScrollFrame,
   SkillIcon,
   ViewSwitch,
   WorkflowIcon,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
-import type { FileMode } from './filesView.ts'
-import { ToolkitMarkdownBlocks } from './ToolkitMarkdownBlocks.tsx'
+import { type FileMode, fileModes } from './filesView.ts'
+import { ToolkitFileBody } from './ToolkitFileBody.tsx'
 
 // D6 432:2290: the viewer fills the browser's column beside the tree, as high as the tree.
 const viewer = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', minW: '[0]', bg: 'surface.pane' })
+// T4 434:485: on a tablet or phone the viewer is a bordered box under the tree, as the browser's box is on the desktop
+// (LIBRARY_GAPS.md, File browser).
+const boxed = css({
+  display: 'flex',
+  flexDirection: 'column',
+  minW: '[0]',
+  bg: 'surface.pane',
+  borderWidth: 'default',
+  borderStyle: 'solid',
+  borderColor: 'border.default',
+  borderRadius: 'xl',
+  overflow: 'hidden',
+})
 // D6 432:2291: 37 high, the code icon 14 in, the path in mono 8 after it, its meta 8 after that, and the copy icon,
 // the lock and Read-only at the end, as the Overview's preview bar (D3 427:274) draws them.
 const bar = css({
@@ -68,9 +81,6 @@ const copy = css({
   _hover: { color: 'fg.default' },
   _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
-// D6 432:2304: a line longer than the viewer runs past its edge (line 13, 432:2343). The code keeps its full width, so
-// the ScrollFrame body around it scrolls the code sideways and takes the focus (d-107), as the preview's code does.
-const codeWidth = css({ w: '[max-content]', minW: '[100%]' })
 // D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code.
 const usedBy = css({
   display: 'flex',
@@ -103,26 +113,30 @@ export type ToolkitFileViewerProps = {
   mode?: FileMode | undefined
   /** Called with Explain or Code when the switch or a step's line link changes the view. */
   onModeChange?: ((mode: FileMode) => void) | undefined
+  /** A bordered box of its own with no copy button in the bar, as on a tablet or phone (T4). */
+  boxed?: boolean | undefined
 }
 
-const modes = [
-  { value: 'explain', label: 'Explain' },
-  { value: 'code', label: 'Code' },
-] as const
-
-export function ToolkitFileViewer({ path, type, view, onCopy, mode = 'code', onModeChange }: ToolkitFileViewerProps) {
-  const code = view?.code
-  const explain = code === undefined ? undefined : view?.explain
-  // Each line's text, from its coloured pieces.
-  const lines = (code ?? []).map((line) => line.map((piece) => piece.text).join(''))
+export function ToolkitFileViewer({
+  path,
+  type,
+  view,
+  onCopy,
+  mode = 'code',
+  onModeChange,
+  boxed: inBox = false,
+}: ToolkitFileViewerProps) {
+  // A script's Explain and Code switch sits in the bar (D10); a Markdown file's under its text (T4).
+  const modes = fileModes(view)
+  const explain = modes.some((m) => m.value === 'explain')
   return (
-    <section aria-label={path} className={viewer} data-figma="viewer">
+    <section aria-label={path} className={inBox ? boxed : viewer} data-figma="viewer">
       <div className={bar} data-figma="viewer bar">
         {type === 'code' ? <CodeIcon size="16" /> : <FileIcon size="16" />}
         <span className={name}>{path}</span>
         {view?.meta === undefined ? null : <span className={fileMeta}>{view.meta}</span>}
         <span className={end}>
-          {explain === undefined ? null : (
+          {!explain ? null : (
             <span className={switchBox} data-figma="toggle · Explain | Code">
               <ViewSwitch
                 label="View"
@@ -135,38 +149,18 @@ export function ToolkitFileViewer({ path, type, view, onCopy, mode = 'code', onM
               />
             </span>
           )}
-          <button type="button" className={copy} aria-label={`Copy ${path}`} onClick={onCopy}>
-            <CopyIcon size="12" />
-          </button>
+          {inBox ? null : (
+            <button type="button" className={copy} aria-label={`Copy ${path}`} onClick={onCopy}>
+              <CopyIcon size="12" />
+            </button>
+          )}
           <span className={readOnly}>
             <LockIcon size="12" />
             Read-only
           </span>
         </span>
       </div>
-      {view === undefined ? null : explain !== undefined && mode === 'explain' ? (
-        <div data-figma="explain">
-          <ScriptExplanation
-            summary={explain.summary}
-            facts={explain.facts}
-            steps={explain.steps}
-            note={explain.note}
-            onLineSelect={() => {
-              onModeChange?.('code')
-            }}
-          />
-        </div>
-      ) : code === undefined ? (
-        <ToolkitMarkdownBlocks blocks={view.blocks} />
-      ) : (
-        <div data-figma="code">
-          <ScrollFrame>
-            <div className={codeWidth}>
-              <CodeLines lines={lines} segments={code} />
-            </div>
-          </ScrollFrame>
-        </div>
-      )}
+      {view === undefined ? null : <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} />}
       {view?.usedBy === undefined ? null : (
         <p className={usedBy} data-figma="used by">
           {kindIcons[view.usedBy.kind]}

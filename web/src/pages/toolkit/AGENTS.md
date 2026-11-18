@@ -216,7 +216,16 @@ what each file of a page folder is for.
   with its model and tools in the frontmatter; a workflow (D35, `workflowFiles`,
   D8's list) is one design doc, with the harness/ folder of the scripts its
   steps run, which are outside the toolkit; a hook (D36, `hookFiles`, D9's list)
-  is the script and its tests, two script rows with the tests selected. Only the
+  is the script and its tests, two script rows with the tests selected. On a
+  tablet (T4, `skillFilesTablet`, D6's files with references/ alone open, doc.md
+  first and selected, and each file's count in lines) the Files tab has no kind
+  badge: the title and the path row, which names the item's folder and its files
+  (the browser's `badge`), sit 8 apart over the tabs, and the tree and the viewer
+  are two boxes, the viewer under the tree with no copy button in its bar. A
+  Markdown file (a view with blocks and no code) opens rendered
+  (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
+  shows the source written back from the blocks (`markdownSource`), and
+  `ui.fileView` keeps the choice (`rendered` or `code`). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

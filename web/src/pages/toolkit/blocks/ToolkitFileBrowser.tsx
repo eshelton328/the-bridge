@@ -4,8 +4,9 @@
 // (`ToolkitFileViewer`, `viewer` 432:2290). The folders the state names are
 // open at first; a click on a file selects it through `onSelect`. On the
 // desktop the tree and the viewer sit side by side and the box runs to the
-// pane's foot, as Figma's runs past the frame; on a narrower layout the viewer
-// comes under the tree. Props only.
+// pane's foot, as Figma's runs past the frame; on a tablet or phone (T4) the
+// tree and the viewer are two bordered boxes, the viewer under the tree, each
+// as high as its content. Props only.
 import { FileTree } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -28,8 +29,19 @@ const box = css({
 // D6 432:2142: the tree column is 330 wide (`shell.sidebar` is 328, the file tree's width) and the viewer takes the
 // rest; the box fills the pane's height under the tabs.
 const columns = css({ flexDirection: 'row', flexGrow: '1' })
-// On a narrower layout the tree spans the box and the viewer comes under it.
-const stacked = css({ flexDirection: 'column' })
+// T4 434:408, 434:485: on a tablet or phone the tree and the viewer are two boxes, the viewer 14 under the tree (no
+// space token has 14: 12; LIBRARY_GAPS.md, Tablet item spacing).
+const stacked = css({ display: 'flex', flexDirection: 'column', gap: '12', minW: '[0]' })
+// T4 434:408: the tree is a bordered box of the pane's colour, as high as its rows.
+const treeBox = css({
+  minW: '[0]',
+  bg: 'surface.pane',
+  borderWidth: 'default',
+  borderStyle: 'solid',
+  borderColor: 'border.default',
+  borderRadius: 'xl',
+  overflow: 'hidden',
+})
 // The tree's well runs the box's full height beside the viewer.
 const tree = css({
   display: 'flex',
@@ -66,23 +78,37 @@ export function ToolkitFileBrowser({
   onModeChange,
 }: ToolkitFileBrowserProps) {
   const desktop = layout === 'desktop'
+  const viewer = (
+    <ToolkitFileViewer
+      path={open.path}
+      type={open.type}
+      view={open.view}
+      mode={fileMode(open.view, mode)}
+      onModeChange={onModeChange}
+      boxed={!desktop}
+      onCopy={() => {
+        onCopy?.(open.path)
+      }}
+    />
+  )
+  const files = (
+    <FileTree nodes={browser.tree} selected={open.path} defaultExpanded={browser.expanded} onSelect={onSelect} />
+  )
+  if (!desktop)
+    return (
+      <div className={stacked}>
+        <div className={treeBox} data-figma="tree">
+          {files}
+        </div>
+        {viewer}
+      </div>
+    )
   return (
-    <div className={cx(box, desktop ? columns : stacked)} data-figma="file browser">
-      <div className={desktop ? cx(tree, treeColumn) : tree} data-figma="tree">
-        <FileTree nodes={browser.tree} selected={open.path} defaultExpanded={browser.expanded} onSelect={onSelect} />
+    <div className={cx(box, columns)} data-figma="file browser">
+      <div className={cx(tree, treeColumn)} data-figma="tree">
+        {files}
       </div>
-      <div className={viewerColumn}>
-        <ToolkitFileViewer
-          path={open.path}
-          type={open.type}
-          view={open.view}
-          mode={fileMode(open.view, mode)}
-          onModeChange={onModeChange}
-          onCopy={() => {
-            onCopy?.(open.path)
-          }}
-        />
-      </div>
+      <div className={viewerColumn}>{viewer}</div>
     </div>
   )
 }

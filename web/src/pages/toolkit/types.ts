@@ -323,6 +323,13 @@ const ToolkitFileBrowser = z.object({
   expanded: z.array(z.string()),
   selected: z.string(),
   views: z.array(ToolkitFileView),
+  /**
+   * On a tablet or phone the Files tab's path row (T4 `path row` 457:169) names the item's folder in the toolkit
+   * ("skills/writer/") and how many files it has ("11 files"), in place of where the item is and when it changed; a
+   * file on its own page (T6 457:178) shows the folder and the file's path in the badge. The item's own path row when
+   * not set.
+   */
+  badge: z.object({ path: z.string(), meta: z.string() }).optional(),
 })
 export type ToolkitFileBrowser = z.infer<typeof ToolkitFileBrowser>
 
@@ -469,10 +476,16 @@ export const ToolkitUi = z.object({
   /** The path of the file selected on the open item's Files tab (D6); the browser's `selected` when not set. */
   file: z.string().optional(),
   /**
-   * How the Files tab's viewer shows a script that has an explanation (D10): Explain or Code. Explain when not set;
-   * a script with no explanation shows its code.
+   * How the Files tab's viewer shows a script that has an explanation (D10): Explain or Code; or a Markdown file (T4):
+   * Rendered or its source (`code`). Explain or Rendered when not set; a script with no explanation shows its code.
    */
-  fileView: z.enum(['explain', 'code']).optional(),
+  fileView: z.enum(['explain', 'rendered', 'code']).optional(),
+  /**
+   * On a tablet or phone, whether the selected file fills the item's Files tab on a page of its own (T6): Back to
+   * Files over its name, its path badge and the tabs, then the file. A script with an explanation opens so; another
+   * file opens under the tree (T4). Under the tree when not set.
+   */
+  filePage: z.boolean().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

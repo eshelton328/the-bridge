@@ -35,6 +35,7 @@ import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } f
 import { canOpenFullPage, isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
 import { backTo, openedFrom, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
+import { selectFile } from '../blocks/filesView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
 const page = {
@@ -184,8 +185,14 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }}
         file={ui.file}
         onFileChange={(file) => {
-          // Another file opens on its default view: Explain for a script with an explanation (D10).
-          onUiChange({ file, fileView: undefined })
+          // Another file opens on its default view: Explain for a script with an explanation (D10). On a tablet or
+          // phone that script opens on a page of its own (T6).
+          const browser = open.detail.browser
+          onUiChange(browser === undefined ? { file, fileView: undefined } : selectFile(browser, file, !desktop))
+        }}
+        filePage={ui.filePage}
+        onCloseFilePage={() => {
+          onUiChange({ filePage: undefined, fileView: undefined })
         }}
         fileView={ui.fileView}
         onFileViewChange={(fileView) => {

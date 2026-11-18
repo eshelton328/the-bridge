@@ -8,7 +8,8 @@
 // and the item's crumb a plain button. A workflow on a page of its own (D13
 // `breadcrumb row` 446:481) shows the same row on the desktop too: Toolkit ›
 // Workflows › the workflow, the kind's crumb going back to the list of that
-// kind; its Figma keys differ (`layers`). Props only.
+// kind; its Figma keys differ (`layers`). A file on a page of its own (T6
+// 440:1761) goes back to the Files tab's tree: the row reads Files. Props only.
 import { BackRow } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -42,6 +43,8 @@ export type ToolkitItemBackProps = {
   named?: boolean | undefined
   /** Back to the list. */
   onBack?: (() => void) | undefined
+  /** What Back goes back to: Toolkit when not set; Files from a file on a page of its own (T6). */
+  label?: string | undefined
   /** Discuss and Show on map. */
   actions: ReactNode
   /**
@@ -58,6 +61,7 @@ export function ToolkitItemBack({
   from,
   named = false,
   onBack,
+  label = 'Toolkit',
   actions,
   layers,
   tall = false,
@@ -67,7 +71,7 @@ export function ToolkitItemBack({
   if (!hasFrom && !named) {
     return (
       <div data-figma={rowLayer}>
-        <BackRow label="Toolkit" onBack={onBack}>
+        <BackRow label={label} onBack={onBack}>
           {actions}
         </BackRow>
       </div>
@@ -86,7 +90,7 @@ export function ToolkitItemBack({
             : (layers.trail ?? undefined)
         }
       >
-        <BackRow label="Toolkit" onBack={onBack} />
+        <BackRow label={label} onBack={onBack} />
         {hasFrom ? (
           <>
             <span className={separator} aria-hidden="true">

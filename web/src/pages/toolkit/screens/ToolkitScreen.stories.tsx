@@ -748,3 +748,20 @@ export const HookFiles: Story = {
     await expect(within(viewer).getByText('Last run on Nov 14: 43 of 43 pass.')).toBeVisible()
   },
 }
+
+export const SkillFilesTablet: Story = {
+  name: 'T4: a skill’s files on a tablet, a doc rendered under the tree',
+  args: { data: toolkitStates.skillFilesTablet.data, ui: toolkitStates.skillFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const viewer = within(item).getByRole('region', { name: 'references/doc.md' })
+    // A Markdown file opens rendered, with the Rendered and Source switch under its text.
+    await expect(within(viewer).getByText('56 lines · read on demand')).toBeVisible()
+    await expect(within(viewer).getByRole('heading', { name: 'Docs' })).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+    await expect(within(viewer).getByRole('radio', { name: 'Source' })).not.toBeChecked()
+  },
+}
