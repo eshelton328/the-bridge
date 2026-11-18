@@ -4,7 +4,7 @@ import { ToolkitPage, toolkitSearch, loadToolkitState } from '../pages/toolkit/i
 
 export const Route = createFileRoute('/toolkit')({
   validateSearch: toolkitSearch,
-  loaderDeps: ({ search }) => ({ state: search.state }),
-  loader: ({ deps }) => loadToolkitState(deps.state),
+  loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
+  loader: ({ deps }) => loadToolkitState(deps.state, deps.source),
   component: ToolkitPage,
 })

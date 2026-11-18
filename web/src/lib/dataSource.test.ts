@@ -1,0 +1,43 @@
+import { describe, expect, it } from 'vitest'
+import { readState } from './dataSource.ts'
+
+const states = { first: { n: 1 }, second: { n: 2 } }
+
+describe('readState', () => {
+  it('reads the fixtures when no source is named: the state file object itself', () => {
+    const read = readState(states, { state: 'second', source: undefined })
+    expect(read).toEqual({ ok: true, value: { key: 'second', state: states.second } })
+    if (read.ok) expect(read.value.state).toBe(states.second)
+    expect(readState(states, { state: 'second', source: 'fixtures' })).toEqual(read)
+  })
+
+  it('reads the fallback, else the first state, when no state is named', () => {
+    expect(readState(states, { state: undefined, source: undefined })).toEqual({
+      ok: true,
+      value: { key: 'first', state: states.first },
+    })
+    expect(readState(states, { state: undefined, source: undefined }, 'second')).toEqual({
+      ok: true,
+      value: { key: 'second', state: states.second },
+    })
+  })
+
+  it('misses for a source that is not built, an unknown source and an unknown state', () => {
+    expect(readState(states, { state: 'first', source: 'mock-api' })).toEqual({
+      ok: false,
+      error: { reason: 'notBuilt', source: 'mock-api' },
+    })
+    expect(readState(states, { state: 'first', source: 'live' })).toEqual({
+      ok: false,
+      error: { reason: 'notBuilt', source: 'live' },
+    })
+    expect(readState(states, { state: 'first', source: 'nowhere' })).toEqual({
+      ok: false,
+      error: { reason: 'unknownSource', source: 'nowhere' },
+    })
+    expect(readState(states, { state: 'third', source: undefined })).toEqual({
+      ok: false,
+      error: { reason: 'unknownState', state: 'third' },
+    })
+  })
+})
