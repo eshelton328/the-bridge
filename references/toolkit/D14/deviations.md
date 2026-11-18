@@ -117,3 +117,12 @@ and rule results are unchanged). The frame has no `exceptions.json`.
   button). Both pass the position check.
 - **Other tabs.** Files, Links, Evals and Activity show empty panels:
   they are later frames.
+
+## Second review
+
+- **Row counts.** The two change counts in each list row sit level with
+  the name, where Figma centres them in the row, as on D03 (gap: Toolkit
+  row (pane)).
+- **Rail items.** The rail items from Inbox to More sit 4 to 5 px higher
+  under the logo than Figma's. The rail is the shared app frame; this is
+  reported to bridge-coord for the cross-page audit.
