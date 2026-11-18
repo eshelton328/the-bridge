@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
-import { toolkitStates } from '../pages/toolkit/states/index.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // The Activity tab of an open item through the real route (D17, `activity` 474:583): the key figures, the bar panels
@@ -140,12 +139,12 @@ describe('the Activity tab of an open item (D17)', () => {
   })
 })
 
-// The skills a round names as the D4 list (ruleOpen, every group) shows them: their description and file count.
-const listItem = (path: string) => {
-  const found = toolkitStates.ruleOpen.data.groups.flatMap((g) => g.items).find((i) => i.path === path)
-  if (found === undefined) throw new Error(`no list item ${path}`)
-  return found
-}
+// The skills a round names as the D4 list (ruleOpen, with toolkitList's Skills group) shows them: the description and
+// the file count. The app layer cannot import a page's states, so the values are copied here.
+const listItems = {
+  'skills/readme/': { description: 'Writes and checks READMEs, then runs the quick start in a sandbox', files: 9 },
+  'skills/pr-description/': { description: 'Writes a PR title and description from the final diff', files: 3 },
+} as const
 
 describe('a round opens its skill with the details the list has (D23)', () => {
   for (const [state, size] of [
@@ -167,7 +166,7 @@ describe('a round opens its skill with the details the list has (D23)', () => {
         if (!(button instanceof HTMLElement)) throw new Error('no round button')
         await userEvent.click(button)
         await expect.poll(() => root.querySelector(`article[aria-label="${name}"]`)).not.toBeNull()
-        const item = listItem(path)
+        const item = listItems[path]
         const article = root.querySelector(`article[aria-label="${name}"]`)
         expect(article?.textContent).toContain(item.description)
         expect(article?.querySelector('[data-figma="files"] h3')?.textContent).toBe(`Files${String(item.files)}`)
