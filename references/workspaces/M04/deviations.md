@@ -50,6 +50,13 @@ the actions in `OptionList`s), with Move to workspace open on the-bridge.
   sheet).** Figma draws them in Regular 15 and the workspaces in Regular
   13; `OptionList` draws `label` (Medium 14) and, at `size="sm"`,
   `labelSm` (Medium 13).
+- **The title sits lower and further in (Phone chat actions sheet).**
+  Figma's sheet (105:2925) pads 12 at the sides and puts the title
+  (105:2928, Semibold 15, x 13) 2 under the grabber and Fork's row 2
+  under the title. `BottomSheet size="sm"` keeps the grabber 9 down, as
+  Figma, but puts the title 12 under it and 17 in, and Fork's label 38
+  under the title's top against about 33. `BottomSheet` takes no padding
+  or `className`.
 - **Close chat's label and the-bridge's label are white (Phone chat
   actions sheet).** Figma draws Close chat in red and the highlighted
   workspace in the accent colour. `OptionList` has no tone and keeps the
@@ -59,7 +66,10 @@ the actions in `OptionList`s), with Move to workspace open on the-bridge.
   M03: `Message` draws the reply in `body` (14/20) and the name in `label`,
   against Figma's Geist 13 on a 19 px line, so the reply wraps to three
   lines and "sessions on the desktop." shows above the sheet, which also
-  starts lower.
+  starts lower. Erik's message (105:2908) is Geist Regular 13 on a 19 px
+  line in Figma and `body` (14/20) in the render, so its first line is
+  about 7% wider. Copy is 24 high against Figma's 22 (105:2919), as in
+  M03.
 - **The ⋯ is lighter (Chat header).** As in M03, a 20 px thin `MoreIcon`
   against Figma's heavy 18 px icon. It stays bare while the sheet is open.
 - **No home indicator.** Figma's sheet runs to the screen's end with the

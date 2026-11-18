@@ -60,7 +60,9 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   the transcript well is 2 px taller per line gap and "Started from this
   chat with its full context; returns its result here." wraps to two
   lines in the 353 px inside the card (Figma 360). The sparkle is 16 px
-  (Figma 15).
+  (Figma 15). Hide transcript keeps the default border while the
+  transcript is open, as Figma draws it (105:1350); its label and the
+  others' are `labelXs` (Medium 12) against Figma's Medium 11.
 - **Main chat.** `105:1277` h +6: the reply wraps in body text (14/20),
   as on D02. `105:1283` h +6: `ProposalBlock` is taller than Figma's
   approval box, as on D01. The reply has no Copy button, as in Figma.

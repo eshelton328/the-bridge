@@ -42,11 +42,16 @@ chevron each.
   would push the button past the Panel body's edge, which scrolls
   (`hiddenOverflow`).
 - **The transcript lines are dimmer and 2 px further apart (Subagent
-  card).** Figma draws them in the text colour 18 apart; the well draws
-  them in `fg.muted` 20 apart, as in D3.
-- **Hide transcript has a cyan border (Subagent card).** `Button` draws the
-  expanded border while `aria-expanded` is true; Figma draws the button
-  plain. D3 draws it the same way.
+  card).** Figma draws them in Geist Mono 11 in the text colour 18 apart
+  (105:3210); the well draws them in Geist Mono 11 (`monoSm`) in
+  `fg.muted` 20 apart, as in D3.
+- **The card buttons' labels are larger (Subagent card).** Transcript,
+  Hide transcript and Stop are 24 high, as in Figma (105:3197, 105:3215,
+  105:3217), but Figma draws their labels in Geist Medium 11 and
+  `textSize="xs"` draws `labelXs` (Medium 12/16), so each button is wider:
+  Hide transcript 102 against 95, Stop 65 against 60, Transcript about 75
+  against 70. No label style is Medium 11. Hide transcript keeps the
+  default border while the transcript is open, as Figma draws it.
 - **No home indicator.** The app draws no status bar or home indicator
   (d-089), so the side-by-side shows a blank band at the top.
 - **What the view does not do yet.** The chevrons have their names but

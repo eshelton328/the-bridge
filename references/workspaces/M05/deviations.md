@@ -56,6 +56,14 @@ the focus is in its message box.
   Figma's 22, as the × sits in a 24 px button.
 - **The ⋯ is lighter (Chat header).** As in M03 and M04, a 20 px thin
   `MoreIcon` against Figma's heavy 18 px icon, under the scrim.
+- **The stars sit elsewhere (Backdrop stars).** Figma draws the frame's
+  own 22 stars behind the screen (105:3035 to 105:3056); `Backdrop
+  size="phone"` draws the Inbox phone frame's 22 stars (346:8982) at
+  fixed places and takes no positions, so the render's dots have Figma's
+  count and tone but sit in other places. The chat's body has no fill in
+  Figma (105:3087), so its stars show under the scrim too, as the
+  render's do; few of Figma's fall above the sheet, which starts at y
+  224.
 - **No home indicator.** The app draws no status bar or home indicator
   (d-089), so the side-by-side shows a blank band at the top.
 - **What the side chat does not do yet.** The composer does not send; ×,

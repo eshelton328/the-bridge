@@ -34,7 +34,8 @@ Start chat, as the footer.
   (Folder chip), `128:30` w -7, `128:34` x -7, `128:41` x -6.4.** The
   paths are in `label` (Geist 14) against Figma's Geist Mono, and the chips
   are 28 px against 30; the × of ~/omni is part of the chip's button. D3
-  draws them the same way.
+  draws them the same way. Add folder's border is dashed, as Figma's
+  (128:41).
 - **The first message box is 33 px shorter and has a send button
   (Composer in a form), `105:3327` h -33, `105:3338` h -32.** `Composer`
   sizes its text area to one line (78 px) and always draws the cyan ↑ send

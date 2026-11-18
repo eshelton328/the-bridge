@@ -65,9 +65,13 @@ search has the focus with its caret after "~/the-".
   which Figma has not, as in D04. The focus trap selects the field's text
   when the sheet opens; the sheet puts the caret after the text, as Figma
   draws it.
+- **No caret (Folder picker).** Figma draws the caret after "~/the-"
+  (128:747). The field has the focus (its cyan border), but the fidelity
+  screenshot shows no caret: the caret blinks, so a screenshot catches it
+  off or hides it, as in M02 and D21.
 - **Rows (Folder list, Folder picker).** The folder rows are 36 high
-  (`Button size="lg"`) against 37, Add folder 28 against 30 and drawn
-  solid where Figma's border is dashed, the recent rows 32 against 33 and
+  (`Button size="lg"`) against 37, Add folder 28 against 30 (its border
+  dashed, as Figma's 128:730), the recent rows 32 against 33 and
   35 (the chosen ~/the-bridge), the folders of ~/ 32 against 31; all
   within the tolerance. "working folder" is `fg.muted`, as in D04.
 - **Chat header (Chat header, Chat header text).** As in M03: the title is

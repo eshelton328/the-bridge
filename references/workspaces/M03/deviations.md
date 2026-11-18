@@ -26,7 +26,11 @@ screen is `WorkspacesPhone` with `ui.phoneView: 'chat'`: `PhoneChat`
   (14/500) and takes no size; Figma draws Geist 13 on a 19 px line and the
   name at 12. The reply's three lines are 60 high against 57, and its
   text is about 5% wider. Erik's message is 2 px taller for the same
-  reason.
+  reason, and its first line about 7% wider. Copy under the reply
+  (105:2797) is 22 high in Figma, padded 8 and 3 with "Copy" in Geist
+  Medium 11; `Button size="xs" textSize="xs"` is 24 high with `labelXs`
+  (12/16), so Copy is about 67 × 24 against 63 × 22, as on the desktop
+  (no button size is 22 and no label style is Medium 11).
 - **The composer is 7 px taller and starts 10 px higher (Composer text,
   Phone safe area), `105:2820` y -10, h +7.** `Composer` draws its text
   in `body` and Stop as `Button size="sm"` (14 px label, 16 px icon), so
@@ -44,13 +48,19 @@ screen is `WorkspacesPhone` with `ui.phoneView: 'chat'`: `PhoneChat`
 - **The ⋯ is lighter (Chat header).** Figma's ⋯ is a heavy 18 px icon in
   the text colour; the icon set has no 18 px size and draws `MoreIcon`
   thin, so it is a 20 px `MoreIcon` in a 24 px text button that reaches
-  2 px into the header's end padding.
+  2 px into the header's end padding. The back button reaches 2 px out on
+  each side, so the chevron is centred where Figma's is (105:2750) and the
+  kind mark and title start at x 44 and 72, as in Figma.
 - **The highlighted skill's name is white (Skill picker).** Figma draws
   /writer in the accent colour on the filled row; `OptionList
   selectedFill` fills the row and keeps the name in `fg.default`. The list
   is `Popover width="lg"`, 360 wide against Figma's 358.
-- **The attachment's × is thin (Composer attachment remove).** Figma
-  draws a heavy 11 px ×; `Composer` draws its own 12 px `CloseIcon`.
+- **The attachment chip is 26 high with thin icons (Composer attachment
+  remove).** Figma's chip (105:2821) is 22 high: padded 8 and 3, a heavy
+  12 px paperclip, the name in Geist Medium 11 and a heavy 11 px ×.
+  `Composer` draws its own chip, 26 high (about 141 × 26 against
+  140 × 22), with a thin outline paperclip and a 12 px `CloseIcon`, and
+  takes no chip size or icon weight (the icon set has no stroke weight).
 - **No caret.** Figma draws the caret after "/" (105:2830). The message
   box has the focus (its border is cyan), but the screenshots hide the
   caret.

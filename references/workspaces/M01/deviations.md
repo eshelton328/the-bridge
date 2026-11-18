@@ -61,6 +61,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Button size="sm"`, 28 high against Edit's 30 (Edit sits 3 px lower,
   within the tolerance), and + is 36 wide, as in Figma, because it is not
   an `iconOnly` button.
+- **The stars sit elsewhere (Backdrop stars).** Figma draws the frame's
+  own 22 stars behind the screen (the 22 `star` layers that `frame.json`
+  skips); `Backdrop size="phone"` draws the Inbox phone frame's 22 stars
+  (346:8982) at fixed places and takes no positions, so the render's
+  dots have Figma's count and tone but sit in other places.
 - **Status bar and home indicator.** Figma draws a 38 px status bar
   (9:41), the home indicator and the frame's rounded corners; the app
   draws none (d-089), so the side-by-side shows a blank band at the top.
