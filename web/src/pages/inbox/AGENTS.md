@@ -150,7 +150,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   field its value props.
 - `states/screens.ts`: the screen map (R10) for `screens/InboxScreens.stories.tsx`
   (`Pages/Inbox/Screens`). A state with a tablet and a phone frame (T1 and
-  M1) has one story, at the tablet, so the map puts it on the tablet only.
+  M1) is named for both devices, so its screen shows the phone column too.
 - `LIBRARY_GAPS.md`: what the Inbox frames need that the component
   library cannot draw yet, for the batched library PR.
 
