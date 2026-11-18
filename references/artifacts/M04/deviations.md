@@ -40,10 +40,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Rows under the scrim.** As M1: the previews are `Thumbnail size="md"`,
   76 × 48 as Figma's, but drawn as D2's row drawing scaled up, with window
   dots and smaller cells (library gap "Phone row preview drawing"), and
-  the rows are 70 high against Figma's 66 (`ListRow
-  padding=\"phone\"` pads 10 where Figma has 8 inside the border), and `RowGroup`'s `mt: -2`
-  holds Figma's 68 px pitch (library gap "ListRow phone height 70 vs
-  66"). New is `Badge size="xs"` with
+  the rows are 66 high and 2 apart, Figma's 68 px pitch (407:578; `ListRow
+  padding="phone"` pads 8 inside the border, as Figma's), each 1 below
+  Figma's, as in M1. New is `Badge size="xs"` with
   `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
   is 12 px against 9 (407:601, 407:602; library gap "New badge"). The
   previews' colours differ as in M1 (library gap "Thumbnail colour").
@@ -55,8 +54,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Values picked (d-100)
 
-- Earlier's header (407:653) at y 501, as M1 (its group starts 2 up
-  into Found's last row, which is 70 high at Figma's 68 px pitch). The
+- Earlier's header (407:653) at y 500 against Figma's 501, as M1 (its
+  36 px header starts right under Found's last row, so its label sits
+  where Figma's 34 px header has it). The
   sheet's top edge is at y 517 (Figma 518, 407:814), so the sheet covers
   Earlier's label as Figma's does.
 - Sort and Filter draw their icons in `fg.muted`, as Figma's grey.

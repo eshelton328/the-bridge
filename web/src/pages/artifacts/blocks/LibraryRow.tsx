@@ -2,7 +2,8 @@
 // 403:8216): its preview, the title, the description and the meta line
 // (source, project and, for a match in it, the link), the New dot 8 after
 // the title, and at the end where a search matched it, the age and Open,
-// centred down the row. A search marks the match in the field it names.
+// centred down the row. The text starts 16 after the preview and is
+// centred down the row too. A search marks the match in the field it names.
 // Props only.
 import {
   Badge,
@@ -33,11 +34,15 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
   return (
     <div data-figma={`artifact row · ${card.title}`}>
       {/* Figma draws each row as a card on the pane fill in a 1 px border, padded 12 (403:8216), 98 high around the
-      72 px preview, with a new artifact's dot 8 after the title (403:8233). */}
+      72 px preview, with a new artifact's dot 8 after the title (403:8233). The text starts 16 after the preview
+      (403:8217 ends at x 237, the title 403:8232 starts at 253), and its 62 px frame (403:8230) is centred down the
+      row, 18 under its top. */}
       <ListRow
         title={card.title}
         surface="card"
         padding="lg"
+        leadingGap="16"
+        bodyAlign="center"
         trailingAlign="center"
         dot={card.isNew ? 'working' : undefined}
         dotLabel={card.isNew ? 'New' : undefined}

@@ -30,11 +30,13 @@ each with its reason. The library gaps are in
   `border.default` border, padded 12, 98 high and 6 apart, as Figma's
   (403:8216), and the three rows, `result list` and `hint` pass.
 - **Row layout.** The match place, the age and Open are centred down the
-  row, as Figma's (`trailingAlign="center"`, library 1.0.0-beta.39). The
-  text starts 10 after the preview (the title at x 247) against Figma's
-  16 (403:8232 at x 253), and 13 under the row's top against Figma's 18
-  (403:8231), as `ListRow` puts its body at the top. Library gap "List
-  row padding and age".
+  row, as Figma's (`trailingAlign="center"`, library 1.0.0-beta.39). Since
+  library 1.0.0-beta.42 the text starts 16 after the preview, as Figma's
+  (`leadingGap="16"`: the preview ends at x 237 and the title starts at
+  253, 403:8217 and 403:8232), and the text is centred down the row
+  (`bodyAlign="center"`). The render's text is 60 high against Figma's
+  62 px frame (403:8230), so it starts 19 under the row's top against
+  Figma's 18.
 - **New dot.** None left: since library 1.0.0-beta.39 (#147) the cyan
   dot of the new Skill eval pass rates is `ListRow dot="working"`, 8 px
   after the title, as Figma's (403:8233).

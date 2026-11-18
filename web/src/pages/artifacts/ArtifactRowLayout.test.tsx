@@ -44,6 +44,13 @@ function listRow(title: string): HTMLElement {
   return row
 }
 
+// A ListRow slot, such as its leading, title or body.
+function slot(row: HTMLElement, name: string): HTMLElement {
+  const el = row.querySelector(`.list-row__${name}`)
+  if (!(el instanceof HTMLElement)) throw new Error(`no list-row__${name}`)
+  return el
+}
+
 // Figma's rows (Artifacts D2 403:219, D4 403:8216) are drawn by ListRow's padding, surface, trailingAlign and dot
 // props (library #147), not by a box and a dot of the page's own.
 describe('the artifact rows', () => {
@@ -79,5 +86,40 @@ describe('the artifact rows', () => {
     expect(row.getBoundingClientRect().height).toBe(98)
     const dot = row.querySelector('[role="img"][aria-label="New"]')
     expect(dot?.closest('.list-row__titleRow')).not.toBeNull()
+  })
+
+  it('starts a D4 row title 16 after the preview and centres its body down the row', async () => {
+    await page.viewport(1512, 982)
+    const { data, ui } = artifactsStates.searchList
+    view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="desktop" />)
+    await expect.element(page.getByRole('button', { name: 'Open Skill eval pass rates' })).toBeVisible()
+    const row = listRow('Skill eval pass rates')
+    const preview = slot(row, 'leading').getBoundingClientRect()
+    const title = slot(row, 'title').getBoundingClientRect()
+    const body = slot(row, 'body').getBoundingClientRect()
+    const box = row.getBoundingClientRect()
+    // Figma's preview (403:8217) ends at x 237 and the title (403:8232) starts at 253.
+    expect(title.left - preview.right).toBe(16)
+    // Figma's 62 px text frame (403:8230) is 18 under the top of the 98 px row (403:8216): centred down it.
+    expect(body.top - box.top).toBeCloseTo(box.bottom - body.bottom, 0)
+    expect(body.top - box.top).toBeGreaterThan(13)
+  })
+
+  it('draws an M1 phone row 66 high 2 above the next, at Figma 68 px pitch', async () => {
+    await page.viewport(390, 844)
+    const { data, ui } = artifactsStates.libraryPhone
+    view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="phone" />)
+    await expect.element(page.getByText('Hono server spike', { exact: true })).toBeVisible()
+    // Figma's rows 406:121 and 406:148 are 66 high, 2 apart.
+    const row = listRow('Skill eval pass rates')
+    const next = listRow('Hono server spike')
+    expect(row.getBoundingClientRect().height).toBe(66)
+    expect(next.getBoundingClientRect().top - row.getBoundingClientRect().bottom).toBe(2)
+    // Earlier's 34 px header (406:196) sits 2 under Found's last row (414:772); the render's 36 px header starts
+    // right under it, so its label is where Figma's is, not 2 up into the row.
+    const last = listRow('Tailscale access check')
+    const earlier = document.querySelector('[data-figma="group · EARLIER"]')
+    expect(earlier?.getBoundingClientRect().height).toBe(36)
+    expect(earlier?.getBoundingClientRect().top).toBe(last.getBoundingClientRect().bottom)
   })
 })

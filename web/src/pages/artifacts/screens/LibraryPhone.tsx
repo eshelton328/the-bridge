@@ -31,7 +31,6 @@ const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 // high with its text 6 from the top.
 const toolsRow = css({ pt: '8' })
 const statusRow = css({ pt: '6' })
-const groupsGap = css({ '& > * + *': { mt: '-2' } })
 
 export type LibraryPhoneProps = {
   data: ArtifactsData
@@ -141,10 +140,10 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           <div className={chips}>
             <FoundStatus text={data.found} className={statusRow} />
           </div>
-          {/* 406:196: Earlier's header sits 2 under Found's last row (499 to 501). The phone's rows are 70 high against
-              Figma's 66 at its 68 px pitch (see RowGroup), so the last row ends 4 lower; the group after it starts 2
-              up into that row's bottom padding, as the rows do, so its header is where Figma has it. */}
-          <Stack gap="0" className={groupsGap}>
+          {/* 406:196: Earlier's header is 34 high, 2 under Found's last row (499 to 501), its label centred at
+              y 518. The render's GroupHeader is 36 high, 1 more above and below the label, so the group starts right
+              under the last row: its header is 1 above Figma's, its rows 1 below, and its label where Figma's is. */}
+          <Stack gap="0">
             {groups.map((group) => (
               <RowGroup
                 key={group.id}

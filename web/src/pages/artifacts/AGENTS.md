@@ -119,7 +119,8 @@ each file of a page folder is for.
   `LibraryTools iconOnly` (icon-only 36 px Sort and Filter with their
   icons in `fg.muted`, also while pressed, and no view switch),
   `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
-  group, each after the first 2 up into the last row's padding, whose
+  group, each after the first right under the last row (its 36 px
+  header, Figma's 34, then puts the label where Figma's is), whose
   `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
   the title line and New under it as `Badge size="xs"` with
   `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 66 high
@@ -189,7 +190,9 @@ each file of a page folder is for.
   and closes it, and the scrim and Escape close it and keep them, so both
   return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
   `GroupHeader` over rows 6 apart, Figma's 104 px pitch) and `LibraryRow`
-  (`ListRow surface="card" padding="lg" trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the title
+  (`ListRow surface="card" padding="lg" leadingGap="16" bodyAlign="center"
+  trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the text 16
+  after it and centred down the row, the title
   with the New dot 8 after it (`dot="working"`) and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
   it, and at the end, centred down the row, the place as `Badge variant="tag"`, the
