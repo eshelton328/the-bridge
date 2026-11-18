@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 3 of the fidelity loop
 (`pnpm fidelity toolkit D05 T05 M07`, then `pnpm fidelity toolkit`,
-2026-11-18, against the installed library 1.0.0-beta.39), each with its
+2026-11-18, against the installed library 1.0.0-beta.42), each with its
 reason. The library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`.
 The state is `web/src/pages/toolkit/states/skillDiscuss.ts`: D3's data
 (`skillOpen`) with writer's discussion open (`ui.discussOpen`) and no
@@ -56,13 +56,15 @@ Used in workflows section. The frame has no `exceptions.json`.
   attach button and is 26 high against 29 (`model` x -6; gap:
   Discussion model chip).
 - **Reply box.** Figma draws the reply box focused, with a light-blue
-  #49a8c4 border; the render opens with nothing focused, so `Composer`
-  draws its #24314f `border.default` (gap: Composer focus). The box is
+  #49a8c4 border. The story focuses it, and `Composer` draws its focus
+  border, `border.selected` over its fill, a darker #3a819d (gap:
+  Composer focus). The box is
   78 high against Figma's 82, with 28 px attach and Send buttons against
   30, so its top edge sits 3 px lower; the attach button's clip is 16 px
   against 14 (gap: Composer size). The attach button does nothing: no
   file flow is designed, and `Composer` draws the button only with
   `onAttach`.
-- **Context row.** The attached path is mono 12, as Figma's (438:19).
+- **Context row and name.** The attached path (438:19) and the item's
+  name in the header (438:7) are mono 12, as Figma's.
 - **Copy. Copy writes the answer's text to the clipboard through
   `ToolkitPage`, as the path badge's copy does.

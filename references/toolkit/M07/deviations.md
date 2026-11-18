@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 3 of the fidelity loop
 (`pnpm fidelity toolkit D05 T05 M07`, then `pnpm fidelity toolkit`,
-2026-11-18, against the installed library 1.0.0-beta.39), each with its
+2026-11-18, against the installed library 1.0.0-beta.42), each with its
 reason. The library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`.
 The state is `web/src/pages/toolkit/states/skillDiscussPhone.ts`: D3's
 data with writer's discussion open, full screen with no tab bar. The
@@ -38,8 +38,9 @@ frame has no `exceptions.json`.
   the "It can" icons are 12 px, and the links icon is a chain (gaps:
   Discussion empty state, Links icon).
 - **Reply box.** Figma draws the reply box focused, with a violet
-  #6863b0 border and a caret; the render opens with nothing focused,
-  with `Composer`'s #24314f border (gap: Composer focus). The box is 78
+  #6863b0 border and a #9e8fff caret. The story focuses it, and
+  `Composer` draws its cyan focus border (#3a819d) and its caret in
+  `accent.default` (gap: Composer focus). The box is 78
   high against 75, so its placeholder sits 1.5 px lower and its buttons
   3 px lower (gap: Composer size). The attach button is a 28 px rounded
   square with a hairline #24314f border on the #17213a fill, as Figma's
