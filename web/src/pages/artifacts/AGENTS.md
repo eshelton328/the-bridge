@@ -27,8 +27,17 @@ each file of a page folder is for.
   it scrolls (d-107), then `ArtifactTitleBlock` with `ArtifactStatus`
   (New and who found it) over the title, a framed `Thumbnail
   shape="wide"`, Open artifact the full width, the link and `MadeIn`,
-  20 apart. Back sets `ui.artifactClosed` and the library shows (T1). The
-  tablet's discussion (T4) and a phone frame of the artifact come later.
+  20 apart. Back sets `ui.artifactClosed` and the library shows (T1).
+  Discuss sets `ui.discussOpen`, and on a tablet the discussion opens as
+  its own page, `screens/ArtifactDiscussionPage.tsx`, with no tab bar
+  (T4), as the Inbox's (Inbox T17): the shared `DetailFrame` with the nav
+  (Back, `ModelContext` in the middle and Open in workspace) and
+  `DiscussedArtifactCard` in its header, the empty state or the entries
+  under them, and the reply box as its sticky footer, capped as the
+  desktop panel's (`blocks/discussionReply.ts`), so the nav and the card
+  stay at the top and the reply box at the bottom while only the messages
+  scroll (d-107). Back and the card return to the artifact (T2). A phone
+  frame of the artifact comes later.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
   as the Inbox's task and discussion (D14); Discuss toggles it. The
@@ -39,7 +48,9 @@ each file of a page folder is for.
   `app/ArtifactsStickyBars.test.tsx` scrolls D7 to D9 and checks both
   bars stay in view, and that a long draft keeps Send in reach; it also
   scrolls T2's page and checks the Back bar and the tab bar stay put,
-  and that Back shows the library.
+  and that Back shows the library, and scrolls T4's page and checks the
+  nav, the card and the reply box stay put, that a long draft keeps Send
+  in reach, and that T2's Discuss opens T4 and its card returns to T2.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
@@ -113,7 +124,10 @@ each file of a page folder is for.
   `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
   state or the sent messages, and `Composer`, whose draft is
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
-  workspace and Close, `ModelChip`, `ContextMeter` and the guard) and
+  workspace and Close, `ModelContext` and `DiscussionGuard`),
+  `ModelContext` (`ModelChip`, `ContextMeter` and "context"),
+  `DiscussionGuard` (the lock and what the discussion may do),
+  `discussionReply.ts` (the reply box's cap, which T4's page shares) and
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the
   Inbox's discussion blocks, which the Inbox page does not export.
@@ -129,7 +143,11 @@ each file of a page folder is for.
   artifact's `applied` pill, bar line and updated chip and the proposal's
   `apply` context; `ArtifactProposal` draws its `apply` eyebrow, the lines
   it put in and its note, with no buttons, as the Inbox's applied update
-  (Inbox D16). The link stays: Apply republishes to it.
+  (Inbox D16). The link stays: Apply republishes to it. For T4:
+  `DiscussedArtifactCard` (a `Panel variant="notice"` with the title, New
+  as `StatusPill tone="working"`, a chevron whose button covers the card
+  and returns to the artifact, the source, project and age, and
+  `DiscussionGuard`).
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
@@ -148,7 +166,9 @@ each file of a page folder is for.
   `artifactTablet` (T1's data with D2's open artifact, no discussion yet)
   and T3 `filterTablet` (T1's data with the Filter sheet open and D3's two
   boxes checked; `libraryTablet` holds the sheet's menu, D3's with Clear
-  and "Show 7 artifacts", so T1's Filter opens it). `library` stays first in `states/index.ts`: the app
+  and "Show 7 artifacts", so T1's Filter opens it) and T4 `discussTablet`
+  (T2's data with its discussion open; `artifactTablet` holds D7's
+  discussion with T4's Back label and node id, so T2's Discuss opens it). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
