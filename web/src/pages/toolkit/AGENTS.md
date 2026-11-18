@@ -213,6 +213,8 @@ what each file of a page folder is for.
   browser with their own files: a rule (D33, `ruleFiles`, D37's list) is one
   file, a one-row tree with its role line, its first lines as code and when it
   loads; an agent (D34, `agentFiles`, D7's list) is one file too, its prompt,
-  with its model and tools in the frontmatter. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  with its model and tools in the frontmatter; a workflow (D35, `workflowFiles`,
+  D8's list) is one design doc, with the harness/ folder of the scripts its
+  steps run, which are outside the toolkit. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

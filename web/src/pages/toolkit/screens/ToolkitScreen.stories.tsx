@@ -711,3 +711,23 @@ export const AgentFiles: Story = {
     ).toBeVisible()
   },
 }
+
+export const WorkflowFiles: Story = {
+  name: 'D35: a workflow open beside the list, on Files',
+  args: { data: toolkitStates.workflowFiles.data, ui: toolkitStates.workflowFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The workflow is one design doc, selected; the harness scripts its steps run are outside the toolkit.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByRole('treeitem', { name: /skill-eval-round\.md/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('Design doc, run by hand. No script yet.')).toBeVisible()
+    await expect(
+      within(tree).getByText('Outside the toolkit, in projects/skill-evals/. One script for each step.'),
+    ).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^aggregate\.py/ })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'skill-eval-round.md' })
+    await expect(within(viewer).getByText('Markdown · 93 lines · design doc')).toBeVisible()
+    await expect(within(viewer).getByText('The steps table names the harness script for each step.')).toBeVisible()
+  },
+}

@@ -143,6 +143,7 @@ describe('a script explained on the Files tab (D10)', () => {
 // viewer. Each lays out as D6's does: the tree and the viewer side by side, down to the item pane's foot.
 const otherKinds = [{ state: 'ruleFiles', item: 'skills', file: 'skills.md', rows: 1 }]
 otherKinds.push({ state: 'agentFiles', item: 'writing-reviewer', file: 'writing-reviewer.md', rows: 1 })
+otherKinds.push({ state: 'workflowFiles', item: 'skill-eval-round', file: 'skill-eval-round.md', rows: 8 })
 
 describe('the Files tab of a rule, an agent, a workflow and a hook (D33 to D36)', () => {
   it.each(otherKinds)('draws $state’s $rows tree rows beside $file, down to the pane’s foot', async (kind) => {
