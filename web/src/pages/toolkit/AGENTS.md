@@ -284,7 +284,10 @@ what each file of a page folder is for.
   (`linkFile`, and `openFile` in `screens/itemView.ts`;
   `src/app/ToolkitLinks.test.tsx`). A rule (D29, `ruleLinks`, D37's data)
   links to one skill and nothing links to it: a side with no links has
-  `empty`, the reason in the graph's left column and in its panel. Only the
+  `empty`, the reason in the graph's left column and in its panel. An
+  agent (D30, `agentLinks`, D7's data) has two items named writer on one
+  side, the skill and the agent: each node and row keys on the item's
+  path. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

@@ -1006,3 +1006,17 @@ export const RuleLinks: Story = {
     await expect(within(to).getByRole('button', { name: 'skills.md:72' })).toBeVisible()
   },
 }
+
+export const AgentLinks: Story = {
+  name: 'D30: an agent open beside the list, on Links',
+  args: { data: toolkitStates.agentLinks.data, ui: toolkitStates.agentLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 7' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'skills/writer/SKILL.md:107' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 3' })
+    await expect(within(to).getByRole('button', { name: 'writing-reviewer.md:102' })).toBeVisible()
+  },
+}
