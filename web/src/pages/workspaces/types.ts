@@ -332,6 +332,11 @@ export const PhoneText = z.object({
    * to Close chat. `move` opens the workspaces under its row. Without it, the ⋯ draws only.
    */
   chatMenu: z.array(PaneAction).optional(),
+  /**
+   * The actions sheet of a chat in the phone's list (M9 146:273), in order: what holding the row or its ⋯ opens,
+   * Rename first. Without it, a hold does nothing and the row's ⋯ draws only.
+   */
+  rowMenu: z.array(PaneAction).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -437,6 +442,10 @@ export const SidebarLayers = z.object({
    * workspace id and `new`: `BottomSheet` and `OptionList` take no `data-*`, so the icons carry the rows' places.
    */
   sheetIcons: z.record(z.string(), z.string()).optional(),
+  /** The lifted copy of a held chat's row over the sheet's scrim on the phone (M9 146:252). */
+  liftedRow: z.string().optional(),
+  /** The ⋯ of that copy (M9 146:268). */
+  liftedMenu: z.string().optional(),
   /** The New chat form on the phone (M7). */
   newChatForm: NewChatLayers.optional(),
   /** The folders sheet on the phone (M8). */

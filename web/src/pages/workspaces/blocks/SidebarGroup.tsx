@@ -90,6 +90,10 @@ export type SidebarGroupProps = {
   moving?: string | undefined
   /** The ⋯ at the end of a chat's row, as the phone draws it (M1); the desktop sidebar has none. */
   rowMenu?: ((chat: SidebarChat) => ReactNode) | undefined
+  /** Called when Erik holds a chat's row, as the phone's list does (M9); the desktop sidebar has none. */
+  onHold?: ((chat: string) => void) | undefined
+  /** The held chat, whose row lifts over the scrim (M9 146:252), and its copy's ⋯. */
+  lifted?: { chat: string; menu?: ReactNode } | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
@@ -107,6 +111,8 @@ export function SidebarGroup(props: SidebarGroupProps) {
     grip = true,
     moving,
     rowMenu,
+    onHold,
+    lifted,
   } = props
   const rowsId = useId()
   const name = workspace.label
@@ -164,6 +170,14 @@ export function SidebarGroup(props: SidebarGroupProps) {
               moving={chat.id === moving}
               onSelect={openable.includes(chat.id) ? () => onSelect?.(chat.id) : undefined}
               menu={rowMenu?.(chat)}
+              onHold={
+                onHold === undefined
+                  ? undefined
+                  : () => {
+                      onHold(chat.id)
+                    }
+              }
+              lifted={lifted?.chat === chat.id ? { figma: layers?.liftedRow, menu: lifted.menu } : undefined}
             />
           ))}
         </Stack>

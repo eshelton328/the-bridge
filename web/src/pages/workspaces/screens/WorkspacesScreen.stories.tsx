@@ -459,3 +459,16 @@ export const PhoneFolders: Story = {
     await expect(within(picker).queryByRole('button', { name: 'Open Documents' })).toBeNull()
   },
 }
+
+export const PhoneHoldChat: Story = {
+  name: 'M9: a chat held in the phone list, with its actions in a sheet',
+  args: { data: workspacesStates.phoneHoldChat.data, ui: workspacesStates.phoneHoldChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width the held row lifts over the actions sheet (M9). WorkspacesPhoneHoldChat.test.tsx checks the
+    // sheet and the hold at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByRole('dialog', { name: 'drift check' })).toBeNull()
+  },
+}

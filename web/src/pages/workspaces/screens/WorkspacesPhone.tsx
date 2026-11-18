@@ -11,7 +11,9 @@
 // PhoneNewChat), which fills the screen with no tab bar; Cancel closes it.
 // M8 is the chat's folders (`ui.foldersOpen`, PhoneFolders), a sheet that the
 // folders chip in the chat's header opens, with the folder picker
-// (`ui.folderPickerOpen`) under the folders.
+// (`ui.folderPickerOpen`) under the folders. M9 is a chat held in the list:
+// its actions open in the same sheet (`ui.menuFor`, PhoneChatActions with
+// `data.phone.rowMenu`) and its row lifts over the scrim.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -42,6 +44,10 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
   const chat = ui.phoneView === 'chat' && focused?.type === 'chat' ? focused : undefined
+  // M9: the chat of the list whose actions are open, and its workspace.
+  const held = data.workspaces
+    .flatMap((w) => (w.chats ?? []).map((c) => ({ chat: c, workspace: w.id })))
+    .find((h) => h.chat.id === ui.menuFor)
   if (ui.newChatOpen === true && data.newChat !== undefined)
     return (
       <Backdrop size="phone">
@@ -125,6 +131,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         onMoveTargetChange={(moveTarget) => {
                           onUiChange({ moveTarget })
                         }}
+                        highlight={ui.menuHighlight}
                         onSelect={(action) => {
                           if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
                           if (action === 'subagents' && data.subagents !== undefined)
@@ -204,6 +211,28 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
           />
         }
       />
+      {held === undefined || text.rowMenu === undefined ? null : (
+        <PhoneChatActions
+          title={held.chat.title}
+          actions={text.rowMenu}
+          targets={data.workspaces.filter((w) => w.id !== held.workspace)}
+          newWorkspace={data.newWorkspace}
+          open
+          onOpenChange={(open) => {
+            if (!open) onUiChange({ menuFor: null, moveOpen: false, menuHighlight: null })
+          }}
+          moveOpen={ui.moveOpen}
+          onMoveOpenChange={(moveOpen) => {
+            onUiChange({ moveOpen })
+          }}
+          moveTarget={ui.moveTarget}
+          onMoveTargetChange={(moveTarget) => {
+            onUiChange({ moveTarget })
+          }}
+          highlight={ui.menuHighlight}
+          layers={data.layers?.sheetIcons}
+        />
+      )}
       <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} />
     </Backdrop>
   )
