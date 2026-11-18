@@ -480,4 +480,11 @@ what each file of a page folder is for.
   (`activitySources.test.ts`); the layout and the taps in
   `src/app/ToolkitActivitySources.test.tsx` (LIBRARY_GAPS.md, Activity item
   chip, Eval share bar, Show all link, Activity chat row).
+- `states/screens.ts`: the screen map (screen review R10), 41 screens
+  with each one's desktop, tablet and phone state; `states/screens.test.ts`
+  checks that every state is in one screen, on its own device.
+  `screens/ToolkitScreens.stories.tsx` (`Pages/Toolkit/Screens`) draws
+  each screen's devices side by side. `toolkitListTablet` (T1, M1) and
+  `toolkitMapTablet` (T2, M11) stand on the tablet only, as a state
+  belongs to one screen.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
