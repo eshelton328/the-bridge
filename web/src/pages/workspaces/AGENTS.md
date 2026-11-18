@@ -314,6 +314,11 @@ first: it says what each file of a page folder is for.
   T8 adds `layers` to `ForkDialog` (D15's ids when not set): at a
   tablet's width `ui.chatDialog: 'fork'` opens D15's dialog over T2's
   chat in place of M18's sheet.
+  T9 needs no new block: the fork fills the screen as T6's chat does, with
+  D16's origin and fork line (`ChatEntryView` puts an `event` entry's
+  layer on a box as wide as its text), and Back returns to the list, where
+  `SidebarChatRow` draws the fork under bridge themes with D16's branch
+  mark.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -422,7 +427,9 @@ first: it says what each file of a page folder is for.
   the menu, with D3's New chat form open: the form in a dialog over the
   chat on the tablet), T8 `tabletFork` (from `tabletChatActions`, without
   the menu, with D15's Fork form open: the form in a dialog over the chat
-  on the tablet).
+  on the tablet), T9 `tabletForkedChat` (from `tabletOneChat`, with D16's
+  fork under bridge themes and M19's empty composer: the fork full screen
+  on the tablet, Idle with no Stop and the focus in the message box).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

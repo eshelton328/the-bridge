@@ -821,3 +821,15 @@ export const TabletFork: Story = {
     await expect(within(dialog).getByRole('button', { name: 'Whole chat' })).toHaveAttribute('aria-pressed', 'true')
   },
 }
+
+export const TabletForkedChat: Story = {
+  name: 'T9: a forked chat on the tablet, Idle',
+  args: { data: workspacesStates.tabletForkedChat.data, ui: workspacesStates.tabletForkedChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with the fork alone, and the
+    // tablet's menu draws T9's fork full screen, Idle with no Stop.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes · fork' })).toBeVisible()
+    await expect(canvas.getByText('Forked from bridge themes here · the messages above are a copy')).toBeVisible()
+    await expect(canvas.queryByRole('button', { name: 'Stop' })).toBeNull()
+  },
+}
