@@ -12,6 +12,8 @@ import { SelectField } from './SelectField.tsx'
 
 const wide = css({ w: '[100%]' })
 const note = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
+// M20 422:608: the phone's note is Regular 12 on one line, which is `small` (12/16).
+const phoneNote = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
 
 /** The Figma layers of the fields, for the fidelity checks. */
 type SubtaskFieldsLayers = {
@@ -27,9 +29,11 @@ export type SubtaskFieldsProps = {
   /** The box around the task, so the form can give its message box the focus when it opens. */
   taskRef?: RefObject<HTMLDivElement | null> | undefined
   layers?: SubtaskFieldsLayers | undefined
+  /** `phone` draws the note in `small` (12/16), as M20 does; `desktop` (the default) in `bodySm`. */
+  size?: 'desktop' | 'phone' | undefined
 }
 
-export function SubtaskFields({ form, taskRef, layers }: SubtaskFieldsProps) {
+export function SubtaskFields({ form, taskRef, layers, size = 'desktop' }: SubtaskFieldsProps) {
   const { labels } = form
   return (
     <>
@@ -51,7 +55,7 @@ export function SubtaskFields({ form, taskRef, layers }: SubtaskFieldsProps) {
           />
         </div>
       </FormField>
-      <p className={note} data-figma={layers?.note}>
+      <p className={size === 'phone' ? phoneNote : note} data-figma={layers?.note}>
         {form.note}
       </p>
     </>

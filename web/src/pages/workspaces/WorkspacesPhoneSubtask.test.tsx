@@ -36,6 +36,19 @@ describe('start a subtask on the phone', () => {
     await expect.element(page.getByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
   })
 
+  it('draws Start subtask in Medium 12 and the note in Regular 12, as Figma does', async () => {
+    // M20 422:607: "Start subtask" is Geist Medium 12 (`labelXs`); 422:608: the note is Regular 12 on one line (`small`).
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSubtask
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const sheet = page.getByRole('dialog', { name: 'Start a subtask' })
+    await expect.element(sheet).toBeVisible()
+    const start = getComputedStyle(sheet.getByRole('button', { name: 'Start subtask' }).element())
+    expect(`${start.fontSize}/${start.fontWeight}`).toBe('12px/500')
+    const note = getComputedStyle(sheet.getByText('Gets this chat’s full context. Returns its result here.').element())
+    expect(`${note.fontSize}/${note.fontWeight}/${note.lineHeight}`).toMatch(/^12px\/400\/16(\.\d+)?px$/)
+  })
+
   it('opens from the chat actions and closes with ×', async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneSubtask

@@ -14,6 +14,7 @@ import { SubtaskFields } from './SubtaskFields.tsx'
 // M20 422:581 to 422:599: as M18's sheet, the parts start 16 in from the screen's sides (the sheet pads 12 inside its
 // border, these 4 more) and 16 apart, the model 16 under the title row. Start subtask spans the sheet, 40 high in
 // Figma; no button is 40, and `lg` (36) keeps the fields nearer Figma's places (LIBRARY_GAPS.md: Phone fork sheet).
+// Its label (422:607) is Geist Medium 12, which is `textSize="xs"` (`labelXs`), as M18's Fork.
 const body = css({ display: 'flex', flexDirection: 'column', gap: '16', px: '4', pt: '6' })
 
 export type PhoneSubtaskProps = {
@@ -36,8 +37,8 @@ export function PhoneSubtask({ form, open, onOpenChange, layers }: PhoneSubtaskP
       initialFocus={() => taskRef.current?.querySelector('textarea') ?? null}
     >
       <div className={body}>
-        <SubtaskFields form={form} taskRef={taskRef} layers={layers} />
-        <Button variant="primary" size="lg" textSize="smStrong" data-figma={layers?.submit}>
+        <SubtaskFields form={form} taskRef={taskRef} layers={layers} size="phone" />
+        <Button variant="primary" size="lg" textSize="xs" data-figma={layers?.submit}>
           <ArrowUpIcon size="16" />
           {form.submit}
         </Button>
