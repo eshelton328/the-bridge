@@ -137,8 +137,11 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           <div className={chips}>
             <FoundStatus text={data.found} className={statusRow} />
           </div>
-          {/* 406:196: Earlier's header sits 2 under Found's last row; the phone's rows end 4 higher (see RowGroup). */}
-          <Stack gap="4">
+          {/* 406:196: Earlier's header sits 2 under Found's last row (499 to 501). The phone's rows are 62 high at
+              Figma's 68 px pitch (see RowGroup), so the last row ends 3 higher and the header needs 5; 4 and 6 tie,
+              and the tie takes the larger (d-072). With 4 the header's label sat 2 px high, and its top showed above
+              M4's sort sheet (407:653, 407:814), which Figma's covers. */}
+          <Stack gap="6">
             {groups.map((group) => (
               <RowGroup
                 key={group.id}
