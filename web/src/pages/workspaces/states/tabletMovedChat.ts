@@ -10,7 +10,7 @@
 // toast (movedChat) and T13's layers.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
-import { movedChat } from './movedChat.ts'
+import { movedChat, moveLastChats } from './movedChat.ts'
 import { tabletOneChat } from './tabletOneChat.ts'
 
 // T6's pane, still Working with Stop, with nothing typed or attached (420:1468).
@@ -27,6 +27,7 @@ export const tabletMovedChat = {
     workspaces: movedChat.data.workspaces,
     current: movedChat.data.current,
     panes,
+    lastChats: moveLastChats(tabletOneChat.data.lastChats, panes),
     toast: movedChat.data.toast,
     layers: {
       ...tabletOneChat.data.layers,

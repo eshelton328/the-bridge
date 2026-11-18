@@ -105,4 +105,14 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(hideSidebar()).toBeVisible()
     await expect.element(showSidebar()).not.toBeInTheDocument()
   })
+
+  it('opens omni-brain on a chat it kept after D20 moved bridge themes to the-bridge', async () => {
+    const { data, ui } = workspacesStates.movedChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
+    await userEvent.click(hideSidebar())
+    await userEvent.click(tab('omni-brain'))
+    await expect.element(tab('omni-brain')).toHaveAttribute('aria-selected', 'true')
+    await expect.element(pane('drift check')).toBeVisible()
+    await expect.element(pane('bridge themes')).not.toBeInTheDocument()
+  })
 })

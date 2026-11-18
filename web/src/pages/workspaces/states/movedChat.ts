@@ -4,10 +4,11 @@
 // brain git; the chat stays selected and shown alone, Working, and its header
 // names the-bridge. A toast over the composer confirms the move, with Undo.
 // The pointer rests on omni's header. Starts from D2b (chatActions), without
-// the side chat and the menu.
+// the side chat and the menu. The workspaces' last chats (R6) move too.
 import type { ScreenState } from '../../../lib/screenState.ts'
-import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { chatActions } from './chatActions.ts'
+import { workbench } from './workbench.ts'
 
 // The chats that move: the chat and the subtask chat listed under it.
 const moved = new Set(['bridge-themes', 'theme-tokens'])
@@ -23,6 +24,25 @@ const workspaces = chatActions.data.workspaces.map((w) => {
   }
 })
 
+// omni-brain's first chat after the move, D1's drift check pane.
+const driftCheck = workbench.data.panes.find((p) => p.id === 'drift-check')
+
+/**
+ * D20's move in the workspaces' last chats (R6), which a state that moves bridge themes inherits from D1: bridge themes,
+ * as the state's `panes` draw it, is now the-bridge's last chat, and omni-brain's is drift check, the first chat it kept.
+ */
+export function moveLastChats(
+  lastChats: Record<string, WorkbenchPane> | undefined,
+  panes: readonly WorkbenchPane[],
+): Record<string, WorkbenchPane> {
+  const chat = panes.find((p) => p.id === 'bridge-themes')
+  return {
+    ...lastChats,
+    ...(chat === undefined ? {} : { 'the-bridge': chat }),
+    ...(driftCheck === undefined ? {} : { 'omni-brain': driftCheck }),
+  }
+}
+
 export const movedChat = {
   title: 'Moved to another workspace',
   frames: [{ id: 'D20', node: '417:1835', viewport: 'desktop' }],
@@ -30,6 +50,7 @@ export const movedChat = {
     ...chatActions.data,
     workspaces,
     current: 'the-bridge',
+    lastChats: moveLastChats(chatActions.data.lastChats, chatActions.data.panes),
     toast: { text: 'Moved bridge themes to the-bridge', action: 'Undo' },
     layers: {
       sidebar: '417:1877',
