@@ -8,7 +8,8 @@ library 1.0.0-beta.10), each with its reason. The library gaps are in
 and Hooks groups added, and the rule skills open beside it. D03 gives the
 same results as before D04. The numbers below are from the run with
 library 1.0.0-beta.15 and `FilterChips padding="none"`, which library
-#115 added.
+#115 added. The Checks below are from a rerun with library 1.0.0-beta.25
+and the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -82,6 +83,10 @@ library 1.0.0-beta.15 and `FilterChips padding="none"`, which library
   nothing links to an item. The frame's side column (`side`, 427:652,
   364 × 118) has no layers, so the render leaves the side column empty
   and adds no text; the list row shows `←0`.
+- **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D7 to D9).
 

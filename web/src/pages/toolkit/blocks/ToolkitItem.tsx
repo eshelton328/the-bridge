@@ -51,6 +51,11 @@ const metaRowPage = css({ display: 'flex', alignItems: 'center', alignSelf: 'fle
 // M2 429:297: on the phone the meta row holds the kind badge and, 8 after it, when the item changed.
 const metaRowPhone = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '8' })
 const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.default' })
+// T3 464:494, M2 464:521: Figma's item tabs are 32 high, and the rows above and under them are 14 apart; the item's
+// rows are 12 apart (no space token has 14). The compact list has no inset, so it is 4 shorter than the default one;
+// 4 above the panel keeps the description and every row under it where the default list put them, within 4 px of
+// Figma's.
+const panelPage = css({ pt: '4' })
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
@@ -173,16 +178,18 @@ export function ToolkitItem({
         onCopyPath={onCopyPath}
         layer={phone ? null : 'path row'}
       />
+      {/* Figma draws the selected tab's label cyan on every layout (D3, T3, M2); on a tablet and the phone the tabs
+          start at the list's edge with 10 px sides (T3 and M2 `item tabs`), on the desktop with the default space. */}
       <ItemTabs
         label={`${item.name} sections`}
+        tone="accent"
+        density={desktop ? 'default' : 'compact'}
         value={tab}
         onValueChange={onTabChange}
-        items={detail.tabs.map((t) => ({
-          value: t.value,
-          label: t.label,
-          content:
-            // Only the selected tab's panel is drawn. The other tabs are later frames; until then their panels are
-            // empty, as How it works is for an item with no `how`.
+        items={detail.tabs.map((t) => {
+          // Only the selected tab's panel is drawn. The other tabs are later frames; until then their panels are
+          // empty, as How it works is for an item with no `how`.
+          const panel =
             t.value !== tab ? null : t.value === 'overview' ? (
               <ToolkitItemOverview
                 detail={detail}
@@ -194,8 +201,13 @@ export function ToolkitItem({
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
-            ) : null,
-        }))}
+            ) : null
+          return {
+            value: t.value,
+            label: t.label,
+            content: desktop || panel === null ? panel : <div className={panelPage}>{panel}</div>,
+          }
+        })}
       />
     </article>
   )

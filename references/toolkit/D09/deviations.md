@@ -9,7 +9,9 @@ Rules, Workflows and Hooks groups, as the frame draws them, and the hook
 commit-msg open beside it. D03, D04 and D07 give the same results as
 before D09 (D03: text fail with the same strings, 15 of 53 layers; D04:
 text pass, 15 of 49 layers; D07: text pass, 21 of 36 layers; all three
-rules pass).
+rules pass). The Checks below are from a rerun with library
+1.0.0-beta.25 and the item tabs' `tone` and `density` props
+(2026-11-17).
 
 The workspace stays on library 1.0.0-beta.15. The code preview is drawn
 with beta.15's `CodeLines` (line numbers, syntax colours, lines 19 px
@@ -114,6 +116,10 @@ apart as Figma's), which fits D9 better than beta.16's `TerminalLines`
   Path badge copy button); the preview box and bar are drawn with the
   Panel's tokens, with a 16 px code icon against 14 (gap: File preview).
   The three pass the position check.
+- **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames.
 

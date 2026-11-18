@@ -8,7 +8,9 @@ each with its reason. The library gaps are in
 with the rule skills open. On a tablet the rule replaces the list in the
 shared `DetailFrame` (d-107), as T3's skill does: the back row stays at the
 top and the item scrolls under it (`web/src/app/ToolkitStickyBack.test.tsx`).
-D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
+D03, D04, D07, D08, D09, T03 and M02 give the same results as before
+T17. The Checks below are from a rerun with library 1.0.0-beta.25 and
+the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -50,11 +52,14 @@ D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
   "nobody". `MarkdownView` fills its box, so the paragraph's first line
   runs to "what is not" (gap: Rendered file text width). The preview's
   height stays within 4 px.
-- **Item tabs.** The tabs are spaced wider: How it works starts about
-  10 px further right than in Figma, and Activity about 33 px. `ItemTabs`
-  pads its list 2 and each tab 12, where Figma has 0 and 10 (gap: Item
-  tab spacing). As on D4, the How it works, Files, Links, Evals and
-  Activity panels are later frames.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 10 px further right,
+  as each label renders a little wider. The item adds 4 above the panel,
+  so the description stays in place. As on D4, the How it works,
+  Files, Links, Evals and Activity panels are later frames.
 - **Copy button and preview bar.** As on D4 and T03: the copy icon is a
   plain button with `CopyIcon` (gap: Path badge copy button), and the
   preview box and bar are drawn with the Panel's tokens (gap: File
@@ -64,9 +69,6 @@ D03, D04, D07, D08, D09, T03 and M02 give the same results as before T17.
 
 ## Second review
 
-- **Selected tab.** Overview is white with a grey outline, where Figma's
-  is cyan with a cyan outline. `ItemTabs` has no accent tone yet; a
-  library PR adds one (gap: Item tab selected tone).
 - **Load box colour.** The reviewer saw a duller amber border on a
   brownish fill. Figma's box has the needs-you border and tint too; the
   tone differs with `Panel tone="needsYou"` (gap: Rule load box).

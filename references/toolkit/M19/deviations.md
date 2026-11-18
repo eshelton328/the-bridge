@@ -9,13 +9,14 @@ with the rule skills open. On the phone the rule replaces the list in the
 shared `DetailFrame` (d-107), as M2's skill does: the back row stays at the
 top and the item scrolls under it (`web/src/app/ToolkitStickyBack.test.tsx`,
 the M19 case). D03, D04, D07, D08, D09, T03, M02 and T17 give the same
-results as before M19.
+results as before M19. The Checks below are from a rerun with library
+1.0.0-beta.25 and the item tabs' `tone` and `density` props
+(2026-11-17).
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. One string is not visible: `Evals` (487:1282), see Item
-  tabs.
+- Text: pass. Every Figma string is in the render and visible; no extra
+  text and no covered text.
 - Position: 17 of 20 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1264`, `path badge`, `487:1403`,
   `when it loads`, `file preview`, `preview bar`, `rendered markdown`,
@@ -36,12 +37,12 @@ results as before M19.
   the scrolling body as `hiddenOverflow`. No string is under the tab bar:
   the file's last line ends above it, as in Figma. This is the scroll
   that Figma's own layout causes, as on M02; it is not an exception yet.
-- **Item tabs.** Figma's tabs are 10 px in at the sides with no list
-  padding, so Evals ends at 378, inside the 390 px screen, and only
-  Activity runs past it. `ItemTabs` pads its list 2 and each tab 12, so
-  the row is about 35 px longer and Evals is cut at the screen's edge
-  (`Evals` not visible; the list's sideways scroll is the second
-  `hiddenOverflow`, which Figma's row has too). Gap: Item tab spacing.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's, so Evals ends inside the
+  390 px screen and only Activity runs past it (the list's sideways scroll is the second `hiddenOverflow`, which Figma's
+  row has too). The outline stays `border.selected` at half alpha where
+  Figma's is solid cyan (no solid selected token, d-050).
 - **Discuss button.** Figma's Discuss is an icon button 36 × 28; an
   icon-only `Button` is square, so Discuss is `sm`, 28 × 28, and starts
   8 px further right (`button · Discuss` x +8 w -8). Show on map is
@@ -58,11 +59,12 @@ results as before M19.
   hold the preview, 387 high (`columns` h +43; `file preview` passes).
   Gap: File preview.
 - **Row spacing.** Figma's description, load box and file are 12 apart.
-  The tabs' list is 36 high (Figma 32) and the Panel makes the load box
-  58 high (Figma 56), so at 12 apart the file ran 5 px low and its last
-  line went under the tab bar. The phone's rule overview puts the rows
-  8 apart: the description is 3 px lower than Figma's, the box 1 px and
-  the file 3 px higher. Gaps: Rule load box, Item tab spacing.
+  The tabs' list is 32 high, as Figma's, with 4 above the panel, and the
+  Panel makes the load box 58 high (Figma 56), so at 12 apart the file
+  ran 5 px low and its last line went under the tab bar. The phone's
+  rule overview puts the rows 8 apart: the description is 3 px lower
+  than Figma's, the box 1 px and the file 3 px higher. Gap: Rule load
+  box.
 - **Load box.** The box spans the item as in Figma, and the condition
   wraps after `toolkit/skills/**` beside the label. The Panel pads it 12
   above and below and 16 at the sides, where Figma has 11 and 15, so the

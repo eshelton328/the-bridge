@@ -9,7 +9,9 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 tablet the item replaces the list in the shared `DetailFrame` (d-107), and
 the steps by phase are `ToolkitWorkflowFlow size="sm"`. D03, D04, D07, D08,
 D09, T03, M02, T07 and M20 give the same results as before this change
-(every text, position delta and rule finding).
+(every text, position delta and rule finding). The Checks below are from
+a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 ## Checks
 
@@ -87,12 +89,14 @@ D09, T03, M02, T07 and M20 give the same results as before this change
   where the render's side holds Files (`side` h +41). The files list is
   as wide as its longest line, where Figma's layer spans the column
   (`files` w -485.6; gap: Item file summary), as on T03 and T07.
-- **Item tabs.** The tabs are spaced wider: `ItemTabs` pads its list 2
-  and each tab 12, where Figma has 0 and 10, so Activity starts about
-  30 px further right (gap: Item tab spacing). The selected tab Overview
-  is white where Figma's is cyan; a library PR adds the prop (gap: Item
-  tab selected tone). The How it works, Files, Links, Evals and Activity
-  panels are later frames.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 10 px further right,
+  as each label renders a little wider. The item adds 4 above the panel,
+  so the description stays in place. The How it works, Files, Links,
+  Evals and Activity panels are later frames.
 - **Row spacing.** Figma's rows from the meta row to the columns are
   14 px apart; no space token has 14. The item uses 20 above the meta row
   and 12 between the rows, as on T03 and T07 (gap: Tablet item spacing).

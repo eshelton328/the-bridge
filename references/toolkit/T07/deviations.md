@@ -10,7 +10,9 @@ writer. On a tablet the item replaces the list in the shared
 `DetailFrame` (d-107), and the back row (`ToolkitItemBack`) shows the
 breadcrumb Toolkit › writer › writing-reviewer; writer's crumb opens
 writer again. D03, D04, D07, D08, D09, T03 and M02 give the same results
-as on main (every text, position delta and rule finding).
+as on main (every text, position delta and rule finding). The Checks
+below are from a rerun with library 1.0.0-beta.25 and the item tabs'
+`tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -63,9 +65,13 @@ as on main (every text, position delta and rule finding).
   as their content, so they end above the Codex and Tools cards, where
   Figma makes all four as tall as the tallest, and the icons are 16 px
   against 14 (gap: Agent fact card), as on D07.
-- **Item tabs.** The tabs are spaced wider: `ItemTabs` pads its list 2
-  and each tab 12, where Figma has 0 and 10, so Activity starts about
-  30 px further right (gap: Item tab spacing). As on D07, the How it
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050), and Activity starts about 10 px further right,
+  as each label renders a little wider. The item adds 4 above the panel,
+  so the description stays in place. As on D07, the How it
   works, Files, Links, Evals and Activity panels are later frames.
 - **Row spacing.** Figma's rows from the meta row to the columns are
   14 px apart; no space token has 14. The item uses 20 above the meta row
@@ -85,5 +91,3 @@ as on main (every text, position delta and rule finding).
   Figma draws T7's badge 27 px high and the badge of every other item
   frame 25; the render uses one `KindBadge`, which passes the position
   check here.
-- **Selected tab.** Overview is white where Figma's is cyan; a library
-  PR adds `ItemTabs tone="accent"` (gap: Item tab selected tone).

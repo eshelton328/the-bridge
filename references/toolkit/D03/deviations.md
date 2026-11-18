@@ -8,7 +8,9 @@ library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 (writing-reviewer at →3 ←4, as in 427:249), with writer open beside it.
 The other seven frames give the same results as before D03. The
 numbers below are from the run with library 1.0.0-beta.15 and
-`FilterChips padding="none"`, which library #115 added.
+`FilterChips padding="none"`, which library #115 added. The Checks below
+are from a rerun with library 1.0.0-beta.25 and the item tabs' `tone`
+and `density` props (2026-11-17).
 
 ## Checks
 
@@ -80,6 +82,10 @@ numbers below are from the run with library 1.0.0-beta.15 and
 - **File preview bar.** The box and its bar are drawn with the Panel's
   tokens around `MarkdownView`; the file icon is 16 px against Figma's
   14 (gap: File preview).
+- **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
+  draws Overview's label cyan, as Figma's. The outline stays
+  `border.selected` at half alpha where Figma's is solid cyan (no solid
+  selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D4, D7 to D9).
 

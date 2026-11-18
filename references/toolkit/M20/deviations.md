@@ -12,13 +12,15 @@ it runs cards sit two across (`ToolkitAgentRuns` `columns="2"`);
 `web/src/app/ToolkitStickyBack.test.tsx` checks the two columns and that
 Back stays in view while the agent scrolls. D03, D04, D07, D08, D09, T03,
 M02 and T07 give the same results as before M20 (every text, position
-delta and rule finding).
+delta and rule finding). The Checks below are from a rerun with library
+1.0.0-beta.25 and the item tabs' `tone` and `density` props
+(2026-11-17).
 
 ## Checks
 
 - Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Three strings are not visible: `Evals` (487:1492, see
-  Item tabs), and the prompt's first paragraph `You review one draft for
+  covered text. Two strings are not visible: the prompt's first
+  paragraph `You review one draft for
   a reader who has none of its author’s context. You see what that reader
   will see: the draft, and the sources a careful reader could open to
   check it.` (487:1663) and `Inputs` (487:1664), see Under the tab bar.
@@ -46,15 +48,12 @@ delta and rule finding).
   Figma, so the text check counts them as not visible, and the rule check
   reports the scrolling body as `hiddenOverflow`. These stay as failures
   for Erik to accept (no `exceptions.json`), as on M02.
-- **Item tabs.** Figma's tabs are 10 px in at the sides with no list
-  padding, so Evals ends at 378 and only Activity runs past the screen.
-  `ItemTabs` pads its list 2 and each tab 12, so the row is about 35 px
-  longer and Evals is cut at the screen's edge (`Evals` not visible; the
-  list's sideways scroll is the second `hiddenOverflow`, which Figma's
-  row has too). Gap: Item tab spacing.
-- **Selected tab tone.** Figma's selected tab, Overview, has a cyan
-  label; the render's label is white with the cyan border. A library PR
-  adds `ItemTabs tone="accent"`. Gap: Item tab selected tone.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws Overview's label cyan, as Figma's, so Evals ends inside the
+  390 px screen and only Activity runs past it (the list's sideways scroll is the second `hiddenOverflow`, which Figma's
+  row has too). The outline stays `border.selected` at half alpha where
+  Figma's is solid cyan (no solid selected token, d-050).
 - **Preview bar.** As in Figma, the bar is one line: the name, then
   `137 lines · the prompt`, and the lock and Read-only run past the box's
   right edge, where the box cuts them (Figma's Read-only, 487:1660,
@@ -101,3 +100,22 @@ delta and rule finding).
   grid end at different heights (Codex about 17 px below Claude, Tools
   about 16 px below Context), where Figma's are all 108 px high. A
   `Panel` is only as tall as its content (gap: Agent fact card).
+
+## Text under the tab bar
+
+bridge-coord decided (2026-11-17) that this frame gets no
+`exceptions.json` for hidden text. Measured cause of each such failure:
+
+- Figma draws the tab bar (`tab bar`, y 767) after these text layers, so
+  `coveredInFigma` counts them as covered. The render does not draw
+  them under the tab bar: the item's scroll body ends at the tab bar's
+  top edge and clips them (`hiddenOverflow` on
+  `main.app-shell__detail`). The text check accepts a covered Figma
+  string only when the render covers it too, so it reports them as not
+  visible. The reference is correct; the difference is the app frame,
+  which ends the scroll body above the tab bar where Figma runs the
+  content under it. A change there is a shared-frame change
+  (bridge-coord). The text check stays failing.
+- The prompt's paragraph and Inputs also start lower than Figma's,
+  because `MarkdownView` pads 20 by 24 where Figma has 14 by 16 (gap:
+  File preview).
