@@ -256,6 +256,61 @@ const ToolkitHowItWorks = z.object({
   named: z.boolean().optional(),
 })
 
+/**
+ * A folder or file in the Files tab's tree (D6 `tree · references/` 432:2151, `tree · check` 432:2213): its path in
+ * the item (unique, what the tab selects it by), its name, whether it is a file, a folder or a script (`code`, D6
+ * icon/code 432:2214), a count at the row's end (a folder's files, a file's lines, "5 cases"), a line under the name
+ * that says what the file or folder is for (D6 `role · references/` 432:2159, "Read on demand") and a folder's
+ * contents.
+ */
+export type ToolkitFileNode = {
+  path: string
+  name: string
+  type?: 'file' | 'folder' | 'code' | undefined
+  count?: number | string | undefined
+  caption?: string | undefined
+  children?: ToolkitFileNode[] | undefined
+}
+const ToolkitFileNode: z.ZodType<ToolkitFileNode> = z.object({
+  path: z.string(),
+  name: z.string(),
+  type: z.enum(['file', 'folder', 'code']).optional(),
+  count: z.union([z.number().int().nonnegative(), z.string()]).optional(),
+  caption: z.string().optional(),
+  get children() {
+    return z.array(ToolkitFileNode).optional()
+  },
+})
+
+/**
+ * One file as the Files tab's viewer shows it (D6 `viewer` 432:2290): the path in the bar (`scripts/check`), text after
+ * it (D6 432:2295, "Python · 437 lines · run, not read"), the file's first lines as code, each split into its syntax
+ * colours, or its blocks rendered read-only, and a line under it on what uses the file (D6 `used by` 432:2347), with
+ * the icon of the kind of item that uses it.
+ */
+const ToolkitFileView = z.object({
+  /** The node's path in the tree that this view shows. */
+  path: z.string(),
+  meta: z.string().optional(),
+  blocks: z.array(ToolkitMarkdownBlock),
+  code: z.array(z.array(ToolkitCodeSegment)).optional(),
+  usedBy: z.object({ kind: ToolkitKind, text: z.string() }).optional(),
+})
+export type ToolkitFileView = z.infer<typeof ToolkitFileView>
+
+/**
+ * The Files tab of an open item (D6 `file browser` 432:2141): the item's folders and files as a tree, the folders open
+ * at first, the file selected at first (`ui.file` overrides it) and what the viewer shows of each file it knows. A
+ * file with no view shows its bar only.
+ */
+const ToolkitFileBrowser = z.object({
+  tree: z.array(ToolkitFileNode).min(1),
+  expanded: z.array(z.string()),
+  selected: z.string(),
+  views: z.array(ToolkitFileView),
+})
+export type ToolkitFileBrowser = z.infer<typeof ToolkitFileBrowser>
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -313,6 +368,8 @@ export const ToolkitItemDetailView = z.object({
    * (`ui.flowFullPage`). None for an item that is not a workflow.
    */
   flowPage: ToolkitFlowPage.optional(),
+  /** The Files tab (D6): the item's tree and its file viewer. None when the item has no such tab yet; its panel is then empty. */
+  browser: ToolkitFileBrowser.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -394,6 +451,8 @@ export const ToolkitUi = z.object({
   flowFullPage: z.boolean().optional(),
   /** The id of the step selected on a workflow's page (D13); its first step with fields when not set. */
   flowStep: z.string().optional(),
+  /** The path of the file selected on the open item's Files tab (D6); the browser's `selected` when not set. */
+  file: z.string().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

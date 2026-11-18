@@ -182,6 +182,10 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         onTabChange={(itemTab) => {
           onUiChange({ itemTab })
         }}
+        file={ui.file}
+        onFileChange={(file) => {
+          onUiChange({ file })
+        }}
         onCopyPath={onCopyPath}
         onShowOnMap={() => {
           // From the full page, Show on map leaves it as a crumb does, so the workflow reopened from the map starts on its

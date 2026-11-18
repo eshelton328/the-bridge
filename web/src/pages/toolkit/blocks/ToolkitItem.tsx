@@ -34,6 +34,8 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
+import { openFile } from './filesView.ts'
+import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
@@ -47,6 +49,20 @@ import { ToolkitItemPath } from './ToolkitItemPath.tsx'
 // The pane fills the frame's height; 24 under the content keeps D8's item (its content ends 42 over the frame's foot,
 // 940, and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
 const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '24' })
+// D6 432:2141: on the Files tab the file browser runs past the frame's foot (it ends at 988 of 982), so the pane keeps
+// no space under it, and the tabs and their open panel grow, so the browser runs to the pane's foot; with the pane's 24
+// the tree's 17 rows would push the pane 4 px past the frame.
+const paneFiles = css({
+  display: 'flex',
+  flexDirection: 'column',
+  flexGrow: '1',
+  gap: '16',
+  px: '40',
+  pt: '24',
+  pb: '0',
+  '& > :last-child': { flexGrow: '1' },
+  '& > :last-child > [role=tabpanel][data-state=open]': { display: 'flex', flexDirection: 'column', flexGrow: '1' },
+})
 // T3 428:542: the DetailFrame's Container pads the item at the sides and the foot. The back row (428:543) ends at 77
 // and the meta row (428:561) starts at 91, and the rows under it are 14 apart; no space token has 14. The BackRow is
 // 32 high against Figma's 36, so 20 above the meta row and 12 between the rows keep each row within 3 px of Figma's
@@ -170,6 +186,12 @@ const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<strin
   tablet: { 'workflows/skill-eval-round.md': '448:215' },
   phone: { 'workflows/skill-eval-round.md': '448:492' },
 }
+// On the Files tab: writer in D6 (432:2010).
+const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'skills/writer/': '432:2010' },
+  tablet: {},
+  phone: {},
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -204,6 +226,10 @@ export type ToolkitItemProps = {
   onDiscuss?: (() => void) | undefined
   /** Opens a workflow's steps on a page of their own (D8 Open full page, D13). */
   onOpenFullPage?: (() => void) | undefined
+  /** The path of the file selected on the Files tab (D6, `ui.file`); the browser's own when not set. */
+  file?: string | undefined
+  /** Called with a file's path when it is selected on the Files tab. */
+  onFileChange?: ((path: string) => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
   /**
@@ -231,6 +257,8 @@ export function ToolkitItem({
   onOpenFullPage,
   onOpenItem,
   fullPage,
+  file,
+  onFileChange,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
@@ -258,7 +286,9 @@ export function ToolkitItem({
         desktop
           ? full
             ? fullPane
-            : pane
+            : tab === 'files'
+              ? paneFiles
+              : pane
           : narrowHow || fullPhone
             ? phone
               ? phoneHowPage
@@ -312,7 +342,9 @@ export function ToolkitItem({
             ? fullPageTitleLayers[layout][item.path]
             : tab === 'how'
               ? howTitleLayersOf[layout][item.path]
-              : titleLayersOf[layout][item.path]
+              : tab === 'files'
+                ? filesTitleLayers[layout][item.path]
+                : titleLayersOf[layout][item.path]
         }
       >
         {item.name}
@@ -357,6 +389,16 @@ export function ToolkitItem({
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
+            ) : t.value === 'files' && detail.browser !== undefined ? (
+              <ToolkitFileBrowser
+                browser={detail.browser}
+                open={openFile(detail.browser, file)}
+                layout={layout}
+                onSelect={onFileChange}
+                onCopy={(path) => {
+                  onCopyPath?.(`${detail.location}${path}`)
+                }}
+              />
             ) : null
           return {
             value: t.value,

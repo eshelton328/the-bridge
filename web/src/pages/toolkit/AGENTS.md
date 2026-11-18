@@ -192,6 +192,17 @@ what each file of a page folder is for.
   (M40, `agentHowItWorksPhone`, T37's data with no `ui.from`, as on M20)
   keeps M20's header, with no breadcrumb, over the same column. A hook on the phone (M41,
   `hookHowItWorksPhone`, T38's data) keeps M22's header over the same column
-  and its five steps. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  and its five steps. The Files tab (D6, `skillFiles`, D3's data with
+  `ui.itemTab` `files`) draws a detail's `browser` (`ToolkitFileBrowser`): the
+  item's folders and files in the library's `FileTree` (each node's count and
+  role line; the folders in `expanded` open at first) beside the selected file
+  in `ToolkitFileViewer` (the bar with the path, its meta, copy and Read-only;
+  the code in `CodeLines` or the blocks in `ToolkitMarkdownBlocks`, which the
+  Overview's preview shares; the line on what uses the file). `ui.file` picks
+  the file, else the browser's `selected` (`openFile` in `blocks/filesView.ts`,
+  tested in `filesView.test.ts`); a file the state has no view of shows its bar
+  only. On the desktop the tree and the viewer sit side by side and the box
+  runs to the pane's foot (`src/app/ToolkitFiles.test.tsx`); on a narrower
+  layout the viewer comes under the tree. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

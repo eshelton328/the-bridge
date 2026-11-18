@@ -1,14 +1,13 @@
 // A toolkit file rendered read-only (Figma `file preview`, D3 427:273): a
 // bar with the file's name and Read-only, over the file's blocks in the
-// library's MarkdownView. The view parses no Markdown; the state gives the
-// blocks. A file shown as code (a hook's script, D9 433:1572) shows the code
+// library's MarkdownView (`ToolkitMarkdownBlocks`). A file shown as code (a hook's script, D9 433:1572) shows the code
 // icon in the bar and its lines with their numbers in the library's
 // CodeLines; on the phone (M22 487:2231) a long line wraps under itself.
 // Props only.
-import { CodeIcon, CodeLines, FileIcon, LockIcon, MarkdownView, ScrollFrame } from '@eshelton328/component-library-1701'
-import { Fragment } from 'react'
+import { CodeIcon, CodeLines, FileIcon, LockIcon, ScrollFrame } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView, ToolkitMarkdownBlock } from '../types.ts'
+import { ToolkitMarkdownBlocks } from './ToolkitMarkdownBlocks.tsx'
 
 type Code = NonNullable<ToolkitItemDetailView['preview']['code']>
 
@@ -55,69 +54,6 @@ const readOnly = css({
 // CodeLines itself does not scroll (its scroller takes no keyboard focus); the ScrollFrame body around it scrolls the
 // code sideways and takes the focus (d-107).
 const codeWidth = css({ w: '[max-content]', minW: '[100%]' })
-// D3 427:290: the file references sit on one line, two spaces apart.
-const refs = css({ display: 'flex', flexWrap: 'wrap', columnGap: '16' })
-// M2 487:161: on the phone the references run as one line of code, two spaces apart, and wrap after a "/" too.
-const refsText = css({ whiteSpace: 'pre-wrap' })
-
-/** A path that may wrap after each "/", as Figma wraps references/ticket.md (M2 487:161). */
-function Breakable({ path }: { path: string }) {
-  const parts = path.split('/')
-  return parts.map((part, i) => (
-    // The parts of one path are in order and never move, so the index keys them.
-    <Fragment key={`${String(i)}:${part}`}>
-      {part}
-      {i < parts.length - 1 ? (
-        <>
-          /<wbr />
-        </>
-      ) : null}
-    </Fragment>
-  ))
-}
-
-function Block({ block, wrapRefs }: { block: ToolkitMarkdownBlock; wrapRefs: boolean }) {
-  switch (block.type) {
-    case 'title':
-      return <h1>{block.text}</h1>
-    case 'heading':
-      return <h2>{block.text}</h2>
-    case 'paragraph':
-      return <p>{block.text}</p>
-    case 'pre':
-      return (
-        <pre>
-          <code>{block.text}</code>
-        </pre>
-      )
-    case 'code':
-      if (wrapRefs)
-        return (
-          <p className={refsText}>
-            <code>
-              {block.items.map((item, i) => (
-                <Fragment key={item}>
-                  {i > 0 ? '  ' : null}
-                  <Breakable path={item} />
-                </Fragment>
-              ))}
-            </code>
-          </p>
-        )
-      return (
-        <p className={refs}>
-          {block.items.map((item) => (
-            <code key={item}>{item}</code>
-          ))}
-        </p>
-      )
-  }
-}
-
-/** A block's text, as its key: a file's blocks in the states never repeat a text. */
-const blockKey = (block: ToolkitMarkdownBlock) =>
-  block.type === 'code' ? `code:${block.items.join(' ')}` : `${block.type}:${block.text}`
-
 export type ToolkitFilePreviewProps = {
   /** The file's name, such as "SKILL.md". */
   file: string
@@ -156,11 +92,7 @@ export function ToolkitFilePreview({
       </div>
       {code === undefined ? (
         <div data-figma="rendered markdown">
-          <MarkdownView>
-            {blocks.map((block) => (
-              <Block key={blockKey(block)} block={block} wrapRefs={wrapRefs} />
-            ))}
-          </MarkdownView>
+          <ToolkitMarkdownBlocks blocks={blocks} wrapRefs={wrapRefs} />
         </div>
       ) : (
         // D9 433:1583: the lines 19 apart, numbered, the comments green.

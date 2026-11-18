@@ -627,3 +627,21 @@ export const WorkflowFullPagePhone: Story = {
     await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeInTheDocument()
   },
 }
+
+export const SkillFiles: Story = {
+  name: 'D6: a skill open beside the list, on Files',
+  args: { data: toolkitStates.skillFiles.data, ui: toolkitStates.skillFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('Read on demand')).toBeVisible()
+    await expect(within(tree).getByText('chat-sourced-first-person/')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /check/, selected: true })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'scripts/check' })
+    await expect(within(viewer).getByText('Python · 437 lines · run, not read')).toBeVisible()
+    await expect(within(viewer).getByText('Step 6 of SKILL.md runs this script on the draft.')).toBeVisible()
+    // Only the selected tab's panel is drawn: the Overview's side column is not there.
+    await expect(within(item).queryByText('Used in workflows')).toBeNull()
+  },
+}
