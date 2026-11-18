@@ -97,3 +97,10 @@ has no `exceptions.json`.
 - **Buttons.** Discuss and Show on map are both 32 px high, against
   Figma's 34 and 36, as on D3 (gap: Item action buttons). Both pass the
   position check.
+
+## Second review
+
+- **Navigation rail.** The rail's items from Inbox down sit 4 to 5 px
+  higher than Figma's. The rail is the shared app frame, not the
+  Toolkit page; D14's second review found the same and sent it to the
+  coordinator.
