@@ -608,3 +608,22 @@ export const WorkflowFullPageTablet: Story = {
     await expect(within(item).queryByText('select a step to see it')).toBeNull()
   },
 }
+
+export const WorkflowFullPagePhone: Story = {
+  name: 'M09: a workflow on a page of its own on the phone, its flow as a column of steps',
+  args: {
+    data: toolkitStates.workflowFullPagePhone.data,
+    ui: toolkitStates.workflowFullPagePhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the column under the breadcrumb Toolkit ›
+  // skill-eval-round. The play test checks what every width shows; src/app/ToolkitWorkflowPage.test.tsx checks the
+  // phone's breadcrumb, meta row and column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByText('Hides which runs had the skill.')).toBeVisible()
+    await expect(within(item).getByText('Own family, 20 runs or more.')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Blinding' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeInTheDocument()
+  },
+}

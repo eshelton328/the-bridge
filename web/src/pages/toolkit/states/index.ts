@@ -35,6 +35,7 @@ import { agentHowItWorksPhone } from './agentHowItWorksPhone.ts'
 import { hookHowItWorksPhone } from './hookHowItWorksPhone.ts'
 import { workflowFullPage } from './workflowFullPage.ts'
 import { workflowFullPageTablet } from './workflowFullPageTablet.ts'
+import { workflowFullPagePhone } from './workflowFullPagePhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -71,4 +72,5 @@ export const toolkitStates = {
   hookHowItWorksPhone,
   workflowFullPage,
   workflowFullPageTablet,
+  workflowFullPagePhone,
 }
