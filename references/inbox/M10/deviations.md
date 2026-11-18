@@ -99,3 +99,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   a press (`InboxRoute.test.tsx`); a disabled secondary `Button` keeps its
   fill and border and draws its label and icon in `fg.muted` (#105; before,
   the whole button faded), where Figma draws it enabled.
+- **Notes box (2026-11-18).** The note card is now the `notice`
+  `Panel` (10 px at the top and bottom, 12 at the sides), as Figma's
+  notes card (D1 346:404), not the `section` one (12 and 16). The note,
+  its author and the "Add a note…" field are one `Stack` 4 apart, so
+  they start 24 and 20 px apart (Figma 25 and 20). The card, which has
+  no "Add a note…" field here, is 4 px shorter: `section · MY NOTES` y +11 px (was y +11, h +7 px); `section · SOURCES` y +21 px (was y +25 px); `task · next step` h +102 px (was h +106 px). The y offsets that stay come from the section
+  gaps and line heights above (4 px grid, d-072, d-100).
