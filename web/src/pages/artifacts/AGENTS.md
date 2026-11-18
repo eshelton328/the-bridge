@@ -132,8 +132,10 @@ each file of a page folder is for.
   With a search (M5) the found status and the groups give way to one
   `RowGroup` of the matches (`search`, no count), whose `ArtifactRow`s
   mark a title match, or show the line that matched under the meta line
-  with the match marked: the state's excerpt of a description
-  (`data.search.excerpts`) or the link. `data.search.fieldLayer` names
+  with the match marked: for a description, the state's excerpt
+  (`data.search.excerpts`) when it holds the query, or else the whole
+  description, so the mark finds the query; or the link
+  (`matchLine` in `screens/libraryView.ts`). `data.search.fieldLayer` names
   the search field's Figma layer by node id, as M5's keyboard key is
   named "search" too. The keyboard is the phone's own (d-089): the
   render draws none and keeps the tab bar, which Figma keeps under it.
@@ -152,7 +154,7 @@ each file of a page folder is for.
   the state's order, oldest turns it round, title A to Z, project grouped
   by project); the groups keep their order, so Found stays first.
   `searchMatches` lists the matches with the first place each matches, in
-  that order; the chip and group counts stay the
+  that order, and `matchLine` the line a phone row shows for its match; the chip and group counts stay the
   state's, because the library holds more artifacts than the cards drawn.
 - `blocks/`: `LibraryHeader` (`PageHeader` with the count, `FoundStatus`
   and Add a link), `FoundStatus` (the refresh mark and when the library

@@ -6,7 +6,7 @@
 // each row marking where it matched. Props only.
 import { GroupHeader, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { ArtifactGroup, ArtifactSearch, MatchPlace } from '../types.ts'
+import type { ArtifactGroup, MatchPlace } from '../types.ts'
 import { ArtifactRow } from './ArtifactRow.tsx'
 
 // Figma's rows are 58 high, 2 apart (403:193 to 403:219); `ListRow` pads 10 inside its border, so a row is 62
@@ -27,16 +27,13 @@ type RowGroupData = Pick<ArtifactGroup, 'label' | 'cards'> & {
   dot?: boolean | undefined
 }
 
-/** A search's matches (M5): the query and where it matched each card, by the card's id. */
-export type RowGroupSearch = {
+/** A search's matches (M5): the query, and by the card's id where it matched and the line that shows the match. */
+type RowGroupSearch = {
   query: string
   places: ReadonlyMap<string, MatchPlace>
-  excerpts?: ArtifactSearch['excerpts']
+  /** The line under the meta line (`matchLine` in screens/libraryView.ts); none for a title or project match. */
+  lines: ReadonlyMap<string, string>
 }
-
-/** The line a phone row shows for its match: the excerpt of a description, or the link. */
-const matchLine = (card: ArtifactGroup['cards'][number], place: MatchPlace | undefined, search: RowGroupSearch) =>
-  place === 'description' ? search.excerpts?.[card.id] : place === 'link' ? card.link : undefined
 
 export type RowGroupProps = {
   group: RowGroupData
@@ -93,7 +90,7 @@ export function RowGroup({
                 layout={layout}
                 query={search?.query}
                 titleMatch={place === 'title'}
-                matchLine={search === undefined ? undefined : matchLine(card, place, search)}
+                matchLine={search?.lines.get(card.id)}
                 onOpen={onOpenArtifact}
               />
             )

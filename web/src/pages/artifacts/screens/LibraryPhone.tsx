@@ -18,7 +18,7 @@ import { LibraryHeader } from '../blocks/LibraryHeader.tsx'
 import { LibraryTools } from '../blocks/LibraryTools.tsx'
 import { RowGroup } from '../blocks/RowGroup.tsx'
 import { type ArtifactsData, type ArtifactsUi, ArtifactChip } from '../types.ts'
-import { libraryView, searchMatches } from './libraryView.ts'
+import { libraryView, matchLine, searchMatches } from './libraryView.ts'
 
 // 406:69: the library starts 4 under the status bar and 12 in; its end scrolls clear of the tab bar (AppShell).
 const page = css({ pt: '4', pb: '12', px: '12' })
@@ -169,7 +169,12 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           search={{
             query,
             places: new Map(matches.map((match) => [match.card.id, match.place])),
-            excerpts: data.search?.excerpts,
+            lines: new Map(
+              matches.flatMap((match): [string, string][] => {
+                const line = matchLine(match.card, match.place, query, data.search?.excerpts)
+                return line === undefined ? [] : [[match.card.id, line]]
+              }),
+            ),
           }}
           layout="phone"
           open={ui.matchesOpen ?? true}
