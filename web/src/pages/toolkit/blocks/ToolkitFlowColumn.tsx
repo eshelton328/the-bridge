@@ -1,18 +1,17 @@
 // A workflow's steps on its own page on a tablet or phone (Figma `steps`, T8
 // 448:216): the stages stand in one column with no panel or header, each step
 // card (`ToolkitFlowStep variant="column"`) as wide as the column, and a
-// parallel stage's steps side by side (`parallel · 4 and 5` 448:256). Between
-// two stages an arrow points down (448:223); into a parallel stage an arrow
-// points at each of its steps (`fork · 4 and 5` 502:2) and out of it one
-// arrow in the middle (`join · 4 and 5` 502:8), as `columnArrow` in
-// flowLayout.ts says. The library has no connector line or 14 px icon
-// (LIBRARY_GAPS.md, Workflow page flow): the arrows are its 16 px arrow icon,
-// with no line or elbow. A gate's way out, when the page has one, is the stop
-// box under the column. On the phone (M9 `steps` 448:493) the column is the
-// same, as wide as the phone's item; its fork and join are 24 high and named
+// parallel stage's steps side by side (`parallel · 4 and 5` 448:256). The
+// library draws each connector, as `columnArrow` in flowLayout.ts says: a
+// `FlowLine` down between two stages (448:223), a `FlowBranch` fork into a
+// parallel stage (`fork · 4 and 5` 502:2, an arm into each step) and a join
+// out of it (`join · 4 and 5` 502:8); each tip ends 2 before the card under
+// it. A gate's way out, when the page has one, is the stop box under the
+// column. On the phone (M9 `steps` 448:493) the column is the same, as wide
+// as the phone's item; its fork and join are 24 high and named
 // `arrows · into 4 and 5` (464:558) and `arrows · out of 4 and 5` (464:560).
 // Props only.
-import { ArrowDownIcon, Panel, WorkflowIcon } from '@eshelton328/component-library-1701'
+import { FlowBranch, FlowLine, Panel, WorkflowIcon } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -22,24 +21,16 @@ import { ToolkitFlowStep } from './ToolkitFlowStep.tsx'
 const column = css({ display: 'flex', flexDirection: 'column', alignItems: 'stretch' })
 // T8 448:256: a parallel stage's steps side by side, 8 apart.
 const stageRow = css({ display: 'grid', gridAutoColumns: '[1fr]', gridAutoFlow: 'column', gap: '8' })
-// T8 448:223: an arrow 18 high, its icon 2 under the card; 502:2 and 502:8: a fork or a join 22 high, its icons 8 under
-// the card over it (the 16 px icon 6 under it, against Figma's 14 px icon 8 under it).
-const down = css.raw({ display: 'flex', justifyContent: 'center', pt: '2', color: 'fg.muted' })
-const fork = css.raw({
-  display: 'grid',
-  gridAutoColumns: '[1fr]',
-  gridAutoFlow: 'column',
-  gap: '8',
-  justifyItems: 'center',
-  pt: '6',
-  color: 'fg.muted',
-})
-const join = css.raw({ display: 'flex', justifyContent: 'center', pt: '6', color: 'fg.muted' })
-// M9 464:558 and 464:560: on the phone a fork or a join is 24 high, its icons 8 under the card over it.
-const phoneForkJoin = css.raw({ pt: '8' })
+// T8 448:223: a connector 18 high, its line from 2 under the card to the card under it; 502:2 and 502:8: a fork or a
+// join 22 high, from 2 under the card over it. Figma's arrow heads are 14 px icons; the library's head is drawn on the
+// line (LIBRARY_GAPS.md, Workflow page flow).
+const down = css.raw({ display: 'grid', justifyContent: 'center', gridTemplateRows: '[token(spacing.16)]', pt: '2' })
+const forkJoin = css.raw({ display: 'grid', gridTemplateRows: '[token(spacing.20)]', pt: '2' })
+// M9 464:558 and 464:560: on the phone a fork or a join is 24 high, its elbow from the card over it (464:559).
+const phoneForkJoin = css.raw({ gridTemplateRows: '[token(spacing.24)]', pt: '0' })
 const arrows: Readonly<Record<'tablet' | 'phone', Readonly<Record<ColumnArrow, string>>>> = {
-  tablet: { down: css(down), fork: css(fork), join: css(join) },
-  phone: { down: css(down), fork: css(fork, phoneForkJoin), join: css(join, phoneForkJoin) },
+  tablet: { down: css(down), fork: css(forkJoin), join: css(forkJoin) },
+  phone: { down: css(down), fork: css(forkJoin, phoneForkJoin), join: css(forkJoin, phoneForkJoin) },
 }
 const stop = css({ mt: '12' })
 const stopLine = css({
@@ -92,12 +83,9 @@ export function ToolkitFlowColumn({ page, selected, onSelect, layout = 'tablet' 
             ? `arrows · out of ${marks(from)}`
             : `join · ${marks(from)}`
           : undefined
-    const icons = kind === 'fork' ? to.map((s) => s.id) : ['down']
     return (
-      <div className={arrows[layout][kind]} aria-hidden="true" data-figma={layer}>
-        {icons.map((id) => (
-          <ArrowDownIcon key={id} size="16" />
-        ))}
+      <div className={arrows[layout][kind]} data-figma={layer}>
+        {kind === 'down' ? <FlowLine direction="down" /> : <FlowBranch kind={kind} direction="down" gap="8" />}
       </div>
     )
   }

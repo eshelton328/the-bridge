@@ -1,19 +1,20 @@
 // A workflow's steps on its own page (Figma `panel · flow`, D13 446:515): a
 // panel with the header (where the steps come from, and the legend of gate,
 // script, agent and person), then the stages left to right, each a column of
-// step cards (`ToolkitFlowStep variant="page"`) with an arrow between stages.
-// A parallel stage stands its two steps one over the other, and a single step
-// sits level with the gap between them (`stepRows`, `arrowRows` in
-// screens/flowView.ts). Under the stage with the gate, its way out ("no") and
-// the stop it leads to; the loop back to the stop is its label, under the
-// step the state names. The library has no connector line (LIBRARY_GAPS.md,
-// Workflow page flow): the arrows are its arrow icons, with no line, no elbow
-// and no dashed loop. A tablet or phone draws the column of
-// `ToolkitFlowColumn` instead. Props only.
-import { ArrowDownIcon, ArrowRightIcon, Panel, WorkflowIcon } from '@eshelton328/component-library-1701'
+// step cards (`ToolkitFlowStep variant="page"`) with a connector between
+// stages. A parallel stage stands its two steps one over the other, and a
+// single step sits level with the gap between them (`stepRows`, `arrowRows`
+// in flowLayout.ts). The library draws each connector (`columnArrow` says
+// which): a `FlowLine` between two single steps, a `FlowBranch` into and out
+// of the parallel steps, the gate's way out (a `FlowLine` down with its
+// label, "no") to the stop under it, and the dashed `FlowLoop` from the last
+// step back to the stop, with its label under the step the state names.
+// Each tip ends short of the box it points at. A tablet or phone draws the
+// column of `ToolkitFlowColumn` instead. Props only.
+import { FlowBranch, FlowLine, FlowLoop, Panel, WorkflowIcon } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { arrowRows, type FlowPage, type FlowRows, stepRows } from './flowLayout.ts'
+import { arrowRows, columnArrow, type FlowPage, type FlowRows, stepRows } from './flowLayout.ts'
 import { ToolkitFlowStep } from './ToolkitFlowStep.tsx'
 
 // D13 446:515: the content 15 under the top and over the foot (the Panel's 12, 2 more and the border), 17 in at the
@@ -32,43 +33,49 @@ const swatch = {
   agent: css(swatchBase, { bg: 'kind.agent' }),
   person: css(swatchBase, { bg: 'fg.default' }),
 }
-// D13 446:531: the stages in a row; every stage and arrow column is four equal rows 32 apart, so each card spans two
-// (128 high) and a single step sits level with the gap between two parallel ones (447:31, 447:2, 447:39).
-const flow = css({ display: 'flex', flexDirection: 'column', gap: '12' })
+// D13 446:531: the stages in a row; every stage and connector column is four equal rows 32 apart, so each card spans
+// two (128 high) and a single step sits level with the gap between two parallel ones (447:31, 447:2, 447:39). The
+// flow is the box the loop is placed in, and the scope of the anchors it is placed by.
+const flow = css({ position: 'relative', display: 'flex', flexDirection: 'column', gap: '12', anchorScope: 'all' })
 const stages = css({ display: 'flex', alignItems: 'stretch' })
 const column = css({ display: 'grid', gridTemplateRows: '[repeat(4, 1fr)]', rowGap: '32', flex: '1', minW: '[0]' })
-// D13 447:74: the arrows between stages are 20 wide: the 12 px icon with 4 at each side.
-const arrowColumn = css({ display: 'grid', gridTemplateRows: '[repeat(4, 1fr)]', rowGap: '32', px: '4' })
-const rows: Readonly<Record<FlowRows, string>> = {
+// D13 447:74: the connectors between stages are 20 wide, from one card's edge to the next; the line's tip ends 2
+// before the next card (Figma's cards are 22 apart, LIBRARY_GAPS.md, Workflow page flow).
+const arrowColumn = css({
+  display: 'grid',
+  gridTemplateRows: '[repeat(4, 1fr)]',
+  rowGap: '32',
+  w: '[token(spacing.20)]',
+})
+const rows: Readonly<Record<FlowRows | '1/5', string>> = {
   '1/3': css({ gridRow: '[1 / 3]' }),
   '2/4': css({ gridRow: '[2 / 4]' }),
   '3/5': css({ gridRow: '[3 / 5]' }),
+  '1/5': css({ gridRow: '[1 / 5]' }),
 }
-const arrow = css({ display: 'flex', alignItems: 'center', color: 'fg.muted' })
-// D13 447:83, 447:85: the way out of the gate runs down under it, its label beside the arrow, in amber; the stop is 12
-// under the flow's lowest card (447:68). The row under the cards is empty under a single step, so the label and the
-// arrow take it, 20 higher (into the gap over it), as Figma starts them under the gate (559).
-const exitCell = css({
-  gridRow: '[4]',
+const across = css({ display: 'flex', alignItems: 'center' })
+// D13 447:79 to 447:82: a fork or a join spans the two parallel steps, its arms at their middles.
+const branch = css({ display: 'flex' })
+// D13 447:83, 447:85: the way out of the gate runs down from the gate (559, the foot of row 3) to the stop under the
+// flow (651, 12 under row 4), with its label beside it.
+const exitCell = css({ gridRow: '[4]', display: 'flex', justifyContent: 'center', mt: '-32', mb: '-12' })
+// D13 447:84: the loop runs down from the middle of the last step and back along the bottom into the stop's middle.
+// Its box is placed by anchors: from the stop's right edge to the last card's middle, and from that card's foot to the
+// stop's middle.
+const loopFrom = css({ anchorName: '--flow-loop-from' })
+const stopAnchor = css({ anchorName: '--flow-stop' })
+const loop = css({
+  position: 'absolute',
+  left: '[anchor(--flow-stop right)]',
+  right: '[anchor(--flow-loop-from center)]',
+  top: '[anchor(--flow-loop-from bottom)]',
+  bottom: '[anchor(--flow-stop center)]',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: '4',
-  mt: '-20',
-  textStyle: 'small',
-  color: 'status.needsYou.fg',
-})
-const loopDown = css({
-  gridRow: '[4]',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'flex-end',
-  color: 'status.needsYou.fg',
 })
 // The stop row mirrors the stages, so the loop's label sits under the stage of its `under` step.
 const stopRow = css({ display: 'flex', alignItems: 'flex-end' })
 const slot = css({ display: 'flex', flex: '1', minW: '[0]' })
-const slotGap = css({ display: 'inline-block', w: 'icon.12', mx: '4' })
+const slotGap = css({ display: 'inline-block', w: '[token(spacing.20)]' })
 const stop = css({ flexShrink: '0' })
 const stopLine = css({
   display: 'flex',
@@ -77,7 +84,9 @@ const stopLine = css({
   textStyle: 'small',
   color: 'status.needsYou.fg',
 })
-// D13 447:86: the label 20 after the start of its stage, in amber mono, under the dashed line.
+// D13 447:86: the label 20 after the start of its stage, in amber mono, under the dashed line. `FlowLoop` centres its
+// own label on the line (843 here) where Figma's sits under the step it names (992; LIBRARY_GAPS.md, Workflow page
+// flow), so the label is drawn here.
 const loopLabel = css({ ms: '20', textStyle: 'mono', color: 'status.needsYou.fg', whiteSpace: 'nowrap' })
 
 export type ToolkitFlowStepsProps = {
@@ -107,9 +116,11 @@ export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsP
   const exitStage = page.stages.findIndex((stage) => stage.some((s) => s.id === page.exit?.from))
   const loopStage = page.stages.findIndex((stage) => stage.some((s) => s.id === page.loop?.under))
   const last = page.stages.length - 1
+  // The loop runs from the last stage back to the stop, so it needs both.
+  const looped = page.loop !== undefined && page.exit !== undefined
   const stopBox =
     page.exit === undefined ? null : (
-      <div className={stop} data-figma={`stop · ${page.exit.workflow}`}>
+      <div className={cx(stop, stopAnchor)} data-figma={`stop · ${page.exit.workflow}`}>
         <Panel variant="notice" tone="needsYou">
           <p className={stopLine}>
             <WorkflowIcon size="12" />
@@ -118,6 +129,21 @@ export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsP
         </Panel>
       </div>
     )
+  const connector = (from: number, to: number) => {
+    const kind = columnArrow(from, to)
+    if (kind === 'down')
+      return arrowRows(from, to).map((r) => (
+        <span key={r} className={cx(across, rows[r])}>
+          <FlowLine />
+        </span>
+      ))
+    // A fork or a join spans the rows of both parallel steps (1/3 and 3/5), so its arms meet their middles.
+    return (
+      <span className={cx(branch, rows['1/5'])}>
+        <FlowBranch kind={kind} direction="right" gap="32" />
+      </span>
+    )
+  }
   return (
     <div data-figma="panel · flow">
       <Panel>
@@ -138,25 +164,16 @@ export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsP
               {page.stages.map((stage, i) => (
                 <Fragment key={stage.map((s) => s.id).join()}>
                   {i === 0 ? null : (
-                    <div className={arrowColumn} aria-hidden="true">
-                      {arrowRows(page.stages[i - 1]?.length ?? 1, stage.length).map((r) => (
-                        <span key={r} className={cx(arrow, rows[r])}>
-                          <ArrowRightIcon size="12" />
-                        </span>
-                      ))}
-                    </div>
+                    <div className={arrowColumn}>{connector(page.stages[i - 1]?.length ?? 1, stage.length)}</div>
                   )}
                   <div className={column}>
-                    {stage.map((step, s) => card(step, rows[stepRows(stage.length)[s] ?? '2/4']))}
+                    {stage.map((step, s) => {
+                      const r = rows[stepRows(stage.length)[s] ?? '2/4']
+                      return card(step, i === last && looped ? cx(r, loopFrom) : r)
+                    })}
                     {i === exitStage && page.exit !== undefined ? (
                       <span className={exitCell}>
-                        <ArrowDownIcon size="12" aria-hidden="true" />
-                        {page.exit.label}
-                      </span>
-                    ) : null}
-                    {i === last && page.loop !== undefined ? (
-                      <span className={loopDown} aria-hidden="true">
-                        <ArrowDownIcon size="12" />
+                        <FlowLine direction="down" tone="needsYou" label={page.exit.label} />
                       </span>
                     ) : null}
                   </div>
@@ -178,6 +195,11 @@ export function ToolkitFlowSteps({ page, selected, onSelect }: ToolkitFlowStepsP
                 </Fragment>
               ))}
             </div>
+            {looped ? (
+              <span className={loop}>
+                <FlowLoop />
+              </span>
+            ) : null}
           </div>
         </div>
       </Panel>
