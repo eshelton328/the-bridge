@@ -56,7 +56,8 @@ each file of a page folder is for.
   that opens it);
   `ArtifactTitleBlock layout="phone"` puts its rows 8 apart with the
   source and project chips only; Copy link and Discuss sit side by side
-  under Open artifact in place of the link; and `MadeIn` draws the chat
+  under Open artifact in place of the link, 44 px `Button size="xl"`s
+  8 apart (Figma 40, which ties 36 and 44, d-072); and `MadeIn` draws the chat
   with no box and Open in workspace as a link (`madeIn.action`); the
   sections are 16 apart. Back sets `ui.artifactClosed` and M1 shows.
   Discuss sets `ui.discussOpen`, and the discussion opens as its own page
@@ -111,10 +112,18 @@ each file of a page folder is for.
   Add a link opens `AddLinkDialog`.
   `screens/LibraryPhone.tsx`: the library on a phone (M1): `LibraryHeader
   layout="phone"` (a 36 px plus button for Add a link), the chips,
-  `LibraryTools iconOnly` (icon-only Sort and Filter, no view switch),
+  `LibraryTools iconOnly` (icon-only 36 px Sort and Filter with their
+  icons in `fg.muted`, also while pressed, and no view switch),
   `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
-  group, whose `ArtifactRow`s put the age on the title line and New as a
-  badge under it; the rows are 6 apart. With `data.filterMenu` the
+  group, 6 apart, whose `ArtifactRow`s put the age on the title line and
+  New as a badge under it; the rows are 6 apart, and each takes
+  `ListRow`'s extra 6 px at the sides outside the page's 12 px padding
+  (`mx: -6`, as the Inbox's phone rows), so its preview starts 4 in from
+  the row's side, as Figma's. The sheets over the phone's library and
+  artifact page (M3, M4, M6, M7) are `BottomSheet`s over the tab bar;
+  a `text` Button in a sheet's title row (Clear, Cancel, Add, Done)
+  reaches 8 past the row's edge, so its label lines up with the sheet's
+  content edge. With `data.filterMenu` the
   icon-only Filter opens T3's sheet over the tab bar (M3, `FilterSheet
   iconOnly`), and with `data.sortMenu` the icon-only Sort opens D6's
   menu as a sheet over the tab bar (M4, `LibraryTools sortAs="sheet"`).
