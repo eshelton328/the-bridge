@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor, within } from 'storybook/test'
+import { expect, within } from 'storybook/test'
+import { expectTrapFocus } from '../../../lib/focusTrap.ts'
 import { artifactsStates } from '../states/index.ts'
 import { ArtifactsScreen } from './ArtifactsScreen.tsx'
 
@@ -84,8 +85,8 @@ export const AddLink: Story = {
     const page = within(document.body)
     await expect(await page.findByRole('dialog', { name: 'Add a link' })).toBeVisible()
     await expect(page.getByRole('textbox', { name: 'Link' })).toHaveValue('https://panda-tokens.example.com/playground')
-    // The dialog moves the focus to the link once it has opened.
-    await waitFor(() => expect(page.getByRole('textbox', { name: 'Link' })).toHaveFocus())
+    // The dialog's focus trap moves the focus to the link in the frame after it opens.
+    await expectTrapFocus(page.getByRole('textbox', { name: 'Link' }))
     await expect(page.getByRole('radio', { name: 'Codex site' })).toBeChecked()
     await expect(page.getByRole('textbox', { name: 'Title' })).toHaveValue('Panda tokens playground')
     await expect(page.getByText('Read from the page’s <title>.')).toBeVisible()

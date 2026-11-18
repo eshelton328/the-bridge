@@ -7,6 +7,11 @@ layer, a store or the router.
   `checkState()`, the shapes of a state file and a page (d-082).
 - `board.ts`: a canvas board, one state of one page.
 - `testRender.ts`: renders a component in a Vitest browser test.
+- `focusTrap.ts`: `expectTrapFocus()`, which waits for the frame after a
+  library focus trap moves the focus, then checks the focus once. Use it,
+  not `waitFor(() => expect(…).toHaveFocus())`, for a dialog, sheet or
+  popover that traps the focus: `waitFor` counts clock time, and a busy
+  CI runner can hold the trap's frame past its 1 s.
 - `viewport.ts`: `viewportForWidth()`, the layout (desktop, tablet or
   phone) for a width. The library has no breakpoint tokens, so the
   widths come from the shell's size tokens: rail + list pane + detail
