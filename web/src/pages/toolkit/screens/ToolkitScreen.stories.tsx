@@ -1130,3 +1130,18 @@ export const HookLinksTablet: Story = {
     await expect(within(to).getByRole('button', { name: 'commit-msg:3' })).toBeVisible()
   },
 }
+
+export const SkillLinksPhone: Story = {
+  name: 'M17: a skill’s links on the phone, the graph upright',
+  args: { data: toolkitStates.skillLinksPhone.data, ui: toolkitStates.skillLinksPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the upright graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 11' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 7' })
+    await expect(within(to).getByRole('button', { name: 'SKILL.md:118' })).toBeVisible()
+    await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
+  },
+}

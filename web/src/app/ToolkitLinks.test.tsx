@@ -230,3 +230,65 @@ describe('a hook’s Links tab on a tablet (T31)', () => {
     expect(to.width).toBeCloseTo(from.width, 0)
   })
 })
+
+// The Links tab on the phone (M17 and on): the item replaces the list under the back row, the graph stands upright and
+// the panels stand one under the other.
+async function renderPhone(state: string) {
+  await page.viewport(390, 806)
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
+  })
+  const view = await testRender(<RouterProvider router={router} />)
+  onTestFinished(view.unmount)
+  await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+  const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+  if (!(root instanceof HTMLElement)) throw new Error('no root')
+  root.style.height = '100%'
+  await expect.poll(() => root.querySelector('[data-figma="links"]')).not.toBeNull()
+  await document.fonts.ready
+  return { root, router }
+}
+
+describe('the Links tab on the phone (M17)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('stands the graph upright over the panels, with no sideways scroll', async () => {
+    const { root } = await renderPhone('skillLinksPhone')
+    const tab = box(root, '[data-figma="links"]')
+    const graph = box(root, '[data-figma="links graph"]')
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(from.top).toBeGreaterThan(graph.bottom)
+    expect(to.top).toBeGreaterThan(from.bottom)
+    for (const b of [graph, from, to]) {
+      expect(b.left).toBeCloseTo(tab.left, 0)
+      expect(b.width).toBeCloseTo(tab.width, 0)
+    }
+    const scroller = root.querySelector('[data-figma="links graph"] .map-graph__scroller')
+    if (scroller === null) throw new Error('no graph scroller')
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth)
+    // The items that name writer over it, the items it names under it.
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    expect(nodes).toHaveLength(12)
+    // The phone's graph has no lines, so it selects nothing and no node dims; writer is the fifth node, in the middle.
+    expect(nodes.filter((n) => n.getAttribute('aria-pressed') === 'true')).toHaveLength(0)
+    expect(nodes[4]?.textContent).toBe('writer')
+    const focus = nodes[4]?.getBoundingClientRect()
+    const first = nodes[0]?.getBoundingClientRect()
+    const last = nodes.at(-1)?.getBoundingClientRect()
+    if (focus === undefined || first === undefined || last === undefined) throw new Error('no nodes')
+    expect(first.bottom).toBeLessThan(focus.top)
+    expect(last.top).toBeGreaterThan(focus.bottom)
+  })
+
+  it('names writer in the back row with icon buttons, and opens an item tapped in the graph (M17)', async () => {
+    const { root } = await renderPhone('skillLinksPhone')
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')?.textContent).toContain('writer')
+    expect(root.querySelector('article[aria-label="writer"] [data-figma="kind badge"]')).toBeNull()
+    await userEvent.click(button(root, 'audit-slop', '[data-figma="links graph"]'))
+    await expect.poll(() => root.querySelector('article[aria-label="audit-slop"]')).not.toBeNull()
+  })
+})

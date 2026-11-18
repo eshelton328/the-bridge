@@ -114,3 +114,32 @@ describe('the links graph on a tablet (T15 to T31)', () => {
     expect(tablet.columns.map((c) => c.x)).toEqual([15, 706 - 15 - 180])
   })
 })
+
+describe('the links graph on the phone (M17)', () => {
+  it('stands the graph upright: the side that names the item over it, two to a row, the side it names under it', () => {
+    const graph = linksGraph(linksOf(skillLinks), writer, 'phone')
+    // M17 493:152: 390 high and 366 wide with its border.
+    expect(graph.width).toBe(364)
+    expect(graph.height).toBe(388)
+    expect(graph.nodeSize).toEqual({ width: 162, height: 32 })
+    const from = graph.nodes.filter((n) => n.id.startsWith('from:'))
+    const to = graph.nodes.filter((n) => n.id.startsWith('to:'))
+    expect(from.map((n) => [n.label, n.x, n.y])).toEqual([
+      ['writer', 15, 41],
+      ['writing-reviewer', 187, 41],
+      ['ste100', 15, 79],
+      ['writing', 187, 79],
+    ])
+    expect(to.map((n) => n.y)).toEqual([225, 225, 263, 263, 301, 301, 339])
+    // The open item is centred where Figma centres its 150 × 40 node (493:224).
+    expect(graph.nodes.find((n) => n.id === focusId)).toMatchObject({ x: 101, y: 155 })
+    expect(graph.columns).toEqual([
+      { label: 'Linked from 4', x: 15, y: 13 },
+      { label: 'Links to 7', x: 15, y: 199 },
+    ])
+    // MapGraph draws its lines side to side only, so the upright graph has none, and selects nothing, so no node dims.
+    expect(graph.edges).toEqual([])
+    expect(graph.selected).toBeNull()
+    expect(linksGraph(linksOf(skillLinks), writer).selected).toBe(focusId)
+  })
+})

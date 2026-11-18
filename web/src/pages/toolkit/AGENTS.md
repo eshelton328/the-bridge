@@ -302,7 +302,11 @@ what each file of a page folder is for.
   and header. A workflow on a tablet (T30, `workflowLinksTablet`, D31's
   data) keeps T18's header, and a hook (T31, `hookLinksTablet`, D32's data)
   T19's. The tablet's graph keeps the desktop's places in height (T29);
-  only T15's is 4 px shorter in Figma. Only the
+  only T15's is 4 px shorter in Figma. On the phone (M17, `skillLinksPhone`,
+  T15's data) the item opens as on M12, and the graph stands upright
+  (`linksGraph`'s `phone` size): the side that names the item two to a row
+  over it, the side it names under it, with no lines and nothing selected
+  (LIBRARY_GAPS.md, Links graph (phone)). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

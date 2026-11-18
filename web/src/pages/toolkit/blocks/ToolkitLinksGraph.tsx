@@ -28,13 +28,13 @@ const emptyText = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre-l
 export type ToolkitLinksGraphProps = {
   links: ToolkitLinks
   item: { path: string; name: string; kind: ToolkitKind }
-  /** A tablet draws the graph narrower (T15 487:6). */
+  /** A tablet draws the graph narrower (T15 487:6), and the phone upright (M17 493:152). */
   layout?: Viewport | undefined
   onOpenItem?: ((path: string) => void) | undefined
 }
 
 export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem }: ToolkitLinksGraphProps) {
-  const graph = linksGraph(links, item, layout === 'desktop' ? 'desktop' : 'tablet')
+  const graph = linksGraph(links, item, layout)
   const empty = links.from.links.length === 0 ? links.from.empty?.graph : undefined
   return (
     <div className={root} data-figma="links graph">
@@ -46,7 +46,7 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
         nodes={graph.nodes.map((n) => ({ id: n.id, label: n.label, kind: n.kind, x: n.x, y: n.y }))}
         edges={graph.edges}
         columns={graph.columns}
-        selectedId={focusId}
+        selectedId={graph.selected}
         onSelect={(id) => {
           const target = graph.nodes.find((n) => n.id === id)
           if (target !== undefined && target.id !== focusId) onOpenItem?.(target.path)

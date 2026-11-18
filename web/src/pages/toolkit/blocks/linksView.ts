@@ -26,6 +26,8 @@ export type LinksGraph = {
   nodeSize: { width: number; height: number }
   /** The open item's node, in the middle; its id is `focusId`. */
   nodes: LinksGraphNode[]
+  /** The selected node: the open item, or none on the phone, whose graph has no lines (`phoneGraph`). */
+  selected: string | null
   edges: { from: string; to: string }[]
   columns: { label: string; x: number; y: number }[]
 }
@@ -73,8 +75,9 @@ const span = (n: number) => (n === 0 ? 0 : n * step - (step - node.height))
 export function linksGraph(
   links: ToolkitLinks,
   item: { path: string; name: string; kind: ToolkitKind },
-  size: keyof typeof sizes = 'desktop',
+  size: keyof typeof sizes | 'phone' = 'desktop',
 ): LinksGraph {
+  if (size === 'phone') return phoneGraph(links, item)
   const { width, top, foot, minHeight } = sizes[size]
   const left = graphItems(links.from)
   const right = graphItems(links.to)
@@ -104,10 +107,77 @@ export function linksGraph(
     height: top + content + foot,
     nodeSize: node,
     nodes: [...from, focus, ...to],
+    selected: focusId,
     edges: [...from.map((n) => ({ from: n.id, to: focusId })), ...to.map((n) => ({ from: focusId, to: n.id }))],
     columns: [
       { label: sideLabel(links.from), x: inset, y: labelTop },
       { label: sideLabel(links.to), x: width - inset - node.width, y: labelTop },
+    ],
+  }
+}
+
+// M17 `links graph` 493:152 draws the graph upright on the phone, 366 wide (364 inside its 1 px border): the items that
+// name the open item over it and the items it names under it, each side two to a row in its graph order (493:229,
+// 493:235), 162 × 32, 15 in from each edge and 38 apart. The side's label is 13 down (493:228) and its first row 28
+// under that; the open item (493:224, 150 × 40) starts 40 under the last row over it, the label of the side under it
+// 8 under it (493:253) and that side's first row 26 under the label; the graph ends 17 under its last row. A side with
+// no links keeps the room of one row for its reason (M31 493:5682). M32, M33 and M34 have the same places.
+const phone = {
+  width: 364,
+  node: { width: 162, height: 32 },
+  labelTop: 13,
+  rows: 28,
+  focusGap: 40,
+  focusHeight: 40,
+  underFocus: 8,
+  underLabel: 26,
+  foot: 17,
+}
+
+/**
+ * The graph of the Links tab on the phone (M17): upright, the open item between the side that names it and the side it
+ * names. MapGraph draws each line from one node's side to another's, so on this upright graph it would cross the
+ * nodes and run past the graph's right edge: the phone's graph has no lines. With no lines a selected node would dim
+ * every other node, so nothing is selected and the open item is drawn as the others are (LIBRARY_GAPS.md, Links graph
+ * (phone)).
+ */
+function phoneGraph(links: ToolkitLinks, item: { path: string; name: string; kind: ToolkitKind }): LinksGraph {
+  const { width, node: size } = phone
+  const second = width - inset - size.width
+  const rows = (n: number) => Math.max(1, Math.ceil(n / 2))
+  const place = (items: Link[], side: 'from' | 'to', top: number): LinksGraphNode[] =>
+    items.map((l, i) => ({
+      id: `${side}:${l.path}`,
+      path: l.path,
+      label: l.name,
+      kind: l.kind,
+      x: i % 2 === 0 ? inset : second,
+      y: top + Math.floor(i / 2) * step,
+    }))
+  const fromItems = graphItems(links.from)
+  const toItems = graphItems(links.to)
+  const fromTop = phone.labelTop + phone.rows
+  const focusTop = fromTop + rows(fromItems.length) * step - (step - size.height) + phone.focusGap
+  const toLabel = focusTop + phone.focusHeight + phone.underFocus
+  const toTop = toLabel + phone.underLabel
+  const focus: LinksGraphNode = {
+    id: focusId,
+    path: item.path,
+    label: item.name,
+    kind: item.kind,
+    x: width / 2 - size.width / 2,
+    y: focusTop + phone.focusHeight / 2 - size.height / 2,
+  }
+  return {
+    width,
+    height: toTop + rows(toItems.length) * step - (step - size.height) + phone.foot,
+    nodeSize: size,
+    nodes: [...place(fromItems, 'from', fromTop), focus, ...place(toItems, 'to', toTop)],
+    selected: null,
+    edges: [],
+    columns: [
+      { label: sideLabel(links.from), x: inset, y: phone.labelTop },
+      { label: sideLabel(links.to), x: inset, y: toLabel },
     ],
   }
 }
