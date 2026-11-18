@@ -777,3 +777,16 @@ export const TabletFolders: Story = {
     await expect(body.getByRole('button', { name: /Documents/ })).toBeVisible()
   },
 }
+
+export const TabletOneChat: Story = {
+  name: 'T6: a chat full screen on the tablet, with no split panes',
+  args: { data: workspacesStates.tabletOneChat.data, ui: workspacesStates.tabletOneChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // "/" typed after requirements.md and no skill list open; the tablet's menu draws T6's chat full screen.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
+  },
+}

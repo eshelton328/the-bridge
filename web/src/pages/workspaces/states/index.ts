@@ -52,6 +52,7 @@ import { tabletChatActions } from './tabletChatActions.ts'
 import { tabletSubagents } from './tabletSubagents.ts'
 import { tabletComposing } from './tabletComposing.ts'
 import { tabletFolders } from './tabletFolders.ts'
+import { tabletOneChat } from './tabletOneChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -105,4 +106,5 @@ export const workspacesStates = {
   tabletSubagents,
   tabletComposing,
   tabletFolders,
+  tabletOneChat,
 }
