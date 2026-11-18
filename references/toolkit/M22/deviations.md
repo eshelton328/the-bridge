@@ -106,3 +106,9 @@ D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
   icon against 14 (gap: File preview).
 - **Tab bar.** The shared `AppTabBar` passes the position check, and its
   five items line up with Figma's.
+
+## Second review
+
+- **Cross glyph.** The Test card's "✗" looks like an upright "×", where
+  Figma's is slanted. The text is the same character (U+2717) in both;
+  only the font's glyph differs, as on T19.
