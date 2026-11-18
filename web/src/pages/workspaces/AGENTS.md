@@ -255,7 +255,20 @@ first: it says what each file of a page folder is for.
   fields with the focus in the task and Start subtask across the sheet, no
   Cancel), which the chat actions' Subtask opens (`ui.chatDialog:
   'subtask'`) when the state has `data.subtask`; `SubtaskFields
-  size="phone"` draws the note in `small`.
+  size="phone"` draws the note in `small`. M21 needs no new block: the
+  chat fills the screen as M17's does, still Working with Stop, the line
+  where the subtask started is D18's `event` entry, and Back returns to
+  the list, where layout notes is D18's nested row under bridge themes.
+  M22 adds `above` to `PhoneChat` (drawn over the composer, in
+  `ChatPane`'s `above` slot): D20's `ChatToast` while `ui.toastOpen`, whose
+  Undo closes it; the header names the workspace the chat moved to, and
+  Back returns to the list, where the chat heads that workspace.
+  M23 adds `rename` to `PhoneChat` (in `ChatHead`'s title place) and
+  `size="phone"` to `ChatNameField` (160 wide): D21's field while
+  `ui.renaming`, which Rename in the chat actions sheet opens; a tap
+  outside saves the name in `ui.names`, × undoes the change. Either
+  gives the focus back to the message box if it had it before Rename
+  (`ui.refocusMessage`).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -332,7 +345,17 @@ first: it says what each file of a page folder is for.
   D16's fork under bridge themes: the fork full screen, Idle with no Stop,
   nothing typed and the focus in the message box), M20 `phoneSubtask`
   (from `phoneFork`, without the Fork form, with D17's Subtask form and
-  M20's task: the Subtask sheet open on the phone).
+  M20's task: the Subtask sheet open on the phone), M21
+  `phoneSubtaskRunning` (from `phoneChatFull`, with M18's empty message
+  box, M4's chat actions with Subagents · 3 and D18's layout notes row:
+  the chat full screen, Working, with the line where the subtask started),
+  M22 `phoneMovedChat` (from `phoneChatFull`, with M18's empty message
+  box, M4's chat actions and D20's move of bridge themes and theme tokens
+  to the-bridge, now `current`: the chat full screen with the toast
+  "Moved to the-bridge" and Undo), M23 `phoneRenameChat` (from
+  `phoneChatFull`, with M18's empty message box, M4's chat actions and
+  D21's rename: the chat full screen with its name a field in the header,
+  the focus in the field).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -400,6 +423,7 @@ first: it says what each file of a page folder is for.
   `closedWorkspaces`; for M14 `workspaceMenuFor`, the workspace whose
   actions are open; for M15 `addMenuOpen`, `addedWorkspaces` and
   `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
-  box in focus with the skills closed), each a Zod schema.
+  box in focus with the skills closed; for M23 `refocusMessage`, the box
+  takes the focus back when the name field closes), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

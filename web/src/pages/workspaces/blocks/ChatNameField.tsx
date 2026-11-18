@@ -5,7 +5,8 @@
 // field), so it is the library's `SearchField`, whose clear button is the ×,
 // 300 wide. The phone's edit mode (M2 146:37, 105:2614) draws it in a chat
 // row or a workspace header, as wide as the room it has (`fill`), with the
-// text Erik has typed (`draft`). Props only.
+// text Erik has typed (`draft`). The phone chat's header (M23 422:925) draws
+// it 160 wide (`size="phone"`). Props only.
 import { CloseIcon, SearchField } from '@eshelton328/component-library-1701'
 import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react'
 import { useEffect, useRef, useState } from 'react'
@@ -13,6 +14,9 @@ import { css } from '../../../../styled-system/css/index.js'
 
 // Figma's field is 300 wide (d-100: shell.popoverFilter is 300).
 const box = css({ w: 'shell.popoverFilter', maxW: '[100%]' })
+// M23 422:925: in the phone chat's header Figma's field is 160 wide, the name, a spacer and × in it (d-100:
+// shell.popoverXs is 160), and it shrinks when the header has less room.
+const phoneBox = css({ w: 'shell.popoverXs', maxW: '[100%]' })
 // M2 146:37: in the phone's list the field takes the whole room after the kind mark or the chevron.
 const fillBox = css({ flex: '1', minW: '[0]' })
 
@@ -31,10 +35,12 @@ export type ChatNameFieldProps = {
   autoFocus?: boolean | undefined
   /** `true`: the field takes the room it has in its row (M2), in place of 300. */
   fill?: boolean | undefined
+  /** `phone`: 160 wide, in the phone chat's header (M23); `full` (the default): 300 wide, in the chat alone's (D21). */
+  size?: 'full' | 'phone' | undefined
 }
 
 export function ChatNameField(props: ChatNameFieldProps) {
-  const { name, onSave, onCancel, figma, autoFocus = true, fill = false } = props
+  const { name, onSave, onCancel, figma, autoFocus = true, fill = false, size = 'full' } = props
   const [draft, setDraft] = useState(props.draft ?? name)
   const rootRef = useRef<HTMLDivElement>(null)
   // The field closes once: a save or an undo, whichever comes first.
@@ -77,7 +83,7 @@ export function ChatNameField(props: ChatNameFieldProps) {
     <div
       ref={rootRef}
       data-figma={figma ?? 'rename field · chat'}
-      className={fill ? fillBox : box}
+      className={fill ? fillBox : size === 'phone' ? phoneBox : box}
       onKeyDown={onKeyDown}
       onBlur={onBlur}
       onClickCapture={onClickCapture}

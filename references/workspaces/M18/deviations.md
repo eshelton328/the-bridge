@@ -65,18 +65,25 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (Message text), `422:175` h +9.** As in M17: `Message` draws the reply
   and Erik's message in `body` (14/20) and the name in `label` (14/500);
   Figma draws both texts in Geist Regular 13 on a 19 px line (422:171,
-  422:180) and the name in SemiBold 12 (422:179). Erik's first line is
-  about 7% wider (323 against 301 px) and his bubble 2 px taller, and
-  "Claude" is 46 wide against 41. Copy is about 67 × 24 against Figma's 63 × 22.
+  422:180) and the name in SemiBold 12 (422:179). The reply wraps as in
+  M17: "a" moves down to the second line and "sessions" to the third: the
+  render's lines end with "and", "long" and "desktop" against Figma's
+  "and a", "sessions" and "desktop". Erik's first line is about 7% wider
+  (323 against 301 px) and his bubble 2 px taller, and "Claude" is 46 wide
+  against 41. Copy is about 67 × 24 against Figma's 63 × 22.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:188` y -12, h +7.** As in M17: `Composer` draws
   its text in `body` and Stop as `Button size="sm"`, so the box is 112
   high against 105, and `AppShell` keeps a 34 px safe area under it.
   Figma puts M18's composer 2 px lower than M17's (y 710 against 708),
   so the offset is 2 px more than M17's.
-- **The header is 4 px taller and the ⋯ lighter (Chat header, Chat header
-  text).** As in M17: the title is `subtitle` (17/24) against SemiBold 16
-  at 21, the model chip 26 high against 22, and the ⋯ a 20 px `MoreIcon`.
+- **The header is 4 px taller, the back chevron thinner and the ⋯ lighter
+  (Chat header, Chat header text).** As in M17: the title is `subtitle`
+  (17/24) against SemiBold 16 at 21, the model chip 26 high against 22,
+  and the ⋯ a 20 px `MoreIcon`. The back chevron (422:143) is a 2 px
+  stroke at 20 px in Figma; `ChevronLeftIcon` draws the same path in a 24
+  px box with stroke 2 and takes no stroke prop, so at 20 px its stroke is
+  about 1.7 px.
 - **The attachment chip is 26 high with thin icons (Composer attachment
   remove).** As in M17.
 - **The stars sit elsewhere (Backdrop stars).** `Backdrop size="phone"`

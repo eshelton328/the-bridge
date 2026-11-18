@@ -27,13 +27,20 @@
 // workspace adds one (`ui.addedWorkspaces`) with its name a field in edit mode.
 // M18 is the Fork form (`ui.chatDialog: 'fork'`, PhoneFork), a sheet over the
 // chat that the actions' Fork opens. M20 is the Subtask form (`ui.chatDialog:
-// 'subtask'`, PhoneSubtask), a sheet that the actions' Subtask opens.
+// 'subtask'`, PhoneSubtask), a sheet that the actions' Subtask opens. M22 is
+// the chat after a move (`ui.toastOpen`): D20's toast over the composer, with
+// Undo, which closes it. M23 is the chat's name as a field in its header
+// (`ui.renaming`, ChatNameField), which the actions' Rename opens: a tap
+// outside saves the name in `ui.names`, × undoes the change; either gives the
+// focus back to the message box if it had it before (`ui.refocusMessage`).
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
+import { ChatNameField } from '../blocks/ChatNameField.tsx'
+import { ChatToast } from '../blocks/ChatToast.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
@@ -189,6 +196,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
       : [chat.head.model, chat.head.context === undefined ? undefined : `${String(chat.head.context)}%`, folderCount]
           .filter((part) => part !== undefined)
           .join(' · ')
+  // M23: the name field closes, saved or undone, and the focus goes back to the message box if it had it before.
+  const afterRename: Partial<WorkspacesUi> =
+    ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   if (chat !== undefined)
     return (
       <Backdrop size="phone">
@@ -213,6 +223,33 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               }}
               meta={meta}
               focusMessage={ui.messageFocus}
+              rename={
+                ui.renaming === true ? (
+                  <ChatNameField
+                    name={chat.head.title}
+                    onSave={(name) => {
+                      onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
+                    }}
+                    onCancel={() => {
+                      onUiChange(afterRename)
+                    }}
+                    figma={data.layers?.renameField}
+                    size="phone"
+                  />
+                ) : undefined
+              }
+              above={
+                ui.toastOpen === true && data.toast !== undefined ? (
+                  <ChatToast
+                    text={data.toast.text}
+                    action={data.toast.action}
+                    onAction={() => {
+                      onUiChange({ toastOpen: false })
+                    }}
+                    figma={data.layers?.toast}
+                  />
+                ) : undefined
+              }
               onSkillsOpenChange={(open) => {
                 onUiChange({ skillsFor: open ? chat.id : null })
               }}
@@ -240,6 +277,12 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         }}
                         highlight={ui.menuHighlight}
                         onSelect={(action) => {
+                          if (action === 'rename')
+                            onUiChange({
+                              renaming: true,
+                              messageFocus: false,
+                              refocusMessage: ui.messageFocus === true,
+                            })
                           if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
                           if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
                           if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })

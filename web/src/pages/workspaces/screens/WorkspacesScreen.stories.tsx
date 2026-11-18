@@ -650,3 +650,45 @@ export const PhoneSubtask: Story = {
     )
   },
 }
+
+export const PhoneSubtaskRunning: Story = {
+  name: 'M21: a subtask running from a chat on the phone',
+  args: {
+    data: workspacesStates.phoneSubtaskRunning.data,
+    ui: workspacesStates.phoneSubtaskRunning.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // layout notes under it, and the phone's menu draws M21. WorkspacesPhoneSubtaskRunning.test.tsx checks the chat and
+    // the list at a phone's width.
+    await expect(canvas.getByText('Subtask layout notes started · returns here')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+  },
+}
+
+export const PhoneMovedChat: Story = {
+  name: 'M22: the chat moved to the-bridge on the phone, with a toast and Undo',
+  args: { data: workspacesStates.phoneMovedChat.data, ui: workspacesStates.phoneMovedChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D20's toast over its composer, and the phone's menu draws M22. WorkspacesPhoneMovedChat.test.tsx checks the chat
+    // at a phone's width. The toast stays open: the fidelity check renders the story after its play test.
+    const toast = canvas.getByRole('status')
+    await expect(toast).toHaveTextContent('Moved to the-bridge')
+    await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
+  },
+}
+
+export const PhoneRenameChat: Story = {
+  name: 'M23: a chat renamed on the phone, its name a field in the header',
+  args: { data: workspacesStates.phoneRenameChat.data, ui: workspacesStates.phoneRenameChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D21's field in its header, and the phone's menu draws M23. WorkspacesPhoneRenameChat.test.tsx checks the field at
+    // a phone's width. The field stays open: the fidelity check renders the story after its play test.
+    const field = await canvas.findByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect(field).toHaveValue('bridge themes')
+    await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
+  },
+}
