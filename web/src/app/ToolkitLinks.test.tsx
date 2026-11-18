@@ -195,3 +195,21 @@ describe('an agent’s Links tab on a tablet (T29)', () => {
     expect(to.top).toBeGreaterThan(from.bottom)
   })
 })
+
+describe('a workflow’s Links tab on a tablet (T30)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the workflow’s header over the stage before it and the agent it runs', async () => {
+    const { root } = await renderTablet('workflowLinksTablet', 'links')
+    expect(root.querySelector('article[aria-label="skill-eval-round"] [data-figma="kind badge"]')).not.toBeNull()
+    const names = [...root.querySelectorAll('[data-figma="links graph"] button')].map((n) => n.textContent)
+    expect(names).toEqual(['skill-eval-cases', 'eval-cases', 'skill-eval-round', 'skill-eval-cases', 'eval-grader'])
+    const graph = box(root, '[data-figma="links graph"]')
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(from.top).toBeGreaterThan(graph.bottom)
+    expect(to.top).toBeGreaterThan(from.bottom)
+  })
+})

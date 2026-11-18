@@ -255,11 +255,12 @@ const linksTitleLayers: Readonly<Record<string, string>> = {
   'workflows/skill-eval-round.md': '493:1984',
 }
 // On the Links tab of a tablet: writer in T15 (482:735), the rule skills in T28 (493:3270), writing-reviewer in T29
-// (493:3697).
+// (493:3697), skill-eval-round in T30 (493:4281).
 const tabletLinksTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:735',
   'rules/skills.md': '493:3270',
   'agents/writing-reviewer.md': '493:3697',
+  'workflows/skill-eval-round.md': '493:4281',
 }
 // T15's graph has a layer named `links` too, so the tab's node id (482:908).
 const tabletLinksLayers: Readonly<Record<string, string>> = {

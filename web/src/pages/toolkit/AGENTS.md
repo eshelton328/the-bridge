@@ -299,7 +299,8 @@ what each file of a page folder is for.
   the item keeps T17's header (Toolkit, the kind badge, the name and the path
   row) over the same tab. An agent on a tablet (T29, `agentLinksTablet`,
   D30's data with `ui.from` set to writer, as on T7) keeps T7's breadcrumb
-  and header. The tablet's graph keeps the desktop's places in height (T29);
+  and header. A workflow on a tablet (T30, `workflowLinksTablet`, D31's
+  data) keeps T18's header. The tablet's graph keeps the desktop's places in height (T29);
   only T15's is 4 px shorter in Figma. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
