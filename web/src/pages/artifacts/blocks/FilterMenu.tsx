@@ -1,29 +1,50 @@
 // The sections of the Filter menu (D3 403:6852): source, project, how the
 // artifact was found and when it changed, each a checkbox with the number
 // of artifacts it matches. As the Inbox's Filter menu, with the same
-// library parts. Props only: a box Erik checks or clears is reported, and
-// the library applies the checks on Show.
-import { Checkbox, PopoverSection } from '@eshelton328/component-library-1701'
+// library parts. In the tablet's sheet (T3 407:1624) a section's label is a
+// `GroupHeader` above its rows, as the Inbox's phone sheet draws it
+// (`PopoverSection` needs its popover). Props only: a box Erik checks or
+// clears is reported, and the library applies the checks on Show.
+import { Checkbox, GroupHeader, PopoverSection } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactFilterMenu } from '../types.ts'
 
 const count = css({ textStyle: 'monoSm', color: 'fg.subtle' })
-// Figma insets each row 8 at both sides (403:6857: the box 8 in from the row), so the boxes line up with the
-// section labels and the counts end 8 before the row's end.
+// Figma insets each row 8 at both sides (403:6857, T3 407:1511: the box 8 in from the row), so the boxes line up
+// with the section labels and the counts end 8 before the row's end.
 const row = css({ px: '8' })
+// T3 407:1507: the label 8 in from the sheet's inset, as the boxes; `GroupHeader` pads its start 4.
+const sheetLabel = css({ pl: '4' })
 
 export type FilterMenuProps = {
   menu: ArtifactFilterMenu
   /** The checked boxes. */
   checks: readonly string[]
   onChecksChange?: ((checks: string[]) => void) | undefined
+  /** The menu is the tablet's Filter sheet (T3), not a popover. */
+  sheet?: boolean | undefined
 }
 
-export function FilterMenu({ menu, checks, onChecksChange }: FilterMenuProps) {
+function Section({ label, sheet, children }: { label: string; sheet: boolean; children: ReactNode }) {
+  if (!sheet) return <PopoverSection label={label}>{children}</PopoverSection>
+  return (
+    <div role="group" aria-label={label}>
+      {/* T3 names each label row by its capitals, such as `group · SOURCE` (407:1506). */}
+      <div className={sheetLabel} data-figma={`group · ${label.toUpperCase()}`}>
+        {/* T3 407:1506: a 26 px label row, the text 8 down. The `sidebar` header (8 above, 30 high) is the nearest. */}
+        <GroupHeader variant="sidebar" label={label} />
+      </div>
+      {children}
+    </div>
+  )
+}
+
+export function FilterMenu({ menu, checks, onChecksChange, sheet = false }: FilterMenuProps) {
   return (
     <>
       {menu.sections.map((section) => (
-        <PopoverSection key={section.label} label={section.label}>
+        <Section key={section.label} label={section.label} sheet={sheet}>
           {section.items.map((item) => (
             <div key={item.value} className={row} data-figma={`check · ${item.label}`}>
               <Checkbox
@@ -40,7 +61,7 @@ export function FilterMenu({ menu, checks, onChecksChange }: FilterMenuProps) {
               />
             </div>
           ))}
-        </PopoverSection>
+        </Section>
       ))}
     </>
   )

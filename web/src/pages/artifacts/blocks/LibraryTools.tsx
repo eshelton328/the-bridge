@@ -3,7 +3,8 @@
 // the button. Beside an open artifact (D2) the row has no switch, and the
 // search takes the free width. With a Filter menu (D3) Filter opens it,
 // and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
-// controls are 36 high, 8 apart, and the search takes the free width.
+// controls are 36 high, 8 apart, and the search takes the free width, and
+// Filter opens its menu as a sheet over the tab bar (T3).
 // Props only.
 import {
   Button,
@@ -21,6 +22,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../types.ts'
 import { FilterPopover } from './FilterPopover.tsx'
+import { FilterSheet } from './FilterSheet.tsx'
 import { SortMenu } from './SortMenu.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
@@ -50,6 +52,8 @@ export type LibraryToolsProps = {
   onFilterChecksChange?: ((checks: string[]) => void) | undefined
   /** Show in the Filter menu: applies the checked boxes. */
   onFilterApply?: (() => void) | undefined
+  /** `sheet` opens the Filter menu as a sheet from the bottom (the tablet, T3); `popover` (the default) under Filter. */
+  filterAs?: 'popover' | 'sheet' | undefined
   /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
   size?: 'md' | 'lg' | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
@@ -75,6 +79,7 @@ export function LibraryTools({
   onFilterOpenChange,
   onFilterChecksChange,
   onFilterApply,
+  filterAs = 'popover',
   size = 'md',
   view,
   onViewChange,
@@ -120,6 +125,15 @@ export function LibraryTools({
             Filter
           </Button>
         </span>
+      ) : filterAs === 'sheet' ? (
+        <FilterSheet
+          menu={filterMenu}
+          checks={filterChecks}
+          open={filterOpen}
+          onOpenChange={onFilterOpenChange}
+          onChecksChange={onFilterChecksChange}
+          onApply={onFilterApply}
+        />
       ) : (
         <FilterPopover
           menu={filterMenu}

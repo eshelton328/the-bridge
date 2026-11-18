@@ -5,7 +5,8 @@
 // The List view (D4) shows them as rows (LibraryRows). During a search the
 // count says how many of the library's artifacts show, such as "3 of 24".
 // With `data.addLinkForm` Add a link opens the Add a link dialog (D5), and
-// with `data.sortMenu` Sort opens the Sort menu (D6).
+// with `data.sortMenu` Sort opens the Sort menu (D6). On a tablet Filter
+// opens its menu as a sheet (T3).
 // Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -115,6 +116,8 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
         onFilterApply={() => {
           onUiChange?.({ filterOpen: false })
         }}
+        // T3: a tablet or phone opens the Filter menu as a sheet over the tab bar.
+        filterAs={layout === 'desktop' ? 'popover' : 'sheet'}
         size={layout === 'desktop' ? 'md' : 'lg'}
         view={ui.view}
         onViewChange={(view) => {

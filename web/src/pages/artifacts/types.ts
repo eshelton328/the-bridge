@@ -118,8 +118,8 @@ const ArtifactFilterItem = z.object({
 })
 
 /**
- * The Filter menu under the list tools (D3): sections of checkboxes with counts, and a footer that names the
- * checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
+ * The Filter menu under the list tools (D3), or the sheet over the tab bar on a tablet (T3): sections of
+ * checkboxes with counts, and a footer that names the checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
  */
 export const ArtifactFilterMenu = z.object({
   /** The label of the menu, for assistive technology. */
@@ -129,6 +129,8 @@ export const ArtifactFilterMenu = z.object({
   note: z.string(),
   /** The Show button, such as "Show 7". */
   show: z.string(),
+  /** The tablet sheet's Clear (T3), which clears the boxes; the desktop menu has none (D3). */
+  clear: z.string().optional(),
 })
 export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
 

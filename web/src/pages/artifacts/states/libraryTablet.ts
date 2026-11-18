@@ -5,8 +5,11 @@
 // search says "Search artifacts", and two Earlier descriptions are shorter
 // (405:279, 405:303). Earlier shows the two cards the frame draws (405:263);
 // its later cards lie below the frame, so they wait for a frame that shows them.
+// It holds T3's Filter sheet (D3's menu, with Clear and "Show 7 artifacts"),
+// so T1's Filter opens it.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
+import { filterOpen } from './filterOpen.ts'
 import { library } from './library.ts'
 
 /** T1's descriptions (405:279, 405:303) by card id; the other cards keep D1's. */
@@ -24,6 +27,8 @@ export const libraryTablet = {
   data: {
     ...library.data,
     searchPlaceholder: 'Search artifacts',
+    // T3 407:1623 and 407:1721: the sheet's Clear and Show; the boxes and counts are D3's.
+    filterMenu: { ...filterOpen.data.filterMenu, clear: 'Clear', show: 'Show 7 artifacts' },
     groups: library.data.groups.map((group) => ({
       ...group,
       cards: group.cards
