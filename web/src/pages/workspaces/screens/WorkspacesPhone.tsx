@@ -16,7 +16,9 @@
 // `data.phone.rowMenu`) and its row lifts over the scrim. M10 is the chat
 // with the keyboard up (`ui.keyboardOpen`): its header shrinks to one line.
 // M11 is New chat with the keyboard up: the name has the focus and the start
-// bar keeps Start chat alone.
+// bar keeps Start chat alone. M12 is a subagent's full transcript
+// (`ui.phoneView: 'transcript'`, PhoneSubagentTranscript), which the chevron
+// of its card opens; its trail returns to the subagents or the chat.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -28,6 +30,7 @@ import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
 import { PhoneNewChat } from '../blocks/PhoneNewChat.tsx'
 import { PhoneSideChat } from '../blocks/PhoneSideChat.tsx'
+import { PhoneSubagentTranscript } from '../blocks/PhoneSubagentTranscript.tsx'
 import { PhoneSubagents } from '../blocks/PhoneSubagents.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -71,6 +74,38 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
         />
       </Backdrop>
     )
+  const fullLabels = data.subagents?.fullTranscript
+  const transcript = data.subagents?.items.find((i) => i.id === ui.subagentFor && i.full !== undefined)
+  if (
+    ui.phoneView === 'transcript' &&
+    focused?.type === 'chat' &&
+    data.subagents !== undefined &&
+    fullLabels !== undefined
+  )
+    return (
+      <Backdrop size="phone">
+        <AppShell
+          size="phone"
+          view="detail"
+          detail={
+            transcript === undefined ? null : (
+              <PhoneSubagentTranscript
+                item={transcript}
+                chat={focused.head.title}
+                labels={{ ...fullLabels, title: data.subagents.title, stop: data.subagents.stop }}
+                onChat={() => {
+                  onUiChange({ phoneView: 'chat', subagentFor: null })
+                }}
+                onSubagents={() => {
+                  onUiChange({ phoneView: 'subagents', subagentFor: null })
+                }}
+                layers={data.layers?.subagentTranscript}
+              />
+            )
+          }
+        />
+      </Backdrop>
+    )
   if (ui.phoneView === 'subagents' && focused?.type === 'chat' && data.subagents !== undefined)
     return (
       <Backdrop size="phone">
@@ -88,6 +123,13 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               onOpenChange={(transcripts) => {
                 onUiChange({ transcripts })
               }}
+              onOpenTranscript={
+                fullLabels === undefined
+                  ? undefined
+                  : (subagentFor) => {
+                      onUiChange({ phoneView: 'transcript', subagentFor })
+                    }
+              }
               layers={data.layers}
             />
           }

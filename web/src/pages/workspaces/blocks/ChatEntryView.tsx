@@ -33,7 +33,7 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
         </div>
       )
     case 'tool':
-      return <ToolLine name={entry.name} target={entry.target} state="done" />
+      return <ToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
     case 'event':
       // Figma draws the event as a tool line: the done dot and the text in mono (D16 417:718).
       return <ToolLine name={entry.text} state="done" stateLabel={entry.label} />

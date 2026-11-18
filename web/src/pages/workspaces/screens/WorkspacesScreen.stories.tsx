@@ -512,3 +512,21 @@ export const PhoneNewChatKeyboard: Story = {
     await expectTrapFocus(name)
   },
 }
+
+export const PhoneSubagentTranscript: Story = {
+  name: "M12: a subagent's full transcript on the phone",
+  args: {
+    data: workspacesStates.phoneSubagentTranscript.data,
+    ui: workspacesStates.phoneSubagentTranscript.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; at a phone's width Layout notes' full transcript fills the screen (M12).
+    // WorkspacesPhoneSubagentTranscript.test.tsx checks the transcript and its trail at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(canvas.queryByText('Read-only: the result returns to bridge themes when it finishes.')).toBeNull()
+  },
+}

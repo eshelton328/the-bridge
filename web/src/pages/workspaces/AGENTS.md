@@ -31,7 +31,8 @@ first: it says what each file of a page folder is for.
   `data.phone.rowMenu`) and the row lifts over its scrim; M10 is the chat
   with the keyboard up (`ui.keyboardOpen`), whose header is one line; M11
   is New chat with the keyboard up, the name in focus and Start chat alone
-  in the start bar. Every other width, and a state without `data.phone` (D1 to D21), draws
+  in the start bar; M12 is a subagent's full transcript (`ui.phoneView:
+  'transcript'`, `ui.subagentFor`), with no tab bar. Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
   Later phone frames add their views to `WorkspacesPhone`.
@@ -211,7 +212,15 @@ first: it says what each file of a page folder is for.
   `NewChatDialog`, the typed name (`form.name.value`, which hides the
   hint), the field with the focus (`form.focus`) and, on the phone only,
   `form.foldersBox` (the folders as one field-high box, such as
-  "~/omni-brain +1"). Later frames add to these blocks.
+  "~/omni-brain +1"). M12 adds `PhoneSubagentTranscript` (a subagent's
+  full transcript on the phone: `TranscriptTrail`, the trail of text
+  buttons back to the chat and the subagents, then the sparkle, the title
+  in `PageHeader`, the status, the meta line and Stop over a rule, in a
+  `ScrollFrame` header; the task in a `ProposalBlock`, the entries by
+  `ChatEntryView`, and the read-only note in a notice `Panel` as its
+  footer), and `running` to a `tool` entry (`ToolLine state="running"`);
+  the chevron of a card in `PhoneSubagents` opens it when the panel has
+  `fullTranscript`. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -270,7 +279,8 @@ first: it says what each file of a page folder is for.
   of a message, /writer listed alone, the keyboard up), M11
   `phoneNewChatKeyboard` (from `phoneNewChat`: "theme tokens" typed in the
   name, which has the focus, Runs in without shell, omni-brain, the
-  folders as one box, the keyboard up).
+  folders as one box, the keyboard up), M12 `phoneSubagentTranscript`
+  (from `phoneSubagents`: Layout notes' full transcript open).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -307,7 +317,9 @@ first: it says what each file of a page folder is for.
   `layers.liftedRow` and `liftedMenu`; for M10 `skillsMatching`, the
   skill list's label once more than "/" is typed; for M11 the New chat
   form's `name.value`, `focus` and `foldersBox`, and the optional layers
-  of `newChatForm` that M11 does not show) and
+  of `newChatForm` that M11 does not show; for M12 a subagent's `full`
+  transcript, the panel's `fullTranscript` labels and the view's layers in
+  `layers.subagentTranscript`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -323,7 +335,8 @@ first: it says what each file of a page folder is for.
   and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
-  fills the phone's screen, `subagents` in M6; for M10 `keyboardOpen`, the
+  fills the phone's screen, `subagents` in M6, `transcript` in M12 with
+  `subagentFor`; for M10 `keyboardOpen`, the
   keyboard up over the phone's chat, and in M11 over New chat), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
