@@ -36,6 +36,16 @@ function list() {
   return found
 }
 
+// Resolves after two rendering steps: the ResizeObserver delivers its notes in each step after the frame callbacks,
+// so the first step's notes and the scroll they set are in.
+function twoFrames() {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+}
+
+// The list is laid out and observed at its fixture size before a test changes it: the observer's first note and the
+// first scroll have run, and the page is rendering. Narrowed in the task that rendered it, the list's first scroll
+// waited on the new page's first rendering step, which a busy CI runner can hold past the poll's second (scrollLeft
+// stayed 0 once, PR #98).
 async function renderTabs(tab: string) {
   const rendered = await testRender(<Tabs tab={tab} />)
   const el = list()
@@ -43,6 +53,7 @@ async function renderTabs(tab: string) {
   for (const t of el.querySelectorAll('[role="tab"]')) {
     if (t instanceof HTMLElement) t.style.flex = '0 0 100px'
   }
+  await twoFrames()
   return { rendered, el }
 }
 
