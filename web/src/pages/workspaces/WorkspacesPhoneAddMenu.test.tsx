@@ -19,6 +19,16 @@ afterEach(async () => {
   await page.viewport(1512, 982)
 })
 
+// The colour a token resolves to, as the browser computes it.
+function tokenColor(token: string): string {
+  const probe = document.createElement('div')
+  probe.style.color = `var(--colors-${token})`
+  document.body.append(probe)
+  const color = getComputedStyle(probe).color
+  probe.remove()
+  return color
+}
+
 const { data, ui } = workspacesStates.phoneAddMenu
 const closed = { ...ui, addMenuOpen: false }
 
@@ -31,6 +41,22 @@ describe('the menu that + opens on the phone', () => {
     await expect
       .element(page.getByRole('button', { name: 'New chat or workspace' }))
       .toHaveAttribute('aria-expanded', 'true')
+  })
+
+  it('is 220 wide, as Figma 208:515, and draws its icons in the label colour (M15)', async () => {
+    await page.viewport(390, 806)
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const menu = page.getByRole('menu')
+    await expect.element(menu).toBeVisible()
+    expect(menu.element().getBoundingClientRect().width).toBe(220)
+    for (const name of ['New chat', 'New workspace']) {
+      const row = page.getByRole('menuitem', { name }).element()
+      const icon = row.querySelector('svg')
+      expect(icon, `${name} has an icon`).not.toBeNull()
+      if (icon === null) continue
+      expect(getComputedStyle(icon).color, `${name}'s icon`).toBe(tokenColor('fg-default'))
+      expect(getComputedStyle(icon).color, `${name}'s icon`).toBe(getComputedStyle(row).color)
+    }
   })
 
   it('opens from +', async () => {
