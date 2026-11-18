@@ -3,7 +3,7 @@
 What still differs from Figma T7 · New chat (D3's New chat form in a
 dialog over bridge themes on the iPad mini, `tabletNewChat`), after the
 last fidelity run (`pnpm fidelity workspaces T07`, 2026-11-18, library
-1.0.0-beta.39), each with its reason. The library gaps are in
+1.0.0-beta.42), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`)
 with D3's `NewChatDialog` (`Dialog size="lg"`, 540) open over it, with
@@ -15,11 +15,10 @@ inert, so its composer's text is not counted: no exception is needed.
 
 - Text: pass. Every Figma string is in the render and visible; the
   render has no extra text.
-- Position: fail, 4 of 25 layers pass: the header (`420:252`), the back
-  button (`420:254`), the ⋯ (`420:265`) and Erik's message (`420:281`).
-  21 fail:
+- Position: fail, 5 of 25 layers pass: the header (`420:252`), the back
+  button (`420:254`), the ⋯ (`420:265`), Erik's message (`420:281`) and
+  the chat's composer (`420:298`). 20 fail:
   - `420:286` (Claude's reply with Copy): h +8.
-  - `420:298` (the chat's composer): y +30.
   - `420:322` (the dialog): y +24, h -19.
   - `420:329` (Name field): y +24; `420:332` (its box): y +25.
   - `420:336` (Runs in field): y +24; `420:340`, `420:344` and
@@ -71,12 +70,11 @@ inert, so its composer's text is not counted: no exception is needed.
 - **Dialog padding.** The form is padded 20 (`Dialog`) against Figma's
   23, so the fields start 2 px further left and are 4 px wider (within
   the tolerance).
-- **The chat's composer sits at the screen's end (Tablet safe area),
-  `420:298` y +30.** Figma ends T7's composer 33 over the screen's end
-  (y 1125 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b and T06. Library beta.42 adds the tablet safe
-  area.
+- **The chat's composer ends 1 px higher (Tablet safe area, closed by
+  beta.42).** `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`)
+  under the detail with no tab bar, so the composer ends 34 over the
+  screen's end, at y 1124, against Figma's 33 (y 1125 of 1158): y -4,
+  h +3, within the tolerance.
 - **Claude's reply is taller (Message text), `420:286` h +8.** `Message`
   draws the text in `body` (14/20) and the name in `label` against
   Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high

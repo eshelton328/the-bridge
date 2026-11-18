@@ -2,7 +2,7 @@
 
 What still differs from Figma T6 · One chat at a time (bridge themes full
 screen on the iPad mini, `tabletOneChat`), after the last fidelity run
-(`pnpm fidelity workspaces T06`, 2026-11-18, library 1.0.0-beta.39),
+(`pnpm fidelity workspaces T06`, 2026-11-18, library 1.0.0-beta.42),
 each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`):
@@ -21,16 +21,18 @@ no Artifacts tab, and no exception is needed.
   back button (`402:10406`), the ⋯ (`402:10417`) and Erik’s message
   (`402:10433`). Two fail:
   - `402:10438` (Claude's reply with Copy): h +8.
-  - `402:15201` (the composer): y +9, h +7.
+  - `402:15201` (the composer): y -25, h +7.
 - Rules: pass.
 
 ## Deviations
 
-- **The composer sits at the screen's end (Tablet safe area),
-  `402:15201` y +9.** Figma ends T6's composer 16 over the screen's end
-  (y 1142 of 1158). `AppShell size="tablet"` keeps no safe area under
-  the detail when there is no tab bar, so the composer ends at the
-  screen's end, as on T02b and T04.
+- **The composer ends 18 px higher (Tablet safe area, closed by
+  beta.42), `402:15201` y -25.** Figma ends T6's composer 16 over the
+  screen's end (y 1142 of 1158), where T2b ends it 37 over and T7 33.
+  `AppShell size="tablet"` keeps 34 (`shell.safeAreaBottom`) under the
+  detail with no tab bar, so the composer ends 34 over the screen's
+  end, at y 1124, as on T02b and T07. The page cannot lower it without
+  a raw value, and the shell's 34 follows T2b (bridge-coord, d-100).
 - **The composer is 7 px taller (Composer text, Composer attachment
   remove), `402:15201` h +7.** `Composer` draws its text in `body` and
   Stop as `Button size="sm"`, so Stop is wider than Figma's 61; the

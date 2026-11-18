@@ -3,7 +3,7 @@
 What still differs from Figma T4 · Composing (bridge themes on the iPad
 mini while Erik types, with the keyboard up, `tabletComposing`), after
 the last fidelity run (`pnpm fidelity workspaces T04`, 2026-11-18,
-library 1.0.0-beta.39), each with its reason. The library gaps are in
+library 1.0.0-beta.42), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is T2's
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`):
 `ChatHead size="full"` over `ChatPane size="tablet"`, with "/" typed
@@ -21,24 +21,25 @@ bar, so the render has no Artifacts tab, and no exception is needed.
   (`105:2222`). Four fail:
   - `105:2227` (Claude's reply with Copy): h +8.
   - `105:2239` (Claude's second reply): y +4, h +5.
-  - `105:2261` (the composer): y +309, h +7.
-  - `105:2246` (the skill list): y +318.
+  - `105:2261` (the composer): y +275, h +7.
+  - `105:2246` (the skill list): y +284.
 - Rules: pass.
 
 ## Deviations
 
-- **No keyboard; the composer and the skill list sit at the screen's
-  end (Phone keyboard, Tablet safe area), `105:2261` y +309, `105:2246`
-  y +318.** Figma draws the iPad keyboard over the lower 300 points
-  (105:2293, from y 858; its text is excluded, d-089) and sizes the page
-  to the area above it: the composer ends 16 over the keyboard and the
-  skill list sits 14 over the composer. `AppShell` is as tall as its
-  parent and has no prop for the visible area, and the app may not set a
-  measured height, so the render keeps the full height: the composer
-  ends at the screen's end (`AppShell size="tablet"` keeps no safe area
-  under a detail with no tab bar), the skill list is over it, and the
-  band where Figma has the keyboard shows the backdrop and the empty
-  transcript. The header keeps its two rows, as Figma's T4 does.
+- **No keyboard; the composer and the skill list sit near the screen's
+  end (Phone keyboard), `105:2261` y +275, `105:2246` y +284.** Figma
+  draws the iPad keyboard over the lower 300 points (105:2293, from y
+  858; its text is excluded, d-089) and sizes the page to the area above
+  it: the composer ends 16 over the keyboard and the skill list sits 14
+  over the composer. `AppShell` is as tall as its parent and has no prop
+  for the visible area, and the app may not set a measured height, so
+  the render keeps the full height: the composer ends 34 over the
+  screen's end, at y 1124 (`AppShell size="tablet"` keeps
+  `shell.safeAreaBottom` under a detail with no tab bar, beta.42),
+  against Figma's y 842, the skill list is over it, and the band where
+  Figma has the keyboard shows the backdrop and the empty transcript.
+  The header keeps its two rows, as Figma's T4 does.
 - **Claude's replies are taller (Message text), `105:2227` h +8,
   `105:2239` y +4, h +5.** `Message` draws the text in `body` (14/20)
   and the name in `label` against Figma's Geist 13 on a 19 px line and
