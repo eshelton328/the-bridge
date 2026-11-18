@@ -10,32 +10,30 @@ the shared `DetailFrame` (d-107), as M2's skill and M19's rule do: the back
 row stays at the top and the item scrolls under it
 (`web/src/app/ToolkitStickyBack.test.tsx`, the M22 case). D03, D04, D07,
 D08, D09, T03, M02, T17, M19 and T19 give the same results as before
-M22. The Checks below are from a rerun with library 1.0.0-beta.25 and
-the item tabs' `tone` and `density` props (2026-11-17).
+M22. The Checks below are from a rerun with library 1.0.0-beta.28
+(2026-11-17): the phone's file preview passes `CodeLines` `wrap`
+(library #132), so the long code lines wrap as in Figma.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render; no extra text and no
-  covered text. Three strings are not visible: the code lines `# Checks a commit message against
-  toolkit/rules/commits-and-prs.md and` (487:2240), `# exits 1 with one
-  line per problem. Git runs it from the top of the work` (487:2243) and
-  ``# tree once `core.hooksPath` is `toolkit/hooks` (link.sh sets that).``
-  (487:2246), see Code lines. `6` (487:2248) and `set -u` (487:2249)
-  pass since the tab bar lies over the page (see Under the tab bar).
-- Position: 21 of 30 layers pass (`back row`, `button · map`,
+- Text: pass. Every Figma string is in the render and visible; no extra
+  text and no covered text. The three code lines that were cut before
+  (487:2240, 487:2243, 487:2246) wrap and pass (see Code lines). `6`
+  (487:2248) and `set -u` (487:2249) pass since the tab bar lies over
+  the page (see Under the tab bar).
+- Position: 23 of 30 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:2043`, `path badge`, `487:2182`,
   `kind section · hook`, `facts`, `fact · Event`, `fact · State`,
   `badge · Enabled · icon`, `fact · Enforces`, `fact · Test`,
-  `preview bar`, `tab bar`). The 9 that fail (`button · Discuss`,
-  `toolkit`, `columns`, `file preview`, `code`, `side`, `files`,
-  `file · commit-msg`, `file · test-commit-msg`) are listed below.
+  `preview bar`, `file · commit-msg`, `file · test-commit-msg`,
+  `tab bar`). The 7 that fail (`button · Discuss`, `toolkit`,
+  `columns`, `file preview`, `code`, `side`, `files`) are listed below.
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
-- Rules: fail. Three `hiddenOverflow` findings: the item's ScrollFrame
-  body (`div.scroll-frame__body`, see Under the tab bar), the item tabs'
-  list (`div.item-tabs__list`, see Item tabs) and the code's ScrollFrame
-  body (`[data-figma="code"] > div.scroll-frame__root >
-  div.scroll-frame__body`, see Code lines).
+- Rules: fail. Two `hiddenOverflow` findings: the item's ScrollFrame
+  body (`div.scroll-frame__body`, see Under the tab bar) and the item
+  tabs' list (`div.item-tabs__list`, see Item tabs). The code no longer
+  scrolls sideways.
 
 ## Deviations
 
@@ -51,17 +49,32 @@ the item tabs' `tone` and `density` props (2026-11-17).
   as on M02 and M19; it is not an exception.
 - **Code lines.** Figma wraps a long line of the script under itself on
   the phone: lines 3, 4, 5 and 8 are two lines each, so the code box
-  (`code` 487:2231) is 284 high. `CodeLines` keeps each line on one and
-  scrolls long lines sideways, so lines 3, 4 and 5 are cut at the box's
-  right edge (`# Checks a commit message against toolkit/…`, `# exits 1
-  with one line per problem…`, ``# tree once `core.hooksPath`…`` not
-  visible; the sideways scroll is the third `hiddenOverflow`). The box is
-  74 px shorter (`code` h -74, `file preview` h -74), so the files under
-  it start 85 px higher (`side` y -85, `files` y -85, `file · commit-msg`
-  y -82, `file · test-commit-msg` y -83). Gap: Code line wrap.
+  (`code` 487:2231) is 284 high. `CodeLines` `wrap` (library #132,
+  beta.28) wraps them the same way in its text column, the number on the
+  first line, and nothing is cut or scrolls sideways
+  (`web/src/app/ToolkitCodeWrap.test.tsx`). Three differences remain, and
+  they make the box 6 px taller (`code` h +6, `file preview` h +6):
+  - A wrapped line is 32 px high, two lines of the 12/16 mono style on
+    the 4 px grid (d-090), where Figma's is 34 (two of 17); a one-line
+    line is 16 against 17. No line-height token has 17 (d-050).
+  - Line 9 (`TOOLKIT_SCOPES="skills rules toolkit hooks"`, 487:2258,
+    310 wide) wraps too. Figma draws it on one line, past the 298 px
+    column of the wrapped lines, to 4 px from the box's edge; the
+    library's text column is 302 px (the box less 16 padding at each
+    side, the numbers' column and the 16 gap), so the line is two lines
+    high (+15 against Figma's 17).
+  - `CodeLines` pads 16 where Figma pads 14 (+4; gap: File preview).
+
+  Lines 1 to 10 sum to 258 px against Figma's 256, and the padding adds
+  4. The box ends 3 px lower than Figma's (it starts 3 px high, see Row
+  spacing), and the files sit 8 under it where Figma's sit 16 (the
+  overview's rows are 8 apart), so they start 5 px higher (`side` y -5,
+  `files` y -5); `file · commit-msg` and `file · test-commit-msg` pass,
+  where they were 82 and 83 px high before the wrap.
 - **Columns height.** Figma's `columns` (487:2219) is 255 high, shorter
   than the file preview inside it (323). The render's columns hold the
-  preview, 249 high (`columns` h -6). Gaps: File preview, Code line wrap.
+  preview, 329 high (`columns` h +74). Gap: File preview; see Code lines
+  for the preview's 6 px.
 - **Row spacing.** Figma's description, When it runs and the code are 12
   apart. The tabs' list is 32 high, as Figma's, with 4 above the panel,
   and the cards are 110 and 111 high (Figma 109), so at 12 apart the
@@ -131,6 +144,6 @@ bridge-coord decided (2026-11-17) that this frame gets no
   which ends the scroll body above the tab bar where Figma runs the
   content under it. A change there is a shared-frame change
   (bridge-coord). The text check stays failing.
-- The three comment lines above the tab bar fail because `CodeLines`
-  keeps each line on one line and cuts it at the box's edge, where
-  Figma wraps it (gap: Code line wrap).
+- The three comment lines above the tab bar that failed while
+  `CodeLines` kept each line on one line now wrap, as Figma's do, and
+  pass (library #132, beta.28).
