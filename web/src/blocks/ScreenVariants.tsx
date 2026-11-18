@@ -7,7 +7,6 @@
 // Outside Storybook's preview page (the Vitest story run), the iframes get
 // no `src`, as no `iframe.html` is there to load; `data-story-id` still
 // names each state's story.
-import { useCallback } from 'react'
 import { storyNameFromExport, toId } from 'storybook/internal/csf'
 import { css } from '../../styled-system/css/index.js'
 import { deviceLabels, frameSizes, type Screen, screenStates } from '../lib/screenMap.ts'
@@ -40,23 +39,21 @@ export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProp
   const frameWidths = variants.reduce((sum, v) => sum + frameSizes[v.device].width, 0)
   const gaps = gapPx * (variants.length - 1)
   const inPreview = window.location.pathname.endsWith('/iframe.html')
-  const measure = useCallback(
-    (element: HTMLDivElement | null) => {
-      if (element === null) return undefined
-      const update = () => {
-        const padding = Number.parseFloat(getComputedStyle(element).paddingLeft) * 2
-        const fit = (element.clientWidth - padding - gaps) / frameWidths
-        element.style.setProperty('--screen-scale', String(Math.min(1, Math.max(fit, 0.1))))
-      }
-      update()
-      const observer = new ResizeObserver(update)
-      observer.observe(element)
-      return () => {
-        observer.disconnect()
-      }
-    },
-    [frameWidths, gaps],
-  )
+  // The React Compiler memoizes this ref callback, so it reruns only when the widths change.
+  const measure = (element: HTMLDivElement | null) => {
+    if (element === null) return undefined
+    const update = () => {
+      const padding = Number.parseFloat(getComputedStyle(element).paddingLeft) * 2
+      const fit = (element.clientWidth - padding - gaps) / frameWidths
+      element.style.setProperty('--screen-scale', String(Math.min(1, Math.max(fit, 0.1))))
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(element)
+    return () => {
+      observer.disconnect()
+    }
+  }
   return (
     <div ref={measure} className={row}>
       {variants.map(({ device, state }) => {
