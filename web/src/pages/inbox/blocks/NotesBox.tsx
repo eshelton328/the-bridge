@@ -25,24 +25,26 @@ export function NotesBox({ notes, drafts }: NotesBoxProps) {
       </div>
     )
   return (
-    <Panel>
-      {/* Figma T4 346:6219 and 346:6220: the note's 19 px line and its author 25 apart. */}
+    // Figma's notes card (D1 346:404) pads 10 at the top and bottom and 12 at the sides: the notice
+    // Panel. Its note, author and "Add a note…" lines start 25 and 20 px apart (D1 657, 682, 702;
+    // T4 346:6219 and 346:6220); the 20, 16 and 20 px line boxes 4 apart start 24 and 20 apart.
+    <Panel variant="notice">
       <Stack gap="4">
         <p className={text}>{note.text}</p>
         <span className={by}>{note.by}</span>
+        {add === undefined ? null : (
+          <TextArea
+            variant="bare"
+            textSize="sm"
+            labelHidden
+            label="Add a note"
+            placeholder={add}
+            autoresize
+            rows={1}
+            {...typed}
+          />
+        )}
       </Stack>
-      {add === undefined ? null : (
-        <TextArea
-          variant="bare"
-          textSize="sm"
-          labelHidden
-          label="Add a note"
-          placeholder={add}
-          autoresize
-          rows={1}
-          {...typed}
-        />
-      )}
     </Panel>
   )
 }

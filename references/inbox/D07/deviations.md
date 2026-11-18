@@ -88,6 +88,13 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **Notes box (2026-11-18).** The note card is now the `notice`
+  `Panel` (10 px at the top and bottom, 12 at the sides), as Figma's
+  notes card (D1 346:404), not the `section` one (12 and 16). The note,
+  its author and the "Add a note…" field are one `Stack` 4 apart, so
+  they start 24 and 20 px apart (Figma 25 and 20). The card is 8 px
+  shorter: `section · MY NOTES` y +11 px (was y +11, h +12 px); `section · SOURCES` y +17 px (was y +25 px). The y offsets that stay come from the section
+  gaps and line heights above (4 px grid, d-072, d-100).
 
 ## Second review
 
