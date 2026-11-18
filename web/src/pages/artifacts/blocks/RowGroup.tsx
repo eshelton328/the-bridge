@@ -72,11 +72,7 @@ export function RowGroup({
         />
       </div>
       {open ? (
-        <Stack
-          gap="0"
-          id={contentId}
-          className={rows}
-        >
+        <Stack gap="0" id={contentId} className={rows}>
           {group.cards.map((card) => {
             const place = search?.places.get(card.id)
             return (
