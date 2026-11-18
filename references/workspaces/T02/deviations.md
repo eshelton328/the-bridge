@@ -9,8 +9,8 @@ screen is M3's `PhoneChat` at the tablet's width (`device="tablet"`,
 with `tabletList`) and `ui.sideChatOpen` set: `PhoneSideChat` (`BottomSheet
 size="sm"` with no title row) holds `SideChatPanel placement="sheet"
 device="tablet"`, and the focus is in its message box. The chat has no
-tab bar, so the render has no Artifacts tab and T02 needs no
-`exceptions.json`.
+tab bar, so the render has no Artifacts tab. `exceptions.json` accepts
+the main composer's two covered strings, as M05's does.
 
 ## Checks
 
@@ -33,8 +33,7 @@ tab bar, so the render has no Artifacts tab and T02 needs no
   - Extra: `Stop` and `Message, or / for a skill`, the main chat's
     composer. It stays at the bottom of the chat (d-107), under the sheet,
     which covers it whole; the text check counts a covered run as extra
-    text. M05 accepts the same two strings in its `exceptions.json`; T02
-    adds no exception for them, so they stay failures here.
+    text. `exceptions.json` accepts both, with M05's reason.
 - Position: fail, 4 of 10 layers pass: the header (`105:1810`), the back
   button (`105:1812`), the ⋯ (`105:1827`) and Erik's message
   (`105:1895`). Six fail:
