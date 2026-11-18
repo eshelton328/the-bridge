@@ -34,8 +34,10 @@ before T06.
   sides against 22). This is the d-107 structure that keeps Back in view.
   Gap: Tablet item spacing.
 - **Title.** check is 82 by 40 against Figma's 77 and 38 (`440:1773`
-  w +5.3): the `heading` glyphs and line height, as on T03 and T04
-  (d-090).
+  w +5.3, y -2): the `heading` glyphs and line height, as on T03 and T04
+  (d-090). It starts 16 under the 32 px back row against Figma's 14
+  under 36, and the tabs are 16 under the path row against 14 (no space
+  token has 14), as on T04. Gap: Tablet item spacing.
 - **Back row.** The back row is 32 px high against Figma's 36. Discuss is
   99.5 px wide against 97, so it starts 5 px further left
   (`button · Discuss` x -5.1, h -2). Files and its chevron are `BackRow`'s
@@ -54,3 +56,20 @@ before T06.
   and Code switch, Tablet item spacing.
 - **Item tabs.** The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
+
+## Second review
+
+The blind review of the side-by-side (2026-11-18) found two
+differences.
+
+- **Title under the back row (fixed).** The title sat about 28 under
+  Discuss against Figma's 23: the item kept the 20 above its rows that
+  T03 sizes for the kind badge, which this page leaves out. The title
+  now starts 16 under the back row (`filesPage` in `ToolkitItem.tsx`),
+  as on T04, and `ToolkitFiles.test.tsx` checks the 16. The tabs, the
+  mode row and the box stay where they were.
+- **Note icon.** The note under the steps starts with a small grey
+  four-point sparkle, where Figma draws a violet asterisk of many points
+  (`icon/spark` 440:1983, 13 px). `ScriptExplanation` draws the note's
+  `SparkIcon` itself, at 12 px in the note's colour, with no prop for
+  the icon or its colour. Gap: Script explanation.

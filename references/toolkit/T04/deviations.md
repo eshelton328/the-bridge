@@ -50,9 +50,35 @@ D33 to D36, T07, T10 and T19 give the same results as before T04.
   y +32, h -321, x +2, w -4). This is the d-107 structure that keeps Back
   in view. Gap: Tablet item spacing.
 - **Title.** writer is 79.5 by 40 against Figma's 74 and 38 (`434:406`
-  w +5.5): the `heading` glyphs and line height, as on T03 (d-090).
+  w +5.5, y -2): the `heading` glyphs and line height, as on T03
+  (d-090). It starts 16 under the 32 px back row against Figma's 14
+  under 36, so it sits 2 px higher and its centre within a pixel of
+  Figma's; the tabs are 16 under the path row against 14 (no space
+  token has 14), so the tree and all under it keep their place. Gap:
+  Tablet item spacing.
 - **Back row.** The back row is 32 px high against Figma's 36. Discuss is
   99.5 px wide against 97, so it starts 5 px further left
   (`button · Discuss` x -5.1, h -2). Gap: Item action buttons.
 - **Item tabs.** The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
+
+## Second review
+
+The blind review of the side-by-side (2026-11-18) found three
+differences.
+
+- **Title under the back row (fixed).** The title sat 20 under the back
+  row, the space T03 keeps for its kind badge, which the Files tab leaves
+  out; the back row's centre to the title's centre was 56 px against
+  Figma's 51. The title now starts 16 under the back row (`filesPage` in
+  `ToolkitItem.tsx`), 52 px from centre to centre, and
+  `ToolkitFiles.test.tsx` checks the 16. The tree and the viewer stay
+  where they were (`tree` y +1, `viewer` y +33).
+- **File line counts.** The files' counts (56 lines, 68 lines under
+  references/) end at the row's right edge, in line with the folders'
+  counts (6, 4, 5 cases); Figma ends them 37 px further left (680
+  against 717). `FileTree` puts every count at the row's end and has no
+  prop for it. Gap: File tree rows.
+- **File row spacing.** The file rows under references/ are 28 px apart
+  against Figma's 31. `FileTree` sets the row height. Gap: File tree
+  rows.
