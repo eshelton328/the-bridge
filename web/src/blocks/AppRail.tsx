@@ -1,7 +1,8 @@
 // The desktop nav rail of every page: the logo and the five pages, with
 // the needs-you count on Inbox (d-047: More comes last). Artifacts and
 // Toolkit come before More, as the Toolkit page's D1 draws them (d-105).
-// Props only; the page entry does the navigation.
+// Each item carries its Figma layer name (`rail · Inbox`) for the fidelity
+// check. Props only; the page entry does the navigation.
 import {
   ArtifactsIcon,
   InboxIcon,
@@ -33,12 +34,12 @@ export function AppRail({ selected, inboxBadge, onSelect }: AppRailProps) {
         </a>
       }
       items={[
-        { value: 'inbox', label: 'Inbox', icon: <InboxIcon />, badge: inboxBadge },
-        { value: 'workspaces', label: 'Workspaces', icon: <WorkspacesIcon /> },
-        { value: 'projects', label: 'Projects', icon: <ProjectsIcon /> },
-        { value: 'artifacts', label: 'Artifacts', icon: <ArtifactsIcon /> },
-        { value: 'toolkit', label: 'Toolkit', icon: <ToolkitIcon /> },
-        { value: 'more', label: 'More', icon: <MoreIcon /> },
+        { value: 'inbox', label: 'Inbox', figma: 'rail · Inbox', icon: <InboxIcon />, badge: inboxBadge },
+        { value: 'workspaces', label: 'Workspaces', figma: 'rail · Workspaces', icon: <WorkspacesIcon /> },
+        { value: 'projects', label: 'Projects', figma: 'rail · Projects', icon: <ProjectsIcon /> },
+        { value: 'artifacts', label: 'Artifacts', figma: 'rail · Artifacts', icon: <ArtifactsIcon /> },
+        { value: 'toolkit', label: 'Toolkit', figma: 'rail · Toolkit', icon: <ToolkitIcon /> },
+        { value: 'more', label: 'More', figma: 'rail · More', icon: <MoreIcon /> },
       ]}
     />
   )
