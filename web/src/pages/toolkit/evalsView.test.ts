@@ -164,3 +164,17 @@ describe('the targets of the Evals taps in every state', () => {
     expect(evalsTaps().some((t) => t.state === 'skillOpen' && t.path === 'skills/writer/')).toBe(true)
   })
 })
+
+describe('the Files tab that "from the file" opens in every state', () => {
+  it('gives each item whose rounds end opens its Files tab a file browser (D8 Evals, then "from the file")', () => {
+    const missing = evalsTaps().flatMap(({ state, path, evals }) => {
+      const end = evals.rounds === undefined ? null : roundsEnd(evals.rounds)
+      if (end?.action !== 'tab' || end.tab !== 'files') return []
+      const s = toolkitStates[state as keyof typeof toolkitStates]
+      const open = openItem(s.data, { ...s.ui, open: path, itemTab: 'files' })
+      return open?.detail.browser === undefined ? [`${state}: ${path}`] : []
+    })
+    expect(missing).toEqual([])
+    expect(evalsTaps().some((t) => t.state === 'workflowOpen')).toBe(true)
+  })
+})

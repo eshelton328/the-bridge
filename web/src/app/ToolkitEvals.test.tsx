@@ -161,6 +161,22 @@ describe('the Evals tab of an item with no eval cases (D25, D27, D28)', () => {
       .toContain('Markdown · 93 lines · design doc')
   })
 
+  it('opens the Files tab with the tree and the design doc from the Overview: Evals, then "from the file" (D8, D35)', async () => {
+    const { root } = await renderToolkit('workflowOpen', 'desktop', 'article[aria-label="skill-eval-round"]')
+    const tab = [...root.querySelectorAll('article[aria-label="skill-eval-round"] [role="tab"]')].find(
+      (t) => t.textContent.trim() === 'Evals',
+    )
+    if (!(tab instanceof HTMLElement)) throw new Error('no Evals tab')
+    await userEvent.click(tab)
+    await expect.poll(() => root.querySelector('[data-figma="evals"]')).not.toBeNull()
+    await userEvent.click(button(root, 'from the file'))
+    await expect.poll(() => selectedTab(root, 'skill-eval-round')).toBe('Files')
+    await expect.poll(() => root.querySelector('[data-figma="file browser"]')).not.toBeNull()
+    const files = root.querySelector('[data-figma="file browser"]')?.textContent ?? ''
+    expect(files).toContain('harness/')
+    expect(files).toContain('Markdown · 93 lines · design doc')
+  })
+
   it('shows a hook’s test run as a passing badge over its test groups', async () => {
     const { root } = await renderToolkit('hookEvals')
     expect(root.querySelector('[data-figma="badge · 43 of 43 pass"]')).not.toBeNull()

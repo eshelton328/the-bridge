@@ -9,6 +9,7 @@
 // its own page (D13's flow, gates and rounds, `skillEvalRoundPage`), which
 // Open full page shows.
 import { workflowResults } from './shared/evalResults.ts'
+import { workflowFilesBrowser } from './shared/workflowBrowser.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { hookOpen } from './hookOpen.ts'
@@ -292,6 +293,8 @@ const skillEvalRound: ToolkitItemDetailView = {
     ],
   },
   files: { count: 1, lines: [{ type: 'file', names: ['skill-eval-round.md'], meta: '93 lines' }] },
+  // The Files tab (D35), which the Evals tab's "from the file" opens (D27).
+  browser: workflowFilesBrowser,
   flowPage: skillEvalRoundPage,
 }
 

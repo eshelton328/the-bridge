@@ -7,7 +7,6 @@
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitUi } from '../types.ts'
 import { withEvals } from './shared/evals.ts'
-import { workflowFilesBrowser } from './workflowFiles.ts'
 import { workflowOpen } from './workflowOpen.ts'
 
 export const workflowEvals = {
@@ -15,10 +14,8 @@ export const workflowEvals = {
   frames: [{ id: 'D27', node: '492:1062', viewport: 'desktop' }],
   data: {
     ...workflowOpen.data,
-    // "from the file" opens the Files tab, with D35's browser.
-    details: withEvals(workflowOpen.data.details).map((d) =>
-      d.path === 'workflows/skill-eval-round.md' ? { ...d, browser: workflowFilesBrowser } : d,
-    ),
+    // "from the file" opens the Files tab, with D35's browser, which workflowOpen's detail carries.
+    details: withEvals(workflowOpen.data.details),
   },
   ui: { ...workflowOpen.ui, itemTab: 'evals' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>
