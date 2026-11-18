@@ -18,6 +18,7 @@ import { changeProposedTablet } from './changeProposedTablet.ts'
 import { libraryPhone } from './libraryPhone.ts'
 import { artifactPhone } from './artifactPhone.ts'
 import { filterPhone } from './filterPhone.ts'
+import { sortPhone } from './sortPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -37,4 +38,5 @@ export const artifactsStates = {
   libraryPhone,
   artifactPhone,
   filterPhone,
+  sortPhone,
 }

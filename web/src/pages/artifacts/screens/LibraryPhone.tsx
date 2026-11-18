@@ -3,7 +3,8 @@
 // icon-only Sort and Filter, when the library last checked its sources,
 // and a RowGroup per group: a list of rows with small previews, the age
 // and New at each row's end. With a Filter menu, Filter opens it as a
-// sheet over the tab bar (M3), as on a tablet. The rows come from libraryView, as the
+// sheet over the tab bar (M3), as on a tablet, and with a Sort menu, Sort
+// opens it as a sheet too (M4). The rows come from libraryView, as the
 // grid's cards do. Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -70,6 +71,17 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             onUiChange?.({ query })
           }}
           sortLabel={sort?.label ?? ''}
+          sortMenu={data.sortMenu}
+          sort={ui.sort}
+          sortOpen={ui.sortOpen}
+          onSortOpenChange={(sortOpen) => {
+            onUiChange?.({ sortOpen })
+          }}
+          onSortChange={(picked) => {
+            onUiChange?.({ sort: picked, sortOpen: false })
+          }}
+          // M4: Sort opens the Sort menu as a sheet over the tab bar, as Filter does (M3).
+          sortAs="sheet"
           filterMenu={data.filterMenu}
           filterChecks={ui.filterChecks}
           filterOpen={ui.filterOpen}

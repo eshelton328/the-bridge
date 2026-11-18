@@ -5,7 +5,8 @@
 // and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
 // controls are 36 high, 8 apart, and the search takes the free width, and
 // Filter opens its menu as a sheet over the tab bar (T3). On a phone (M1
-// 406:90) Sort and Filter are 36 px icon-only buttons.
+// 406:90) Sort and Filter are 36 px icon-only buttons, and Sort opens its
+// menu as a sheet over the tab bar (M4).
 // Props only.
 import {
   Button,
@@ -25,6 +26,7 @@ import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../ty
 import { FilterPopover } from './FilterPopover.tsx'
 import { FilterSheet } from './FilterSheet.tsx'
 import { SortMenu } from './SortMenu.tsx'
+import { SortSheet } from './SortSheet.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
 const grow = css({ flex: '1', overflow: 'hidden' })
@@ -55,6 +57,8 @@ export type LibraryToolsProps = {
   onFilterApply?: (() => void) | undefined
   /** `sheet` opens the Filter menu as a sheet from the bottom (the tablet, T3); `popover` (the default) under Filter. */
   filterAs?: 'popover' | 'sheet' | undefined
+  /** `sheet` opens the Sort menu as a sheet from the bottom (the phone, M4); `popover` (the default) under Sort. */
+  sortAs?: 'popover' | 'sheet' | undefined
   /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
   size?: 'md' | 'lg' | undefined
   /** Sort and Filter as icon-only buttons, named by their labels (the phone, M1 406:97, 406:104). */
@@ -85,6 +89,7 @@ export function LibraryTools({
   onFilterChecksChange,
   onFilterApply,
   filterAs = 'popover',
+  sortAs = 'popover',
   size = 'md',
   iconOnly = false,
   className,
@@ -121,6 +126,15 @@ export function LibraryTools({
             </Button>
           )}
         </span>
+      ) : sortAs === 'sheet' ? (
+        <SortSheet
+          menu={sortMenu}
+          sort={sort}
+          sortLabel={sortLabel}
+          open={sortOpen}
+          onOpenChange={onSortOpenChange}
+          onSortChange={onSortChange}
+        />
       ) : (
         <SortMenu
           menu={sortMenu}

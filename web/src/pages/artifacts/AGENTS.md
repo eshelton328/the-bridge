@@ -96,7 +96,8 @@ each file of a page folder is for.
   group, whose `ArtifactRow`s put the age on the title line and New as a
   badge under it; the rows are 6 apart. With `data.filterMenu` the
   icon-only Filter opens T3's sheet over the tab bar (M3, `FilterSheet
-  iconOnly`).
+  iconOnly`), and with `data.sortMenu` the icon-only Sort opens D6's
+  menu as a sheet over the tab bar (M4, `LibraryTools sortAs="sheet"`).
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -151,7 +152,11 @@ each file of a page folder is for.
   carry no finder or update data yet, so the grid does not narrow. For
   D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
   width="sort"` with the heading, a description per sort and the note,
-  as the Inbox's Sort menu; picking a sort closes it). For D7:
+  as the Inbox's Sort menu; picking a sort closes it). For M4:
+  `SortSheet` (the phone's icon-only Sort and a `BottomSheet` titled
+  Sort by with an `OptionList size="sm"` of the sorts and the note under
+  it, as the Inbox's phone Sort sheet; picking a sort closes it, and the
+  scrim and Escape close it and keep the sort). For D7:
   `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
   state or the sent messages, and `Composer`, whose draft is
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
@@ -207,7 +212,9 @@ each file of a page folder is for.
   shorter words and D7's discussion) and M3 `filterPhone` (M1's data with
   T3's sheet open and its two boxes checked; the menu's `footLayer` is
   M3's node id of the footer around Show; `libraryPhone` does not hold the
-  menu, so M1's Filter opens nothing yet). `library` stays first in `states/index.ts`: the app
+  menu, so M1's Filter opens nothing yet) and M4 `sortPhone` (M1's data
+  with D6's sorts and Sort menu and the Sort sheet open, Newest first
+  picked). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips

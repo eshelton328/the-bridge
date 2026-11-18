@@ -247,3 +247,16 @@ export const FilterPhone: Story = {
     await expect(menu.getByRole('checkbox', { name: 'omni' })).not.toBeChecked()
   },
 }
+
+export const SortPhone: Story = {
+  name: 'M4: the Sort sheet open over the library on a phone',
+  args: { data: artifactsStates.sortPhone.data, ui: artifactsStates.sortPhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the phone's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; pnpm fidelity checks M4's sheet at the phone's width).
+    const page = within(document.body)
+    await expect(await page.findByText('Grouped by project, then newest')).toBeVisible()
+    await expect(page.getByText('Least recently updated at the top')).toBeVisible()
+    await expect(page.getByText('Found since you last looked stays at the top.')).toBeVisible()
+  },
+}
