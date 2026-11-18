@@ -2,7 +2,7 @@
 
 What still differs from Figma M1 · Workspaces (the phone's home,
 `phoneHome`), after the last fidelity run (`pnpm fidelity workspaces`,
-2026-11-17, library 1.0.0-beta.20), each with its reason. The library gaps
+2026-11-17, library 1.0.0-beta.25), each with its reason. The library gaps
 are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is the first
 phone frame of the page: at a phone's width a state with `data.phone`
 draws `WorkspacesPhone` (the list over the shared tab bar); D01 to D21
@@ -12,10 +12,11 @@ render as before (the same run gives each the same report as on main).
 
 - Text: pass. Every Figma string shows, `SKILL-EVALS` and its `1` above
   the tab bar included; no extra text.
-- Position: 15 of 23 layers pass. The list (`105:2327`), the header
+- Position: 20 of 28 layers pass. The list (`105:2327`), the header
   (`105:2328`), Edit (`105:2333`), + (`105:2335`), omni-brain's header
-  and rows with their ⋯, the-bridge's header and the tab bar (`tab bar`)
-  pass. `105:2405`, `146:17`, `105:2419`, `146:22`, `105:2430`,
+  and rows with their ⋯, the-bridge's header, the tab bar (`tab bar`)
+  and its five tabs (`tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects`, `tab · More`) pass. `105:2405`, `146:17`, `105:2419`, `146:22`, `105:2430`,
   `105:2440`, `146:27` and `105:2456` fail.
 - Rules: pass.
 

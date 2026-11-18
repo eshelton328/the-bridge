@@ -2,7 +2,7 @@
 
 What still differs from Figma M3 · Chat (bridge themes open on the phone,
 `phoneChat`), after the last fidelity run (`pnpm fidelity workspaces
-M03`, 2026-11-17, library 1.0.0-beta.20), each with its reason. The
+M03`, 2026-11-17, library 1.0.0-beta.25), each with its reason. The
 library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is `WorkspacesPhone` with `ui.phoneView: 'chat'`: `PhoneChat`
 (`ChatHead size="phone"` over `ChatPane size="phone"`) in

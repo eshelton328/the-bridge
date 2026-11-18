@@ -3,7 +3,7 @@
 What still differs from Figma M5 · Side chat (D2's side chat with M5's
 note, in a sheet over bridge themes on the phone, `phoneSideChat`), after
 the last fidelity run (`pnpm fidelity workspaces M05`, 2026-11-17, library
-1.0.0-beta.20), each with its reason. The library gaps are in
+1.0.0-beta.25), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
 `PhoneChat` with `ui.sideChatOpen` set: `PhoneSideChat` (`BottomSheet
 size="sm"` with no title row) holds `SideChatPanel placement="sheet"`, and
@@ -21,22 +21,24 @@ the focus is in its message box.
   button (`105:3061`), the ⋯ (`105:3072`) and Erik's message
   (`105:3088`). Six fail:
   - `105:3093` (Claude's reply in the main chat): h +9.
-  - `105:3109` (the side chat's title row): y +221.
-  - `105:3120` (the note): y +223.
-  - `105:3121` (Erik's side question): y +221.
-  - `105:3123` (Claude's side answer): y +222, h +28.
+  - `105:3109` (the side chat's title row): y +217.
+  - `105:3120` (the note): y +219.
+  - `105:3121` (Erik's side question): y +217.
+  - `105:3123` (Claude's side answer): y +218, h +28.
   - `105:3136` (the side composer): y -17.
 - Rules: pass.
 
 ## Deviations
 
 - **The sheet is shorter and starts much lower (Phone side chat sheet),
-  `105:3109` y +221, `105:3120` y +223, `105:3121` y +221, `105:3123`
-  y +222.** Figma's sheet is 620 high from y 224 to the screen's end, with
+  `105:3109` y +217, `105:3120` y +219, `105:3121` y +217, `105:3123`
+  y +218.** Figma's sheet is 620 high from y 224 to the screen's end, with
   an empty space between the answer and the composer. `BottomSheet` is as
   high as its content and no size token gives 620, so the sheet starts at
-  about y 462: the title row, the note and the transcript sit about 221 px
-  lower, with no empty space above the composer. So Claude's reply and
+  about y 458: the title row, the note and the transcript sit about 217 px
+  lower, with no empty space above the composer. Library beta.25's
+  `ScrollFrame` pads 4 round the side composer, so the sheet is 4 px
+  taller than with beta.20 and starts 4 px higher. So Claude's reply and
   Copy in the main chat show above the sheet, under the scrim, where
   Figma's sheet covers them.
 - **The side composer sits 17 px higher (Phone side chat sheet),

@@ -2,7 +2,7 @@
 
 What still differs from Figma M2 · Edit workspaces (the phone's list in
 edit mode, `phoneEdit`), after the last fidelity run (`pnpm fidelity
-workspaces M02`, 2026-11-17, library 1.0.0-beta.20), each with its reason.
+workspaces M02`, 2026-11-17, library 1.0.0-beta.25), each with its reason.
 The library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is M1's list (`PhoneWorkspaceList`) with `ui.editing`: each
 workspace is a `PhoneEditGroup`, Done takes Edit's place and + is off.
@@ -12,10 +12,10 @@ workspace is a `PhoneEditGroup`, Done takes Edit's place and + is off.
 - Text: pass. Every Figma string shows, the two field values ("theme
   explorations", "the-bridge") and both Done strings included; no extra
   text.
-- Position: pass, 17 of 17 layers: the list (`105:2504`), the header
+- Position: pass, 22 of 22 layers: the list (`105:2504`), the header
   (`105:2505`), Done (`105:2508`), + (`105:2510`), the four workspace
-  headers, the six chat rows, the two fields (`146:37`, `105:2614`) and
-  the tab bar.
+  headers, the six chat rows, the two fields (`146:37`, `105:2614`), the
+  tab bar and its five tabs (`tab · Home` to `tab · More`).
 - Rules: pass.
 
 ## Deviations
