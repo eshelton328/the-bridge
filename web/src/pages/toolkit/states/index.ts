@@ -23,6 +23,7 @@ import { workflowOpenTablet } from './workflowOpenTablet.ts'
 import { workflowOpenPhone } from './workflowOpenPhone.ts'
 import { skillHowItWorks } from './skillHowItWorks.ts'
 import { ruleHowItWorks } from './ruleHowItWorks.ts'
+import { agentHowItWorks } from './agentHowItWorks.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -47,4 +48,5 @@ export const toolkitStates = {
   workflowOpenPhone,
   skillHowItWorks,
   ruleHowItWorks,
+  agentHowItWorks,
 }

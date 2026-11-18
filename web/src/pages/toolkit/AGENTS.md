@@ -121,6 +121,8 @@ what each file of a page folder is for.
   (D37, `ruleHowItWorks`, D4's data with D9's groups) names its sources in
   the label (no `file`), has four steps in one row and, in the chat path's
   place, `elsewhere`: one line on what Codex does instead, in a notice
-  `Panel`. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  `Panel`. An agent (D38, `agentHowItWorks`, D7's data) names its prompt
+  file in the label, so it shows in capitals, and uses `elsewhere` for the
+  only inputs it gets. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

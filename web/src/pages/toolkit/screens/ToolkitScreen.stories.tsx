@@ -364,3 +364,19 @@ export const RuleHowItWorks: Story = {
     await expect(within(item).queryByText('Loads when')).toBeNull()
   },
 }
+
+export const AgentHowItWorks: Story = {
+  name: 'D38: an agent open beside the list, on How it works',
+  args: { data: toolkitStates.agentHowItWorks.data, ui: toolkitStates.agentHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'Grade W1 to W7' })).toBeVisible()
+    await expect(within(steps).getByText('ls, grep, git ls-files')).toBeVisible()
+    // The only inputs it gets take the chat path's place.
+    await expect(within(item).getByText('It gets only')).toBeVisible()
+    // The agent's Overview is not drawn: no How it runs cards.
+    await expect(within(item).queryByText('How it runs')).toBeNull()
+  },
+}
