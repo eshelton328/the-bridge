@@ -222,6 +222,10 @@ what each file of a page folder is for.
   badge: the title and the path row, which names the item's folder and its files
   (the browser's `badge`), sit 8 apart over the tabs, and the tree and the viewer
   are two boxes, the viewer under the tree with no copy button in its bar. A
+  browser with no `badge` keeps the item's header on a tablet, as on T17: a
+  rule (T32, `ruleFilesTablet`, D33's list) shows its kind badge, name and path
+  row over the tabs, its one file's role line ending with its length, and the
+  rule rendered under the tree. A
   Markdown file (a view with blocks and no code) opens rendered
   (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
   shows the source written back from the blocks (`markdownSource`), and

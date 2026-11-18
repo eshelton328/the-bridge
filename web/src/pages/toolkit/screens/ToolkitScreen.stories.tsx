@@ -787,3 +787,22 @@ export const ScriptExplainedTablet: Story = {
     await expect(within(item).getByRole('button', { name: 'line 433' })).toBeVisible()
   },
 }
+
+export const RuleFilesTablet: Story = {
+  name: 'T32: a rule’s files on a tablet, the rule rendered under the tree',
+  args: { data: toolkitStates.ruleFilesTablet.data, ui: toolkitStates.ruleFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(
+      within(tree).getByText('The rule. Claude Code loads it by the paths in its frontmatter. 104 lines.'),
+    ).toBeVisible()
+    // The rule opens rendered, with the Rendered and Source switch under its text.
+    const viewer = within(item).getByRole('region', { name: 'skills.md' })
+    await expect(within(viewer).getByRole('heading', { name: 'Skills' })).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+  },
+}

@@ -44,6 +44,7 @@ import { workflowFiles } from './workflowFiles.ts'
 import { hookFiles } from './hookFiles.ts'
 import { skillFilesTablet } from './skillFilesTablet.ts'
 import { scriptExplainedTablet } from './scriptExplainedTablet.ts'
+import { ruleFilesTablet } from './ruleFilesTablet.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -89,4 +90,5 @@ export const toolkitStates = {
   hookFiles,
   skillFilesTablet,
   scriptExplainedTablet,
+  ruleFilesTablet,
 }

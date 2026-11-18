@@ -22,7 +22,8 @@
 // the kind's crumb (Toolkit › the workflow), the actions are icon buttons, when it runs sits beside the kind badge, the
 // path row is left out and the rows are 10 apart under the smaller title, as on M12. On the Files tab of a tablet or
 // phone (T4) the kind badge is left out: the title and the path row (the item's folder in the toolkit and how many
-// files it has, the browser's `badge`) sit 8 apart over the tabs. A script with an explanation opens there on a page
+// files it has, the browser's `badge`) sit 8 apart over the tabs; a browser with no `badge` keeps the item's header
+// (T32 to T35). A script with an explanation opens there on a page
 // of its own (T6, `filePage`): the back row goes back to Files, and the title and the path row name the file.
 import {
   AgentIcon,
@@ -200,10 +201,16 @@ const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<strin
   phone: { 'workflows/skill-eval-round.md': '448:492' },
 }
 // On the Files tab: writer in D6 (432:2010), and in D10 (440:1198) with a script on Explain.
-// On a tablet: writer in T4 (434:406).
+// On a tablet: writer in T4 (434:406), and the rule, the agent, the workflow and the hook in T32 to T35.
 const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: { 'skills/writer/': '432:2010' },
-  tablet: { 'skills/writer/': '434:406' },
+  tablet: {
+    'skills/writer/': '434:406',
+    'rules/skills.md': '494:2870',
+    'agents/writing-reviewer.md': '494:3203',
+    'workflows/skill-eval-round.md': '494:3571',
+    'hooks/commit-msg': '494:4073',
+  },
   phone: {},
 }
 // A file on a page of its own names it by the item's path and the file's: check in T6 (440:1773).
@@ -306,9 +313,11 @@ export function ToolkitItem({
     tab === 'files' &&
     detail.browser !== undefined &&
     fileMode(openFile(detail.browser, file).view, fileView) === 'explain'
-  // T4: the Files tab of a tablet or phone has no kind badge, and its path row may name the item's folder (`badge`).
+  // T4: the Files tab of a tablet or phone whose browser names the item's folder (`badge`) has no kind badge, and its
+  // path row names that folder. Without a `badge` (T32 to T35) the item keeps its header, as on the Overview (T17).
   const browser = !desktop && tab === 'files' ? detail.browser : undefined
   const narrowFiles = browser !== undefined
+  const folderFiles = browser?.badge !== undefined
   const opened = browser === undefined ? undefined : openFile(browser, file)
   // T6: the selected file on a page of its own, when the state has a view of it.
   const pageView = filePage && opened?.view !== undefined ? opened.view : undefined
@@ -399,7 +408,7 @@ export function ToolkitItem({
           />
         </div>
       ) : null}
-      {narrowHow || narrowFiles ? null : (
+      {narrowHow || folderFiles ? null : (
         <div
           className={
             desktop && !full
@@ -421,7 +430,7 @@ export function ToolkitItem({
           {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
         </div>
       )}
-      {narrowFiles ? (
+      {folderFiles ? (
         <div className={titleGroup} data-figma="title">
           {heading}
           {pathRow}

@@ -339,3 +339,41 @@ describe('the selected script tapped again after Back to Files (T6)', () => {
     await view.unmount()
   })
 })
+
+// The Files tab of the other kinds on a tablet (T32 to T35): the item keeps its header (the kind badge, the name and the
+// path row with where the item is), and the tree and the viewer are two boxes, the viewer under the tree, as on T4.
+const tabletKinds = [{ state: 'ruleFilesTablet', item: 'skills', file: 'skills.md', rows: 1, kind: 'Rule' }]
+
+describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (T32 to T35)', () => {
+  it.each(tabletKinds)('keeps $state’s header and puts $file under its $rows tree rows', async (kind) => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit(kind.state)
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="viewer"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    expect(root.querySelector(`article[aria-label="${kind.item}"]`)).not.toBeNull()
+    // The header of the Overview: the kind badge, and the path row with the item's place in the toolkit.
+    expect(root.querySelector('[data-figma="kind badge"]')?.textContent).toBe(kind.kind)
+    expect(root.querySelector('[data-figma="path row"]')?.textContent).toContain('toolkit/')
+    expect(root.querySelector('[data-figma="path row"]')?.textContent).toContain('changed 6 days ago')
+    // Two boxes as wide as the item, the viewer under the tree, and no file browser box around them.
+    const tree = box('[data-figma="tree"]')
+    const viewer = box('[data-figma="viewer"]')
+    expect(viewer.left).toBeCloseTo(tree.left, 0)
+    expect(viewer.width).toBeCloseTo(tree.width, 0)
+    expect(viewer.top).toBeGreaterThan(tree.bottom)
+    expect(root.querySelector('[data-figma="file browser"]')).toBeNull()
+    expect(root.querySelectorAll('[data-figma="tree"] [role="treeitem"]')).toHaveLength(kind.rows)
+    expect(root.querySelector(`[data-figma="viewer"][aria-label="${kind.file}"]`)).not.toBeNull()
+    await view.unmount()
+  })
+})
