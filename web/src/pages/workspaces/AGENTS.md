@@ -248,7 +248,12 @@ first: it says what each file of a page folder is for.
   `ChatHead` puts its `origin` after the workspace, `ChatEntryView` draws
   the line where it was forked as D16's `event` entry, and Back returns to
   the list, where `SidebarChatRow` draws the fork under bridge themes with
-  D16's branch mark.
+  D16's branch mark. M20 adds `SubtaskFields` (D17's model, task and
+  note, which `SubtaskDialog` draws too) and `PhoneSubtask` (the Subtask
+  form on the phone: `BottomSheet` titled "Start a subtask" with ×, the
+  fields with the focus in the task and Start subtask across the sheet, no
+  Cancel), which the chat actions' Subtask opens (`ui.chatDialog:
+  'subtask'`) when the state has `data.subtask`.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -323,7 +328,9 @@ first: it says what each file of a page folder is for.
   chat actions and the message box empty and out of focus: the Fork sheet
   open on the phone), M19 `phoneForkedChat` (from `phoneChatFull`, with
   D16's fork under bridge themes: the fork full screen, Idle with no Stop,
-  nothing typed and the focus in the message box).
+  nothing typed and the focus in the message box), M20 `phoneSubtask`
+  (from `phoneFork`, without the Fork form, with D17's Subtask form and
+  M20's task: the Subtask sheet open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -367,7 +374,8 @@ first: it says what each file of a page folder is for.
   `phone.workspaceMenu`, a workspace's actions; for M15 `phone.addMenu`,
   the labels of the menu that + opens, and its layers in
   `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
-  sheet's layers in `layers.phoneFork`) and
+  sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
+  in `layers.phoneSubtask`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

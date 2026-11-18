@@ -635,3 +635,18 @@ export const PhoneForkedChat: Story = {
     await expect(canvas.queryByRole('button', { name: 'Stop' })).toBeNull()
   },
 }
+
+export const PhoneSubtask: Story = {
+  name: 'M20: start a subtask on the phone',
+  args: { data: workspacesStates.phoneSubtask.data, ui: workspacesStates.phoneSubtask.ui, viewport: 'phone' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws D17's Subtask dialog over bridge themes,
+    // with M20's task, and the phone's menu draws M20's sheet. WorkspacesPhoneSubtask.test.tsx checks the sheet at a
+    // phone's width.
+    const body = within(document.body)
+    await expect(await body.findByRole('dialog', { name: 'Start a subtask' })).toBeVisible()
+    await expect(body.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })).toHaveValue(
+      'Draft layout notes for the three directions.',
+    )
+  },
+}

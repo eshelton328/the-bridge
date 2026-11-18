@@ -2,18 +2,14 @@
 // subagent and what it should do, then a line on what the subtask gets and
 // where its result goes, Cancel and Start subtask. Start subtask starts
 // nothing here; the chat keeps working while a subtask runs. The library's
-// `Dialog size="lg"` is the form's box, and the task is a `Composer` with
-// its attach button, as the New chat form's first message (LIBRARY_GAPS.md:
-// Composer in a form). Props only.
-import { ArrowUpIcon, Button, Composer, Dialog, DialogClose } from '@eshelton328/component-library-1701'
+// `Dialog size="lg"` is the form's box, with `SubtaskFields` in it. Props only.
+import { ArrowUpIcon, Button, Dialog, DialogClose } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
-import { css } from '../../../../styled-system/css/index.js'
 import type { SubtaskForm } from '../types.ts'
-import { FormField } from './FormField.tsx'
-import { SelectField } from './SelectField.tsx'
+import { SubtaskFields } from './SubtaskFields.tsx'
 
-const wide = css({ w: '[100%]' })
-const note = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
+// D17's Figma layers of the fields.
+const layers = { model: '417:1087', modelBox: '417:1090', task: '417:1095', taskBox: '417:1098', note: '417:1114' }
 
 export type SubtaskDialogProps = {
   form: SubtaskForm
@@ -22,7 +18,6 @@ export type SubtaskDialogProps = {
 }
 
 export function SubtaskDialog({ form, open, onOpenChange }: SubtaskDialogProps) {
-  const { labels } = form
   const taskRef = useRef<HTMLDivElement>(null)
   return (
     <Dialog
@@ -48,22 +43,7 @@ export function SubtaskDialog({ form, open, onOpenChange }: SubtaskDialogProps) 
         </>
       }
     >
-      <FormField label={labels.model} figma="417:1087">
-        <SelectField label={labels.model} options={form.model.options} value={form.model.value} figma="417:1090" />
-      </FormField>
-      <FormField label={labels.task} figma="417:1095">
-        <div ref={taskRef} data-figma="417:1098" className={wide}>
-          <Composer
-            label={labels.task}
-            placeholder={form.task.placeholder}
-            defaultValue={form.task.value}
-            onAttach={() => undefined}
-          />
-        </div>
-      </FormField>
-      <p className={note} data-figma="417:1114">
-        {form.note}
-      </p>
+      <SubtaskFields form={form} taskRef={taskRef} layers={layers} />
     </Dialog>
   )
 }

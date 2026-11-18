@@ -547,6 +547,17 @@ export const SidebarLayers = z.object({
       submit: z.string(),
     })
     .optional(),
+  /** The Subtask sheet on the phone (M20 422:520): the model's field and box, the task's, the note and Start subtask. */
+  phoneSubtask: z
+    .object({
+      model: z.string(),
+      modelBox: z.string(),
+      task: z.string(),
+      taskBox: z.string(),
+      note: z.string(),
+      submit: z.string(),
+    })
+    .optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
