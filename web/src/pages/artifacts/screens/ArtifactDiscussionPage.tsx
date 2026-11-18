@@ -34,7 +34,14 @@ const entriesPad = css({ pt: '12' })
 const emptyTop = css({ pt: '32' })
 // 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px (43, 40 on the grid),
 // 22 in (24, as the page). It stays on the page's canvas, so the messages that scroll under it do not show through.
-const footer = css({ position: 'sticky', bottom: '0', pt: '12', pb: '40', px: '24', bg: 'bg.canvas' })
+const footer = css({
+  position: 'sticky',
+  bottom: '[var(--scroll-frame-inset, 0px)]',
+  pt: '12',
+  pb: '40',
+  px: '24',
+  bg: 'bg.canvas',
+})
 
 export type ArtifactDiscussionPageProps = {
   artifact: ArtifactDetail

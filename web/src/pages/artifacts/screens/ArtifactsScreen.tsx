@@ -84,6 +84,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                   <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} />
                 ) : undefined
               }
+              // The library runs under the tab bar, as the phone pages do. The tablet's artifact page (T2) keeps
+              // its page between the Back bar and the tab bar, as ArtifactsStickyBars.test.tsx checks.
+              tabBarOverlay={open === undefined}
               tabBar={
                 layout === 'desktop' || (layout === 'tablet' && discussing) ? undefined : (
                   <AppTabBar

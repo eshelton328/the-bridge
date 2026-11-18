@@ -192,6 +192,7 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         size={layout}
         view="detail"
         rail={desktop ? <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
+        tabBarOverlay
         tabBar={
           desktop ? undefined : (
             <AppTabBar

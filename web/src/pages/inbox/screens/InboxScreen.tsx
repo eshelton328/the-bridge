@@ -258,6 +258,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         size={layout}
         view={open === null ? 'list' : 'detail'}
         rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
+        tabBarOverlay
         tabBar={
           desktop || inChat || keyboard ? undefined : (
             <AppTabBar
