@@ -10,19 +10,21 @@ D01 and T01 give the same results as before M01. The numbers below are
 from the run with library 1.0.0-beta.15 and the props that library #115
 added: `Button pressedTone="accent"` and `FilterChips padding="none"`. A
 rerun with library 1.0.0-beta.26 (the-bridge #60: the tab bar lies over
-the page) gives the same counts (2026-11-17); the Text line says what
-changed.
+the page) gave the same counts (2026-11-17). The Checks and the numbers below
+are from `pnpm fidelity toolkit` on 2026-11-18, against library
+1.0.0-beta.47, with the props that library #166 added to the rows:
+`ListRow padding="phone"`, `trailingAlign="center"` and
+`leadingGap="12"`.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. Eight strings are not
-  visible, because the taller rows push them down (see Row height). The
-  readme row's `readme`, `skills/readme/` and `→2 ←2` (429:181) lie under
-  the tab bar, which lies over the list (AppShell `tabBarOverlay`,
-  library 1.0.0-beta.26), so the check counts them as covered; Figma
-  draws that row above the bar. `writer`, `skills/writer/`, `→7 ←4`,
-  `AGENTS` and `7` (429:199) lie under the bar too and run past the
-  screen's foot.
+- Text: fail. Every Figma string is in the render. Two strings are not
+  visible: `AGENTS` and `7` (429:199), the Agents header, lie under the
+  tab bar, which lies over the list (AppShell `tabBarOverlay`), and run
+  past the screen's foot, because the taller rows push it down (see Row
+  height). On main (beta.47 without these props) eight strings were not
+  visible; the readme and writer rows now show above the bar, as in
+  Figma.
 - Position: 12 of 39 layers pass (`header`, `button · list`, `button · map`,
   `button · activity`, `filter · chips`, `search`, `tab bar`). The Rules group and its rows are in `exceptions.json`: the
   frame ends at the last Agents row, and the render draws Rules below it.
@@ -35,28 +37,29 @@ changed.
 
 ## Deviations
 
-- **Row height.** Each row is 62 px high against Figma's 53 (`h +9` on
-  every row key). `ListRow` pads 10 inside a 1 px border; Figma's row
-  has no border and sets the 36 px tile 8.5 px from its top (gap: Toolkit
-  row (phone)). The first row starts 1 px lower (within the tolerance):
-  the SKILLS header starts 6 px higher (see Read-only line) and is 7 px
-  higher (see Group headers). Each row after it starts 9 px lower again:
-  `toolkit row · ambitious` y +10; `toolkit row · audit-slop` y +19;
-  `toolkit row · eval-cases` y +28; `toolkit row · mermaid-diagrams`
-  y +37; `toolkit row · pr-description` y +46;
-  `toolkit row · project-setup` y +55; `toolkit row · readme` y +64;
-  `group · AGENTS` y +82; `toolkit row · diagram-reviewer` y +89;
-  `toolkit row · eval-case-writer` y +98; `toolkit row · eval-grader`
-  y +107; `toolkit row · pr-description-checker` y +116;
-  `toolkit row · readme-cold-reader` y +125;
-  `toolkit row · writing-reviewer` y +143. The two writer rows have no
-  key, because two shown items share the name. The screen shows seven
-  Skills rows above the tab bar; Figma shows eight and the top of writer.
-- **Row content.** The tile is 7 px further in than Figma's, the name is
-  `label` (14/20) against Figma's larger 23 px line, and the counts and
-  chevron sit at the top of the row, level with the name, where Figma
-  centres them on the row. The counts are in the path's grey, as in
-  Figma (gap: Toolkit row (phone)).
+- **Row height.** Each row is 58 px high against Figma's 53 (`h +5` on
+  every row key). Library #166 gave `ListRow` the phone row's inset
+  (4 at the sides, 8 above and below), but the row keeps its 1 px border
+  and the title stays `label` (14/20), and 53 is off the 4 px grid
+  (d-100; gap: Toolkit row (phone)). `toolkit row · agents-md` starts
+  where Figma's does; each row after it starts 5 px lower again:
+  `toolkit row · ambitious` y +6; `toolkit row · audit-slop` y +11;
+  `toolkit row · eval-cases` y +16; `toolkit row · mermaid-diagrams`
+  y +21; `toolkit row · pr-description` y +26;
+  `toolkit row · project-setup` y +31; `toolkit row · readme` y +36;
+  `group · AGENTS` y +46; `toolkit row · diagram-reviewer` y +53;
+  `toolkit row · eval-case-writer` y +58; `toolkit row · eval-grader`
+  y +63; `toolkit row · pr-description-checker` y +68;
+  `toolkit row · readme-cold-reader` y +73;
+  `toolkit row · writing-reviewer` y +83. The two writer rows have no
+  key, because two shown items share the name. The screen shows the
+  eight Skills rows above the tab bar; Figma shows them and the top of
+  writer.
+- **Row content.** With #166 the tile is 4 px in, as Figma's, the name
+  starts 12 after it (`leadingGap="12"`), and the counts and chevron sit
+  centred down the row (`trailingAlign="center"`), as in Figma. The name
+  is `label` (14/20) against Figma's larger 23 px line. The counts are in
+  the path's grey, as in Figma (gap: Toolkit row (phone)).
 - **Chevron.** The row's chevron is 12 px, 6 after the counts, against
   Figma's 14 px, 12 after them (`icon/right`, 429:105). No icon token
   has 14, and with a 16 px chevron the longest path
@@ -65,16 +68,20 @@ changed.
 - **Read-only line.** The line starts 5 px higher than Figma's
   (`read-only line` y -5: Figma y 185, render 180). The chip row lost
   its 4 px of padding (`FilterChips padding="none"`), and the phone
-  search is still 36 px high against Figma's 40 (gap: Phone search
-  height). Before #115 the two cancelled out. The SKILLS header under
+  search is still 36 px high against Figma's 40: no size or control
+  token gives `SearchField` 40 (gap: Phone search height). Before #115 the two cancelled out. The SKILLS header under
   the line starts 6 px higher (`group · SKILLS` y -6).
 - **Group headers.** SKILLS and AGENTS are 30 px high against Figma's 23
   (`group · SKILLS` h +7, `group · AGENTS` h +7;
-  `GroupHeader variant="sidebar"`; gap: Toolkit group header).
+  `GroupHeader variant="sidebar"`). Library #166 added header variants
+  for the desktop and a tablet only: no label offset was given for the
+  phone's, and 23 is off the 4 px grid (d-100; gap: Toolkit group
+  header).
 - **View buttons.** List, Map and Activity are icon-only secondary
   buttons; List is pressed with `pressedTone="accent"`, so its border
-  and icon are cyan as in Figma. The icons are 16 px against 17 (gap:
-  Phone view buttons).
+  and icon are cyan as in Figma. The icons are 16 px against 17: no icon
+  token has 17, which is off the 4 px grid (d-100; gap: Phone view
+  buttons).
 - **Map button.** The Map button sets the view to the map, but the screen
   has no map yet: it keeps showing the list. The map is a later frame
   (the note's links view, M3); the Activity button is the same.
@@ -82,7 +89,7 @@ changed.
   box, 366 wide from x 12, and it ends at the tab bar (h 725). The
   render's `toolkit` is the scrolling list with its 12 px sides, 390 wide
   from x 0, and as high as all its rows (`toolkit` x -12, w +24,
-  h +1293).
+  h +1197).
 - **Hooks chip.** The chip row ends with Hooks 1 after Workflows; it lies
   past the screen's right edge, as the chip row scrolls. Figma's row has
   no Hooks chip in the frame.

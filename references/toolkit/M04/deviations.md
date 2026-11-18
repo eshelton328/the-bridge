@@ -10,6 +10,11 @@ block `web/src/blocks/MoreDrawer.tsx`, on the library's `MoreDrawer`.
 D01, T01 and M01 give the same results as before M04. The numbers below
 are from the run with library 1.0.0-beta.15 and the props that library
 #115 added: `Button pressedTone="accent"` and `FilterChips padding="none"`.
+The Checks below are from `pnpm fidelity toolkit` on 2026-11-18,
+against library 1.0.0-beta.47, with the props that library #166 added to
+M1's rows under the scrim (`ListRow padding="phone"`,
+`trailingAlign="center"` and `leadingGap="12"`); the drawer is as it
+was.
 
 Most of the failures come from one cause. Figma draws M4's drawer over
 the Artifacts list (`library`, 424:6653), but the state belongs to the
@@ -44,8 +49,10 @@ has all its text and is the same in both.
     `→1 ←2`, `eval-cases`, `skills/eval-cases/`, `→3 ←3`,
     `mermaid-diagrams`, `skills/mermaid-diagrams/`, `→2 ←2`,
     `pr-description`, `skills/pr-description/`, `project-setup`,
-    `skills/project-setup/`, `→1 ←0`, `readme`, `skills/readme/` and
-    `Search the toolkit`. Since the tab bar lies over the page (AppShell
+    `skills/project-setup/`, `→1 ←0`, `readme`, `skills/readme/`,
+    `writer`, `skills/writer/`, `→7 ←4` and `Search the toolkit`. The
+    rows are 58 px high since #166 (62 before), so the writer row
+    shows under the scrim too. Since the tab bar lies over the page (AppShell
     `tabBarOverlay`, library 1.0.0-beta.26), the list runs under the
     tab bar, so the readme row there counts as shown under the drawer
     too (`readme`, `skills/readme/`).
@@ -88,15 +95,20 @@ has all its text and is the same in both.
 - **Selected item.** Toolkit, the page on screen, has the selected fill
   and border; Figma selects Artifacts, the page it draws under the
   drawer. The block selects the page the drawer opens from.
-- **Focus ring on Artifacts.** The drawer opens with the focus on its
-  first item, so Artifacts has a cyan focus ring that Figma does not
-  draw. `MoreDrawer` has no `initialFocus` (gap: More drawer first
-  focus).
+- **Focus ring.** Closed. Measured on beta.47, the drawer opens with
+  the focus on its sheet (`bottom-sheet__content`), whose outline is
+  transparent, so no item has a focus ring, as in Figma.
 - **Item spacing.** Library #115 (beta.14) closed it: the four item
   icons (`icon/layers`, `icon/toolkit`, `icon/brain`, `icon/flow`)
   now pass the position check. Before it, the items stood about 71 px
-  apart against Figma's 66 to 68. The item titles are still about 6 %
-  wider than Figma's (gap: More drawer item titles).
+  apart against Figma's 66 to 68. Measured on beta.47, the title to
+  subtitle spacing matches Figma (22 px from the title's top to the
+  subtitle's top, as 424:6950 to 424:6951), and the subtitles are within
+  1.2 px of Figma's widths. The item titles are about 7 % narrower than
+  Figma's: Artifacts 56.5 px against 61, Toolkit 43.6 against 47, Brain
+  34.2 against 37 and Workflows 69.8 against 75. `MoreDrawer` draws them
+  in `label` (14/20), and Figma's widths fit a 15 px title; the drawer
+  has no title size option (gap: More drawer item titles).
 - **Workflows icon.** Figma's `icon/flow` (424:6973) is two circles on a
   branch; the library has no flow icon, and `BranchIcon` draws the same
   shape.
@@ -130,6 +142,8 @@ closed in each of them, and no `AppTabBar` or `AppRail` item changed.
 
 ## Second review
 
-- **Item titles.** The drawer item titles are about 6 % wider than
-  Figma's, with 22 px from title to subtitle against 20 (gap: More
-  drawer item spacing).
+- **Item titles.** The reviewer saw the drawer item titles about 6 %
+  wider than Figma's, with 22 px from title to subtitle against 20. The
+  measure on beta.47 (see Item spacing) finds the spacing equal to
+  Figma's and the titles about 7 % narrower (gap: More drawer item
+  titles).
