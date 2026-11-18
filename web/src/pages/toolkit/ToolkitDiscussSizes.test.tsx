@@ -88,3 +88,18 @@ describe('the item’s card on the discussion page (T5, M7)', () => {
     expect(box(area).top - box(card).bottom).toBe(8)
   })
 })
+
+describe('the discussion panel’s header (D5)', () => {
+  // 438:7: the item's name "writer" is violet Geist Mono 12, 44 × 17.
+  it('draws the item’s name in mono 12, as wide as Figma’s', async () => {
+    await page.viewport(1512, 982)
+    const header = await renderDiscuss('skillDiscuss', 'desktop', '[data-figma="header"]')
+    const name = [...header.querySelectorAll('span')].find((s) => s.textContent === 'writer')
+    expect(name).toBeDefined()
+    if (name === undefined) return
+    const text = document.createRange()
+    text.selectNodeContents(name)
+    expect(getComputedStyle(name).fontSize).toBe('12px')
+    expect(Math.abs(text.getBoundingClientRect().width - 44)).toBeLessThanOrEqual(2)
+  })
+})

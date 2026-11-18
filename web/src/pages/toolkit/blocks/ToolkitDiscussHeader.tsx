@@ -12,7 +12,7 @@ const icon = css({ display: 'inline-flex', color: 'accent.discuss' })
 // 438:6: Discuss is SemiBold 24 (76 × 29): the `title` text style.
 const heading = css({ textStyle: 'title', color: 'fg.default', m: '0' })
 // 438:7: the item's name in violet mono 12 (44 × 17).
-const name = css({ textStyle: 'monoSm', color: 'accent.discuss', flex: '1' })
+const name = css({ textStyle: 'mono', color: 'accent.discuss', flex: '1' })
 // 438:15: Regular 12/17 in two lines.
 const note = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
 // 438:16: 378 × 33, its text 11 in and 8 down, the paperclip and the lock in grey.
