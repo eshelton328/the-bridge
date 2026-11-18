@@ -60,6 +60,7 @@ import { tabletSubtask } from './tabletSubtask.ts'
 import { tabletSubtaskRunning } from './tabletSubtaskRunning.ts'
 import { tabletMoveToWorkspace } from './tabletMoveToWorkspace.ts'
 import { tabletMovedChat } from './tabletMovedChat.ts'
+import { tabletRenameChat } from './tabletRenameChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -121,4 +122,5 @@ export const workspacesStates = {
   tabletSubtaskRunning,
   tabletMoveToWorkspace,
   tabletMovedChat,
+  tabletRenameChat,
 }

@@ -906,3 +906,17 @@ export const TabletMovedChat: Story = {
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
   },
 }
+
+export const TabletRenameChat: Story = {
+  name: 'T14: a chat renamed on the tablet, its name a field in the header',
+  args: { data: workspacesStates.tabletRenameChat.data, ui: workspacesStates.tabletRenameChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D21's field in its header, and the tablet's menu draws T14. WorkspacesTabletRenameChat.test.tsx checks the field
+    // at a tablet's width. The field stays open: the fidelity check renders the story after its play test.
+    const field = await canvas.findByRole('searchbox', { name: 'Rename bridge themes' })
+    await expect(field).toHaveValue('bridge themes')
+    await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+  },
+}

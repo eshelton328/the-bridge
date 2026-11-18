@@ -274,7 +274,8 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
                       onUiChange(afterRename)
                     }}
                     figma={data.layers?.renameField}
-                    size="phone"
+                    // T14: at a tablet's width the field is D21's, 300 wide.
+                    size={device === 'tablet' ? 'full' : 'phone'}
                   />
                 ) : undefined
               }

@@ -335,6 +335,11 @@ first: it says what each file of a page folder is for.
   Working with Stop and an empty composer in focus, its header names the
   workspace it moved to, and D20's `ChatToast` sits over the composer in
   `PhoneChat`'s `above` slot while `ui.toastOpen`, as in M22.
+  T14 needs no new block: the chat fills the screen as T11's does, and
+  Rename chat in T2b's menu opens M23's field (`ui.renaming`), at a
+  tablet's width D21's `ChatNameField`, 300 wide; a tap outside saves the
+  name, × undoes the change, and either gives the focus back to the
+  message box if it had it before (`ui.refocusMessage`).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -456,7 +461,10 @@ first: it says what each file of a page folder is for.
   `tabletMovedChat` (from `tabletOneChat`, with M19's empty composer,
   D20's move of bridge themes and theme tokens to the-bridge, now
   `current`, and its toast: the chat full screen on the tablet with the
-  toast "Moved bridge themes to the-bridge" and Undo).
+  toast "Moved bridge themes to the-bridge" and Undo), T14
+  `tabletRenameChat` (from `tabletOneChat`, with M19's empty composer and
+  D21's rename: the chat full screen on the tablet with its name a field
+  in the header, the focus in the field).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
