@@ -73,4 +73,27 @@ describe('useTabInView', () => {
     view = undefined
     expect(disconnect).toHaveBeenCalled()
   })
+
+  // M15: the list first scrolls while the web fonts load, with narrower labels, so Activity ended 1 px past the
+  // list's end with its middle inside it; the hook scrolls again once `document.fonts.ready` resolves, measured from
+  // the unscrolled list. Here the tabs widen from 100 to 105 before the fonts resolve, with no change to the list's
+  // size: Activity's middle stays inside the list and its end 25 px past it.
+  it('scrolls the selected tab into view again when the fonts have loaded', async () => {
+    let fontsLoaded: (fonts: FontFaceSet) => void = () => undefined
+    const ready = new Promise<FontFaceSet>((resolve) => {
+      fontsLoaded = resolve
+    })
+    vi.spyOn(document.fonts, 'ready', 'get').mockReturnValue(ready)
+    const { rendered, el } = await renderTabs('activity')
+    view = rendered
+    el.style.width = '150px'
+    await expect.poll(() => el.scrollLeft).toBe(350)
+    for (const t of el.querySelectorAll('[role="tab"]')) {
+      if (t instanceof HTMLElement) t.style.flex = '0 0 105px'
+    }
+    expect(selectedMiddleInside(el)).toBe(true)
+    fontsLoaded(document.fonts)
+    await expect.poll(() => el.scrollLeft).toBe(375)
+    expect(selectedMiddleInside(el)).toBe(true)
+  })
 })
