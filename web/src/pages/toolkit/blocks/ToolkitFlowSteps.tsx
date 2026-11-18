@@ -53,15 +53,23 @@ const rows: Readonly<Record<FlowRows | '1/5', string>> = {
   '3/5': css({ gridRow: '[3 / 5]' }),
   '1/5': css({ gridRow: '[1 / 5]' }),
 }
-const across = css({ display: 'flex', alignItems: 'center' })
+// The connectors only draw: none of them takes a click, so a click on a step under one selects the step.
+const across = css({ display: 'flex', alignItems: 'center', pointerEvents: 'none' })
 // D13 447:79 to 447:82: a fork or a join spans the two parallel steps, its arms at their middles.
-const branch = css({ display: 'flex' })
+const branch = css({ display: 'flex', pointerEvents: 'none' })
 // D13 447:83, 447:85: the way out of the gate runs down from the gate (559, the foot of row 3) to the stop under the
 // flow (651, 12 under row 4), with its label beside it.
-const exitCell = css({ gridRow: '[4]', display: 'flex', justifyContent: 'center', mt: '-32', mb: '-12' })
+const exitCell = css({
+  gridRow: '[4]',
+  display: 'flex',
+  justifyContent: 'center',
+  mt: '-32',
+  mb: '-12',
+  pointerEvents: 'none',
+})
 // D13 447:84: the loop runs down from the middle of the last step and back along the bottom into the stop's middle.
 // Its box is placed by anchors: from the stop's right edge to the last card's middle, and from that card's foot to the
-// stop's middle.
+// stop's middle. Its box crosses the steps over the stop, so it takes no clicks.
 const loopFrom = css({ anchorName: '--flow-loop-from' })
 const stopAnchor = css({ anchorName: '--flow-stop' })
 const loop = css({
@@ -71,6 +79,7 @@ const loop = css({
   top: '[anchor(--flow-loop-from bottom)]',
   bottom: '[anchor(--flow-stop center)]',
   display: 'flex',
+  pointerEvents: 'none',
 })
 // The stop row mirrors the stages, so the loop's label sits under the stage of its `under` step.
 const stopRow = css({ display: 'flex', alignItems: 'flex-end' })

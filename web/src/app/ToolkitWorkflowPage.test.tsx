@@ -263,3 +263,25 @@ describe('the connectors of a workflow on its own page', () => {
     expectTips('[data-figma="steps"] .flow-branch__head', 'down', 3)
   })
 })
+
+// The loop and the other connectors are drawn over the flow, so none of them may catch a click meant for a step:
+// a click anywhere on "Second grades", which the loop's box crosses, selects that step (D13).
+describe('a click on a step of a workflow on its own page on the desktop', () => {
+  it('selects the step at its middle and its lower part, under the loop’s box (D13)', async () => {
+    const { box } = await renderPage(1512, 982)
+    const second = box('Second grades')
+    if (second === undefined) throw new Error('step 5 has no box')
+    const x = (second.left + second.right) / 2
+    for (const share of [0.5, 0.75, 0.9]) {
+      const y = second.top + second.height * share
+      const hit = document.elementFromPoint(x, y)
+      expect(hit?.closest('[data-figma="step · Second grades"]')).not.toBeNull()
+    }
+    const lower = document.elementFromPoint(x, second.top + second.height * 0.75)
+    if (!(lower instanceof HTMLElement)) throw new Error('nothing at the lower part of step 5')
+    lower.click()
+    await expect
+      .poll(() => document.querySelector('[data-figma="step · Second grades"] button')?.getAttribute('aria-pressed'))
+      .toBe('true')
+  })
+})
