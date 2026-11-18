@@ -47,7 +47,11 @@ each file of a page folder is for.
   reopens the discussion with the applied proposal. On a phone (M2) the
   artifact opens on the same page (`ArtifactPage layout="phone"`), under
   the tab bar with More selected: `ArtifactTopBar layout="phone"` has
-  only the ⋯ button, which sets `ui.fileOpen` (File in a project, M7);
+  only the ⋯ button, which sets `ui.fileOpen` and opens File in a
+  project as a sheet over the tab bar (M7, `FileSheet` with
+  `data.fileMenu`, which `ArtifactsScreen` draws over an open artifact
+  at any width when `ui.fileOpen` is set; only the phone has a button
+  that opens it);
   `ArtifactTitleBlock layout="phone"` puts its rows 8 apart with the
   source and project chips only; Copy link and Discuss sit side by side
   under Open artifact in place of the link; and `MadeIn` draws the chat
@@ -171,7 +175,14 @@ each file of a page folder is for.
   scrim and Escape close it and keep the sort). For M6: `AddLinkSheet`
   (a `BottomSheet` titled Add a link with Cancel at the start of its
   title row and Add at the end, then the description and
-  `AddLinkFields`, 16 apart; Cancel, the scrim and Escape close it). For D7:
+  `AddLinkFields`, 16 apart; Cancel, the scrim and Escape close it). For
+  M7: `FileSheet` (a `BottomSheet` titled File in a project with Done,
+  the artifact's title, an `OptionList selectedFill` of Not in a project
+  and the projects, each with its count and a folder, cyan on the checked
+  one, then under a rule Remove from the library as a `dangerText`
+  button and its note, 2 apart; picking a project sets `ui.fileProject`
+  and checks it; Done, the scrim and Escape close it; Remove does
+  nothing yet, as the desktop's Remove (D2)). For D7:
   `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
   state or the sent messages, and `Composer`, whose draft is
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
@@ -233,7 +244,8 @@ each file of a page folder is for.
   the excerpt of the readme cold-reader run's description and the
   Writer round's preview as a chart) and M6 `addLinkPhone` (M1's data
   with D5's form in the phone's shorter words, the sheet open, Codex site
-  picked). `library` stays first in `states/index.ts`: the app
+  picked) and M7 `filePhone` (M2's data with the File in a project
+  menu, the sheet open, skill-evals checked). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -242,13 +254,13 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu` and the
-  open artifact's `discussion`) and `ArtifactsUi` (chip,
+  `ArtifactDetail`, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu`, the
+  open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu,
   whether Back closed the open artifact (T2, M2), whether the phone's ⋯
-  opened File in a project (M2), and the open discussion, its draft, the sent messages and what Erik did to
+  opened File in a project (M7) and the project picked in it, and the open discussion, its draft, the sent messages and what Erik did to
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).

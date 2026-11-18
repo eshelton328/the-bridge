@@ -10,7 +10,8 @@
 // with no tab bar (T4), and whose proposal's Apply returns to the artifact's
 // page, which shows Updated (T5); on a phone the library as a list of rows
 // (M1, LibraryPhone), and an open artifact on its own page under Back, as
-// on a tablet, with the ⋯ button for File in a project (M2). A state file's data and ui are its props; the
+// on a tablet, with the ⋯ button for File in a project (M2), which opens
+// it as a sheet (M7). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -20,6 +21,7 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
+import { FileSheet } from '../blocks/FileSheet.tsx'
 import { ArtifactDetail } from './ArtifactDetail.tsx'
 import { ArtifactDiscussionPage } from './ArtifactDiscussionPage.tsx'
 import { ArtifactPage } from './ArtifactPage.tsx'
@@ -162,6 +164,24 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 )
               }
             />
+            {/* M7: File in a project, a sheet the phone's ⋯ button opens over the artifact. Picking a project checks
+                it; Done, the scrim and Escape close it. Remove does nothing yet, as the desktop's Remove (D2). A wider
+                screen has nothing that opens it yet (LIBRARY_GAPS.md, Project chip menu), but shows it when a state
+                sets `fileOpen`, as a story at the width Storybook gives it does. */}
+            {view === undefined || data.fileMenu === undefined ? undefined : (
+              <FileSheet
+                menu={data.fileMenu}
+                artifactTitle={view.artifact.title}
+                project={ui.fileProject ?? view.artifact.project}
+                open={ui.fileOpen === true}
+                onOpenChange={(fileOpen) => {
+                  onUiChange?.({ fileOpen })
+                }}
+                onProjectChange={(fileProject) => {
+                  onUiChange?.({ fileProject })
+                }}
+              />
+            )}
           </Backdrop>
         )
       }}

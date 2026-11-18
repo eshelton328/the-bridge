@@ -290,3 +290,18 @@ export const AddLinkPhone: Story = {
     await expectTrapFocus(form.getByRole('textbox', { name: 'Link' }))
   },
 }
+
+export const FilePhone: Story = {
+  name: 'M7: File in a project open over an artifact on a phone',
+  args: { data: artifactsStates.filePhone.data, ui: artifactsStates.filePhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The sheet is portalled outside the story's root. It opens over the artifact at any width (the story renders at
+    // the width Storybook gives it; pnpm fidelity checks M7's sheet over the phone's page).
+    const sheet = within(await within(document.body).findByRole('dialog', { name: 'File in a project' }))
+    await expect(sheet.getByRole('radio', { name: /skill-evals/ })).toBeChecked()
+    await expect(sheet.getByRole('button', { name: 'Remove from the library' })).toBeVisible()
+    await expect(
+      sheet.getByText('Removing takes the link out of the library only; the artifact stays where it was published.'),
+    ).toBeVisible()
+  },
+}

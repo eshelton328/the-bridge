@@ -178,6 +178,28 @@ const ArtifactSearch = z.object({
 })
 export type ArtifactSearch = z.infer<typeof ArtifactSearch>
 
+/**
+ * File in a project (M7): the phone's ⋯ button opens it as a sheet over the artifact's page. The artifact's title under
+ * the sheet's title, a choice per project with how many artifacts it holds (the artifact's own project checked), and
+ * Remove from the library with its note: Remove takes only the link out of the library, and the artifact stays where
+ * it was published.
+ */
+const ArtifactFileMenu = z.object({
+  /** Such as "File in a project". */
+  title: z.string(),
+  /** The title row's Done, which closes the sheet. */
+  done: z.string(),
+  /** The first choice, such as "Not in a project", with how many artifacts are in no project, such as "1". */
+  none: z.object({ label: z.string(), count: z.string() }),
+  /** One choice per project, such as ncc-1701, with how many artifacts it holds, such as "9 artifacts". */
+  projects: z.array(z.object({ value: z.string(), count: z.string() })),
+  /** Such as "Remove from the library". */
+  remove: z.string(),
+  /** What Remove does, under it. */
+  note: z.string(),
+})
+export type ArtifactFileMenu = z.infer<typeof ArtifactFileMenu>
+
 /** A field of the Add a link dialog (D5): its label, its value and the line under it. */
 const AddLinkField = z.object({
   label: z.string(),
@@ -302,6 +324,8 @@ export const ArtifactsData = z.object({
   addLinkForm: AddLinkForm.optional(),
   /** The open artifact's discussion (D7), which Discuss opens; without it Discuss opens nothing. */
   discussion: ArtifactDiscussion.optional(),
+  /** File in a project (M7), which the phone's ⋯ button opens; without it the button opens nothing. */
+  fileMenu: ArtifactFileMenu.optional(),
 })
 export type ArtifactsData = z.infer<typeof ArtifactsData>
 
@@ -328,8 +352,10 @@ export const ArtifactsUi = z.object({
   addLinkSource: ArtifactSource.optional(),
   /** Back closed the open artifact on a tablet (T2) or a phone (M2), and the library shows (T1, M1). */
   artifactClosed: z.boolean().optional(),
-  /** The phone's ⋯ button or project chip opened File in a project (M2 to M7); its sheet comes with M7. */
+  /** The phone's ⋯ button opened File in a project (M7). */
   fileOpen: z.boolean().optional(),
+  /** The project picked in File in a project, or `none` (M7); the open artifact's own project when not set. */
+  fileProject: z.string().optional(),
   /**
    * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
    * its own page in the artifact's place, with no tab bar (T4).
