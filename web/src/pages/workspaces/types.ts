@@ -21,8 +21,13 @@ export const SidebarChat = z.object({
   model: z.string(),
   context: z.number().optional(),
   status: PaneStatus,
-  /** 1 for a subtask's chat, indented under the chat that started it. */
+  /** 1 for a subtask's or a fork's chat, indented under the chat that started it. */
   level: z.union([z.literal(0), z.literal(1)]).optional(),
+  /**
+   * What the chat is to the chat above it, drawn before its kind mark: `fork`, the branch mark of a fork (D16).
+   * `label` names the mark for assistive technology.
+   */
+  mark: z.object({ kind: z.enum(['fork']), label: z.string() }).optional(),
 })
 export type SidebarChat = z.infer<typeof SidebarChat>
 
@@ -46,6 +51,8 @@ export const PaneHead = z.object({
   /** The share of the context window in use; a shell has none. */
   context: z.number().optional(),
   status: PaneStatus,
+  /** Where the chat came from, after its workspace in the header, such as "forked from bridge themes" (D16). */
+  origin: z.string().optional(),
 })
 export type PaneHead = z.infer<typeof PaneHead>
 
@@ -61,6 +68,11 @@ export const ChatEntry = z.discriminatedUnion('type', [
     text: z.string(),
     copy: z.string().optional(),
   }),
+  /**
+   * A line that records what happened to the chat, such as where a fork starts (D16 417:718): a done dot and the
+   * text in mono, as a tool line. `label` names the dot for assistive technology.
+   */
+  z.object({ type: z.literal('event'), label: z.string(), text: z.string() }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */
@@ -202,6 +214,43 @@ export const NewChatForm = z.object({
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
 
+/**
+ * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
+ * `name.value` is the forked chat's title.
+ */
+export const ForkForm = z.object({
+  title: z.string(),
+  /** The field labels, as Figma writes them, in capitals. */
+  labels: z.object({ name: z.string(), startFrom: z.string() }),
+  /** The name the copy gets, which Erik can change, and the hint inside the field. */
+  name: z.object({ value: z.string(), hint: z.string() }),
+  /** Where the copy starts: the whole chat, or up to a message Erik picks next. */
+  startFrom: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The line under the choice that says what the fork copies. */
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type ForkForm = z.infer<typeof ForkForm>
+
+/**
+ * The Subtask form (D17 417:1026): what the subagent should do and which model runs it. The subtask gets the chat's
+ * full context and returns its result to the chat.
+ */
+export const SubtaskForm = z.object({
+  title: z.string(),
+  /** The field labels, as Figma writes them, in capitals. */
+  labels: z.object({ model: z.string(), task: z.string() }),
+  model: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The task as the form opens with it, and the placeholder of an empty task. */
+  task: z.object({ value: z.string(), placeholder: z.string().optional() }),
+  /** The line under the task that says what the subtask gets and where its result goes. */
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type SubtaskForm = z.infer<typeof SubtaskForm>
+
 /** The workspace sidebar's labels (D2 105:611). */
 export const SidebarText = z.object({
   title: z.string(),
@@ -270,6 +319,10 @@ export const SidebarLayers = z.object({
   subagentCards: z.record(z.string(), z.string()).optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
+  /** The toast over the composer of the chat shown alone (D20 toast · moved). */
+  toast: z.string().optional(),
+  /** The field that takes the place of the chat's name in its header while Erik renames it (D21 417:2442). */
+  renameField: z.string().optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -370,6 +423,10 @@ export const WorkspacesData = z.object({
   subagents: SubagentsPanel.optional(),
   /** The New chat form (D3). */
   newChat: NewChatForm.optional(),
+  /** The Fork form of a chat action (D15). */
+  fork: ForkForm.optional(),
+  /** The Subtask form of a chat action (D17). */
+  subtask: SubtaskForm.optional(),
   /** `false`: the chat header has no ⋯, as D4 draws it. */
   chatActions: z.boolean().optional(),
   /** The folders of the chat shown alone (D4). */
@@ -385,6 +442,11 @@ export const WorkspacesData = z.object({
   split: z.enum(['rows']).optional(),
   /** The readout beside a handle while Erik drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
   resizeHint: z.string().optional(),
+  /**
+   * A toast over the composer of the chat shown alone that confirms what Erik just did, with its button, such as
+   * "Moved bridge themes to the-bridge" and Undo (D20). `ui.toastOpen` shows it.
+   */
+  toast: z.object({ text: z.string(), action: z.string() }).optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -424,6 +486,8 @@ export const WorkspacesUi = z.object({
   transcripts: z.array(z.string()).optional(),
   /** The New chat form is open over the screen (D3). */
   newChatOpen: z.boolean().optional(),
+  /** The chat action whose dialog is open over the screen, for the focused chat, such as `fork` (D15), or null. */
+  chatDialog: PaneAction.shape.value.nullable().optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */
@@ -454,6 +518,15 @@ export const WorkspacesUi = z.object({
    * others as they are; `resize` sets its own handle's sizes over these.
    */
   splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
+  /** `data.toast` shows over the composer of the chat shown alone (D20); its button closes it. */
+  toastOpen: z.boolean().optional(),
+  /**
+   * The name of the chat shown alone is a field in its header (D21): a click outside it or Enter saves the name,
+   * and its × or Escape undoes the change; either closes it.
+   */
+  renaming: z.boolean().optional(),
+  /** The names Erik gave chats, by chat id, in place of their titles in the data. */
+  names: z.record(z.string(), z.string()).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

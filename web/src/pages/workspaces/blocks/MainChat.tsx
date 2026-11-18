@@ -1,7 +1,8 @@
 // The chat shown alone beside the workspace sidebar (D2 105:784): its
 // two-row header, the transcript and the composer. Props only. The chat
 // actions menu (D2b) comes from the caller, and so does a drop zone over
-// the chat while a chat is dragged onto it (D6).
+// the chat while a chat is dragged onto it (D6), and so does a toast over the
+// composer (D20), and so does the name field while Erik renames the chat (D21).
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
@@ -30,12 +31,17 @@ export type MainChatProps = {
   folders?: ReactNode
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
+  /** Drawn in the header in place of the chat's name while Erik renames it (D21 417:2442). */
+  rename?: ReactNode
+  /** Drawn between the transcript and the composer, such as the toast after a move (D20 417:2135). */
+  above?: ReactNode
   /** Drawn over the whole chat, header included, such as the drop zone of a dragged chat (D6 158:1025). */
   overlay?: ReactNode
 }
 
 export function MainChat(props: MainChatProps) {
-  const { pane, workspace, contextLabel, skills, onSkillsOpenChange, menu, folders, layers, overlay } = props
+  const { pane, workspace, contextLabel, skills, onSkillsOpenChange, menu, folders, layers, rename, above, overlay } =
+    props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
       <ChatHead
@@ -43,6 +49,7 @@ export function MainChat(props: MainChatProps) {
         workspace={workspace}
         contextLabel={contextLabel}
         menu={menu}
+        rename={rename}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
@@ -56,6 +63,7 @@ export function MainChat(props: MainChatProps) {
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         folders={folders}
+        above={above}
       />
       {overlay}
     </section>

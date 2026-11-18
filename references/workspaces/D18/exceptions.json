@@ -1,0 +1,12 @@
+{
+  "extra": [
+    {
+      "text": "Artifacts",
+      "reason": "The rail item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    },
+    {
+      "text": "Toolkit",
+      "reason": "The rail item Toolkit comes from the Toolkit page's frames (D1, T1), which are newer than the Workbench frames; the app has one rail for every page (d-105)."
+    }
+  ]
+}

@@ -16,6 +16,13 @@ import { threePanes } from './threePanes.ts'
 import { fourPanes } from './fourPanes.ts'
 import { emptiedPane } from './emptiedPane.ts'
 import { resizedPanes } from './resizedPanes.ts'
+import { forkDialog } from './forkDialog.ts'
+import { forkedChat } from './forkedChat.ts'
+import { subtaskDialog } from './subtaskDialog.ts'
+import { subtaskRunning } from './subtaskRunning.ts'
+import { moveToWorkspace } from './moveToWorkspace.ts'
+import { movedChat } from './movedChat.ts'
+import { renameChat } from './renameChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -33,4 +40,11 @@ export const workspacesStates = {
   fourPanes,
   emptiedPane,
   resizedPanes,
+  forkDialog,
+  forkedChat,
+  subtaskDialog,
+  subtaskRunning,
+  moveToWorkspace,
+  movedChat,
+  renameChat,
 }

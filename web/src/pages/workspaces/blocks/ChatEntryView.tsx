@@ -1,6 +1,7 @@
 // One entry of a chat pane's transcript: Erik's message, a tool line, an
 // agent's reply with Copy, progress lines or a command waiting for approval
-// (D1 105:210 to 105:291). The caller names the entry's Figma layer. Props only.
+// (D1 105:210 to 105:291), or a line that records an event, such as where a
+// fork starts (D16 417:718). The caller names the entry's Figma layer. Props only.
 import {
   Button,
   CopyIcon,
@@ -33,6 +34,9 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
       )
     case 'tool':
       return <ToolLine name={entry.name} target={entry.target} state="done" />
+    case 'event':
+      // Figma draws the event as a tool line: the done dot and the text in mono (D16 417:718).
+      return <ToolLine name={entry.text} state="done" stateLabel={entry.label} />
     case 'assistant':
       return (
         <div data-figma={figma}>

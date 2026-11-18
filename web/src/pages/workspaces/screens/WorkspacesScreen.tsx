@@ -14,7 +14,10 @@
 // fades in the sidebar, and the drop zone shows where it would open (D6).
 // A chat opened from the sidebar can show in the workbench beside it, in
 // place of the chat alone (D7), and a chat dragged over one of its panes
-// shows the drop zone over that pane (D8).
+// shows the drop zone over that pane (D8). A chat action's dialog, such as
+// Fork (D15) or Subtask (D17), opens over the screen for the chat shown
+// alone, and a toast over its composer confirms a move, with Undo (D20).
+// Rename chat turns the chat's name in its header into a field (D21).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -23,7 +26,11 @@ import { css } from '../../../../styled-system/css/index.js'
 import { MainChat } from '../blocks/MainChat.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
+import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { ChatNameField } from '../blocks/ChatNameField.tsx'
+import { ChatToast } from '../blocks/ChatToast.tsx'
+import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
 import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
@@ -46,18 +53,30 @@ export type WorkspacesScreenProps = {
 export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUiChange }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
+  // Merge each change into the latest ui, not this render's: one event can report two changes, such as Rename
+  // chat's pick and then the menu's close, and the second must not drop the first.
   const change = (next: Partial<WorkspacesUi>) => {
-    setChanged({ of: stateUi, ui: { ...ui, ...next } })
+    setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  const current = data.workspaces.find((w) => w.id === data.current)
+  // The names Erik gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
+  // alone and in the panes of the workbench, with or without the sidebar.
+  const names = ui.names ?? {}
+  const workspaces = data.workspaces.map((w) =>
+    w.chats === undefined ? w : { ...w, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) },
+  )
+  const panes = data.panes.map((p) =>
+    p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
+  )
+  const named = { ...data, workspaces, panes }
+  const current = workspaces.find((w) => w.id === data.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
       <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
     </div>
   )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
-  const focused = data.panes.find((p) => p.id === ui.focusedPane)
+  const focused = panes.find((p) => p.id === ui.focusedPane)
   const chat = focused?.type === 'chat' ? focused : undefined
   if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
     const menuOpen = ui.menuFor === chat?.id
@@ -66,7 +85,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
         <ChatActionsMenu
           title={chat.head.title}
           actions={data.chatMenu}
-          targets={data.workspaces.filter((w) => w.id !== data.current)}
+          targets={workspaces.filter((w) => w.id !== data.current)}
           newWorkspace={data.newWorkspace}
           open={menuOpen}
           onOpenChange={(open) => {
@@ -79,6 +98,9 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           highlighted={ui.menuHighlight}
           onHighlightChange={(menuHighlight) => {
             change({ menuHighlight })
+          }}
+          onSelect={(action) => {
+            if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
           }}
           moveTarget={ui.moveTarget}
           onMoveTargetChange={(moveTarget) => {
@@ -124,7 +146,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           }}
         />
       ) : undefined
-    const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
+    const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
     const dropZone =
       ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined || chat === undefined ? undefined : (
         <PaneDropZone
@@ -135,6 +157,30 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           figma={data.layers?.dropZone}
         />
       )
+    const rename =
+      ui.renaming === true && chat !== undefined ? (
+        <ChatNameField
+          name={chat.head.title}
+          onSave={(name) => {
+            change({ renaming: false, names: { ...names, [chat.id]: name } })
+          }}
+          onCancel={() => {
+            change({ renaming: false })
+          }}
+          figma={data.layers?.renameField}
+        />
+      ) : undefined
+    const toast =
+      ui.toastOpen === true && data.toast !== undefined ? (
+        <ChatToast
+          text={data.toast.text}
+          action={data.toast.action}
+          onAction={() => {
+            change({ toastOpen: false })
+          }}
+          figma={data.layers?.toast}
+        />
+      ) : undefined
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -144,7 +190,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           list={
             <WorkspaceSidebar
               text={data.sidebar}
-              workspaces={data.workspaces}
+              workspaces={workspaces}
               selected={ui.focusedPane}
               openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
@@ -154,7 +200,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           }
           detail={
             ui.workbench === true || chat === undefined ? (
-              <WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle={false} />
+              <WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle={false} />
             ) : (
               <MainChat
                 pane={chat}
@@ -185,6 +231,8 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
                   )
                 }
                 layers={data.layers}
+                rename={rename}
+                above={toast}
                 overlay={dropZone}
               />
             )
@@ -202,12 +250,31 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             }}
           />
         )}
+        {data.fork === undefined || chat === undefined ? null : (
+          <ForkDialog
+            form={data.fork}
+            chat={chat.head.title}
+            open={ui.chatDialog === 'fork'}
+            onOpenChange={(open) => {
+              change({ chatDialog: open ? 'fork' : null })
+            }}
+          />
+        )}
+        {data.subtask === undefined || chat === undefined ? null : (
+          <SubtaskDialog
+            form={data.subtask}
+            open={ui.chatDialog === 'subtask'}
+            onOpenChange={(open) => {
+              change({ chatDialog: open ? 'subtask' : null })
+            }}
+          />
+        )}
       </Backdrop>
     )
   }
   return (
     <Backdrop size={viewport}>
-      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={data} ui={ui} onUiChange={change} toggle />} />
+      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle />} />
     </Backdrop>
   )
 }

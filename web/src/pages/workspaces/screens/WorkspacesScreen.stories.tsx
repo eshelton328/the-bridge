@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, within } from 'storybook/test'
+import { expect, waitFor, within } from 'storybook/test'
 import { workspacesStates } from '../states/index.ts'
 import { WorkspacesScreen } from './WorkspacesScreen.tsx'
 
@@ -230,5 +230,119 @@ export const ResizedPanes: Story = {
     // Rows first: one handle between the top row's panes and one between the rows; brain git's row has none.
     await expect(canvas.getByLabelText('Resize columns')).toBeVisible()
     await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
+  },
+}
+
+export const ForkDialog: Story = {
+  name: 'D15: Fork asks for a name and where the copy starts',
+  args: { data: workspacesStates.forkDialog.data, ui: workspacesStates.forkDialog.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.'),
+    ).toBeVisible()
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'Fork bridge themes' }))
+    await expect(dialog.getByRole('textbox', { name: 'NAME' })).toHaveValue('bridge themes · fork')
+    await expect(dialog.getByRole('button', { name: 'Whole chat' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(dialog.getByRole('button', { name: 'Up to a message…' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(
+      dialog.getByText('The fork copies the messages and the context. The original keeps running.'),
+    ).toBeVisible()
+  },
+}
+
+export const ForkedChat: Story = {
+  name: 'D16: the fork listed under its original and shown alone, Idle',
+  args: { data: workspacesStates.forkedChat.data, ui: workspacesStates.forkedChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes · fork' })).toBeVisible()
+    await expect(canvas.getByText('omni-brain · forked from bridge themes')).toBeVisible()
+    await expect(canvas.getByText('Forked from bridge themes here · the messages above are a copy')).toBeVisible()
+    await expect(canvas.getByRole('img', { name: 'Fork of bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'bridge themes · fork', current: true })).toBeVisible()
+    // The fork is Idle: its composer has no Stop.
+    await expect(canvas.queryByRole('button', { name: /Stop/ })).toBeNull()
+  },
+}
+
+export const SubtaskDialog: Story = {
+  name: 'D17: Subtask asks what the subagent should do and which model runs it',
+  args: { data: workspacesStates.subtaskDialog.data, ui: workspacesStates.subtaskDialog.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.'),
+    ).toBeVisible()
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'Start a subtask' }))
+    await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
+    const task = dialog.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })
+    await expect(task).toHaveValue('Draft layout notes for the three directions, one page each.')
+    // The dialog moves the focus to the task once it has opened.
+    await waitFor(() => expect(task).toHaveFocus())
+    await expect(dialog.getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
+  },
+}
+
+export const SubtaskRunning: Story = {
+  name: 'D18: the subtask listed under its chat, Running, and where it started',
+  args: { data: workspacesStates.subtaskRunning.data, ui: workspacesStates.subtaskRunning.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('Subtask layout notes started · returns its result here')).toBeVisible()
+    await expect(canvas.getByText('layout notes')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'bridge themes', current: true })).toBeVisible()
+    // bridge themes keeps working: its composer has Stop.
+    await expect(canvas.getByRole('button', { name: /Stop/ })).toBeVisible()
+  },
+}
+
+export const MoveToWorkspace: Story = {
+  name: 'D19: Move to workspace with its list of workspaces open',
+  args: { data: workspacesStates.moveToWorkspace.data, ui: workspacesStates.moveToWorkspace.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'bridge themes actions' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+    // The menu and its list render in portals, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: /Move to workspace/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await expect(await body.findByRole('menuitem', { name: 'skill-evals' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'New workspace…' })).toBeVisible()
+    await expect(body.queryByRole('menuitem', { name: 'omni-brain' })).toBeNull()
+  },
+}
+
+export const MovedChat: Story = {
+  name: 'D20: the chat moved to the-bridge, with a toast and Undo',
+  args: { data: workspacesStates.movedChat.data, ui: workspacesStates.movedChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // The chat and its subtask chat now head the-bridge's list.
+    const header = canvas.getByRole('button', { name: /the-bridge/i, expanded: true })
+    const rows = document.getElementById(header.getAttribute('aria-controls') ?? '')
+    await expect(rows).toContainElement(canvas.getByRole('button', { name: 'bridge themes', current: true }))
+    await expect(rows).toContainElement(canvas.getByText('theme tokens'))
+    await expect(canvas.getByText('the-bridge', { selector: 'header span' })).toBeVisible()
+    // The toast stays open: the fidelity check renders the story after its play test.
+    const toast = canvas.getByRole('status')
+    await expect(toast).toHaveTextContent('Moved bridge themes to the-bridge')
+    await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
+  },
+}
+
+export const RenameChat: Story = {
+  name: 'D21: Rename chat, the name in the header as a field',
+  args: { data: workspacesStates.renameChat.data, ui: workspacesStates.renameChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    // The field takes the heading's place and takes the focus once it opens.
+    const field = canvas.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await waitFor(() => expect(field).toHaveFocus())
+    await expect(field).toHaveValue('bridge themes')
+    await expect(canvas.queryByRole('heading', { name: 'bridge themes' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
   },
 }
