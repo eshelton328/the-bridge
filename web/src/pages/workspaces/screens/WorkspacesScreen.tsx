@@ -94,12 +94,17 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
   const workspaceNames = ui.workspaceNames ?? {}
   // The workspaces Erik added with the phone's New workspace (M15) follow the others, with no chats yet.
   const added = (ui.addedWorkspaces ?? []).map((w) => ({ ...w, count: 0, needsYou: false, chats: [] }))
-  const workspaces = [...data.workspaces, ...added].map((w) => {
-    const label = workspaceNames[w.id] ?? w.label
-    return w.chats === undefined
-      ? { ...w, label }
-      : { ...w, label, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) }
-  })
+  // The workspaces Erik closed with the phone's close dialog (M13) leave both layouts, so a wider window keeps them
+  // closed.
+  const closed = ui.closedWorkspaces ?? []
+  const workspaces = [...data.workspaces, ...added]
+    .filter((w) => !closed.includes(w.id))
+    .map((w) => {
+      const label = workspaceNames[w.id] ?? w.label
+      return w.chats === undefined
+        ? { ...w, label }
+        : { ...w, label, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) }
+    })
   const panes = data.panes.map((p) =>
     p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
   )

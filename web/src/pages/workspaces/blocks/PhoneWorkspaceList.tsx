@@ -8,7 +8,8 @@
 // actions (M9, `ui.menuFor`, the sheet in WorkspacesPhone) with the first
 // action highlighted, and the held row lifts over the sheet's scrim.
 // With `text.closeWorkspace`, × on a workspace in edit mode asks before it
-// closes (M13, `ui.closing`); Close takes the workspace off the list.
+// closes (M13, `ui.closing`); Close adds it to `ui.closedWorkspaces`, which
+// WorkspacesScreen takes out of `workspaces` in both layouts.
 // With `text.workspaceMenu`, the ⋯ of a workspace's header opens its actions
 // (M14, `ui.workspaceMenuFor`, the sheet in WorkspacesPhone). With
 // `text.addMenu`, + opens New chat and New workspace (M15, `ui.addMenuOpen`,
@@ -135,60 +136,58 @@ export function PhoneWorkspaceList({
           />
         </PageHeader>
       </div>
-      {workspaces
-        .filter((w) => !closed.includes(w.id))
-        .map((w) =>
-          editing ? (
-            <PhoneEditGroup
-              key={w.id}
-              workspace={w}
-              open={!collapsed.includes(w.id)}
-              onOpenChange={(open) => setOpen(w.id, open)}
-              renaming={renamingWorkspaces[w.id]}
-              renamingChats={renamingChats}
-              focus={focus}
-              onRenameChat={(chat) => {
-                const title = w.chats?.find((c) => c.id === chat)?.title ?? ''
-                onUiChange?.({ renamingChats: { ...renamingChats, [chat]: title } })
-              }}
-              onChatRenamed={(chat, name) =>
-                onUiChange?.({
-                  renamingChats: without(renamingChats, chat),
-                  ...(name === undefined ? {} : { names: { ...ui.names, [chat]: name } }),
-                })
-              }
-              onRenamed={(name) =>
-                onUiChange?.({
-                  renamingWorkspaces: without(renamingWorkspaces, w.id),
-                  ...(name === undefined ? {} : { workspaceNames: { ...ui.workspaceNames, [w.id]: name } }),
-                })
-              }
-              onClose={closeText?.workspaces[w.id] === undefined ? undefined : () => onUiChange?.({ closing: w.id })}
-              layers={layers}
-            />
-          ) : (
-            <SidebarGroup
-              key={w.id}
-              workspace={w}
-              open={!collapsed.includes(w.id)}
-              onOpenChange={(open) => setOpen(w.id, open)}
-              hovered={false}
-              selected={selected}
-              openable={openable}
-              layers={layers}
-              grip={false}
-              onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
-              rowMenu={(chat) => more(chat, layers?.rowMenus?.[chat.id])}
-              onHold={openActions}
-              onActions={text.workspaceMenu === undefined ? undefined : () => onUiChange?.({ workspaceMenuFor: w.id })}
-              lifted={
-                openActions === undefined || held === undefined
-                  ? undefined
-                  : { chat: held.id, menu: more(held, layers?.liftedMenu) }
-              }
-            />
-          ),
-        )}
+      {workspaces.map((w) =>
+        editing ? (
+          <PhoneEditGroup
+            key={w.id}
+            workspace={w}
+            open={!collapsed.includes(w.id)}
+            onOpenChange={(open) => setOpen(w.id, open)}
+            renaming={renamingWorkspaces[w.id]}
+            renamingChats={renamingChats}
+            focus={focus}
+            onRenameChat={(chat) => {
+              const title = w.chats?.find((c) => c.id === chat)?.title ?? ''
+              onUiChange?.({ renamingChats: { ...renamingChats, [chat]: title } })
+            }}
+            onChatRenamed={(chat, name) =>
+              onUiChange?.({
+                renamingChats: without(renamingChats, chat),
+                ...(name === undefined ? {} : { names: { ...ui.names, [chat]: name } }),
+              })
+            }
+            onRenamed={(name) =>
+              onUiChange?.({
+                renamingWorkspaces: without(renamingWorkspaces, w.id),
+                ...(name === undefined ? {} : { workspaceNames: { ...ui.workspaceNames, [w.id]: name } }),
+              })
+            }
+            onClose={closeText?.workspaces[w.id] === undefined ? undefined : () => onUiChange?.({ closing: w.id })}
+            layers={layers}
+          />
+        ) : (
+          <SidebarGroup
+            key={w.id}
+            workspace={w}
+            open={!collapsed.includes(w.id)}
+            onOpenChange={(open) => setOpen(w.id, open)}
+            hovered={false}
+            selected={selected}
+            openable={openable}
+            layers={layers}
+            grip={false}
+            onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
+            rowMenu={(chat) => more(chat, layers?.rowMenus?.[chat.id])}
+            onHold={openActions}
+            onActions={text.workspaceMenu === undefined ? undefined : () => onUiChange?.({ workspaceMenuFor: w.id })}
+            lifted={
+              openActions === undefined || held === undefined
+                ? undefined
+                : { chat: held.id, menu: more(held, layers?.liftedMenu) }
+            }
+          />
+        ),
+      )}
       {closeText === undefined ? null : (
         <CloseWorkspaceDialog
           text={closeText}
