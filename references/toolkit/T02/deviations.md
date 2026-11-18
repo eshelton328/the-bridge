@@ -8,7 +8,9 @@ What still differs from Figma after round 3 of the fidelity loop
 first heading "Rules, hooks" and no "every session" on writing. The
 numbers below are from the run with library 1.0.0-beta.15 and the props
 that library #115 added: `ViewSwitch tone="accent"` and
-`FilterChips padding="none"`.
+`FilterChips padding="none"`. A rerun of `pnpm fidelity toolkit` on
+2026-11-18, against library 1.0.0-beta.47 with the list options of
+library #166, gives the same Checks: the map view uses none of them.
 
 The map is the library's `MapGraph` with 140 × 30 nodes and no legend,
 and the selected item is `MapSelectionCard` with no description. The
@@ -55,8 +57,9 @@ header, the chips, the canvas, the selection and the tab bar.
   before them pass the position check, and with `tone="accent"` the
   selected item (Map) has the selected fill with no border and a cyan
   label and icon, as in Figma. The switch is still 36 px high against
-  Figma's 38, with a 2 px inset against 4 and 16 px icons against 15: no
-  control token has 38 (gap: View switch 38 px).
+  Figma's 38, with a 2 px inset against 4 and 16 px icons against 15: 38
+  is off the 4 px grid (d-100), and no icon token has 15 (gap: View
+  switch 38 px).
 - **Links in one column.** A link between two items of one column bows
   out 40 px for every length; Figma's tablet map bows 22.2 px for rows
   next to each other (project-setup to agents-md) and 65.7 for six rows,

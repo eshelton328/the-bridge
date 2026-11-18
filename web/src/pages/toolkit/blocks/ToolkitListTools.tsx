@@ -9,6 +9,7 @@ import {
   Button,
   ChevronDownIcon,
   CloseCircleIcon,
+  Grid,
   LockIcon,
   SearchField,
   SearchIcon,
@@ -19,10 +20,12 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitView } from '../types.ts'
 
 const row = css({ display: 'flex', alignItems: 'center', gap: '6' })
-// Figma 425:56: the search and Sort take about the first half of the row (677 of 1384), over the first two card
-// columns; no size token has Figma's 566 px search, so the pair takes half the row and the search the rest of it.
-const tools = css({ display: 'flex', alignItems: 'center', gap: '6', w: '[50%]', minW: '[0]' })
+// Figma 425:56: the search and Sort take 677 of the 1384 px row, over the first two of the four card columns (684);
+// no size token has Figma's 566 px search, so the row is the cards' grid (four columns, 16 apart), the pair spans
+// the first two columns and the search takes what Sort leaves. The legend ends the last two.
+const tools = css({ display: 'flex', alignItems: 'center', gap: '6', gridColumn: '[span 2]', minW: '[0]' })
 const compactTools = css({ display: 'flex', alignItems: 'center', gap: '6', flex: '1', minW: '[0]' })
+const legendCell = css({ display: 'flex', alignItems: 'center', gridColumn: '[span 2]', minW: '[0]' })
 const search = css({ flex: '1', minW: '[0]' })
 // M1 429:86: the lock, then the source in mono, as wide as its text.
 const readOnly = css({
@@ -72,34 +75,45 @@ export function ToolkitListTools({ query, onQueryChange, layout, view = 'list' }
       </>
     )
   }
+  const field = (
+    <div className={search} data-figma="search">
+      <SearchField
+        label="Search the toolkit"
+        placeholder="Search names, descriptions and files"
+        size="lg"
+        icon={<SearchIcon />}
+        clearIcon={<CloseCircleIcon />}
+        clearLabel="Clear the search"
+        value={query}
+        onValueChange={onQueryChange}
+      />
+    </div>
+  )
+  if (layout !== 'desktop') {
+    return (
+      <div className={row}>
+        <div className={compactTools}>{field}</div>
+      </div>
+    )
+  }
   return (
-    <div className={row} data-figma={layout === 'desktop' ? 'list tools' : undefined}>
-      <div className={layout === 'desktop' ? tools : compactTools}>
-        <div className={search} data-figma="search">
-          <SearchField
-            label="Search the toolkit"
-            placeholder="Search names, descriptions and files"
-            size="lg"
-            icon={<SearchIcon />}
-            clearIcon={<CloseCircleIcon />}
-            clearLabel="Clear the search"
-            value={query}
-            onValueChange={onQueryChange}
-          />
-        </div>
-        {layout === 'desktop' && !map ? (
-          <Button variant="secondary" size="lg" data-figma="button · Sort" aria-label="Sort by name">
+    <Grid columns="4" gap="16" data-figma="list tools">
+      <div className={tools}>
+        {field}
+        {map ? null : (
+          // D1 425:62: 12 px sides where `lg` has 16 (Figma 13).
+          <Button variant="secondary" size="lg" padding="compact" data-figma="button · Sort" aria-label="Sort by name">
             <SortIcon size="16" />
             Name
             <ChevronDownIcon size="12" />
           </Button>
-        ) : null}
+        )}
       </div>
-      {layout === 'desktop' ? (
+      <div className={legendCell}>
         <span className={legend} data-figma="counts legend">
           {map ? 'A line means one file links to another' : 'links to → · linked from ← · files'}
         </span>
-      ) : null}
-    </div>
+      </div>
+    </Grid>
   )
 }

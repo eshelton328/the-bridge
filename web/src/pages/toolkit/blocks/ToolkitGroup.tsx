@@ -13,9 +13,12 @@ import type { ToolkitGroupView } from '../types.ts'
 import { ToolkitCard } from './ToolkitCard.tsx'
 import { ToolkitRow } from './ToolkitRow.tsx'
 
-// Figma 425:71: the header is as wide as its chevron, label and count, and 31 high. The list variant is 36 high
-// (12 above, 8 below); the sidebar variant (8 above, 6 below) is 30, the nearest the library has.
+// Figma 425:71: the header is as wide as its chevron, label and count. On the desktop it is 31 high, the label 10
+// under its top: `toolkit` is 32 high. On a tablet (T1 428:53) it is 27 high, the label 8 under its top:
+// `toolkitCompact` is 28. The phone's (M1 429:91) is 23 high with no label offset in the library, and the pane
+// (D3) keeps the sidebar variant (8 above, 6 below, 30 high).
 const header = css({ alignSelf: 'flex-start' })
+const variants = { desktop: 'toolkit', tablet: 'toolkitCompact', phone: 'sidebar', pane: 'sidebar' } as const
 
 const columns = { desktop: '4', tablet: '2', phone: '1', pane: '1' } as const
 // T1 428:58: the rows are 8 apart, across and down; M1 429:96 and D3 427:94: 10 apart.
@@ -49,7 +52,7 @@ export function ToolkitGroup({ group, open, onOpenChange, layout, selected, onOp
           open={open}
           onOpenChange={onOpenChange}
           contentId={contentId}
-          variant="sidebar"
+          variant={variants[layout]}
         />
       </div>
       {open ? (

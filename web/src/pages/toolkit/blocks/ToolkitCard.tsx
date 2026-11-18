@@ -3,21 +3,17 @@
 // description, and the counts: the files it links to (→), the files that
 // link to it (←) and its files; the page's legend names the arrows. On a
 // tablet or phone it is a row (Figma `toolkit row · <name>`, T1 428:59):
-// the kind tile, the name over its path and the two link counts, with no
-// description. A long path or description ends with an ellipsis and shows
-// in full in a tooltip. Props only.
+// the kind tile, the name over its path and the two link counts at the
+// row's end, with no description. A long path or description ends with an
+// ellipsis and shows in full in a tooltip. Props only.
 import { Card, KindTile } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemView } from '../types.ts'
-
-// T1 428:67: the counts are one mono line, "→0 ←1".
-const counts = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap' })
 
 export type ToolkitCardProps = {
   item: ToolkitItemView
   /** The Figma layer the card stands for; none when two shown items share a name. */
   figma?: string | undefined
-  /** The tablet and phone row: no description, and the link counts beside the name. */
+  /** The tablet row: no description, and the link counts at the row's end. */
   compact?: boolean | undefined
   /** Called when the card is clicked, to open its item; the card is not interactive without it. */
   onSelect?: (() => void) | undefined
@@ -27,12 +23,14 @@ export function ToolkitCard({ item, figma, compact = false, onSelect }: ToolkitC
   if (compact) {
     return (
       <div data-figma={figma}>
+        {/* T1 428:59: a 60 px row, the tile 13 in, and the counts (428:67, one mono line "→0 ←1") centred at its end. */}
         <Card
           title={item.name}
           leading={<KindTile kind={item.kind} size="sm" />}
           subtitle={item.path}
           onSelect={onSelect}
-          badge={<span className={counts}>{`→${String(item.linksTo)} ←${String(item.linkedFrom)}`}</span>}
+          padding="compact"
+          trailing={`→${String(item.linksTo)} ←${String(item.linkedFrom)}`}
         />
       </div>
     )
@@ -45,6 +43,8 @@ export function ToolkitCard({ item, figma, compact = false, onSelect }: ToolkitC
         subtitle={item.path}
         description={item.description}
         onSelect={onSelect}
+        // D1 425:86: the spacer puts the counts 34 under the description, so the card is 148 high (Figma 150).
+        metaSpacer
         meta={
           <>
             <span>{`→ ${String(item.linksTo)}`}</span>
