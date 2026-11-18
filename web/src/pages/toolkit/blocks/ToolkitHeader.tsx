@@ -4,7 +4,9 @@
 // source line. The phone (M1 429:51) shows the three views as icon buttons
 // and puts Read-only under the search (ToolkitListTools). Beside an open item
 // (`pane`, D3 427:55) the header is the title, the count and Read-only, with
-// no source and no views. Props only.
+// no source and no views. The Activity view (D11 444:158) says its counts come
+// from the session files; D12 keys the header by its node id (`layer`), as its
+// run panel has a header too. Props only.
 import {
   Badge,
   Button,
@@ -33,9 +35,20 @@ export type ToolkitHeaderProps = {
   onViewChange?: ((view: ToolkitView) => void) | undefined
   /** `pane` is the list beside an open item (D3). */
   layout: Viewport | 'pane'
+  /** Where the page reads from, on the desktop; toolkit/ in the brain when not set. */
+  source?: string | undefined
+  /** The header's Figma key; `header` when not set. */
+  layer?: string | undefined
 }
 
-export function ToolkitHeader({ count, view, onViewChange, layout }: ToolkitHeaderProps) {
+export function ToolkitHeader({
+  count,
+  view,
+  onViewChange,
+  layout,
+  source: readFrom = 'Read from toolkit/ in the brain',
+  layer = 'header',
+}: ToolkitHeaderProps) {
   const desktop = layout === 'desktop'
   if (layout === 'pane') {
     return (
@@ -75,9 +88,9 @@ export function ToolkitHeader({ count, view, onViewChange, layout }: ToolkitHead
     )
   }
   return (
-    <div data-figma="header">
+    <div data-figma={layer}>
       <PageHeader title="Toolkit" count={count} countLabel={`${String(count)} items`} size={desktop ? 'page' : 'phone'}>
-        {desktop ? <span className={source}>Read from toolkit/ in the brain</span> : null}
+        {desktop ? <span className={source}>{readFrom}</span> : null}
         <div data-figma="read-only">
           <Badge variant="quiet" label="Read-only" icon={<LockIcon size="12" />} />
         </div>
