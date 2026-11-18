@@ -2,7 +2,7 @@
 
 What still differs from Figma after the fidelity loop
 (`pnpm fidelity toolkit T28`, 2026-11-18, against library
-1.0.0-beta.31), each with its reason. The library gaps are in
+1.0.0-beta.36), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/ruleLinksTablet.ts`: D29's data
 (`ruleLinks`). On a tablet the item replaces the list in the shared

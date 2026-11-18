@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first run of the fidelity loop
 (`pnpm fidelity toolkit M31`, 2026-11-18, against the installed library
-1.0.0-beta.31), each with its reason. The library gaps are in
+1.0.0-beta.36), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/ruleLinksPhone.ts`: T28's data
 (`ruleLinksTablet`, D29's links). Its `links` does not set `named`, so on
@@ -57,6 +57,9 @@ and M17 give the same results as before M31. The frame has no
   `tabBarOverlay`), so the Links to panel and the note lie under the bar
   in the render too, and the item's ScrollFrame body scrolls: the first
   `hiddenOverflow` finding, the scroll that Figma's own layout causes.
+  Since library beta.36 (#139) the tab bar is opaque, so what lies
+  under it no longer shows through; the position and rule results
+  did not change.
 - **Item tabs.** As on M17: Evals ends inside the screen and only
   Activity runs past it, as in Figma; the list's sideways scroll is the
   second `hiddenOverflow` finding. The outline stays `border.selected` at

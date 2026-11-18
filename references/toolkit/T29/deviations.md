@@ -2,7 +2,7 @@
 
 What still differs from Figma after the fidelity loop
 (`pnpm fidelity toolkit T29`, 2026-11-18, against library
-1.0.0-beta.31), each with its reason. The library gaps are in
+1.0.0-beta.36), each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/agentLinksTablet.ts`: D30's data
 (`agentLinks`) with `ui.from` set to the skill writer, as on T07. On a
@@ -38,6 +38,9 @@ before T29. The frame has no `exceptions.json`.
   over the page (AppShell `tabBarOverlay`), and the rest of the item
   scrolls, so the rule check reports the scrolling body as
   `hiddenOverflow`, as on T10 and T15. It is not an exception.
+  Since library beta.36 (#139) the tab bar is opaque, so what lies
+  under it no longer shows through; the position and rule results
+  did not change.
 - **Item frame.** In `DetailFrame` the back row is the ScrollFrame's
   header and the item is the body under it, so the article starts under
   the back row (`toolkit item` y +32, h -18, x +2, w -4: the Container
