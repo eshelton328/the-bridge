@@ -80,14 +80,15 @@ screen uses the part named under "Used now", and the frame's
 
 ## Closed by 1.0.0-beta.42
 
-- **Tablet safe area** (T02b, T04, T06, T07): `AppShell size="tablet"`
-  keeps `shell.safeAreaBottom` (34) under a detail with no tab bar, so
-  the tablet chat's composer ends 34 over the screen's end, at y 1124.
-  Figma ends it 37 over on T2b (402:5783), 33 on T7 (420:298) and 16 on
-  T6 (402:15201). The 3 px against T2b's 37 is accepted (bridge-coord,
-  d-100): T02b's and T07's composers now pass. T06's composer ends 18
-  px higher than Figma's (y -25), and T04's stays where the keyboard
-  would be (Phone keyboard).
+- **Tablet safe area** (T02b, T04, T06, T07, T08, T09, T10, T11, T12,
+  T13): `AppShell size="tablet"` keeps `shell.safeAreaBottom` (34) under
+  a detail with no tab bar, so the tablet chat's composer ends 34 over
+  the screen's end, at y 1124. Figma ends it 37 over on T2b (402:5783),
+  33 on T7 (420:298) and T8 to T13, and 16 on T6 (402:15201). The 3 px
+  against T2b's 37 is accepted (bridge-coord, d-100): the composers of
+  T02b, T07 and T08 to T13 now pass (T08 to T13 at y -4). T06's
+  composer ends 18 px higher than Figma's (y -25), and T04's stays where
+  the keyboard would be (Phone keyboard).
 
 ## Closed by 1.0.0-beta.39
 
