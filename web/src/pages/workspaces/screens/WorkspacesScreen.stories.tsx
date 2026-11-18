@@ -582,3 +582,16 @@ export const PhoneAddMenu: Story = {
     await expect(within(document.body).queryByRole('menuitem', { name: 'New workspace' })).toBeNull()
   },
 }
+
+export const PhoneTapChat: Story = {
+  name: 'M16: a tap on a chat in the phone list, which opens it',
+  args: { data: workspacesStates.phoneTapChat.data, ui: workspacesStates.phoneTapChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M16. WorkspacesPhoneTapChat.test.tsx checks that a tap opens the chat full screen.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('release notes')).toBeVisible()
+    await expect(within(document.body).queryByRole('menu')).toBeNull()
+    await expect(within(document.body).queryByRole('dialog')).toBeNull()
+  },
+}
