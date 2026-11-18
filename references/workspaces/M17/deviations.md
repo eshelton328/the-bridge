@@ -49,9 +49,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   is `subtitle` (17/24) against Figma's SemiBold 16 at 21, and the model
   chip is 26 high against 22, so the header is 83 high against 79; the
   entries below move 4 px down, within the tolerance.
-- **The ⋯ is lighter (Chat header).** Figma's ⋯ is a heavy 18 px icon in
-  the text colour; the icon set has no 18 px size and draws `MoreIcon`
-  thin, so it is a 20 px `MoreIcon` in a 24 px text button.
+- **The back chevron is thinner and the ⋯ lighter (Chat header).** The
+  back chevron (402:10775) is a 2 px stroke at 20 px in Figma;
+  `ChevronLeftIcon` draws the same path in a 24 px box with stroke 2 and
+  takes no stroke prop, so at 20 px its stroke is about 1.7 px. Figma's ⋯
+  is a heavy 18 px icon in the text colour; the icon set has no 18 px size
+  and draws `MoreIcon` thin, so it is a 20 px `MoreIcon` in a 24 px text
+  button.
 - **The attachment chip is 26 high with thin icons (Composer attachment
   remove).** Figma's chip (402:10834) is 140 × 22 with a heavy paperclip
   and ×; `Composer` draws its own chip, about 141 × 26, with a thin

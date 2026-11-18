@@ -74,9 +74,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   high against 105, and `AppShell` keeps a 34 px safe area under it.
   Figma puts M18's composer 2 px lower than M17's (y 710 against 708),
   so the offset is 2 px more than M17's.
-- **The header is 4 px taller and the ⋯ lighter (Chat header, Chat header
-  text).** As in M17: the title is `subtitle` (17/24) against SemiBold 16
-  at 21, the model chip 26 high against 22, and the ⋯ a 20 px `MoreIcon`.
+- **The header is 4 px taller, the back chevron thinner and the ⋯ lighter
+  (Chat header, Chat header text).** As in M17: the title is `subtitle`
+  (17/24) against SemiBold 16 at 21, the model chip 26 high against 22,
+  and the ⋯ a 20 px `MoreIcon`. The back chevron (422:143) is a 2 px
+  stroke at 20 px in Figma; `ChevronLeftIcon` draws the same path in a 24
+  px box with stroke 2 and takes no stroke prop, so at 20 px its stroke is
+  about 1.7 px.
 - **The attachment chip is 26 high with thin icons (Composer attachment
   remove).** As in M17.
 - **The stars sit elsewhere (Backdrop stars).** `Backdrop size="phone"`
