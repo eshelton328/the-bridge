@@ -67,7 +67,10 @@ each file of a page folder is for.
   (`discussion.sourceLabel`), and `DiscussionEmpty place="phone"`, whose
   text is 320 wide and whose suggestions stack under "Try"
   (`empty.tryLabel`); the reply box pads 4 above the AppShell's home
-  indicator area. Back and the card return to M2.
+  indicator area. Back and the card return to M2. With entries (M10) the
+  phone's page shows D8's question, reply and proposal as T5 does, and
+  Apply closes the page the same way (`proposalEffect(…, 'page')`), so
+  M2 shows Updated and Discuss reopens the applied proposal.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
   as the Inbox's task and discussion (D14); Discuss toggles it. The
@@ -86,7 +89,9 @@ each file of a page folder is for.
   scrolls M2's page and checks the Back bar and the tab bar stay put, and
   that Back shows M1's library; and it scrolls M9's page and checks the
   nav, the card and the reply box stay put, that a long draft keeps Send
-  in reach, and that M2's Discuss opens M9 and its Back returns to M2.
+  in reach, and that M2's Discuss opens M9 and its Back returns to M2;
+  it scrolls M10's page as T5's and checks that Apply returns to M2,
+  Updated, and that Discuss then shows the applied proposal.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
@@ -259,7 +264,9 @@ each file of a page folder is for.
   menu, the sheet open, skill-evals checked) and M8 `morePhone` (M1's data
   with the More drawer open) and M9 `discussPhone` (M2's data with its
   discussion open; `artifactPhone` holds D7's discussion with M9's Back
-  label, the card's source, "Try" and node id, so M2's Discuss opens it). `library` stays first in `states/index.ts`: the app
+  label, the card's source, "Try" and node id, so M2's Discuss opens it)
+  and M10 `changeProposedPhone` (M9's data with D8's entries, context and
+  what Apply shows; M10's node id of Open in workspace). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips

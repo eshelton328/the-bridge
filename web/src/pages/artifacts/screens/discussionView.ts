@@ -18,9 +18,9 @@ export function discussionEntries(discussion: ArtifactDiscussion, ui: Decisions)
 
 /**
  * What a press on the proposal changes. Discard drops it. Apply records the decision, and `appliedView` shows the
- * artifact Updated and the proposal applied (D9). On the tablet's discussion page (`page`, T5) Apply also closes the
- * page, so the artifact's page shows Updated (T2), as the desktop's artifact beside its panel does (D9); reopened,
- * the discussion shows the applied proposal. Edit first puts the lines the proposal adds in the reply box, one a line,
+ * artifact Updated and the proposal applied (D9). On the tablet's or phone's discussion page (`page`, T5, M10) Apply
+ * also closes the page, so the artifact's page shows Updated (T2, M2), as the desktop's artifact beside its panel does
+ * (D9); reopened, the discussion shows the applied proposal. Edit first puts the lines the proposal adds in the reply box, one a line,
  * for Erik to change and send; the proposal stays until he applies or discards it.
  */
 export function proposalEffect(

@@ -9,7 +9,8 @@
 // (T5 452:3841) the question, the reply and the proposal, as D8's. On a
 // phone (M9 452:3982) the same page, 12 in: the nav has only Back and Open in
 // workspace, the model and context sit in the card under its meta line, as
-// the Inbox's (M18), and the suggestions stack under "Try". Props only.
+// the Inbox's (M18), and the suggestions stack under "Try"; with entries
+// (M10 452:4080) T5's question, reply and proposal. Props only.
 import { BackRow, Button, ChatIcon, Composer, Inline, Stack } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'

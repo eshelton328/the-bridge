@@ -330,3 +330,21 @@ export const DiscussPhone: Story = {
     await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
   },
 }
+
+export const ChangeProposedPhone: Story = {
+  name: 'M10: a proposed update to the artifact in its discussion page on a phone',
+  args: {
+    data: artifactsStates.changeProposedPhone.data,
+    ui: artifactsStates.changeProposedPhone.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks M10's page at the phone's width, and that Apply shows M2 Updated.
+    await expect(canvas.getByText('A dashed line at the median pass rate, 71%')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '48')
+    // M10's own node id of its one Open in workspace.
+    await expect(canvasElement.querySelector('[data-figma="452:4181"]')).not.toBeNull()
+  },
+}

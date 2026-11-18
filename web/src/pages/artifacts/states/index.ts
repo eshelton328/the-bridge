@@ -24,6 +24,7 @@ import { addLinkPhone } from './addLinkPhone.ts'
 import { filePhone } from './filePhone.ts'
 import { morePhone } from './morePhone.ts'
 import { discussPhone } from './discussPhone.ts'
+import { changeProposedPhone } from './changeProposedPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -49,4 +50,5 @@ export const artifactsStates = {
   filePhone,
   morePhone,
   discussPhone,
+  changeProposedPhone,
 }

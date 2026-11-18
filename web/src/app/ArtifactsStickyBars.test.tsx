@@ -415,6 +415,61 @@ describe('the proposed update on the tablet (T5)', () => {
   })
 })
 
+describe('the proposed update on the phone (M10)', () => {
+  it('keeps the nav, the card and the reply box in view while the messages scroll (M10)', async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('changeProposedPhone')
+    await expect.poll(() => root.querySelector('[data-figma="proposal · UPDATE THIS ARTIFACT"]')).not.toBeNull()
+    const nav = root.querySelector('[data-figma="nav"]')
+    const card = root.querySelector('[data-figma="artifact · discussing"]')
+    const bottom = root.querySelector('[data-figma="composer · discussion"]')
+    if (nav === null || card === null || bottom === null) throw new Error('no discussion page')
+    expect(root.querySelector('[data-figma="tab bar"]')).toBeNull()
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')]
+    expect(bodies).toHaveLength(1)
+    const [body] = bodies
+    if (body === undefined) throw new Error('no messages')
+    const long = document.createElement('div')
+    long.style.height = '3000px'
+    long.style.flexShrink = '0'
+    ;(body.firstElementChild ?? body).append(long)
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = { nav: box(nav).top, card: box(card).top, bottom: box(bottom).bottom }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop > 0).toBe(true)
+    expect(root.querySelector('.app-shell__detail')?.scrollTop ?? 0).toBe(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(nav).top).toBe(before.nav)
+    expect(box(card).top).toBe(before.card)
+    expect(box(bottom).bottom).toBe(before.bottom)
+    expect(box(bottom).bottom).toBeLessThanOrEqual(window.innerHeight)
+    expect(box(card).bottom).toBeLessThanOrEqual(box(bottom).top)
+    await view.unmount()
+  })
+
+  it('returns to the artifact page, Updated, on Apply, and shows the applied proposal when reopened (M10 to M2)', async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('changeProposedPhone')
+    await expect.poll(() => root.querySelector('[data-figma="proposal · UPDATE THIS ARTIFACT"]')).not.toBeNull()
+    const apply = [...root.querySelectorAll('button')].find((b) => b.textContent === 'Apply')
+    if (apply === undefined) throw new Error('no Apply')
+    await userEvent.click(apply)
+    // M2: the artifact's page with the tab bar, and Updated where the update came from.
+    await expect.poll(() => root.querySelector('[data-figma="top bar"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="artifact · discussing"]')).toBeNull()
+    expect(root.querySelector('[data-figma="tab bar"]')).not.toBeNull()
+    expect(root.textContent).toContain('Updated')
+    expect(root.textContent).toContain('updated just now from the discussion')
+    // Discuss reopens the discussion, with the applied proposal and no buttons.
+    const discuss = root.querySelector('[data-figma="button · Discuss"] button')
+    if (!(discuss instanceof HTMLElement)) throw new Error('no Discuss')
+    await userEvent.click(discuss)
+    await expect.poll(() => root.querySelector('[data-figma="proposal · applied"]')).not.toBeNull()
+    expect([...root.querySelectorAll('button')].some((b) => b.textContent === 'Apply')).toBe(false)
+    await view.unmount()
+  })
+})
+
 describe('a long draft (d-107)', () => {
   for (const c of states)
     it(`keeps Send in reach of the wheel when the reply box holds 70 lines: ${c.name}`, async () => {
