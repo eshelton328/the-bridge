@@ -340,6 +340,19 @@ export const ForkForm = z.object({
 })
 export type ForkForm = z.infer<typeof ForkForm>
 
+/** The Fork dialog's layers in a frame other than D15, whose ids `ForkDialog` keeps as its defaults (T8). */
+export const ForkDialogLayers = z.object({
+  dialog: z.string(),
+  name: z.string(),
+  startFrom: z.string(),
+  /** The start-from choices, in order. */
+  choices: z.array(z.string()),
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type ForkDialogLayers = z.infer<typeof ForkDialogLayers>
+
 /**
  * The Subtask form (D17 417:1026): what the subagent should do and which model runs it. The subtask gets the chat's
  * full context and returns its result to the chat.
@@ -580,6 +593,8 @@ export const SidebarLayers = z.object({
    * no `data-*`, so the icons carry the rows' places.
    */
   addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
+  /** The Fork dialog over the tablet's chat (T8); D15's layers when not set. */
+  forkDialog: ForkDialogLayers.optional(),
   /** The Fork sheet on the phone (M18 422:217): its fields, the start-from choices in order, the note and Fork. */
   phoneFork: z
     .object({

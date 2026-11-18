@@ -40,7 +40,9 @@
 // ChatActionsMenu) in place of the phone's sheet. T3 draws the chat's
 // subagents at a tablet's width, with Start a subtask under the cards, which
 // opens the Subtask form over the chat. T7 opens New chat over the tablet's
-// chat as D3's dialog (NewChatDialog), from the chat actions' New chat.
+// chat as D3's dialog (NewChatDialog), from the chat actions' New chat. T8
+// opens the actions' Fork over it as D15's dialog (ForkDialog) in place of
+// M18's sheet.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -50,6 +52,7 @@ import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
+import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
@@ -388,7 +391,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
             layers={data.layers}
           />
         )}
-        {data.fork === undefined ? null : (
+        {data.fork === undefined || device !== 'phone' ? null : (
           <PhoneFork
             form={data.fork}
             chat={chat.head.title}
@@ -407,6 +410,17 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
               onUiChange({ chatDialog: open ? 'subtask' : null })
             }}
             layers={data.layers?.phoneSubtask}
+          />
+        )}
+        {device === 'phone' || data.fork === undefined ? null : (
+          <ForkDialog
+            form={data.fork}
+            chat={chat.head.title}
+            open={ui.chatDialog === 'fork'}
+            onOpenChange={(open) => {
+              onUiChange({ chatDialog: open ? 'fork' : null })
+            }}
+            layers={data.layers?.forkDialog}
           />
         )}
         {device === 'phone' || data.newChat === undefined ? null : (
