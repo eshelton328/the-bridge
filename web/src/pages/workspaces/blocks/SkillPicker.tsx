@@ -1,18 +1,22 @@
 // The skills a composer lists after "/" (D1 105:406), above the composer,
-// which is the popover's trigger: a 160 px popover (`width="xs"`) whose rows
-// show each /name in mono, the highlighted one filled, with no check. On the
-// phone (M3 105:2805) the list is as wide as the composer and compact, with
-// no rule after its label, and the focus stays in the message box. Props only.
+// which is the popover's trigger: rows that show each /name in mono, the
+// highlighted one filled, with no check. The list grows with the composer
+// (R8, Erik's screen review of 2026-11-18): in a pane and on the tablet it
+// is 40% of the composer's width, from 240 to 400 (`width="composer"`); on
+// the phone (M3 105:2805) it is as wide as the composer (`width="trigger"`).
+// The phone's and the tablet's lists are compact, with no rule after their
+// label, and the focus stays in the message box. Props only.
 import { OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
 import type { ReactElement } from 'react'
 import type { Skill } from '../types.ts'
 
-// `pane`: the desktop's list (D1). `phone`: Figma's 358 × 173 box with 44 px rows (M3 105:2805); `lg` (360) is the
-// nearest width, and the compact spacing draws the label's 20 px row and the rows as Figma does. Figma's SKILLS spacer
-// (105:2808) draws no line.
+// `pane`: the desktop's list (D1; Figma draws it 160 wide). `tablet`: T4's list (105:2246; Figma 360). `phone`:
+// Figma's 358 × 173 box with 44 px rows (M3 105:2805), as wide as the composer. The compact spacing draws the label's
+// 20 px row and the rows as Figma does; Figma's SKILLS spacer (105:2808) draws no line.
 const layouts = {
-  pane: { width: 'xs', compact: false },
-  phone: { width: 'lg', compact: true },
+  pane: { width: 'composer', compact: false },
+  tablet: { width: 'composer', compact: true },
+  phone: { width: 'trigger', compact: true },
 } as const
 
 export type SkillPickerProps = {
@@ -29,7 +33,8 @@ export type SkillPickerProps = {
   /** The focus enters the list, as the popover moves it there when it opens; not on the phone, whose popover leaves
    * the focus in the box, so a Tab into the list stays there. */
   onListFocus?: (() => void) | undefined
-  /** `pane` (the default): a pane or the chat alone (D1); `phone`: the chat on the phone (M3). */
+  /** `pane` (the default): a pane or the chat alone (D1); `tablet`: the chat on the tablet (T4); `phone`: the chat on
+   * the phone (M3). */
   layout?: keyof typeof layouts | undefined
   /** The list's Figma layer, for the fidelity checks; D1's when not set. */
   figma?: string | undefined

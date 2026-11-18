@@ -86,8 +86,9 @@ first: it says what each file of a page folder is for.
   `ChatPane` (the transcript in a `ScrollFrame` body and the composer in
   its footer; a message that starts with "/", or a word that starts with
   "/" before the caret, opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
-  `SkillPicker` (the skills after "/": `Popover width="xs"` and a mono
-  `OptionList` with no check), `ShellPane` (the library's `TerminalLines`
+  `SkillPicker` (the skills after "/": `Popover width="composer"`, 40%
+  of the composer from 240 to 400 (screen review R8; `SkillListWidth.test.tsx`
+  checks the widths), and a mono `OptionList` with no check), `ShellPane` (the library's `TerminalLines`
   in a `ScrollFrame`) and `EmptyPane` (the library's `EmptyPane`: start a
   chat, or open one of the workspace). D2 adds
   `WorkspaceSidebar` (the title, the toggle, + and the groups; only a
@@ -179,8 +180,8 @@ first: it says what each file of a page folder is for.
   (the chat on the phone: `ChatHead size="phone"` with the back button in
   its `back` slot and a bare ⋯, over `ChatPane size="phone"`), `autoFocus`
   to `ChatPane` (the focus in the message box) and `layout="phone"` to
-  `SkillPicker` (as wide as the composer, compact, and the focus stays in
-  the box); a tap on a chat in the phone's list opens it, and the back
+  `SkillPicker` (as wide as the composer, `Popover width="trigger"`,
+  compact, and the focus stays in the box); a tap on a chat in the phone's list opens it, and the back
   button returns to the list. M4 adds `PhoneChatActions` (the chat
   actions sheet behind the phone chat's ⋯: `BottomSheet size="sm"` titled
   with the chat's name, the actions in `OptionList`s with no check, Move
@@ -310,8 +311,8 @@ first: it says what each file of a page folder is for.
   with `panel.startSubtask`), which opens the Subtask form over the chat
   (`ui.chatDialog: 'subtask'`) when the state has `data.subtask`.
   T4 needs no new block: T2's chat with "/" typed after an attachment
-  lists the skills over the composer as M3 does (`SkillPicker
-  layout="phone"`), and the screen keeps its full height under the
+  lists the skills over the composer, compact as M3 does (`SkillPicker
+  layout="tablet"`, 40% of the composer as in a pane, R8), and the screen keeps its full height under the
   keyboard (LIBRARY_GAPS.md: Phone keyboard).
   T5 adds `device` and `chat` to `PhoneFolders` (at a tablet's width the
   sheet's title row is Folders with the chat's name after it and ×, drawn
