@@ -77,3 +77,31 @@ report's text, position and rule results are unchanged). The frame has no
 - **Other tabs.** Overview opens the workflow's D8 Overview on the same
   page; Files, Links, Evals and Activity show empty panels: they are
   later frames.
+
+## Second review
+
+A blind side-by-side review of D13 found three differences (F1 to F3).
+After the fix, `pnpm fidelity toolkit D13 T08 D14 T07 M19` (2026-11-17,
+library 1.0.0-beta.26) gives D13 the same results as above: text and
+rules pass, and position fails on the same three keys
+(`button · Show on map`, `446:514`, `stop · skill-eval-cases`). T08, D14,
+T07 and M19 keep their results.
+
+- **F2, header rows (fixed).** Figma's meta row, title, path row, tabs
+  and description are 14 apart; the render had 12, so the path row sat at
+  164 against 168 and the tabs 6 higher. No space token has 14: the page
+  now keeps the gap's 12 and adds 2 above each row after the first, and
+  the breadcrumb row's foot space is 2. The path row is at 168 (Figma
+  168), the tabs at 210 (Figma 208), and the description 14 under the
+  tabs (Figma 14), at 256 (Figma 255). The flow panel stays at 310 and the
+  details row at 716.
+- **F3, details panels (not fixed).** The step, gates and rounds panels
+  are 246 px high against Figma's 242, so they end 4 px lower, with 13 px
+  under the last field against Figma's 4. Figma's last field
+  (`field · If it fails` 446:644) ends 4 over the panel's foot, where
+  `Panel` pads 12 and scrolls content that runs into that space (a 4 px
+  smaller foot made `panel__body` scroll, a `hiddenOverflow` finding). The
+  fields cannot move up: they are 26 apart against 27 (`small` is 16 high),
+  so the last one is already 3 px over Figma's. Gap: Workflow page details.
+- **F1, Show on map icon.** The library's `MapIcon` glyph against Figma's
+  `icon/map`; no action.
