@@ -191,8 +191,8 @@ describe('a long draft (d-107)', () => {
       await userEvent.fill(field, Array.from({ length: 70 }, (_, i) => `line ${String(i + 1)}`).join('\n'))
       // The box grows to its text a frame or more after the input: let the layout settle before measuring.
       await new Promise((resolve) => setTimeout(resolve, 300))
-      // The element around the Composer: the reply layer, which caps the box.
-      const box = field.closest('.composer__root')?.parentElement ?? field
+      // The library Composer, which caps its draft (30% of the nearest size container) and scrolls inside.
+      const box = field.closest('.composer__root') ?? field
       // The reply box stays inside the window; past its cap it scrolls, and scrolled to its end Send is in view.
       expect(box.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight)
       expect(box.getBoundingClientRect().top).toBeGreaterThanOrEqual(0)
@@ -206,5 +206,37 @@ describe('a long draft (d-107)', () => {
         )
         .toBe(true)
       expect(send.getBoundingClientRect().top).toBeGreaterThanOrEqual(box.getBoundingClientRect().top)
+    })
+
+  // A short window (the-bridge#45: at 1232 x 400 a box capped at half the window left the messages 0 px): with a
+  // 70-line draft, the Composer stops at 30% of the discussion panel (a size container) and the entries between the
+  // bars keep at least 100 px (104 at 1232 x 400; 18 with the 50vh cap).
+  for (const [w, h] of [
+    [1232, 400],
+    [1512, 600],
+  ] as const)
+    it(`keeps the discussion's entries room to read with a long draft at ${String(w)} x ${String(h)} (D15)`, async () => {
+      await page.viewport(w, h)
+      const view = await renderInbox('changeProposed').rendered
+      onTestFinished(view.unmount)
+      await expect.poll(() => document.querySelector('[data-figma="composer · discussion"] textarea')).not.toBeNull()
+      // The app's root fills the window, as in index.html, so the window's height bounds the panel.
+      const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+      if (!(root instanceof HTMLElement)) throw new Error('no root')
+      root.style.height = '100%'
+      const field = document.querySelector('[data-figma="composer · discussion"] textarea')
+      if (!(field instanceof HTMLTextAreaElement)) throw new Error('no reply box')
+      await userEvent.fill(field, Array.from({ length: 70 }, (_, i) => `line ${String(i + 1)}`).join('\n'))
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      const composer = field.closest('.composer__root')
+      const panel = field.closest('[data-figma="discussion panel"]')
+      const body = field.closest('.scroll-frame__footer')?.parentElement?.querySelector('.scroll-frame__body')
+      if (!(composer instanceof HTMLElement) || !(panel instanceof HTMLElement) || !(body instanceof HTMLElement))
+        throw new Error('no frame')
+      const style = getComputedStyle(panel)
+      const inner = box(panel).height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom)
+      expect(box(composer).height).toBeLessThanOrEqual(inner * 0.3 + 1)
+      expect(field.scrollHeight).toBeGreaterThan(field.clientHeight)
+      expect(box(body).height).toBeGreaterThanOrEqual(100)
     })
 })
