@@ -30,6 +30,11 @@ y.
   variant="notice"` pads 10 and 12 against Figma's 11 and 13, and its rows
   are 4 apart against 5. Library gap "Model chip width" (its M9 note) and
   the 4 px grid (d-072).
+- **Card title.** "Skill eval pass rates" is `paneTitle` (SemiBold
+  15/20), so it is 141 px wide against Figma's 132 (452:4019, about
+  SemiBold 14 in an 18 px line). The library has no SemiBold 14 text
+  style: `label` is Medium 14 and `paneTitle` SemiBold 15. Library gap
+  "Discussed artifact title size".
 - **Model and context.** `model and context` w +6.2 (226 against 220):
   `ModelChip` pads its sides more than Figma's 83 px picker, as in D7 and
   T4. Library gap "Model chip width".

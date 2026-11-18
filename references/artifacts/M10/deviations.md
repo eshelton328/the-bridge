@@ -1,7 +1,8 @@
 # M10 deviations
 
-What still differs from Figma after fix round 1 of the fidelity loop
-(`pnpm fidelity artifacts M10`, 2026-11-18, against the installed
+What still differs from Figma after the review fix round of the
+fidelity loop (`pnpm fidelity artifacts M10`, 2026-11-18, against the
+installed
 library 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M10 is D8's proposed update
 (`../D08/deviations.md`) on M9's discussion page (`../M09/deviations.md`),
@@ -29,6 +30,11 @@ status bar (d-102), and the position check adds 38 to each render y.
   and 15, the model chip is 26 high against 22 (454:428), and `Panel
   variant="notice"` pads 10 and 12 against Figma's 11 and 13. Library
   gap "Model chip width" and the 4 px grid (d-072).
+- **Card title.** "Skill eval pass rates" is `paneTitle` (SemiBold
+  15/20), so it is 141 px wide against Figma's 132 (452:4117, about
+  SemiBold 14 in an 18 px line), as in M9. The library has no SemiBold
+  14 text style: `label` is Medium 14 and `paneTitle` SemiBold 15.
+  Library gap "Discussed artifact title size".
 - **Model and context.** `model and context` w +6.2 (226 against 220):
   `ModelChip` pads its sides more than Figma's 83 px picker, as in D7,
   T4 and M9. Library gap "Model chip width".
@@ -47,9 +53,11 @@ status bar (d-102), and the position check adds 38 to each render y.
   are 12 apart, as Figma's.
 - **Messages.** As in D8 and T5: Erik's message is `Message from="user"`
   in 14/20 against Figma's 13/19 (452:4132), so it is 60 high against
-  58; the reply is composed in the page (a violet 12 px bubble,
-  "Discussion" in `labelXsStrong`, the text in `bodySm`, 62 against 60).
-  Library gap "Message author icon and small text".
+  58, and its first line wraps one word earlier: it ends "and sort",
+  where Figma's ends "and sort the", so "the" starts the second line.
+  The reply is composed in the page (a violet 12 px bubble,
+  "Discussion" in `labelXsStrong`, the text in `bodySm`, 62 against
+  60). Library gap "Message author icon and small text".
 - **Proposal block.** `proposal · UPDATE THIS ARTIFACT` h +7 and
   `diff · CHART` h +5, as in D8 and T5: no spark icon before the eyebrow
   (452:4141), and `ProposalDiff` draws its rows a few px taller than
@@ -75,8 +83,11 @@ status bar (d-102), and the position check adds 38 to each render y.
 
 ## Values picked (d-100)
 
-- Apply on the phone: back to the artifact's page (M2), as the tablet
-  (T5); Figma's note does not say otherwise.
+- Apply on the phone: Apply closes the discussion page and returns to
+  the artifact's page (M2), as Apply on the tablet returns to T2 (T5).
+  M2 then shows Updated and "updated just now from the discussion", and
+  Discuss reopens the discussion with the applied proposal. Figma's
+  note does not say otherwise.
 - The first entry 12 under the discussion area's top (Figma 14, on the
   4 px grid); the entries 12 apart, as Figma's. The entries take the
   page's full 366 px, as Figma's.

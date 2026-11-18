@@ -1,7 +1,7 @@
 # M01 deviations
 
-What still differs from Figma after fix round 1 of the fidelity loop
-(`pnpm fidelity artifacts M01`, 2026-11-17, against the installed library
+What still differs from Figma after fix round 2 of the fidelity loop
+(`pnpm fidelity artifacts M01`, 2026-11-18, against the installed library
 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M1 is D1's library on the
 phone as a list of rows (`screens/LibraryPhone.tsx`, `RowGroup` and
@@ -30,8 +30,8 @@ phone as a list of rows (`screens/LibraryPhone.tsx`, `RowGroup` and
   with no gap, so it stays where Figma has it. Library gap "Compact chip
   spacing".
 - **Row previews.** Each row's preview is 44 × 27.5 against Figma's
-  76 × 48, so the previews look small and the title and meta start 27 px
-  left of Figma's (x 77 against 104). No size token is 76; the rows use
+  76 × 48, so the previews look small and the title and meta start 33 px
+  left of Figma's (x 71 against 104). No size token is 76; the rows use
   D2's `control.xl` width. Library gap "List row thumbnail".
 - **Preview drawings.** The previews are `Thumbnail shape="compact"`'s
   own drawings, cropped and scaled: the chart's bars are brighter cyan,
@@ -45,7 +45,16 @@ phone as a list of rows (`screens/LibraryPhone.tsx`, `RowGroup` and
   `Badge size="sm"`, 20 high against Figma's 16, so the age and New sit
   4 apart in one column at the row's end, the age 3 px higher than
   Figma's. `ListRow` pads 10 and has no 16 px badge. Library gap "List
-  row padding and age".
+  row padding and age". At the sides the row's content now sits where
+  Figma's does: the preview starts at x 17 and the age and New end at
+  373 (Figma 16 and 374), because the row takes `ListRow`'s extra 6 px
+  outside the list's padding, as the Inbox's phone rows do.
+- **New badge.** New is `Badge tone="working" size="sm"` with
+  `SparkIcon`: the same teal fill as Figma's (#152c3b against #142a37),
+  but 57 × 20 against Figma's 48 × 16 (406:144), and its spark is a
+  12 px outline where Figma draws a filled four-point star of 9 px
+  (406:145). The library has no filled spark icon and no 16 px badge.
+  Library gap "New badge".
 
 ## Values picked (d-100)
 
@@ -53,5 +62,10 @@ phone as a list of rows (`screens/LibraryPhone.tsx`, `RowGroup` and
 - Rows 2 apart from the header to the groups, as Figma's frames
   (406:70 to 406:114); the search row is padded 8 above its controls
   (406:90, 44 high) and the status 6 above its text (406:110).
-- Earlier's header 4 under Found's last row (Figma 2), because the
-  phone's rows are 4 shorter than Figma's.
+- Earlier's header 6 under Found's last row (Figma 2): the phone's
+  rows are 62 high at Figma's 68 px pitch, so Found's last row ends 3
+  higher than Figma's and the header needs 5 to stay where Figma's is;
+  4 and 6 tie, and the tie takes the larger (d-072). The header is at
+  y 502 against Figma's 501.
+- Sort and Filter draw their icons in `fg.muted`, as Figma's grey
+  (406:100, 406:107).

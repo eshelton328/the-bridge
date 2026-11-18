@@ -1,11 +1,10 @@
 # M07 deviations
 
-What still differs from Figma after fix round 3 of the fidelity loop
-(`pnpm fidelity artifacts M07`, 2026-11-18, against the installed library
-1.0.0-beta.27), each with its reason. The last run re-checks the render
-after `pnpm verify`'s fix (the sheet moved from the phone's page to the
-screen, so the story opens it at any width); it gave the same result as
-round 3. The library gaps are in
+What still differs from Figma after the review fix round of the
+fidelity loop (`pnpm fidelity artifacts M07`, 2026-11-18, against the
+installed library 1.0.0-beta.27), each with its reason. That round
+lined Done up with the sheet's edge and made M2's Copy link and Discuss
+44 high, which puts Made in about 6 px lower. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M7 is M2's artifact page on
 the phone with File in a project open as a sheet over the tab bar
 (`FileSheet`); the page under the scrim has M2's differences
@@ -34,9 +33,9 @@ so the shorter choices move everything above them in the sheet down.
 - `artifact name`: y +43 (h -1).
 - `chips`: w -15.6.
 - `project · File in a project`: w -16.8.
-- `section · MADE IN`: h +20.
-- `made in`: h +21.
-- `text`: h +21.
+- `section · MADE IN`: y +6.9, h +20.
+- `made in`: y +5.9, h +21.
+- `text`: y +5.9, h +21 (x -2).
 - `link · Open in workspace`: no layer of that name in M7.
 
 ## Deviations: the sheet
@@ -61,8 +60,10 @@ so the shorter choices move everything above them in the sheet down.
 
 ## Deviations: the page under the scrim (as M2)
 
-- **Made in.** `section · MADE IN` h +20, `made in` h +21 and `text`
-  h +21, and the extra `link · Open in workspace`: the page is M2's,
+- **Made in.** `section · MADE IN` y +6.9 and `made in` and `text`
+  y +5.9: Copy link and Discuss are 44 high (below), as in M2.
+  `section · MADE IN` h +20, `made in` h +21 and `text` h +21, and the
+  extra `link · Open in workspace`: the page is M2's,
   which puts Open in workspace as a link under the meta line (M2
   452:4229). Figma's M7 copy of the page has no link there. The sheet
   covers Made in in both, so a viewer sees no difference. The page stays
@@ -70,8 +71,11 @@ so the shorter choices move everything above them in the sheet down.
 - **Project chip.** `project · File in a project` w -16.8 and `chips`
   w -15.6: the project chip is a read-only `MetaChip` with no chevron
   (407:973), as in M2. Library gap "Project chip menu".
-- **Page parts.** As M2: the description wraps after "with and", the
-  Open artifact label is smaller, Copy link and Discuss are 36 high, and
+- **Page parts.** As M2: the description's first line ends one word
+  later than Figma's ("with and" against "with"), the Open artifact
+  label is smaller, Copy link and Discuss are 44 high against Figma's 40
+  (407:997, 407:1001; 36 and 44 tie, and the tie takes the larger, d-072),
+  and
   the chart's bars are the library's colours and heights. Library gaps
   "Phone artifact description size", "Large primary button label",
   "Phone secondary action height", "Made in on the phone", "Thumbnail
@@ -82,6 +86,8 @@ so the shorter choices move everything above them in the sheet down.
 
 ## Values picked (d-100)
 
+- Done: the `text` Button reaches 8 past the title row's end, so its
+  label ends at x 372, 1 px inside Figma's 373 (407:1100).
 - Spacing: the artifact's title, the choices, the rule, Remove and the
   note are 2 apart, and the body ends 8 under the note, as Figma's
   (407:1101 ends at 809, the note at 801).

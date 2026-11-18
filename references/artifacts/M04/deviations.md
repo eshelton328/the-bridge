@@ -1,7 +1,7 @@
 # M04 deviations
 
-What still differs from Figma after fix round 2 of the fidelity loop
-(`pnpm fidelity artifacts M04`, 2026-11-17, against the installed library
+What still differs from Figma after fix round 3 of the fidelity loop
+(`pnpm fidelity artifacts M04`, 2026-11-18, against the installed library
 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M4 is M1's library on the
 phone with the Sort menu open as a sheet over the tab bar (`SortSheet`,
@@ -39,8 +39,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   trigger expanded. Library gap "Sheet trigger while open".
 - **Rows under the scrim.** As M1: the previews are 44 × 27.5 against
   Figma's 76 × 48 and drawn by `Thumbnail shape="compact"`, and the rows
-  are 62 high, 6 apart, with New as a 20 px badge. Library gaps "List row
-  thumbnail", "List row padding and age" and "Thumbnail colour".
+  are 62 high, 6 apart. New is a 57 × 20 badge with a 12 px outline
+  spark against Figma's 48 × 16 pill with a filled four-point star
+  (407:601, 407:602); the fill is Figma's teal. Library gaps "List row
+  thumbnail", "List row padding and age", "Thumbnail colour" and "New
+  badge".
 - **Note.** The note under the sorts is `small` (12/16), 16 high against
   Figma's 17 (407:812), within the tolerance.
 - **Device chrome.** The status bar (9:41), the home indicator (407:789)
@@ -48,6 +51,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
   render 38 px shorter, under Figma's status bar (d-102).
 
 ## Values picked (d-100)
+
+- Earlier's header (407:653) 6 under Found's last row, as M1: the
+  sheet's top edge is at y 517 (Figma 518, 407:814) and Earlier's label
+  starts at 516 in the line box (glyph tops about 518), so the sheet
+  covers it as Figma's does. With the earlier gap of 4 the label sat 2 px
+  higher and the tops of its letters showed above the sheet: the rows
+  are 62 high at Figma's 68 px pitch, so Found's last row ends 3 higher
+  than Figma's (496 against 499).
+- Sort and Filter draw their icons in `fg.muted`, as Figma's grey.
 
 - Choices: `OptionList size="sm"`, whose rows are 50 high and 2 apart
   with the text 12 in and the check 12 from the end, as Figma's

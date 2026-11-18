@@ -1,7 +1,7 @@
 # M03 deviations
 
-What still differs from Figma after fix round 1 of the fidelity loop
-(`pnpm fidelity artifacts M03`, 2026-11-17, against the installed library
+What still differs from Figma after fix round 2 of the fidelity loop
+(`pnpm fidelity artifacts M03`, 2026-11-18, against the installed library
 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M3 is M1's library on the
 phone with T3's Filter sheet open over the tab bar (`FilterSheet
@@ -49,8 +49,11 @@ iconOnly`); the library under the scrim has M1's differences
   spacing".
 - **Rows under the scrim.** As M1: the previews are 44 × 27.5 against
   Figma's 76 × 48 and drawn by `Thumbnail shape="compact"`, and the rows
-  are 62 high, 6 apart, with New as a 20 px badge. Library gaps "List row
-  thumbnail", "List row padding and age" and "Thumbnail colour".
+  are 62 high, 6 apart. New is a 57 × 20 badge with an outline spark
+  against Figma's 48 × 16 pill with a filled four-point star (407:99,
+  407:100); the fill is Figma's teal. Library gaps "List row
+  thumbnail", "List row padding and age", "Thumbnail colour" and "New
+  badge".
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier, as T3.
 - **Device chrome.** The status bar (9:41), the home indicator (407:287)
@@ -62,4 +65,7 @@ iconOnly`); the library under the scrim has M1's differences
 - Sheet, section rows, Show and focus: T3's (`../T03/deviations.md`); M3's
   sheet has T3's insets (407:399 to 407:502).
 - Filter: M1's 36 px icon-only button, pressed while the sheet is open,
-  with no dot, as Figma draws it (407:61).
+  with no dot, as Figma draws it (407:61); its icon stays `fg.muted`
+  while pressed, as Figma's.
+- Clear: the `text` Button reaches 8 past the title row's end, so its
+  label ends 1 px inside Figma's (407:405 ends at x 373).

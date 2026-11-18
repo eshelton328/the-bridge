@@ -2,7 +2,9 @@
 
 What still differs from Figma after fix round 3 of the fidelity loop
 (`pnpm fidelity artifacts M05`, 2026-11-17, against the installed library
-1.0.0-beta.27), each with its reason. The library gaps are in
+1.0.0-beta.27), each with its reason. A run on 2026-11-18, after the
+phone rows' side padding and the tool icons changed, still passes all
+three checks. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M5 is M1's library on the
 phone with "eval" in the search (`searchPhone`): `LibraryPhone` drops the
 found status and shows one `RowGroup` of the matches (no count), and each
@@ -40,7 +42,13 @@ under its meta line, the match marked (`Highlight`).
   and 78, and New is a 20 px badge under the age against Figma's 16 px
   badge at the end of the meta line (408:99). The matches sit 0 apart
   against Figma's 2, so each row starts within 4 px of Figma's. Library
-  gap "List row padding and age".
+  gap "List row padding and age". The row's content sits 4 in from the
+  row's sides, as Figma's (M1).
+- **New badge.** New's spark is a 12 px outline (`SparkIcon`) where
+  Figma draws a filled four-point star of 9 px (408:100), and the badge
+  is 57 × 20 against 48 × 16 (408:99); the fill is Figma's teal. The
+  library has no filled spark and no 16 px badge. Library gap "New
+  badge".
 - **Source chips.** As M1: 6 apart with 8 px sides against Figma's 5 and
   9; within the tolerance here. Library gap "Compact chip spacing".
 - **Clear button.** The search's clear button (408:288) is `SearchField`'s

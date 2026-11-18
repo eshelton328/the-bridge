@@ -1,6 +1,6 @@
 # M06 deviations
 
-What still differs from Figma after fix round 2 of the fidelity loop
+What still differs from Figma after fix round 3 of the fidelity loop
 (`pnpm fidelity artifacts M06`, 2026-11-18, against the installed library
 1.0.0-beta.27), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M6 is M1's library on the
@@ -64,7 +64,9 @@ the Project field passes and the offsets grow towards the top.
   gap "Select field".
 - **Title row.** Cancel and Add are the library's cyan `text` buttons;
   Figma draws Add bolder than Cancel. The title row sits about 18 px
-  lower than Figma's, as the whole sheet is shorter (above).
+  lower than Figma's, as the whole sheet is shorter (above). Each button
+  reaches 8 past the row's edge, so Cancel's label starts at x 18 and
+  Add's ends at 372, 1 px inside Figma's 17 and 373 (408:707, 408:711).
 - **Link focus.** The link field has the focus when the sheet opens, with
   the cyan border, as Figma draws it, and the caret after the link, as
   D5's dialog.
@@ -75,9 +77,15 @@ the Project field passes and the offsets grow towards the top.
   are 6 apart with 8 px sides against Figma's 5 and 9. Library gap
   "Compact chip spacing".
 - **Rows.** The previews are smaller and drawn by `Thumbnail
-  shape="compact"` in one colour set per kind, and the rows are 62 high
-  with New as a 20 px badge. Library gaps "List row thumbnail", "List
-  row padding and age" and "Thumbnail colour".
+  shape="compact"` in one colour set per kind, and the rows are 62 high.
+  Library gaps "List row thumbnail", "List row padding and age" and
+  "Thumbnail colour".
+- **New badge.** New is a 57 × 20 pill with a 12 px outline spark
+  against Figma's 48 × 16 pill with a filled four-point star (408:513,
+  408:514). The badge has no border (the library's `pill` badge sets
+  none); under the scrim its larger rounded edge reads as an outline
+  next to Figma's smaller pill. The fill is Figma's teal. Library gap
+  "New badge".
 - **Device chrome.** The status bar (9:41), the home indicator (408:700)
   and the screen corners are not drawn (d-089); the checks measure the
   render 38 px shorter, under Figma's status bar (d-102). Figma draws no
