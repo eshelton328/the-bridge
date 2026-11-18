@@ -3,9 +3,10 @@
 // every workspace and its chats (PhoneWorkspaceList); M2 its edit mode. M3
 // is a chat (`ui.phoneView: 'chat'`, PhoneChat): it fills the screen with no
 // tab bar, and its back button returns to the list. M4 is the chat's actions
-// (`ui.menuFor`, PhoneChatActions), a sheet that its ⋯ opens. Later phone
-// frames (the side chat sheet, subagents, New chat, folders) add their
-// views here. Props only; WorkspacesScreen keeps the ui
+// (`ui.menuFor`, PhoneChatActions), a sheet that its ⋯ opens. M5 is the
+// side chat (`ui.sideChatOpen`, PhoneSideChat), a sheet over the chat that
+// the actions' Side chat opens. Later phone frames (subagents, New chat,
+// folders) add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
@@ -13,6 +14,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
+import { PhoneSideChat } from '../blocks/PhoneSideChat.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
@@ -44,7 +46,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               contextLabel={data.sidebar?.contextLabel ?? ''}
               backLabel={text.back ?? text.title}
               onBack={() => {
-                onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false })
+                onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false, sideChatOpen: false })
               }}
               skills={{ label: data.skillsLabel, items: data.skills, value: ui.skill, open: ui.skillsFor === chat.id }}
               onSkillsOpenChange={(open) => {
@@ -72,6 +74,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         onMoveTargetChange={(moveTarget) => {
                           onUiChange({ moveTarget })
                         }}
+                        onSelect={(action) => {
+                          if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
+                        }}
                         layers={data.layers?.sheetIcons}
                       />
                     )
@@ -80,6 +85,16 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
             />
           }
         />
+        {data.sideChat === undefined ? null : (
+          <PhoneSideChat
+            chat={data.sideChat}
+            open={ui.sideChatOpen === true}
+            onOpenChange={(sideChatOpen) => {
+              onUiChange({ sideChatOpen })
+            }}
+            layers={data.layers}
+          />
+        )}
       </Backdrop>
     )
   return (

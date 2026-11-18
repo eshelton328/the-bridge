@@ -333,6 +333,8 @@ export const SidebarLayers = z.object({
   /** The main chat's entries, in order; an entry with no layer has none. */
   entries: z.array(z.string().optional()).optional(),
   sideChat: z.string().optional(),
+  /** The side chat's title row: its bubble, title, command and × (M5 105:3109); none when not set. */
+  sideHeader: z.string().optional(),
   sideNote: z.string().optional(),
   sideComposer: z.string().optional(),
   sideEntries: z.array(z.string().optional()).optional(),

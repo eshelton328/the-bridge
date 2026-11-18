@@ -399,3 +399,17 @@ export const PhoneChatActions: Story = {
     await expect(await body.findByText('New workspace…')).toBeVisible()
   },
 }
+
+export const PhoneSideChat: Story = {
+  name: 'M5: the side chat on the phone, in a sheet over the main chat',
+  args: { data: workspacesStates.phoneSideChat.data, ui: workspacesStates.phoneSideChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the side chat beside it; at a phone's width the sheet draws M5. WorkspacesPhoneSideChat.test.tsx checks the
+    // sheet at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Nothing here enters bridge themes. Close it and the main chat carries on.'),
+    ).toBeVisible()
+  },
+}

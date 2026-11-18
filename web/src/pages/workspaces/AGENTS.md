@@ -13,7 +13,8 @@ first: it says what each file of a page folder is for.
   opens the shared `MoreDrawer`. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
-  that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`).
+  that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
+  the side chat, a sheet over the chat (`ui.sideChatOpen`, `PhoneSideChat`).
   Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
@@ -148,7 +149,12 @@ first: it says what each file of a page folder is for.
   to workspace's list of workspaces inline under its row) and
   `renderMenu` to `PhoneChat` (the caller gets the ⋯ as the sheet's
   trigger); `ChatPane`'s composer layer is optional, as M4's sheet hides
-  the composer. Later frames add to these blocks.
+  the composer. M5 adds `PhoneSideChat` (the side chat on the phone:
+  `BottomSheet size="sm"` with no title row, the focus in its message box),
+  `placement="sheet"` to `SideChatPanel` (the title row with the bubble,
+  `/btw` and a grey × at 20 px, the 17 px title, and `sideHeader`, its layer)
+  and `size="sheet"` to `ChatPane`; Side chat in the chat actions sheet
+  opens it, and × or the scrim closes it. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -191,7 +197,9 @@ first: it says what each file of a page folder is for.
   D1's bridge themes pane without the composer's model chip: "/" typed,
   the skills listed, the chat open on the phone), M4 `phoneChatActions`
   (from `phoneChat`, without the skills and the "/": the chat actions
-  sheet open, Move to workspace's list open on the-bridge).
+  sheet open, Move to workspace's list open on the-bridge), M5
+  `phoneSideChat` (from `phoneChatActions`, without the sheet: D2's side
+  chat with M5's note, open in a sheet over the chat).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -217,7 +225,8 @@ first: it says what each file of a page folder is for.
   `phoneAdd` and `rowMenus`; for M2 `phone.done`, a chat's `hideStatus`
   and the fields' layers in `layers.renameFields`; for M3 `phone.back`
   and the layers `phoneBack` and `skills`; for M4 `phone.chatMenu`, the
-  sheet's actions, and the sheet's icons in `layers.sheetIcons`) and
+  sheet's actions, and the sheet's icons in `layers.sheetIcons`; for M5
+  the side chat's title row in `layers.sideHeader`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
