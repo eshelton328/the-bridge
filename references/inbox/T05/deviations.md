@@ -65,6 +65,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   is 11. Stop and send are
   `Composer`'s 28 px controls with 14 px labels, against Figma's 26.
   Library gap: Button label size.
+- **Home indicator on the tablet (2026-11-18).** Library beta.42 keeps
+  the home indicator's 34 px (`shell.safeAreaBottom`) under a tablet page
+  with no tab bar, and the page pads its foot 6 in place of the tablet
+  Container's 20, so the reply box ends 40 over the frame's end, as
+  Figma's: `346:6416` passes (was y +20 px).
 
 ## Second review
 

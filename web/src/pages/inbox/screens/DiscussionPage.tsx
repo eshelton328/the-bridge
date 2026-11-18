@@ -26,6 +26,10 @@ import type { InboxDiscussion, InboxDrafts, InboxNextStep } from '../types.ts'
 
 // The page fills the detail's height and no more: Back stays at the top, the reply box at the bottom (d-107).
 const fill = css({ flex: '1', minH: '[0]' })
+// A tablet chat has no tab bar, so AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42)
+// under the page. Figma ends the reply box 40 over the frame's end (T5 346:6416, T17 402:11226), so the page pads 6, not
+// the tablet Container's 20.
+const tabletFoot = css({ pb: '6' })
 const spacer = css({ flex: '1' })
 // T17 402:11176: SemiBold 15, as the chat's task card (T5 346:6380).
 const title = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
@@ -65,7 +69,7 @@ export function DiscussionPage({
 }: DiscussionPageProps) {
   const phone = layout === 'phone'
   return (
-    <Container size={detailContainerSize(layout)} className={fill}>
+    <Container size={detailContainerSize(layout)} className={layout === 'tablet' ? cx(fill, tabletFoot) : fill}>
       <DiscussionThread
         discussion={discussion}
         control={control}

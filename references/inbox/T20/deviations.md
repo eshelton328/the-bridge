@@ -130,6 +130,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `notice` `Panel` (10 px at the top and bottom, 12 at the sides), as
   Figma's card, not the `section` one (12 and 16): `task · discussing` y +6 px (was y +6, h +6 px); `guard` y +6 px (was x +6, y +8, w -12 px); `chevron · open task` y +6 px (was x -6, y +8 px). The
   entries under the card start 4 px higher.
+- **Home indicator on the tablet (2026-11-18).** Library beta.42 keeps
+  the home indicator's 34 px (`shell.safeAreaBottom`) under a tablet page
+  with no tab bar, and the page pads its foot 6 in place of the tablet
+  Container's 20, so the reply box ends 40 over the frame's end, as
+  Figma's: `composer · discussion` passes (was y +20 px).
 
 ## Second review, round 2
 

@@ -122,6 +122,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `proposal · UPDATE THIS TASK` now fails (y -7, w +148, h -10 px): the messages above it
   are shorter than Figma's (`message · discussion` h -18), and the
   4 px of card padding hid part of that offset before.
+- **Home indicator on the tablet (2026-11-18).** Library beta.42 keeps
+  the home indicator's 34 px (`shell.safeAreaBottom`) under a tablet page
+  with no tab bar, and the page pads its foot 6 in place of the tablet
+  Container's 20, so the reply box ends 40 over the frame's end, as
+  Figma's: `composer · discussion` passes (was y +20 px).
 
 ## Second review, round 2
 

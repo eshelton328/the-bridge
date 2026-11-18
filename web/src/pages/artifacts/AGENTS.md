@@ -122,8 +122,8 @@ each file of a page folder is for.
   group, each after the first 2 up into the last row's padding, whose
   `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
   the title line and New under it as `Badge size="xs"` with
-  `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 70 high,
-  each after the first 2 up, so they keep Figma's 68 px pitch, and pad 4
+  `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 66 high
+  and 2 apart, Figma's 68 px pitch, and pad 4
   at the sides, so the preview starts 4 in from the row's border, as
   Figma's. The sheets over the phone's library and
   artifact page (M3, M4, M6, M7) are `BottomSheet`s over the tab bar;
