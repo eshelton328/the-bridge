@@ -4,9 +4,9 @@
 // `ListRow` for each chat that loaded the item (`row · Linear workflow setup
 // for NCC team` 474:650: the chat icon, the title, when and where it ran,
 // and the chevron) or each round from the ledgers (D23, no icon). A round
-// opens the skill it names on its Evals tab (`rowTap`); a chat opens in the
-// Activity view's chat panel (D18), which no state draws yet, so its row is
-// not a button. Props only.
+// opens the skill it names on its Evals tab (`rowTap`); a chat's panel (D18)
+// opens from the Activity view's Chats list, and the tab's data has no link
+// to it, so its row is not a button. Props only.
 import { ChatIcon, ChevronRightIcon, ListRow, Panel } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitActivity } from '../types.ts'

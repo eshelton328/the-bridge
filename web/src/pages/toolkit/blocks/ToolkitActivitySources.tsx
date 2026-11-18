@@ -1,7 +1,8 @@
 // The source switch of the Activity view (Figma `source · segmented`, D11
 // 444:491): All sessions, Chats or Headless runs, the library's `ViewSwitch`
-// as the List, Map and Activity switch draws it. A source with no counts yet
-// is disabled (Chats and Headless runs wait for T11 and T12). On the desktop
+// as the List, Map and Activity switch draws it. A source with no counts in
+// the view is disabled (D11's Chats and Headless runs; D15 and D16 have
+// theirs). On the desktop
 // it starts the row under the kind chips (`list tools` 444:200), which ends
 // with since when the counts start (444:207); a tablet or phone shows the
 // switch alone. Props only.

@@ -505,8 +505,8 @@ const ToolkitActivityBars = z.object({
  * A row of the Activity tab's list (D17 `row · Linear workflow setup for NCC team` 474:650): a chat that loaded the
  * item (`chat`, after the chat icon) or a round from a ledger (`round`, D23 `row · readme · cross-family x1`, no icon),
  * its title and the line under it. `open` is the path of the toolkit item the row names (a round's skill): a tap opens
- * that item on its Evals tab. A chat opens in the chat panel of the Activity view (D18), which no state draws yet, so a
- * chat row has no `open` and takes no tap.
+ * that item on its Evals tab. A chat's panel (D18) opens from the Activity view's Chats list; the tab's chat row has
+ * no link to it, so it has no `open` and takes no tap.
  */
 const ToolkitActivityRow = z.object({
   type: z.enum(['chat', 'round']),
