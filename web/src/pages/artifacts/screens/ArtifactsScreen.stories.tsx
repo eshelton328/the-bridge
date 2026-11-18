@@ -146,3 +146,67 @@ export const ChangeApplied: Story = {
     await expect(canvas.queryByRole('button', { name: 'Apply' })).toBeNull()
   },
 }
+
+export const LibraryTablet: Story = {
+  name: 'T1: the library on a tablet, in two columns',
+  args: { data: artifactsStates.libraryTablet.data, ui: artifactsStates.libraryTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Artifacts' })).toBeVisible()
+    await expect(canvas.getByRole('searchbox', { name: /Search artifacts/i })).toBeVisible()
+    await expect(canvas.getByText('Viewscreen, Captain’s Log, Engineering and Console')).toBeInTheDocument()
+  },
+}
+
+export const ArtifactTablet: Story = {
+  name: 'T2: an artifact on its own page on a tablet',
+  args: { data: artifactsStates.artifactTablet.data, ui: artifactsStates.artifactTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { level: 2, name: 'Skill eval pass rates' })).toBeVisible()
+    // The story renders at the width Storybook gives it; app/ArtifactsStickyBars.test.tsx checks T2's Back bar.
+    await expect(canvas.getByText('claude.ai/artifact/8f3c2a91-skill-evals')).toBeVisible()
+  },
+}
+
+export const FilterTablet: Story = {
+  name: 'T3: the Filter sheet open over the library on a tablet',
+  args: { data: artifactsStates.filterTablet.data, ui: artifactsStates.filterTablet.ui, viewport: 'tablet' },
+  play: async () => {
+    // The menu is portalled outside the story's root: a sheet at the tablet's width, a popover at a wider one
+    // (the story renders at the width Storybook gives it; app/ArtifactsRoute.test.tsx checks the tablet's sheet).
+    const menu = within(await within(document.body).findByRole('dialog', { name: /^Filter/ }))
+    await expect(menu.getByRole('button', { name: 'Show 7 artifacts' })).toBeVisible()
+    await expect(menu.getByRole('checkbox', { name: 'Claude artifacts' })).toBeChecked()
+    await expect(menu.getByRole('checkbox', { name: 'Codex sites' })).not.toBeChecked()
+  },
+}
+
+export const DiscussTablet: Story = {
+  name: 'T4: the open artifact’s discussion on its own page on a tablet',
+  args: { data: artifactsStates.discussTablet.data, ui: artifactsStates.discussTablet.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the tablet's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks T4's page at the tablet's width.
+    await expect(canvas.getByText('Talk this artifact through')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Why did readme drop?' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Ask about this artifact' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
+  },
+}
+
+export const ChangeProposedTablet: Story = {
+  name: 'T5: a proposed update in the discussion page on a tablet',
+  args: {
+    data: artifactsStates.changeProposedTablet.data,
+    ui: artifactsStates.changeProposedTablet.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // The story renders at the width Storybook gives it: the tablet's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks T5's page at the tablet's width, and that Apply shows T2 Updated.
+    await expect(canvas.getByText('A dashed line at the median pass rate, 71%')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '48')
+    // T5's own node id of its one Open in workspace.
+    await expect(canvasElement.querySelector('[data-figma="452:3978"]')).not.toBeNull()
+  },
+}

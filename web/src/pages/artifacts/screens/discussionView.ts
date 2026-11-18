@@ -18,11 +18,18 @@ export function discussionEntries(discussion: ArtifactDiscussion, ui: Decisions)
 
 /**
  * What a press on the proposal changes. Discard drops it. Apply records the decision, and `appliedView` shows the
- * artifact Updated and the proposal applied (D9). Edit first puts the lines the proposal adds in the reply box, one a line, for Erik to
- * change and send; the proposal stays until he applies or discards it.
+ * artifact Updated and the proposal applied (D9). On the tablet's discussion page (`page`, T5) Apply also closes the
+ * page, so the artifact's page shows Updated (T2), as the desktop's artifact beside its panel does (D9); reopened,
+ * the discussion shows the applied proposal. Edit first puts the lines the proposal adds in the reply box, one a line,
+ * for Erik to change and send; the proposal stays until he applies or discards it.
  */
-export function proposalEffect(discussion: ArtifactDiscussion, act: ProposalAct): Partial<ArtifactsUi> {
-  if (act === 'apply') return { discussProposal: 'applied' }
+export function proposalEffect(
+  discussion: ArtifactDiscussion,
+  act: ProposalAct,
+  where: 'panel' | 'page' = 'panel',
+): Partial<ArtifactsUi> {
+  if (act === 'apply')
+    return where === 'page' ? { discussProposal: 'applied', discussOpen: false } : { discussProposal: 'applied' }
   if (act === 'discard') return { discussProposal: 'discarded' }
   const added = discussion.entries.flatMap((e) =>
     e.type === 'proposal' ? e.proposal.lines.filter((l) => l.change === 'added').map((l) => l.text) : [],

@@ -118,8 +118,8 @@ const ArtifactFilterItem = z.object({
 })
 
 /**
- * The Filter menu under the list tools (D3): sections of checkboxes with counts, and a footer that names the
- * checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
+ * The Filter menu under the list tools (D3), or the sheet over the tab bar on a tablet (T3): sections of
+ * checkboxes with counts, and a footer that names the checked boxes and the Show button. Which boxes are checked is `ArtifactsUi.filterChecks`; they apply on Show.
  */
 export const ArtifactFilterMenu = z.object({
   /** The label of the menu, for assistive technology. */
@@ -129,6 +129,8 @@ export const ArtifactFilterMenu = z.object({
   note: z.string(),
   /** The Show button, such as "Show 7". */
   show: z.string(),
+  /** The tablet sheet's Clear (T3), which clears the boxes; the desktop menu has none (D3). */
+  clear: z.string().optional(),
 })
 export type ArtifactFilterMenu = z.infer<typeof ArtifactFilterMenu>
 
@@ -243,11 +245,14 @@ const ArtifactDiscussion = z.object({
   placeholder: z.string(),
   /** What was said and proposed so far (D8); with none the discussion shows `empty`. */
   entries: z.array(ArtifactDiscussionEntry),
+  /** The label of Back on the tablet's discussion page (T4), such as "Artifact": it returns to the artifact. */
+  back: z.string().optional(),
   /**
    * The Figma node ids of the two layers named "button · Open in workspace" in the frame that shows the discussion:
-   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own.
+   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's
+   * discussion page (T4 452:3837) has no "Made in", so `madeIn` is left out there.
    */
-  layers: z.object({ header: z.string(), madeIn: z.string() }),
+  layers: z.object({ header: z.string(), madeIn: z.string().optional() }),
 })
 export type ArtifactDiscussion = z.infer<typeof ArtifactDiscussion>
 
@@ -301,7 +306,12 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
-  /** The open artifact's discussion is open beside it, and the library list closes (D7). */
+  /** Back closed the open artifact on a tablet (T2), and the library shows (T1). */
+  artifactClosed: z.boolean().optional(),
+  /**
+   * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
+   * its own page in the artifact's place, with no tab bar (T4).
+   */
   discussOpen: z.boolean().optional(),
   /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */
   discussDraft: z.string().optional(),

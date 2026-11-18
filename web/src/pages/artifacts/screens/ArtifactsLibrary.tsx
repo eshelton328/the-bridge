@@ -5,7 +5,8 @@
 // The List view (D4) shows them as rows (LibraryRows). During a search the
 // count says how many of the library's artifacts show, such as "3 of 24".
 // With `data.addLinkForm` Add a link opens the Add a link dialog (D5), and
-// with `data.sortMenu` Sort opens the Sort menu (D6).
+// with `data.sortMenu` Sort opens the Sort menu (D6). On a tablet Filter
+// opens its menu as a sheet (T3).
 // Props only; changes go out through onUiChange.
 import { FilterChips, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -21,7 +22,9 @@ import { libraryView } from './libraryView.ts'
 // D1 402:15370: the library starts 32 in from the rail and 24 down; its rows are 12 apart.
 const page = {
   desktop: css({ pt: '24', pb: '32', px: '32' }),
-  tablet: css({ pt: '12', pb: '20', px: '24' }),
+  // T1 405:105: the header starts 24 under the status bar and 22 in (20 on the 4 px grid, d-100, so the two card
+  // columns are wide enough for Figma's whole descriptions; see CardGroup); rows 10 apart.
+  tablet: css({ pt: '24', pb: '20', px: '20' }),
   phone: css({ pt: '4', pb: '12', px: '12' }),
 }
 // The chips take their own width (402:15384), not the row's. FilterChips pads its row 2 (for the focus ring);
@@ -42,12 +45,13 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
   const sort = data.sorts.find((s) => s.value === ui.sort) ?? data.sorts[0]
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
   return (
-    <Stack gap="12" className={page[layout]}>
+    <Stack gap={layout === 'tablet' ? '10' : '12'} className={page[layout]}>
       <LibraryHeader
         title={data.title}
         count={ui.query.trim() === '' ? data.count : `${String(shown)} of ${String(data.count)}`}
         found={data.found}
         addLink={data.addLink}
+        layout={layout}
         onAddLink={
           data.addLinkForm === undefined
             ? onAddLink
@@ -113,6 +117,9 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
         onFilterApply={() => {
           onUiChange?.({ filterOpen: false })
         }}
+        // T3: a tablet or phone opens the Filter menu as a sheet over the tab bar.
+        filterAs={layout === 'desktop' ? 'popover' : 'sheet'}
+        size={layout === 'desktop' ? 'md' : 'lg'}
         view={ui.view}
         onViewChange={(view) => {
           onUiChange?.({ view })

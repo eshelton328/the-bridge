@@ -42,6 +42,16 @@ describe('proposalEffect', () => {
     expect(proposalEffect(proposed, 'discard')).toEqual({ discussProposal: 'discarded' })
   })
 
+  it("closes the tablet's discussion page on Apply, so the artifact's page shows Updated (T5 to T2)", () => {
+    const tablet = discussionOf(artifactsStates.changeProposedTablet.data.discussion)
+    const effect = proposalEffect(tablet, 'apply', 'page')
+    expect(effect).toEqual({ discussProposal: 'applied', discussOpen: false })
+    const view = appliedView(artifactOf(artifactsStates.changeProposedTablet.data.open), tablet, effect)
+    expect(view.badge).toBe('Updated')
+    expect(view.artifact.updated).toBe('updated just now')
+    expect(proposalEffect(tablet, 'discard', 'page')).toEqual({ discussProposal: 'discarded' })
+  })
+
   it('puts the added lines in the reply box on Edit first', () => {
     expect(proposalEffect(proposed, 'edit')).toEqual({
       discussDraft: 'Bars sorted from the lowest pass rate to the highest\nA dashed line at the median pass rate, 71%',

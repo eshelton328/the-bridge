@@ -2,7 +2,9 @@
 // Filter, and at the end the Grid or List switch. Sort names the sort on
 // the button. Beside an open artifact (D2) the row has no switch, and the
 // search takes the free width. With a Filter menu (D3) Filter opens it,
-// and with a Sort menu (D6) Sort opens it.
+// and with a Sort menu (D6) Sort opens it. On a tablet (T1 405:131) the
+// controls are 36 high, 8 apart, and the search takes the free width, and
+// Filter opens its menu as a sheet over the tab bar (T3).
 // Props only.
 import {
   Button,
@@ -20,6 +22,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../types.ts'
 import { FilterPopover } from './FilterPopover.tsx'
+import { FilterSheet } from './FilterSheet.tsx'
 import { SortMenu } from './SortMenu.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
@@ -49,6 +52,10 @@ export type LibraryToolsProps = {
   onFilterChecksChange?: ((checks: string[]) => void) | undefined
   /** Show in the Filter menu: applies the checked boxes. */
   onFilterApply?: (() => void) | undefined
+  /** `sheet` opens the Filter menu as a sheet from the bottom (the tablet, T3); `popover` (the default) under Filter. */
+  filterAs?: 'popover' | 'sheet' | undefined
+  /** `lg` (36, the tablet's controls, T1) or `md` (32, the desktop's). The Sort and Filter menus keep `md`. */
+  size?: 'md' | 'lg' | undefined
   /** The Grid or List switch's value; without it the row has no switch (D2). */
   view?: ViewValue | undefined
   onViewChange?: ((view: ViewValue) => void) | undefined
@@ -72,14 +79,18 @@ export function LibraryTools({
   onFilterOpenChange,
   onFilterChecksChange,
   onFilterApply,
+  filterAs = 'popover',
+  size = 'md',
   view,
   onViewChange,
 }: LibraryToolsProps) {
+  const large = size === 'lg'
   return (
-    <Inline gap="6" align="center" data-figma="list tools">
+    <Inline gap={large ? '8' : '6'} align="center" data-figma="list tools">
       <div className={grow} data-figma="search">
         <SearchField
           label={placeholder}
+          size={size}
           textSize="sm"
           placeholder={placeholder}
           icon={<SearchIcon />}
@@ -91,7 +102,7 @@ export function LibraryTools({
       </div>
       {sortMenu === undefined ? (
         <span data-figma="button · Sort">
-          <Button textSize="sm" onClick={onSortClick}>
+          <Button size={size} textSize="sm" onClick={onSortClick}>
             <SortDescIcon />
             {sortLabel}
             <ChevronDownIcon size="12" />
@@ -109,11 +120,20 @@ export function LibraryTools({
       )}
       {filterMenu === undefined ? (
         <span data-figma="button · Filter">
-          <Button textSize="sm" onClick={onFilterClick}>
+          <Button size={size} textSize="sm" onClick={onFilterClick}>
             <FilterIcon />
             Filter
           </Button>
         </span>
+      ) : filterAs === 'sheet' ? (
+        <FilterSheet
+          menu={filterMenu}
+          checks={filterChecks}
+          open={filterOpen}
+          onOpenChange={onFilterOpenChange}
+          onChecksChange={onFilterChecksChange}
+          onApply={onFilterApply}
+        />
       ) : (
         <FilterPopover
           menu={filterMenu}
@@ -126,11 +146,13 @@ export function LibraryTools({
       )}
       {view === undefined ? null : (
         <>
-          <span className={grow} />
+          {/* T1 has no space before the switch: the search takes it (405:132). */}
+          {large ? null : <span className={grow} />}
           <span data-figma="view · Grid or List">
             {/* Figma draws two icon-only segments, the picked view's icon cyan on the selected fill, with no border (402:15421). */}
             <ViewSwitch
               tone="accent"
+              size={size}
               iconOnly
               label="View"
               value={view}
