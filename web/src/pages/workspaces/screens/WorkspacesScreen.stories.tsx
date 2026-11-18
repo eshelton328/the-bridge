@@ -833,3 +833,20 @@ export const TabletForkedChat: Story = {
     await expect(canvas.queryByRole('button', { name: 'Stop' })).toBeNull()
   },
 }
+
+export const TabletSubtask: Story = {
+  name: 'T10: Start a subtask on the tablet, in a dialog over the chat',
+  args: { data: workspacesStates.tabletSubtask.data, ui: workspacesStates.tabletSubtask.ui, viewport: 'tablet' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D17's Subtask dialog over it; the tablet's menu draws T10's dialog over the tablet's chat in place of M20's sheet.
+    // The dialog renders in a portal, outside the story's canvas, and makes the rest of the page inert.
+    const body = within(document.body)
+    const dialog = await body.findByRole('dialog', { name: 'Start a subtask' })
+    await expect(dialog).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeVisible()
+    await expect(within(dialog).getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
+    // The dialog's focus trap moves the focus to the task in the frame after it opens.
+    await expectTrapFocus(within(dialog).getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' }))
+  },
+}

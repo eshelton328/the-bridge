@@ -319,6 +319,10 @@ first: it says what each file of a page folder is for.
   layer on a box as wide as its text), and Back returns to the list, where
   `SidebarChatRow` draws the fork under bridge themes with D16's branch
   mark.
+  T10 adds `layers` to `SubtaskDialog` (D17's ids when not set): at a
+  tablet's width `ui.chatDialog: 'subtask'` opens D17's dialog over T2's
+  chat in place of M20's sheet, from the chat actions' Subtask or T3's Start
+  a subtask.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -429,7 +433,9 @@ first: it says what each file of a page folder is for.
   the menu, with D15's Fork form open: the form in a dialog over the chat
   on the tablet), T9 `tabletForkedChat` (from `tabletOneChat`, with D16's
   fork under bridge themes and M19's empty composer: the fork full screen
-  on the tablet, Idle with no Stop and the focus in the message box).
+  on the tablet, Idle with no Stop and the focus in the message box), T10
+  `tabletSubtask` (from `tabletChatActions`, without the menu, with D17's
+  Subtask form open: the form in a dialog over the chat on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -480,7 +486,8 @@ first: it says what each file of a page folder is for.
   `startedFrom` and `startSubtask` labels and Start a subtask's layer in
   `layers.subagentsStart`; for T7 the New chat dialog's layers in
   `layers.newChatDialog`; for T8 the Fork dialog's layers in
-  `layers.forkDialog`) and
+  `layers.forkDialog`; for T10 the Subtask dialog's layers in
+  `layers.subtaskDialog`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
