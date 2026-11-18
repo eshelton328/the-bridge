@@ -206,6 +206,28 @@ describe('the accent text and the symbols of the Evals tab', () => {
   })
 })
 
+describe('the result of each criterion for assistive technology (D20, D26, D28)', () => {
+  it('names each badge with its state: passed, failed or waits', async () => {
+    await renderToolkit('skillEvals')
+    const criteria = page.getByRole('list', { name: 'Criteria' }).last()
+    await expect.element(criteria).toBeInTheDocument()
+    const items = criteria.getByRole('listitem')
+    expect(items.elements()).toHaveLength(6)
+    await expect.element(items.nth(0)).toHaveTextContent('D1 Quality failed')
+    await expect.element(items.nth(1)).toHaveTextContent('D2 Value passed')
+    // The waiting criterion's label already says so.
+    expect(items.nth(5).element().textContent).toBe('D6 Real use · waits')
+    await expect.element(page.getByRole('button', { name: 'D5 Reviewer passed' }).last()).toBeInTheDocument()
+  })
+
+  it('keeps a test run’s label as its name when it states the result (D28 43 of 43 pass)', async () => {
+    await renderToolkit('hookEvals')
+    const run = page.getByRole('list', { name: 'Criteria' }).last().getByRole('listitem')
+    await expect.element(run).toBeInTheDocument()
+    expect(run.element().textContent).toBe('43 of 43 pass')
+  })
+})
+
 describe('the Evals tab on a tablet and the phone', () => {
   it('stands the chart over the cases on a tablet, each as wide as the tab (T16)', async () => {
     const { root } = await renderToolkit('skillEvalsTablet', 'tablet')

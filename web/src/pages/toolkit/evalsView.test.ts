@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { badgeLayer, badgeLook, casesLabel, chartSeries, evalsRow, openEvals, roundsEnd } from './blocks/evalsView.ts'
+import { badgeLayer, badgeLook, badgeResult, casesLabel, chartSeries, evalsRow, openEvals, roundsEnd } from './blocks/evalsView.ts'
 import { openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ToolkitData, ToolkitEvals, ToolkitUi } from './types.ts'
@@ -176,5 +176,15 @@ describe('the Files tab that "from the file" opens in every state', () => {
     })
     expect(missing).toEqual([])
     expect(evalsTaps().some((t) => t.state === 'workflowOpen')).toBe(true)
+  })
+})
+
+describe('badgeResult', () => {
+  it('gives each badge its state as text, unless its label ends with it (D20, D28)', () => {
+    expect(badgeResult({ label: 'D1 Quality', state: 'fail' })).toBe('failed')
+    expect(badgeResult({ label: 'D2 Value', state: 'pass' })).toBe('passed')
+    expect(badgeResult({ label: 'D6', state: 'waits' })).toBe('waits')
+    expect(badgeResult({ label: 'D6 Real use · waits', state: 'waits' })).toBeNull()
+    expect(badgeResult({ label: '43 of 43 pass', state: 'pass' })).toBeNull()
   })
 })

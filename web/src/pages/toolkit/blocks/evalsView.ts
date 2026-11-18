@@ -27,6 +27,19 @@ export function badgeLook(state: Badge['state']): {
 }
 
 /**
+ * A badge's state as text for assistive technology, after its label ("D1 Quality failed"): the library's Badge hides
+ * its icon, so the colour and the icon alone would not say it. None when the label already ends with it (D20 "D6 Real
+ * use · waits", D28 "43 of 43 pass").
+ */
+export function badgeResult(badge: Pick<Badge, 'label' | 'state'>): string | null {
+  const last = badge.label.trim().split(' ').at(-1)
+  if (last === badge.state) return null
+  if (badge.state === 'pass') return 'passed'
+  if (badge.state === 'fail') return 'failed'
+  return 'waits'
+}
+
+/**
  * The Figma key of a badge: `badge · ` and its label (D20 `badge · D1 Quality` 482:1901), or only the criterion's
  * number for one that waits (`badge · D6` 482:1923, "D6 Real use · waits").
  */
