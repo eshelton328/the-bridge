@@ -548,3 +548,20 @@ export const PhoneCloseWorkspace: Story = {
     await expect(within(document.body).queryByRole('alertdialog', { name: 'Close omni-brain?' })).toBeNull()
   },
 }
+
+export const PhoneWorkspaceActions: Story = {
+  name: 'M14: a workspace’s actions in a sheet over the phone list',
+  args: {
+    data: workspacesStates.phoneWorkspaceActions.data,
+    ui: workspacesStates.phoneWorkspaceActions.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width omni-brain's actions open in a sheet (M14). WorkspacesPhoneWorkspaceActions.test.tsx checks
+    // the sheet and its actions at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('dialog', { name: 'omni-brain' })).toBeNull()
+  },
+}

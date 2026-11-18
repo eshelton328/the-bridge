@@ -19,6 +19,10 @@
 // bar keeps Start chat alone. M12 is a subagent's full transcript
 // (`ui.phoneView: 'transcript'`, PhoneSubagentTranscript), which the chevron
 // of its card opens; its trail returns to the subagents or the chat.
+// M14 is a workspace's actions (`ui.workspaceMenuFor`, PhoneChatActions with
+// `data.phone.workspaceMenu`), a sheet that the ⋯ of its header opens: New
+// chat in it, Rename (edit mode with its name a field) and Close (M13's
+// dialog).
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -54,6 +58,15 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   const held = data.workspaces
     .flatMap((w) => (w.chats ?? []).map((c) => ({ chat: c, workspace: w.id })))
     .find((h) => h.chat.id === ui.menuFor)
+  // M14: the workspace of the list whose actions are open.
+  const actionsFor = data.workspaces.find((w) => w.id === ui.workspaceMenuFor)
+  const pickWorkspaceAction = (workspace: string, label: string, action: string) => {
+    if (action === 'newChat' && data.newChat !== undefined) onUiChange({ newChatOpen: true })
+    if (action === 'rename' && text.done !== undefined)
+      onUiChange({ editing: true, renamingChats: {}, renamingWorkspaces: { [workspace]: label } })
+    if (action === 'close' && text.closeWorkspace?.workspaces[workspace] !== undefined)
+      onUiChange({ closing: workspace })
+  }
   if (ui.newChatOpen === true && data.newChat !== undefined)
     return (
       <Backdrop size="phone">
@@ -295,6 +308,23 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
             onUiChange({ moveTarget })
           }}
           highlight={ui.menuHighlight}
+          layers={data.layers?.sheetIcons}
+        />
+      )}
+      {actionsFor === undefined || text.workspaceMenu === undefined ? null : (
+        <PhoneChatActions
+          title={actionsFor.label}
+          actions={text.workspaceMenu.map((a) => ({ ...a, label: a.label.replace('{workspace}', actionsFor.label) }))}
+          targets={[]}
+          newWorkspace={data.newWorkspace}
+          open
+          onOpenChange={(open) => {
+            if (!open) onUiChange({ workspaceMenuFor: null })
+          }}
+          moveOpen={false}
+          onSelect={(action) => {
+            pickWorkspaceAction(actionsFor.id, actionsFor.label, action)
+          }}
           layers={data.layers?.sheetIcons}
         />
       )}

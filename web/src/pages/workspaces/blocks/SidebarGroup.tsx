@@ -94,6 +94,8 @@ export type SidebarGroupProps = {
   onHold?: ((chat: string) => void) | undefined
   /** The held chat, whose row lifts over the scrim (M9 146:252), and its copy's ⋯. */
   lifted?: { chat: string; menu?: ReactNode } | undefined
+  /** Called by the header's ⋯, which opens the workspace's actions on the phone (M14); without it, the ⋯ draws only. */
+  onActions?: (() => void) | undefined
 }
 
 export function SidebarGroup(props: SidebarGroupProps) {
@@ -113,6 +115,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
     rowMenu,
     onHold,
     lifted,
+    onActions,
   } = props
   const rowsId = useId()
   const name = workspace.label
@@ -143,7 +146,15 @@ export function SidebarGroup(props: SidebarGroupProps) {
                   </Button>
                 </>
               ) : (
-                <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`${name} actions`}>
+                <Button
+                  variant="text"
+                  size="xs"
+                  iconOnly
+                  className={headerAction}
+                  aria-label={`${name} actions`}
+                  aria-haspopup={onActions === undefined ? undefined : 'dialog'}
+                  onClick={onActions}
+                >
                   <MoreIcon size="12" />
                 </Button>
               )}

@@ -9,7 +9,8 @@
 // action highlighted, and the held row lifts over the sheet's scrim.
 // With `text.closeWorkspace`, × on a workspace in edit mode asks before it
 // closes (M13, `ui.closing`); Close takes the workspace off the list.
-// Props only.
+// With `text.workspaceMenu`, the ⋯ of a workspace's header opens its actions
+// (M14, `ui.workspaceMenuFor`, the sheet in WorkspacesPhone). Props only.
 import { Button, Container, MoreIcon, PageHeader, PlusIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
@@ -167,6 +168,7 @@ export function PhoneWorkspaceList({
               onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
               rowMenu={(chat) => more(chat, layers?.rowMenus?.[chat.id])}
               onHold={openActions}
+              onActions={text.workspaceMenu === undefined ? undefined : () => onUiChange?.({ workspaceMenuFor: w.id })}
               lifted={
                 openActions === undefined || held === undefined
                   ? undefined

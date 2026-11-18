@@ -381,6 +381,12 @@ export const PhoneText = z.object({
   rowMenu: z.array(PaneAction).optional(),
   /** The dialog that × on a workspace in edit mode opens (M13). Without it, × draws only. */
   closeWorkspace: CloseWorkspaceText.optional(),
+  /**
+   * The actions sheet of a workspace in the phone's list (M14 208:235), in order: what the ⋯ of its header opens.
+   * "{workspace}" in a label is the workspace's name ("New chat in {workspace}"). `close` asks first with
+   * `closeWorkspace` (M13). Without it, the header's ⋯ draws only.
+   */
+  workspaceMenu: z.array(PaneAction).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -770,6 +776,8 @@ export const WorkspacesUi = z.object({
   closing: z.string().nullable().optional(),
   /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
   closedWorkspaces: z.array(z.string()).optional(),
+  /** The workspace whose actions sheet is open over the phone's list (M14), or null. */
+  workspaceMenuFor: z.string().nullable().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

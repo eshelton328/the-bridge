@@ -36,6 +36,7 @@ import { phoneKeyboard } from './phoneKeyboard.ts'
 import { phoneNewChatKeyboard } from './phoneNewChatKeyboard.ts'
 import { phoneSubagentTranscript } from './phoneSubagentTranscript.ts'
 import { phoneCloseWorkspace } from './phoneCloseWorkspace.ts'
+import { phoneWorkspaceActions } from './phoneWorkspaceActions.ts'
 
 export const workspacesStates = {
   workbench,
@@ -73,4 +74,5 @@ export const workspacesStates = {
   phoneNewChatKeyboard,
   phoneSubagentTranscript,
   phoneCloseWorkspace,
+  phoneWorkspaceActions,
 }
