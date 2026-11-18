@@ -31,6 +31,9 @@ const triggerText = css({ textStyle: 'small', color: 'status.done.fg' })
 // M12 461:572: on the phone the steps start 10 under the trigger; the trigger is 7 px taller, so 8 higher puts them
 // 1 px above Figma's.
 const steps = css({ display: 'flex', flexDirection: 'column', listStyle: 'none', m: '0', p: '0', mt: '-8' })
+// T36 495:1938 and T37 495:2336: under the item's full header the steps start 14 under the trigger, not 12; the
+// trigger is 7 px taller, so 6 higher (not 8) puts them 1 px above Figma's.
+const headedSteps = css({ display: 'flex', flexDirection: 'column', listStyle: 'none', m: '0', p: '0', mt: '-6' })
 const down = css({ display: 'flex', justifyContent: 'center', py: '2', color: 'fg.muted' })
 const elsewhereLine = css({ display: 'flex', alignItems: 'center', gap: '8' })
 const elsewhereLabel = css({ textStyle: 'monoCaps', color: 'fg.muted' })
@@ -52,7 +55,11 @@ export function ToolkitHowColumn({ how, layout = 'tablet' }: ToolkitHowColumnPro
           </Panel>
         </div>
       )}
-      <ol className={steps} aria-label="Steps" data-figma="steps">
+      <ol
+        className={layout === 'tablet' && how.named !== true ? headedSteps : steps}
+        aria-label="Steps"
+        data-figma="steps"
+      >
         {how.steps.map((step, i) => (
           <Fragment key={step.number}>
             {i === 0 ? null : (

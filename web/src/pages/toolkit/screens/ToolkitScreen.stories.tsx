@@ -462,3 +462,25 @@ export const RuleHowItWorksTablet: Story = {
     await expect(within(item).queryByText('In Codex')).toBeNull()
   },
 }
+
+export const AgentHowItWorksTablet: Story = {
+  name: 'T37: an agent open on a tablet from a skill, on How it works',
+  args: {
+    data: toolkitStates.agentHowItWorksTablet.data,
+    ui: toolkitStates.agentHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the agent's steps in one column under its
+  // header and the breadcrumb. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx
+  // checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Each fail is a lead for W1. Read the sentence to confirm it.')).toBeVisible()
+    await expect(
+      within(item).getByText('Starts when step 7 of the writer skill runs it, or when a task asks to review a draft.'),
+    ).toBeVisible()
+    await expect(within(item).queryByText('It gets only')).toBeNull()
+  },
+}

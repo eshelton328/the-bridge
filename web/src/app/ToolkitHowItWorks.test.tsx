@@ -119,3 +119,26 @@ describe('the How it works tab of a rule on a tablet (T36)', () => {
     expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
   })
 })
+
+// T37: an agent's How it works on a tablet, opened from the skill writer: the back row shows the breadcrumb, the item
+// keeps its kind badge and path row, and T10's column follows, with nothing under the steps.
+describe('the How it works tab of an agent on a tablet (T37)', () => {
+  it('shows the breadcrumb and the header over the column, the steps 6 under the trigger', async () => {
+    await page.viewport(756, 1129)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=agentHowItWorksTablet'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(4)
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')?.textContent).toContain('writer')
+    expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="path row"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="chat path"]')).toBeNull()
+    // Figma's steps start 14 under the trigger (495:2334 ends at 300, 495:2336 starts at 314); the notice Panel makes
+    // the trigger 7 px taller (LIBRARY_GAPS.md, How it works trigger), so the steps start 6 under it.
+    const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    expect(Math.round((list?.top ?? 0) - (trigger?.bottom ?? -1))).toBe(6)
+  })
+})
