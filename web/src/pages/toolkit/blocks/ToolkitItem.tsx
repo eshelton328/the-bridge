@@ -4,7 +4,7 @@
 // then the item's tabs; the Overview tab (`ToolkitItemOverview`) shows the
 // description, the main file rendered read-only, what uses the item, its
 // files and its evals, and the How it works tab (`ToolkitHowItWorks`, D14)
-// its steps. Only the selected tab's panel is drawn. On a tablet or phone (T3) the item replaces the list
+// its steps, and the Evals tab (`ToolkitEvals`, D20) its results. Only the selected tab's panel is drawn. On a tablet or phone (T3) the item replaces the list
 // in the shared DetailFrame (d-107): the back row to Toolkit, with Discuss and
 // Show on map at its end, stays at the top, and only the item under it
 // scrolls; opened from another item's links (T7), the back row is a
@@ -46,6 +46,7 @@ import type { ToolkitOpenItem } from '../types.ts'
 import { type FileMode, fileMode, filePathIn, findFile, openFile } from './filesView.ts'
 import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
 import { ToolkitFilePage } from './ToolkitFilePage.tsx'
+import { ToolkitEvals } from './ToolkitEvals.tsx'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
@@ -281,6 +282,33 @@ const linksTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, stri
   tablet: tabletLinksTitleLayers,
   phone: phoneLinksTitleLayers,
 }
+// On the Evals tab: writer in D20 (482:1722), the rule skills in D25 (492:334), writing-reviewer in D26 (492:811),
+// skill-eval-round in D27 (492:1395), the hook commit-msg in D28 (492:2024); on a tablet in T16 (482:2077) and T24 to
+// T27 (492:2381, 492:2709, 492:3093, 492:3522); on the phone in M18 (482:2396) and M27 to M30 (492:3885, 492:4162,
+// 492:4499, 492:4790).
+const evalsTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: {
+    'skills/writer/': '482:1722',
+    'rules/skills.md': '492:334',
+    'agents/writing-reviewer.md': '492:811',
+    'workflows/skill-eval-round.md': '492:1395',
+    'hooks/commit-msg': '492:2024',
+  },
+  tablet: {
+    'skills/writer/': '482:2077',
+    'rules/skills.md': '492:2381',
+    'agents/writing-reviewer.md': '492:2709',
+    'workflows/skill-eval-round.md': '492:3093',
+    'hooks/commit-msg': '492:3522',
+  },
+  phone: {
+    'skills/writer/': '482:2396',
+    'rules/skills.md': '492:3885',
+    'agents/writing-reviewer.md': '492:4162',
+    'workflows/skill-eval-round.md': '492:4499',
+    'hooks/commit-msg': '492:4790',
+  },
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -331,6 +359,8 @@ export type ToolkitItemProps = {
   onCloseFilePage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
+  /** Opens another toolkit item on its Evals tab, by its path: a criterion's badge (D20 D5 Reviewer) or a ledger (D25). */
+  onOpenEvals?: ((path: string) => void) | undefined
   /**
    * Opens a file of a toolkit item on its Files tab: the item's path, the file's path in it and the line the link
    * names (D19's link lines).
@@ -360,6 +390,7 @@ export function ToolkitItem({
   onDiscuss,
   onOpenFullPage,
   onOpenItem,
+  onOpenEvals,
   onOpenFile,
   fullPage,
   file,
@@ -411,7 +442,10 @@ export function ToolkitItem({
   // back row names the item. Without it (T36) the item keeps its header and spacing, as on the Overview. The Links tab
   // does the same when its `links` asks for it (T15); without it (T28) the item keeps its header.
   const narrowHow =
-    !desktop && ((tab === 'how' && detail.how?.named === true) || (tab === 'links' && detail.links?.named === true))
+    !desktop &&
+    ((tab === 'how' && detail.how?.named === true) ||
+      (tab === 'links' && detail.links?.named === true) ||
+      (tab === 'evals' && detail.results?.named === true))
   // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
     <ToolkitItemActions
@@ -445,7 +479,9 @@ export function ToolkitItem({
                 ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
                 : tab === 'links'
                   ? linksTitleLayersOf[layout][item.path]
-                  : titleLayersOf[layout][item.path]
+                  : tab === 'evals'
+                    ? evalsTitleLayersOf[layout][item.path]
+                    : titleLayersOf[layout][item.path]
       }
     >
       {pageFile?.name ?? item.name}
@@ -583,6 +619,13 @@ export function ToolkitItem({
                   onOpenFile?.(target.item, target.file, linkLine(l))
                 }}
               />
+            ) : t.value === 'evals' && detail.results !== undefined ? (
+              <ToolkitEvals
+                evals={detail.results}
+                layout={layout}
+                onTabChange={onTabChange}
+                onOpenEvals={onOpenEvals}
+              />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : t.value === 'files' && pageFile !== undefined ? (
@@ -615,8 +658,14 @@ export function ToolkitItem({
             // T8 448:215: a workflow's own page starts 12 under the tabs; the tabs' panel puts it 15 under them.
             // T4 434:408: on the Files tab of a tablet the tree starts 14 under the tabs, where the tabs' panel puts it.
             // T15 482:909: a named Links tab starts 12 under the tabs, so it takes no space above it either.
+            // M27 492:3839: on the phone the Evals tab starts 10 under the tabs, where the tabs' panel puts it.
             content:
-              desktop || full || narrowFiles || panel === null || (narrowHow && tab === 'links') ? (
+              desktop ||
+              full ||
+              narrowFiles ||
+              panel === null ||
+              (narrowHow && (tab === 'links' || tab === 'evals')) ||
+              (phone && tab === 'evals') ? (
                 panel
               ) : (
                 <div className={panelPage}>{panel}</div>

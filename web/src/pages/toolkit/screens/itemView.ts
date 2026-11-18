@@ -8,7 +8,7 @@
 // without rendering. `openFrom`, `backTo` and `openedFrom` are the way into an
 // item from another item's links and back (T7). An item a link names that
 // the list does not show opens from `data.linkTargets`, with its Files tab
-// (D19).
+// (D19), and an item an Evals tab names from `data.evalTargets` (D25).
 import type {
   ToolkitData,
   ToolkitFileBrowser,
@@ -121,7 +121,10 @@ export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTa
   const path = ui.open
   const target = data.linkTargets?.find((t) => t.item.path === path)
   const item =
-    data.groups.flatMap((g) => g.items).find((i) => i.path === path) ?? fromMap(data.map, path) ?? target?.item
+    data.groups.flatMap((g) => g.items).find((i) => i.path === path) ??
+    fromMap(data.map, path) ??
+    target?.item ??
+    data.evalTargets?.find((i) => i.path === path)
   if (item === undefined) return null
   const detail = withLinkBrowser(data.details?.find((d) => d.path === path) ?? fallback(item), target?.browser)
   const first = detail.tabs[0]?.value ?? overview.value

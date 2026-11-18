@@ -9,6 +9,7 @@
 // to 3 files, 433:352) with the Skills group closed (433:192). The frame
 // draws only the Skills and Agents groups, as D1 does, so the Rules group of
 // T1 is left out.
+import { agentResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
@@ -28,6 +29,8 @@ const writingReviewer: ToolkitItemDetailView = {
       { icon: 'context', label: 'Context', value: 'Its own', caption: 'gets only what the task hands it' },
     ],
   },
+  // The Evals tab (D20, D25 to D28).
+  results: agentResults,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },

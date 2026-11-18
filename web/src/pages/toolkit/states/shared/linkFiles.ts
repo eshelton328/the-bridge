@@ -17,7 +17,7 @@ import { ruleFilesBrowser } from '../ruleFiles.ts'
 import { ruleOpen } from '../ruleOpen.ts'
 import { skillFilesBrowser } from '../skillFiles.ts'
 import { skillOpen } from '../skillOpen.ts'
-import { workflowFilesBrowser } from '../workflowFiles.ts'
+import { workflowFilesBrowser } from './workflowBrowser.ts'
 import type { ToolkitData, ToolkitFileBrowser, ToolkitFileView } from '../../types.ts'
 
 type LinkTarget = NonNullable<ToolkitData['linkTargets']>[number]
@@ -96,9 +96,8 @@ const browsers: Record<string, ToolkitFileBrowser> = {
     at(102, 'toolkit/rules/ste100.md and run the lint with --ste'),
   ]),
   'rules/skills.md': withExcerpts(ruleFilesBrowser, 'skills.md', [at(72, 'The eval-cases skill is the…')]),
-  'workflows/skill-eval-round.md': withExcerpts(workflowFilesBrowser, 'skill-eval-round.md', [
-    at(46, '4. Primary grades: grade.py <round> <skill> primary, eval-grader'),
-  ]),
+  // The workflow's browser holds its line 46 itself, since its own detail carries it (shared/workflowBrowser.ts).
+  'workflows/skill-eval-round.md': workflowFilesBrowser,
   'hooks/commit-msg': commitMsg,
   'rules/writing.md': oneFile(
     'writing.md',

@@ -4,7 +4,12 @@
 // that use it (none), its files and the link to its evals. Copy word for word
 // from references/toolkit/D03/frame.json. The list beside it has T1's data
 // (toolkitListTablet): writing-reviewer links to 3 files there, as in this
-// frame (427:249), and the Rules group lies below the frame.
+// frame (427:249), and the Rules group lies below the frame. The details hold
+// the agent writing-reviewer too (agentOpen, with its Evals results), so
+// writer's D5 Reviewer badge opens the agent's Evals tab (D26) from this
+// state and every state built on it.
+import { agentOpen } from './agentOpen.ts'
+import { writerResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
@@ -15,6 +20,8 @@ const writer: ToolkitItemDetailView = {
   changed: 'changed 6 days ago',
   description:
     'Use before writing, rewriting or editing any doc, ticket, issue, PRD, spec, report, explainer, note, the text of an artifact or HTML page, or a chat answer that explains from records or logs why something happened.',
+  // The Evals tab (D20, D25 to D28).
+  results: writerResults,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },
@@ -58,6 +65,6 @@ const writer: ToolkitItemDetailView = {
 export const skillOpen = {
   title: 'a skill open beside the list',
   frames: [{ id: 'D3', node: '424:618', viewport: 'desktop' }],
-  data: { ...toolkitListTablet.data, details: [writer] },
+  data: { ...toolkitListTablet.data, details: [writer, ...agentOpen.data.details] },
   ui: { ...toolkitListTablet.ui, open: 'skills/writer/' },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

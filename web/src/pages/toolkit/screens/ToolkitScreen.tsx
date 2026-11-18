@@ -35,6 +35,7 @@ import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } f
 import { canOpenFullPage, isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
 import { backTo, openedFrom, openFile, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
+import { openEvals } from '../blocks/evalsView.ts'
 import { selectFile } from '../blocks/filesView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
@@ -236,6 +237,9 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
         }
         onOpenItem={(path) => {
           onUiChange(openFrom(path, open.item.path))
+        }}
+        onOpenEvals={(path) => {
+          onUiChange(openEvals(path, open.item.path))
         }}
         onOpenFile={(path, file, line) => {
           // The file opens as a tap on its row in the tree opens it: on a tablet or phone on its own page when it has

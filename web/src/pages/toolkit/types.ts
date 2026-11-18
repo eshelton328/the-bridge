@@ -395,6 +395,100 @@ const ToolkitLinks = z.object({
 })
 export type ToolkitLinks = z.infer<typeof ToolkitLinks>
 
+/**
+ * A badge of the Evals tab's status panel (D20 `badge · D1 Quality` 482:1901): a done criterion or a test run and its
+ * state. `pass` is drawn in the done colour with a check, `fail` in the danger colour with a cross in a circle, and
+ * `waits` (a criterion not measured yet, D20 `badge · D6` 482:1923) in the needs-you colour with no icon. `open` is the
+ * path of the item whose Evals tab holds the criterion's results (D5 Reviewer, the agent writing-reviewer, D26): a tap
+ * on the badge opens that item there.
+ */
+const ToolkitEvalBadge = z.object({
+  label: z.string(),
+  state: z.enum(['pass', 'fail', 'waits']),
+  open: z.string().optional(),
+})
+
+/**
+ * One row of a panel that lists rounds (D20 `round · r7` 482:1987): its name, the meta after it (the date, the runs and
+ * the cost) and a line under them. The rule's ledgers (D25 `round · writer` 492:506) and the workflow's gates (D27
+ * `round · Before step 1` 492:1677) use the same row. `open` is the path of the toolkit item the row names (a ledger's
+ * skill): a tap on the name opens that item on its Evals tab.
+ */
+const ToolkitEvalRound = z.object({
+  name: z.string(),
+  meta: z.string(),
+  text: z.string(),
+  open: z.string().optional(),
+})
+
+/**
+ * The text at the end of a rounds panel's header: the count of its rows and a noun (D25 492:489, "4 ledgers"), a link
+ * to another tab of the item (D27 492:1660, "from the file" opens Files) or a link to a file outside the toolkit that
+ * no frame draws yet (D20 482:1986, "Open the ledger"), which waits for a design and is disabled.
+ */
+const ToolkitEvalsEnd = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('count'), noun: z.string() }),
+  z.object({ type: z.literal('tab'), label: z.string(), tab: z.string() }),
+  z.object({ type: z.literal('waits'), label: z.string() }),
+])
+
+/**
+ * A line of text with pass and fail marks in it (D28 492:2185: Figma's ✓ and ✗ in the hook's test line): plain text, or
+ * its runs, each a string or a mark, which the line draws as the library's check or cross icon with "pass" or "fail"
+ * as its accessible text.
+ */
+const ToolkitMarkedText = z.union([
+  z.string(),
+  z.array(z.union([z.string(), z.object({ mark: z.enum(['pass', 'fail']) })])),
+])
+
+/**
+ * The Evals tab of an open item (D20 `evals` 482:1894), from the item's ledger, its cases or its tests: the status
+ * panel (its label in capitals, the text at the header's end, the badges and a line on what they mean), the pass rate
+ * by round as grouped bars (`chart`, D20 `panel · opus by round` 482:1927), the cases with their scores (`cases`, D20
+ * `panel · cases` 482:1956; the count follows the label), the rounds (`rounds`, D20 `panel · rounds` 482:1982) and the
+ * source under them. An item with no evals has only a status panel that says so, and the rows that stand in for them:
+ * the ledgers that cite a rule (D25), a workflow's gates (D27) or a hook's test groups (D28).
+ */
+const ToolkitEvals = z.object({
+  status: z.object({
+    label: z.string(),
+    meta: z.string().optional(),
+    badges: z.array(ToolkitEvalBadge).optional(),
+    text: ToolkitMarkedText,
+  }),
+  chart: z
+    .object({
+      label: z.string(),
+      meta: z.string(),
+      /** The series, one bar in each group: with the skill (cyan) and without it (grey). */
+      series: z.array(z.object({ name: z.string() })).min(1),
+      groups: z.array(z.object({ label: z.string(), values: z.array(z.number().nonnegative()) })).min(1),
+      /** The value of a full-height bar (100, a pass rate in percent). */
+      max: z.number().positive(),
+      note: z.string(),
+    })
+    .optional(),
+  cases: z
+    .object({
+      label: z.string(),
+      meta: z.string(),
+      rows: z.array(z.object({ name: z.string(), value: z.string() })).min(1),
+      note: z.string().optional(),
+    })
+    .optional(),
+  rounds: z
+    .object({ label: z.string(), end: ToolkitEvalsEnd.optional(), items: z.array(ToolkitEvalRound).min(1) })
+    .optional(),
+  source: z.string(),
+  /**
+   * On a tablet or the phone, the back row names the item (Toolkit › writer, T16 482:2066) and the kind badge and path
+   * rows are left out, as on How it works (T10). When not set the tab keeps the item's header (T24 492:2381).
+   */
+  named: z.boolean().optional(),
+})
+export type ToolkitEvals = z.infer<typeof ToolkitEvals>
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -456,6 +550,11 @@ export const ToolkitItemDetailView = z.object({
   browser: ToolkitFileBrowser.optional(),
   /** The Links tab (D19): what links to the item and what it links to. None when the item has no such tab yet. */
   links: ToolkitLinks.optional(),
+  /**
+   * The Evals tab (D20): the item's results from its ledger, or what stands in for them when it has no eval cases (D25
+   * to D28). None when the item has no such tab yet; its panel is then empty. The Overview's `evals` is the link to it.
+   */
+  results: ToolkitEvals.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -507,6 +606,11 @@ export const ToolkitData = z.object({
    * browser in `details` takes this one, and its Files tab. None when the state has no Links tab.
    */
   linkTargets: z.array(z.object({ item: ToolkitItemView, browser: ToolkitFileBrowser })).optional(),
+  /**
+   * The items an Evals tab's rows name that the list does not show (D25 `round · writer` 492:506: a rule's ledgers are
+   * skills, and D25's list has no Skills group); a tap on one opens it from here. None when the state has none.
+   */
+  evalTargets: z.array(ToolkitItemView).optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 

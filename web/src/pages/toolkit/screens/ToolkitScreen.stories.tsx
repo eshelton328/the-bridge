@@ -1204,3 +1204,186 @@ export const HookLinksPhone: Story = {
     await expect(within(item).getByRole('group', { name: 'commit-msg links' })).toBeVisible()
   },
 }
+
+export const SkillEvals: Story = {
+  name: 'D20: a skill open beside the list, on Evals',
+  args: { data: toolkitStates.skillEvals.data, ui: toolkitStates.skillEvals.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('region', { name: 'Cases · 5' })).toBeVisible()
+    await expect(within(item).getByRole('figure', { name: 'Opus pass rate by round' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'D5 Reviewer passed' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'Open the ledger' })).toBeDisabled()
+  },
+}
+
+export const RuleEvals: Story = {
+  name: 'D25: a rule open beside the list, on Evals',
+  args: { data: toolkitStates.ruleEvals.data, ui: toolkitStates.ruleEvals.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'No evals for rules' })).toBeVisible()
+    await expect(within(item).getByText('4 ledgers')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'agents-md' })).toBeVisible()
+  },
+}
+
+export const AgentEvals: Story = {
+  name: 'D26: an agent open beside the list, on Evals',
+  args: { data: toolkitStates.agentEvals.data, ui: toolkitStates.agentEvals.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('region', { name: 'Drafts · 9' })).toBeVisible()
+    await expect(within(item).getByText('r4 Opus artifact')).toBeVisible()
+    await expect(within(item).getByText('reviewer-1')).toBeVisible()
+  },
+}
+
+export const WorkflowEvals: Story = {
+  name: 'D27: a workflow open beside the list, on Evals',
+  args: { data: toolkitStates.workflowEvals.data, ui: toolkitStates.workflowEvals.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'No evals for workflows' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'from the file' })).toBeEnabled()
+    await expect(within(item).getByText('After step 6')).toBeVisible()
+  },
+}
+
+export const HookEvals: Story = {
+  name: 'D28: a hook open beside the list, on Evals',
+  args: { data: toolkitStates.hookEvals.data, ui: toolkitStates.hookEvals.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('43 of 43 pass')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'Test groups · 5' })).toBeVisible()
+    await expect(within(item).getByText('what git adds')).toBeVisible()
+  },
+}
+
+export const SkillEvalsTablet: Story = {
+  name: 'T16: a skill’s evals on a tablet, the cases under the chart',
+  args: { data: toolkitStates.skillEvalsTablet.data, ui: toolkitStates.skillEvalsTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('region', { name: 'Cases · 5' })).toBeVisible()
+    await expect(within(item).getByText('x1, graded by Codex')).toBeVisible()
+  },
+}
+
+export const RuleEvalsTablet: Story = {
+  name: 'T24: a rule’s evals on a tablet, under the rule’s header',
+  args: { data: toolkitStates.ruleEvalsTablet.data, ui: toolkitStates.ruleEvalsTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('Cites rule 6: run the task without the skill first.')).toBeVisible()
+  },
+}
+
+export const AgentEvalsTablet: Story = {
+  name: 'T25: an agent’s evals on a tablet, opened from writer',
+  args: { data: toolkitStates.agentEvalsTablet.data, ui: toolkitStates.agentEvalsTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('expected / its verdict')).toBeVisible()
+  },
+}
+
+export const WorkflowEvalsTablet: Story = {
+  name: 'T26: a workflow’s evals on a tablet, under the workflow’s header',
+  args: { data: toolkitStates.workflowEvalsTablet.data, ui: toolkitStates.workflowEvalsTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('G1 and G6')).toBeVisible()
+  },
+}
+
+export const HookEvalsTablet: Story = {
+  name: 'T27: a hook’s evals on a tablet, under the hook’s header',
+  args: { data: toolkitStates.hookEvalsTablet.data, ui: toolkitStates.hookEvalsTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('cases, all pass')).toBeVisible()
+  },
+}
+
+export const SkillEvalsPhone: Story = {
+  name: 'M18: a skill’s evals on the phone, the badges in two rows',
+  args: { data: toolkitStates.skillEvalsPhone.data, ui: toolkitStates.skillEvalsPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('x1, Codex grader')).toBeVisible()
+    await expect(within(item).getByRole('heading', { name: 'V1 done criteria' })).toBeVisible()
+  },
+}
+
+export const RuleEvalsPhone: Story = {
+  name: 'M27: a rule’s evals on the phone, under the rule’s header',
+  args: { data: toolkitStates.ruleEvalsPhone.data, ui: toolkitStates.ruleEvalsPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('ambitious.md:58')).toBeVisible()
+  },
+}
+
+export const AgentEvalsPhone: Story = {
+  name: 'M28: an agent’s evals on the phone, under the agent’s header',
+  args: { data: toolkitStates.agentEvalsPhone.data, ui: toolkitStates.agentEvalsPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('Nov 8, 9 drafts')).toBeVisible()
+  },
+}
+
+export const WorkflowEvalsPhone: Story = {
+  name: 'M29: a workflow’s evals on the phone, under the workflow’s header',
+  args: { data: toolkitStates.workflowEvalsPhone.data, ui: toolkitStates.workflowEvalsPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('Before step 1')).toBeVisible()
+  },
+}
+
+export const HookEvalsPhone: Story = {
+  name: 'M30: a hook’s evals on the phone, under the hook’s header',
+  args: { data: toolkitStates.hookEvalsPhone.data, ui: toolkitStates.hookEvalsPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitEvals.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('run Nov 14')).toBeVisible()
+  },
+}

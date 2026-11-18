@@ -9,6 +9,7 @@
 // (427:576, 427:602). Figma draws the list scrolled to the Rules group under
 // a pinned header, chips and search; the pane starts at the Skills group
 // until the library's ScrollFrame (beta.15, d-107).
+import { ruleResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitGroupView, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
 import { toolkitListTablet } from './toolkitListTablet.ts'
@@ -61,6 +62,8 @@ const skills: ToolkitItemDetailView = {
   description:
     'How every skill in the toolkit is built. A skill is a procedure an agent loads only when a task needs it, so it can carry depth that a context file cannot afford.',
   loads: { label: 'Loads when', when: 'a file under toolkit/skills/** or skills/** changes' },
+  // The Evals tab (D20, D25 to D28).
+  results: ruleResults,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },

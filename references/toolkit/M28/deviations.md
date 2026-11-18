@@ -1,0 +1,68 @@
+# M28 deviations
+
+What still differs from Figma after the fidelity loop
+(`pnpm fidelity toolkit M28`, 2026-11-18, against library 1.0.0-beta.36:
+a first run and three fix rounds), each with its reason. The library
+gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
+`web/src/pages/toolkit/states/agentEvalsPhone.ts`: T25's data with no
+`ui.from`, as on M20: the agent keeps M20's header under Back to
+Toolkit. Every other Toolkit frame (M01, M02, M04 to M06, M08, M09, M11,
+M12, M17, M19 to M22 and M31 to M41 and the list frames) gives the same
+text, position and rule results as before the Evals tab. The frame has
+no `exceptions.json`.
+
+## Checks
+
+- Text: pass. Every Figma string is in the render and visible, and
+  nothing extra shows.
+- Position: 26 of 31 layers pass. The 5 that fail: `button · Discuss` x
+  +8 w -8; `toolkit` y +36 h +81; `evals` y -1 h -10; `panel · rounds` y
+  -5 h -3; `round · reviewer-1` y -6 h -2. Each is explained below.
+- Rules: fail. 2 `hiddenOverflow` findings:
+  `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`;
+  `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
+  Each is explained below; this frame takes no exceptions.
+
+## Deviations
+
+- **Discuss button.** As on M19: an icon-only `Button` is square, so
+  Discuss is `sm`, 28 × 28, against Figma's 36 × 28, and starts further
+  right (`button · Discuss` x +8 w -8; gap: Item action buttons).
+- **Item frame.** Figma's `toolkit` holds the back row and the item,
+  from y 42 down to the tab bar at y 767. In `DetailFrame` the back row
+  is the ScrollFrame's header and the item is the body under it, so the
+  article starts under the back row and runs to the tab's source line
+  (`toolkit` y +36 h +81), as on M19 (d-107).
+- **Under the tab bar.** Figma draws the tab past the tab bar at y 767;
+  the tab bar lies over the page (AppShell `tabBarOverlay`), so the
+  tab's foot lies under the bar in the render too, and the item's
+  ScrollFrame body scrolls: the `hiddenOverflow` finding
+  `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`,
+  as on M17 and M20.
+- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
+  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
+  Figma draws a border only on the selected tab. So Evals is 327.5 to
+  384.3 against Figma's 321 to 378, and the list, which ends at 378,
+  cuts 6 px of its outline at the right. The list does not scroll the
+  selected tab into view (gap: Item tab width). Activity runs past the
+  screen, as in Figma; the list's sideways scroll is the
+  `hiddenOverflow` finding
+  `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
+  The outline stays `border.selected` at half alpha (d-050).
+- **Line heights.** The tab's headers, its small and mono lines and its
+  rows are 16 px high in the `monoCaps`, `small` and `mono` text styles
+  against Figma's 17: the library keeps line heights on the 4 px grid
+  (d-072). The rows sit 8 and 10 apart in turn to keep Figma's 25 and 47
+  px steps on average, and the lines under the badges, the chart and the
+  cases 2 px lower, so most rows stay within the tolerance; what remains
+  adds up down the tab: `evals` y -1 h -10; `panel · rounds` y -5 h -3;
+  `round · reviewer-1` y -6 h -2 (gap: Evals panels).
+- **Open the ledger.** Figma draws Open the ledger in the accent colour.
+  The ledger is in projects/skill-evals/, outside the toolkit, and no
+  frame draws it, so the render keeps the link disabled, in the accent colour at the
+  disabled opacity, with
+  a title that says so (gap: Evals panels).
+- **Badge icon.** The D5 Reviewer badge's check is the library's 12 px
+  `CheckIcon` against Figma's 11 px icon. Its stroke is 1 px, where
+  Figma's is about 2 px wide, so the render's check is thinner; no icon
+  takes a weight (gap: Evals criterion badge).
