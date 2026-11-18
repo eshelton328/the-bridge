@@ -138,6 +138,85 @@ describe('the Back bar on the tablet (d-107)', () => {
   })
 })
 
+describe('the discussion page on the tablet (d-107)', () => {
+  it('keeps the nav and the card at the top and the reply box at the bottom while the messages scroll (T4)', async () => {
+    await page.viewport(756, 1158)
+    const { view, root } = await renderRoot('discussTablet')
+    await expect.poll(() => root.querySelector('[data-figma="composer · discussion"]')).not.toBeNull()
+    const nav = root.querySelector('[data-figma="nav"]')
+    const card = root.querySelector('[data-figma="artifact · discussing"]')
+    const bottom = root.querySelector('[data-figma="composer · discussion"]')
+    if (nav === null || card === null || bottom === null) throw new Error('no discussion page')
+    // The tab bar hides, as in a chat.
+    expect(root.querySelector('[data-figma="tab bar"]')).toBeNull()
+    // The messages under the card: one ScrollFrame body, made to overflow as a long discussion would.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')]
+    expect(bodies).toHaveLength(1)
+    const [body] = bodies
+    if (body === undefined) throw new Error('no messages')
+    const long = document.createElement('div')
+    long.style.height = '3000px'
+    long.style.flexShrink = '0'
+    ;(body.firstElementChild ?? body).append(long)
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = { nav: box(nav).top, card: box(card).top, bottom: box(bottom).bottom }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop > 0).toBe(true)
+    // The page and the AppShell detail do not scroll; only the messages between the card and the reply box.
+    expect(root.querySelector('.app-shell__detail')?.scrollTop ?? 0).toBe(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(nav).top).toBe(before.nav)
+    expect(box(card).top).toBe(before.card)
+    expect(box(nav).top).toBeGreaterThanOrEqual(0)
+    expect(box(bottom).bottom).toBe(before.bottom)
+    expect(box(bottom).bottom).toBeLessThanOrEqual(window.innerHeight)
+    expect(box(card).bottom).toBeLessThanOrEqual(box(bottom).top)
+    await view.unmount()
+  })
+
+  it('keeps Send in reach of the wheel when the reply box holds 70 lines (T4)', async () => {
+    await page.viewport(756, 1158)
+    const { view, root } = await renderRoot('discussTablet')
+    await expect.poll(() => root.querySelector('[data-figma="composer · discussion"] textarea')).not.toBeNull()
+    const field = root.querySelector('[data-figma="composer · discussion"] textarea')
+    const card = root.querySelector('[data-figma="artifact · discussing"]')
+    if (!(field instanceof HTMLTextAreaElement) || card === null) throw new Error('no reply box')
+    await userEvent.fill(field, Array.from({ length: 70 }, (_, i) => `line ${String(i + 1)}`).join('\n'))
+    await new Promise((resolve) => setTimeout(resolve, 300))
+    const reply = field.closest('.composer__root')?.parentElement ?? field
+    // The reply box keeps the desktop panel's cap: inside the window, at most half of it, under the card.
+    expect(box(reply).bottom).toBeLessThanOrEqual(window.innerHeight)
+    expect(box(reply).top).toBeGreaterThanOrEqual(box(card).bottom)
+    expect(box(reply).height).toBeLessThanOrEqual(window.innerHeight / 2 + 1)
+    reply.scrollTop = reply.scrollHeight
+    const send = [...reply.querySelectorAll('button')].at(-1)
+    if (send === undefined) throw new Error('no Send')
+    await expect
+      .poll(() => send.getBoundingClientRect().bottom <= Math.min(window.innerHeight, box(reply).bottom) + 1)
+      .toBe(true)
+    expect(send.getBoundingClientRect().top).toBeGreaterThanOrEqual(box(reply).top)
+    await view.unmount()
+  })
+
+  it('opens the discussion from Discuss on the artifact page, and its card returns to the artifact (T2 to T4 to T2)', async () => {
+    await page.viewport(756, 1158)
+    const { view, root } = await renderRoot('artifactTablet')
+    await expect.poll(() => root.querySelector('[data-figma="button · Discuss"] button')).not.toBeNull()
+    const discuss = root.querySelector('[data-figma="button · Discuss"] button')
+    if (!(discuss instanceof HTMLElement)) throw new Error('no Discuss')
+    await userEvent.click(discuss)
+    await expect.poll(() => root.querySelector('[data-figma="artifact · discussing"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="tab bar"]')).toBeNull()
+    const card = root.querySelector('button[aria-label="Back to Skill eval pass rates"]')
+    if (!(card instanceof HTMLElement)) throw new Error('no card')
+    await userEvent.click(card)
+    await expect.poll(() => root.querySelector('[data-figma="top bar"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="artifact · discussing"]')).toBeNull()
+    expect(root.querySelector('[data-figma="tab bar"]')).not.toBeNull()
+    await view.unmount()
+  })
+})
+
 describe('a long draft (d-107)', () => {
   for (const c of states)
     it(`keeps Send in reach of the wheel when the reply box holds 70 lines: ${c.name}`, async () => {
