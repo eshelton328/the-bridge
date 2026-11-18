@@ -153,3 +153,5 @@ The blind second review of round 3 (`reports/fidelity/inbox/D20.sideBySide.png`,
 - Read the whole prompt and SOURCES links larger: fixed. They are Figma's 12 px (Medium and Regular): `small`.
 - Close X a bare X: no change needed. The render's close is the library's `Button size="sm" iconOnly`, a 28 px box with the raised fill, as in D14; under the scrim both look darker.
 - Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
+
+**Meta line in the dialog's heading (2026-11-18).** The dialog now passes its meta line to `Dialog meta` (library #158, beta.45), so the line sits 4 px under the title as Figma's (403:3915), not 12 px in the content. `dialog · Remove this task` goes from h +15 to h +7. The 8 px it gains were the gap under the title; the rest stays, as the entries above record.

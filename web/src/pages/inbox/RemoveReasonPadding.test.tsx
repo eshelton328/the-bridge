@@ -38,3 +38,22 @@ describe('the reason box of the remove confirm', () => {
     expect(Math.abs(box.getBoundingClientRect().height - 78)).toBeLessThanOrEqual(4)
   })
 })
+
+// D20 403:3915: Figma puts the task's meta line 4 under the dialog's title, in one frame with it.
+describe('the meta line of the remove confirm', () => {
+  it('sits 4 px under the title (D20)', async () => {
+    const { data, ui } = inboxStates.removeConfirm
+    view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)
+    const dialog = document.querySelector('[data-figma="dialog · Remove this task"]')
+    expect(dialog).not.toBeNull()
+    if (dialog === null) return
+    const title = dialog.querySelector('h2')
+    const meta = [...dialog.querySelectorAll('p')].find(
+      (p) => p.textContent === 'ncc-1701 · f-005 · NCC-28 · Next step',
+    )
+    expect(title).not.toBeNull()
+    expect(meta).toBeDefined()
+    if (title === null || meta === undefined) return
+    expect(meta.getBoundingClientRect().top - title.getBoundingClientRect().bottom).toBe(4)
+  })
+})
