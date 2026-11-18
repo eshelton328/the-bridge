@@ -138,3 +138,29 @@ describe('openEvals', () => {
     expect(agentEvalsTablet.ui.from).toBe('skills/writer/')
   })
 })
+
+// Every open item a state can show with an Evals tab: the item each of its details names, resolved as a tap opens it.
+function evalsTaps(): { state: string; path: string; evals: ToolkitEvals }[] {
+  return Object.entries(toolkitStates).flatMap(([state, s]) => {
+    const data: ToolkitData = s.data
+    return (data.details ?? []).flatMap((d) => {
+      const evals = openItem(data, { ...s.ui, open: d.path })?.detail.results
+      return evals === undefined ? [] : [{ state, path: d.path, evals }]
+    })
+  })
+}
+
+describe('the targets of the Evals taps in every state', () => {
+  it('gives each badge that opens another item that item’s Evals results (D3 Skill evals, then D5 Reviewer)', () => {
+    const missing = evalsTaps().flatMap(({ state, path, evals }) =>
+      (evals.status.badges ?? []).flatMap((b) => {
+        if (b.open === undefined) return []
+        const s = toolkitStates[state as keyof typeof toolkitStates]
+        const target = openItem(s.data, { ...s.ui, ...openEvals(b.open, path) })
+        return target?.detail.results === undefined ? [`${state}: ${path} › ${b.label}`] : []
+      }),
+    )
+    expect(missing).toEqual([])
+    expect(evalsTaps().some((t) => t.state === 'skillOpen' && t.path === 'skills/writer/')).toBe(true)
+  })
+})

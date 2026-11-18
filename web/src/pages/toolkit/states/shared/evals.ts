@@ -7,12 +7,12 @@
 // has neither. The rule's ledgers are skills that D25's list does not show:
 // `ledgerSkills` gives them to `evalTargets`.
 import type { ToolkitData, ToolkitItemDetailView } from '../../types.ts'
-import { agentOpen } from '../agentOpen.ts'
 import { ruleOpen } from '../ruleOpen.ts'
 import { skillOpen } from '../skillOpen.ts'
 import { ruleResults } from './evalResults.ts'
 
-const linked: readonly ToolkitItemDetailView[] = [...skillOpen.data.details, ...agentOpen.data.details]
+// skillOpen's details hold both writer and writing-reviewer (agentOpen's).
+const linked: readonly ToolkitItemDetailView[] = skillOpen.data.details
 
 /** A state's details, with writer and writing-reviewer added when the state has no details for them. */
 export function withEvals(details: readonly ToolkitItemDetailView[]): ToolkitItemDetailView[] {

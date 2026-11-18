@@ -111,6 +111,16 @@ describe('the Evals tab of an open item (D20)', () => {
     expect(root.querySelector('[data-figma="evals"]')?.textContent).toContain('Drafts · 9')
   })
 
+  it('opens writing-reviewer’s Evals with its results from the Overview: Skill evals, then D5 Reviewer (D3, D26)', async () => {
+    const { root } = await renderToolkit('skillOpen', 'desktop', 'article[aria-label="writer"]')
+    await userEvent.click(button(root, 'Skill evals', 'article'))
+    await expect.poll(() => root.querySelector('[data-figma="evals"]')).not.toBeNull()
+    await userEvent.click(button(root, 'D5 Reviewer'))
+    await expect.poll(() => root.querySelector('article[aria-label="writing-reviewer"]')).not.toBeNull()
+    expect(selectedTab(root, 'writing-reviewer')).toBe('Evals')
+    await expect.poll(() => root.querySelector('[data-figma="evals"]')?.textContent).toContain('Drafts · 9')
+  })
+
   it('keeps Open the ledger disabled: the ledger is outside the toolkit and no screen shows it', async () => {
     const { root } = await renderToolkit('skillEvals')
     const ledger = button(root, 'Open the ledger')
