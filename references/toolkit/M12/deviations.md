@@ -74,3 +74,11 @@ D14, D37, D38, D39, T10 and M02 give the same results as before M12.
   breadcrumb). The row passes the position check.
 - **Tab bar.** The shared `AppTabBar` passes the position check, and its
   five items line up with Figma's.
+
+## Second review
+
+- **Repeat border.** Steps 6 and 7 repeat, and Figma draws their border
+  in amber. The render draws it in `status.needsYou.border`, which is
+  that amber at alpha 0.5 (rgba(255, 184, 107, 0.5)), so on the dark
+  card it looks almost grey. No status border token is solid amber
+  (d-050).
