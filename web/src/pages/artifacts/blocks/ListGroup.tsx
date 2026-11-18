@@ -45,9 +45,9 @@ export function ListGroup({
         />
       </div>
       {open ? (
-        // Figma's rows are 98 high, 6 apart (403:8216): a 104 px pitch. The render's rows are 96 (`ListRow` pads 10
-        // inside the box's and its own 1 px borders, against Figma's 12 inside one), so they keep the pitch 8 apart.
-        <Stack gap="8" id={id} data-figma={rowsFigma}>
+        // Figma's rows are 98 high, 6 apart (403:8216): a 104 px pitch. `ListRow padding="lg"` pads 12 inside its
+        // 1 px card border, so the rows are Figma's height and sit 6 apart.
+        <Stack gap="6" id={id} data-figma={rowsFigma}>
           {children}
         </Stack>
       ) : null}
