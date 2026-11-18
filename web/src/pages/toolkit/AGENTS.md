@@ -215,6 +215,8 @@ what each file of a page folder is for.
   loads; an agent (D34, `agentFiles`, D7's list) is one file too, its prompt,
   with its model and tools in the frontmatter; a workflow (D35, `workflowFiles`,
   D8's list) is one design doc, with the harness/ folder of the scripts its
-  steps run, which are outside the toolkit. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  steps run, which are outside the toolkit; a hook (D36, `hookFiles`, D9's list)
+  is the script and its tests, two script rows with the tests selected. Only the
+  selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

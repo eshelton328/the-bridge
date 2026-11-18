@@ -731,3 +731,20 @@ export const WorkflowFiles: Story = {
     await expect(within(viewer).getByText('The steps table names the harness script for each step.')).toBeVisible()
   },
 }
+
+export const HookFiles: Story = {
+  name: 'D36: a hook open beside the list, on Files',
+  args: { data: toolkitStates.hookFiles.data, ui: toolkitStates.hookFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // A hook is the script and its tests; the tests are selected.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(2)
+    await expect(within(tree).getByText('The hook. Git runs it on every commit.')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^test-commit-msg/, selected: true })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'test-commit-msg' })
+    await expect(within(viewer).getByText('bash · 97 lines · run, not read')).toBeVisible()
+    await expect(within(viewer).getByText('Last run on Nov 14: 43 of 43 pass.')).toBeVisible()
+  },
+}
