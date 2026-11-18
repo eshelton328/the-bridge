@@ -64,6 +64,7 @@ import { skillLinksTablet } from './skillLinksTablet.ts'
 import { ruleLinksTablet } from './ruleLinksTablet.ts'
 import { agentLinksTablet } from './agentLinksTablet.ts'
 import { workflowLinksTablet } from './workflowLinksTablet.ts'
+import { hookLinksTablet } from './hookLinksTablet.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -129,4 +130,5 @@ export const toolkitStates = {
   ruleLinksTablet,
   agentLinksTablet,
   workflowLinksTablet,
+  hookLinksTablet,
 }

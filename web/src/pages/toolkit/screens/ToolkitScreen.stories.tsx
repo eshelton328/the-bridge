@@ -1114,3 +1114,19 @@ export const WorkflowLinksTablet: Story = {
     await expect(within(to).getByRole('button', { name: 'skill-eval-round.md:46' })).toBeVisible()
   },
 }
+
+export const HookLinksTablet: Story = {
+  name: 'T31: a hook’s links on a tablet, under the hook’s header',
+  args: { data: toolkitStates.hookLinksTablet.data, ui: toolkitStates.hookLinksTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the panels under the graph, under Back.
+  // src/app/ToolkitLinks.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 2' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 1' })
+    await expect(within(from).getByRole('button', { name: 'rules/commits-and-prs.md:182' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'commit-msg:3' })).toBeVisible()
+  },
+}

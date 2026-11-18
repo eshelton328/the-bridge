@@ -213,3 +213,20 @@ describe('a workflow’s Links tab on a tablet (T30)', () => {
     expect(to.top).toBeGreaterThan(from.bottom)
   })
 })
+
+describe('a hook’s Links tab on a tablet (T31)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the hook’s header and puts the rule it enforces on both sides', async () => {
+    const { root } = await renderTablet('hookLinksTablet', 'links')
+    expect(root.querySelector('article[aria-label="commit-msg"] [data-figma="kind badge"]')).not.toBeNull()
+    const names = [...root.querySelectorAll('[data-figma="links graph"] button')].map((n) => n.textContent)
+    expect(names).toEqual(['commits-and-prs', 'commit-msg', 'commits-and-prs'])
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(to.top).toBeGreaterThan(from.bottom)
+    expect(to.width).toBeCloseTo(from.width, 0)
+  })
+})
