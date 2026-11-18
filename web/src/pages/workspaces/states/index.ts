@@ -20,6 +20,7 @@ import { forkDialog } from './forkDialog.ts'
 import { forkedChat } from './forkedChat.ts'
 import { subtaskDialog } from './subtaskDialog.ts'
 import { subtaskRunning } from './subtaskRunning.ts'
+import { moveToWorkspace } from './moveToWorkspace.ts'
 
 export const workspacesStates = {
   workbench,
@@ -41,4 +42,5 @@ export const workspacesStates = {
   forkedChat,
   subtaskDialog,
   subtaskRunning,
+  moveToWorkspace,
 }

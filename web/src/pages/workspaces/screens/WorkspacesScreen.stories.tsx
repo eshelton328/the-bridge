@@ -296,3 +296,21 @@ export const SubtaskRunning: Story = {
     await expect(canvas.getByRole('button', { name: /Stop/ })).toBeVisible()
   },
 }
+
+export const MoveToWorkspace: Story = {
+  name: 'D19: Move to workspace with its list of workspaces open',
+  args: { data: workspacesStates.moveToWorkspace.data, ui: workspacesStates.moveToWorkspace.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'bridge themes actions' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+    // The menu and its list render in portals, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: /Move to workspace/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+    await expect(await body.findByRole('menuitem', { name: 'skill-evals' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'New workspace…' })).toBeVisible()
+    await expect(body.queryByRole('menuitem', { name: 'omni-brain' })).toBeNull()
+  },
+}
