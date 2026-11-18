@@ -15,5 +15,31 @@
       "text": "Artifacts",
       "reason": "The tab bar item Artifacts comes from the Toolkit page's frames (D1, T1), which are newer than the Inbox frames; the app has one tab bar for every page (d-105)."
     }
+  ],
+  "position": [
+    {
+      "layer": "tab · Home",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    },
+    {
+      "layer": "tab · Inbox",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    },
+    {
+      "layer": "tab · Workspaces",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    },
+    {
+      "layer": "tab · Projects",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    },
+    {
+      "layer": "tab · Artifacts",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    },
+    {
+      "layer": "tab · More",
+      "reason": "The Inbox frames are older than d-105: Figma draws 5 tabs of 91.2 px, and the tablet tab bar has 6 tabs of 76 px with Artifacts, as Toolkit T1 (424:3863) draws it. Each tab moves and narrows."
+    }
   ]
 }
