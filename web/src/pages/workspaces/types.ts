@@ -21,8 +21,13 @@ export const SidebarChat = z.object({
   model: z.string(),
   context: z.number().optional(),
   status: PaneStatus,
-  /** 1 for a subtask's chat, indented under the chat that started it. */
+  /** 1 for a subtask's or a fork's chat, indented under the chat that started it. */
   level: z.union([z.literal(0), z.literal(1)]).optional(),
+  /**
+   * What the chat is to the chat above it, drawn before its kind mark: `fork`, the branch mark of a fork (D16).
+   * `label` names the mark for assistive technology.
+   */
+  mark: z.object({ kind: z.enum(['fork']), label: z.string() }).optional(),
 })
 export type SidebarChat = z.infer<typeof SidebarChat>
 
@@ -46,6 +51,8 @@ export const PaneHead = z.object({
   /** The share of the context window in use; a shell has none. */
   context: z.number().optional(),
   status: PaneStatus,
+  /** Where the chat came from, after its workspace in the header, such as "forked from bridge themes" (D16). */
+  origin: z.string().optional(),
 })
 export type PaneHead = z.infer<typeof PaneHead>
 
@@ -61,6 +68,11 @@ export const ChatEntry = z.discriminatedUnion('type', [
     text: z.string(),
     copy: z.string().optional(),
   }),
+  /**
+   * A line that records what happened to the chat, such as where a fork starts (D16 417:718): a done dot and the
+   * text in mono, as a tool line. `label` names the dot for assistive technology.
+   */
+  z.object({ type: z.literal('event'), label: z.string(), text: z.string() }),
   /** Lines of an agent's progress, in mono. */
   z.object({ type: z.literal('progress'), lines: z.array(z.string()) }),
   /** A command the agent asks to run. */

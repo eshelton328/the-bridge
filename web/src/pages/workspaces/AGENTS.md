@@ -90,8 +90,11 @@ first: it says what each file of a page folder is for.
   library's outline `Badge` over the pane before the handle). D15 adds
   `ForkDialog` (the Fork form in `Dialog size="lg"`: the copy's name, a
   two-way start-from choice, a note, Cancel and Fork), which opens over
-  the chat alone when `ui.chatDialog` is `fork`. Later frames add to these
-  blocks.
+  the chat alone when `ui.chatDialog` is `fork`. D16 needs no new block:
+  `SidebarChatRow` draws a chat's `mark` (`fork`: the branch mark before
+  the kind mark of a nested row), `ChatHead` puts the chat's `origin` after
+  its workspace, and `ChatEntryView` draws an `event` entry (where a fork
+  starts) as the library's `ToolLine`. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -113,7 +116,8 @@ first: it says what each file of a page folder is for.
   `resizedPanes` (from `emptiedPane` with D11's panes, rows first, and
   the top row's handle dragged to 60 : 40), D15 `forkDialog` (from
   `chatActions`, without the side chat and the menu, and the Fork form
-  open).
+  open), D16 `forkedChat` (from `chatActions`, without the side chat and
+  the menu: the fork under bridge themes, focused, Idle).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -130,7 +134,8 @@ first: it says what each file of a page folder is for.
   `icon` and the zone's layers in `layers.dropZone`, for D12 its
   `preview`; for D13 the empty pane's `close` and its layers in
   `layers.emptyClose`; for D14 `split`, `resizeHint` and its layer in
-  `layers.resizeHint`; for D15 `fork`, the Fork form) and
+  `layers.resizeHint`; for D15 `fork`, the Fork form; for D16 a sidebar
+  chat's `mark`, a pane head's `origin` and the `event` chat entry) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

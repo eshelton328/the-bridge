@@ -250,3 +250,17 @@ export const ForkDialog: Story = {
     ).toBeVisible()
   },
 }
+
+export const ForkedChat: Story = {
+  name: 'D16: the fork listed under its original and shown alone, Idle',
+  args: { data: workspacesStates.forkedChat.data, ui: workspacesStates.forkedChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes · fork' })).toBeVisible()
+    await expect(canvas.getByText('omni-brain · forked from bridge themes')).toBeVisible()
+    await expect(canvas.getByText('Forked from bridge themes here · the messages above are a copy')).toBeVisible()
+    await expect(canvas.getByRole('img', { name: 'Fork of bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'bridge themes · fork', current: true })).toBeVisible()
+    // The fork is Idle: its composer has no Stop.
+    await expect(canvas.queryByRole('button', { name: /Stop/ })).toBeNull()
+  },
+}

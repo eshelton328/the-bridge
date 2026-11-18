@@ -1,5 +1,5 @@
 // The header of a chat shown alone (D2 105:785): the kind mark, the title over
-// its workspace, the status and the chat actions; under them the model, the
+// its workspace (and where the chat came from, D16), the status and the chat actions; under them the model, the
 // context used and its label. The library's `Pane` header has one row
 // (LIBRARY_GAPS.md: Chat header). Props only.
 import {
@@ -49,7 +49,7 @@ export function ChatHead({ head: chat, workspace, contextLabel, menu, figma }: C
         <KindMark kind={chat.kind} size="20" />
         <div className={titles}>
           <h2 className={title}>{chat.title}</h2>
-          <span className={where}>{workspace}</span>
+          <span className={where}>{chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`}</span>
         </div>
         <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
         {menu === undefined ? (

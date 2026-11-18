@@ -1,8 +1,10 @@
 // One chat in the workspace sidebar (D2 105:643): the kind mark, the title,
 // the model and context used, and the status. A subtask's chat is indented
 // under the chat that started it (199:51). The row of a chat Erik drags
-// onto the chat shown alone fades (D6 158:750). Props only.
-import { ContextMeter, Inline, KindMark, ListRow, StatusPill } from '@eshelton328/component-library-1701'
+// onto the chat shown alone fades (D6 158:750). A fork is indented under its
+// original too, with the branch mark before its kind mark (D16 417:697).
+// Props only.
+import { BranchIcon, ContextMeter, Inline, KindMark, ListRow, StatusPill } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarChat } from '../types.ts'
 
@@ -27,7 +29,19 @@ export function SidebarChatRow({ chat, figma, selected, moving, onSelect }: Side
         variant="sidebar"
         density="compact"
         title={chat.title}
-        leading={<KindMark kind={chat.kind} size="16" />}
+        leading={
+          chat.mark?.kind === 'fork' ? (
+            // D16 418:2: Figma draws the branch mark (13 px) in place of the ↳ and the kind mark 10 after it; the
+            // library's row draws the ↳ of every nested row and its icons are 12 or 16 (LIBRARY_GAPS.md: Nested row
+            // mark). 6 apart keeps the kind mark and the title where Figma has them.
+            <Inline gap="6" align="center">
+              <BranchIcon size="12" title={chat.mark.label} />
+              <KindMark kind={chat.kind} size="16" />
+            </Inline>
+          ) : (
+            <KindMark kind={chat.kind} size="16" />
+          )
+        }
         meta={
           <Inline gap="4" align="center">
             <span>{chat.model}</span>

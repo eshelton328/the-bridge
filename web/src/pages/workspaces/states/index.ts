@@ -17,6 +17,7 @@ import { fourPanes } from './fourPanes.ts'
 import { emptiedPane } from './emptiedPane.ts'
 import { resizedPanes } from './resizedPanes.ts'
 import { forkDialog } from './forkDialog.ts'
+import { forkedChat } from './forkedChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -35,4 +36,5 @@ export const workspacesStates = {
   emptiedPane,
   resizedPanes,
   forkDialog,
+  forkedChat,
 }
