@@ -88,7 +88,8 @@ export function ToolkitListTools({ query, onQueryChange, layout, view = 'list' }
           />
         </div>
         {layout === 'desktop' && !map ? (
-          <Button variant="secondary" size="lg" data-figma="button · Sort" aria-label="Sort by name">
+          // D1 425:62: 12 px sides where `lg` has 16 (Figma 13).
+          <Button variant="secondary" size="lg" padding="compact" data-figma="button · Sort" aria-label="Sort by name">
             <SortIcon size="16" />
             Name
             <ChevronDownIcon size="12" />
