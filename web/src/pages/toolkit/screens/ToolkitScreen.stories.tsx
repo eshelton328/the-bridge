@@ -328,3 +328,20 @@ export const WorkflowOpenPhone: Story = {
     await expect(within(flow).getByRole('button', { name: 'eval-grader' })).toBeVisible()
   },
 }
+
+export const SkillHowItWorks: Story = {
+  name: 'D14: a skill open beside the list, on How it works',
+  args: { data: toolkitStates.skillHowItWorks.data, ui: toolkitStates.skillHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByRole('heading', { name: 'Draft the point first' })).toBeVisible()
+    await expect(within(steps).getByText('until no fail')).toBeVisible()
+    await expect(within(steps).getByText('writing-reviewer')).toBeVisible()
+    await expect(within(item).getByRole('region', { name: 'A chat answer takes a shorter path' })).toBeVisible()
+    await expect(within(item).getByText('--form chat --ste')).toBeVisible()
+    // Only the selected tab's panel is drawn: the Overview's side column is not there.
+    await expect(within(item).queryByText('Used in workflows')).toBeNull()
+  },
+}

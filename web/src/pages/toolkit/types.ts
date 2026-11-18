@@ -153,6 +153,55 @@ const ToolkitFlowPhase = z.object({
   fromLabel: z.string().optional(),
 })
 
+/**
+ * What a step of How it works uses (D14 `uses · scripts/check` 460:55): a file it reads, a script it runs (`code`) or
+ * a toolkit item it starts or loads, by kind. The kind picks the chip's icon.
+ */
+const ToolkitHowUse = z.object({ label: z.string(), kind: z.union([z.enum(['file', 'code']), ToolkitKind]) })
+
+/**
+ * One step of How it works (D14 `step 6` 460:48): its number, its title, what it does, what it uses and, for a step
+ * that repeats, until what (D14 `loop` 460:59, "until no fail").
+ */
+const ToolkitHowStep = z.object({
+  number: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  uses: z.array(ToolkitHowUse),
+  repeats: z.string().optional(),
+})
+
+/**
+ * How an item works, step by step, from its main file (D14 `how it works` 459:598): a skill's steps from SKILL.md;
+ * later an agent's procedure or a hook's checks. The header's label and the file it names, the legend of what a step
+ * reads, runs, starts and repeats, when the item loads, the steps in order, an optional shorter path through them and
+ * a note on where the steps come from.
+ */
+const ToolkitHowItWorks = z.object({
+  /** The header, such as "How it works · from the 8 steps in"; it shows in capitals. */
+  label: z.string(),
+  /** The file the steps come from, after the label as it is written, such as "SKILL.md". */
+  file: z.string(),
+  /** The legend at the header's end (D14 `legend · reads` 459:602): what each icon of a step means. */
+  legend: z.array(z.object({ type: z.enum(['reads', 'runs', 'starts', 'repeats']), label: z.string() })),
+  /** When the item loads (D14 `trigger` 459:621), such as "Loads when a task writes a doc…". None when not set. */
+  trigger: z.string().optional(),
+  steps: z.array(ToolkitHowStep).min(1),
+  /**
+   * A shorter path through the steps (D14 `chat path` 501:62): its title, a line under it and its steps, each the
+   * number of the step it keeps (or a mark such as "→" for a step of its own), its name and a note.
+   */
+  shortPath: z
+    .object({
+      title: z.string(),
+      description: z.string().optional(),
+      steps: z.array(z.object({ number: z.string(), label: z.string(), note: z.string().optional() })).min(1),
+    })
+    .optional(),
+  /** Where the steps come from (D14 `source` 459:772), under the rest. */
+  note: z.string().optional(),
+})
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -203,6 +252,8 @@ export const ToolkitItemDetailView = z.object({
       elsewhere: z.string().optional(),
     })
     .optional(),
+  /** The How it works tab (D14): the item's steps. None when the item has no such tab yet; its panel is then empty. */
+  how: ToolkitHowItWorks.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the

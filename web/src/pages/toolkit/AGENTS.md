@@ -111,6 +111,13 @@ what each file of a page folder is for.
   works. A click on a card, a row or the map card's Open
   opens an item through `onUiChange`; Show on map opens the map with the
   item selected; the path badge's copy button calls `onCopyPath`, which
-  `ToolkitPage` writes to the clipboard. Later frames of the open item
-  fill the other tabs.
+  `ToolkitPage` writes to the clipboard. The How it works tab (D14,
+  `skillHowItWorks`, D3's data with `ui.itemTab` `how`) draws a detail's
+  `how`: the header with the file the steps come from and the legend, when
+  the item loads, the steps four to a row (`ToolkitHowItWorks`, each card a
+  `ToolkitHowStep` with its uses and the step's repeat), the library's
+  `ChatPath` for a shorter path and the source line. It takes any list of
+  steps, so a rule, an agent or a hook (D37 to D39) can fill it. Only the
+  selected tab's panel is drawn. Later frames of the open item fill the
+  other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
