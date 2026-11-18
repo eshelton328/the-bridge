@@ -10,6 +10,7 @@ import {
 } from './screens/discussView.ts'
 import { openItem, openFrom, showOnMap } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
+import { writerDiscussions } from './states/shared/discussions.ts'
 
 const { skillDiscuss, skillDiscussPhone, skillDiscussTablet, skillOpen, ruleOpen } = toolkitStates
 
@@ -27,7 +28,7 @@ describe('discussionOf', () => {
   it('takes the desktop discussion for a layout with none, and none for an item with none or nothing open', () => {
     const open = openItem(skillOpen.data, skillOpen.ui)
     if (open === null) throw new Error('no writer')
-    const desktopOnly = { ...open, detail: { ...open.detail, discuss: { desktop: discussionOf(open, 'desktop') } } }
+    const desktopOnly = { ...open, detail: { ...open.detail, discuss: { desktop: writerDiscussions.desktop } } }
     expect(discussionOf(desktopOnly, 'phone')?.model).toBe('Opus 5.5')
     expect(discussionOf(openItem(ruleOpen.data, ruleOpen.ui), 'desktop')).toBeUndefined()
     expect(discussionOf(null, 'desktop')).toBeUndefined()
@@ -43,7 +44,7 @@ describe('openDiscussion', () => {
     ] as const) {
       expect(openDiscussion(openItem(state.data, state.ui), state.ui, layout)).toBeDefined()
     }
-    expect(openDiscussion(openItem(skillOpen.data, skillOpen.ui), skillOpen.ui, 'desktop')).toBeUndefined()
+    expect(openDiscussion(openItem(skillOpen.data, skillOpen.ui), {}, 'desktop')).toBeUndefined()
   })
 
   it('opens D5 on the item D5 draws: writer with no Used in workflows', () => {
