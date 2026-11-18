@@ -6,7 +6,7 @@ import { toolkitPage } from '../pages/toolkit/index.ts'
 import { workspacesPage } from '../pages/workspaces/index.ts'
 
 /** Every board of the canvas: one Figma state of one page. */
-export type BoardId = 'artifacts/addLink' | 'artifacts/addLinkPhone' | 'artifacts/artifactOpen' | 'artifacts/artifactPhone' | 'artifacts/artifactTablet' | 'artifacts/changeApplied' | 'artifacts/changeProposed' | 'artifacts/changeProposedPhone' | 'artifacts/changeProposedTablet' | 'artifacts/discussOpen' | 'artifacts/discussPhone' | 'artifacts/discussTablet' | 'artifacts/filePhone' | 'artifacts/filterOpen' | 'artifacts/filterPhone' | 'artifacts/filterTablet' | 'artifacts/library' | 'artifacts/libraryPhone' | 'artifacts/libraryTablet' | 'artifacts/morePhone' | 'artifacts/searchList' | 'artifacts/searchPhone' | 'artifacts/sortOpen' | 'artifacts/sortPhone' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/agentFiles' | 'toolkit/agentFilesPhone' | 'toolkit/agentFilesTablet' | 'toolkit/agentHowItWorks' | 'toolkit/agentHowItWorksPhone' | 'toolkit/agentHowItWorksTablet' | 'toolkit/agentOpen' | 'toolkit/agentOpenPhone' | 'toolkit/agentOpenTablet' | 'toolkit/hookFiles' | 'toolkit/hookFilesPhone' | 'toolkit/hookFilesTablet' | 'toolkit/hookHowItWorks' | 'toolkit/hookHowItWorksPhone' | 'toolkit/hookHowItWorksTablet' | 'toolkit/hookOpen' | 'toolkit/hookOpenPhone' | 'toolkit/hookOpenTablet' | 'toolkit/moreDrawer' | 'toolkit/ruleFiles' | 'toolkit/ruleFilesPhone' | 'toolkit/ruleFilesTablet' | 'toolkit/ruleHowItWorks' | 'toolkit/ruleHowItWorksPhone' | 'toolkit/ruleHowItWorksTablet' | 'toolkit/ruleOpen' | 'toolkit/ruleOpenPhone' | 'toolkit/ruleOpenTablet' | 'toolkit/scriptCodePhone' | 'toolkit/scriptExplained' | 'toolkit/scriptExplainedPhone' | 'toolkit/scriptExplainedTablet' | 'toolkit/skillFiles' | 'toolkit/skillFilesPhone' | 'toolkit/skillFilesTablet' | 'toolkit/skillHowItWorks' | 'toolkit/skillHowItWorksPhone' | 'toolkit/skillHowItWorksTablet' | 'toolkit/skillOpen' | 'toolkit/skillOpenPhone' | 'toolkit/skillOpenTablet' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet' | 'toolkit/toolkitMap' | 'toolkit/toolkitMapTablet' | 'toolkit/workflowFiles' | 'toolkit/workflowFilesPhone' | 'toolkit/workflowFilesTablet' | 'toolkit/workflowFullPage' | 'toolkit/workflowFullPagePhone' | 'toolkit/workflowFullPageTablet' | 'toolkit/workflowOpen' | 'toolkit/workflowOpenPhone' | 'toolkit/workflowOpenTablet' | 'workspaces/chatActions' | 'workspaces/chatInWorkbench' | 'workspaces/dragBelowPane' | 'workspaces/dragIntoPane' | 'workspaces/dragOverPane' | 'workspaces/emptiedPane' | 'workspaces/folders' | 'workspaces/forkDialog' | 'workspaces/forkedChat' | 'workspaces/fourPanes' | 'workspaces/moveToWorkspace' | 'workspaces/movedChat' | 'workspaces/phoneAddMenu' | 'workspaces/phoneChat' | 'workspaces/phoneChatActions' | 'workspaces/phoneCloseWorkspace' | 'workspaces/phoneEdit' | 'workspaces/phoneFolders' | 'workspaces/phoneHoldChat' | 'workspaces/phoneHome' | 'workspaces/phoneKeyboard' | 'workspaces/phoneNewChat' | 'workspaces/phoneNewChatKeyboard' | 'workspaces/phoneSideChat' | 'workspaces/phoneSubagentTranscript' | 'workspaces/phoneSubagents' | 'workspaces/phoneTapChat' | 'workspaces/phoneWorkspaceActions' | 'workspaces/renameChat' | 'workspaces/resizedPanes' | 'workspaces/sideChat' | 'workspaces/sideChatInPane' | 'workspaces/subagents' | 'workspaces/subtaskDialog' | 'workspaces/subtaskRunning' | 'workspaces/threePanes' | 'workspaces/twoPanes' | 'workspaces/workbench'
+export type BoardId = 'artifacts/addLink' | 'artifacts/addLinkPhone' | 'artifacts/artifactOpen' | 'artifacts/artifactPhone' | 'artifacts/artifactTablet' | 'artifacts/changeApplied' | 'artifacts/changeProposed' | 'artifacts/changeProposedPhone' | 'artifacts/changeProposedTablet' | 'artifacts/discussOpen' | 'artifacts/discussPhone' | 'artifacts/discussTablet' | 'artifacts/filePhone' | 'artifacts/filterOpen' | 'artifacts/filterPhone' | 'artifacts/filterTablet' | 'artifacts/library' | 'artifacts/libraryPhone' | 'artifacts/libraryTablet' | 'artifacts/morePhone' | 'artifacts/searchList' | 'artifacts/searchPhone' | 'artifacts/sortOpen' | 'artifacts/sortPhone' | 'inbox/changeApplied' | 'inbox/changeAppliedPage' | 'inbox/changeProposed' | 'inbox/changeProposedPage' | 'inbox/chat' | 'inbox/discussOpen' | 'inbox/discussTask' | 'inbox/discussionPage' | 'inbox/done' | 'inbox/doneList' | 'inbox/filterList' | 'inbox/filterOpen' | 'inbox/filtered' | 'inbox/filteredList' | 'inbox/list' | 'inbox/nextStep' | 'inbox/promptEditing' | 'inbox/promptEditingPage' | 'inbox/promptKeyboard' | 'inbox/promptRead' | 'inbox/promptSheet' | 'inbox/question' | 'inbox/questionPhone' | 'inbox/removalProposed' | 'inbox/removalProposedPage' | 'inbox/removeConfirm' | 'inbox/removeConfirmPage' | 'inbox/removed' | 'inbox/removedList' | 'inbox/removedPhone' | 'inbox/rowActions' | 'inbox/runInSheet' | 'inbox/running' | 'inbox/runningList' | 'inbox/runningTask' | 'inbox/runningTaskPage' | 'inbox/search' | 'inbox/searchList' | 'inbox/snoozeOpen' | 'inbox/snoozePage' | 'inbox/sortList' | 'inbox/sortOpen' | 'inbox/sortedByProject' | 'inbox/sortedList' | 'inbox/taskPage' | 'inbox/tasksCreated' | 'inbox/tasksCreatedList' | 'inbox/tasksCreatedPhone' | 'inbox/tasksProposed' | 'inbox/tasksProposedPage' | 'toolkit/agentFiles' | 'toolkit/agentFilesPhone' | 'toolkit/agentFilesTablet' | 'toolkit/agentHowItWorks' | 'toolkit/agentHowItWorksPhone' | 'toolkit/agentHowItWorksTablet' | 'toolkit/agentLinks' | 'toolkit/agentLinksPhone' | 'toolkit/agentLinksTablet' | 'toolkit/agentOpen' | 'toolkit/agentOpenPhone' | 'toolkit/agentOpenTablet' | 'toolkit/hookFiles' | 'toolkit/hookFilesPhone' | 'toolkit/hookFilesTablet' | 'toolkit/hookHowItWorks' | 'toolkit/hookHowItWorksPhone' | 'toolkit/hookHowItWorksTablet' | 'toolkit/hookLinks' | 'toolkit/hookLinksPhone' | 'toolkit/hookLinksTablet' | 'toolkit/hookOpen' | 'toolkit/hookOpenPhone' | 'toolkit/hookOpenTablet' | 'toolkit/moreDrawer' | 'toolkit/ruleFiles' | 'toolkit/ruleFilesPhone' | 'toolkit/ruleFilesTablet' | 'toolkit/ruleHowItWorks' | 'toolkit/ruleHowItWorksPhone' | 'toolkit/ruleHowItWorksTablet' | 'toolkit/ruleLinks' | 'toolkit/ruleLinksPhone' | 'toolkit/ruleLinksTablet' | 'toolkit/ruleOpen' | 'toolkit/ruleOpenPhone' | 'toolkit/ruleOpenTablet' | 'toolkit/scriptCodePhone' | 'toolkit/scriptExplained' | 'toolkit/scriptExplainedPhone' | 'toolkit/scriptExplainedTablet' | 'toolkit/skillFiles' | 'toolkit/skillFilesPhone' | 'toolkit/skillFilesTablet' | 'toolkit/skillHowItWorks' | 'toolkit/skillHowItWorksPhone' | 'toolkit/skillHowItWorksTablet' | 'toolkit/skillLinks' | 'toolkit/skillLinksPhone' | 'toolkit/skillLinksTablet' | 'toolkit/skillOpen' | 'toolkit/skillOpenPhone' | 'toolkit/skillOpenTablet' | 'toolkit/toolkitList' | 'toolkit/toolkitListTablet' | 'toolkit/toolkitMap' | 'toolkit/toolkitMapTablet' | 'toolkit/workflowFiles' | 'toolkit/workflowFilesPhone' | 'toolkit/workflowFilesTablet' | 'toolkit/workflowFullPage' | 'toolkit/workflowFullPagePhone' | 'toolkit/workflowFullPageTablet' | 'toolkit/workflowLinks' | 'toolkit/workflowLinksPhone' | 'toolkit/workflowLinksTablet' | 'toolkit/workflowOpen' | 'toolkit/workflowOpenPhone' | 'toolkit/workflowOpenTablet' | 'workspaces/chatActions' | 'workspaces/chatInWorkbench' | 'workspaces/dragBelowPane' | 'workspaces/dragIntoPane' | 'workspaces/dragOverPane' | 'workspaces/emptiedPane' | 'workspaces/folders' | 'workspaces/forkDialog' | 'workspaces/forkedChat' | 'workspaces/fourPanes' | 'workspaces/moveToWorkspace' | 'workspaces/movedChat' | 'workspaces/phoneAddMenu' | 'workspaces/phoneChat' | 'workspaces/phoneChatActions' | 'workspaces/phoneCloseWorkspace' | 'workspaces/phoneEdit' | 'workspaces/phoneFolders' | 'workspaces/phoneHoldChat' | 'workspaces/phoneHome' | 'workspaces/phoneKeyboard' | 'workspaces/phoneNewChat' | 'workspaces/phoneNewChatKeyboard' | 'workspaces/phoneSideChat' | 'workspaces/phoneSubagentTranscript' | 'workspaces/phoneSubagents' | 'workspaces/phoneTapChat' | 'workspaces/phoneWorkspaceActions' | 'workspaces/renameChat' | 'workspaces/resizedPanes' | 'workspaces/sideChat' | 'workspaces/sideChatInPane' | 'workspaces/subagents' | 'workspaces/subtaskDialog' | 'workspaces/subtaskRunning' | 'workspaces/threePanes' | 'workspaces/twoPanes' | 'workspaces/workbench'
 
 export const boards: readonly Board[] = [
   board(artifactsPage, 'addLink'),
@@ -89,6 +89,9 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'agentHowItWorks'),
   board(toolkitPage, 'agentHowItWorksPhone'),
   board(toolkitPage, 'agentHowItWorksTablet'),
+  board(toolkitPage, 'agentLinks'),
+  board(toolkitPage, 'agentLinksPhone'),
+  board(toolkitPage, 'agentLinksTablet'),
   board(toolkitPage, 'agentOpen'),
   board(toolkitPage, 'agentOpenPhone'),
   board(toolkitPage, 'agentOpenTablet'),
@@ -98,6 +101,9 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'hookHowItWorks'),
   board(toolkitPage, 'hookHowItWorksPhone'),
   board(toolkitPage, 'hookHowItWorksTablet'),
+  board(toolkitPage, 'hookLinks'),
+  board(toolkitPage, 'hookLinksPhone'),
+  board(toolkitPage, 'hookLinksTablet'),
   board(toolkitPage, 'hookOpen'),
   board(toolkitPage, 'hookOpenPhone'),
   board(toolkitPage, 'hookOpenTablet'),
@@ -108,6 +114,9 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'ruleHowItWorks'),
   board(toolkitPage, 'ruleHowItWorksPhone'),
   board(toolkitPage, 'ruleHowItWorksTablet'),
+  board(toolkitPage, 'ruleLinks'),
+  board(toolkitPage, 'ruleLinksPhone'),
+  board(toolkitPage, 'ruleLinksTablet'),
   board(toolkitPage, 'ruleOpen'),
   board(toolkitPage, 'ruleOpenPhone'),
   board(toolkitPage, 'ruleOpenTablet'),
@@ -121,6 +130,9 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'skillHowItWorks'),
   board(toolkitPage, 'skillHowItWorksPhone'),
   board(toolkitPage, 'skillHowItWorksTablet'),
+  board(toolkitPage, 'skillLinks'),
+  board(toolkitPage, 'skillLinksPhone'),
+  board(toolkitPage, 'skillLinksTablet'),
   board(toolkitPage, 'skillOpen'),
   board(toolkitPage, 'skillOpenPhone'),
   board(toolkitPage, 'skillOpenTablet'),
@@ -134,6 +146,9 @@ export const boards: readonly Board[] = [
   board(toolkitPage, 'workflowFullPage'),
   board(toolkitPage, 'workflowFullPagePhone'),
   board(toolkitPage, 'workflowFullPageTablet'),
+  board(toolkitPage, 'workflowLinks'),
+  board(toolkitPage, 'workflowLinksPhone'),
+  board(toolkitPage, 'workflowLinksTablet'),
   board(toolkitPage, 'workflowOpen'),
   board(toolkitPage, 'workflowOpenPhone'),
   board(toolkitPage, 'workflowOpenTablet'),
