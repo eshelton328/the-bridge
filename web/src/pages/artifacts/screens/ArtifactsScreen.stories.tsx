@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, waitFor, within } from 'storybook/test'
+import { expect, within } from 'storybook/test'
 import { artifactsStates } from '../states/index.ts'
 import { ArtifactsScreen } from './ArtifactsScreen.tsx'
 
@@ -84,8 +84,11 @@ export const AddLink: Story = {
     const page = within(document.body)
     await expect(await page.findByRole('dialog', { name: 'Add a link' })).toBeVisible()
     await expect(page.getByRole('textbox', { name: 'Link' })).toHaveValue('https://panda-tokens.example.com/playground')
-    // The dialog moves the focus to the link once it has opened.
-    await waitFor(() => expect(page.getByRole('textbox', { name: 'Link' })).toHaveFocus())
+    // The dialog's focus trap (Zag) moves the focus to the link in the first animation frame after it opens. On a
+    // busy CI runner that frame can come later than waitFor's 1 s, so wait for the frame itself: a frame asked for now
+    // runs after the trap's, which the dialog asked for when it opened.
+    await new Promise((resolve) => requestAnimationFrame(resolve))
+    await expect(page.getByRole('textbox', { name: 'Link' })).toHaveFocus()
     await expect(page.getByRole('radio', { name: 'Codex site' })).toBeChecked()
     await expect(page.getByRole('textbox', { name: 'Title' })).toHaveValue('Panda tokens playground')
     await expect(page.getByText('Read from the page’s <title>.')).toBeVisible()
