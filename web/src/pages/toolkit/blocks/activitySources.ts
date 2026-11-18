@@ -19,10 +19,21 @@ export function changeSource(source: ToolkitActivitySource): Partial<ToolkitUi> 
   return { activitySource: source, run: undefined, chat: undefined, activityShowAll: undefined }
 }
 
-/** The list narrowed by a kind chip: the chats that used an item of that kind, the evals of a skill of that kind. */
+/**
+ * The list narrowed by a kind chip: the chats that used an item of that kind, the evals of a skill of that kind.
+ * Whether the state knows every row is decided before the chip narrows it: when it does (D16's seven evals), Show all
+ * counts the rows the chip leaves, so it shows each of them (Skills: five, readme the fifth); when it does not (D15's
+ * 8 chats, 5 known), Show all keeps the count it names and waits.
+ */
 export function narrowList(list: ToolkitActivityList, kind: ToolkitKind): ToolkitActivityList {
-  if (list.type === 'chats') return { ...list, rows: list.rows.filter((c) => c.items.some((i) => i.kind === kind)) }
-  return { ...list, rows: list.rows.filter((g) => g.skill?.kind === kind) }
+  const known = list.showAll === undefined || list.rows.length >= list.showAll.count
+  const counted = <T extends ToolkitActivityList>(narrowed: T): T =>
+    known && narrowed.showAll !== undefined
+      ? { ...narrowed, showAll: { ...narrowed.showAll, count: narrowed.rows.length } }
+      : narrowed
+  if (list.type === 'chats')
+    return counted({ ...list, rows: list.rows.filter((c) => c.items.some((i) => i.kind === kind)) })
+  return counted({ ...list, rows: list.rows.filter((g) => g.skill?.kind === kind) })
 }
 
 /** The rows the list shows: the first `shown`, or every row once Show all was pressed (T12 shows all seven). */

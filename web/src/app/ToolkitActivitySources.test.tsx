@@ -213,6 +213,18 @@ describe('the Chats and Headless runs sources on the desktop (D15, D16)', () => 
     // A folder with no skill has no button and no chip.
     expect(root.querySelector('[data-figma="eval · other folders"] button')).toBeNull()
   })
+
+  it('shows every eval of the Skills chip once Show all is pressed, readme the fifth (D16)', async () => {
+    const { root } = await renderToolkit('toolkitActivityHeadless')
+    await userEvent.click(page.getByRole('radio', { name: /Skills/ }))
+    await expect.poll(() => root.querySelectorAll('[data-figma^="eval · "]').length).toBe(4)
+    expect(root.querySelector('[data-figma="eval · readme"]')).toBeNull()
+    const show = page.getByRole('button', { name: 'Show all 7 evals' }).element()
+    expect(show).not.toBeDisabled()
+    await userEvent.click(show)
+    await expect.poll(() => root.querySelectorAll('[data-figma^="eval · "]').length).toBe(5)
+    expect(root.querySelector('[data-figma="eval · readme"]')).not.toBeNull()
+  })
 })
 
 describe('the sources on a tablet (T11, T12, T14) and the phone (M13, M14, M16)', () => {
