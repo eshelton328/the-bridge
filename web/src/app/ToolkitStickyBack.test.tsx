@@ -170,7 +170,7 @@ describe('the open item on the phone (d-107)', () => {
     await view.unmount()
   })
 
-  it('draws the item tabs cyan and compact, so Evals ends inside the screen: the skill writer (M2)', async () => {
+  it('draws the item tabs cyan and compact: the skill writer (M2)', async () => {
     await page.viewport(390, 844)
     const view = await renderToolkit('skillOpenPhone')
     onTestFinished(view.unmount)
@@ -191,8 +191,9 @@ describe('the open item on the phone (d-107)', () => {
     probe.remove()
     expect(accent).not.toBe('')
     expect(getComputedStyle(selected).color).toBe(accent)
-    // M2 464:521: the tabs start at the list's edge, so the list has no inset, and Evals (480:126) ends at 378,
-    // inside the 390 px screen.
+    // M2 464:521: the tabs start at the list's edge, so the list has no inset, and each tab is 10 px in at its
+    // sides, so Evals (480:126) ends at 378, inside the 390 px screen. The test checks the spacing, not Evals'
+    // right edge, because the label's width depends on the font that the machine has.
     const style = getComputedStyle(list)
     expect([style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]).toEqual([
       '0px',
@@ -200,9 +201,8 @@ describe('the open item on the phone (d-107)', () => {
       '0px',
       '0px',
     ])
-    // Measure the label in the app's font, not the fallback that shows until the font loads.
-    await document.fonts.ready
-    expect(box(evals).right).toBeLessThanOrEqual(390)
+    const tab = getComputedStyle(evals)
+    expect([tab.paddingLeft, tab.paddingRight]).toEqual(['10px', '10px'])
     await view.unmount()
   })
 
