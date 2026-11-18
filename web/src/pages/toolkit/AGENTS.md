@@ -359,6 +359,34 @@ what each file of a page folder is for.
   path row), and M18's status header is its own. The chart has one size in
   the library, so it is 392 wide on every layout and scrolls sideways on
   the phone (LIBRARY_GAPS.md, Evals bar chart; `src/app/ToolkitEvals.test.tsx`).
+  The Activity tab (D17, `skillActivity`, D3's data with `ui.itemTab`
+  `activity`) draws a detail's `activity` (`ToolkitActivity`): four key
+  figures (`ToolkitActivityKpis`, the library's `KpiTile` in a `Grid`), the
+  counts by day and where the item ran (`ToolkitActivityBars`: a `Panel`
+  with the library's `HorizontalBarChart`), side by side on the desktop, the
+  chats that loaded it (`ToolkitActivityList`, a `ListRow` each) and the
+  source line. Each Overview state (D3, D4, D7 to D9) carries its item's
+  `activity` from `states/shared/activity.ts`, so the tab is there whichever
+  state opened the item. A rule (D21, `ruleActivity`, D37's data) counts
+  the sessions that opened a skill file, an agent (D22, `agentActivity`)
+  its runs, a hook (D24, `hookActivity`) its commits and why it rejected
+  them, and a workflow (D23, `workflowActivity`) lists the ledgers' rounds:
+  a tap on one opens its skill on its Evals tab (`rowTap` and `openEvals`;
+  writer's Evals as D20 draws it, a skill with no Evals tab on its
+  Overview), from D8's `evalTargets` and writer's details
+  (`states/shared/activityTargets.ts`). A chat row takes no tap: a chat
+  opens in the Activity view's chat panel (D18), which no state draws yet.
+  On a tablet (T13, T20 to T23) the bar panels stand one under the other;
+  writer's `activity` sets `named` (Toolkit › writer, no kind badge or path
+  row), and the agent keeps T7's breadcrumb (T21). On the phone (M15, M23
+  to M26) the key figures sit two by two with no caption, and the item's
+  tabs scroll so the selected tab shows (`tabScroll` in
+  `blocks/activityView.ts`, `blocks/useTabInView.ts`), again when the
+  tab list's width changes (`ToolkitTabInView.test.tsx`).
+  `activityView.test.ts` checks the view logic and that every state has
+  the data its taps need; `src/app/ToolkitActivity.test.tsx` the layout and
+  the taps (LIBRARY_GAPS.md, Activity bar chart, Activity chat row, KPI
+  tile).
   Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.

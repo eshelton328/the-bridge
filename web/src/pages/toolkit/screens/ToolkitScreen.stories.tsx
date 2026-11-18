@@ -1387,3 +1387,181 @@ export const HookEvalsPhone: Story = {
     await expect(within(item).getByText('run Nov 14')).toBeVisible()
   },
 }
+
+export const SkillActivity: Story = {
+  name: 'D17: a skill open beside the list, on Activity',
+  args: { data: toolkitStates.skillActivity.data, ui: toolkitStates.skillActivity.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No calls on the other 13 days.')).toBeVisible()
+  },
+}
+
+export const RuleActivity: Story = {
+  name: 'D21: a rule open beside the list, on Activity',
+  args: { data: toolkitStates.ruleActivity.data, ui: toolkitStates.ruleActivity.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No sessions on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const AgentActivity: Story = {
+  name: 'D22: an agent open beside the list, on Activity',
+  args: { data: toolkitStates.agentActivity.data, ui: toolkitStates.agentActivity.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No runs on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const WorkflowActivity: Story = {
+  name: 'D23: a workflow open beside the list, on Activity',
+  args: { data: toolkitStates.workflowActivity.data, ui: toolkitStates.workflowActivity.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No rounds on the other 14 days.')).toBeVisible()
+  },
+}
+
+export const HookActivity: Story = {
+  name: 'D24: a hook open beside the list, on Activity',
+  args: { data: toolkitStates.hookActivity.data, ui: toolkitStates.hookActivity.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No commits from a session on the other 13 days.')).toBeVisible()
+  },
+}
+
+export const SkillActivityTablet: Story = {
+  name: 'T13: a skill’s activity on a tablet, the bar panels one under the other',
+  args: { data: toolkitStates.skillActivityTablet.data, ui: toolkitStates.skillActivityTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No calls on the other 13 days.')).toBeVisible()
+  },
+}
+
+export const RuleActivityTablet: Story = {
+  name: 'T20: a rule’s activity on a tablet, under the rule’s header',
+  args: { data: toolkitStates.ruleActivityTablet.data, ui: toolkitStates.ruleActivityTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No sessions on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const AgentActivityTablet: Story = {
+  name: 'T21: an agent’s activity on a tablet, opened from writer',
+  args: { data: toolkitStates.agentActivityTablet.data, ui: toolkitStates.agentActivityTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No runs on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const WorkflowActivityTablet: Story = {
+  name: 'T22: a workflow’s activity on a tablet, under the workflow’s header',
+  args: {
+    data: toolkitStates.workflowActivityTablet.data,
+    ui: toolkitStates.workflowActivityTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No rounds on the other 14 days.')).toBeVisible()
+  },
+}
+
+export const HookActivityTablet: Story = {
+  name: 'T23: a hook’s activity on a tablet, under the hook’s header',
+  args: { data: toolkitStates.hookActivityTablet.data, ui: toolkitStates.hookActivityTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No commits from a session on the other 13 days.')).toBeVisible()
+  },
+}
+
+export const SkillActivityPhone: Story = {
+  name: 'M15: a skill’s activity on the phone, the tabs scrolled to Activity',
+  args: { data: toolkitStates.skillActivityPhone.data, ui: toolkitStates.skillActivityPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No calls on the other 13 days.')).toBeVisible()
+  },
+}
+
+export const RuleActivityPhone: Story = {
+  name: 'M23: a rule’s activity on the phone, under the rule’s header',
+  args: { data: toolkitStates.ruleActivityPhone.data, ui: toolkitStates.ruleActivityPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No sessions on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const AgentActivityPhone: Story = {
+  name: 'M24: an agent’s activity on the phone, under the agent’s header',
+  args: { data: toolkitStates.agentActivityPhone.data, ui: toolkitStates.agentActivityPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No runs on the other 12 days.')).toBeVisible()
+  },
+}
+
+export const WorkflowActivityPhone: Story = {
+  name: 'M25: a workflow’s activity on the phone, under the workflow’s header',
+  args: {
+    data: toolkitStates.workflowActivityPhone.data,
+    ui: toolkitStates.workflowActivityPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No rounds on the other 14 days.')).toBeVisible()
+  },
+}
+
+export const HookActivityPhone: Story = {
+  name: 'M26: a hook’s activity on the phone, under the hook’s header',
+  args: { data: toolkitStates.hookActivityPhone.data, ui: toolkitStates.hookActivityPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the item under Back.
+  // src/app/ToolkitActivity.test.tsx checks the layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Activity' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('No commits from a session on the other 13 days.')).toBeVisible()
+  },
+}

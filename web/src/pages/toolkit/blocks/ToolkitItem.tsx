@@ -4,7 +4,10 @@
 // then the item's tabs; the Overview tab (`ToolkitItemOverview`) shows the
 // description, the main file rendered read-only, what uses the item, its
 // files and its evals, and the How it works tab (`ToolkitHowItWorks`, D14)
-// its steps, and the Evals tab (`ToolkitEvals`, D20) its results. Only the selected tab's panel is drawn. On a tablet or phone (T3) the item replaces the list
+// its steps, the Evals tab (`ToolkitEvals`, D20) its results and the
+// Activity tab (`ToolkitActivity`, D17) its runs; on the phone the tabs
+// scroll so the selected tab shows (M15, `useTabInView`). Only the selected
+// tab's panel is drawn. On a tablet or phone (T3) the item replaces the list
 // in the shared DetailFrame (d-107): the back row to Toolkit, with Discuss and
 // Show on map at its end, stays at the top, and only the item under it
 // scrolls; opened from another item's links (T7), the back row is a
@@ -46,7 +49,9 @@ import type { ToolkitOpenItem } from '../types.ts'
 import { type FileMode, fileMode, filePathIn, findFile, openFile } from './filesView.ts'
 import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
 import { ToolkitFilePage } from './ToolkitFilePage.tsx'
+import { ToolkitActivity } from './ToolkitActivity.tsx'
 import { ToolkitEvals } from './ToolkitEvals.tsx'
+import { useTabInView } from './useTabInView.ts'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
@@ -309,6 +314,32 @@ const evalsTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, stri
     'hooks/commit-msg': '492:4790',
   },
 }
+// On the Activity tab: writer in D17 (474:411), the rule skills in D21 (491:4567), writing-reviewer in D22
+// (491:5071), skill-eval-round in D23 (491:5657), the hook commit-msg in D24 (491:6314); on a tablet in T13 (474:749)
+// and T20 to T23; on the phone in M15 (474:1049) and M23 to M26.
+const activityTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: {
+    'skills/writer/': '474:411',
+    'rules/skills.md': '491:4567',
+    'agents/writing-reviewer.md': '491:5071',
+    'workflows/skill-eval-round.md': '491:5657',
+    'hooks/commit-msg': '491:6314',
+  },
+  tablet: {
+    'skills/writer/': '474:749',
+    'rules/skills.md': '491:6694',
+    'agents/writing-reviewer.md': '491:7049',
+    'workflows/skill-eval-round.md': '491:7435',
+    'hooks/commit-msg': '491:7892',
+  },
+  phone: {
+    'skills/writer/': '474:1049',
+    'rules/skills.md': '491:8278',
+    'agents/writing-reviewer.md': '491:8578',
+    'workflows/skill-eval-round.md': '491:8913',
+    'hooks/commit-msg': '491:9228',
+  },
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -402,6 +433,8 @@ export function ToolkitItem({
   line,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
+  // M15 474:1050: on the phone the tabs scroll sideways so the selected tab shows.
+  const tabsRef = useTabInView(tab)
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const full = fullPage !== undefined
@@ -445,7 +478,8 @@ export function ToolkitItem({
     !desktop &&
     ((tab === 'how' && detail.how?.named === true) ||
       (tab === 'links' && detail.links?.named === true) ||
-      (tab === 'evals' && detail.results?.named === true))
+      (tab === 'evals' && detail.results?.named === true) ||
+      (tab === 'activity' && detail.activity?.named === true))
   // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
     <ToolkitItemActions
@@ -481,7 +515,9 @@ export function ToolkitItem({
                   ? linksTitleLayersOf[layout][item.path]
                   : tab === 'evals'
                     ? evalsTitleLayersOf[layout][item.path]
-                    : titleLayersOf[layout][item.path]
+                    : tab === 'activity'
+                      ? activityTitleLayersOf[layout][item.path]
+                      : titleLayersOf[layout][item.path]
       }
     >
       {pageFile?.name ?? item.name}
@@ -508,6 +544,7 @@ export function ToolkitItem({
     )
   const article = (
     <article
+      ref={tabsRef}
       aria-label={item.name}
       className={
         desktop
@@ -626,6 +663,8 @@ export function ToolkitItem({
                 onTabChange={onTabChange}
                 onOpenEvals={onOpenEvals}
               />
+            ) : t.value === 'activity' && detail.activity !== undefined ? (
+              <ToolkitActivity activity={detail.activity} layout={layout} onOpenEvals={onOpenEvals} />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
             ) : t.value === 'files' && pageFile !== undefined ? (
@@ -664,8 +703,8 @@ export function ToolkitItem({
               full ||
               narrowFiles ||
               panel === null ||
-              (narrowHow && (tab === 'links' || tab === 'evals')) ||
-              (phone && tab === 'evals') ? (
+              (narrowHow && (tab === 'links' || tab === 'evals' || tab === 'activity')) ||
+              (phone && (tab === 'evals' || tab === 'activity')) ? (
                 panel
               ) : (
                 <div className={panelPage}>{panel}</div>

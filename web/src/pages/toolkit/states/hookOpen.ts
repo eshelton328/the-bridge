@@ -9,6 +9,7 @@
 // and Hooks groups). The frame draws only the Rules, Workflows and Hooks
 // groups, as D7 draws only Skills and Agents, so the Skills and Agents groups
 // are left out; the chips keep every kind's count.
+import { hookUsage } from './shared/activity.ts'
 import { hookResults } from './shared/evalResults.ts'
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitItemDetailView, ToolkitUi } from '../types.ts'
@@ -46,6 +47,8 @@ const commitMsg: ToolkitItemDetailView = {
   },
   // The Evals tab (D20, D25 to D28).
   results: hookResults,
+  // The Activity tab (D17, D21 to D24).
+  activity: hookUsage,
   tabs: [
     { value: 'overview', label: 'Overview' },
     { value: 'how', label: 'How it works' },

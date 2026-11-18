@@ -3,9 +3,9 @@
 // no details opens with what the list knows: its name, kind, path and
 // description, the Overview tab, and no files. An item that is on the map
 // but not in the list (the Rules items of the D1 list) opens from its map
-// node, with its link counts from the map. `showOnMap` is the ui change of
-// the item's Show on map button. Pure, so itemView.test.ts checks both
-// without rendering. `openFrom`, `backTo` and `openedFrom` are the way into an
+// node, with its link counts from the map, when no link or eval target has
+// it. `showOnMap` is the ui change of the item's Show on map button. Pure,
+// so itemView.test.ts checks both without rendering. `openFrom`, `backTo` and `openedFrom` are the way into an
 // item from another item's links and back (T7). An item a link names that
 // the list does not show opens from `data.linkTargets`, with its Files tab
 // (D19), and an item an Evals tab names from `data.evalTargets` (D25).
@@ -120,11 +120,13 @@ export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTa
   if (ui.open === undefined || ui.open === null) return null
   const path = ui.open
   const target = data.linkTargets?.find((t) => t.item.path === path)
+  // A list item, a link target or an eval target carries its description and file count; a map node has neither,
+  // so it comes last (the D23 rounds' readme and pr-description are on D9's map too).
   const item =
     data.groups.flatMap((g) => g.items).find((i) => i.path === path) ??
-    fromMap(data.map, path) ??
     target?.item ??
-    data.evalTargets?.find((i) => i.path === path)
+    data.evalTargets?.find((i) => i.path === path) ??
+    fromMap(data.map, path)
   if (item === undefined) return null
   const detail = withLinkBrowser(data.details?.find((d) => d.path === path) ?? fallback(item), target?.browser)
   const first = detail.tabs[0]?.value ?? overview.value
