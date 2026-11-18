@@ -41,8 +41,9 @@ Figma sizes), and a pinch on the Toolkit map zoomed the whole app.
   iPadOS, which reports a Mac with touch points) a non-passive listener
   cancels each `gesturestart` and `gesturechange` on the document. A part
   that zooms itself with a pinch marks itself `data-allow-pinch`, and
-  gestures that start inside it go through. No part does yet: the Toolkit
-  map's pinch was the page zoom.
+  gestures that start inside it go through. The Toolkit phone map's
+  window does (MapGraph `zoom`, `ToolkitMapZoom.test.tsx`); before it,
+  the map's pinch was the page zoom.
 
 `user-scalable=no` turns off browser zoom, which WCAG 1.4.4 (Resize Text)
 asks apps to allow. That is Erik's decision for his own app.

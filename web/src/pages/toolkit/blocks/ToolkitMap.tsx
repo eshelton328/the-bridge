@@ -8,7 +8,10 @@
 // legend, and the selected item shows without its description. On the phone
 // (M11 461:683) the map is a window onto the tablet's drawing that scrolls
 // sideways, with the hint at its foot, and the selected item's card comes
-// under the window. Props only.
+// under the window. The phone's window pinch zooms and drags its drawing
+// (MapGraph `zoom`, which marks the window `data-allow-pinch`, so the app's
+// page zoom block lets the gesture through); the desktop's and tablet's
+// maps do not zoom, as Figma's D2 and T2 notes say nothing of it. Props only.
 import { Badge, MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -28,6 +31,8 @@ import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
 // 7 px in and 51 down (node · writing 461:921 at 20, 145), 178 and 58 apart; a heading (461:868) is 2 px right of
 // its nodes and 36 above them, so its capitals start at y 19. The drawing is 705 wide, to the right edge of the
 // last column; it is 498 high, the window's height, so the window scrolls sideways only (no size token has 500).
+// The phone's map zooms from the whole drawing fitted to the window (705 wide in a 364 wide inside, so a little over
+// half size) up to MapGraph's default 3 times; it opens at 1, the drawing at its own size, as before.
 const GEOMETRY = {
   desktop: {
     canvas: { width: 1382, height: 740 },
@@ -36,6 +41,7 @@ const GEOMETRY = {
     nodeSize: undefined,
     legend: true,
     description: true,
+    inside: undefined,
   },
   tablet: {
     canvas: { width: 706, height: 898 },
@@ -44,6 +50,7 @@ const GEOMETRY = {
     nodeSize: { width: 140, height: 30 },
     legend: false,
     description: false,
+    inside: undefined,
   },
   phone: {
     canvas: { width: 705, height: 498 },
@@ -52,6 +59,7 @@ const GEOMETRY = {
     nodeSize: { width: 140, height: 30 },
     legend: false,
     description: false,
+    inside: { width: 364, height: 498 },
   },
 }
 // The selection card names its item in an h3; this heading, for screen readers only, comes between it and the
@@ -79,8 +87,11 @@ export type ToolkitMapProps = {
 }
 
 export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layout = 'desktop' }: ToolkitMapProps) {
-  const { canvas, nodes, heading, nodeSize, legend, description } = GEOMETRY[layout]
+  const { canvas, nodes, heading, nodeSize, legend, description, inside } = GEOMETRY[layout]
   const phone = layout === 'phone'
+  // The smallest scale fits the whole drawing in the window, and never goes over 1 when the drawing already fits.
+  const zoom =
+    inside === undefined ? undefined : { min: Math.min(1, inside.width / canvas.width, inside.height / canvas.height) }
   const node = map.nodes.find((n) => n.path === selected)
   const card =
     node === undefined ? null : (
@@ -129,6 +140,7 @@ export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layo
         onSelect={onSelect}
         legend={legendSlot}
         card={phone ? null : card}
+        zoom={zoom}
       />
       {phone ? (
         // M11 461:1257: the hint is a pill 10 px in from the window's left and bottom edges; the MapGraph legend

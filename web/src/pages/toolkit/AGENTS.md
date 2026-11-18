@@ -46,8 +46,10 @@ what each file of a page folder is for.
   description, and the screen leaves out the search row. The phone map
   (M11) is the same state: the screen shows the header and the map, with
   no chips and no search; `ToolkitMap` draws the tablet's map in a window
-  that scrolls sideways, the hint at its foot and the selected item's card
-  under the window. An open item (D3, `skillOpen`) sets `ui.open` to the
+  that pinch zooms and drags (MapGraph `zoom`, from the drawing fitted to
+  the window up to 3 times; `src/app/ToolkitMapZoom.test.tsx`), the hint
+  at its foot and the selected item's card under the window. The desktop
+  and tablet maps do not zoom. An open item (D3, `skillOpen`) sets `ui.open` to the
   item's path (and `ui.itemTab` for a tab other than the first) and adds
   `data.details`: for each item, its path badge, when it changed, its
   tabs, the blocks of its main file, what uses it, its files and its
