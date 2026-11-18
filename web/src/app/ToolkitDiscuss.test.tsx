@@ -201,3 +201,13 @@ describe('the discussion on the phone (M7)', () => {
     expect(workbench.getAttribute('aria-disabled')).toBe('true')
   })
 })
+
+describe('the reply box on the tablet’s page (T5)', () => {
+  // T5 464:379 ends at 1115, 43 over the frame's 1158 end (40 on the grid). Under a tablet page with no tab bar
+  // AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42), so the footer pads 6.
+  it('ends 40 over the screen’s end', async () => {
+    const root = await renderToolkit('skillDiscussTablet', 'tablet', '[data-figma="task · discussing"]')
+    const reply = find(root, '[data-figma="composer · discussion"]')
+    expect(sizes.tablet[1] - box(reply).bottom).toBe(40)
+  })
+})

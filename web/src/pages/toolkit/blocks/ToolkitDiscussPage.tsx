@@ -42,7 +42,8 @@ const threads = {
 const emptyPads = { tablet: css({ pt: '20', pb: '8' }), phone: css({ pt: '20', pb: '8' }) }
 const emptyInner = { tablet: css({ pt: '32' }), phone: undefined }
 // T5 464:379: the reply box 22 in, as the page (24), and 22 above the home indicator's 21 (43, 40 on the grid). It
-// stays on the page's canvas, so the messages that scroll under it do not show through.
+// stays on the page's canvas, so the messages that scroll under it do not show through. With no tab bar the tablet
+// AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42) under the page, so the footer pads 6.
 // M7 464:214: on the phone the reply box is 12 in, as the page, and ends 22 above the home indicator's 21. With no tab
 // bar the phone AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`) under the page, so the footer pads 8.
 const footers = {
@@ -50,7 +51,7 @@ const footers = {
     position: 'sticky',
     bottom: '[var(--scroll-frame-inset, 0px)]',
     pt: '12',
-    pb: '40',
+    pb: '6',
     px: '24',
     bg: 'bg.canvas',
   }),
