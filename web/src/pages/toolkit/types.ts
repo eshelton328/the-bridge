@@ -186,8 +186,8 @@ export const ToolkitItemDetailView = z.object({
   /**
    * A workflow's steps by phase, from the Mermaid flow in its file (D8 `kind section · workflow` 433:1034): the
    * section's label, the phases left to right, the label of the loop back to the start (D8 `label · new failure`
-   * 466:11), the agents it runs, and a note after them, such as "Gates in amber; …". None for an item that is not a
-   * workflow.
+   * 466:11), the agents it runs, a note after them, such as "Gates in amber; …", and where the steps are when the
+   * phone cannot draw them. None for an item that is not a workflow.
    */
   flow: z
     .object({
@@ -196,6 +196,11 @@ export const ToolkitItemDetailView = z.object({
       loop: z.string().optional(),
       agents: z.object({ label: z.string(), items: z.array(ToolkitItemRef) }),
       note: z.string().optional(),
+      /**
+       * Where the steps are when the screen is too narrow to draw them (M21 487:2275, on the phone): "The steps, gates
+       * and loop are on How it works." It takes the flow's place under the agents.
+       */
+      elsewhere: z.string().optional(),
     })
     .optional(),
   tabs: z.array(ToolkitItemTab).min(1),
@@ -267,6 +272,11 @@ export const ToolkitUi = z.object({
   open: z.string().nullable().optional(),
   /** The open item's tab, by value; its first tab when not set. */
   itemTab: z.string().optional(),
+  /**
+   * The path of the item the open item was opened from, through its links (T7): on a tablet or phone the back row
+   * shows the breadcrumb Toolkit, that item, the open item, and its crumb goes back to it. None when the list opened it.
+   */
+  from: z.string().nullable().optional(),
   /**
    * Whether the open workflow's steps fill the page (D8's Open full page; the page is D13, a later frame). Until D13
    * is built the screen shows the item as before. Not open when not set.

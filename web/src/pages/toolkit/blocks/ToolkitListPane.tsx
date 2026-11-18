@@ -84,7 +84,8 @@ export function ToolkitListPane({ data, ui, groups, sharedNames, onUiChange }: T
             setGroupOpen(group.kind, open)
           }}
           onOpen={(path) => {
-            onUiChange({ open: path })
+            // From the list, so the item has no breadcrumb back to another (T7).
+            onUiChange({ open: path, from: null })
           }}
         />
       ))}

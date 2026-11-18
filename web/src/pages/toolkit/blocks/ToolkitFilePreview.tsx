@@ -36,10 +36,20 @@ const bar = css({
   borderBottomColor: 'border.default',
   color: 'fg.muted',
 })
-const name = css({ textStyle: 'mono', color: 'fg.default' })
+// M20 487:1650: the bar is one line; on the phone the name and its meta keep their width, and Read-only runs past
+// the box's edge, where the box cuts it (487:1660 starts at 390, past the 378 px box).
+const name = css({ textStyle: 'mono', color: 'fg.default', whiteSpace: 'nowrap', flexShrink: '0' })
 // D7 433:567: text after the name, such as the file's length and what it is, in mono.
-const fileMeta = css({ textStyle: 'mono', color: 'fg.muted' })
-const readOnly = css({ display: 'inline-flex', alignItems: 'center', gap: '8', ms: 'auto', textStyle: 'small' })
+const fileMeta = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap', flexShrink: '0' })
+const readOnly = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8',
+  ms: 'auto',
+  textStyle: 'small',
+  whiteSpace: 'nowrap',
+  flexShrink: '0',
+})
 // D9 433:1583: a line longer than the box runs past its edge (line 4, 433:1595). The code keeps its full width, so
 // CodeLines itself does not scroll (its scroller takes no keyboard focus); the ScrollFrame body around it scrolls the
 // code sideways and takes the focus (d-107).

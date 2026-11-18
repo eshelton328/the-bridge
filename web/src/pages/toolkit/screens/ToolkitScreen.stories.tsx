@@ -267,3 +267,64 @@ export const HookOpenPhone: Story = {
     await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
   },
 }
+
+export const AgentOpenTablet: Story = {
+  name: 'T7: an agent open on a tablet, from the links of a skill',
+  args: { data: toolkitStates.agentOpenTablet.data, ui: toolkitStates.agentOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the breadcrumb Toolkit › writer ›
+  // writing-reviewer in the back row. The play test checks what every width shows.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writing-reviewer' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    const runs = within(item).getByRole('region', { name: 'How it runs' })
+    await expect(within(runs).getByText('gets only what the task hands it')).toBeVisible()
+    await expect(within(item).getByText('137 lines · the prompt')).toBeVisible()
+  },
+}
+
+export const AgentOpenPhone: Story = {
+  name: 'M20: an agent open on the phone, its facts in two columns',
+  args: { data: toolkitStates.agentOpenPhone.data, ui: toolkitStates.agentOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the How it runs cards in two columns under
+  // Back. The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the phone's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'writing-reviewer' })).toBeVisible()
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'How it runs' })
+    await expect(within(runs).getByText('codex_effort; default model')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+  },
+}
+
+export const WorkflowOpenTablet: Story = {
+  name: 'T18: a workflow open on a tablet, with its steps by phase drawn smaller',
+  args: { data: toolkitStates.workflowOpenTablet.data, ui: toolkitStates.workflowOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the smaller flow under Back. The play test
+  // checks what every width shows.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skill-eval-round' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    const flow = within(item).getByRole('region', { name: 'Steps · from the Mermaid flow in the file' })
+    await expect(within(flow).getByText('hides which runs had the skill')).toBeVisible()
+    await expect(within(flow).getByRole('button', { name: 'eval-grader' })).toBeVisible()
+  },
+}
+
+export const WorkflowOpenPhone: Story = {
+  name: 'M21: a workflow open on the phone, its steps left to How it works',
+  args: { data: toolkitStates.workflowOpenPhone.data, ui: toolkitStates.workflowOpenPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the workflow under Back with no flow, and the
+  // line that sends the reader to How it works. The play test checks what every width shows;
+  // src/app/ToolkitStickyBack.test.tsx checks the phone's rows and Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'skill-eval-round' })).toBeVisible()
+    await expect(within(item).getByText('toolkit/workflows/skill-eval-round.md')).toBeVisible()
+    const flow = within(item).getByRole('region', { name: 'Steps · from the Mermaid flow in the file' })
+    await expect(within(flow).getByRole('button', { name: 'Open full page' })).toBeVisible()
+    await expect(within(flow).getByRole('button', { name: 'eval-grader' })).toBeVisible()
+  },
+}

@@ -202,6 +202,56 @@ describe('the open item on the phone (d-107)', () => {
     await view.unmount()
   })
 
+  it('keeps Back in view while the agent scrolls, its facts in two columns: writing-reviewer (M20)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderToolkit('agentOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="back row"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const back = root.querySelector('button[aria-label="Back to Toolkit"]')
+    const map = root.querySelector('button[aria-label="Show on map"]')
+    const item = root.querySelector('article[aria-label="writing-reviewer"]')
+    if (back === null || map === null || item === null) throw new Error('no Back, Show on map or item')
+    expect(backRow.contains(map)).toBe(true)
+    // M20 487:1616: the four How it runs cards sit two across, in two rows of the same width.
+    const fact = (label: string) => item.querySelector(`[data-figma="fact · ${label}"]`) ?? document.body
+    const [claude, codex, tools, context] = ['Claude', 'Codex', 'Tools', 'Context'].map((l) => box(fact(l)))
+    if (claude === undefined || codex === undefined || tools === undefined || context === undefined) {
+      throw new Error('no fact cards')
+    }
+    expect(codex.top).toBe(claude.top)
+    expect(codex.left).toBeGreaterThan(claude.right)
+    expect(tools.left).toBe(claude.left)
+    expect(tools.top).toBeGreaterThan(claude.bottom)
+    expect(context.left).toBe(codex.left)
+    expect(codex.width).toBe(claude.width)
+    expect(codex.right).toBeLessThanOrEqual(box(item).right)
+    // The prompt and the files run under the tab bar, so the item scrolls under Back.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')].filter((b) => b.contains(item))
+    expect(bodies).toHaveLength(1)
+    const body = bodies[0] ?? document.body
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight)
+    const before = { back: box(back).top, row: box(backRow).top, item: box(item).top }
+    body.scrollTop = body.scrollHeight
+    await expect.poll(() => body.scrollTop).toBeGreaterThan(0)
+    expect(root.querySelector('.app-shell__detail')?.scrollTop ?? 0).toBe(0)
+    expect(document.scrollingElement?.scrollTop ?? 0).toBe(0)
+    expect(box(item).top).toBeLessThan(before.item)
+    expect(box(back).top).toBe(before.back)
+    expect(box(backRow).top).toBe(before.row)
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(body).top)
+    // The agent's one file, the last part of the item, scrolls into view above the tab bar.
+    const file = root.querySelector('[data-figma="file · writing-reviewer.md"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (file === null || tabBar === null) throw new Error('no file line or tab bar')
+    expect(box(file).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
+
   it('opens the hook commit-msg under Back, its cards two by two, and scrolls its script under Back (M22)', async () => {
     await page.viewport(390, 806)
     const view = await renderToolkit('hookOpenPhone')
@@ -248,6 +298,44 @@ describe('the open item on the phone (d-107)', () => {
     expect(box(back).top).toBe(before.back)
     expect(box(backRow).top).toBe(before.row)
     expect(box(lastFile).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
+
+  it('cuts the workflow’s one-line rows at the item’s edge, with no flow: skill-eval-round (M21)', async () => {
+    await page.viewport(390, 844)
+    const view = await renderToolkit('workflowOpenPhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="back row"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]') ?? document.body
+    const map = root.querySelector('button[aria-label="Show on map"]')
+    const item = root.querySelector('article[aria-label="skill-eval-round"]')
+    if (map === null || item === null) throw new Error('no Show on map or item')
+    expect(backRow.contains(map)).toBe(true)
+    // M21 487:1863: the phone draws no steps by phase; the line under the agents says where they are.
+    expect(item.querySelector('[data-figma="flow · by phase"]')).toBeNull()
+    expect(item.textContent).toContain('The steps, gates and loop are on How it works.')
+    // The header and the agents' row are one line each, longer than the item: each scrolls sideways inside the item's
+    // width, so the item itself never scrolls sideways.
+    const bodies = [...root.querySelectorAll<HTMLElement>('.scroll-frame__body')].filter((b) => b.contains(item))
+    expect(bodies).toHaveLength(1)
+    const body = bodies[0] ?? document.body
+    for (const key of ['steps header', 'runs']) {
+      const row = item.querySelector<HTMLElement>(`[data-figma="${key}"]`)
+      if (row === null) throw new Error(`no ${key}`)
+      expect(row.scrollWidth).toBeGreaterThan(row.clientWidth)
+      expect(box(row).right).toBeLessThanOrEqual(box(item).right)
+      expect(box(row).height).toBeLessThan(40)
+    }
+    expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth)
+    // The workflow's one file, the last part of the item, is above the tab bar.
+    const file = root.querySelector('[data-figma="file · skill-eval-round.md"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (file === null || tabBar === null) throw new Error('no file line or tab bar')
+    expect(box(file).bottom).toBeLessThanOrEqual(box(tabBar).top)
     await view.unmount()
   })
 })

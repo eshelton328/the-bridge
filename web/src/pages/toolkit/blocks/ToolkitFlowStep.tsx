@@ -7,7 +7,9 @@
 // title and a dashed needs-you border. The library has no step card that
 // fits (LIBRARY_GAPS.md, Workflow flow by phase): `FlowDiagram` numbers its
 // steps itself and puts the body beside the number, so the card is drawn
-// here with the FlowDiagram card's tokens. Props only.
+// here with the FlowDiagram card's tokens. On a tablet (T18 `step · Runs`
+// 487:791) the card is smaller (`size="sm"`): less padding and smaller text,
+// with a line that is too long wrapping in the card. Props only.
 import { Badge } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
@@ -28,44 +30,67 @@ const card = css.raw({
   borderColor: 'border.default',
   borderRadius: 'lg',
 })
+// T18 487:791: 147 × 62, the top row 8 in, the lines under it (13 high, 15 apart).
+const cardSm = css.raw({ p: '6' })
 const gate = css.raw({ borderColor: 'status.needsYou.border' })
 const end = css.raw({ borderColor: 'status.needsYou.border', borderStyle: 'dashed' })
 // D8 458:12: the mark (22 × 19) and the title 7 apart; the lines start 3 under the row.
-const top = css({ display: 'flex', alignItems: 'center', gap: '8', pb: '2' })
-const title = css({ textStyle: 'label', color: 'fg.default', whiteSpace: 'nowrap' })
+// T18 487:792: the mark (16.5 × 14.5) and the title (16 high) 5 apart; the lines 2 under the row.
+const top = {
+  md: css({ display: 'flex', alignItems: 'center', gap: '8', pb: '2' }),
+  sm: css({ display: 'flex', alignItems: 'center', gap: '6' }),
+}
+const title = {
+  md: css({ textStyle: 'label', color: 'fg.default', whiteSpace: 'nowrap' }),
+  sm: css({ textStyle: 'labelXs', color: 'fg.default', whiteSpace: 'nowrap' }),
+}
 const amber = css({ color: 'status.needsYou.fg' })
-const note = css({ textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' })
+const note = {
+  md: css({ textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' }),
+  sm: css({ textStyle: 'smallXs', color: 'fg.muted' }),
+}
 const uses = {
-  code: css({ textStyle: 'mono', color: 'fg.accent', whiteSpace: 'nowrap' }),
-  agent: css({ textStyle: 'mono', color: 'kind.agent', whiteSpace: 'nowrap' }),
+  md: {
+    code: css({ textStyle: 'mono', color: 'fg.accent', whiteSpace: 'nowrap' }),
+    agent: css({ textStyle: 'mono', color: 'kind.agent', whiteSpace: 'nowrap' }),
+  },
+  sm: {
+    code: css({ textStyle: 'monoSm', color: 'fg.accent' }),
+    agent: css({ textStyle: 'monoSm', color: 'kind.agent' }),
+  },
 }
 
 export type ToolkitFlowStepProps = {
   step: Step
   /** The grid cell the card takes, from the flow. */
   className?: string | undefined
+  /** `md` on the desktop (D8); `sm` on a tablet (T18). */
+  size?: 'md' | 'sm' | undefined
 }
 
-export function ToolkitFlowStep({ step, className }: ToolkitFlowStepProps) {
+export function ToolkitFlowStep({ step, className, size = 'md' }: ToolkitFlowStepProps) {
   const marked = step.type !== 'step'
   return (
     <div
       // css() merges the raw styles, so a gate's or an end's border wins over the card's.
-      className={cx(css(card, step.type === 'gate' ? gate : {}, step.type === 'end' ? end : {}), className)}
+      className={cx(
+        css(card, size === 'sm' ? cardSm : {}, step.type === 'gate' ? gate : {}, step.type === 'end' ? end : {}),
+        className,
+      )}
       data-figma={`step · ${step.title}`}
     >
-      <div className={top}>
+      <div className={top[size]}>
         {/* D8 458:13: the number in a bordered mono box; a gate's "?" in the needs-you tint. */}
         {step.type === 'gate' ? (
           <Badge variant="tag" tone="needsYou" label={step.mark} />
         ) : (
           <Badge variant="outline" label={step.mark} />
         )}
-        <h4 className={cx(title, marked ? amber : undefined)}>{step.title}</h4>
+        <h4 className={cx(title[size], marked ? amber : undefined)}>{step.title}</h4>
       </div>
-      {step.uses === undefined ? null : <span className={uses[step.uses.kind]}>{step.uses.text}</span>}
+      {step.uses === undefined ? null : <span className={uses[size][step.uses.kind]}>{step.uses.text}</span>}
       {step.notes.map((n) => (
-        <span key={n} className={note}>
+        <span key={n} className={note[size]}>
           {n}
         </span>
       ))}

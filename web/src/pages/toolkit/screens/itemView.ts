@@ -5,7 +5,8 @@
 // but not in the list (the Rules items of the D1 list) opens from its map
 // node, with its link counts from the map. `showOnMap` is the ui change of
 // the item's Show on map button. Pure, so itemView.test.ts checks both
-// without rendering.
+// without rendering. `openFrom`, `backTo` and `openedFrom` are the way into an
+// item from another item's links and back (T7).
 import type {
   ToolkitData,
   ToolkitItemDetailView,
@@ -49,6 +50,29 @@ function fromMap(map: ToolkitMapView | undefined, path: string): ToolkitItemView
 /** The ui change of Show on map: close the item, show the map with it selected, and clear the chip and the search, which could hide it. */
 export function showOnMap(path: string): Partial<ToolkitUi> {
   return { open: null, view: 'map', mapSelected: path, filter: 'all', query: '' }
+}
+
+/**
+ * The ui change that opens an item: from the list or the map (`from` null), or from the links of the open item (`from`
+ * its path, T7), so the back row can show the way back to it.
+ */
+export function openFrom(path: string, from: string | null = null): Partial<ToolkitUi> {
+  return { open: path, from }
+}
+
+/** The ui change of a crumb in the back row: Toolkit (`null`) shows the list, an item's crumb opens that item. */
+export function backTo(path: string | null): Partial<ToolkitUi> {
+  return { open: path, from: null }
+}
+
+/**
+ * The item the open item was opened from (T7), for the back row's breadcrumb: the list item at `ui.from`, or null when
+ * nothing is open, the list opened it, the path is the open item's own or no list item has it.
+ */
+export function openedFrom(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'from'>): ToolkitItemView | null {
+  if (ui.open === undefined || ui.open === null || ui.from === undefined || ui.from === null) return null
+  if (ui.from === ui.open) return null
+  return data.groups.flatMap((g) => g.items).find((i) => i.path === ui.from) ?? null
 }
 
 export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTab'>): ToolkitOpenItem | null {

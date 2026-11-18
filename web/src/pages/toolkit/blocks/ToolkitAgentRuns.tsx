@@ -5,7 +5,8 @@
 // own context; a hook's are its git event, whether it is on, the rule it
 // enforces and its test. Each card has its icon and label, the value (or a
 // badge for a state that is on or off), and a caption: in mono for an
-// agent, in small text for a hook. Props only.
+// agent, in small text for a hook. On the phone (M20) the cards sit two
+// across. Props only.
 import {
   AgentIcon,
   Badge,
@@ -69,7 +70,7 @@ export type ToolkitAgentRunsProps = {
   kind?: 'agent' | 'hook' | undefined
   /** A tablet's cards are narrower (T19 487:1130, 170 wide): they pad 12 at the sides, so the text keeps Figma's lines. */
   compact?: boolean | undefined
-  /** The cards across a row: four (D7, D9, T19), or two on the phone (M22 487:2185, two rows of 178 px cards). */
+  /** The cards across a row: four (D7, D9, T7, T19), or two on the phone (M20 487:1616, M22 487:2185), in two rows. */
   columns?: '2' | '4' | undefined
 }
 
@@ -108,7 +109,7 @@ export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false, column
   return (
     <section aria-label={runs.label} className={section} data-figma={`kind section · ${kind}`}>
       <h3 className={heading}>{runs.label}</h3>
-      {/* D7 433:528: four cards across, 10 apart. T19 487:1130: on a tablet each card is 170 wide and pads 15 at the
+      {/* D7 433:528: four cards across, 10 apart; M20 487:1616: two across, 10 apart both ways. T19 487:1130: on a tablet each card is 170 wide and pads 15 at the
           sides, leaving its text 140; the section variant's 16 leaves 135.5 in the 708 px item, which breaks the Enforces
           value and the State caption onto an extra line. The notice variant pads 12 at the sides and 10 above and below
           (Figma 13; LIBRARY_GAPS.md, Agent fact card). */}

@@ -6,12 +6,12 @@
 // files and its evals. On a tablet or phone (T3) the item replaces the list
 // in the shared DetailFrame (d-107): the back row to Toolkit, with Discuss and
 // Show on map at its end, stays at the top, and only the item under it
-// scrolls. On the phone (M2) the actions are icon buttons and when the item
+// scrolls; opened from another item's links (T7), the back row is a
+// breadcrumb back to that item (`ToolkitItemBack`). On the phone (M2) the actions are icon buttons and when the item
 // changed sits beside the kind badge. Nothing edits the item (R35). Props
 // only.
 import {
   AgentIcon,
-  BackRow,
   HookIcon,
   ItemTabs,
   KindBadge,
@@ -24,6 +24,7 @@ import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
+import { ToolkitItemBack } from './ToolkitItemBack.tsx'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
 import { ToolkitItemPath } from './ToolkitItemPath.tsx'
@@ -59,16 +60,22 @@ const titleLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1536',
   'workflows/skill-eval-round.md': '433:1032',
 }
-// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567), the rule skills in
-// T17 (487:355), the hook commit-msg in T19 (487:980).
+// On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567); writing-reviewer in
+// T7 (441:93), whose breadcrumb has the name too; skill-eval-round in T18 (487:612); the rule skills in T17 (487:355);
+// the hook commit-msg in T19 (487:980).
 const pageTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '428:567',
+  'agents/writing-reviewer.md': '441:93',
+  'workflows/skill-eval-round.md': '487:612',
   'rules/skills.md': '487:355',
   'hooks/commit-msg': '487:980',
 }
-// On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264), the hook commit-msg in M22 (487:2043).
+// On the phone: writer in M2 (429:303), writing-reviewer in M20 (487:1474), skill-eval-round in M21 (487:1722), the
+// rule skills in M19 (487:1264), the hook commit-msg in M22 (487:2043).
 const phoneTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '429:303',
+  'agents/writing-reviewer.md': '487:1474',
+  'workflows/skill-eval-round.md': '487:1722',
   'rules/skills.md': '487:1264',
   'hooks/commit-msg': '487:2043',
 }
@@ -91,6 +98,8 @@ export type ToolkitItemProps = {
   layout?: Viewport | undefined
   /** Back to the list, on a tablet or phone. */
   back?: (() => void) | undefined
+  /** The item it was opened from (T7): on a tablet or phone the back row shows the breadcrumb back to it. */
+  from?: { name: string; onOpen?: (() => void) | undefined } | null | undefined
   onTabChange?: ((tab: string) => void) | undefined
   /** Called with the badge's path when its copy button is pressed. */
   onCopyPath?: ((path: string) => void) | undefined
@@ -107,6 +116,7 @@ export function ToolkitItem({
   open,
   layout = 'desktop',
   back,
+  from,
   onTabChange,
   onCopyPath,
   onShowOnMap,
@@ -169,13 +179,7 @@ export function ToolkitItem({
   return (
     <DetailFrame
       layout={layout}
-      back={
-        <div data-figma="back row">
-          <BackRow label="Toolkit" onBack={back}>
-            {actions}
-          </BackRow>
-        </div>
-      }
+      back={<ToolkitItemBack name={item.name} from={from} onBack={back} actions={actions} />}
     >
       {article}
     </DetailFrame>

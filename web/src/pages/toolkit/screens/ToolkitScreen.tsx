@@ -12,7 +12,9 @@
 // card, a row or the map card's Open button opens the item (`ui.open`, D3):
 // on the desktop the list moves into the list pane (`ToolkitListPane`) and
 // the item (`ToolkitItem`) fills the rest; on a tablet or phone (T3) the item
-// replaces the list, in the shared DetailFrame under its back row.
+// replaces the list, in the shared DetailFrame under its back row. An item
+// opened from another item's links records it (`ui.from`, T7), and the back
+// row shows the breadcrumb back to it.
 import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -28,7 +30,7 @@ import { ToolkitListPane } from '../blocks/ToolkitListPane.tsx'
 import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
-import { openItem, showOnMap } from './itemView.ts'
+import { backTo, openedFrom, openFrom, openItem, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 
 // D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
@@ -65,8 +67,9 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
   const view = listView(data, ui)
   const open = openItem(data, ui)
   const openPath = (path: string) => {
-    onUiChange({ open: path })
+    onUiChange(openFrom(path))
   }
+  const from = openedFrom(data, ui)
   const map = ui.view === 'map'
   // M11 461:709: the phone's map comes straight under the header; T2 428:348: the tablet's under the chips.
   const showChips = !(map && layout === 'phone')
@@ -154,7 +157,17 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           desktop
             ? undefined
             : () => {
-                onUiChange({ open: null })
+                onUiChange(backTo(null))
+              }
+        }
+        from={
+          from === null
+            ? null
+            : {
+                name: from.name,
+                onOpen: () => {
+                  onUiChange(backTo(from.path))
+                },
               }
         }
         onTabChange={(itemTab) => {
@@ -168,7 +181,9 @@ function ToolkitLayout({ data, ui, layout, onNavigate, onUiChange, onCopyPath }:
           // D13 shows the steps on a page of their own; until it is built the item stays as it is.
           onUiChange({ flowFullPage: true })
         }}
-        onOpenItem={openPath}
+        onOpenItem={(path) => {
+          onUiChange(openFrom(path, open.item.path))
+        }}
       />
     )
   return (

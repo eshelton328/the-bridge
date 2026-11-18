@@ -118,3 +118,8 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
 - **Gate fill.** The reviewer saw Pre-registered? and Owner decides filled
   with an amber tint, where Figma draws only the amber border and title
   on the card's own fill. Fixed: a gate now keeps the card's fill.
+
+- **Agent link chip.** The `eval-grader` chip has a grey border where
+  Figma's is the agent purple, and it is about 3 px taller with a
+  slightly larger label. It is a secondary `Button` (gap: Agent link
+  chip).

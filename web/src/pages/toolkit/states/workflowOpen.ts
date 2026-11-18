@@ -122,6 +122,7 @@ const skillEvalRound: ToolkitItemDetailView = {
       items: [{ path: 'agents/eval-grader.md', name: 'eval-grader', kind: 'agent' }],
     },
     note: 'Gates in amber; G1 and G6 run after step 1.',
+    elsewhere: 'The steps, gates and loop are on How it works.',
   },
   tabs: [
     { value: 'overview', label: 'Overview' },
