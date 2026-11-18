@@ -8,12 +8,16 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 keeps T19's header. Every other Toolkit frame (T03, T04, T06 to T08,
 T10, T15, T17 to T19 and T28 to T38 and the list frames) gives the same
 text, position and rule results as before the Evals tab. The frame has
-no `exceptions.json`.
+no `exceptions.json`. A later run (after the review's fixes and the
+icons in the test line) gives the same results, but for the text
+check, which the icons fail.
 
 ## Checks
 
-- Text: pass. Every Figma string is in the render and visible, and
-  nothing extra shows.
+- Text: fail. 1 string is missing: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
+  (492:3729): the render draws its ✗ and ✓ as the library's cross and
+  check icons, so its text has no glyphs (see Cross mark). Every other
+  Figma string is in the render and visible, and nothing extra shows.
 - Position: 24 of 27 layers pass. The 3 that fail: `button · Discuss` x
   -5.1 y -1 w +2.5 h -2; `toolkit item` x +2 y +32 w -4 h -528;
   `492:3522` x +2 y -1 w +11.7 h +2. Each is explained below.
@@ -45,11 +49,14 @@ no `exceptions.json`.
   472.3 against Figma's 463, 2 px of it the Container's 24 px side
   (gap: Item tab width). The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (d-050).
-- **Cross mark.** The test line has Figma's ballot cross ✗ (U+2717)
-  and check ✓ (U+2713), and passes the text check. Geist Variable's
-  latin subset has neither mark, so the browser draws them in the
-  system fallback font, where ✗ is an upright cross like the sign ×;
-  Figma draws it slanted (gap: Symbol glyphs).
+- **Cross mark.** Figma's test line has the ballot cross ✗ (U+2717)
+  and the check ✓ (U+2713), the cross slanted. The line now draws them
+  as the library's `CloseIcon` and `CheckIcon` (12, the text's size, in
+  `fg.muted`, named fail and pass for assistive technology), so the
+  marks are upright line icons, and the render's line has no glyphs:
+  the text check no longer finds Figma's string with ✗ and ✓ in it
+  (a coordinator decision; gap: Symbol glyphs, whose font gap remains
+  only for other text).
 - **Line break.** The test line breaks after "so the", where Figma's
   breaks after "rule": the text box is 674 px wide against Figma's 678
   (the Container's 24 px sides, d-107), and with "rule" the first line

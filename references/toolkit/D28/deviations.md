@@ -13,8 +13,11 @@ position and rule results as before the Evals tab. The frame has no
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render and nothing extra
-  shows. 5 strings are not visible: `Workflows` (492:1871), `2`
+- Text: fail. 1 string is missing: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
+  (492:2185): the render draws its ✗ and ✓ as the library's cross and
+  check icons, so its text has no glyphs (see Cross mark). Every other
+  Figma string is in the render and nothing extra shows. 5 strings are
+  not visible: `Workflows` (492:1871), `2`
   (492:1872), `hooks/commit-msg` (492:2002), `→1 ←1` (492:2004),
   `commit-msg` (492:2024); see List pane.
 - Position: 31 of 44 layers pass. The 13 that fail:
@@ -63,8 +66,11 @@ position and rule results as before the Evals tab. The frame has no
   Figma draws a border only on the selected tab, and the list pads 2 px
   in the default density. So Overview starts at 526 against Figma's 524
   and Activity ends at 998.3 against 989 (gap: Item tab width).
-- **Cross mark.** The test line has Figma's ballot cross ✗ (U+2717)
-  and check ✓ (U+2713), and passes the text check. Geist Variable's
-  latin subset has neither mark, so the browser draws them in the
-  system fallback font, where ✗ is an upright cross like the sign ×;
-  Figma draws it slanted (gap: Symbol glyphs).
+- **Cross mark.** Figma's test line has the ballot cross ✗ (U+2717)
+  and the check ✓ (U+2713), the cross slanted. The line now draws them
+  as the library's `CloseIcon` and `CheckIcon` (12, the text's size, in
+  `fg.muted`, named fail and pass for assistive technology), so the
+  marks are upright line icons, and the render's line has no glyphs:
+  the text check no longer finds Figma's string with ✗ and ✓ in it
+  (a coordinator decision; gap: Symbol glyphs, whose font gap remains
+  only for other text).
