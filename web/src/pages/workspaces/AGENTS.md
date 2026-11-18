@@ -255,7 +255,10 @@ first: it says what each file of a page folder is for.
   fields with the focus in the task and Start subtask across the sheet, no
   Cancel), which the chat actions' Subtask opens (`ui.chatDialog:
   'subtask'`) when the state has `data.subtask`; `SubtaskFields
-  size="phone"` draws the note in `small`.
+  size="phone"` draws the note in `small`. M21 needs no new block: the
+  chat fills the screen as M17's does, still Working with Stop, the line
+  where the subtask started is D18's `event` entry, and Back returns to
+  the list, where layout notes is D18's nested row under bridge themes.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -332,7 +335,10 @@ first: it says what each file of a page folder is for.
   D16's fork under bridge themes: the fork full screen, Idle with no Stop,
   nothing typed and the focus in the message box), M20 `phoneSubtask`
   (from `phoneFork`, without the Fork form, with D17's Subtask form and
-  M20's task: the Subtask sheet open on the phone).
+  M20's task: the Subtask sheet open on the phone), M21
+  `phoneSubtaskRunning` (from `phoneChatFull`, with M18's empty message
+  box, M4's chat actions with Subagents · 3 and D18's layout notes row:
+  the chat full screen, Working, with the line where the subtask started).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

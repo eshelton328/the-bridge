@@ -650,3 +650,19 @@ export const PhoneSubtask: Story = {
     )
   },
 }
+
+export const PhoneSubtaskRunning: Story = {
+  name: 'M21: a subtask running from a chat on the phone',
+  args: {
+    data: workspacesStates.phoneSubtaskRunning.data,
+    ui: workspacesStates.phoneSubtaskRunning.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // layout notes under it, and the phone's menu draws M21. WorkspacesPhoneSubtaskRunning.test.tsx checks the chat and
+    // the list at a phone's width.
+    await expect(canvas.getByText('Subtask layout notes started · returns here')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+  },
+}
