@@ -134,6 +134,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Panel` (10/12), as in D20: `dialog · Remove this task` is x -10,
   y +7, w +20, h +15 px (was x -10, y +5, w +20, h +19). The rest is the
   4 px grid and the 12 px title-to-meta gap, as in D20.
+- **Home indicator on the tablet (2026-11-18).** Library beta.42 keeps
+  the home indicator's 34 px (`shell.safeAreaBottom`) under a tablet page
+  with no tab bar, and the page pads its foot 6 in place of the tablet
+  Container's 20, so the reply box ends 40 over the frame's end, as
+  Figma's: `composer · discussion` passes (was y +20 px).
 
 ## Second review, round 2
 

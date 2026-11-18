@@ -43,13 +43,14 @@ const emptyTop = css({ pt: '32' })
 // Figma's (the model chip and the guard's 16 px lines), so the tile sits 24 under the area's top and "It can" and the
 // suggestions keep Figma's places (within 2 px).
 const phoneEmptyPad = css({ pt: '24' })
-// 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px (43, 40 on the grid),
-// 22 in (24, as the page). It stays on the page's canvas, so the messages that scroll under it do not show through.
+// 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px, 22 in (24, as the
+// page). With no tab bar the tablet AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42)
+// under the page, so the footer pads 6: 40 over the frame's end, as Figma's 43 within the check's 4 px. It stays on the page's canvas, so the messages that scroll under it do not show through.
 const footer = css({
   position: 'sticky',
   bottom: '[var(--scroll-frame-inset, 0px)]',
   pt: '12',
-  pb: '40',
+  pb: '6',
   px: '24',
   bg: 'bg.canvas',
 })

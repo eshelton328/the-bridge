@@ -5,18 +5,13 @@
 // row selected, and its search (M5 408:290) is one group of the matches,
 // each row marking where it matched. Props only.
 import { GroupHeader, Stack } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactGroup, MatchPlace } from '../types.ts'
 import { ArtifactRow } from './ArtifactRow.tsx'
 
 // D2's rows are 58 high, 2 apart (403:193 to 403:219), a 60 px pitch: `ListRow padding="sm"` pads 8 inside its 1 px
 // border, so the rows are Figma's height and sit 2 apart. M1's rows are 66 high, 2 apart (406:121 to 406:148), a 68 px
-// pitch; `padding="phone"` pads 10 above and below (Figma's 8 inside the border, LIBRARY_GAPS.md), so the phone's rows are 70 high
-// around the 48 px preview, and each after the first starts 2 up into the last one's padding to keep Figma's pitch.
-// M5's matches are 66 and 78 high, 2 apart (408:76 to 408:329); with the match line the render's are 70 and 82, so
-// they overlap the same 2 px and each starts within 2 px of Figma's.
-// Work-around for LIBRARY_GAPS.md "ListRow phone height 70 vs 66": remove it when the library draws a 66 px phone row.
-const phoneRows = css({ '& > * + *': { mt: '-2' } })
+// pitch: `padding="phone"` pads 8 above and below inside the border (library beta.41, #156), so the phone's rows are
+// Figma's 66 around the 48 px preview and sit 2 apart, as on the desktop.
 
 /** A group of rows: a library group, or the search's matches with no count or dot (M5). */
 type RowGroupData = Pick<ArtifactGroup, 'label' | 'cards'> & {
@@ -73,11 +68,7 @@ export function RowGroup({
         />
       </div>
       {open ? (
-        <Stack
-          gap={layout === 'phone' ? '0' : '2'}
-          id={contentId}
-          className={layout === 'phone' ? phoneRows : undefined}
-        >
+        <Stack gap="2" id={contentId}>
           {group.cards.map((card) => {
             const place = search?.places.get(card.id)
             return (

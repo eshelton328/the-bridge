@@ -18,7 +18,7 @@ import {
   Stack,
   TruncatedText,
 } from '@eshelton328/component-library-1701'
-import { css } from '../../../../styled-system/css/index.js'
+import { css, cx } from '../../../../styled-system/css/index.js'
 import { detailContainerSize } from '../../../lib/containerSize.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ChatEntry } from '../blocks/ChatEntry.tsx'
@@ -30,6 +30,10 @@ const fill = css({ flex: '1' })
 // The chat fills the detail's height and no more: the Back bar stays at the top, the reply box at the bottom, and only
 // the started task and the chat between them scroll (d-107).
 const frame = css({ flex: '1', minH: '[0]' })
+// A tablet chat has no tab bar, so AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42)
+// under the page. Figma ends the reply box 40 over the frame's end (T5 346:6416, T17 402:11226), so the page pads 6, not
+// the tablet Container's 20.
+const tabletFoot = css({ pb: '6' })
 // The started task and the chat, 16 apart, as the stack around them was.
 const bodyGap = css({ gap: '16' })
 // The reply box is an unnamed layer: 346:6416 in T5, 346:10886 in M8.
@@ -132,7 +136,7 @@ function CompactHeader({ detail, phone }: { detail: InboxRunning; phone: boolean
 
 export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onViewTask }: RunningDetailProps) {
   return (
-    <Container size={detailContainerSize(layout)} className={frame}>
+    <Container size={detailContainerSize(layout)} className={layout === 'tablet' ? cx(frame, tabletFoot) : frame}>
       <ScrollFrame
         gap="16"
         bodyClassName={bodyGap}
