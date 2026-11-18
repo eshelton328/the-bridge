@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
-import { expect, within } from 'storybook/test'
+import { expect, waitFor, within } from 'storybook/test'
 import { workspacesStates } from '../states/index.ts'
 import { WorkspacesScreen } from './WorkspacesScreen.tsx'
 
@@ -277,7 +277,8 @@ export const SubtaskDialog: Story = {
     await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
     const task = dialog.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })
     await expect(task).toHaveValue('Draft layout notes for the three directions, one page each.')
-    await expect(task).toHaveFocus()
+    // The dialog moves the focus to the task once it has opened.
+    await waitFor(() => expect(task).toHaveFocus())
     await expect(dialog.getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
     await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
   },
