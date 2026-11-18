@@ -30,9 +30,13 @@ function screenStory(screen: Screen<string>): Story {
       await expect(frames).toHaveLength(expected.length)
       for (const [i, { device, state }] of expected.entries()) {
         const story = state.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)
-        await expect(frames[i]?.getAttribute('src')).toContain(`id=pages-artifacts-states--${story}&`)
+        await expect(frames[i]?.dataset.storyId).toBe(`pages-artifacts-states--${story}`)
         await expect(frames[i]?.getAttribute('width')).toBe(String(frameSizes[device].width))
       }
+      // The scaled frames and their gaps fit the row's width.
+      const row = canvasElement.firstElementChild
+      await expect(row).not.toBeNull()
+      await expect(row?.scrollWidth).toBeLessThanOrEqual(row?.clientWidth ?? 0)
     },
   }
 }

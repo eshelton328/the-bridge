@@ -4,6 +4,9 @@
 // popovers and measures its width as in that story. All frames take one
 // scale, so their sizes compare; the scale fits the row to the width.
 // Storybook only: a page's `screens/<Page>Screens.stories.tsx` renders it.
+// Outside Storybook's preview page (the Vitest story run), the iframes get
+// no `src`, as no `iframe.html` is there to load; `data-story-id` still
+// names each state's story.
 import { useCallback } from 'react'
 import { storyNameFromExport, toId } from 'storybook/internal/csf'
 import { css } from '../../styled-system/css/index.js'
@@ -33,13 +36,16 @@ function stateStoryId(statesTitle: string, state: string): string {
 
 export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProps) {
   const variants = screenStates(screen)
-  const total = variants.reduce((sum, v) => sum + frameSizes[v.device].width, 0) + gapPx * (variants.length - 1)
+  // Zoom scales the frames, not the gaps between them, so the gaps come off the free width first.
+  const frameWidths = variants.reduce((sum, v) => sum + frameSizes[v.device].width, 0)
+  const gaps = gapPx * (variants.length - 1)
+  const inPreview = window.location.pathname.endsWith('/iframe.html')
   const measure = useCallback(
     (element: HTMLDivElement | null) => {
       if (element === null) return undefined
       const update = () => {
         const padding = Number.parseFloat(getComputedStyle(element).paddingLeft) * 2
-        const fit = (element.clientWidth - padding) / total
+        const fit = (element.clientWidth - padding - gaps) / frameWidths
         element.style.setProperty('--screen-scale', String(Math.min(1, Math.max(fit, 0.1))))
       }
       update()
@@ -49,12 +55,13 @@ export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProp
         observer.disconnect()
       }
     },
-    [total],
+    [frameWidths, gaps],
   )
   return (
     <div ref={measure} className={row}>
       {variants.map(({ device, state }) => {
         const size = frameSizes[device]
+        const storyId = stateStoryId(statesTitle, state)
         return (
           <figure key={device} className={figure}>
             <figcaption className={label}>{deviceLabels[device]}</figcaption>
@@ -62,7 +69,8 @@ export function ScreenVariants({ screen, statesTitle, mode }: ScreenVariantsProp
               <iframe
                 className={frame}
                 title={`${screen.title}, ${deviceLabels[device]}`}
-                src={`iframe.html?id=${stateStoryId(statesTitle, state)}&viewMode=story&globals=mode:${mode}`}
+                data-story-id={storyId}
+                src={inPreview ? `iframe.html?id=${storyId}&viewMode=story&globals=mode:${mode}` : undefined}
                 width={size.width}
                 height={size.height}
               />
