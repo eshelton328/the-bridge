@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -14,8 +14,10 @@ import { routeTree } from './routeTree.gen.ts'
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
+let router: ReturnType<typeof createRouter> | undefined
+
 function renderAt(path: string) {
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
+  router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
   return testRender(<RouterProvider router={router} />)
 }
 
@@ -65,6 +67,14 @@ describe('the Workspaces home', () => {
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     expect(visibleOverlays()).toHaveLength(0)
+  })
+
+  it('goes to Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
+    await page.viewport(756, 1024)
+    view = await renderAt('/workspaces')
+    await expect.poll(tabBar).not.toBeNull()
+    await userEvent.click(page.getByRole('button', { name: 'More' }))
+    await expect.poll(() => router?.state.location.pathname).toBe('/toolkit')
   })
 
   it('changes from the desktop to the phone layout and back as the window narrows and widens', async () => {
