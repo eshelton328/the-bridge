@@ -119,6 +119,9 @@ the checks and offsets below are from the beta.9 run.
   they start 24 and 20 px apart (Figma 25 and 20). The card is 8 px
   shorter: `section · MY NOTES` y +14 px (was y +14, h +12 px); `section · SOURCES` y +20 px (was y +28 px). The y offsets that stay come from the section
   gaps and line heights above (4 px grid, d-072, d-100).
+- **Model and context label (2026-11-18).** "context" is `smallXs`
+  (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
+  group is now within tolerance (was `model and context` w +6.4).
 
 ## Second review
 

@@ -105,6 +105,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `ProposalBlock`'s own buttons (Remove…, Keep it) in `labelXs` (Medium
   12/16), as Figma's (was `label`, Medium 14/20). No layer of this frame
   moved.
+- **Model and context label (2026-11-18).** "context" is `smallXs`
+  (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
+  group is now within 1.8 px of Figma's width; `model and context` y +5 px stays.
+- **Discussion layer (2026-11-18).** Figma's `discussion` layer
+  holds the entries and the reply box (T17 ends 10 px under the box). The
+  render tags only the entries, because `ScrollFrame` puts the entries
+  in its body and the reply box in its footer, and no element holds both
+  without the task card above them. So `discussion` y +28, h -101 px.
+  The page structure stays (d-107).
 
 ## Second review, round 2
 

@@ -117,6 +117,15 @@ shorter, below Figma's status bar (d-102), and the position check adds
   remove this task" on a 16 px `inline` row in `fg.muted` (was 32 px,
   `fg.default`). This moves one layer: `proposal · CREATE 3 TASKS` x +2,
   y +18, w +148, h +2 (was x +2, y +18, w +148, h +18).
+- **Model and context label (2026-11-18).** "context" is `smallXs`
+  (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
+  group is now within 1.8 px of Figma's width; `model and context` y +5 px stays.
+- **Discussion layer (2026-11-18).** Figma's `discussion` layer
+  holds the entries and the reply box (T17 ends 10 px under the box). The
+  render tags only the entries, because `ScrollFrame` puts the entries
+  in its body and the reply box in its footer, and no element holds both
+  without the task card above them. So `discussion` y +28, h -101 px.
+  The page structure stays (d-107).
 
 ## Second review, round 2
 

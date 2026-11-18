@@ -140,3 +140,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `fg.default`). This moves one layer: `proposal · CREATE 3 TASKS` x +0,
   y +16, w +0, h +2 (was x +0, y +16, w +0, h +18). No other layer
   moved.
+- **Model and context label (2026-11-18).** "context" is `smallXs`
+  (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
+  group is now within tolerance (was `model and context` w +6.4).
+- **Discussion layer (2026-11-18).** Figma's `discussion` layer
+  holds the entries and the reply box (M18 ends 10 px under the box). The
+  render tags only the entries, because `ScrollFrame` puts the entries
+  in its body and the reply box in its footer, and no element holds both
+  without the task card above them. So `discussion` y +25, h -124 px.
+  The page structure stays (d-107).
