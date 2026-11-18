@@ -22,12 +22,16 @@ import { libraryView, matchLine, searchMatches } from './libraryView.ts'
 
 // 406:69: the library starts 4 under the status bar and 12 in; its end scrolls clear of the tab bar (AppShell).
 const page = css({ pt: '4', pb: '12', px: '12' })
-// 406:77: the chips take their own width; FilterChips' 2 px focus room is Figma's 2 above the chips (406:78).
+// 406:77: the chips take their own width; FilterChips' 2 px focus room is Figma's 2 above the chips (406:78). Figma's
+// 32 px frame ends at the chips, so the margin takes back the focus room below them, as LibraryList does.
+const chipRow = css({ alignSelf: 'flex-start', maxW: '[100%]', mb: '-2' })
+// The found status takes its own width too.
 const chips = css({ alignSelf: 'flex-start', maxW: '[100%]' })
 // 406:90 and 406:110: the search row's frame is 44 high with its 36 px controls 8 from the top, and the status's 23
 // high with its text 6 from the top.
 const toolsRow = css({ pt: '8' })
 const statusRow = css({ pt: '6' })
+const groupsGap = css({ '& > * + *': { mt: '-2' } })
 
 export type LibraryPhoneProps = {
   data: ArtifactsData
@@ -44,10 +48,9 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
   const query = ui.query.trim()
   const matches = searchMatches(data, ui)
   return (
-    // Figma's rows are 2 apart (406:70 to 406:114), each in a frame with its own padding. FilterChips pads its row 2
-    // below the chips too, where Figma's chip frame ends (406:77), so the search row follows it with no gap.
+    // Figma's rows are 2 apart (406:70 to 406:114), each in a frame with its own padding.
     <Stack gap="2" className={page}>
-      <Stack gap="0">
+      <Stack gap="2">
         <Stack gap="2">
           <LibraryHeader
             title={data.title}
@@ -80,7 +83,7 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
               }}
             />
           )}
-          <div className={chips} data-figma="filter · chips">
+          <div className={chipRow} data-figma="filter · chips">
             <FilterChips
               label="Filter by source"
               items={data.chips}
@@ -138,11 +141,10 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
           <div className={chips}>
             <FoundStatus text={data.found} className={statusRow} />
           </div>
-          {/* 406:196: Earlier's header sits 2 under Found's last row (499 to 501). The phone's rows are 62 high at
-              Figma's 68 px pitch (see RowGroup), so the last row ends 3 higher and the header needs 5; 4 and 6 tie,
-              and the tie takes the larger (d-072). With 4 the header's label sat 2 px high, and its top showed above
-              M4's sort sheet (407:653, 407:814), which Figma's covers. */}
-          <Stack gap="6">
+          {/* 406:196: Earlier's header sits 2 under Found's last row (499 to 501). The phone's rows are 70 high against
+              Figma's 66 at its 68 px pitch (see RowGroup), so the last row ends 4 lower; the group after it starts 2
+              up into that row's bottom padding, as the rows do, so its header is where Figma has it. */}
+          <Stack gap="0" className={groupsGap}>
             {groups.map((group) => (
               <RowGroup
                 key={group.id}

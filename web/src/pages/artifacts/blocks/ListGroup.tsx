@@ -1,6 +1,6 @@
 // A group of the library's list view (Figma "group · …", D4 403:8208): the
 // group header, with a count and the New dot when it has them, and under it,
-// while the group is open, its rows 6 apart (403:8215). Props only.
+// while the group is open, its rows at Figma's 104 px pitch (403:8215). Props only.
 import { GroupHeader, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 
@@ -45,7 +45,9 @@ export function ListGroup({
         />
       </div>
       {open ? (
-        <Stack gap="6" id={id} data-figma={rowsFigma}>
+        // Figma's rows are 98 high, 6 apart (403:8216): a 104 px pitch. The render's rows are 96 (`ListRow` pads 10
+        // inside the box's and its own 1 px borders, against Figma's 12 inside one), so they keep the pitch 8 apart.
+        <Stack gap="8" id={id} data-figma={rowsFigma}>
           {children}
         </Stack>
       ) : null}
