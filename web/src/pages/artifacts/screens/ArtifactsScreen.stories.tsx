@@ -192,3 +192,21 @@ export const DiscussTablet: Story = {
     await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
   },
 }
+
+export const ChangeProposedTablet: Story = {
+  name: 'T5: a proposed update in the discussion page on a tablet',
+  args: {
+    data: artifactsStates.changeProposedTablet.data,
+    ui: artifactsStates.changeProposedTablet.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas, canvasElement }) => {
+    // The story renders at the width Storybook gives it: the tablet's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks T5's page at the tablet's width, and that Apply shows T2 Updated.
+    await expect(canvas.getByText('A dashed line at the median pass rate, 71%')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Apply' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '48')
+    // T5's own node id of its one Open in workspace.
+    await expect(canvasElement.querySelector('[data-figma="452:3978"]')).not.toBeNull()
+  },
+}
