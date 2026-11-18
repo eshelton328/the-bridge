@@ -4,10 +4,13 @@
 // status. A tap on a row with a chat to show selects it and opens it (M3); a workspace's
 // chevron shows or hides its chats. Edit (with `text.done`) starts edit
 // mode (M2): each workspace is a PhoneEditGroup, + is off and Done ends it.
+// With `text.rowMenu`, holding a row or tapping its ⋯ opens the chat's
+// actions (M9, `ui.menuFor`, the sheet in WorkspacesPhone) with the first
+// action highlighted, and the held row lifts over the sheet's scrim.
 // Props only.
 import { Button, Container, MoreIcon, PageHeader, PlusIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import type { PhoneText, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
+import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
 import { PhoneEditGroup } from './PhoneEditGroup.tsx'
 import { SidebarGroup } from './SidebarGroup.tsx'
 
@@ -55,6 +58,34 @@ export function PhoneWorkspaceList({
   // One field takes the focus as it opens: the first chat's, else the first workspace's; a second field that took
   // it would blur the first, which saves and closes it.
   const focus = Object.keys(renamingChats)[0] ?? Object.keys(renamingWorkspaces)[0]
+  // M9: the row's actions open on a hold or on its ⋯, the first one highlighted.
+  const openActions =
+    text.rowMenu === undefined
+      ? undefined
+      : (chat: string) =>
+          onUiChange?.({ menuFor: chat, moveOpen: false, menuHighlight: text.rowMenu?.[0]?.value ?? null })
+  const held = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.menuFor)
+  const more = (chat: SidebarChat, layer: string | undefined) => (
+    <Button
+      variant="text"
+      size="lg"
+      iconOnly
+      className={rowMenu}
+      aria-label={`${chat.title} actions`}
+      data-figma={layer}
+      onClick={
+        openActions === undefined
+          ? undefined
+          : (event) => {
+              // The ⋯ opens the actions, not the chat under it.
+              event.stopPropagation()
+              openActions(chat.id)
+            }
+      }
+    >
+      <MoreIcon size="20" />
+    </Button>
+  )
   const setOpen = (id: string, open: boolean) =>
     onUiChange?.({ collapsed: open ? collapsed.filter((c) => c !== id) : [...collapsed, id] })
   return (
@@ -126,18 +157,13 @@ export function PhoneWorkspaceList({
             layers={layers}
             grip={false}
             onSelect={(chat) => onUiChange?.({ focusedPane: chat, phoneView: 'chat' })}
-            rowMenu={(chat) => (
-              <Button
-                variant="text"
-                size="lg"
-                iconOnly
-                className={rowMenu}
-                aria-label={`${chat.title} actions`}
-                data-figma={layers?.rowMenus?.[chat.id]}
-              >
-                <MoreIcon size="20" />
-              </Button>
-            )}
+            rowMenu={(chat) => more(chat, layers?.rowMenus?.[chat.id])}
+            onHold={openActions}
+            lifted={
+              openActions === undefined || held === undefined
+                ? undefined
+                : { chat: held.id, menu: more(held, layers?.liftedMenu) }
+            }
           />
         ),
       )}

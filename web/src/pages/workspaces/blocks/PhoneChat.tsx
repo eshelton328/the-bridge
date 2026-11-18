@@ -5,7 +5,8 @@
 // composer. The header and the composer stay put and only the transcript
 // scrolls (d-107). The chat actions behind the ⋯ come from the caller, which
 // gets the ⋯ as their trigger (M4), and the folders chip with its sheet
-// (M8).
+// (M8). While the keyboard is up the header shrinks to one line, `meta`
+// under the title (M10).
 // Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -34,7 +35,13 @@ export type PhoneChatProps = {
   /** The accessible name of the back button. */
   backLabel: string
   onBack?: (() => void) | undefined
-  skills: { label: string; items: readonly Skill[]; value: string | null; open: boolean }
+  skills: {
+    label: string
+    matching?: string | undefined
+    items: readonly Skill[]
+    value: string | null
+    open: boolean
+  }
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The chat actions, such as the sheet of M4, given the ⋯ as their trigger; the bare ⋯ when not set. */
   renderMenu?: ((trigger: ReactElement) => ReactNode) | undefined
@@ -42,6 +49,11 @@ export type PhoneChatProps = {
   noActions?: boolean | undefined
   /** Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8). */
   folders?: ReactNode
+  /**
+   * The header on one line, this under the title in place of the workspace and the model row, such as "Opus 5.5 ·
+   * 42% · 2 folders" while the keyboard is up (M10 147:53).
+   */
+  meta?: string | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
@@ -58,6 +70,7 @@ export function PhoneChat(props: PhoneChatProps) {
     renderMenu,
     noActions,
     folders,
+    meta,
     layers,
   } = props
   const more = (
@@ -89,6 +102,7 @@ export function PhoneChat(props: PhoneChatProps) {
         }
         menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
         extra={folders}
+        meta={meta}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane

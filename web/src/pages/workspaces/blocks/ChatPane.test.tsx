@@ -69,4 +69,31 @@ describe('the skill list of a chat', () => {
     await expect.element(writer()).not.toBeInTheDocument()
     await expect.element(box()).toHaveFocus()
   })
+
+  it('opens on a "/" after a space and keeps the skills that start with the word Erik types (M10)', async () => {
+    view = await testRender(
+      <ChatPane
+        figma={{ composer: 'composer' }}
+        entries={[]}
+        composer={{ placeholder: 'Message, or / for a skill', text: '', attachments: [], running: false }}
+        skills={{ label: skillsLabel, matching: 'SKILLS MATCHING {query}', items: skills, value: null, open: true }}
+      />,
+    )
+    await expect.element(page.getByText('SKILLS', { exact: true })).toBeInTheDocument()
+    await userEvent.click(box())
+    await userEvent.keyboard('a doc with /wri')
+    await expect.element(page.getByText('SKILLS MATCHING /wri')).toBeInTheDocument()
+    await expect.element(writer()).toBeVisible()
+    await expect.element(page.getByRole('radio', { name: /\/readme/ })).not.toBeInTheDocument()
+  })
+
+  it('stays closed while no word starts with "/"', async () => {
+    view = await testRender(<Chat text="" />)
+    await userEvent.click(box())
+    await userEvent.keyboard('a doc with ')
+    await expect.element(writer()).not.toBeInTheDocument()
+    await userEvent.keyboard('/')
+    await expect.element(writer()).toBeVisible()
+    await expect.element(box()).toHaveFocus()
+  })
 })

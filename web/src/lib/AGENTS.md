@@ -18,5 +18,8 @@ layer, a store or the router.
   (1232) for the desktop, one list pane (420) for the tablet.
 - `copyText.ts`: `copyText()`, which copies text to the clipboard when
   the page has one and copies nothing (and throws nothing) when not.
+- `skillQuery.ts`: `skillQuery()`, the word before the caret when it
+  starts with "/", which opens and filters the skill list. Its speed
+  after a long paste is tested in Node (`scripts/skillQuery.test.ts`).
 - `containerSize.ts`: the library `Container` size of a detail column
   for each layout.

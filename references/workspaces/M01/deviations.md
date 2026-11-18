@@ -2,7 +2,7 @@
 
 What still differs from Figma M1 · Workspaces (the phone's home,
 `phoneHome`), after the last fidelity run (`pnpm fidelity workspaces`,
-2026-11-17, library 1.0.0-beta.27), each with its reason. The library gaps
+2026-11-18, library 1.0.0-beta.27), each with its reason. The library gaps
 are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is the first
 phone frame of the page: at a phone's width a state with `data.phone`
 draws `WorkspacesPhone` (the list, with the shared tab bar laid over
@@ -43,6 +43,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `146:22`), omni's header 6 (`105:2430`) and its row and skill-evals'
   header 8 (`105:2440`, `146:27`, `105:2456`). Each row is 52 high, as
   Figma's.
+- **The nested row starts 14 to 19 px further left (Phone chat row).**
+  Figma's theme tokens row (199:5) pads 44 at the start and puts its
+  parts 8 apart: the ↳ at x 56, the kind mark at 77 and the title at
+  101. `ListRow level={1}` pads 24 inside its 1 px border and puts its
+  parts 10 apart, so the render draws them at 37, 61 and 87. No spacing
+  token is 44, and `ListRow` takes no class and draws the ↳ before
+  `leading`, so the page cannot move it. These parts carry no
+  `data-figma`, so the position check does not measure them.
 - **Group header icons (Sidebar group header).** The chevrons are the
   library's 12 px `ChevronDownIcon` and `ChevronRightIcon`, and the ⋯ at
   the header's end is a 12 px `MoreIcon` in a 24 px button, against

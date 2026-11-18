@@ -243,6 +243,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
                 contextLabel={data.sidebar.contextLabel}
                 skills={{
                   label: data.skillsLabel,
+                  matching: data.skillsMatching,
                   items: data.skills,
                   value: ui.skill,
                   open: ui.skillsFor === chat.id,

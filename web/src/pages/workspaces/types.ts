@@ -61,7 +61,8 @@ export type PaneHead = z.infer<typeof PaneHead>
 /** One entry of a chat's transcript, a union on `type`. */
 export const ChatEntry = z.discriminatedUnion('type', [
   z.object({ type: z.literal('user'), text: z.string() }),
-  z.object({ type: z.literal('tool'), name: z.string(), target: z.string() }),
+  /** A tool call; `running` draws its dot in the running colour, as the call still runs (M12 147:383). */
+  z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), running: z.boolean().optional() }),
   /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). */
   z.object({
     type: z.literal('assistant'),
@@ -174,6 +175,11 @@ export const Subagent = z.object({
   description: z.string().optional(),
   /** The last lines of its transcript, shown when the transcript is open. */
   transcript: z.array(z.string()),
+  /**
+   * Its full transcript on the phone (M12 147:367), which the card's chevron opens: the task the chat gave it and
+   * what it has done since, its tool calls and its messages.
+   */
+  full: z.object({ task: z.string(), entries: z.array(ChatEntry) }).optional(),
 })
 export type Subagent = z.infer<typeof Subagent>
 
@@ -195,6 +201,12 @@ export const SubagentsPanel = z.object({
    * 147:15). The chevron opens the full transcript (M12); without it, the cards have none.
    */
   openTranscript: z.string().optional(),
+  /**
+   * The labels of a subagent's full transcript on the phone (M12): the trail's name for assistive technology, the
+   * label over the task, such as "Task from {chat}", and the note at the foot, such as "Read-only: the result
+   * returns to {chat} when it finishes"; {chat} is the chat the subagent works for.
+   */
+  fullTranscript: z.object({ trail: z.string(), taskFrom: z.string(), readOnly: z.string() }).optional(),
   items: z.array(Subagent),
 })
 export type SubagentsPanel = z.infer<typeof SubagentsPanel>
@@ -211,14 +223,24 @@ export const NewChatForm = z.object({
     model: z.string(),
     message: z.string(),
   }),
-  /** The random name a blank name becomes, shown as the placeholder, and the hint that says so. */
-  name: z.object({ placeholder: z.string(), hint: z.string() }),
+  /**
+   * The random name a blank name becomes, shown as the placeholder, and the hint that says so; `value` is the name
+   * Erik has typed (M11 147:212), which hides the hint.
+   */
+  name: z.object({ placeholder: z.string(), hint: z.string(), value: z.string().optional() }),
+  /** The field with the focus when the form opens: the first message unless set, the name in M11 (147:211). */
+  focus: z.enum(['name', 'message']).optional(),
   runsIn: z.object({ options: z.array(z.object({ kind: AgentKind, label: z.string() })), value: AgentKind }),
   /** The workspace the chat starts in, by id. */
   workspace: z.string(),
   /** The folders the chat may read; the first is the workspace's own. */
   folders: z.array(z.string()),
   addFolder: z.string(),
+  /**
+   * On the phone, the folders as one field-high box in place of the chips (M11 148:82): `{first}` is the first
+   * folder and `{more}` the number of the others, such as "~/omni-brain  +1". Without it, the chips.
+   */
+  foldersBox: z.string().optional(),
   /** The models; `short` names a model in the summary, such as "Sonnet 5.5" for "Sonnet 5.5 · high effort". */
   model: z.object({
     options: z.array(z.object({ value: z.string(), label: z.string(), short: z.string().optional() })),
@@ -244,20 +266,29 @@ export const NewChatLayers = z.object({
   header: z.string(),
   cancel: z.string(),
   title: z.string(),
+  /** M11 (147:174) shows the fields above the keyboard alone, so the model and the first message have no layer. */
   fields: z.object({
     name: z.string(),
     runsIn: z.string(),
     workspace: z.string(),
     folders: z.string(),
-    model: z.string(),
-    message: z.string(),
+    model: z.string().optional(),
+    message: z.string().optional(),
   }),
-  boxes: z.object({ name: z.string(), workspace: z.string(), model: z.string(), message: z.string() }),
+  /** `folders` is the box of `foldersBox` (M11 148:82). */
+  boxes: z.object({
+    name: z.string(),
+    workspace: z.string(),
+    folders: z.string().optional(),
+    model: z.string().optional(),
+    message: z.string().optional(),
+  }),
   runsIn: z.partialRecord(AgentKind, z.string()),
   folders: z.array(z.string()),
-  addFolder: z.string(),
+  addFolder: z.string().optional(),
   startBar: z.string(),
-  summary: z.string(),
+  /** M11 has no summary: it hides while the keyboard is up. */
+  summary: z.string().optional(),
   start: z.string(),
 })
 export type NewChatLayers = z.infer<typeof NewChatLayers>
@@ -332,6 +363,11 @@ export const PhoneText = z.object({
    * to Close chat. `move` opens the workspaces under its row. Without it, the ⋯ draws only.
    */
   chatMenu: z.array(PaneAction).optional(),
+  /**
+   * The actions sheet of a chat in the phone's list (M9 146:273), in order: what holding the row or its ⋯ opens,
+   * Rename first. Without it, a hold does nothing and the row's ⋯ draws only.
+   */
+  rowMenu: z.array(PaneAction).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -363,6 +399,27 @@ const PaneChatLayers = z.object({
  * The Figma layer ids of a frame's parts, for the fidelity checks (`data-figma`). Each frame has its own ids; a
  * block uses D1's (split panes) or D2's (sidebar) for a part a state does not name.
  */
+/**
+ * A subagent's full transcript on the phone (M12 147:314): the trail (147:339) with its back chevron, the chat and
+ * Subagents; the header (147:345) with the title, the status, the meta line and Stop; the task box (147:368), each
+ * transcript entry in order, and the read-only note at the foot (147:387).
+ */
+export const SubagentTranscriptLayers = z.object({
+  trail: z.string().optional(),
+  back: z.string().optional(),
+  chat: z.string().optional(),
+  subagents: z.string().optional(),
+  header: z.string().optional(),
+  title: z.string().optional(),
+  status: z.string().optional(),
+  meta: z.string().optional(),
+  stop: z.string().optional(),
+  task: z.string().optional(),
+  entries: z.array(z.string().optional()).optional(),
+  note: z.string().optional(),
+})
+export type SubagentTranscriptLayers = z.infer<typeof SubagentTranscriptLayers>
+
 export const SidebarLayers = z.object({
   sidebar: z.string().optional(),
   /** The sidebar toggle: Hide in the sidebar, Show in the tab bar. */
@@ -437,8 +494,14 @@ export const SidebarLayers = z.object({
    * workspace id and `new`: `BottomSheet` and `OptionList` take no `data-*`, so the icons carry the rows' places.
    */
   sheetIcons: z.record(z.string(), z.string()).optional(),
+  /** The lifted copy of a held chat's row over the sheet's scrim on the phone (M9 146:252). */
+  liftedRow: z.string().optional(),
+  /** The ⋯ of that copy (M9 146:268). */
+  liftedMenu: z.string().optional(),
   /** The New chat form on the phone (M7). */
   newChatForm: NewChatLayers.optional(),
+  /** A subagent's full transcript on the phone (M12). */
+  subagentTranscript: SubagentTranscriptLayers.optional(),
   /** The folders sheet on the phone (M8). */
   phoneFolders: PhoneFoldersLayers.optional(),
 })
@@ -533,6 +596,11 @@ export const WorkspacesData = z.object({
   newWorkspace: z.string(),
   /** What typing / in a composer lists. */
   skillsLabel: z.string(),
+  /**
+   * The list's label once Erik has typed more than the "/", such as "SKILLS MATCHING {query}" (M10 147:72); {query}
+   * is what he typed from the "/", and the list keeps only the skills that start with it. `skillsLabel` when not set.
+   */
+  skillsMatching: z.string().optional(),
   skills: z.array(Skill),
   /** The sidebar's labels; a state without them has no sidebar. */
   sidebar: SidebarText.optional(),
@@ -667,11 +735,22 @@ export const WorkspacesUi = z.object({
   workspaceNames: z.record(z.string(), z.string()).optional(),
   /**
    * What fills the phone's screen: `list`, the workspaces (M1, the default), `chat`, the focused chat with its
-   * header and composer and no tab bar (M3), or `subagents`, the focused chat's subagents (M6). A tap on a chat in the
-   * list opens it; the chat's back button returns. Subagents in the chat actions opens the subagents, and their back
-   * button returns to the chat.
+   * header and composer and no tab bar (M3), `subagents`, the focused chat's subagents (M6), or `transcript`, the
+   * full transcript of the subagent `subagentFor` names (M12). A tap on a chat in the list opens it; the chat's back
+   * button returns. Subagents in the chat actions opens the subagents, and their back button returns to the chat. A
+   * card's chevron opens its transcript, whose back chevron and Subagents return to the subagents and whose chat
+   * returns to the chat.
    */
-  phoneView: z.enum(['list', 'chat', 'subagents']).optional(),
+  phoneView: z.enum(['list', 'chat', 'subagents', 'transcript']).optional(),
+  /** The subagent whose full transcript fills the phone's screen (M12). */
+  subagentFor: z.string().nullable().optional(),
+  /**
+   * The on-screen keyboard is up over the phone's chat (M10): the chat's header shrinks to one line, the model, the
+   * context used and the folders under the title. Over New chat (M11) the start bar keeps Start chat alone, with no
+   * summary. The app does not measure the keyboard yet, and the screen does
+   * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
+   */
+  keyboardOpen: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

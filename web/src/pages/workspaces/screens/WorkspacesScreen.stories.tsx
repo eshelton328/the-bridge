@@ -459,3 +459,74 @@ export const PhoneFolders: Story = {
     await expect(within(picker).queryByRole('button', { name: 'Open Documents' })).toBeNull()
   },
 }
+
+export const PhoneHoldChat: Story = {
+  name: 'M9: a chat held in the phone list, with its actions in a sheet',
+  args: { data: workspacesStates.phoneHoldChat.data, ui: workspacesStates.phoneHoldChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width the held row lifts over the actions sheet (M9). WorkspacesPhoneHoldChat.test.tsx checks the
+    // sheet and the hold at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByRole('dialog', { name: 'drift check' })).toBeNull()
+  },
+}
+
+export const PhoneKeyboard: Story = {
+  name: 'M10: a chat on the phone with the keyboard open',
+  args: { data: workspacesStates.phoneKeyboard.data, ui: workspacesStates.phoneKeyboard.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // its skills open on "/wri"; at a phone's width the header is one line (M10). WorkspacesPhoneChat.test.tsx checks
+    // the one-line header at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Message, or / for a skill' })).toHaveValue(
+      'Turn the layout notes into a doc with /wri',
+    )
+    const body = within(document.body)
+    await expect(await body.findByText('SKILLS MATCHING /wri')).toBeInTheDocument()
+    await expect(await body.findByRole('radio', { name: /\/writer/ })).toBeChecked()
+    await expect(body.queryByRole('radio', { name: /\/readme/ })).toBeNull()
+  },
+}
+
+export const PhoneNewChatKeyboard: Story = {
+  name: 'M11: New chat on the phone with the keyboard open',
+  args: {
+    data: workspacesStates.phoneNewChatKeyboard.data,
+    ui: workspacesStates.phoneNewChatKeyboard.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat dialog over it, the name typed; at a phone's width the form fills the screen (M11).
+    // The open dialog hides the screen behind it from assistive technology, so its roles need `hidden`.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes', hidden: true })).toBeVisible()
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'New chat' }))
+    const name = dialog.getByRole('textbox', { name: 'NAME · OPTIONAL' })
+    await expect(name).toHaveValue('theme tokens')
+    await expect(dialog.queryByText('random if blank')).toBeNull()
+    await expect(dialog.getByRole('button', { name: 'WORKSPACE: omni-brain' })).toBeVisible()
+    await expect(dialog.queryByRole('button', { name: /shell/ })).toBeNull()
+    await expectTrapFocus(name)
+  },
+}
+
+export const PhoneSubagentTranscript: Story = {
+  name: "M12: a subagent's full transcript on the phone",
+  args: {
+    data: workspacesStates.phoneSubagentTranscript.data,
+    ui: workspacesStates.phoneSubagentTranscript.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; at a phone's width Layout notes' full transcript fills the screen (M12).
+    // WorkspacesPhoneSubagentTranscript.test.tsx checks the transcript and its trail at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(canvas.queryByText('Read-only: the result returns to bridge themes when it finishes.')).toBeNull()
+  },
+}

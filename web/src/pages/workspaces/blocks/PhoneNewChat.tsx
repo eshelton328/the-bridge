@@ -3,7 +3,8 @@
 // the fields (NewChatFields) scroll between it and the start bar, which sums
 // up the choices over Start chat, within thumb reach. The header and the
 // start bar stay put and only the fields scroll (d-107, `ScrollFrame`).
-// Props only.
+// With the keyboard up (M11 147:174) the start bar keeps Start chat alone,
+// just over the keyboard. Props only.
 import { ArrowUpIcon, Button, ScrollFrame } from '@eshelton328/component-library-1701'
 import { useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -44,6 +45,8 @@ export type PhoneNewChatProps = {
   onCancel?: (() => void) | undefined
   /** Called when Erik presses Start chat. */
   onStart?: (() => void) | undefined
+  /** The keyboard is up (M11): the start bar has no summary. */
+  keyboardOpen?: boolean | undefined
   /** The frame's Figma layers. */
   layers?: NewChatLayers | undefined
 }
@@ -59,13 +62,20 @@ function summaryText(form: NewChatForm, workspaces: readonly Workspace[]): strin
     .replace('{folders}', String(form.folders.length))
 }
 
-export function PhoneNewChat({ form, workspaces, onCancel, onStart, layers }: PhoneNewChatProps) {
+export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen, layers }: PhoneNewChatProps) {
   const messageRef = useRef<HTMLDivElement>(null)
-  // The first message has the focus when the form opens, as Figma draws its cyan border (105:3327).
+  const nameRef = useRef<HTMLDivElement>(null)
+  const focus = form.focus ?? 'message'
+  // The first message has the focus when the form opens, as Figma draws its cyan border (105:3327); in M11 the name
+  // has it, the caret after the typed name (147:213).
   useEffect(() => {
-    messageRef.current?.querySelector('textarea')?.focus()
-  }, [])
-  const line = summaryText(form, workspaces)
+    if (focus === 'name') {
+      const input = nameRef.current?.querySelector('input')
+      input?.focus()
+      input?.setSelectionRange(input.value.length, input.value.length)
+    } else messageRef.current?.querySelector('textarea')?.focus()
+  }, [focus])
+  const line = keyboardOpen === true ? undefined : summaryText(form, workspaces)
   return (
     <section aria-label={form.title} className={column}>
       <ScrollFrame
@@ -95,7 +105,7 @@ export function PhoneNewChat({ form, workspaces, onCancel, onStart, layers }: Ph
           </div>
         }
       >
-        <NewChatFields form={form} workspaces={workspaces} messageRef={messageRef} layers={layers} />
+        <NewChatFields form={form} workspaces={workspaces} messageRef={messageRef} nameRef={nameRef} layers={layers} />
       </ScrollFrame>
     </section>
   )

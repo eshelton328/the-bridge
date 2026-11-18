@@ -40,6 +40,7 @@ export type NewChatDialogProps = {
 export function NewChatDialog({ form, workspaces, open, onOpenChange }: NewChatDialogProps) {
   const { labels } = form
   const messageRef = useRef<HTMLDivElement>(null)
+  const nameRef = useRef<HTMLDivElement>(null)
   return (
     <Dialog
       size="lg"
@@ -47,8 +48,12 @@ export function NewChatDialog({ form, workspaces, open, onOpenChange }: NewChatD
       closeButton
       open={open}
       onOpenChange={onOpenChange}
-      // The first message has the focus, as Figma draws its cyan border (105:1427).
-      initialFocus={() => messageRef.current?.querySelector('textarea') ?? null}
+      // The first message has the focus, as Figma draws its cyan border (105:1427), or the name when `form.focus` says.
+      initialFocus={() =>
+        form.focus === 'name'
+          ? (nameRef.current?.querySelector('input') ?? null)
+          : (messageRef.current?.querySelector('textarea') ?? null)
+      }
       data-figma="105:1379"
       actions={
         <>
@@ -64,8 +69,20 @@ export function NewChatDialog({ form, workspaces, open, onOpenChange }: NewChatD
         </>
       }
     >
-      <FormField label={labels.name} hint={form.name.hint} figma="114:2">
-        <TextField label={labels.name} labelHidden size="lg" placeholder={form.name.placeholder} />
+      <FormField
+        label={labels.name}
+        hint={form.name.value === undefined || form.name.value === '' ? form.name.hint : undefined}
+        figma="114:2"
+      >
+        <div ref={nameRef} className={wide}>
+          <TextField
+            label={labels.name}
+            labelHidden
+            size="lg"
+            placeholder={form.name.placeholder}
+            defaultValue={form.name.value}
+          />
+        </div>
       </FormField>
       <FormField label={labels.runsIn} figma="105:1404">
         <Grid columns="3" gap="6" role="group" aria-label={labels.runsIn}>

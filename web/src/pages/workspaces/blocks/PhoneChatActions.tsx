@@ -4,7 +4,9 @@
 // workspace opens the other workspaces under its row (the highlighted one
 // with its check, then New workspace…); Close chat comes last. The library
 // has no list of actions for a sheet, so the rows are `OptionList`s with no
-// check (LIBRARY_GAPS.md: Phone chat actions sheet). Props only.
+// check (LIBRARY_GAPS.md: Phone chat actions sheet). A held row of the phone's
+// list opens the same sheet with no trigger, Rename first and highlighted
+// (M9 146:273). Props only.
 import {
   BottomSheet,
   BranchIcon,
@@ -77,8 +79,8 @@ export type PhoneChatActionsProps = {
   /** The workspaces the chat can move to: every one but its own. */
   targets: readonly Workspace[]
   newWorkspace: string
-  /** The ⋯ that opens the sheet. */
-  trigger: ReactElement
+  /** The ⋯ that opens the sheet; without it, `open` alone opens it, as a held row of the phone's list does (M9). */
+  trigger?: ReactElement | undefined
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
   /** Move to workspace's list is open under its row. */
@@ -86,6 +88,8 @@ export type PhoneChatActionsProps = {
   onMoveOpenChange?: ((open: boolean) => void) | undefined
   /** The highlighted workspace of that list; it shows its check. */
   moveTarget?: string | null | undefined
+  /** The action drawn filled while Move to workspace's list is closed, such as `rename` after a hold (M9 146:374). */
+  highlight?: string | null | undefined
   onMoveTargetChange?: ((workspace: string) => void) | undefined
   /** Called with the picked action, such as `rename`; the sheet then closes. */
   onSelect?: ((action: PaneAction['value']) => void) | undefined
@@ -149,7 +153,7 @@ export function PhoneChatActions(props: PhoneChatActionsProps) {
       <OptionList
         label={title}
         items={before.map(row)}
-        value={moveOpen ? 'move' : null}
+        value={moveOpen ? 'move' : (props.highlight ?? null)}
         selectedFill
         check={false}
         onItemSelect={pick}

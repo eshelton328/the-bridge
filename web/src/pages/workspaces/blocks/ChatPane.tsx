@@ -1,7 +1,9 @@
 // A chat's body: the transcript, then the composer at the bottom, with the
 // skill list over it after "/" (D1 105:209). Only what Erik types opens the
 // list: a message that starts with "/" opens it, and the focus stays in the
-// box. `size="pane"` is a pane of the
+// box; a word that starts with "/" at the caret opens it too, as "/wri" at
+// the end of M10's message does, and the list keeps the skills that start
+// with that word, under `matching`. `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
@@ -10,8 +12,9 @@
 // phone (M3 105:2784), with the skill list as wide as the composer, and
 // `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106). Props only.
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
-import { type ReactNode, useEffect, useRef } from 'react'
+import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
+import { skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { SkillPicker } from './SkillPicker.tsx'
@@ -67,6 +70,7 @@ const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: 
 // focus as its border, so the footer pads nothing under it and ends with the frame (M3).
 const phoneFrame = css({ '& > .scroll-frame__footer': { pb: '0', mb: '0' } })
 const footer = css({ display: 'flex', flexDirection: 'column' })
+
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
   figma: {
@@ -79,7 +83,16 @@ export type ChatPaneProps = {
   entries: readonly ChatEntry[]
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
-  skills?: { label: string; items: readonly Skill[]; value: string | null; open: boolean } | undefined
+  skills?:
+    | {
+        label: string
+        /** The label once Erik has typed more than the "/", with {query} for what he typed (M10); `label` when not set. */
+        matching?: string | undefined
+        items: readonly Skill[]
+        value: string | null
+        open: boolean
+      }
+    | undefined
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   size?: keyof typeof sizes | undefined
   /** The folders control, before the model in the composer's bottom row (D4 137:9). */
@@ -117,6 +130,8 @@ export function ChatPane(props: ChatPaneProps) {
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
   const areaRef = useRef<HTMLDivElement>(null)
+  // What Erik has typed from the "/": the list keeps the skills that start with it.
+  const [query, setQuery] = useState(() => skillQuery(composer.text, composer.text.length))
   useEffect(() => {
     if (!autoFocus) return
     const area = areaRef.current?.querySelector('textarea')
@@ -127,7 +142,10 @@ export function ChatPane(props: ChatPaneProps) {
     area.setSelectionRange(area.value.length, area.value.length)
   }, [autoFocus])
   const onValueChange = (text: string) => {
-    const open = text.startsWith('/')
+    const caret = areaRef.current?.querySelector('textarea')?.selectionStart ?? text.length
+    const next = skillQuery(text, caret)
+    setQuery(next)
+    const open = next !== null || text.startsWith('/')
     if (skills === undefined || open === skills.open) return
     typedRef.current = open
     onSkillsOpenChange?.(open)
@@ -170,8 +188,12 @@ export function ChatPane(props: ChatPaneProps) {
       </div>
     ) : (
       <SkillPicker
-        label={skills.label}
-        skills={skills.items}
+        label={
+          query !== null && query.length > 1 && skills.matching !== undefined
+            ? skills.matching.replace('{query}', query)
+            : skills.label
+        }
+        skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
         value={skills.value}
         open={skills.open}
         layout={size === 'phone' ? 'phone' : 'pane'}

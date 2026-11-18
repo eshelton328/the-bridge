@@ -55,6 +55,8 @@ export type SubagentCardProps = {
   /** The accessible name of the chevron that opens the full transcript (M6); not set, no chevron. */
   openLabel?: string | undefined
   onOpen?: (() => void) | undefined
+  /** The subagent has no full transcript to open: the chevron stays in its place but is disabled (M12). */
+  openDisabled?: boolean | undefined
   /** The Figma layer the card stands for, for the fidelity checks. */
   figma?: string | undefined
   /** The Figma layer of the chevron. */
@@ -62,7 +64,18 @@ export type SubagentCardProps = {
 }
 
 export function SubagentCard(props: SubagentCardProps) {
-  const { item, labels, transcriptOpen, onTranscriptOpenChange, size, openLabel, onOpen, figma, figmaOpen } = props
+  const {
+    item,
+    labels,
+    transcriptOpen,
+    onTranscriptOpenChange,
+    size,
+    openLabel,
+    onOpen,
+    openDisabled,
+    figma,
+    figmaOpen,
+  } = props
   const running = item.status.tone === 'running' || item.status.tone === 'working'
   return (
     <div data-figma={figma}>
@@ -76,7 +89,15 @@ export function SubagentCard(props: SubagentCardProps) {
             <h3 className={title}>{item.title}</h3>
             <StatusPill label={item.status.label} tone={item.status.tone} dot />
             {openLabel === undefined ? null : (
-              <Button variant="text" size="xs" iconOnly className={chevron} aria-label={openLabel} onClick={onOpen}>
+              <Button
+                variant="text"
+                size="xs"
+                iconOnly
+                className={chevron}
+                aria-label={openLabel}
+                disabled={openDisabled}
+                onClick={onOpen}
+              >
                 <span className={icon} data-figma={figmaOpen}>
                   <ChevronRightIcon size="16" />
                 </span>

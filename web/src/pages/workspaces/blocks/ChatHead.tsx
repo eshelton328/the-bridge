@@ -3,7 +3,10 @@
 // context used and its label. While Erik renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
 // first and the rows sit 8 apart under a 4 px top; the folders chip can take
-// the context label's place (M8). The library's `Pane`
+// the context label's place (M8). While the phone's keyboard is up the
+// header shrinks to one line: `meta`, the model, the context used and the
+// folders, takes the workspace's place under the title, with no second row
+// (M10 147:46). The library's `Pane`
 // header has one row (LIBRARY_GAPS.md: Chat header). Props only.
 import {
   Button,
@@ -23,7 +26,6 @@ const head = css({
   flexDirection: 'column',
   gap: '4',
   pt: '12',
-  pb: '8',
   px: '16',
   borderBottomWidth: 'default',
   borderBottomStyle: 'solid',
@@ -33,6 +35,12 @@ const head = css({
 // workspace are 37 high, where `subtitle` over `monoSm` is 40 and the model chip 4 taller than Figma's (LIBRARY_GAPS.md:
 // Chat header), so the rows keep the 4 apart of the chat alone and the second row sits where Figma's does.
 const sizes = { full: undefined, phone: css({ pt: '4' }) }
+// Both rows end 8 over the rule.
+const twoRows = css({ pb: '8' })
+// M10 147:46: one row, 4 under the status bar and 8 over the rule in Figma, 46 high with the rule under it. The title
+// over `monoSm` is 40 high against Figma's 34 (LIBRARY_GAPS.md: Chat header text), so the row pads 2 under it: the
+// title starts where Figma's does, and the header with its rule is 47 high.
+const oneRow = css({ pt: '4', pb: '2' })
 const titles = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]' })
 // Figma's title is Geist SemiBold 16 (D19 417:1669), which no text style draws (LIBRARY_GAPS.md: Chat header text);
 // the workspace is Geist Mono 11 (417:1670) and "context" Geist Regular 11 (417:1689).
@@ -57,18 +65,28 @@ export type ChatHeadProps = {
   back?: ReactNode
   /** Drawn after the context used in place of its label, such as the phone's folders chip (M8 128:695). */
   extra?: ReactNode
+  /**
+   * Drawn under the title in place of the workspace, with no second row, such as "Opus 5.5 · 42% · 2 folders" while
+   * the phone's keyboard is up (M10 147:53).
+   */
+  meta?: string | undefined
 }
 
 export function ChatHead(props: ChatHeadProps) {
-  const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back, extra } = props
+  const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back, extra, meta } = props
   return (
-    <header data-figma={figma?.head ?? '105:785'} className={cx(head, sizes[size])}>
+    <header
+      data-figma={figma?.head ?? '105:785'}
+      className={cx(head, meta === undefined ? cx(sizes[size], twoRows) : oneRow)}
+    >
       <Inline gap="8" align="center">
         {back}
         <KindMark kind={chat.kind} size="20" />
         <div className={titles}>
           {rename ?? <h2 className={title}>{chat.title}</h2>}
-          <span className={where}>{chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`}</span>
+          <span className={where}>
+            {meta ?? (chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`)}
+          </span>
         </div>
         <StatusPill label={chat.status.label} tone={chat.status.tone} dot />
         {menu === undefined ? (
@@ -79,11 +97,13 @@ export function ChatHead(props: ChatHeadProps) {
           menu
         )}
       </Inline>
-      <Inline gap="8" align="center">
-        <ModelChip model={chat.model} options={[{ value: chat.model, label: chat.model }]} value={chat.model} />
-        {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
-        {extra ?? <span className={label}>{contextLabel}</span>}
-      </Inline>
+      {meta === undefined ? (
+        <Inline gap="8" align="center">
+          <ModelChip model={chat.model} options={[{ value: chat.model, label: chat.model }]} value={chat.model} />
+          {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
+          {extra ?? <span className={label}>{contextLabel}</span>}
+        </Inline>
+      ) : null}
     </header>
   )
 }

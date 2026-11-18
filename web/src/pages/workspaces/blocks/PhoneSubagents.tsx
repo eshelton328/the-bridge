@@ -33,7 +33,7 @@ export type PhoneSubagentsProps = {
   /** The subagents whose transcript is open. */
   open: readonly string[]
   onOpenChange?: ((open: string[]) => void) | undefined
-  /** Opens a subagent's full transcript (M12). */
+  /** Opens a subagent's full transcript (M12); a subagent without one has its chevron disabled. */
   onOpenTranscript?: ((id: string) => void) | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
@@ -75,8 +75,11 @@ export function PhoneSubagents(props: PhoneSubagentsProps) {
               onOpenChange?.(next ? [...open, item.id] : open.filter((id) => id !== item.id))
             }
             openLabel={panel.openTranscript === undefined ? undefined : `${panel.openTranscript} ${item.title}`}
+            // A subagent with no full transcript would open a blank screen, as the sidebar only selects a chat that
+            // has a pane; without `onOpenTranscript` (M6) the chevrons stay as Figma draws them.
+            openDisabled={onOpenTranscript !== undefined && item.full === undefined}
             onOpen={
-              onOpenTranscript === undefined
+              onOpenTranscript === undefined || item.full === undefined
                 ? undefined
                 : () => {
                     onOpenTranscript(item.id)
