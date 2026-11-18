@@ -127,7 +127,12 @@ what each file of a page folder is for.
   `ToolkitFlowStep variant="column"` as wide as the item, an arrow down
   between stages and a fork into and a join out of the parallel steps
   (`columnArrow` in `blocks/flowLayout.ts`); the selected step's panel comes
-  under it. M9 is a later frame.
+  under it. On the phone (M9, `workflowFullPagePhone`, T8's data) the
+  breadcrumb leaves out the kind's crumb (Toolkit › the workflow), Discuss
+  and Show on map are icon buttons, when it runs sits beside the kind
+  badge, the path row is left out and the rows are 10 apart under the
+  smaller title, as on M12; the column's fork and join are 24 high and the
+  page ends with the steps, with no details panel under them.
   `flowView.test.ts` checks the pure parts (LIBRARY_GAPS.md, Workflow
   page flow, description and details). On a tablet (T18, `workflowOpenTablet`, D8's
   data) the flow is drawn smaller (`ToolkitWorkflowFlow size="sm"`:
