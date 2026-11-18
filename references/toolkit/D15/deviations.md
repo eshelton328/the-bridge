@@ -88,7 +88,3 @@ frame has no exceptions.json.
   `row · most called and log` y +16 h +13; `source note` y +29). The
   rows over them are taller, so the source line is lower; the page
   section ends with it.
-- **Sources in D11.** Chats and Headless runs are enabled in this
-  frame's state and the eight others of this branch; D11, D12, T9 and
-  M10 keep them disabled, because their tests assert it (reported to the
-  caller).

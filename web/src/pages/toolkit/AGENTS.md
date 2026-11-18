@@ -425,8 +425,8 @@ what each file of a page folder is for.
   `ToolkitActivityPage`: the header says the counts come from the session
   files, the kind chips, the source switch (`ToolkitActivitySources`: All
   sessions, Chats and Headless runs as a `ViewSwitch`, since at the row's
-  end; a source with no counts in `counts` is disabled, so only All works
-  in these four states; `ui.activitySource` keeps the pick) and
+  end; a source with no counts in `counts` is disabled; `ui.activitySource`
+  keeps the pick) and
   `ToolkitActivityBody`: the key figures (`ToolkitActivityKpis` with the
   view's keys), the runs (`ToolkitActivityRuns`, a `ToolkitRunRow` each)
   beside the calls per day (`ToolkitCallsPerDay`, a library `DailyBarChart`
@@ -451,10 +451,10 @@ what each file of a page folder is for.
   Chats and Headless runs (D15, `toolkitActivityChats`; D16,
   `toolkitActivityHeadless`; their views from
   `states/shared/activitySources.ts`, D11's, T9's and M10's with the two
-  sources' counts) are enabled in those states only: D11, D12, T9 and M10
-  keep them disabled, as their tests say, until Erik decides to give them
-  the counts. A source's counts add its `list`, drawn in the log's place
-  beside Most called on the desktop and over it elsewhere
+  sources' counts) are enabled in every Activity state: D11, D12, T9 and
+  M10 show the same views, so their switch opens D15 or D16 (T11, T12 on
+  a tablet, M13, M14 on the phone). A source's counts add its `list`,
+  drawn in the log's place beside Most called on the desktop and over it elsewhere
   (`ToolkitActivitySourceList`): the chats that used the toolkit
   (`ToolkitChatRow`, a `ListRow` with the items it used as `MapNode` chips,
   `ToolkitChatItems`; a chip opens its item's page, the row opens the chat)
@@ -462,7 +462,9 @@ what each file of a page folder is for.
   page, the row opens the skill on its Evals tab, `openEvalGroup`; writer's
   details are D20's; a folder with no skill takes no tap). Show all shows
   every row (`ui.activityShowAll`), and waits with a title while the data
-  knows fewer rows than it names (8 chats, 5 known; `showAllLink`). A chat's
+  knows fewer rows than it names (8 chats, 5 known; `showAllLink`). Under
+  a kind chip it shows every row the chip leaves when the data knows all
+  the rows (`narrowList`). A chat's
   row sets `ui.chat` (D18, `toolkitActivityChat`): on the desktop
   `ToolkitChatPanel` takes the side slot as a run's panel does (its header
   with the Chat ended badge and close, Open the session in Workbench

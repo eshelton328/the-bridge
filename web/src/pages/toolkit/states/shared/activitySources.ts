@@ -3,7 +3,8 @@
 // in D18 475:373), the tablet's (T11 477:1241, T12, T14: no captions,
 // shorter lines and every row of the list) and the phone's (M13, M14, M16:
 // one run each and the phone's chat). Each view is D11's, T9's or M10's with
-// the two sources' counts beside All. Copy word for word from
+// the two sources' counts beside All; D11, D12, T9 and M10 show these views
+// too, so their switch opens D15's or D16's counts. Copy word for word from
 // references/toolkit/D15, D16, D18, T11, T12, T14, M13, M14 and
 // M16/frame.json. Running now is sample data, as the frames say; the counts,
 // the chats and the evals are real.
@@ -15,7 +16,7 @@ import type {
   ToolkitEvalGroup,
   ToolkitRun,
 } from '../../types.ts'
-import { activityDesktop, activityPhone, activityTablet } from './activityView.ts'
+import { activityDesktop, activityPhone, activityRunOpen, activityTablet } from './activityView.ts'
 
 function allOf(view: ToolkitActivityView): ToolkitActivityCounts {
   const all = view.counts.all
@@ -240,6 +241,12 @@ const desktopHeadless: ToolkitActivityCounts = {
 export const activitySourcesDesktop: ToolkitActivityView = {
   ...activityDesktop,
   counts: { all: desktopAll, chats: desktopChats(writerRulesChat), headless: desktopHeadless },
+}
+
+/** D12 beside D15 and D16: D12's All sessions, with writing-reviewer's panel keyed to D12's layers, and every source. */
+export const activityRunSources: ToolkitActivityView = {
+  ...activityRunOpen,
+  counts: { ...activitySourcesDesktop.counts, all: allOf(activityRunOpen) },
 }
 
 /** D18: D15 with Writer rules, skills, and agents keyed to D18's layers. */

@@ -35,8 +35,10 @@ The frame has no exceptions.json.
   -15.7 h -2; `kpis` and each `kpi · …` y -7 h +4, x and w within 2).
   The switch is `ViewSwitch` 36 high and 16 px narrower (View switch 38
   px); each tile is 68 high where Figma's is 64, and the values are in
-  one colour (Activity KPI tile). Chats and Headless are disabled until
-  T11 and T12 add their counts.
+  one colour (Activity KPI tile). Chats and Headless are enabled, as
+  Erik approved on 2026-11-18: their labels are drawn in the switch's
+  full colour, no longer dimmed as disabled, and a tap opens T11's or
+  T12's view.
 - **Runs** (`run · skill-eval-round` y -5 h -1, `run ·
   pr-description-checker` y -6 h -1). Each `ListRow` card is 58 high
   where Figma's is 59; the dot comes after the name and the kind icon

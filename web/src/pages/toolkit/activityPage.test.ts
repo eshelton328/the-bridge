@@ -37,11 +37,12 @@ describe('activitySource and activityCounts', () => {
     expect(activityCounts(view, { filter: 'all' })?.kpis[0]?.value).toBe('2,052')
   })
 
-  it('falls back to All for a source with no counts yet (Chats, Headless runs: T11, T12)', () => {
-    expect(activitySource(view, { activitySource: 'chats' })).toBe('all')
+  it('counts the picked source in D11, and falls back to All for a source with no counts', () => {
+    expect(activitySource(view, { activitySource: 'chats' })).toBe('chats')
+    expect(activitySource(view, { activitySource: 'headless' })).toBe('headless')
     const all = view.counts.all
     if (all === undefined) throw new Error('no counts')
-    expect(activitySource({ ...view, counts: { all, chats: all } }, { activitySource: 'chats' })).toBe('chats')
+    expect(activitySource({ ...view, counts: { all } }, { activitySource: 'chats' })).toBe('all')
   })
 
   it('keeps only the picked kind in the runs, Most called and the log, and every key figure', () => {
@@ -58,11 +59,21 @@ describe('activitySource and activityCounts', () => {
 })
 
 describe('sourceItems', () => {
-  it('disables the sources with no counts, so only All sessions works now (D11 444:491)', () => {
+  it('enables every source in D11, D12, T9 and M10, and disables one with no counts (D11 444:491)', () => {
     expect(sourceItems(viewOf(toolkitActivity.data))).toEqual([
       { value: 'all', label: 'All sessions', disabled: false },
-      { value: 'chats', label: 'Chats', disabled: true },
-      { value: 'headless', label: 'Headless runs', disabled: true },
+      { value: 'chats', label: 'Chats', disabled: false },
+      { value: 'headless', label: 'Headless runs', disabled: false },
+    ])
+    for (const state of [toolkitActivityRun, toolkitActivityTablet, toolkitActivityPhone]) {
+      expect(sourceItems(viewOf(state.data)).every((s) => !s.disabled)).toBe(true)
+    }
+    const all = viewOf(toolkitActivity.data).counts.all
+    if (all === undefined) throw new Error('no counts')
+    expect(sourceItems({ ...viewOf(toolkitActivity.data), counts: { all } }).map((s) => s.disabled)).toEqual([
+      false,
+      true,
+      true,
     ])
     expect(sourceItems(viewOf(toolkitActivityTablet.data)).map((s) => s.label)).toEqual(['All', 'Chats', 'Headless'])
   })

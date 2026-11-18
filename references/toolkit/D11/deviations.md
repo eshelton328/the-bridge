@@ -49,8 +49,10 @@ The frame has no exceptions.json.
   `activity` y -6). The header and the chips are D1's, 2 px shorter in
   the library (Kind chip row, View switch 38 px); the source switch is
   the library's `ViewSwitch` with no icons, 36 high and 16 px narrower
-  than Figma's 38 (View switch 38 px). Chats and Headless runs are drawn
-  disabled: they have no counts until T11 and T12.
+  than Figma's 38 (View switch 38 px). Chats and Headless runs are
+  enabled, as Erik approved on 2026-11-18: their labels are drawn in the
+  switch's full colour, no longer dimmed as disabled, and a tap opens
+  D15's or D16's view.
 - **Runs** (`run · writing-reviewer` h +8, `run · skill-eval-round` y +7
   h +8, `run · pr-description-checker` y +15 h +8; `panel · RUNNING NOW`,
   `row · now and per day` and `panel · CALLS PER DAY` h +22). Each run
