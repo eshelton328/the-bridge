@@ -704,6 +704,112 @@ export type ToolkitOpenItem = {
   tab: string
 }
 
+/**
+ * Where the sessions of the Activity view started (D11 `source · segmented` 444:491): all of them, the chats (the CLI
+ * and the desktop app, T11) or the headless runs (`claude -p` and the SDK, T12).
+ */
+export const ToolkitActivitySource = z.enum(['all', 'chats', 'headless'])
+export type ToolkitActivitySource = z.infer<typeof ToolkitActivitySource>
+
+/** One value of an open run and where it comes from (D12 `field · Session` 445:483). */
+const ToolkitRunField = z.object({ label: z.string(), value: z.string(), source: z.string() })
+
+/** One step of an open run (D12 `step · 0:00` 445:521): when, the tool, what it did; `now` is the step running. */
+const ToolkitRunStep = z.object({ time: z.string(), name: z.string(), text: z.string(), now: z.boolean().optional() })
+
+/**
+ * What an open run shows (D12 `side panel · run` 445:465): the line under its name, its values with their sources, its
+ * steps and what its result will show. `layers` are the Figma keys D12 gives the page's header and the panel's header
+ * and button, whose names the frame uses twice.
+ */
+const ToolkitRunDetail = z.object({
+  summary: z.string(),
+  fields: z.array(ToolkitRunField).min(1),
+  stepsLabel: z.string(),
+  steps: z.array(ToolkitRunStep).min(1),
+  resultLabel: z.string(),
+  result: z.string(),
+  layers: z.object({ pageHeader: z.string(), header: z.string(), openSession: z.string() }).optional(),
+})
+
+/**
+ * A run in progress (D11 `run · writing-reviewer` 444:526): the item that runs, by its kind, name and path, the line
+ * under it, its chips (the project, the feature; none on a tablet or phone), how long it has run and what its panel
+ * shows; a run with no `detail` opens with what its row says (no frame draws it yet). `id` keys it in `ui.run`.
+ */
+const ToolkitRun = z.object({
+  id: z.string(),
+  kind: ToolkitKind,
+  name: z.string(),
+  path: z.string(),
+  meta: z.string(),
+  chips: z.array(z.string()).optional(),
+  elapsed: z.string(),
+  detail: ToolkitRunDetail.optional(),
+})
+export type ToolkitRun = z.infer<typeof ToolkitRun>
+
+/** A series of the calls per day (D11 `chart · Headless runs` 444:586): its name and one count for each day. */
+const ToolkitDailySeries = z.object({
+  name: z.string(),
+  source: ToolkitActivitySource.exclude(['all']),
+  values: z.array(z.number().int().nonnegative()).min(1),
+})
+
+/** An item of Most called (D11 `bar · writer` 444:638): the item, by its kind, name and path, and its calls. */
+const ToolkitCalledItem = z.object({ kind: ToolkitKind, name: z.string(), path: z.string(), value: z.number() })
+
+/** A line of the log (D11 `log · 01:16:40` 444:694): when, the kind of the item, and what happened. */
+const ToolkitLogLine = z.object({ time: z.string(), kind: ToolkitKind, text: z.string() })
+
+/**
+ * What the Activity view counts for one source (All, Chats or Headless): four key figures (a caption under each on the
+ * desktop only), the runs in progress, the calls per day (one chart per series, the days under the last), the most
+ * called items, the log (the desktop only) and the source line (the desktop only). Each panel has its label and the
+ * note at its header's end; the tablet and the phone write the runs' label and note as one line (`T9` 449:262) and
+ * the hint under the runs.
+ */
+const ToolkitActivityCounts = z.object({
+  kpis: z.array(z.object({ value: z.string(), label: z.string(), caption: z.string().optional() })).length(4),
+  running: z.object({
+    label: z.string(),
+    meta: z.string(),
+    hint: z.string().optional(),
+    /** The open run's status badge, such as "Running" (D12 `badge · Running · icon` 479:14). */
+    status: z.string(),
+    /** The row's button that opens the run, such as "Open session" (D11 444:540); none on a tablet or phone. */
+    open: z.string().optional(),
+    /** The open run's button, such as "Open the session in Workbench" (D12 445:478). */
+    openSession: z.string(),
+    rows: z.array(ToolkitRun),
+  }),
+  perDay: z.object({
+    label: z.string(),
+    meta: z.string(),
+    /** The days, oldest first, each its date and its label on the axis. */
+    days: z.array(z.object({ date: z.string(), label: z.string() })).min(1),
+    series: z.array(ToolkitDailySeries).min(1),
+  }),
+  mostCalled: z.object({ label: z.string(), meta: z.string().optional(), rows: z.array(ToolkitCalledItem) }),
+  log: z.object({ label: z.string(), meta: z.string(), rows: z.array(ToolkitLogLine) }).optional(),
+  source: z.string().optional(),
+})
+export type ToolkitActivityCounts = z.infer<typeof ToolkitActivityCounts>
+
+/**
+ * The Activity view of the page (D11 `activity` 444:498): where its counts come from (the header's line), since when
+ * (the list tools' end, or the tablet's back row), the title of the tablet's page, the source switch and the counts of
+ * each source. A source with no counts is shown disabled until a frame draws it.
+ */
+export const ToolkitActivityView = z.object({
+  title: z.string(),
+  readFrom: z.string(),
+  since: z.string(),
+  sources: z.array(z.object({ value: ToolkitActivitySource, label: z.string() })).length(3),
+  counts: z.partialRecord(ToolkitActivitySource, ToolkitActivityCounts),
+})
+export type ToolkitActivityView = z.infer<typeof ToolkitActivityView>
+
 export const ToolkitData = z.object({
   /** The number of items in toolkit/, after the title. */
   count: z.number().int().nonnegative(),
@@ -729,6 +835,8 @@ export const ToolkitData = z.object({
    * name skills, and D23's list has none); a tap on one opens it from here. None when the state has none.
    */
   evalTargets: z.array(ToolkitItemView).optional(),
+  /** What the Activity view counts (D11); without it the Activity view shows the list. */
+  activity: ToolkitActivityView.optional(),
 })
 export type ToolkitData = z.infer<typeof ToolkitData>
 
@@ -789,6 +897,13 @@ export const ToolkitUi = z.object({
   discussDraft: z.string().optional(),
   /** The messages Erik sent in the discussion, after its entries. Nothing answers them in this mock-up. */
   discussSent: z.array(z.string()).optional(),
+  /** The source the Activity view counts (D11's All sessions, Chats or Headless runs); All when not set. */
+  activitySource: ToolkitActivitySource.optional(),
+  /**
+   * The id of the run open in the Activity view (D12): beside the view on the desktop, on a page of its own on a
+   * tablet or phone. None when not set.
+   */
+  run: z.string().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 
