@@ -687,3 +687,27 @@ export const RuleFiles: Story = {
     ).toBeVisible()
   },
 }
+
+export const AgentFiles: Story = {
+  name: 'D34: an agent open beside the list, on Files',
+  args: { data: toolkitStates.agentFiles.data, ui: toolkitStates.agentFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // An agent is one file, its prompt: the tree has its one row, selected, with what it is.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByRole('treeitem', { name: /writing-reviewer\.md/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('The prompt. Its model and tools are in the frontmatter.')).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'writing-reviewer.md' })
+    await expect(within(viewer).getByText('Markdown · 137 lines · the prompt')).toBeVisible()
+    // The frontmatter holds the model and the tools.
+    await expect(within(viewer).getByText('model: opus')).toBeVisible()
+    await expect(within(viewer).getByText('tools: Bash, Read, Grep, Glob')).toBeVisible()
+    await expect(
+      within(viewer).getByText(
+        'Step 7 of the writer skill starts this agent with the draft, the form and the sources.',
+      ),
+    ).toBeVisible()
+  },
+}

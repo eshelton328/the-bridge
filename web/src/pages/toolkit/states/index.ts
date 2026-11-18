@@ -39,6 +39,7 @@ import { workflowFullPagePhone } from './workflowFullPagePhone.ts'
 import { skillFiles } from './skillFiles.ts'
 import { scriptExplained } from './scriptExplained.ts'
 import { ruleFiles } from './ruleFiles.ts'
+import { agentFiles } from './agentFiles.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -79,4 +80,5 @@ export const toolkitStates = {
   skillFiles,
   scriptExplained,
   ruleFiles,
+  agentFiles,
 }

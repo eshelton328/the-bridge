@@ -212,6 +212,7 @@ what each file of a page folder is for.
   default (`fileMode` in `blocks/filesView.ts`). The other kinds fill the same
   browser with their own files: a rule (D33, `ruleFiles`, D37's list) is one
   file, a one-row tree with its role line, its first lines as code and when it
-  loads. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  loads; an agent (D34, `agentFiles`, D7's list) is one file too, its prompt,
+  with its model and tools in the frontmatter. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
