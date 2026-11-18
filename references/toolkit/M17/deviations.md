@@ -100,3 +100,9 @@ this change, so the checks below still hold.
 - **Back row.** Toolkit and its chevron are `BackRow`'s: `labelLg` and an
   18 px chevron, where Figma has label text and 16 px (gap: Item
   breadcrumb). The row passes the position check.
+- **Item tab gaps.** How it works starts about 2 px and Files and Links
+  about 4 px right of Figma's, because every library tab has a 1 px
+  border. Library #153 removes it from idle tabs; it comes with a later
+  version move (gap: Item tab width).
+- **Linked from heading.** LINKED FROM 4 sits about 3 px nearer the
+  panel's top than Figma's; the rows under it stay within 1 px.

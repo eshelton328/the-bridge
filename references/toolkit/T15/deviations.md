@@ -81,3 +81,7 @@ this change, so the checks below still hold.
   within 1 px of Figma's.
 - **Item tabs.** As on T10: the selected tab's outline is
   `border.selected` at half alpha where Figma's is solid cyan (d-050).
+- **Open item place.** writer sits about 7 px lower than Figma's, level
+  with the middle of the two columns. Figma's open item is 150 × 40 and
+  sits about 6 px above that middle; the render's is 180 × 32. The saved
+  150 × 40 work closes this after Erik's answer on the Links tests.
