@@ -64,4 +64,18 @@ describe('the Artifacts route', () => {
     await expect.element(sheet.getByRole('checkbox', { name: 'omni', exact: true })).toBeChecked()
     await view.unmount()
   })
+
+  it("gives a screen reader each tablet card's source, which only its mark shows (T1)", async () => {
+    await page.viewport(756, 1158)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/artifacts?state=libraryTablet'] }),
+    })
+    const view = await testRender(<RouterProvider router={router} />)
+    const card = page.getByText('Hono server spike', { exact: true })
+    await expect.element(card).toBeVisible()
+    const box = card.element().closest('[data-figma="artifact card · Hono server spike"]')
+    expect(box?.textContent).toContain('Codex site')
+    await view.unmount()
+  })
 })

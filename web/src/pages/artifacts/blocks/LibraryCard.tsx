@@ -8,6 +8,9 @@ import type { ArtifactCard } from '../types.ts'
 
 // The meta line takes the card's width, so the age sits at its end (402:15467).
 const metaWide = css({ flex: '1', overflow: 'hidden' })
+// The mark alone is aria-hidden, so a card that hides the source's name
+// still gives it to a screen reader.
+const srOnly = css({ srOnly: true })
 
 export type LibraryCardProps = {
   card: ArtifactCard
@@ -28,7 +31,12 @@ export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProp
           <div className={metaWide}>
             <MetaLine
               icon="md"
-              leading={<KindMark kind={card.source} size="12" />}
+              leading={
+                <>
+                  <KindMark kind={card.source} size="12" />
+                  {showSource ? null : <span className={srOnly}>{card.sourceLabel}</span>}
+                </>
+              }
               items={showSource ? [card.sourceLabel, card.project] : [card.project]}
               trailing={card.age}
             />

@@ -64,7 +64,8 @@ each file of a page folder is for.
   status on its own row under a 44 px header with the phone title size and
   a 36 px Add a link, `LibraryTools size="lg"` gives 36 px controls 8 apart
   with no space before the view switch, and `CardGroup` draws two columns
-  of cards, 12 apart, whose meta line has the source mark without its name. There
+  of cards, 12 apart, whose meta line has the source mark without its name
+  (the name stays as screen-reader text). There
   Filter opens the Filter menu as a sheet from the bottom over the tab
   bar (T3, `LibraryTools filterAs="sheet"`). In
   the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
