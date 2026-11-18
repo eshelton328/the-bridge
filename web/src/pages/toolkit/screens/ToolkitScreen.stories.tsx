@@ -1213,7 +1213,7 @@ export const SkillEvals: Story = {
     await expect(within(item).getByRole('tab', { name: 'Evals' })).toHaveAttribute('aria-selected', 'true')
     await expect(within(item).getByRole('region', { name: 'Cases · 5' })).toBeVisible()
     await expect(within(item).getByRole('figure', { name: 'Opus pass rate by round' })).toBeVisible()
-    await expect(within(item).getByRole('button', { name: 'D5 Reviewer' })).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'D5 Reviewer passed' })).toBeVisible()
     await expect(within(item).getByRole('button', { name: 'Open the ledger' })).toBeDisabled()
   },
 }

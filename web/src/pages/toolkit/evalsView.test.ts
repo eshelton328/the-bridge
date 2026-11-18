@@ -149,22 +149,26 @@ describe('openEvals', () => {
 })
 
 // Every open item a state can show with an Evals tab: the item each of its details names, resolved as a tap opens it.
-function evalsTaps(): { state: string; path: string; evals: ToolkitEvals }[] {
+function evalsTaps(): {
+  state: string
+  s: { data: ToolkitData; ui: ToolkitUi }
+  path: string
+  evals: ToolkitEvals
+}[] {
   return Object.entries(toolkitStates).flatMap(([state, s]) => {
     const data: ToolkitData = s.data
     return (data.details ?? []).flatMap((d) => {
       const evals = openItem(data, { ...s.ui, open: d.path })?.detail.results
-      return evals === undefined ? [] : [{ state, path: d.path, evals }]
+      return evals === undefined ? [] : [{ state, s, path: d.path, evals }]
     })
   })
 }
 
 describe('the targets of the Evals taps in every state', () => {
   it('gives each badge that opens another item that item’s Evals results (D3 Skill evals, then D5 Reviewer)', () => {
-    const missing = evalsTaps().flatMap(({ state, path, evals }) =>
+    const missing = evalsTaps().flatMap(({ state, s, path, evals }) =>
       (evals.status.badges ?? []).flatMap((b) => {
         if (b.open === undefined) return []
-        const s = toolkitStates[state as keyof typeof toolkitStates]
         const target = openItem(s.data, { ...s.ui, ...openEvals(b.open, path) })
         return target?.detail.results === undefined ? [`${state}: ${path} › ${b.label}`] : []
       }),
@@ -176,10 +180,9 @@ describe('the targets of the Evals taps in every state', () => {
 
 describe('the Files tab that "from the file" opens in every state', () => {
   it('gives each item whose rounds end opens its Files tab a file browser (D8 Evals, then "from the file")', () => {
-    const missing = evalsTaps().flatMap(({ state, path, evals }) => {
+    const missing = evalsTaps().flatMap(({ state, s, path, evals }) => {
       const end = evals.rounds === undefined ? null : roundsEnd(evals.rounds)
       if (end?.action !== 'tab' || end.tab !== 'files') return []
-      const s = toolkitStates[state as keyof typeof toolkitStates]
       const open = openItem(s.data, { ...s.ui, open: path, itemTab: 'files' })
       return open?.detail.browser === undefined ? [`${state}: ${path}`] : []
     })
