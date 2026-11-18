@@ -305,3 +305,16 @@ export const FilePhone: Story = {
     ).toBeVisible()
   },
 }
+
+export const MorePhone: Story = {
+  name: 'M8: the More drawer open over the library on a phone',
+  args: { data: artifactsStates.morePhone.data, ui: artifactsStates.morePhone.ui, viewport: 'phone' },
+  play: async () => {
+    // The drawer is portalled outside the story's root. It opens at any width (the story renders at the width Storybook
+    // gives it; pnpm fidelity checks M8's drawer at the phone's width).
+    const drawer = within(await within(document.body).findByRole('dialog', { name: 'More' }))
+    await expect(drawer.getByText('Every Claude artifact and Codex site')).toBeVisible()
+    await expect(drawer.getByRole('button', { name: /Artifacts/ })).toHaveAttribute('aria-current', 'page')
+    await expect(drawer.getByRole('button', { name: /Workflows/ })).toBeDisabled()
+  },
+}

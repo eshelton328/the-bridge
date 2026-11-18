@@ -18,8 +18,10 @@ each file of a page folder is for.
   tablet or phone the library with the tab bar (`AppTabBar`) laid over
   its foot (AppShell `tabBarOverlay`), so the library runs under the bar
   and its end scrolls clear of it (the phone
-  selects More, which opens Artifacts, d-105). Do not change `AppRail` or
-  `AppTabBar` from this page; a difference goes in `deviations.md`.
+  selects More, which opens Artifacts, d-105; there More opens the shared
+  `MoreDrawer` over the tab bar, Artifacts selected with its count,
+  `ui.moreOpen`, M8). Do not change `AppRail`, `AppTabBar`,
+  `MoreDrawer` or another shared block from this page; a difference goes in `deviations.md`.
   With an artifact open (`data.open`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
   `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
@@ -245,7 +247,8 @@ each file of a page folder is for.
   Writer round's preview as a chart) and M6 `addLinkPhone` (M1's data
   with D5's form in the phone's shorter words, the sheet open, Codex site
   picked) and M7 `filePhone` (M2's data with the File in a project
-  menu, the sheet open, skill-evals checked). `library` stays first in `states/index.ts`: the app
+  menu, the sheet open, skill-evals checked) and M8 `morePhone` (M1's data
+  with the More drawer open). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
@@ -260,7 +263,8 @@ each file of a page folder is for.
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu,
   whether Back closed the open artifact (T2, M2), whether the phone's ⋯
-  opened File in a project (M7) and the project picked in it, and the open discussion, its draft, the sent messages and what Erik did to
+  opened File in a project (M7) and the project picked in it, whether
+  the phone's More opened the More drawer (M8), and the open discussion, its draft, the sent messages and what Erik did to
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).

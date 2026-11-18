@@ -11,11 +11,13 @@
 // page, which shows Updated (T5); on a phone the library as a list of rows
 // (M1, LibraryPhone), and an open artifact on its own page under Back, as
 // on a tablet, with the ⋯ button for File in a project (M2), which opens
-// it as a sheet (M7). A state file's data and ui are its props; the
+// it as a sheet (M7); the phone's More opens the shared More drawer over the
+// tab bar (M8). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
+import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
@@ -100,7 +102,11 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                     selected={layout === 'tablet' ? 'artifacts' : 'more'}
                     device={layout === 'tablet' ? 'tablet' : 'phone'}
                     inboxBadge={data.railBadge}
-                    onSelect={onNavigate}
+                    onSelect={(next) => {
+                      // M8: on the phone More opens the More drawer; the tablet's tabs navigate.
+                      if (next === 'more' && layout === 'phone') onUiChange?.({ moreOpen: true })
+                      else onNavigate?.(next)
+                    }}
                   />
                 )
               }
@@ -182,6 +188,17 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 }}
               />
             )}
+            {/* M8: the shared More drawer, Artifacts selected with its count. Only the phone's More opens it; a state
+                with `moreOpen` shows it at any width, as a story at the width Storybook gives it does. */}
+            <MoreDrawer
+              open={ui.moreOpen === true}
+              onOpenChange={(moreOpen) => {
+                onUiChange?.({ moreOpen })
+              }}
+              selected="artifacts"
+              counts={{ artifacts: data.count }}
+              onNavigate={onNavigate}
+            />
           </Backdrop>
         )
       }}

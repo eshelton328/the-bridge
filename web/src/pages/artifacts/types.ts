@@ -356,6 +356,8 @@ export const ArtifactsUi = z.object({
   fileOpen: z.boolean().optional(),
   /** The project picked in File in a project, or `none` (M7); the open artifact's own project when not set. */
   fileProject: z.string().optional(),
+  /** The phone's More opened the More drawer over the tab bar (M8). */
+  moreOpen: z.boolean().optional(),
   /**
    * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
    * its own page in the artifact's place, with no tab bar (T4).
