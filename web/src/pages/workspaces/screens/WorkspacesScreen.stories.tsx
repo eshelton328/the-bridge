@@ -428,3 +428,18 @@ export const PhoneSubagents: Story = {
     await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
   },
 }
+
+export const PhoneNewChat: Story = {
+  name: 'M7: New chat on the phone',
+  args: { data: workspacesStates.phoneNewChat.data, ui: workspacesStates.phoneNewChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat dialog over it; at a phone's width the form fills the screen (M7).
+    // WorkspacesPhoneNewChat.test.tsx checks it at a phone's width.
+    // The open dialog hides the screen behind it from assistive technology, so its roles need `hidden`.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes', hidden: true })).toBeVisible()
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'New chat' }))
+    await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
+    await expectTrapFocus(dialog.getByRole('textbox', { name: 'FIRST MESSAGE' }))
+  },
+}

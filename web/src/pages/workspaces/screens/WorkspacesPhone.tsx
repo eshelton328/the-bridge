@@ -7,8 +7,9 @@
 // side chat (`ui.sideChatOpen`, PhoneSideChat), a sheet over the chat that
 // the actions' Side chat opens. M6 is the chat's subagents (`ui.phoneView:
 // 'subagents'`, PhoneSubagents), which the actions' Subagents opens and
-// whose back row returns to the chat. Later phone frames (New chat, folders)
-// add their views here. Props only; WorkspacesScreen keeps the ui
+// whose back row returns to the chat. M7 is New chat (`ui.newChatOpen`,
+// PhoneNewChat), which fills the screen with no tab bar; Cancel closes it.
+// Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
@@ -16,6 +17,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
+import { PhoneNewChat } from '../blocks/PhoneNewChat.tsx'
 import { PhoneSideChat } from '../blocks/PhoneSideChat.tsx'
 import { PhoneSubagents } from '../blocks/PhoneSubagents.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
@@ -36,6 +38,25 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
   const chat = ui.phoneView === 'chat' && focused?.type === 'chat' ? focused : undefined
+  if (ui.newChatOpen === true && data.newChat !== undefined)
+    return (
+      <Backdrop size="phone">
+        <AppShell
+          size="phone"
+          view="detail"
+          detail={
+            <PhoneNewChat
+              form={data.newChat}
+              workspaces={data.workspaces}
+              onCancel={() => {
+                onUiChange({ newChatOpen: false })
+              }}
+              layers={data.layers?.newChatForm}
+            />
+          }
+        />
+      </Backdrop>
+    )
   if (ui.phoneView === 'subagents' && focused?.type === 'chat' && data.subagents !== undefined)
     return (
       <Backdrop size="phone">

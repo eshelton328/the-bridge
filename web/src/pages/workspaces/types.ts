@@ -219,12 +219,48 @@ export const NewChatForm = z.object({
   /** The folders the chat may read; the first is the workspace's own. */
   folders: z.array(z.string()),
   addFolder: z.string(),
-  model: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The models; `short` names a model in the summary, such as "Sonnet 5.5" for "Sonnet 5.5 · high effort". */
+  model: z.object({
+    options: z.array(z.object({ value: z.string(), label: z.string(), short: z.string().optional() })),
+    value: z.string(),
+  }),
   message: z.object({ placeholder: z.string(), skills: z.string() }),
   cancel: z.string(),
   start: z.string(),
+  /**
+   * The line over Start chat on the phone (M7 147:9) that sums up the choices: `{workspace}`, `{model}` and
+   * `{folders}` (the number of folders) are filled in. Without it, there is no line.
+   */
+  summary: z.string().optional(),
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
+
+/**
+ * The Figma layers of the New chat form on the phone (M7 105:3248), for the fidelity checks: the header (105:3273)
+ * with Cancel and the title, the scrolling fields (105:3282), each field and its box, the Runs in choices by kind,
+ * the folder chips in order and Add folder, and the start bar (147:8) with its summary and Start chat.
+ */
+export const NewChatLayers = z.object({
+  header: z.string(),
+  cancel: z.string(),
+  title: z.string(),
+  fields: z.object({
+    name: z.string(),
+    runsIn: z.string(),
+    workspace: z.string(),
+    folders: z.string(),
+    model: z.string(),
+    message: z.string(),
+  }),
+  boxes: z.object({ name: z.string(), workspace: z.string(), model: z.string(), message: z.string() }),
+  runsIn: z.partialRecord(AgentKind, z.string()),
+  folders: z.array(z.string()),
+  addFolder: z.string(),
+  startBar: z.string(),
+  summary: z.string(),
+  start: z.string(),
+})
+export type NewChatLayers = z.infer<typeof NewChatLayers>
 
 /**
  * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
@@ -383,6 +419,8 @@ export const SidebarLayers = z.object({
    * workspace id and `new`: `BottomSheet` and `OptionList` take no `data-*`, so the icons carry the rows' places.
    */
   sheetIcons: z.record(z.string(), z.string()).optional(),
+  /** The New chat form on the phone (M7). */
+  newChatForm: NewChatLayers.optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
