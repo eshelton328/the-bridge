@@ -60,11 +60,11 @@ each file of a page folder is for.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
-  tablet (T1) the rows are 10 apart, 24 in: `LibraryHeader` puts the found
+  tablet (T1) the rows are 10 apart, 20 in: `LibraryHeader` puts the found
   status on its own row under a 44 px header with the phone title size and
   a 36 px Add a link, `LibraryTools size="lg"` gives 36 px controls 8 apart
   with no space before the view switch, and `CardGroup` draws two columns
-  of cards whose meta line has the source mark without its name. There
+  of cards, 12 apart, whose meta line has the source mark without its name. There
   Filter opens the Filter menu as a sheet from the bottom over the tab
   bar (T3, `LibraryTools filterAs="sheet"`). In
   the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
