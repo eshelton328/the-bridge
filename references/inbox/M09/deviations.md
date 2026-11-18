@@ -78,6 +78,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (`346:10794` y -10, h +11). Done shows the focus ring: the sheet
   focuses its first control. Library gap: Bottom sheet sections and
   data attribute.
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the sheet, the
+  library's focus tracker marks Done `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the sheet with no press, so the render
+  still shows the ring.
 - **What the buttons do.** Edit prompt closes the sheet and opens the
   prompt editor with the focus in it (M3); Copy copies the whole prompt
   (`InboxRoute.test.tsx`). A sent prompt's sheet (M10) has Copy only.

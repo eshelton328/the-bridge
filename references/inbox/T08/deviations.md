@@ -72,6 +72,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   5 px higher, since the sheet is anchored to the bottom (y -5).
 - **Focus.** Ark focuses the first control when the sheet opens, Done,
   so Done shows a focus ring; Figma shows none (as D08).
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the sheet, the
+  library's focus tracker marks Done `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the sheet with no press, so the render
+  still shows the ring.
 - **Tab bar.** The tabs are one centred group, 456 px wide from x 150
   (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
   place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app

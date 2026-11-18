@@ -59,6 +59,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Focus.** Ark focuses the first control when the dialog opens, which
   is now Done in the title row, so Done shows a focus ring; Figma shows
   none.
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the dialog, the
+  library's focus tracker marks Done `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the dialog with no press, so the
+  render still shows the ring.
 - **Beta.5 (2026-11-17).** The new library parts move these layers:
   `section · MY NOTES` x +4, y +14, h +12 (was x +4, y +23, h +12);
   `section · RUN IN` x +4, y +10, h +1 (was x +4, y +15, h +5);

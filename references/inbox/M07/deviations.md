@@ -78,6 +78,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   sheet starts higher (`filter popover` y -50). Clear shows the
   focus ring: the sheet focuses its first control. Library gaps: Styles
   that differ from Figma, Bottom sheet sections and data attribute.
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the sheet, the
+  library's focus tracker marks Clear `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the sheet with no press, so the render
+  still shows the ring.
 - **Below the fold.** The checks render 806 px high (d-102). The list
   fits its viewport, as Figma's does (`main.app-shell__detail` does not
   scroll), so the rules check passes. The Snoozed header sits just above

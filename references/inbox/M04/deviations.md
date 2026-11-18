@@ -95,6 +95,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   token is that close, so the note has none. Library gap: Picker note
   panel on the phone.
   Library gap: Bottom sheet sections and data attribute.
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the sheet, the
+  library's focus tracker marks Done `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the sheet with no press, so the render
+  still shows the ring.
 - **Button labels.** Reset and Edit are `Button textSize="xs"`
   (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100). Change,
   Snooze and Dismiss are icons, and the pinned Start is `size="xl"` with
