@@ -4,7 +4,8 @@
 // to (D5), and a chat dragged from the sidebar over a pane shows the drop
 // zone over the part of the pane where it would open (D8). With `data.split`
 // `rows` the split is rows first (D14), and a dragged handle shows its
-// readout over the pane before it. Props only; `ui` says which pane is focused and which menu,
+// readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
+// Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -145,5 +146,11 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
         }
       />
     )
-  return <SplitPanes panes={shown} />
+  return (
+    <SplitPanes
+      panes={shown}
+      sizes={ui.splitSizes}
+      onSizeChange={(part, next) => onUiChange?.({ splitSizes: { ...ui.splitSizes, [part]: next } })}
+    />
+  )
 }
