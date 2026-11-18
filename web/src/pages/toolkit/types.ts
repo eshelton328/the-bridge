@@ -340,6 +340,47 @@ const ToolkitFileBrowser = z.object({
 })
 export type ToolkitFileBrowser = z.infer<typeof ToolkitFileBrowser>
 
+/**
+ * One link of the Links tab (D19 `link · writing · rules/writing.md:77` 482:547): the item at the other end (its path,
+ * name and kind), where the link is written (`at`, the file and its line, such as "rules/writing.md:77") and the line
+ * itself, cut as Figma cuts it.
+ */
+const ToolkitLink = z.object({
+  path: z.string(),
+  name: z.string(),
+  kind: ToolkitKind,
+  at: z.string(),
+  text: z.string(),
+})
+
+/**
+ * One side of the Links tab (D19 `panel · linked from` 482:542): its label ("Linked from", shown in capitals with the
+ * count after it), the caption at the header's end ("files that name writer"), the links in the file's order, and the
+ * order of the items in the graph's column (`graph`, their paths). With no links, `empty` says why, in the graph's
+ * column (`graph`, D29 493:895) and in the panel (`panel`, D29 493:901).
+ */
+const ToolkitLinkSide = z.object({
+  label: z.string(),
+  caption: z.string(),
+  links: z.array(ToolkitLink),
+  graph: z.array(z.string()),
+  empty: z.object({ graph: z.string(), panel: z.string() }).optional(),
+})
+
+/**
+ * The Links tab (D19 `links` 482:539): a line on what it shows, the header's label ("Links", with the count of the
+ * links) and hint, the items that link to this one and the items it links to, and the note under them.
+ */
+const ToolkitLinks = z.object({
+  intro: z.string(),
+  label: z.string(),
+  hint: z.string(),
+  from: ToolkitLinkSide,
+  to: ToolkitLinkSide,
+  note: z.string(),
+})
+export type ToolkitLinks = z.infer<typeof ToolkitLinks>
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -399,6 +440,8 @@ export const ToolkitItemDetailView = z.object({
   flowPage: ToolkitFlowPage.optional(),
   /** The Files tab (D6): the item's tree and its file viewer. None when the item has no such tab yet; its panel is then empty. */
   browser: ToolkitFileBrowser.optional(),
+  /** The Links tab (D19): what links to the item and what it links to. None when the item has no such tab yet. */
+  links: ToolkitLinks.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the

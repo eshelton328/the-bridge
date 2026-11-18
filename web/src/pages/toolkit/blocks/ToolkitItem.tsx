@@ -53,6 +53,8 @@ import { ToolkitItemBack } from './ToolkitItemBack.tsx'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
 import { ToolkitItemPath } from './ToolkitItemPath.tsx'
+import { ToolkitLinks } from './ToolkitLinks.tsx'
+import { linkFile } from './linksView.ts'
 
 // D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
 // the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
@@ -243,6 +245,10 @@ const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, stri
   tablet: {},
   phone: {},
 }
+// On the Links tab: writer in D19 (482:367).
+const linksTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '482:367',
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -291,6 +297,8 @@ export type ToolkitItemProps = {
   onCloseFilePage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
+  /** Opens a file of a toolkit item on its Files tab: the item's path and the file's path in it (D19's link lines). */
+  onOpenFile?: ((item: string, file: string) => void) | undefined
   /**
    * A workflow on a page of its own (D13): the kind's crumb after Toolkit (Workflows, back to that kind's list), the
    * selected step and the way to select one. Beside the list when not set.
@@ -315,6 +323,7 @@ export function ToolkitItem({
   onDiscuss,
   onOpenFullPage,
   onOpenItem,
+  onOpenFile,
   fullPage,
   file,
   onFileChange,
@@ -394,7 +403,9 @@ export function ToolkitItem({
               ? howTitleLayersOf[layout][item.path]
               : tab === 'files'
                 ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
-                : titleLayersOf[layout][item.path]
+                : tab === 'links' && desktop
+                  ? linksTitleLayers[item.path]
+                  : titleLayersOf[layout][item.path]
       }
     >
       {pageFile?.name ?? item.name}
@@ -519,6 +530,16 @@ export function ToolkitItem({
                 selected={fullPage.selectedStep}
                 onSelectStep={fullPage.onSelectStep}
                 layout={layout}
+              />
+            ) : t.value === 'links' && detail.links !== undefined ? (
+              <ToolkitLinks
+                links={detail.links}
+                item={item}
+                onOpenItem={onOpenItem}
+                onOpenLine={(side, l) => {
+                  const target = linkFile(side, l, item.path)
+                  onOpenFile?.(target.item, target.file)
+                }}
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />

@@ -976,3 +976,18 @@ export const HookFilesPhone: Story = {
     await expect(within(tree).getByText('97 lines · script')).toBeVisible()
   },
 }
+
+export const SkillLinks: Story = {
+  name: 'D19: a skill open beside the list, on Links',
+  args: { data: toolkitStates.skillLinks.data, ui: toolkitStates.skillLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 11' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 4' })
+    await expect(within(from).getByRole('button', { name: 'agents/writing-reviewer.md:30' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 7' })
+    await expect(within(to).getByText('then the audit-slop skill’s deslop steps (step 8)')).toBeInTheDocument()
+    await expect(within(item).getByRole('group', { name: 'writer links' })).toBeVisible()
+  },
+}

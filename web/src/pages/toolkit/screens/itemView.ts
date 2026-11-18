@@ -60,6 +60,15 @@ export function openFrom(path: string, from: string | null = null): Partial<Tool
   return { open: path, from }
 }
 
+/**
+ * The ui change that opens a file of an item on its Files tab (D19, a tap on a link's file and line): another item
+ * opens from the open item (`openFrom`); the open item stays as it was opened. The file opens in its own default view.
+ */
+export function openFile(path: string, file: string, from: string): Partial<ToolkitUi> {
+  const files = { itemTab: 'files', file, fileView: undefined, filePage: undefined }
+  return path === from ? files : { ...openFrom(path, from), ...files }
+}
+
 /** The ui change of a crumb in the back row: Toolkit (`null`) shows the list, an item's crumb opens that item. */
 export function backTo(path: string | null): Partial<ToolkitUi> {
   return { open: path, from: null }

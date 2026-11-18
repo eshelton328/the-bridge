@@ -55,6 +55,7 @@ import { ruleFilesPhone } from './ruleFilesPhone.ts'
 import { agentFilesPhone } from './agentFilesPhone.ts'
 import { workflowFilesPhone } from './workflowFilesPhone.ts'
 import { hookFilesPhone } from './hookFilesPhone.ts'
+import { skillLinks } from './skillLinks.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -111,4 +112,5 @@ export const toolkitStates = {
   agentFilesPhone,
   workflowFilesPhone,
   hookFilesPhone,
+  skillLinks,
 }

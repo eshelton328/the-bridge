@@ -270,7 +270,19 @@ what each file of a page folder is for.
   `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
   same under Back to Toolkit, and a workflow (M37, `workflowFilesPhone`,
   T34's files) shows its doc and the harness/ folder open; a hook (M38,
-  `hookFilesPhone`, T35's files) its script and its tests. Only the
+  `hookFilesPhone`, T35's files) its script and its tests. The Links tab
+  (D19, `skillLinks`, D3's data with `ui.itemTab` `links`) draws a detail's
+  `links` (`ToolkitLinks`): a line on what it shows, the count of links and
+  the hint, the graph (`ToolkitLinksGraph`: the library's `MapGraph` with
+  the item selected in the middle, the items that name it on the left and
+  the items it names on the right, each column in the side's `graph`
+  order, placed by `linksGraph` in `blocks/linksView.ts`, tested in
+  `linksView.test.ts`), the two panels side by side (`ToolkitLinksPanel`:
+  each link's item as a `MapNode`, its file and line, and the line's text)
+  and the note. A tap on an item opens it from the open item (`openFrom`);
+  a tap on a file and line opens that file on its item's Files tab
+  (`linkFile`, and `openFile` in `screens/itemView.ts`;
+  `src/app/ToolkitLinks.test.tsx`). Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
