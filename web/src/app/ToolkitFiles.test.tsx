@@ -350,6 +350,13 @@ tabletKinds.push({
   rows: 1,
   kind: 'Agent',
 })
+tabletKinds.push({
+  state: 'workflowFilesTablet',
+  item: 'skill-eval-round',
+  file: 'skill-eval-round.md',
+  rows: 8,
+  kind: 'Workflow',
+})
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (T32 to T35)', () => {
   it.each(tabletKinds)('keeps $state’s header and puts $file under its $rows tree rows', async (kind) => {
