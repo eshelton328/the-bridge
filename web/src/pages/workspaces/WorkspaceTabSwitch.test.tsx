@@ -17,6 +17,8 @@ const tab = (label: string) => page.getByRole('tab', { name: new RegExp(`^${labe
 const pane = (title: string) => page.getByRole('button', { name: `Maximise ${title}` })
 const columns = () => page.getByRole('separator', { name: 'Resize columns' })
 const composer = (title: string) => page.getByRole('region', { name: title }).getByRole('textbox')
+const hideSidebar = () => page.getByRole('button', { name: 'Hide the workspace sidebar' })
+const showSidebar = () => page.getByRole('button', { name: 'Show the workspace sidebar' })
 
 let view: { unmount: () => Promise<void> } | undefined
 
@@ -91,5 +93,16 @@ describe('switching workspaces from their tabs', () => {
     await userEvent.click(tab('omni-brain'))
     await expect.element(pane('drift check')).toBeVisible()
     await expect.element(composer('drift check')).toHaveValue('keep this draft')
+  })
+
+  it('shows the sidebar again after Erik hides it in D2 and selects the-bridge', async () => {
+    const { data, ui } = workspacesStates.sideChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
+    await userEvent.click(hideSidebar())
+    await userEvent.click(tab('the-bridge'))
+    await expect.element(pane('hono server')).toBeVisible()
+    await userEvent.click(showSidebar())
+    await expect.element(hideSidebar()).toBeVisible()
+    await expect.element(showSidebar()).not.toBeInTheDocument()
   })
 })

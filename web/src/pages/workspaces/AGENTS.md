@@ -591,7 +591,10 @@ first: it says what each file of a page folder is for.
   workspace. A workspace with no layout shows the state's panes when it
   is `data.current`, and its last chat (`data.lastChats`, mock chats in
   `states/workbench.ts`) alone in one pane when it is another; the status
-  bar counts its panes. A switch unmounts the panes of the workspace
+  bar counts its panes. `WorkspacesScreen` reads the shown workspace's
+  panes (`shownView`) for the chat alone beside the sidebar, the chats
+  the sidebar can open and the chat actions' targets, so the sidebar
+  shows again on another tab. A switch unmounts the panes of the workspace
   left, and their drafts stay in `ui.drafts`. The page store keeps the
   layouts across page visits. The phone and the tablet's list views have no workspace tabs,
   so this does not apply there; a tablet that draws the desktop layout
