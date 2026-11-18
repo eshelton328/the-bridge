@@ -78,6 +78,12 @@ each file of a page folder is for.
   without one, a `ListGroup` per group. During a search the header's count
   says how many show, such as "3 of 24". With `data.addLinkForm` (D5)
   Add a link opens `AddLinkDialog`.
+  `screens/LibraryPhone.tsx`: the library on a phone (M1): `LibraryHeader
+  layout="phone"` (a 36 px plus button for Add a link), the chips,
+  `LibraryTools iconOnly` (icon-only Sort and Filter, no view switch),
+  `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
+  group, whose `ArtifactRow`s put the age on the title line and New as a
+  badge under it; the rows are 6 apart.
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -182,7 +188,8 @@ each file of a page folder is for.
   discussion with T4's Back label and node id, so T2's Discuss opens it)
   and T5 `changeProposedTablet` (T4's data with D8's discussion and open
   artifact, so its Apply shows T2 Updated; T5's node id of Open in
-  workspace). `library` stays first in `states/index.ts`: the app
+  workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
+  artifacts", and only Earlier's five rows in the frame). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
