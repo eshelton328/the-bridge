@@ -38,7 +38,8 @@ const text = css({ textStyle: 'small', color: 'fg.muted', mt: '2' })
 const icons = { check: <CheckIcon size="12" />, cross: <CloseCircleIcon size="12" /> }
 
 // D28 492:2185: a pass or fail mark in the line, Figma's ✓ and ✗, as the library's check and cross at the text's 12
-// px, in the line's colour; the icon's title is its accessible text.
+// px, in the line's colour; the icon's title is its accessible text. The marks are characters of Figma's text layer,
+// not layers of their own, so they have no `data-figma`.
 const mark = css({ display: 'inline-flex', verticalAlign: 'middle', color: 'fg.muted' })
 const marks = {
   pass: <CheckIcon size="12" title="pass" />,
@@ -58,7 +59,7 @@ function MarkedText({ text }: { text: ToolkitEvals['status']['text'] }) {
     typeof run === 'string' ? (
       <Fragment key={start}>{run}</Fragment>
     ) : (
-      <span key={start} className={mark} data-figma={`mark · ${run.mark}`}>
+      <span key={start} className={mark}>
         {marks[run.mark]}
       </span>
     ),
