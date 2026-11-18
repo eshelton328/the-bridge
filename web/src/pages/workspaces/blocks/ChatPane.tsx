@@ -58,7 +58,14 @@ const gaps = {
 // library's ScrollFrame lets its footer shrink (and scroll) so a long draft leaves the transcript room; the inline
 // composer caps its own draft, so here the footer keeps its height (`footerShrink={false}`, library beta.27) and the
 // panel scrolls instead (SideChatPanel).
-const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: true, inset: false } satisfies Record<keyof typeof sizes, boolean>
+const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: true, inset: false } satisfies Record<
+  keyof typeof sizes,
+  boolean
+>
+// The chat on the phone ends at the screen's safe area. `ScrollFrame`'s footer pads 4 round the composer for a focus
+// ring and reaches 4 below the frame to make up for it, which would scroll the screen by 4; the composer draws its
+// focus as its border, so the footer pads nothing under it and ends with the frame (M3).
+const phoneFrame = css({ '& > .scroll-frame__footer': { pb: '0', mb: '0' } })
 const footer = css({ display: 'flex', flexDirection: 'column' })
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
@@ -187,6 +194,7 @@ export function ChatPane(props: ChatPaneProps) {
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
+        className={size === 'phone' ? phoneFrame : undefined}
         footerShrink={footerShrinks[size]}
         bodyClassName={gaps[size].body}
         footer={
