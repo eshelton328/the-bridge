@@ -101,3 +101,22 @@ delta and rule finding).
   grid end at different heights (Codex about 17 px below Claude, Tools
   about 16 px below Context), where Figma's are all 108 px high. A
   `Panel` is only as tall as its content (gap: Agent fact card).
+
+## Text under the tab bar
+
+bridge-coord decided (2026-11-17) that this frame gets no
+`exceptions.json` for hidden text. Measured cause of each such failure:
+
+- Figma draws the tab bar (`tab bar`, y 767) after these text layers, so
+  `coveredInFigma` counts them as covered. The render does not draw
+  them under the tab bar: the item's scroll body ends at the tab bar's
+  top edge and clips them (`hiddenOverflow` on
+  `main.app-shell__detail`). The text check accepts a covered Figma
+  string only when the render covers it too, so it reports them as not
+  visible. The reference is correct; the difference is the app frame,
+  which ends the scroll body above the tab bar where Figma runs the
+  content under it. A change there is a shared-frame change
+  (bridge-coord). The text check stays failing.
+- The prompt's paragraph and Inputs also start lower than Figma's,
+  because `MarkdownView` pads 20 by 24 where Figma has 14 by 16 (gap:
+  File preview).

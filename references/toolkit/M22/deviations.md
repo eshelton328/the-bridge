@@ -114,3 +114,22 @@ D08, D09, T03, M02, T17, M19 and T19 give the same results as before M22.
 - **Cross glyph.** The Test card's "✗" looks like an upright "×", where
   Figma's is slanted. The text is the same character (U+2717) in both;
   only the font's glyph differs, as on T19.
+
+## Text under the tab bar
+
+bridge-coord decided (2026-11-17) that this frame gets no
+`exceptions.json` for hidden text. Measured cause of each such failure:
+
+- Figma draws the tab bar (`tab bar`, y 767) after these text layers, so
+  `coveredInFigma` counts them as covered. The render does not draw
+  them under the tab bar: the item's scroll body ends at the tab bar's
+  top edge and clips them (`hiddenOverflow` on
+  `main.app-shell__detail`). The text check accepts a covered Figma
+  string only when the render covers it too, so it reports them as not
+  visible. The reference is correct; the difference is the app frame,
+  which ends the scroll body above the tab bar where Figma runs the
+  content under it. A change there is a shared-frame change
+  (bridge-coord). The text check stays failing.
+- The three comment lines above the tab bar fail because `CodeLines`
+  keeps each line on one line and cuts it at the box's edge, where
+  Figma wraps it (gap: Code line wrap).
