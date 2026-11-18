@@ -33,8 +33,8 @@ each file of a page folder is for.
   (T4), as the Inbox's (Inbox T17): the shared `DetailFrame` with the nav
   (Back, `ModelContext` in the middle and Open in workspace) and
   `DiscussedArtifactCard` in its header, the empty state or the entries
-  under them, and the reply box as its sticky footer, capped as the
-  desktop panel's (`blocks/discussionReply.ts`), so the nav and the card
+  under them, and the reply box as its sticky footer, whose long draft
+  the Composer caps at 30% of the page, so the nav and the card
   stay at the top and the reply box at the bottom while only the messages
   scroll (d-107). Back and the card return to the artifact (T2). With
   entries (T5) the page shows D8's question, reply and proposal; there
@@ -47,8 +47,8 @@ each file of a page folder is for.
   as the Inbox's task and discussion (D14); Discuss toggles it. The
   artifact's column (the shared block `DetailFrame`) and the discussion
   (the library `ScrollFrame`) each scroll on their own: the discussion's
-  header stays at the top and its reply box, at most half the window high,
-  at the bottom, while only the messages between them scroll (d-107).
+  header stays at the top and its reply box, whose long draft the Composer
+  caps at 30% of the panel, at the bottom, while only the messages between them scroll (d-107).
   `app/ArtifactsStickyBars.test.tsx` scrolls D7 to D9 and checks both
   bars stay in view, and that a long draft keeps Send in reach; it also
   scrolls T2's page and checks the Back bar and the tab bar stay put,
@@ -134,8 +134,7 @@ each file of a page folder is for.
   `ui.discussDraft`), `DiscussionHeader` (the title with Open in
   workspace and Close, `ModelContext` and `DiscussionGuard`),
   `ModelContext` (`ModelChip`, `ContextMeter` and "context"),
-  `DiscussionGuard` (the lock and what the discussion may do),
-  `discussionReply.ts` (the reply box's cap, which T4's page shares) and
+  `DiscussionGuard` (the lock and what the discussion may do) and
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the
   Inbox's discussion blocks, which the Inbox page does not export.
