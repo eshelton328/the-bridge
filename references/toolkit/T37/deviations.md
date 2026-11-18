@@ -80,3 +80,10 @@ is 2 px taller (h -436 against -438).
   Figma groups them in the centre. The tab bar is the shared `AppTabBar`
   (d-105), as on T07, T10 and T36; its box passes the position check, and
   a change to it needs the app-frame lock.
+
+## Second review
+
+- **Title width.** The title writing-reviewer is about 16 px wider than
+  Figma's (220 against 206 at the same place). Figma's title layer has
+  the same size on T07's Overview; the difference is the library
+  heading text style's glyphs, as on T07, T18 and T19.
