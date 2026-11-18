@@ -63,14 +63,12 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T35.
 ## Second review
 
 The blind review of the side-by-side (2026-11-18) found two differences.
+The second, the item tabs' gaps and Activity's end, closed with library
+#153 (beta.42): each tab is within 1.1 px of Figma's width, and Activity
+ends at 462.3 against 463.
 
 - **Selected file.** test-commit-msg is drawn with a cyan name and icon on a
   tinted fill, where Figma draws the selected file in the default text
   colour with no fill (`tree · test-commit-msg` 494:4385). `FileTree` (through `TreeView`)
   styles the selected row itself and has no prop for it. Gap: File tree
   rows.
-- **Item tabs.** `ItemTabs density="compact" tone="accent"`, as on T07,
-  T10 and the other tablet frames, draws each label a little wider than
-  Figma's, so each gap looks 1 to 2 px wider and Activity ends about 6 to
-  9 px further right, as T10 records (Activity about 8 px right). The
-  library's compact tabs set it.

@@ -92,11 +92,16 @@ it, layer by layer. The frame has no `exceptions.json`.
   Overview past the left edge (M15 480:214 at x -71). The library's
   `ItemTabs` does not scroll its selected tab into view, so the page
   sets the list's scroll when the tab's middle is outside it
-  (`useTabInView`); Activity then ends at the list's end, where Figma's
-  ends 8 px inside it, since each tab is 1.3 to 1.8 px wider (gap: Item
-  tab width). The list's sideways scroll is the `hiddenOverflow` finding
-  `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) >
-  div.item-tabs__list:nth-of-type(1)`, as on M18 and M27.
+  (`useTabInView`). Since library #153 (beta.42) each tab is within
+  1.1 px of Figma's width, but the list cannot scroll past its last tab,
+  where Figma's Activity (480:224, 297 to 370) ends 8 px inside the
+  list's end (378): the render's list scrolls to its maximum, 72 px,
+  against Figma's 83 (`useTabInView` scrolls again once the fonts have
+  loaded), so each tab is 9.3 to 11 px right of Figma's and Activity is
+  306.3 to 378.3, its outline whole (gap: Item tab width). The list's
+  sideways scroll is the `hiddenOverflow` finding
+  `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`,
+  as on M18 and M27.
 - **Under the tab bar.** Figma draws the tab past the tab bar at y 767;
   the tab bar lies over the page (AppShell `tabBarOverlay`), so the
   tab's foot lies under the bar in the render too, and the item's

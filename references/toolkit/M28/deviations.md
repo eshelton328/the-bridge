@@ -39,14 +39,12 @@ no `exceptions.json`.
   ScrollFrame body scrolls: the `hiddenOverflow` finding
   `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`,
   as on M17 and M20.
-- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
-  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
-  Figma draws a border only on the selected tab. So Evals is 327.5 to
-  384.3 against Figma's 321 to 378, and the list, which ends at 378,
-  cuts 6 px of its outline at the right. The list does not scroll the
-  selected tab into view (gap: Item tab width). Activity runs past the
-  screen, as in Figma; the list's sideways scroll is the
-  `hiddenOverflow` finding
+- **Item tabs.** Since library #153 (beta.42) only the selected tab has
+  a border, so each tab is within 1.1 px of Figma's width and within
+  1.7 px of its x: Evals is 319.5 to 376.4 against Figma's 321 to 378,
+  inside the list's end (378), so its outline is whole, and the list
+  stays unscrolled, as Figma's. Activity runs past the screen, as in
+  Figma; the list's sideways scroll is the `hiddenOverflow` finding
   `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
   The outline stays `border.selected` at half alpha (d-050).
 - **Line heights.** The tab's headers, its small and mono lines and its

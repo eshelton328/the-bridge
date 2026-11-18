@@ -73,4 +73,51 @@ describe('useTabInView', () => {
     view = undefined
     expect(disconnect).toHaveBeenCalled()
   })
+
+  // M15: the list first scrolls while the web fonts load, with narrower labels, so Activity ended 1 px past the
+  // list's end with its middle inside it; the hook scrolls again once `document.fonts.ready` resolves, measured from
+  // the unscrolled list. Here the tabs widen from 100 to 105 before the fonts resolve, with no change to the list's
+  // size: Activity's middle stays inside the list and its end 25 px past it.
+  it('scrolls the selected tab into view again when the fonts have loaded', async () => {
+    let fontsLoaded: (fonts: FontFaceSet) => void = () => undefined
+    const ready = new Promise<FontFaceSet>((resolve) => {
+      fontsLoaded = resolve
+    })
+    vi.spyOn(document.fonts, 'ready', 'get').mockReturnValue(ready)
+    const { rendered, el } = await renderTabs('activity')
+    view = rendered
+    el.style.width = '150px'
+    await expect.poll(() => el.scrollLeft).toBe(350)
+    for (const t of el.querySelectorAll('[role="tab"]')) {
+      if (t instanceof HTMLElement) t.style.flex = '0 0 105px'
+    }
+    expect(selectedMiddleInside(el)).toBe(true)
+    fontsLoaded(document.fonts)
+    await expect.poll(() => el.scrollLeft).toBe(375)
+    expect(selectedMiddleInside(el)).toBe(true)
+  })
+
+  // At 250% canvas zoom the frame is scaled by a CSS transform: getBoundingClientRect() gives scaled px and
+  // scrollLeft layout px. The list narrows to 150 and scrolls Activity in (scrollLeft 350), then widens to 400 with
+  // Activity still selected; the browser keeps the scroll at its new end, 100. In layout px Activity runs 400 to 500
+  // of the unscrolled list, its middle past the list's end, so the list stays at 100. Mixing the two units put the
+  // middle inside the scaled list (975 of its 1000) and reset the scroll to 0, with Activity out of view.
+  it('keeps the selected tab in view when a scaled tab list widens', async () => {
+    const { rendered, el } = await renderTabs('activity')
+    view = rendered
+    const frame = el.parentElement
+    if (frame === null) throw new Error('no frame around the tab list')
+    Object.assign(frame.style, { transform: 'scale(2.5)', transformOrigin: '0 0' })
+    el.style.width = '150px'
+    await expect.poll(() => el.scrollLeft).toBe(350)
+    el.style.width = '400px'
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    await expect.poll(() => el.scrollLeft).toBe(100)
+    const selected = el.querySelector('[role="tab"][aria-selected="true"]')
+    if (!(selected instanceof HTMLElement)) throw new Error('no selected tab')
+    const middle = selected.offsetLeft - el.offsetLeft + selected.offsetWidth / 2 - el.scrollLeft
+    expect(el.scrollLeft).not.toBe(0)
+    expect(middle).toBeGreaterThanOrEqual(0)
+    expect(middle).toBeLessThanOrEqual(el.clientWidth)
+  })
 })

@@ -67,10 +67,12 @@ props (2026-11-17).
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's. The outline stays
   `border.selected` at half alpha where Figma's is solid cyan (no solid
-  selected token, d-050), and Activity starts about 10 px further right,
-  as each label renders a little wider. The item adds 4 above the panel,
-  so the description stays in place. As on D3, the How it works, Files,
-  Links, Evals and Activity panels are later frames.
+  selected token, d-050), and since library #153 (beta.42) each tab is
+  within 1.1 px of Figma's width: the tabs start at 24 against 22 (the
+  Container's 24 px side), and Activity ends at 462.3 against 463. The
+  item adds 4 above the panel, so the description stays in place. As on
+  D3, the How it works, Files, Links, Evals and Activity panels are
+  later frames.
 - **Copy button and preview bar.** As on D3: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
   box and bar are drawn with the Panel's tokens (gap: File preview).

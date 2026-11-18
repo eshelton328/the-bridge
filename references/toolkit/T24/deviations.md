@@ -41,9 +41,8 @@ Evals tab. The frame has no `exceptions.json`.
   library has no round row and no text link at this size, so the rows
   are styled with tokens (gap: Evals panels). The count 4 ledgers is
   accent text with no tap.
-- **Item tabs.** Each unselected tab is 1.3 to 1.8 px wider than
-  Figma's: `ItemTabs` gives every tab a 1 px transparent border, where
-  Figma draws a border only on the selected tab. So Activity ends at
-  472.3 against Figma's 463, 2 px of it the Container's 24 px side
-  (gap: Item tab width). The selected tab's outline is `border.selected` at half
-  alpha where Figma's is solid cyan (d-050).
+- **Item tabs.** Since library #153 (beta.42) only the selected tab has
+  a border, so each tab is within 1.1 px of Figma's width and Activity
+  ends at 462.3 against Figma's 463; the tabs start at 24 against 22,
+  the Container's 24 px side. The selected tab's outline is
+  `border.selected` at half alpha where Figma's is solid cyan (d-050).

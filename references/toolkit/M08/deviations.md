@@ -50,9 +50,6 @@ page restyle.
   nearer the summary, so the card is about 7 px shorter. This is the
   library's own spacing inside `ScriptExplanation`, which the page must
   not restyle. Gap: Script explanation.
-- **Item tab spacing.** Each item tab starts about 1 px further right
-  than the one before it, so Evals starts about 5 px right of Figma's.
-  `ItemTabs` sets the gap; this branch does not change it.
 - **Status bar and corners (not real).** Figma's 9:41 status bar and the
   rounded device corners are design-only chrome (d-089); the app draws
   neither.

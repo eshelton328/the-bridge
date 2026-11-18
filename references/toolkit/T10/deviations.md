@@ -65,12 +65,14 @@ from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   further in, so it starts 7 px further left (`button · Discuss` x -7.1,
   h -2). Toolkit and its chevron are `BackRow`'s: `labelLg` and an 18 px
   chevron, where Figma has label text and 16 px (gap: Item breadcrumb).
-- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library #126,
-  beta.21) starts the tabs at the list's edge with 10 px sides and draws
-  How it works' label cyan, as Figma's. The outline stays
+- **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
+  #126, beta.21) starts the tabs at the list's edge with 10 px sides and
+  draws How it works' label cyan, as Figma's. The outline stays
   `border.selected` at half alpha where Figma's is solid cyan (no solid
-  selected token, d-050), and Activity starts about 8 px further right, as
-  each label renders a little wider. The compact list is 4 px shorter and
-  the item adds 4 above the panel, so the panel starts where it did; the
-  column starts 4 higher than the panel puts it (16 under the tabs against
-  Figma's 12), so the trigger is in place.
+  selected token, d-050), and since library #153 (beta.42) each tab is
+  within 1.1 px of Figma's width: the tabs start at 24 against 22 (the
+  Container's 24 px side), and Activity ends at 462.3 against 463. The
+  compact list is 4 px shorter and the item adds 4 above the panel, so
+  the panel starts where it did; the column starts 4 higher than the
+  panel puts it (16 under the tabs against Figma's 12), so the trigger
+  is in place.
