@@ -59,8 +59,15 @@ each file of a page folder is for.
   under Open artifact in place of the link; and `MadeIn` draws the chat
   with no box and Open in workspace as a link (`madeIn.action`); the
   sections are 16 apart. Back sets `ui.artifactClosed` and M1 shows.
-  Discuss sets `ui.discussOpen`; the phone's discussion page comes with
-  M9, so until then the artifact's page stays.
+  Discuss sets `ui.discussOpen`, and the discussion opens as its own page
+  with no tab bar, as on a tablet (M9, `ArtifactDiscussionPage
+  layout="phone"`, as the Inbox's M18): 12 in, the nav with only Back and
+  Open in workspace, `ModelContext` in the card under its meta line
+  (`DiscussedArtifactCard model`), the card's source in full
+  (`discussion.sourceLabel`), and `DiscussionEmpty place="phone"`, whose
+  text is 320 wide and whose suggestions stack under "Try"
+  (`empty.tryLabel`); the reply box pads 4 above the AppShell's home
+  indicator area. Back and the card return to M2.
   With its discussion open (`ui.discussOpen`, D7) the list closes, the
   artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
   as the Inbox's task and discussion (D14); Discuss toggles it. The
@@ -77,7 +84,9 @@ each file of a page folder is for.
   it scrolls T5's page the same way and checks that Apply returns to T2,
   Updated, and that Discuss then shows the applied proposal; and it
   scrolls M2's page and checks the Back bar and the tab bar stay put, and
-  that Back shows M1's library.
+  that Back shows M1's library; and it scrolls M9's page and checks the
+  nav, the card and the reply box stay put, that a long draft keeps Send
+  in reach, and that M2's Discuss opens M9 and its Back returns to M2.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
   source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
   and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
@@ -248,7 +257,9 @@ each file of a page folder is for.
   with D5's form in the phone's shorter words, the sheet open, Codex site
   picked) and M7 `filePhone` (M2's data with the File in a project
   menu, the sheet open, skill-evals checked) and M8 `morePhone` (M1's data
-  with the More drawer open). `library` stays first in `states/index.ts`: the app
+  with the More drawer open) and M9 `discussPhone` (M2's data with its
+  discussion open; `artifactPhone` holds D7's discussion with M9's Back
+  label, the card's source, "Try" and node id, so M2's Discuss opens it). `library` stays first in `states/index.ts`: the app
   shows the first state without `?state=`. `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips

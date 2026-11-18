@@ -283,16 +283,26 @@ const ArtifactDiscussion = z.object({
     canLabel: z.string(),
     can: z.array(z.object({ icon: z.enum(['edit', 'plus', 'trash']), text: z.string() })),
     suggestions: z.array(z.string()),
+    /** The label over the suggestions where they stack one under the other, such as "Try" (the phone's page, M9). */
+    tryLabel: z.string().optional(),
   }),
   placeholder: z.string(),
   /** What was said and proposed so far (D8); with none the discussion shows `empty`. */
   entries: z.array(ArtifactDiscussionEntry),
-  /** The label of Back on the tablet's discussion page (T4), such as "Artifact": it returns to the artifact. */
+  /**
+   * The label of Back on the tablet's and the phone's discussion page (T4, M9), such as "Artifact": it returns to
+   * the artifact.
+   */
   back: z.string().optional(),
   /**
+   * The source in the artifact's card on the discussion page, where the open artifact's own is shorter: the phone's
+   * chip says "Claude" (M2) and its discussion's card "Claude artifact" (M9). The open artifact's without it.
+   */
+  sourceLabel: z.string().optional(),
+  /**
    * The Figma node ids of the two layers named "button · Open in workspace" in the frame that shows the discussion:
-   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's
-   * discussion page (T4 452:3837) has no "Made in", so `madeIn` is left out there.
+   * the header's and the one in "Made in" (D7 452:2464 and 452:2406). Each frame has its own. The tablet's and the
+   * phone's discussion pages (T4 452:3837, M9 452:4076) have no "Made in", so `madeIn` is left out there.
    */
   layers: z.object({ header: z.string(), madeIn: z.string().optional() }),
 })
@@ -360,7 +370,7 @@ export const ArtifactsUi = z.object({
   moreOpen: z.boolean().optional(),
   /**
    * The open artifact's discussion is open: beside it on the desktop, and the library list closes (D7); on a tablet as
-   * its own page in the artifact's place, with no tab bar (T4).
+   * its own page in the artifact's place, with no tab bar (T4); on a phone the same (M9).
    */
   discussOpen: z.boolean().optional(),
   /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */

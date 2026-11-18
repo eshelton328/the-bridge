@@ -5,7 +5,10 @@
 // shorter words: who found it, the description, the source chip and where
 // it was made, with Open in workspace as a link. The ⋯ button opens File in
 // a project (M7) and Discuss the discussion (M9); Back closes it and shows
-// M1's library. It holds D7's discussion, which Discuss opens.
+// M1's library. It holds D7's discussion, which Discuss opens as its own
+// page (M9); its Back label, the card's source, the label over the stacked
+// suggestions and the node id of its one Open in workspace are from
+// references/artifacts/M09/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ArtifactsData, ArtifactsUi } from '../types.ts'
 import { artifactOpen } from './artifactOpen.ts'
@@ -30,7 +33,13 @@ export const artifactPhone = {
         action: 'Open in workspace ›',
       },
     },
-    discussion: artifactOpen.data.discussion,
+    discussion: {
+      ...artifactOpen.data.discussion,
+      back: 'Artifact',
+      sourceLabel: 'Claude artifact',
+      empty: { ...artifactOpen.data.discussion.empty, tryLabel: 'Try' },
+      layers: { header: '452:4076' },
+    },
   },
   ui: { ...libraryPhone.ui },
 } satisfies ScreenState<ArtifactsData, ArtifactsUi>

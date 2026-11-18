@@ -11,8 +11,9 @@
 // page, which shows Updated (T5); on a phone the library as a list of rows
 // (M1, LibraryPhone), and an open artifact on its own page under Back, as
 // on a tablet, with the ⋯ button for File in a project (M2), which opens
-// it as a sheet (M7); the phone's More opens the shared More drawer over the
-// tab bar (M8). A state file's data and ui are its props; the
+// it as a sheet (M7), and whose Discuss opens the discussion as a page of its
+// own with no tab bar, as on a tablet (M9); the phone's More opens the shared
+// More drawer over the tab bar (M8). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -51,10 +52,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
         const open = layout === 'desktop' || ui.artifactClosed !== true ? data.open : undefined
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
         const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
-        // D7: Discuss opens the artifact's discussion beside it, and the list closes. T4: on a tablet it opens as a
-        // page of its own, and the tab bar hides. The phone's discussion page comes with M9; there Discuss sets
-        // `discussOpen` and the artifact's page stays.
-        const discussion = layout === 'phone' ? undefined : view?.discussion
+        // D7: Discuss opens the artifact's discussion beside it, and the list closes. T4 and M9: on a tablet or phone
+        // it opens as a page of its own, and the tab bar hides.
+        const discussion = view?.discussion
         const discussing = discussion !== undefined && ui.discussOpen === true
         const sent = ui.discussSent ?? []
         // What the desktop panel and the tablet page share: the draft, the entries and where Erik's presses go.
@@ -66,9 +66,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 draft: ui.discussDraft,
                 entries: discussionEntries(discussion, ui),
                 applied: view.applied,
-                // T5: on the tablet's page Apply returns to the artifact's page, which shows Updated.
+                // T5: on the tablet's or phone's page Apply returns to the artifact's page, which shows Updated.
                 onAct: (act: ProposalAct) => {
-                  onUiChange?.(proposalEffect(discussion, act, layout === 'tablet' ? 'page' : 'panel'))
+                  onUiChange?.(proposalEffect(discussion, act, layout === 'desktop' ? 'panel' : 'page'))
                 },
                 onDraftChange:
                   onUiChange === undefined
@@ -96,7 +96,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
               // end scrolls clear of it (ArtifactsStickyBars.test.tsx, PhoneTabBar.test.tsx).
               tabBarOverlay
               tabBar={
-                layout === 'desktop' || (layout === 'tablet' && discussing) ? undefined : (
+                layout === 'desktop' || discussing ? undefined : (
                   <AppTabBar
                     // The phone opens Artifacts from More (d-105).
                     selected={layout === 'tablet' ? 'artifacts' : 'more'}
@@ -121,9 +121,10 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                   <LibraryPhone data={data} ui={ui} onUiChange={onUiChange} />
                 ) : open === undefined || view === undefined ? (
                   <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
-                ) : layout === 'tablet' && discussing && thread !== undefined ? (
+                ) : layout !== 'desktop' && discussing && thread !== undefined ? (
                   <ArtifactDiscussionPage
                     {...thread}
+                    layout={layout}
                     artifact={view.artifact}
                     badge={view.badge}
                     onBack={closeDiscussion}

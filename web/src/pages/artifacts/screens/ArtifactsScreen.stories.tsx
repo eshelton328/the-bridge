@@ -318,3 +318,15 @@ export const MorePhone: Story = {
     await expect(drawer.getByRole('button', { name: /Workflows/ })).toBeDisabled()
   },
 }
+
+export const DiscussPhone: Story = {
+  name: 'M9: the open artifact’s discussion on its own page on a phone',
+  args: { data: artifactsStates.discussPhone.data, ui: artifactsStates.discussPhone.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The story renders at the width Storybook gives it: the phone's page or the desktop's panel.
+    // app/ArtifactsStickyBars.test.tsx checks M9's page at the phone's width.
+    await expect(canvas.getByText('Talk this artifact through')).toBeVisible()
+    await expect(canvas.getByRole('textbox', { name: 'Ask about this artifact' })).toBeVisible()
+    await expect(canvas.getByRole('meter')).toHaveAttribute('aria-valuenow', '46')
+  },
+}

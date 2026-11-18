@@ -6,7 +6,10 @@
 // nav and the card stay at the top and the reply box at the bottom, and only
 // the messages between them scroll (d-107): the shared DetailFrame, with the
 // reply box as its sticky footer, capped as the desktop panel's. With entries
-// (T5 452:3841) the question, the reply and the proposal, as D8's. Props only.
+// (T5 452:3841) the question, the reply and the proposal, as D8's. On a
+// phone (M9 452:3982) the same page, 12 in: the nav has only Back and Open in
+// workspace, the model and context sit in the card under its meta line, as
+// the Inbox's (M18), and the suggestions stack under "Try". Props only.
 import { BackRow, Button, ChatIcon, Composer, Inline, Stack } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
@@ -23,6 +26,9 @@ const page = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[
 // 452:3769: the nav is 40 high, 4 under the status bar, and the card 8 under it (452:3778). The Container pads 12 at
 // the top; the nav takes 8 of it back and pads its 32 px buttons 4 above and below.
 const nav = css({ mt: '-8', py: '4' })
+// M9 452:4008: on the phone the nav is 40 high, 4 under the status bar: the phone Container's 4 at the top and 4
+// above and below its 32 px button.
+const phoneNav = css({ py: '4' })
 const spacer = css({ flex: '1' })
 // 452:3793: the discussion area starts 8 under the card, and the empty state's tile 74 under its top (452:3795).
 // The library's tile (44 against 42) and title (28 high against 22) are 8 taller than Figma's, so the tile sits 64
@@ -32,6 +38,10 @@ const thread = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: 
 const emptyPad = css({ pt: '32' })
 const entriesPad = css({ pt: '12' })
 const emptyTop = css({ pt: '32' })
+// M9 452:4034: on the phone the tile is 42 under the area's top (452:4032), but the card above is 9 taller than
+// Figma's (the model chip and the guard's 16 px lines), so the tile sits 24 under the area's top and "It can" and the
+// suggestions keep Figma's places (within 2 px).
+const phoneEmptyPad = css({ pt: '24' })
 // 452:3823: the reply box 12 under the discussion area and 22 above the home indicator's 21 px (43, 40 on the grid),
 // 22 in (24, as the page). It stays on the page's canvas, so the messages that scroll under it do not show through.
 const footer = css({
@@ -42,8 +52,24 @@ const footer = css({
   px: '24',
   bg: 'bg.canvas',
 })
+// M9 452:4062: on the phone the reply box is 12 in, as the page, and ends 38 above the bottom: Figma's 17 and the home
+// indicator's 21. With no tab bar the phone AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`) under the
+// page, so the footer pads 4. It starts 8 above the reply box (Figma 13 under the spacer, 25 under the suggestions):
+// with the Container's 12 the suggestions end 20 above it, so the empty state fits the screen with no scroll.
+const phoneFooter = css({
+  position: 'sticky',
+  bottom: '[var(--scroll-frame-inset, 0px)]',
+  pt: '8',
+  pb: '4',
+  px: '12',
+  bg: 'bg.canvas',
+})
+// M9 454:408: the model and context hug their width in the card, under the meta line.
+const cardModel = css({ alignSelf: 'flex-start' })
 
 export type ArtifactDiscussionPageProps = {
+  /** The tablet's page (T4, the default) or the phone's (M9). */
+  layout?: 'tablet' | 'phone' | undefined
   artifact: ArtifactDetail
   discussion: ArtifactDiscussion
   /** The status pill of the artifact's card, such as "New"; none without it. */
@@ -62,6 +88,7 @@ export type ArtifactDiscussionPageProps = {
 }
 
 export function ArtifactDiscussionPage({
+  layout = 'tablet',
   artifact,
   discussion,
   badge,
@@ -75,17 +102,23 @@ export function ArtifactDiscussionPage({
   onOpenInWorkspace,
 }: ArtifactDiscussionPageProps) {
   const back = discussion.back ?? artifact.title
+  const phone = layout === 'phone'
+  const model = <ModelContext discussion={discussion} className={phone ? cardModel : undefined} />
   return (
     <div className={page}>
       <DetailFrame
-        layout="tablet"
+        layout={layout}
         back={
           <Stack gap="8">
-            <Inline gap="8" align="center" className={nav} data-figma="nav">
+            <Inline gap="8" align="center" className={phone ? phoneNav : nav} data-figma="nav">
               <BackRow label={back} onBack={onBack} />
               <span className={spacer} />
-              <ModelContext discussion={discussion} />
-              <span className={spacer} />
+              {phone ? null : (
+                <>
+                  {model}
+                  <span className={spacer} />
+                </>
+              )}
               <span data-figma={discussion.layers.header}>
                 <Button onClick={onOpenInWorkspace}>
                   <ChatIcon />
@@ -93,11 +126,17 @@ export function ArtifactDiscussionPage({
                 </Button>
               </span>
             </Inline>
-            <DiscussedArtifactCard artifact={artifact} badge={badge} guard={discussion.guard} onOpen={onBack} />
+            <DiscussedArtifactCard
+              artifact={{ ...artifact, sourceLabel: discussion.sourceLabel ?? artifact.sourceLabel }}
+              badge={badge}
+              guard={discussion.guard}
+              onOpen={onBack}
+              model={phone ? model : undefined}
+            />
           </Stack>
         }
         footer={
-          <div className={footer}>
+          <div className={phone ? phoneFooter : footer}>
             <div data-figma="composer · discussion">
               <Composer
                 label={discussion.placeholder}
@@ -114,10 +153,13 @@ export function ArtifactDiscussionPage({
           </div>
         }
       >
-        <div className={cx(thread, entries.length === 0 ? emptyPad : entriesPad)} data-figma="discussion">
+        <div
+          className={cx(thread, entries.length > 0 ? entriesPad : phone ? phoneEmptyPad : emptyPad)}
+          data-figma="discussion"
+        >
           {entries.length === 0 ? (
-            <div className={emptyTop}>
-              <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} place="page" />
+            <div className={phone ? undefined : emptyTop}>
+              <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} place={phone ? 'phone' : 'page'} />
             </div>
           ) : (
             <Stack gap="12">

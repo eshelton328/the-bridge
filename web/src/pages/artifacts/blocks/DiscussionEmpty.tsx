@@ -47,6 +47,21 @@ const canIcon = css({ display: 'inline-flex', color: 'accent.discuss' })
 const canOnPage = css({ mt: '10' })
 // 452:2445: the suggestions' row hugs its buttons, centred in the column.
 const suggestions = css({ alignSelf: 'center' })
+// M9 452:4038: on the phone the text is 320 wide, centred, so its lines break where Figma's do. No token names a text
+// column's width; `shell.popover` has the same 320, as the Inbox's phone empty state (LIBRARY_GAPS.md, Empty state
+// with an icon tile).
+const phoneText = css({
+  textStyle: 'bodySm',
+  color: 'fg.muted',
+  m: '0',
+  textAlign: 'center',
+  alignSelf: 'center',
+  maxW: 'shell.popover',
+})
+// M9 452:4053: on the phone the suggestions stack under "Try", full width, their labels at the start, as the Inbox's
+// (M18 402:2075).
+const tryLabel = css({ textStyle: 'eyebrow', textTransform: 'uppercase', color: 'fg.subtle', m: '0' })
+const stackedSuggestion = css({ justifyContent: 'flex-start' })
 
 const icons = {
   edit: <EditIcon size="12" />,
@@ -58,19 +73,25 @@ export type DiscussionEmptyProps = {
   empty: ArtifactDiscussion['empty']
   /** A suggestion was pressed: its question goes in the reply box. */
   onPick?: ((text: string) => void) | undefined
-  /** Where it shows: in D7's panel (the default) or on T4's tablet page, which puts "It can" 20 under the text. */
-  place?: 'panel' | 'page' | undefined
+  /**
+   * Where it shows: in D7's panel (the default), on T4's tablet page, which puts "It can" 20 under the text, or on
+   * M9's phone page, which does too and stacks the suggestions under their label.
+   */
+  place?: 'panel' | 'page' | 'phone' | undefined
 }
 
 export function DiscussionEmpty({ empty, onPick, place = 'panel' }: DiscussionEmptyProps) {
+  const pick = (s: string) => () => {
+    onPick?.(s)
+  }
   return (
     <Stack gap="10" data-figma="empty state">
       <span className={tile}>
         <BubbleIcon size="20" />
       </span>
       <h3 className={title}>{empty.title}</h3>
-      <p className={text}>{empty.text}</p>
-      <div className={place === 'page' ? canOnPage : undefined} data-figma="it can">
+      <p className={place === 'phone' ? phoneText : text}>{empty.text}</p>
+      <div className={place === 'panel' ? undefined : canOnPage} data-figma="it can">
         <Panel title={empty.canLabel}>
           <Stack gap="8">
             {empty.can.map((c) => (
@@ -82,20 +103,25 @@ export function DiscussionEmpty({ empty, onPick, place = 'panel' }: DiscussionEm
           </Stack>
         </Panel>
       </div>
-      {/* Figma 452:2446 sets the labels in Medium 12 (`textSize="xs"`), so the three stay on one row. */}
-      <Inline gap="6" align="center" justify="center" wrap className={suggestions} data-figma="suggestions">
-        {empty.suggestions.map((s) => (
-          <Button
-            key={s}
-            textSize="xs"
-            onClick={() => {
-              onPick?.(s)
-            }}
-          >
-            {s}
-          </Button>
-        ))}
-      </Inline>
+      {place === 'phone' ? (
+        <Stack gap="6" data-figma="suggestions">
+          {empty.tryLabel === undefined ? null : <p className={tryLabel}>{empty.tryLabel}</p>}
+          {empty.suggestions.map((s) => (
+            <Button key={s} textSize="xs" className={stackedSuggestion} onClick={pick(s)}>
+              {s}
+            </Button>
+          ))}
+        </Stack>
+      ) : (
+        // Figma 452:2446 sets the labels in Medium 12 (`textSize="xs"`), so the three stay on one row.
+        <Inline gap="6" align="center" justify="center" wrap className={suggestions} data-figma="suggestions">
+          {empty.suggestions.map((s) => (
+            <Button key={s} textSize="xs" onClick={pick(s)}>
+              {s}
+            </Button>
+          ))}
+        </Inline>
+      )}
     </Stack>
   )
 }

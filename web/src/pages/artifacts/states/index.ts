@@ -23,6 +23,7 @@ import { searchPhone } from './searchPhone.ts'
 import { addLinkPhone } from './addLinkPhone.ts'
 import { filePhone } from './filePhone.ts'
 import { morePhone } from './morePhone.ts'
+import { discussPhone } from './discussPhone.ts'
 
 export const artifactsStates = {
   library,
@@ -47,4 +48,5 @@ export const artifactsStates = {
   addLinkPhone,
   filePhone,
   morePhone,
+  discussPhone,
 }
