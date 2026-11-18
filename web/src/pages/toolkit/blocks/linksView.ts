@@ -188,6 +188,13 @@ function fileOf(at: string): string {
   return colon === -1 ? at : at.slice(0, colon)
 }
 
+/** The line of the place a link is written at: 77 of "rules/writing.md:77"; none when the place names no line. */
+export function linkLine(link: Link): number | undefined {
+  const colon = link.at.lastIndexOf(':')
+  const line = colon === -1 ? Number.NaN : Number(link.at.slice(colon + 1))
+  return Number.isInteger(line) && line > 0 ? line : undefined
+}
+
 /**
  * What a tap on a link's line opens (D19 482:660, "a line to open the file there"): the Files tab of the item whose file
  * it is, with that file selected. A link in is written in the other item's file: its path in toolkit/ starts with that

@@ -288,6 +288,13 @@ what each file of a page folder is for.
   states' browsers (D6, D33 to D36) and one-file browsers for the other
   items; `openItem` gives an item with no browser that one and its Files
   tab, and opens an item the list does not show (`linksView.test.ts`).
+  The link's line (`linkLine`) goes into `ui.line`, with `ui.fileView`
+  set to `code`: the viewer shows the part of the file's source that
+  holds it (a view's `excerpts`, or its first lines; `sourceAt` in
+  `blocks/filesView.ts`), numbered from its first line, and scrolls the
+  line into view (`blocks/useScrollToLine.ts`; CodeLines cannot mark it:
+  LIBRARY_GAPS.md, Code line from a link). Another file, view or page
+  clears the line.
   A rule (D29, `ruleLinks`, D37's data) links to one skill and nothing links to it: a side with no links has
   `empty`, the reason in the graph's left column and in its panel. An
   agent (D30, `agentLinks`, D7's data) has two items named writer on one

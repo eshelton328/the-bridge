@@ -81,10 +81,23 @@ export function openFrom(path: string, from: string | null = null): Partial<Tool
 /**
  * The ui change that opens a file of an item on its Files tab (D19, a tap on a link's file and line): another item
  * opens from the open item (`openFrom`); the open item stays as it was opened. The file opens in its own default view,
- * on a page of its own when `page` is set (`filePage`, as `selectFile` sets it for a tablet or phone).
+ * on a page of its own when `page` is set (`filePage`, as `selectFile` sets it for a tablet or phone). A `line` (the
+ * link's, such as 8 of "SKILL.md:8") opens the file's source at that line.
  */
-export function openFile(path: string, file: string, from: string, page = false): Partial<ToolkitUi> {
-  const files = { itemTab: 'files', file, fileView: undefined, filePage: page ? true : undefined }
+export function openFile(
+  path: string,
+  file: string,
+  from: string,
+  { page = false, line }: { page?: boolean; line?: number | undefined } = {},
+): Partial<ToolkitUi> {
+  // A line opens the file's source at it (`ui.line`); without one the file opens on its own default view.
+  const files = {
+    itemTab: 'files',
+    file,
+    line,
+    fileView: line === undefined ? undefined : ('code' as const),
+    filePage: page ? true : undefined,
+  }
   return path === from ? files : { ...openFrom(path, from), ...files }
 }
 

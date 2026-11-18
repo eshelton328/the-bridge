@@ -115,6 +115,8 @@ export type ToolkitFileViewerProps = {
   onModeChange?: ((mode: FileMode) => void) | undefined
   /** A bordered box of its own with no copy button in the bar, as on a tablet or phone (T4). */
   boxed?: boolean | undefined
+  /** The line a link names (`ui.line`): the source opens at it (`ToolkitFileBody`). */
+  line?: number | undefined
 }
 
 export function ToolkitFileViewer({
@@ -125,6 +127,7 @@ export function ToolkitFileViewer({
   mode = 'code',
   onModeChange,
   boxed: inBox = false,
+  line,
 }: ToolkitFileViewerProps) {
   // A script's Explain and Code switch sits in the bar (D10); a Markdown file's under its text (T4).
   const modes = fileModes(view)
@@ -160,7 +163,7 @@ export function ToolkitFileViewer({
           </span>
         </span>
       </div>
-      {view === undefined ? null : <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} />}
+      {view === undefined ? null : <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} line={line} />}
       {view?.usedBy === undefined ? null : (
         <p className={usedBy} data-figma="used by">
           {kindIcons[view.usedBy.kind]}

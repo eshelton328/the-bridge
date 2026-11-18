@@ -410,3 +410,37 @@ describe('a link’s file on its item’s Files tab (D19)', () => {
     expect(viewer?.querySelector('[data-figma="code"], [data-figma="rendered markdown"]')).not.toBeNull()
   })
 })
+
+// A link names a line of its file: the file opens on its source at that line, scrolled into the viewer, and another line
+// of the same file opens there instead.
+describe('a link’s line in its file (D19)', () => {
+  function shownLine(root: HTMLElement, line: number) {
+    return root.querySelector(`article[aria-label="writer"] [data-figma="viewer"] [data-line="${String(line)}"]`)
+  }
+
+  it('opens SKILL.md:8 on the source at line 8, in view, and SKILL.md:118 at line 118', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    await userEvent.click(button(root, 'SKILL.md:8'))
+    await expect.poll(() => shownLine(root, 8)).not.toBeNull()
+    const viewer = root.querySelector('article[aria-label="writer"] [data-figma="viewer"]')
+    if (!(viewer instanceof HTMLElement)) throw new Error('no viewer')
+    expect(viewer.getAttribute('aria-label')).toBe('SKILL.md')
+    // The line's number and its text: the code row after the number.
+    const eight = shownLine(root, 8)
+    expect(eight?.textContent).toBe('8')
+    expect(eight?.nextElementSibling?.textContent).toContain('The writing rules in')
+    // The line is inside the viewer's visible box.
+    const seen = viewer.getBoundingClientRect()
+    const at = eight?.getBoundingClientRect()
+    if (at === undefined) throw new Error('no line 8')
+    expect(at.top).toBeGreaterThanOrEqual(seen.top)
+    expect(at.bottom).toBeLessThanOrEqual(seen.bottom)
+    // Another line of the same file opens at that line.
+    await userEvent.click(button(root, 'Links', 'article'))
+    await expect.poll(() => root.querySelector('[data-figma="links"]')).not.toBeNull()
+    await userEvent.click(button(root, 'SKILL.md:118'))
+    await expect.poll(() => shownLine(root, 118)).not.toBeNull()
+    expect(shownLine(root, 118)?.nextElementSibling?.textContent).toContain('audit-slop')
+    expect(shownLine(root, 8)).toBeNull()
+  })
+})

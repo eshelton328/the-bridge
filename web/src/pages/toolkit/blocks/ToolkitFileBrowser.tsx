@@ -76,6 +76,8 @@ export type ToolkitFileBrowserProps = {
   folder?: string | undefined
   /** On the phone, the file the tree marks: the one opened last (`ui.file`, M5's check), or none (M35). */
   marked?: string | null | undefined
+  /** The line a link names in the selected file (`ui.line`, D19): the viewer opens its source at it. */
+  line?: number | undefined
 }
 
 export function ToolkitFileBrowser({
@@ -88,6 +90,7 @@ export function ToolkitFileBrowser({
   onModeChange,
   folder,
   marked = null,
+  line,
 }: ToolkitFileBrowserProps) {
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
@@ -99,6 +102,7 @@ export function ToolkitFileBrowser({
       mode={fileMode(open.view, mode)}
       onModeChange={onModeChange}
       boxed={!desktop}
+      line={line}
       onCopy={() => {
         onCopy?.(open.path)
       }}

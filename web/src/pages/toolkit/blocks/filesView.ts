@@ -43,6 +43,25 @@ export function openFile(browser: ToolkitFileBrowser, file?: string): OpenFile {
   }
 }
 
+/** Source lines from the number of the first one, with their syntax colours when the view has them. */
+export type SourceLines = {
+  start: number
+  lines: string[]
+  segments?: ToolkitFileView['code'] | undefined
+}
+
+/**
+ * The source that holds a line of a file (`ui.line`, a link's line): the excerpt that holds it, else the file's first
+ * lines (`code`) when they reach it; undefined when the view has neither.
+ */
+export function sourceAt(view: ToolkitFileView, line: number): SourceLines | undefined {
+  const excerpt = view.excerpts?.find((e) => line >= e.start && line < e.start + e.lines.length)
+  if (excerpt !== undefined) return { start: excerpt.start, lines: excerpt.lines }
+  const code = view.code
+  if (code === undefined || line > code.length) return undefined
+  return { start: 1, lines: code.map((l) => l.map((p) => p.text).join('')), segments: code }
+}
+
 /**
  * How the viewer shows a file: a script's explanation (D10) or a Markdown file rendered (T4), or the file's source
  * (`code`).
@@ -124,5 +143,5 @@ export function selectFile(
   phone = false,
 ): Partial<ToolkitUi> {
   const page = opensPage(openFile(browser, path).view, narrow, phone)
-  return { file: path, fileView: undefined, filePage: page ? true : undefined }
+  return { file: path, line: undefined, fileView: undefined, filePage: page ? true : undefined }
 }

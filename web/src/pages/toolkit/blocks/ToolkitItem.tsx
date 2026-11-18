@@ -54,7 +54,7 @@ import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 import { ToolkitItemOverview } from './ToolkitItemOverview.tsx'
 import { ToolkitItemPath } from './ToolkitItemPath.tsx'
 import { ToolkitLinks } from './ToolkitLinks.tsx'
-import { linkFile } from './linksView.ts'
+import { linkFile, linkLine } from './linksView.ts'
 
 // D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
 // the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
@@ -323,14 +323,19 @@ export type ToolkitItemProps = {
   fileView?: FileMode | undefined
   /** Called with Explain or Code when the Files tab's viewer changes its view. */
   onFileViewChange?: ((mode: FileMode) => void) | undefined
+  /** The line a link names in the selected file (`ui.line`, D19): its source opens at it. */
+  line?: number | undefined
   /** On a tablet or phone, the selected file fills the Files tab on a page of its own (T6, `ui.filePage`). */
   filePage?: boolean | undefined
   /** Leaves the file's page for the Files tab's tree (T6's Back to Files). */
   onCloseFilePage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
-  /** Opens a file of a toolkit item on its Files tab: the item's path and the file's path in it (D19's link lines). */
-  onOpenFile?: ((item: string, file: string) => void) | undefined
+  /**
+   * Opens a file of a toolkit item on its Files tab: the item's path, the file's path in it and the line the link
+   * names (D19's link lines).
+   */
+  onOpenFile?: ((item: string, file: string, line: number | undefined) => void) | undefined
   /**
    * A workflow on a page of its own (D13): the kind's crumb after Toolkit (Workflows, back to that kind's list), the
    * selected step and the way to select one. Beside the list when not set.
@@ -363,6 +368,7 @@ export function ToolkitItem({
   onFileViewChange,
   filePage = false,
   onCloseFilePage,
+  line,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
@@ -574,7 +580,7 @@ export function ToolkitItem({
                 onOpenItem={onOpenItem}
                 onOpenLine={(side, l) => {
                   const target = linkFile(side, l, item.path)
-                  onOpenFile?.(target.item, target.file)
+                  onOpenFile?.(target.item, target.file, linkLine(l))
                 }}
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
@@ -585,6 +591,7 @@ export function ToolkitItem({
                 mode={fileMode(pageFile.view, fileView)}
                 onModeChange={onFileViewChange}
                 layout={layout}
+                line={line}
               />
             ) : t.value === 'files' && detail.browser !== undefined ? (
               <ToolkitFileBrowser
@@ -596,6 +603,7 @@ export function ToolkitItem({
                 marked={phone ? (file ?? null) : undefined}
                 mode={fileView}
                 onModeChange={onFileViewChange}
+                line={line}
                 onCopy={(path) => {
                   onCopyPath?.(filePathIn(detail.location, path))
                 }}

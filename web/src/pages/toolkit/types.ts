@@ -317,6 +317,11 @@ const ToolkitFileView = z.object({
   summary: z.literal(true).optional(),
   /** A line under the source on a file's own page on the phone (M6 435:555), such as how its long lines wrap. */
   footnote: z.string().optional(),
+  /**
+   * Parts of the file's source past its first lines, each from the number of its first line: the lines that the
+   * items' links name (D19, "SKILL.md:118"), which a tap on a link opens (`sourceAt` in blocks/filesView.ts).
+   */
+  excerpts: z.array(z.object({ start: z.number().int().positive(), lines: z.array(z.string()).min(1) })).optional(),
 })
 export type ToolkitFileView = z.infer<typeof ToolkitFileView>
 
@@ -547,6 +552,11 @@ export const ToolkitUi = z.object({
    * file opens under the tree (T4). Under the tree when not set.
    */
   filePage: z.boolean().optional(),
+  /**
+   * The line of the file on the Files tab that a link names (D19, "SKILL.md:8"): the viewer shows the file's source
+   * at that line and scrolls to it. None when the file opened from its tree row.
+   */
+  line: z.number().int().positive().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

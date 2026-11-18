@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { openFile as openBrowserFile, findFile } from './blocks/filesView.ts'
-import { focusId, linkCount, linkFile, linksGraph, sideLabel } from './blocks/linksView.ts'
+import { openFile as openBrowserFile, findFile, sourceAt } from './blocks/filesView.ts'
+import { focusId, linkCount, linkFile, linkLine, linksGraph, sideLabel } from './blocks/linksView.ts'
 import { openFile, openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -199,4 +199,69 @@ describe('a link’s file on its item’s Files tab, in every Links state', () =
         }
     })
   }
+})
+
+// A link names a line of its file (SKILL.md:8, SKILL.md:118): the navigation keeps the line, and the Files tab opens the
+// file's source at it.
+describe('a link’s line', () => {
+  it('reads the line of the place a link is written at, and none when the place has no line', () => {
+    expect(linkLine({ ...writer, at: 'SKILL.md:8', text: '' })).toBe(8)
+    expect(linkLine({ ...writer, at: 'skills/writer/SKILL.md:107', text: '' })).toBe(107)
+    expect(linkLine({ ...writer, at: 'SKILL.md', text: '' })).toBeUndefined()
+  })
+
+  it('keeps the line in the navigation, on the file’s source, so two lines of one file open apart', () => {
+    const at8 = openFile(writer.path, 'SKILL.md', writer.path, { line: 8 })
+    const at118 = openFile(writer.path, 'SKILL.md', writer.path, { line: 118 })
+    expect(at8).toMatchObject({ itemTab: 'files', file: 'SKILL.md', line: 8, fileView: 'code' })
+    expect(at118).toMatchObject({ itemTab: 'files', file: 'SKILL.md', line: 118, fileView: 'code' })
+    expect(at8).not.toEqual(at118)
+    // Without a line the file opens on its own default view, as a tap on its tree row opens it.
+    expect(openFile(writer.path, 'SKILL.md', writer.path)).toMatchObject({ fileView: undefined, line: undefined })
+  })
+
+  it('finds the source lines that hold a line: an excerpt of the file, or its first lines', () => {
+    const open = openItem(skillLinks.data, { ...skillLinks.ui, ...openFile(writer.path, 'SKILL.md', writer.path) })
+    const view = open?.detail.browser?.views.find((v) => v.path === 'SKILL.md')
+    if (view === undefined) throw new Error('no view of SKILL.md')
+    const at8 = sourceAt(view, 8)
+    const at118 = sourceAt(view, 118)
+    if (at8 === undefined || at118 === undefined) throw new Error('no source at 8 or 118')
+    expect(at8.lines[8 - at8.start]).toContain('The writing rules in')
+    expect(at118.lines[118 - at118.start]).toContain('audit-slop')
+    expect(sourceAt(view, 500)).toBeUndefined()
+    // A file whose first lines are its code holds a line among them (D32 commit-msg:3).
+    const hook = openItem(toolkitStates.hookLinks.data, {
+      ...toolkitStates.hookLinks.ui,
+      ...openFile('hooks/commit-msg', 'commit-msg', 'hooks/commit-msg'),
+    })
+    const script = hook?.detail.browser?.views.find((v) => v.path === 'commit-msg')
+    if (script === undefined) throw new Error('no view of commit-msg')
+    expect(sourceAt(script, 3)).toMatchObject({ start: 1 })
+    expect(sourceAt(script, 3)?.lines[2]).toContain('toolkit/rules/commits-and-prs.md')
+  })
+
+  it('holds the source at every link’s line, in every Links state', () => {
+    const linkStates: [string, ScreenState<ToolkitData, ToolkitUi>][] = Object.entries(toolkitStates).filter(([key]) =>
+      key.includes('Links'),
+    )
+    for (const [id, state] of linkStates) {
+      const open = openItem(state.data, state.ui)
+      if (open?.detail.links === undefined) throw new Error(`${id} has no links`)
+      const sides = [
+        ['from', open.detail.links.from.links],
+        ['to', open.detail.links.to.links],
+      ] as const
+      for (const [side, list] of sides)
+        for (const link of list) {
+          const target = linkFile(side, link, open.item.path)
+          const line = linkLine(link)
+          if (line === undefined) throw new Error(`${id}: ${link.at} has no line`)
+          const opened = openItem(state.data, { ...state.ui, ...openFile(target.item, target.file, open.item.path) })
+          const view = opened?.detail.browser?.views.find((v) => v.path === target.file)
+          if (view === undefined) throw new Error(`${id}: ${link.at} has no view`)
+          expect(sourceAt(view, line), `${id}: ${link.at}`).toBeDefined()
+        }
+    }
+  })
 })
