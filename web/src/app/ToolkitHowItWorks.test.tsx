@@ -113,10 +113,10 @@ describe('the How it works tab of a rule on a tablet (T36)', () => {
     const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
     const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
     expect(Math.round(trigger?.width ?? 0)).toBe(Math.round(list?.width ?? -1))
-    // Figma's trigger starts 14 under the tabs (495:1923 ends at 253, 495:1936 starts at 267); `ItemTabs` pads its
-    // list 2 below the tabs (LIBRARY_GAPS.md, Item tab spacing), so the trigger is 12 under the tab list.
+    // Figma's trigger starts 14 under the tabs (495:1923 ends at 253, 495:1936 starts at 267); the compact tab list
+    // ends with the tabs and the item adds 4 above the panel (ToolkitItem), so the trigger is 16 under the tab list.
     const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
-    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(16)
   })
 })
 
@@ -171,7 +171,7 @@ describe('the How it works tab of a hook on a tablet (T38)', () => {
 // M39: a rule's How it works on the phone keeps the item's header, as on its Overview (M19), then the column with its
 // rows 12 apart, as the header's are, and nothing under the steps.
 describe('the How it works tab of a rule on the phone (M39)', () => {
-  it('keeps the header over the column, the trigger 8 under the tab list and the steps 6 under it', async () => {
+  it('keeps the header over the column, the trigger 12 under the tab list and the steps 6 under it', async () => {
     await page.viewport(390, 806)
     const router = createRouter({
       routeTree,
@@ -183,12 +183,12 @@ describe('the How it works tab of a rule on the phone (M39)', () => {
     expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="path badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="chat path"]')).toBeNull()
-    // Figma's trigger starts 12 under the tabs (495:3035 ends at 249, 495:3048 starts at 261). `ItemTabs` pads its
-    // list 2 above and below the tabs (LIBRARY_GAPS.md, Item tab spacing), so its list ends 3 under Figma's tabs, and
-    // the trigger starts 8 under it, 1 px above Figma's.
+    // Figma's trigger starts 12 under the tabs (495:3035 ends at 249, 495:3048 starts at 261). The compact tab list
+    // ends with the tabs, 1 under Figma's, and the item adds 4 above the panel (ToolkitItem), so the trigger starts 12
+    // under it, 1 px above Figma's.
     const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
     const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
-    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(8)
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
     // Figma's steps start 12 under the trigger (495:3048 ends at 292, 495:3050 starts at 304); the notice Panel makes
     // the trigger 7 px taller (LIBRARY_GAPS.md, How it works trigger), so the steps start 6 under it.
     const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
@@ -201,7 +201,7 @@ describe('the How it works tab of a rule on the phone (M39)', () => {
 // M40: an agent's How it works on the phone keeps the item's header, as on its Overview (M20), with no breadcrumb,
 // then the column with its rows 12 apart, as M39's are, and nothing under the steps.
 describe('the How it works tab of an agent on the phone (M40)', () => {
-  it('keeps the header over the column, the trigger 8 under the tab list and the steps 6 under it', async () => {
+  it('keeps the header over the column, the trigger 12 under the tab list and the steps 6 under it', async () => {
     await page.viewport(390, 806)
     const router = createRouter({
       routeTree,
@@ -213,11 +213,11 @@ describe('the How it works tab of an agent on the phone (M40)', () => {
     expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="path badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="495:3255"]')).not.toBeNull()
-    // Figma's trigger starts 12 under the tabs (495:3382 ends at 249, 495:3395 starts at 261); `ItemTabs` pads its
-    // list 2 above and below (LIBRARY_GAPS.md, Item tab spacing), so the trigger starts 8 under the list.
+    // Figma's trigger starts 12 under the tabs (495:3382 ends at 249, 495:3395 starts at 261); the compact tab
+    // list ends with the tabs and the item adds 4 above the panel (ToolkitItem), so the trigger starts 12 under it.
     const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
     const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
-    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(8)
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
     // Figma's steps start 12 under the two-line trigger (495:3395 ends at 309, 495:3397 starts at 321); the notice
     // Panel makes the trigger 6 px taller (LIBRARY_GAPS.md, How it works trigger), so the steps start 6 under it.
     const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
@@ -230,7 +230,7 @@ describe('the How it works tab of an agent on the phone (M40)', () => {
 // M41: a hook's How it works on the phone keeps the item's header, as on its Overview (M22), then the column with its
 // rows 12 apart, as M39's and M40's are, and its five steps end above the tab bar.
 describe('the How it works tab of a hook on the phone (M41)', () => {
-  it('keeps the header over the column, the trigger 8 under the tab list and the five steps above the tab bar', async () => {
+  it('keeps the header over the column, the trigger 12 under the tab list and the five steps above the tab bar', async () => {
     await page.viewport(390, 806)
     const router = createRouter({
       routeTree,
@@ -241,11 +241,11 @@ describe('the How it works tab of a hook on the phone (M41)', () => {
     expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="path badge"]')).not.toBeNull()
     expect(document.querySelector('[data-figma="495:3591"]')).not.toBeNull()
-    // Figma's trigger starts 12 under the tabs (495:3747 ends at 249, 495:3760 starts at 261); `ItemTabs` pads its
-    // list 2 above and below (LIBRARY_GAPS.md, Item tab spacing), so the trigger starts 8 under the list.
+    // Figma's trigger starts 12 under the tabs (495:3747 ends at 249, 495:3760 starts at 261); the compact tab
+    // list ends with the tabs and the item adds 4 above the panel (ToolkitItem), so the trigger starts 12 under it.
     const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
     const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
-    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(8)
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(12)
     // Figma's steps start 12 under the two-line trigger (495:3760 ends at 309, 495:3762 starts at 321); the notice
     // Panel makes the trigger 6 px taller (LIBRARY_GAPS.md, How it works trigger), so the steps start 6 under it.
     const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
