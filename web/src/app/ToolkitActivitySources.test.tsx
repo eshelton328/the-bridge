@@ -94,6 +94,13 @@ describe('the Chats and Headless runs sources on the desktop (D15, D16)', () => 
     expect(card('panel · CALLS PER DAY').height).toBeCloseTo(running.height, 0)
   })
 
+  it('keeps the two panels of each row as wide as each other beside the open chat (D18)', async () => {
+    const { root } = await renderToolkit('toolkitActivityChat')
+    const panel = (key: string) => box(root, `[data-figma="${key}"]`)
+    expect(panel('panel · CALLS PER DAY').width).toBeCloseTo(panel('panel · RUNNING NOW').width, 0)
+    expect(panel('panel · MOST CALLED').width).toBeCloseTo(panel('panel · CHATS THAT USED THE TOOLKIT').width, 0)
+  })
+
   it('switches the counts between the sources, and All sessions shows the log again', async () => {
     const { root } = await renderToolkit('toolkitActivityChats')
     await userEvent.click(source(root, 'Headless runs'))

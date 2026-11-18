@@ -12,8 +12,8 @@ import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
 import { ToolkitRunRow } from './ToolkitRunRow.tsx'
 
 // D11 444:520: the two panels of a row are as tall as the taller: the row's grid stretches the section,
-// and its Panel grows to fill it (a section Panel is as tall as its content).
-const fill = css({ display: 'flex', flexDirection: 'column', '& > *': { flexGrow: '1' } })
+// and its Panel grows to fill it (a section Panel is as tall as its content); no wider content widens it.
+const fill = css({ display: 'flex', flexDirection: 'column', minW: '[0]', '& > *': { flexGrow: '1' } })
 
 // D11 444:526 to 444:563: the rows 8 apart, 8 under the header; T9 449:263 to 449:286 12 apart; M10 10 apart.
 const rows = {
