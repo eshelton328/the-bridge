@@ -192,6 +192,85 @@ what each file of a page folder is for.
   (M40, `agentHowItWorksPhone`, T37's data with no `ui.from`, as on M20)
   keeps M20's header, with no breadcrumb, over the same column. A hook on the phone (M41,
   `hookHowItWorksPhone`, T38's data) keeps M22's header over the same column
-  and its five steps. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  and its five steps. The Files tab (D6, `skillFiles`, D3's data with
+  `ui.itemTab` `files`) draws a detail's `browser` (`ToolkitFileBrowser`): the
+  item's folders and files in the library's `FileTree` (each node's count and
+  role line; the folders in `expanded` open at first) beside the selected file
+  in `ToolkitFileViewer` (the bar with the path, its meta, copy and Read-only;
+  the code in `CodeLines` or the blocks in `ToolkitMarkdownBlocks`, which the
+  Overview's preview shares; the line on what uses the file). `ui.file` picks
+  the file, else the browser's `selected` (`openFile` in `blocks/filesView.ts`,
+  tested in `filesView.test.ts`); a file the state has no view of shows its bar
+  only. On the desktop the tree and the viewer sit side by side and the box
+  runs to the pane's foot (`src/app/ToolkitFiles.test.tsx`); on a narrower
+  layout the viewer comes under the tree. A script whose view has `explain`
+  (D10, `scriptExplained`, D6's data with check's explanation) opens on
+  Explain: the bar holds the Explain and Code switch (`ViewSwitch`), and the
+  viewer draws the library's `ScriptExplanation` (the overview with its facts,
+  the steps with their line links, the note); a line link or Code shows the
+  source. `ui.fileView` keeps the choice, and another file opens on its own
+  default (`fileMode` in `blocks/filesView.ts`). The other kinds fill the same
+  browser with their own files: a rule (D33, `ruleFiles`, D37's list) is one
+  file, a one-row tree with its role line, its first lines as code and when it
+  loads; an agent (D34, `agentFiles`, D7's list) is one file too, its prompt,
+  with its model and tools in the frontmatter; a workflow (D35, `workflowFiles`,
+  D8's list) is one design doc, with the harness/ folder of the scripts its
+  steps run, which are outside the toolkit; a hook (D36, `hookFiles`, D9's list)
+  is the script and its tests, two script rows with the tests selected. On a
+  tablet (T4, `skillFilesTablet`, D6's files with references/ alone open, doc.md
+  first and selected, and each file's count in lines) the Files tab has no kind
+  badge: the title and the path row, which names the item's folder and its files
+  (the browser's `badge`), sit 8 apart, 16 under the back row and over the tabs
+  (`filesPage`; T3's 20 is for the kind badge), and the tree and the viewer
+  are two boxes, the viewer under the tree with no copy button in its bar. A
+  browser with no `badge` keeps the item's header on a tablet, as on T17: a
+  rule (T32, `ruleFilesTablet`, D33's list) shows its kind badge, name and path
+  row over the tabs, its one file's role line ending with its length, and the
+  rule rendered under the tree; an agent (T33, `agentFilesTablet`, D34's list,
+  opened from writer as on T7) does the same under T7's breadcrumb, and a
+  workflow (T34, `workflowFilesTablet`, D35's list) with the harness/ folder
+  open and each script's count in lines; a hook (T35, `hookFilesTablet`,
+  D36's list) sums up its tests in the viewer: a view with `summary` draws its
+  blocks rendered with no Rendered and Source switch (`fileMode`), since a
+  script's summary has no Markdown source. A
+  Markdown file (a view with blocks and no code) opens rendered
+  (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
+  shows the source written back from the blocks (`markdownSource`), and
+  `ui.fileView` keeps the choice (`rendered` or `code`). On a tablet or phone a
+  script with an explanation opens on a page of its own (T6,
+  `scriptExplainedTablet`, D10's data with the script's language and length and
+  no line on what uses it, `ui.filePage`; `selectFile` in `blocks/filesView.ts`
+  sets it): the back row goes back to Files, the title and the path badge name
+  the script (the badge's folder and the file's path), and `ToolkitFilePage`
+  puts the Explain and Code switch in a row over the box. Back to Files shows
+  the tree with the script under it, still selected; a tap on its row opens its
+  page again (`opensPage`; the library's FileTree reports no tap on the
+  selected row, so `ToolkitFileBrowser` handles it). On the phone (M5,
+  `skillFilesPhone`, T4's files with the phone's shorter role lines and only
+  scripts/ open) the Files tab has no viewer: the item's folder in the toolkit
+  (`ToolkitFileBrowser` `folder`) sits over the tree, the tree marks only the
+  file opened last (`ui.file`, `marked`), and every file with a view opens on
+  its page (`selectFile`'s `phone`). A browser with a `badge` leaves out the
+  path row too, and the copy button joins the back row's icon buttons
+  (`ToolkitItemActions` `copy`). A file on its page on the phone (M6,
+  `scriptCodePhone`, M5's files with the phone's source of check, as Figma
+  numbers its lines, and D10's explanation, on Code) has no title: the path
+  badge names the file with its icon and no copy button, and the copy button
+  joins the back row. `ToolkitFilePage layout="phone"` puts the file's meta
+  line over the switch, and on Code the line on what runs it after
+  Read-only, the source wrapped (`CodeLines` `wrap`) in a box and the view's
+  `footnote` under it. On Explain (M8, `scriptExplainedPhone`, M6's data)
+  the explanation has no box: `ToolkitFilePage` restyles the library's
+  `ScriptExplanation` slots so it starts at the item's edge and each line
+  link sits under its step's text (LIBRARY_GAPS.md, Script explanation).
+  A browser with no `badge` keeps the item's header on the phone, as on M19
+  (M35, `ruleFilesPhone`, T32's files with the phone's role line: the
+  length and kind), with the folder and the tree under the tabs and no row
+  marked until a file is opened. An agent on the phone (M36,
+  `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
+  same under Back to Toolkit, and a workflow (M37, `workflowFilesPhone`,
+  T34's files) shows its doc and the harness/ folder open; a hook (M38,
+  `hookFilesPhone`, T35's files) its script and its tests. Only the
+  selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

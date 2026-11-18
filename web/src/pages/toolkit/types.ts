@@ -256,6 +256,90 @@ const ToolkitHowItWorks = z.object({
   named: z.boolean().optional(),
 })
 
+/**
+ * A folder or file in the Files tab's tree (D6 `tree · references/` 432:2151, `tree · check` 432:2213): its path in
+ * the item (unique, what the tab selects it by), its name, whether it is a file, a folder or a script (`code`, D6
+ * icon/code 432:2214), a count at the row's end (a folder's files, a file's lines, "5 cases"), a line under the name
+ * that says what the file or folder is for (D6 `role · references/` 432:2159, "Read on demand") and a folder's
+ * contents.
+ */
+export type ToolkitFileNode = {
+  path: string
+  name: string
+  type?: 'file' | 'folder' | 'code' | undefined
+  count?: number | string | undefined
+  caption?: string | undefined
+  children?: ToolkitFileNode[] | undefined
+}
+const ToolkitFileNode: z.ZodType<ToolkitFileNode> = z.object({
+  path: z.string(),
+  name: z.string(),
+  type: z.enum(['file', 'folder', 'code']).optional(),
+  count: z.union([z.number().int().nonnegative(), z.string()]).optional(),
+  caption: z.string().optional(),
+  get children() {
+    return z.array(ToolkitFileNode).optional()
+  },
+})
+
+/**
+ * A script explained in plain English (D10 `explain` 440:1423), the default view of a script that has one: what it
+ * does (`overview` 440:1424), its facts such as In, Out and Exit (`io · In` 440:1427), each step with the line it
+ * explains (`walkthrough` 440:1437) and a note on who wrote it (`generated` 440:1480). The library's
+ * `ScriptExplanation` draws it.
+ */
+const ToolkitFileExplain = z.object({
+  summary: z.string(),
+  facts: z.array(z.object({ key: z.string(), value: z.string() })).optional(),
+  steps: z.array(z.object({ text: z.string(), line: z.number().int().positive().optional() })).min(1),
+  note: z.string().optional(),
+})
+
+/**
+ * One file as the Files tab's viewer shows it (D6 `viewer` 432:2290): the path in the bar (`scripts/check`), text after
+ * it (D6 432:2295, "Python · 437 lines · run, not read"), the file's first lines as code, each split into its syntax
+ * colours, or its blocks rendered read-only, and a line under it on what uses the file (D6 `used by` 432:2347), with
+ * the icon of the kind of item that uses it.
+ */
+const ToolkitFileView = z.object({
+  /** The node's path in the tree that this view shows. */
+  path: z.string(),
+  meta: z.string().optional(),
+  blocks: z.array(ToolkitMarkdownBlock),
+  code: z.array(z.array(ToolkitCodeSegment)).optional(),
+  usedBy: z.object({ kind: ToolkitKind, text: z.string() }).optional(),
+  /** A script's explanation (D10); a script with one and `code` opens on it, with the Explain and Code switch. */
+  explain: ToolkitFileExplain.optional(),
+  /**
+   * The blocks summarise a file that is not Markdown, such as a script's header comment (T35 `rendered markdown`
+   * 494:4338): drawn rendered with no Rendered and Source switch, since they have no source of their own.
+   */
+  summary: z.literal(true).optional(),
+  /** A line under the source on a file's own page on the phone (M6 435:555), such as how its long lines wrap. */
+  footnote: z.string().optional(),
+})
+export type ToolkitFileView = z.infer<typeof ToolkitFileView>
+
+/**
+ * The Files tab of an open item (D6 `file browser` 432:2141): the item's folders and files as a tree, the folders open
+ * at first, the file selected at first (`ui.file` overrides it) and what the viewer shows of each file it knows. A
+ * file with no view shows its bar only.
+ */
+const ToolkitFileBrowser = z.object({
+  tree: z.array(ToolkitFileNode).min(1),
+  expanded: z.array(z.string()),
+  selected: z.string(),
+  views: z.array(ToolkitFileView),
+  /**
+   * On a tablet or phone the Files tab's path row (T4 `path row` 457:169) names the item's folder in the toolkit
+   * ("skills/writer/") and how many files it has ("11 files"), in place of where the item is and when it changed; a
+   * file on its own page (T6 457:178) shows the folder and the file's path in the badge. The item's own path row when
+   * not set.
+   */
+  badge: z.object({ path: z.string(), meta: z.string() }).optional(),
+})
+export type ToolkitFileBrowser = z.infer<typeof ToolkitFileBrowser>
+
 /** A tab of an open item: Overview, How it works, Files, Links, Evals or Activity. */
 const ToolkitItemTab = z.object({ value: z.string(), label: z.string() })
 
@@ -313,6 +397,8 @@ export const ToolkitItemDetailView = z.object({
    * (`ui.flowFullPage`). None for an item that is not a workflow.
    */
   flowPage: ToolkitFlowPage.optional(),
+  /** The Files tab (D6): the item's tree and its file viewer. None when the item has no such tab yet; its panel is then empty. */
+  browser: ToolkitFileBrowser.optional(),
   tabs: z.array(ToolkitItemTab).min(1),
   /**
    * The item's main file, rendered read-only: its name, text after the name in the bar (D7 433:567, "137 lines · the
@@ -394,6 +480,19 @@ export const ToolkitUi = z.object({
   flowFullPage: z.boolean().optional(),
   /** The id of the step selected on a workflow's page (D13); its first step with fields when not set. */
   flowStep: z.string().optional(),
+  /** The path of the file selected on the open item's Files tab (D6); the browser's `selected` when not set. */
+  file: z.string().optional(),
+  /**
+   * How the Files tab's viewer shows a script that has an explanation (D10): Explain or Code; or a Markdown file (T4):
+   * Rendered or its source (`code`). Explain or Rendered when not set; a script with no explanation shows its code.
+   */
+  fileView: z.enum(['explain', 'rendered', 'code']).optional(),
+  /**
+   * On a tablet or phone, whether the selected file fills the item's Files tab on a page of its own (T6): Back to
+   * Files over its name, its path badge and the tabs, then the file. A script with an explanation opens so; another
+   * file opens under the tree (T4). Under the tree when not set.
+   */
+  filePage: z.boolean().optional(),
 })
 export type ToolkitUi = z.infer<typeof ToolkitUi>
 

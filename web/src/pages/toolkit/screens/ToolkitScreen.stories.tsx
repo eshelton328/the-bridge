@@ -627,3 +627,352 @@ export const WorkflowFullPagePhone: Story = {
     await expect(within(item).getByRole('button', { name: 'Primary grades', pressed: true })).toBeInTheDocument()
   },
 }
+
+export const SkillFiles: Story = {
+  name: 'D6: a skill open beside the list, on Files',
+  args: { data: toolkitStates.skillFiles.data, ui: toolkitStates.skillFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('Read on demand')).toBeVisible()
+    await expect(within(tree).getByText('chat-sourced-first-person/')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /check/, selected: true })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'scripts/check' })
+    await expect(within(viewer).getByText('Python · 437 lines · run, not read')).toBeVisible()
+    await expect(within(viewer).getByText('Step 6 of SKILL.md runs this script on the draft.')).toBeVisible()
+    // Only the selected tab's panel is drawn: the Overview's side column is not there.
+    await expect(within(item).queryByText('Used in workflows')).toBeNull()
+  },
+}
+
+export const ScriptExplained: Story = {
+  name: 'D10: a skill’s script explained, on Files',
+  args: { data: toolkitStates.scriptExplained.data, ui: toolkitStates.scriptExplained.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    const viewer = within(item).getByRole('region', { name: 'scripts/check' })
+    // A script with an explanation opens on Explain: the overview, the walkthrough and who wrote it.
+    await expect(within(viewer).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(viewer).getByText('437 lines')).toBeVisible()
+    await expect(within(viewer).getByText('0 pass · 1 a rule fails · 2 bad input')).toBeVisible()
+    await expect(within(viewer).getByText('Exit 1 if any file has a fail. Otherwise exit 0.')).toBeVisible()
+    await expect(within(viewer).getByText(/^Written by Claude from this version of the file/)).toBeVisible()
+    await expect(within(viewer).queryByText('#!/usr/bin/env python3')).toBeNull()
+    // Each step links to its line; the play test does not press one, so the render stays on Explain (the fidelity
+    // check draws the story after its play). src/app/ToolkitFiles.test.tsx presses the switch and the links.
+    await expect(within(viewer).getByRole('button', { name: 'line 433' })).toBeVisible()
+  },
+}
+
+export const RuleFiles: Story = {
+  name: 'D33: a rule open beside the list, on Files',
+  args: { data: toolkitStates.ruleFiles.data, ui: toolkitStates.ruleFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // A rule is one file: the tree has its one row, selected, with what it is.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByRole('treeitem', { name: /skills\.md/, selected: true })).toBeVisible()
+    await expect(
+      within(tree).getByText('The rule. Claude Code loads it by the paths in its frontmatter.'),
+    ).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'skills.md' })
+    await expect(within(viewer).getByText('Markdown · 104 lines · the rule')).toBeVisible()
+    // The file's first lines as written: the paths frontmatter, then the rule's text.
+    await expect(within(viewer).getByText(/^\s*- "toolkit\/skills\/\*\*"$/)).toBeVisible()
+    await expect(
+      within(viewer).getByText('Loads when a file under toolkit/skills/** or skills/** changes.'),
+    ).toBeVisible()
+  },
+}
+
+export const AgentFiles: Story = {
+  name: 'D34: an agent open beside the list, on Files',
+  args: { data: toolkitStates.agentFiles.data, ui: toolkitStates.agentFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // An agent is one file, its prompt: the tree has its one row, selected, with what it is.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByRole('treeitem', { name: /writing-reviewer\.md/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('The prompt. Its model and tools are in the frontmatter.')).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'writing-reviewer.md' })
+    await expect(within(viewer).getByText('Markdown · 137 lines · the prompt')).toBeVisible()
+    // The frontmatter holds the model and the tools.
+    await expect(within(viewer).getByText('model: opus')).toBeVisible()
+    await expect(within(viewer).getByText('tools: Bash, Read, Grep, Glob')).toBeVisible()
+    await expect(
+      within(viewer).getByText(
+        'Step 7 of the writer skill starts this agent with the draft, the form and the sources.',
+      ),
+    ).toBeVisible()
+  },
+}
+
+export const WorkflowFiles: Story = {
+  name: 'D35: a workflow open beside the list, on Files',
+  args: { data: toolkitStates.workflowFiles.data, ui: toolkitStates.workflowFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The workflow is one design doc, selected; the harness scripts its steps run are outside the toolkit.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByRole('treeitem', { name: /skill-eval-round\.md/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('Design doc, run by hand. No script yet.')).toBeVisible()
+    await expect(
+      within(tree).getByText('Outside the toolkit, in projects/skill-evals/. One script for each step.'),
+    ).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^aggregate\.py/ })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'skill-eval-round.md' })
+    await expect(within(viewer).getByText('Markdown · 93 lines · design doc')).toBeVisible()
+    await expect(within(viewer).getByText('The steps table names the harness script for each step.')).toBeVisible()
+  },
+}
+
+export const HookFiles: Story = {
+  name: 'D36: a hook open beside the list, on Files',
+  args: { data: toolkitStates.hookFiles.data, ui: toolkitStates.hookFiles.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // A hook is the script and its tests; the tests are selected.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(2)
+    await expect(within(tree).getByText('The hook. Git runs it on every commit.')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^test-commit-msg/, selected: true })).toBeVisible()
+    const viewer = within(item).getByRole('region', { name: 'test-commit-msg' })
+    await expect(within(viewer).getByText('bash · 97 lines · run, not read')).toBeVisible()
+    await expect(within(viewer).getByText('Last run on Nov 14: 43 of 43 pass.')).toBeVisible()
+  },
+}
+
+export const SkillFilesTablet: Story = {
+  name: 'T4: a skill’s files on a tablet, a doc rendered under the tree',
+  args: { data: toolkitStates.skillFilesTablet.data, ui: toolkitStates.skillFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const viewer = within(item).getByRole('region', { name: 'references/doc.md' })
+    // A Markdown file opens rendered, with the Rendered and Source switch under its text.
+    await expect(within(viewer).getByText('56 lines · read on demand')).toBeVisible()
+    await expect(within(viewer).getByRole('heading', { name: 'Docs' })).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+    await expect(within(viewer).getByRole('radio', { name: 'Source' })).not.toBeChecked()
+  },
+}
+
+export const ScriptExplainedTablet: Story = {
+  name: 'T6: a skill’s script explained on a tablet, on a page of its own',
+  args: {
+    data: toolkitStates.scriptExplainedTablet.data,
+    ui: toolkitStates.scriptExplainedTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the script on a page of its own, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Explain: its language and length, the overview, the walkthrough and who wrote it.
+    await expect(within(item).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(item).getByText('Python · 437 lines')).toBeVisible()
+    await expect(within(item).getByText('0 pass · 1 a rule fails · 2 bad input')).toBeVisible()
+    await expect(within(item).getByText(/^Written by Claude from this version of the file/)).toBeVisible()
+    await expect(within(item).queryByText('Step 6 of SKILL.md runs this script on the draft.')).toBeNull()
+    await expect(within(item).getByRole('button', { name: 'line 433' })).toBeVisible()
+  },
+}
+
+export const RuleFilesTablet: Story = {
+  name: 'T32: a rule’s files on a tablet, the rule rendered under the tree',
+  args: { data: toolkitStates.ruleFilesTablet.data, ui: toolkitStates.ruleFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(
+      within(tree).getByText('The rule. Claude Code loads it by the paths in its frontmatter. 104 lines.'),
+    ).toBeVisible()
+    // The rule opens rendered, with the Rendered and Source switch under its text.
+    const viewer = within(item).getByRole('region', { name: 'skills.md' })
+    await expect(within(viewer).getByRole('heading', { name: 'Skills' })).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+  },
+}
+
+export const AgentFilesTablet: Story = {
+  name: 'T33: an agent’s files on a tablet, from the links of a skill',
+  args: { data: toolkitStates.agentFilesTablet.data, ui: toolkitStates.agentFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under the
+  // breadcrumb. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(
+      within(tree).getByText('The prompt. Its model and tools are in the frontmatter. 137 lines.'),
+    ).toBeVisible()
+    // The prompt opens rendered, with the Rendered and Source switch under its text.
+    const viewer = within(item).getByRole('region', { name: 'writing-reviewer.md' })
+    await expect(
+      within(viewer).getByText('You review one draft for a reader who has none of its author’s context.'),
+    ).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+  },
+}
+
+export const WorkflowFilesTablet: Story = {
+  name: 'T34: a workflow’s files on a tablet, the design doc rendered under the tree',
+  args: { data: toolkitStates.workflowFilesTablet.data, ui: toolkitStates.workflowFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('Design doc, run by hand. No script yet. 93 lines.')).toBeVisible()
+    await expect(within(tree).getByText('156 lines')).toBeVisible()
+    // The design doc opens rendered, with the Rendered and Source switch under its text.
+    const viewer = within(item).getByRole('region', { name: 'skill-eval-round.md' })
+    await expect(within(viewer).getByRole('heading', { name: 'skill-eval-round' })).toBeVisible()
+    await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
+  },
+}
+
+export const HookFilesTablet: Story = {
+  name: 'T35: a hook’s files on a tablet, its tests summed up under the tree',
+  args: { data: toolkitStates.hookFilesTablet.data, ui: toolkitStates.hookFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('The hook. Git runs it on every commit. 142 lines.')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^test-commit-msg/, selected: true })).toBeVisible()
+    // The tests are summed up rendered, with no Rendered and Source switch.
+    const viewer = within(item).getByRole('region', { name: 'test-commit-msg' })
+    await expect(within(viewer).getByRole('heading', { name: 'test-commit-msg' })).toBeVisible()
+    await expect(within(viewer).queryByRole('radio', { name: 'Source' })).toBeNull()
+  },
+}
+
+export const SkillFilesPhone: Story = {
+  name: 'M5: a skill’s files on the phone, the tree with a file per row',
+  args: { data: toolkitStates.skillFilesPhone.data, ui: toolkitStates.skillFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The phone's shorter role lines, only scripts/ open, and check marked with its count in lines.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('When to use, steps, rules')).toBeVisible()
+    await expect(within(tree).getByText('Never loaded into a session')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^check/, selected: true })).toBeVisible()
+    await expect(within(tree).getByText('437 lines')).toBeVisible()
+    await expect(within(tree).queryByRole('treeitem', { name: /^doc\.md/ })).toBeNull()
+  },
+}
+
+export const ScriptCodePhone: Story = {
+  name: 'M6: a skill’s script on the phone, on a page of its own, on Code',
+  args: { data: toolkitStates.scriptCodePhone.data, ui: toolkitStates.scriptCodePhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the script on a page of its own, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Code: the phone's source, as Figma numbers its lines, and what runs it.
+    await expect(within(item).getByRole('radio', { name: 'Code' })).toBeChecked()
+    await expect(within(item).getByText('draft against toolkit/rules/writing.md.')).toBeVisible()
+    await expect(within(item).getByText(/Step 6 of SKILL\.md runs this script\.$/)).toBeVisible()
+  },
+}
+
+export const ScriptExplainedPhone: Story = {
+  name: 'M8: a skill’s script explained on the phone, on a page of its own',
+  args: { data: toolkitStates.scriptExplainedPhone.data, ui: toolkitStates.scriptExplainedPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the explanation with no box, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Explain, with the phone's meta line: the overview and each step's line link.
+    await expect(within(item).getByRole('radio', { name: 'Explain' })).toBeChecked()
+    await expect(within(item).getByText('Python · 437 lines · run, not read')).toBeVisible()
+    await expect(within(item).getByText('one JSON line for each file')).toBeVisible()
+    await expect(within(item).getByRole('button', { name: 'line 406' })).toBeVisible()
+    await expect(within(item).queryByText('draft against toolkit/rules/writing.md.')).toBeNull()
+  },
+}
+
+export const RuleFilesPhone: Story = {
+  name: 'M35: a rule’s files on the phone, its one file in the tree',
+  args: { data: toolkitStates.ruleFilesPhone.data, ui: toolkitStates.ruleFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skills' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The rule's one file, with the phone's role line: its length and kind.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByText('104 lines · markdown')).toBeVisible()
+  },
+}
+
+export const AgentFilesPhone: Story = {
+  name: 'M36: an agent’s files on the phone, its prompt in the tree',
+  args: { data: toolkitStates.agentFilesPhone.data, ui: toolkitStates.agentFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The prompt, with the phone's role line: its length and kind.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(1)
+    await expect(within(tree).getByText('137 lines · markdown')).toBeVisible()
+  },
+}
+
+export const WorkflowFilesPhone: Story = {
+  name: 'M37: a workflow’s files on the phone, its doc and the harness scripts',
+  args: { data: toolkitStates.workflowFilesPhone.data, ui: toolkitStates.workflowFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'skill-eval-round' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The doc and harness/ with the phone's role lines, and the scripts with their counts in lines.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(8)
+    await expect(within(tree).getByText('93 lines · markdown')).toBeVisible()
+    await expect(within(tree).getByText('Outside the toolkit')).toBeVisible()
+    await expect(within(tree).getByText('208 lines')).toBeVisible()
+  },
+}
+
+export const HookFilesPhone: Story = {
+  name: 'M38: a hook’s files on the phone, the script and its tests',
+  args: { data: toolkitStates.hookFilesPhone.data, ui: toolkitStates.hookFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script and its tests, with the phone's role lines: each one's length and kind.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(2)
+    await expect(within(tree).getByText('142 lines · script')).toBeVisible()
+    await expect(within(tree).getByText('97 lines · script')).toBeVisible()
+  },
+}

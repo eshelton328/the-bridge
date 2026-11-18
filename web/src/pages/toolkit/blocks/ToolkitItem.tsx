@@ -20,9 +20,18 @@
 // (`ToolkitFlowPage`). On a tablet (T8) the same breadcrumb row is the
 // DetailFrame's back row, 36 high, and the item's rows start 12 under it. On the phone (M9) the breadcrumb leaves out
 // the kind's crumb (Toolkit › the workflow), the actions are icon buttons, when it runs sits beside the kind badge, the
-// path row is left out and the rows are 10 apart under the smaller title, as on M12.
+// path row is left out and the rows are 10 apart under the smaller title, as on M12. On the Files tab of a tablet or
+// phone (T4) the kind badge is left out: the title and the path row (the item's folder in the toolkit and how many
+// files it has, the browser's `badge`) sit 8 apart over the tabs; a browser with no `badge` keeps the item's header
+// (T32 to T35). A script with an explanation opens there on a page
+// of its own (T6, `filePage`): the back row goes back to Files, and the title and the path row name the file. On the
+// phone's Files tab (M5) a browser with a `badge` leaves out the path row too: the title sits over the tabs, the item's
+// folder in the toolkit over the tree, and the copy button joins the back row's icon buttons. A file on its own page on
+// the phone (M6) has no title: the path badge names the file with its icon, and the copy button joins the back row.
 import {
   AgentIcon,
+  CodeIcon,
+  FileIcon,
   HookIcon,
   ItemTabs,
   KindBadge,
@@ -34,6 +43,9 @@ import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitOpenItem } from '../types.ts'
+import { type FileMode, fileMode, filePathIn, findFile, openFile } from './filesView.ts'
+import { ToolkitFileBrowser } from './ToolkitFileBrowser.tsx'
+import { ToolkitFilePage } from './ToolkitFilePage.tsx'
 import { ToolkitFlowPage } from './ToolkitFlowPage.tsx'
 import { ToolkitHowItWorks } from './ToolkitHowItWorks.tsx'
 import { ToolkitItemActions } from './ToolkitItemActions.tsx'
@@ -47,6 +59,20 @@ import { ToolkitItemPath } from './ToolkitItemPath.tsx'
 // The pane fills the frame's height; 24 under the content keeps D8's item (its content ends 42 over the frame's foot,
 // 940, and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
 const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '24' })
+// D6 432:2141: on the Files tab the file browser runs past the frame's foot (it ends at 988 of 982), so the pane keeps
+// no space under it, and the tabs and their open panel grow, so the browser runs to the pane's foot; with the pane's 24
+// the tree's 17 rows would push the pane 4 px past the frame.
+const paneFiles = css({
+  display: 'flex',
+  flexDirection: 'column',
+  flexGrow: '1',
+  gap: '16',
+  px: '40',
+  pt: '24',
+  pb: '0',
+  '& > :last-child': { flexGrow: '1' },
+  '& > :last-child > [role=tabpanel][data-state=open]': { display: 'flex', flexDirection: 'column', flexGrow: '1' },
+})
 // T3 428:542: the DetailFrame's Container pads the item at the sides and the foot. The back row (428:543) ends at 77
 // and the meta row (428:561) starts at 91, and the rows under it are 14 apart; no space token has 14. The BackRow is
 // 32 high against Figma's 36, so 20 above the meta row and 12 between the rows keep each row within 3 px of Figma's
@@ -55,6 +81,12 @@ const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20'
 // T10 461:64: on How it works the title (461:255) starts 12 under the back row (461:244, which ends at 77), and the rows
 // are 12 apart. The BackRow is 32 high against Figma's 36, so 16 above the title keeps it in place.
 const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '16' })
+// T4 434:405, T6 440:1772: on the Files tab of a tablet with the browser's `badge` there is no meta row, and the title
+// starts 14 under the back row (434:394 and 440:1761 end at 77, the title starts at 91). The BackRow is 32 high against
+// Figma's 36, so 16 above the title keeps it in place, as on T10 (`page`'s 20 is sized for T3's meta row). The tabs
+// (434:512, 464:562) start 14 under the path row; no space token has 14, and 16 keeps the tabs and everything under
+// them where `page`'s 20 and 12 put them, within 3 px of Figma's (LIBRARY_GAPS.md, Tablet item spacing).
+const filesPage = css({ display: 'flex', flexDirection: 'column', gap: '16', pt: '16' })
 // M12 461:404: on How it works on the phone the title (461:560) starts 10 under the back row (461:550), and the title
 // and the tabs are 10 apart. M9 448:343, a workflow's own page on the phone, has the same spacing: the meta row
 // (448:483) 10 under the breadcrumb row (448:473, ends at 78), and the title (448:491) and the tabs (464:530) 10 apart.
@@ -99,6 +131,15 @@ const title = css({ alignSelf: 'flex-start', textStyle: 'heading', color: 'fg.de
 const panelPage = css({ pt: '4' })
 // M12 461:560: on How it works on the phone the title is smaller (57 × 29): the title text style, 28 high.
 const phoneHowTitle = css({ alignSelf: 'flex-start', textStyle: 'title', color: 'fg.default' })
+// T4 434:405, T6 440:1772: on the Files tab of a tablet the title and the path row are one layer, 8 apart (the name
+// ends at 129, the path row starts at 137).
+const titleGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  alignSelf: 'flex-start',
+  gap: '8',
+})
 
 // The item's title is a text layer named after the item, and a list row has the same name, so its Figma key is the
 // node id of the frame that shows the item: writer in D3 (427:270), the rule skills in D4 (427:626), the agent
@@ -170,6 +211,38 @@ const fullPageDescriptionLayers: Readonly<Record<Viewport, Readonly<Record<strin
   tablet: { 'workflows/skill-eval-round.md': '448:215' },
   phone: { 'workflows/skill-eval-round.md': '448:492' },
 }
+// On the Files tab: writer in D6 (432:2010), and in D10 (440:1198) with a script on Explain.
+// On a tablet: writer in T4 (434:406), and the rule, the agent, the workflow and the hook in T32 to T35.
+const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'skills/writer/': '432:2010' },
+  tablet: {
+    'skills/writer/': '434:406',
+    'rules/skills.md': '494:2870',
+    'agents/writing-reviewer.md': '494:3203',
+    'workflows/skill-eval-round.md': '494:3571',
+    'hooks/commit-msg': '494:4073',
+  },
+  // On the phone: writer in M5 (435:210), the rule skills in M35 (494:4452), writing-reviewer in M36 (494:4717),
+  // skill-eval-round in M37 (494:5021) and the hook commit-msg in M38 (494:5369).
+  phone: {
+    'hooks/commit-msg': '494:5369',
+    'skills/writer/': '435:210',
+    'rules/skills.md': '494:4452',
+    'agents/writing-reviewer.md': '494:4717',
+    'workflows/skill-eval-round.md': '494:5021',
+  },
+}
+// A file on a page of its own names it by the item's path and the file's: check in T6 (440:1773).
+const filePageTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: {},
+  tablet: { 'skills/writer/scripts/check': '440:1773' },
+  phone: {},
+}
+const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: { 'skills/writer/': '440:1198' },
+  tablet: {},
+  phone: {},
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
   desktop: howTitleLayers,
@@ -204,6 +277,18 @@ export type ToolkitItemProps = {
   onDiscuss?: (() => void) | undefined
   /** Opens a workflow's steps on a page of their own (D8 Open full page, D13). */
   onOpenFullPage?: (() => void) | undefined
+  /** The path of the file selected on the Files tab (D6, `ui.file`); the browser's own when not set. */
+  file?: string | undefined
+  /** Called with a file's path when it is selected on the Files tab. */
+  onFileChange?: ((path: string) => void) | undefined
+  /** Explain or Code for the Files tab's script (D10, `ui.fileView`); Explain when not set. */
+  fileView?: FileMode | undefined
+  /** Called with Explain or Code when the Files tab's viewer changes its view. */
+  onFileViewChange?: ((mode: FileMode) => void) | undefined
+  /** On a tablet or phone, the selected file fills the Files tab on a page of its own (T6, `ui.filePage`). */
+  filePage?: boolean | undefined
+  /** Leaves the file's page for the Files tab's tree (T6's Back to Files). */
+  onCloseFilePage?: (() => void) | undefined
   /** Opens another toolkit item, such as an agent a workflow runs, by its path. */
   onOpenItem?: ((path: string) => void) | undefined
   /**
@@ -231,11 +316,47 @@ export function ToolkitItem({
   onOpenFullPage,
   onOpenItem,
   fullPage,
+  file,
+  onFileChange,
+  fileView,
+  onFileViewChange,
+  filePage = false,
+  onCloseFilePage,
 }: ToolkitItemProps) {
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
   const full = fullPage !== undefined
+  // The Files tab shows a script's explanation (D10), which names its own title layer.
+  const explaining =
+    tab === 'files' &&
+    detail.browser !== undefined &&
+    fileMode(openFile(detail.browser, file).view, fileView) === 'explain'
+  // T4: the Files tab of a tablet or phone whose browser names the item's folder (`badge`) has no kind badge, and its
+  // path row names that folder. Without a `badge` (T32 to T35) the item keeps its header, as on the Overview (T17).
+  const browser = !desktop && tab === 'files' ? detail.browser : undefined
+  const narrowFiles = browser !== undefined
+  const folderFiles = browser?.badge !== undefined
+  const opened = browser === undefined ? undefined : openFile(browser, file)
+  // T6: the selected file on a page of its own, when the state has a view of it.
+  const pageView = filePage && opened?.view !== undefined ? opened.view : undefined
+  const pageFile =
+    browser === undefined || opened === undefined || pageView === undefined
+      ? undefined
+      : {
+          path: opened.path,
+          name: findFile(browser.tree, opened.path)?.name ?? opened.path,
+          view: pageView,
+          location: `${browser.badge?.path ?? detail.location}${opened.path}`,
+        }
+  // M5 435:203: on the phone's Files tab with no path badge (a browser with a `badge`), the copy button joins the back
+  // row's icon buttons.
+  const phoneFolder = phone && folderFiles && pageFile === undefined
+  // M6 435:493: a file on its own page on the phone has no title; the path badge names the file in the item.
+  const phoneFile = phone && pageFile !== undefined
+  const copied = phoneFile ? filePathIn(detail.location, pageFile.path) : detail.location
+  // M5 435:212: on the phone the Files tab names the item's folder in the toolkit over the tree.
+  const folder = detail.location.slice(0, detail.location.lastIndexOf('/') + 1)
   // M9 448:473: on the phone a workflow's own page names only the workflow after Toolkit.
   const fullPhone = full && phone
   const crumb = fullPhone ? null : (fullPage?.crumb ?? from)
@@ -249,8 +370,55 @@ export function ToolkitItem({
       iconOnly={phone}
       onDiscuss={onDiscuss}
       onShowOnMap={onShowOnMap}
+      copy={
+        phoneFolder || phoneFile
+          ? {
+              label: `Copy ${copied}`,
+              onCopy: () => {
+                onCopyPath?.(copied)
+              },
+            }
+          : undefined
+      }
     />
   )
+  const heading = (
+    <h2
+      className={(narrowHow || fullPhone) && phone ? phoneHowTitle : title}
+      data-figma={
+        pageFile !== undefined
+          ? filePageTitleLayers[layout][pageFile.location]
+          : full
+            ? fullPageTitleLayers[layout][item.path]
+            : tab === 'how'
+              ? howTitleLayersOf[layout][item.path]
+              : tab === 'files'
+                ? (explaining ? explainTitleLayers : filesTitleLayers)[layout][item.path]
+                : titleLayersOf[layout][item.path]
+      }
+    >
+      {pageFile?.name ?? item.name}
+    </h2>
+  )
+  const pathRow =
+    narrowHow || fullPhone || phoneFolder ? null : phoneFile ? (
+      <ToolkitItemPath
+        location={pageFile.path}
+        changed=""
+        icon={opened?.type === 'code' ? <CodeIcon /> : <FileIcon />}
+        copyable={false}
+        layer={null}
+      />
+    ) : (
+      <ToolkitItemPath
+        location={pageFile?.location ?? browser?.badge?.path ?? detail.location}
+        changed={
+          pageFile !== undefined ? (pageFile.view.meta ?? '') : (browser?.badge?.meta ?? (phone ? '' : detail.changed))
+        }
+        onCopyPath={onCopyPath}
+        layer={phone ? null : 'path row'}
+      />
+    )
   const article = (
     <article
       aria-label={item.name}
@@ -258,7 +426,9 @@ export function ToolkitItem({
         desktop
           ? full
             ? fullPane
-            : pane
+            : tab === 'files'
+              ? paneFiles
+              : pane
           : narrowHow || fullPhone
             ? phone
               ? phoneHowPage
@@ -267,7 +437,9 @@ export function ToolkitItem({
               ? phonePage
               : full
                 ? fullNarrowPage
-                : page
+                : folderFiles
+                  ? filesPage
+                  : page
       }
       data-figma={desktop && full ? 'toolkit' : itemLayer[layout]}
     >
@@ -283,7 +455,7 @@ export function ToolkitItem({
           />
         </div>
       ) : null}
-      {narrowHow ? null : (
+      {narrowHow || folderFiles || phoneFile ? null : (
         <div
           className={
             desktop && !full
@@ -305,25 +477,18 @@ export function ToolkitItem({
           {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
         </div>
       )}
-      <h2
-        className={(narrowHow || fullPhone) && phone ? phoneHowTitle : title}
-        data-figma={
-          full
-            ? fullPageTitleLayers[layout][item.path]
-            : tab === 'how'
-              ? howTitleLayersOf[layout][item.path]
-              : titleLayersOf[layout][item.path]
-        }
-      >
-        {item.name}
-      </h2>
-      {narrowHow || fullPhone ? null : (
-        <ToolkitItemPath
-          location={detail.location}
-          changed={phone ? '' : detail.changed}
-          onCopyPath={onCopyPath}
-          layer={phone ? null : 'path row'}
-        />
+      {folderFiles && !phone ? (
+        <div className={titleGroup} data-figma="title">
+          {heading}
+          {pathRow}
+        </div>
+      ) : phoneFile ? (
+        pathRow
+      ) : (
+        <>
+          {heading}
+          {pathRow}
+        </>
       )}
       {/* Figma draws the selected tab's label cyan on every layout (D3, T3, M2); on a tablet and the phone the tabs
           start at the list's edge with 10 px sides (T3 and M2 `item tabs`), on the desktop with the default space. */}
@@ -357,12 +522,35 @@ export function ToolkitItem({
               />
             ) : t.value === 'how' && detail.how !== undefined ? (
               <ToolkitHowItWorks how={detail.how} headerLayer={howHeaderLayers[item.path]} layout={layout} />
+            ) : t.value === 'files' && pageFile !== undefined ? (
+              <ToolkitFilePage
+                view={pageFile.view}
+                mode={fileMode(pageFile.view, fileView)}
+                onModeChange={onFileViewChange}
+                layout={layout}
+              />
+            ) : t.value === 'files' && detail.browser !== undefined ? (
+              <ToolkitFileBrowser
+                browser={detail.browser}
+                open={openFile(detail.browser, file)}
+                layout={layout}
+                onSelect={onFileChange}
+                folder={phone ? folder : undefined}
+                marked={phone ? (file ?? null) : undefined}
+                mode={fileView}
+                onModeChange={onFileViewChange}
+                onCopy={(path) => {
+                  onCopyPath?.(filePathIn(detail.location, path))
+                }}
+              />
             ) : null
           return {
             value: t.value,
             label: t.label,
             // T8 448:215: a workflow's own page starts 12 under the tabs; the tabs' panel puts it 15 under them.
-            content: desktop || full || panel === null ? panel : <div className={panelPage}>{panel}</div>,
+            // T4 434:408: on the Files tab of a tablet the tree starts 14 under the tabs, where the tabs' panel puts it.
+            content:
+              desktop || full || narrowFiles || panel === null ? panel : <div className={panelPage}>{panel}</div>,
           }
         })}
       />
@@ -377,7 +565,9 @@ export function ToolkitItem({
           name={item.name}
           from={crumb}
           named={narrowHow || fullPhone}
-          onBack={back}
+          // T6 440:1762: a file on a page of its own goes back to the Files tab's tree.
+          label={pageFile === undefined ? undefined : 'Files'}
+          onBack={pageFile === undefined ? back : onCloseFilePage}
           actions={actions}
           // T8 448:193: a workflow's own page names the row `breadcrumb row`, 36 high, as D13 does.
           layers={full ? { row: 'breadcrumb row', trail: null } : undefined}

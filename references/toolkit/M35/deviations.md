@@ -1,0 +1,62 @@
+# M35 deviations
+
+What still differs from Figma after the fidelity loop
+(`pnpm fidelity toolkit M35`, 2026-11-18, against library 1.0.0-beta.31),
+each with its reason. The library gaps are in
+`web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
+`web/src/pages/toolkit/states/ruleFilesPhone.ts`: T32's files
+(`ruleFilesTablet`) with the phone's role line for skills.md (its length
+and kind). The browser has no `badge`, so the rule keeps M19's header: the
+kind badge with when it changed, the name and the path badge with its copy
+button. Under the tabs the rule's folder in the toolkit and the tree with
+its one file, no viewer and no row marked; the file opens on a page of its
+own (`src/app/ToolkitFiles.test.tsx`, the M35 to M38 cases). D06, D10, D33
+to D36, T04, T06, T32 to T35, M22 and M12 give the same results as before
+M35.
+
+## Checks
+
+- Text: pass (20 strings checked).
+- Position: 13 of 16 layers pass (`back row`, `button · map`,
+  `meta row`, `kind badge`, `494:4452`, `path badge`, `toolkit/rules/`,
+  `tab bar` and the five tabs of the navigation). The 3 that fail
+  (`button · Discuss`, `toolkit`, `tree`) are listed below.
+- Rules: fail. One `hiddenOverflow` finding: the item tabs' list
+  (`[data-figma="toolkit"] > div.item-tabs__root > div.item-tabs__list`),
+  see Item tabs.
+
+## Deviations
+
+- **Tree row.** Figma's row ends with a 14 px chevron and is 54 high;
+  `FileTree` draws a file with no chevron and pads the row so the tree box
+  is 12 px taller (`tree` h +12). Gap: File tree rows.
+- **Discuss button.** Figma's Discuss is an icon button 36 × 28; an
+  icon-only `Button` is square, so Discuss is `sm`, 28 × 28, and starts
+  8 px further right (`button · Discuss` x +8 w -8), as on M19. Gap: Item
+  action buttons.
+- **Item frame.** Figma's `toolkit` (494:4432) holds the back row and the
+  item, from y 42 to the tab bar. In `DetailFrame` the back row is the
+  ScrollFrame's header and the item is the body under it, so the article
+  starts under the back row and is as high as its content (`toolkit`
+  y +36, h -447), as on M19 (d-107).
+- **Item tabs.** Activity runs past the screen's edge as in Figma; the
+  compact list scrolls sideways (`hiddenOverflow` on the item tabs'
+  list), as on M19 and M22. The selected tab's outline is
+  `border.selected` at half alpha (no solid selected token, d-050).
+- **Copy icon.** The path badge's copy icon is a plain button with
+  `CopyIcon`, as on M19. Gap: Path badge copy button.
+
+## Second review
+
+A blind side-by-side review of M35 (Figma left, render right, 390 × 844)
+found the differences below. Nothing in `web/` changed for them: the
+library part draws each one, and LIBRARY_GAPS.md records the Figma
+values. The checks give the same results as before.
+
+- **Tree icons.** Figma draws the row's icon 16 × 16, 12 in from the
+  tree's edge (x 25) and centred on the row, beside the name and its
+  role line together (`icon/file` 494:4662 in `tree · skills.md` 494:4661). `FileTree` draws its icons at a fixed
+  12 px and `TreeView` aligns a row's parts to the top after its padding,
+  so the icon is about 4 px smaller each way, level with the name's line
+  only, and starts about 5 px further right; the names start at Figma's
+  x. The library sets all three. Gap: File tree rows.

@@ -36,6 +36,25 @@ import { hookHowItWorksPhone } from './hookHowItWorksPhone.ts'
 import { workflowFullPage } from './workflowFullPage.ts'
 import { workflowFullPageTablet } from './workflowFullPageTablet.ts'
 import { workflowFullPagePhone } from './workflowFullPagePhone.ts'
+import { skillFiles } from './skillFiles.ts'
+import { scriptExplained } from './scriptExplained.ts'
+import { ruleFiles } from './ruleFiles.ts'
+import { agentFiles } from './agentFiles.ts'
+import { workflowFiles } from './workflowFiles.ts'
+import { hookFiles } from './hookFiles.ts'
+import { skillFilesTablet } from './skillFilesTablet.ts'
+import { scriptExplainedTablet } from './scriptExplainedTablet.ts'
+import { ruleFilesTablet } from './ruleFilesTablet.ts'
+import { agentFilesTablet } from './agentFilesTablet.ts'
+import { workflowFilesTablet } from './workflowFilesTablet.ts'
+import { hookFilesTablet } from './hookFilesTablet.ts'
+import { skillFilesPhone } from './skillFilesPhone.ts'
+import { scriptCodePhone } from './scriptCodePhone.ts'
+import { scriptExplainedPhone } from './scriptExplainedPhone.ts'
+import { ruleFilesPhone } from './ruleFilesPhone.ts'
+import { agentFilesPhone } from './agentFilesPhone.ts'
+import { workflowFilesPhone } from './workflowFilesPhone.ts'
+import { hookFilesPhone } from './hookFilesPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -73,4 +92,23 @@ export const toolkitStates = {
   workflowFullPage,
   workflowFullPageTablet,
   workflowFullPagePhone,
+  skillFiles,
+  scriptExplained,
+  ruleFiles,
+  agentFiles,
+  workflowFiles,
+  hookFiles,
+  skillFilesTablet,
+  scriptExplainedTablet,
+  ruleFilesTablet,
+  agentFilesTablet,
+  workflowFilesTablet,
+  hookFilesTablet,
+  skillFilesPhone,
+  scriptCodePhone,
+  scriptExplainedPhone,
+  ruleFilesPhone,
+  agentFilesPhone,
+  workflowFilesPhone,
+  hookFilesPhone,
 }
