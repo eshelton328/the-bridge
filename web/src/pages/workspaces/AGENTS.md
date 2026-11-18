@@ -106,7 +106,11 @@ first: it says what each file of a page folder is for.
   where the window has no room on the right. D20 adds `ChatToast` (the
   library's static `Toast` with its button, centred), which `MainChat`
   draws in `ChatPane`'s `above` slot, over the composer, while
-  `ui.toastOpen`; its button closes it. Later frames add to these
+  `ui.toastOpen`; its button closes it. D21 adds `ChatNameField` (the
+  library's `SearchField`, 300 wide, with × as its clear button), which
+  `ChatHead` draws in place of the title while `ui.renaming`: Enter or a
+  click outside saves the name in `ui.names`, × or Escape undoes it; Rename
+  chat in `ChatActionsMenu` opens it. Later frames add to these
   blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -139,7 +143,8 @@ first: it says what each file of a page folder is for.
   Move to workspace's list open, the-bridge highlighted), D20
   `movedChat` (from `chatActions`, without the side chat and the menu:
   bridge themes and theme tokens moved to the-bridge, now `current`, and
-  the toast with Undo).
+  the toast with Undo), D21 `renameChat` (from `chatActions`, without the
+  side chat and the menu: the chat's name a field in its header).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -159,7 +164,8 @@ first: it says what each file of a page folder is for.
   `layers.resizeHint`; for D15 `fork`, the Fork form; for D16 a sidebar
   chat's `mark`, a pane head's `origin` and the `event` chat entry; for
   D17 `subtask`, the Subtask form; for D20 `toast`, the toast's text and
-  button, and its layer in `layers.toast`) and
+  button, and its layer in `layers.toast`; for D21 the name field's layer
+  in `layers.renameField`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -171,6 +177,7 @@ first: it says what each file of a page folder is for.
   of a rows-first split and its sizes, and `splitSizes`, each handle's
   sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
-  `toastOpen`, the toast shown), each a Zod schema.
+  `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
+  and `names`, the names Erik gave chats), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

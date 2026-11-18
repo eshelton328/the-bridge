@@ -22,6 +22,7 @@ import { subtaskDialog } from './subtaskDialog.ts'
 import { subtaskRunning } from './subtaskRunning.ts'
 import { moveToWorkspace } from './moveToWorkspace.ts'
 import { movedChat } from './movedChat.ts'
+import { renameChat } from './renameChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -45,4 +46,5 @@ export const workspacesStates = {
   subtaskRunning,
   moveToWorkspace,
   movedChat,
+  renameChat,
 }

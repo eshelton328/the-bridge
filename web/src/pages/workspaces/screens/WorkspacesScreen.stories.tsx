@@ -332,3 +332,17 @@ export const MovedChat: Story = {
     await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
   },
 }
+
+export const RenameChat: Story = {
+  name: 'D21: Rename chat, the name in the header as a field',
+  args: { data: workspacesStates.renameChat.data, ui: workspacesStates.renameChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    // The field takes the heading's place and takes the focus once it opens.
+    const field = canvas.getByRole('searchbox', { name: 'Rename bridge themes' })
+    await waitFor(() => expect(field).toHaveFocus())
+    await expect(field).toHaveValue('bridge themes')
+    await expect(canvas.queryByRole('heading', { name: 'bridge themes' })).toBeNull()
+    await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
+    await expect(canvas.queryByRole('complementary', { name: 'Side chat' })).toBeNull()
+  },
+}

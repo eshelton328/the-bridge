@@ -17,6 +17,7 @@
 // shows the drop zone over that pane (D8). A chat action's dialog, such as
 // Fork (D15) or Subtask (D17), opens over the screen for the chat shown
 // alone, and a toast over its composer confirms a move, with Undo (D20).
+// Rename chat turns the chat's name in its header into a field (D21).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -27,6 +28,7 @@ import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
@@ -55,7 +57,12 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     setChanged({ of: stateUi, ui: { ...ui, ...next } })
     onUiChange?.(next)
   }
-  const current = data.workspaces.find((w) => w.id === data.current)
+  // The names Erik gave chats (D21) take the place of their titles, in the sidebar and in the header.
+  const names = ui.names ?? {}
+  const workspaces = data.workspaces.map((w) =>
+    w.chats === undefined ? w : { ...w, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) },
+  )
+  const current = workspaces.find((w) => w.id === data.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
       <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
@@ -63,7 +70,10 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
   )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
-  const chat = focused?.type === 'chat' ? focused : undefined
+  const chat =
+    focused?.type === 'chat'
+      ? { ...focused, head: { ...focused.head, title: names[focused.id] ?? focused.head.title } }
+      : undefined
   if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
     const menuOpen = ui.menuFor === chat?.id
     const chatMenu =
@@ -71,7 +81,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
         <ChatActionsMenu
           title={chat.head.title}
           actions={data.chatMenu}
-          targets={data.workspaces.filter((w) => w.id !== data.current)}
+          targets={workspaces.filter((w) => w.id !== data.current)}
           newWorkspace={data.newWorkspace}
           open={menuOpen}
           onOpenChange={(open) => {
@@ -84,6 +94,9 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           highlighted={ui.menuHighlight}
           onHighlightChange={(menuHighlight) => {
             change({ menuHighlight })
+          }}
+          onSelect={(action) => {
+            if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
           }}
           moveTarget={ui.moveTarget}
           onMoveTargetChange={(moveTarget) => {
@@ -129,7 +142,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           }}
         />
       ) : undefined
-    const dragged = data.workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
+    const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.paneDrag?.chat)
     const dropZone =
       ui.paneDrag == null || data.paneDrop === undefined || dragged === undefined || chat === undefined ? undefined : (
         <PaneDropZone
@@ -140,6 +153,19 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           figma={data.layers?.dropZone}
         />
       )
+    const rename =
+      ui.renaming === true && chat !== undefined ? (
+        <ChatNameField
+          name={chat.head.title}
+          onSave={(name) => {
+            change({ renaming: false, names: { ...names, [chat.id]: name } })
+          }}
+          onCancel={() => {
+            change({ renaming: false })
+          }}
+          figma={data.layers?.renameField}
+        />
+      ) : undefined
     const toast =
       ui.toastOpen === true && data.toast !== undefined ? (
         <ChatToast
@@ -160,7 +186,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           list={
             <WorkspaceSidebar
               text={data.sidebar}
-              workspaces={data.workspaces}
+              workspaces={workspaces}
               selected={ui.focusedPane}
               openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
@@ -201,6 +227,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
                   )
                 }
                 layers={data.layers}
+                rename={rename}
                 above={toast}
                 overlay={dropZone}
               />

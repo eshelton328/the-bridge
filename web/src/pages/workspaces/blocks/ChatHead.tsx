@@ -1,6 +1,7 @@
 // The header of a chat shown alone (D2 105:785): the kind mark, the title over
 // its workspace (and where the chat came from, D16), the status and the chat actions; under them the model, the
-// context used and its label. The library's `Pane` header has one row
+// context used and its label. While Erik renames the chat, a field takes the
+// title's place (D21). The library's `Pane` header has one row
 // (LIBRARY_GAPS.md: Chat header). Props only.
 import {
   Button,
@@ -38,17 +39,19 @@ export type ChatHeadProps = {
   contextLabel: string
   /** The chat actions menu, with its trigger; a plain button when not set, and none when `null` (D4). */
   menu?: ReactNode
+  /** Drawn in place of the title while Erik renames the chat, such as the name field (D21). */
+  rename?: ReactNode
   /** The Figma layers of the header and of the chat actions button, for the fidelity checks; D2's when not set. */
   figma?: { head?: string | undefined; actions?: string | undefined } | undefined
 }
 
-export function ChatHead({ head: chat, workspace, contextLabel, menu, figma }: ChatHeadProps) {
+export function ChatHead({ head: chat, workspace, contextLabel, menu, rename, figma }: ChatHeadProps) {
   return (
     <header data-figma={figma?.head ?? '105:785'} className={head}>
       <Inline gap="8" align="center">
         <KindMark kind={chat.kind} size="20" />
         <div className={titles}>
-          <h2 className={title}>{chat.title}</h2>
+          {rename ?? <h2 className={title}>{chat.title}</h2>}
           <span className={where}>{chat.origin === undefined ? workspace : `${workspace} · ${chat.origin}`}</span>
         </div>
         <StatusPill label={chat.status.label} tone={chat.status.tone} dot />

@@ -321,6 +321,8 @@ export const SidebarLayers = z.object({
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
   toast: z.string().optional(),
+  /** The field that takes the place of the chat's name in its header while Erik renames it (D21 417:2442). */
+  renameField: z.string().optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -518,6 +520,13 @@ export const WorkspacesUi = z.object({
   splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
   /** `data.toast` shows over the composer of the chat shown alone (D20); its button closes it. */
   toastOpen: z.boolean().optional(),
+  /**
+   * The name of the chat shown alone is a field in its header (D21): a click outside it or Enter saves the name,
+   * and its × or Escape undoes the change; either closes it.
+   */
+  renaming: z.boolean().optional(),
+  /** The names Erik gave chats, by chat id, in place of their titles in the data. */
+  names: z.record(z.string(), z.string()).optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

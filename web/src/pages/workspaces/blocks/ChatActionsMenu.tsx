@@ -16,6 +16,8 @@ export type ChatActionsMenuProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   moveOpen: boolean
   onMoveOpenChange?: ((open: boolean) => void) | undefined
+  /** Called with the picked action, such as `rename` (D21). */
+  onSelect?: ((action: string) => void) | undefined
   /** The highlighted row and the highlighted workspace of Move to workspace's list, as on `PaneMenu`. */
   highlighted?: string | null | undefined
   onHighlightChange?: ((value: string | null) => void) | undefined
