@@ -1,17 +1,28 @@
 // The graph of the Links tab (Figma `links graph`, D19 493:6): the library's
-// MapGraph with the open item in the middle, selected, the items that link to
-// it on the left and the items it links to on the right, each with its line
-// (`linksGraph` in linksView.ts places them). The side items have a muted
-// kind border (`nodeTone="muted"`), the lines end at the node's edge with no
-// dot (`edgeEnd="none"`) and the open item's name is in the label style. A
-// tap on an item opens it. A side with no links says why in its column (D29
-// 493:895). The open item keeps the others' size (LIBRARY_GAPS.md, Links
-// graph). Props only.
+// MapGraph with the open item in the middle, 150 × 40 with its name in the
+// label style and selected, the items that link to it on the left and the
+// items it links to on the right, each with its line, in muted kind borders
+// and with no dot at a line's end (`linksGraph` in linksView.ts places them).
+// On the phone the graph stands upright and its lines run between the rows
+// (M17 493:152, MapGraph `orientation="vertical"`). One tap on an item at a
+// side opens it, on every layout, as the hint says (`tapNode`). On the
+// desktop and tablet the pointer over a side item, or the keyboard focus on
+// it, selects it, so only its line stays lit (`litNode`); MapGraph has no
+// hover of its own, so the block reads the pointer and the focus from the
+// events that bubble out of its node buttons. On the phone the open item
+// stays selected. The open item is Figma's 150 × 40; when the library's
+// label style cuts its name (writing-reviewer, T29 and M32), the block
+// measures the cut after render and once the fonts load, and draws the open
+// item as wide as the side items, centred on the same point (`widenFocus`).
+// A side with no links says why in its column (D29 493:895). Props only:
+// the pointer, the focus and the wider open item are the block's own state.
 import { MapGraph } from '@eshelton328/component-library-1701'
+import { type SyntheticEvent, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitKind, ToolkitLinks } from '../types.ts'
-import { focusId, linksGraph } from './linksView.ts'
+import { type LinksGraph, linksGraph, litNode, tapNode, widenFocus } from './linksView.ts'
+import { useWideFocus } from './useWideFocus.ts'
 
 const root = css({ position: 'relative' })
 // D29 493:895: the reason sits in the left column, 16 in, centred on the open item. The graph's columns start 46 down
@@ -38,6 +49,19 @@ const emptyBoxPhone = css({
 })
 const emptyText = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre-line' })
 
+/** The id of the node whose button an event came from: MapGraph draws one button per node, in `nodes` order. */
+function nodeOf(graph: LinksGraph, event: SyntheticEvent<HTMLElement>): string | null {
+  const target = event.target
+  if (!(target instanceof Element)) return null
+  const button = target.closest('button')
+  if (button === null) return null
+  const index = [...event.currentTarget.querySelectorAll('button')].indexOf(button)
+  return graph.nodes[index]?.id ?? null
+}
+
+/** A node id kept for the item it was set on; another item opens with nothing under the pointer or the focus. */
+type Marked = { item: string; id: string | null }
+
 export type ToolkitLinksGraphProps = {
   links: ToolkitLinks
   item: { path: string; name: string; kind: ToolkitKind }
@@ -47,10 +71,36 @@ export type ToolkitLinksGraphProps = {
 }
 
 export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem }: ToolkitLinksGraphProps) {
-  const graph = linksGraph(links, item, layout)
+  const ref = useRef<HTMLDivElement>(null)
+  // The item whose open node is drawn wider, as its name does not fit at 150 px.
+  const [wideItem, setWideItem] = useState<string | null>(null)
+  const wide = wideItem === item.path
+  const base = linksGraph(links, item, layout)
+  const graph = wide ? widenFocus(base) : base
+  useWideFocus(ref, graph, item.path, wide, setWideItem)
+  const [pointer, setPointer] = useState<Marked | null>(null)
+  const [focus, setFocus] = useState<Marked | null>(null)
+  const on = (m: Marked | null) => (m !== null && m.item === item.path ? m.id : null)
+  const selected = litNode(graph, layout, on(pointer), on(focus))
   const empty = links.from.links.length === 0 ? links.from.empty?.graph : undefined
   return (
-    <div className={root} data-figma="links graph">
+    <div
+      ref={ref}
+      className={root}
+      data-figma="links graph"
+      onPointerOver={(e) => {
+        setPointer({ item: item.path, id: nodeOf(graph, e) })
+      }}
+      onPointerLeave={() => {
+        setPointer(null)
+      }}
+      onFocus={(e) => {
+        setFocus({ item: item.path, id: nodeOf(graph, e) })
+      }}
+      onBlur={() => {
+        setFocus(null)
+      }}
+    >
       <MapGraph
         label={`${item.name} links`}
         width={graph.width}
@@ -58,20 +108,24 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
         nodeSize={graph.nodeSize}
         nodeTone={graph.nodeTone}
         edgeEnd={graph.edgeEnd}
+        orientation={graph.orientation}
         nodes={graph.nodes.map((n) => ({
           id: n.id,
           label: n.label,
           kind: n.kind,
           x: n.x,
           y: n.y,
+          size: n.size,
           labelStyle: n.labelStyle,
         }))}
         edges={graph.edges}
         columns={graph.columns}
-        selectedId={graph.selected}
+        selectedId={selected}
         onSelect={(id) => {
-          const target = graph.nodes.find((n) => n.id === id)
-          if (target !== undefined && target.id !== focusId) onOpenItem?.(target.path)
+          const open = tapNode(graph, id)
+          if (open !== null) onOpenItem?.(open)
+          // Escape puts the selection back on the open item.
+          else if (id === null) setFocus(null)
         }}
       />
       {empty === undefined ? null : (

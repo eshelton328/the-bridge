@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { openFile as openBrowserFile, findFile, sourceAt } from './blocks/filesView.ts'
 import { focusId, linkCount, linkFile, linksGraph, sideLabel } from './blocks/linksView.ts'
 import { linkLine } from './blocks/linksView.ts'
+import { litNode, tapNode } from './blocks/linksView.ts'
+import { widenFocus } from './blocks/linksView.ts'
 import { openFile, openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -41,7 +43,7 @@ describe('the Links tab (D19)', () => {
     expect(right.map((n) => n.y)).toEqual([46, 84, 122, 160, 198, 236, 274])
     expect(right.every((n) => n.x === 751) && left.every((n) => n.x === 15)).toBe(true)
     const focus = graph.nodes.find((n) => n.id === focusId)
-    expect(focus).toMatchObject({ x: 383, y: 160, label: 'writer' })
+    expect(focus).toMatchObject({ x: 398, y: 156, label: 'writer' })
     // A line from each item on the left into the item, and from the item to each on the right.
     expect(graph.edges).toHaveLength(11)
     expect(graph.edges.filter((e) => e.to === focusId)).toHaveLength(4)
@@ -114,7 +116,7 @@ describe('the links graph on a tablet (T15 to T31)', () => {
     const right = tablet.nodes.filter((n) => n.id.startsWith('to:'))
     expect(right.every((n) => n.x + tablet.nodeSize.width === 706 - 15)).toBe(true)
     const focus = tablet.nodes.find((n) => n.id === focusId)
-    expect(focus === undefined ? null : focus.x + tablet.nodeSize.width / 2).toBe(353)
+    expect(focus === undefined ? null : focus.x + (focus.size?.width ?? 0) / 2).toBe(353)
     expect(tablet.columns.map((c) => c.x)).toEqual([15, 706 - 15 - 180])
   })
 })
@@ -136,14 +138,14 @@ describe('the links graph on the phone (M17)', () => {
     ])
     expect(to.map((n) => n.y)).toEqual([225, 225, 263, 263, 301, 301, 339])
     // The open item is centred where Figma centres its 150 × 40 node (493:224).
-    expect(graph.nodes.find((n) => n.id === focusId)).toMatchObject({ x: 101, y: 155 })
+    expect(graph.nodes.find((n) => n.id === focusId)).toMatchObject({ x: 107, y: 151 })
     expect(graph.columns).toEqual([
       { label: 'Linked from 4', x: 15, y: 13 },
       { label: 'Links to 7', x: 15, y: 199 },
     ])
-    // MapGraph draws its lines side to side only, so the upright graph has none, and selects nothing, so no node dims.
-    expect(graph.edges).toEqual([])
-    expect(graph.selected).toBeNull()
+    // MapGraph's vertical orientation draws the open item's lines upright, and the open item is selected, as on D19.
+    expect(graph.edges).toEqual(linksGraph(linksOf(skillLinks), writer).edges)
+    expect(graph.selected).toBe(focusId)
     expect(linksGraph(linksOf(skillLinks), writer).selected).toBe(focusId)
   })
 })
@@ -158,7 +160,7 @@ describe('a rule’s links graph on the phone (M31)', () => {
     // M31 493:5483: 238 high with its border; the rule 476 and the skill 550 in the frame, the graph at 363.
     expect(graph.height).toBe(236)
     expect(graph.nodes.map((n) => [n.label, n.x, n.y])).toEqual([
-      ['skills', 101, 117],
+      ['skills', 107, 113],
       ['eval-cases', 15, 187],
     ])
     expect(graph.columns.map((c) => c.y)).toEqual([13, 161])
@@ -276,6 +278,98 @@ describe('the links graph’s looks on each layout (D19, T15, M17)', () => {
       expect(graph.edgeEnd).toBe('none')
       expect(graph.nodes.find((n) => n.id === focusId)?.labelStyle).toBe('label')
       expect(graph.nodes.filter((n) => n.id !== focusId).every((n) => n.labelStyle === undefined)).toBe(true)
+    }
+  })
+})
+
+describe('the links graph’s props on each layout (D19, T15, M17)', () => {
+  const layouts = ['desktop', 'tablet', 'phone'] as const
+
+  it('draws the open item 150 × 40, and the side items in the graph’s node size', () => {
+    for (const layout of layouts) {
+      const graph = linksGraph(linksOf(skillLinks), writer, layout)
+      expect(graph.nodes.find((n) => n.id === focusId)?.size).toEqual({ width: 150, height: 40 })
+      expect(graph.nodes.filter((n) => n.id !== focusId).every((n) => n.size === undefined)).toBe(true)
+    }
+  })
+
+  it('places the open item where Figma does: D19 493:78, T15 487:21 and M17 493:224, inside the border', () => {
+    const at = (layout: (typeof layouts)[number]) =>
+      linksGraph(linksOf(skillLinks), writer, layout).nodes.find((n) => n.id === focusId)
+    expect(at('desktop')).toMatchObject({ x: 398, y: 156 })
+    // The tablet's graph is 706 wide (LIBRARY_GAPS.md, Tablet item spacing): the item stays in its middle.
+    expect(at('tablet')).toMatchObject({ x: 278, y: 156 })
+    expect(at('phone')).toMatchObject({ x: 107, y: 151 })
+  })
+
+  it('runs the lines side to side on the desktop and tablet, and upright on the phone', () => {
+    expect(linksGraph(linksOf(skillLinks), writer).orientation).toBe('horizontal')
+    expect(linksGraph(linksOf(skillLinks), writer, 'tablet').orientation).toBe('horizontal')
+    expect(linksGraph(linksOf(skillLinks), writer, 'phone').orientation).toBe('vertical')
+  })
+
+  it('gives the phone the desktop’s lines, with the open item selected', () => {
+    const desktop = linksGraph(linksOf(skillLinks), writer)
+    const phone = linksGraph(linksOf(skillLinks), writer, 'phone')
+    expect(phone.selected).toBe(focusId)
+    expect(phone.edges).toHaveLength(11)
+    expect(phone.edges).toEqual(desktop.edges)
+    expect(phone.edges.filter((e) => e.to === focusId).map((e) => e.from)).toEqual(
+      phone.nodes.filter((n) => n.id.startsWith('from:')).map((n) => n.id),
+    )
+    expect(phone.edges.filter((e) => e.from === focusId).map((e) => e.to)).toEqual(
+      phone.nodes.filter((n) => n.id.startsWith('to:')).map((n) => n.id),
+    )
+  })
+})
+
+describe('a tap, the pointer and the focus on the links graph', () => {
+  const graph = linksGraph(linksOf(skillLinks), writer)
+  const audit = 'to:skills/audit-slop/'
+  const writing = 'from:rules/writing.md'
+
+  it('opens a side item on one tap, on every layout, and opens nothing on the open item or Escape', () => {
+    for (const layout of ['desktop', 'tablet', 'phone'] as const) {
+      const g = linksGraph(linksOf(skillLinks), writer, layout)
+      expect(tapNode(g, audit)).toBe('skills/audit-slop/')
+      expect(tapNode(g, writing)).toBe('rules/writing.md')
+      expect(tapNode(g, focusId)).toBeNull()
+      expect(tapNode(g, null)).toBeNull()
+    }
+  })
+
+  it('lights the line of the side item under the pointer, else the focused one, on the desktop and tablet', () => {
+    for (const layout of ['desktop', 'tablet'] as const) {
+      const g = linksGraph(linksOf(skillLinks), writer, layout)
+      expect(litNode(g, layout, null, null)).toBe(focusId)
+      expect(litNode(g, layout, audit, null)).toBe(audit)
+      expect(litNode(g, layout, null, writing)).toBe(writing)
+      expect(litNode(g, layout, audit, writing)).toBe(audit)
+      expect(litNode(g, layout, focusId, writing)).toBe(writing)
+      expect(litNode(g, layout, 'to:nowhere/', null)).toBe(focusId)
+    }
+  })
+
+  it('keeps the open item selected on the phone', () => {
+    const phone = linksGraph(linksOf(skillLinks), writer, 'phone')
+    expect(litNode(phone, 'phone', audit, writing)).toBe(focusId)
+    expect(litNode(graph, 'desktop', audit, null)).toBe(audit)
+  })
+})
+
+describe('a wider open item, for a name its node cuts (T29, M32)', () => {
+  it('draws the open item as wide as the side items, 40 high, centred on the same point, and moves nothing else', () => {
+    for (const layout of ['desktop', 'tablet', 'phone'] as const) {
+      const graph = linksGraph(linksOf(skillLinks), writer, layout)
+      const wide = widenFocus(graph)
+      const before = graph.nodes.find((n) => n.id === focusId)
+      const after = wide.nodes.find((n) => n.id === focusId)
+      if (before === undefined || after === undefined) throw new Error('no open item')
+      expect(after.size).toEqual({ width: graph.nodeSize.width, height: 40 })
+      expect(after.x + graph.nodeSize.width / 2).toBe(before.x + 75)
+      expect(after.y).toBe(before.y)
+      expect(wide.nodes.filter((n) => n.id !== focusId)).toEqual(graph.nodes.filter((n) => n.id !== focusId))
+      expect(wide.edges).toEqual(graph.edges)
     }
   })
 })

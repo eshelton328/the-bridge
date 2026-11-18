@@ -16,10 +16,12 @@ and M17 give the same results as before M31. The frame has no
 `exceptions.json`.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
-2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
-Text passes, 18 of 21 position layers pass and the rules fail: the
-same results, failing keys and findings as the run on beta.39 before
-this change, so the checks below still hold.
+2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
+open item 150 × 40 at Figma's place and, on the phone, the open item's
+lines drawn upright and the open item selected. Text passes, 18 of 21
+position layers pass and the rules fail. Against the same run on main
+(24fc7be), the position and rule results, failing keys and findings are
+the same.
 
 ## Checks
 
@@ -37,24 +39,24 @@ this change, so the checks below still hold.
 
 ## Deviations
 
-- **Graph line.** Figma draws a curve from the foot of skills down into
-  the top of eval-cases. The render draws no lines. Library beta.39
-  (#148) draws upright lines (`MapGraph orientation="vertical"`), but
-  `linksView.test.ts` asserts that the phone graph has no edges and
-  selects nothing, and `ToolkitLinks.test.tsx` that no node of M17's
-  graph is pressed; a change to those lines waits for Erik (gap: Links
-  graph (phone)).
-- **Open rule.** skills in the middle of the graph is 162 × 32 with a
-  plain border in the rule's colour and its name in mono, against Figma's
-  150 × 40 with an accent ring, a selected fill and its name in the label
-  style. With no lines a selected node would dim the other node, so
-  nothing is selected; skills is centred where Figma centres it (gap:
-  Links graph (phone), Links graph).
+- **Graph line.** The render draws the open item's lines upright
+  (`MapGraph orientation="vertical"`, library beta.39 #148), all lit, as
+  the open item is selected. Figma draws each line as its own curve from
+  the foot of an item over skills down into its top, and from its foot
+  down into each item under it. The library runs the lines down a lane
+  between or beside the columns, behind skills, and meets each item at
+  the side that faces the lane, so the lines do not fan into skills's
+  top and foot (gap: Links graph (phone)).
+- **Open rule.** skills in the middle of the graph is 150 × 40 with its
+  name in the label style, selected (the accent ring and the selected
+  fill), at Figma's place. Its icon is 16 px against Figma's 15 and sits
+  8 from the name against Figma's 6: `MapNode` takes no icon size or gap
+  (gap: Links graph).
 - **Node borders.** Since library beta.39 (#151) each item of the graph
   has its kind's colour at 60 % alpha (`MapGraph nodeTone="muted"`) and
   each link row's node at 45 % (`MapNode tone="faint"`), with the icons
-  in the full kind colour, as in Figma. With nothing selected on the
-  phone, the open item has the muted border too. The icons are 16 px
+  in the full kind colour, as in Figma. The open item is selected,
+  so it has the accent border, as in Figma. The icons are 16 px
   against Figma's 13 (gap: Links graph, Links panel rows).
 - **Link node.** eval-cases in the Links to panel is a `MapNode` 28 px
   high against Figma's 29, and its file and line is a plain mono button
