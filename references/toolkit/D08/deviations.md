@@ -60,16 +60,18 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   (`commit-msg`, `hooks/commit-msg`, `→1 ←1`) are not visible and the
   list pane scrolls (`hiddenOverflow` on `[data-figma="toolkit list"]`).
   No page builds its own scroll layout (d-107).
-- **Connector lines.** The library has no line between steps (gap:
-  Workflow flow by phase). The render draws each arrow as the library's
-  12 px `ArrowDownIcon` or `ArrowRightIcon` with no line: down between
-  the steps of Run and Decide, across into Run (under `yes`), into both
-  Grade steps and into Aggregate. Figma's elbows (Blinding up into both
-  grades, both grades into Aggregate), the long `no` line from
-  Pre-registered? down to Stop (the render shows `no` over a short down
-  arrow in the empty row) and the dashed amber loop from Owner decides
-  back to Stop are not drawn; the loop's label `new failure` sits alone
-  under the lanes, centred as Figma's.
+- **Connector lines.** The straight arrows are the library's `FlowLine`
+  (library #133 and #137): down between the steps of Run and Decide,
+  across into Run (under `yes`, which sits over the line as Figma's), into
+  both Grade steps and into Aggregate, each across line 38 long from a
+  card's edge to 2 before the next, and the long amber line from
+  Pre-registered? down to Stop with `no` beside it. The library has no
+  elbow that leaves Blinding at its own row and enters both grades at
+  theirs, so the arrows into Grade and into Aggregate are straight lines
+  at each row they enter; and `FlowLoop`'s head points into a side, so
+  the dashed amber loop from Owner decides up into Stop's foot is not
+  drawn, and its label `new failure` sits alone under the lanes, centred
+  as Figma's (gap: Workflow flow by phase).
 - **Step cards.** `FlowDiagram` numbers its steps itself and puts the
   body beside the number, so the cards are drawn with its card's tokens
   (gap: Workflow flow by phase): 10 px padding against Figma's 11, the
@@ -132,3 +134,9 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   Figma's is the agent purple, and it is about 3 px taller with a
   slightly larger label. It is a secondary `Button` (gap: Agent link
   chip).
+
+## Library connectors
+
+After the move to `FlowLine`, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
+and toolkit (2026-11-18, library 1.0.0-beta.31) gives D08 the same results as
+before: the same text, position and rule results.

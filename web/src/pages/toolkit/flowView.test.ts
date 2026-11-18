@@ -67,6 +67,11 @@ describe('the flow layout', () => {
     expect(columnArrow(2, 1)).toBe('join')
   })
 
+  it('runs a line from each parallel step into the one beside it when two parallel stages follow each other', () => {
+    expect(columnArrow(2, 2)).toBe('pair')
+    expect(arrowRows(2, 2)).toEqual(stepRows(2))
+  })
+
   it('puts a single step across the middle rows and two parallel steps at the top and the bottom', () => {
     expect(stepRows(1)).toEqual(['2/4'])
     expect(stepRows(2)).toEqual(['1/3', '3/5'])

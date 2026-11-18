@@ -101,8 +101,9 @@ what each file of a page folder is for.
   whose card rows are equal, so every card has one size; a phase's
   `from` rows take an arrow from the phase before, a `parallel` phase
   has no arrow between its steps, gates and ends are amber, and the
-  loop's label sits under the lanes (the library has no connector line:
-  LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
+  loop's label sits under the lanes (each arrow is the library's
+  `FlowLine`; it has no elbow for these rows and no loop into a step's
+  foot: LIBRARY_GAPS.md, Workflow flow by phase). Open full page sets
   `ui.flowFullPage` and opens How it works (`openFullPage` in
   `screens/flowView.ts`; D8, T18 and M21 carry the workflow's page, and
   the button is disabled on an item with no `flowPage`), and the agent buttons under the flow open the
@@ -117,8 +118,9 @@ what each file of a page folder is for.
   stage's two steps at the top and the bottom and a single step across
   the middle, `blocks/flowLayout.ts`; each card a
   `ToolkitFlowStep variant="page"` whose title selects the step; the
-  gate's way out to the stop and the loop's label under the step it
-  names) and `ToolkitFlowDetails` (the selected step's fields, the gates,
+  library's `FlowLine` and `FlowBranch` between stages, the gate's way
+  out to the stop, and the `FlowLoop` back to it, placed by CSS anchors,
+  with its label under the step it names) and `ToolkitFlowDetails` (the selected step's fields, the gates,
   the rounds). On a tablet or phone the stages stand in one column with
   the parallel steps side by side, and the panels one under another
   (`src/app/ToolkitWorkflowPage.test.tsx`). On a tablet (T8,
@@ -126,9 +128,11 @@ what each file of a page folder is for.
   fields for step 4 and no stop box, loop label, hint, gates or rounds) the
   breadcrumb row is the `DetailFrame`'s back row (36 high, D13's `layers`),
   and the flow is `ToolkitFlowColumn`: no panel or header, each card a
-  `ToolkitFlowStep variant="column"` as wide as the item, an arrow down
-  between stages and a fork into and a join out of the parallel steps
-  (`columnArrow` in `blocks/flowLayout.ts`); the selected step's panel comes
+  `ToolkitFlowStep variant="column"` as wide as the item, a `FlowLine`
+  down between stages and a `FlowBranch` fork into and join out of the
+  parallel steps (`columnArrow` in `blocks/flowLayout.ts`; two parallel
+  stages in a row get a `FlowLine` from each step, on every layout,
+  `ToolkitFlowSteps.test.tsx`); the selected step's panel comes
   under it. On the phone (M9, `workflowFullPagePhone`, T8's data) the
   breadcrumb leaves out the kind's crumb (Toolkit › the workflow), Discuss
   and Show on map are icon buttons, when it runs sits beside the kind

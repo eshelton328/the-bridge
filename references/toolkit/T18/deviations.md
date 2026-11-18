@@ -50,13 +50,15 @@ a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   `rendered markdown` y +82.6, `side` y +99.6, `files` y +99.6 and
   `file · skill-eval-round.md` y +102.6. The lanes and cards are in
   place across: each card's x and width are within 3 px of Figma's.
-- **Connector lines.** The library has no connector line (gap: Workflow
-  flow by phase). As on D8, the steps are joined by 12 px arrow icons
-  with no line: no elbow from Blinding into the grades and from the
-  grades into Aggregate, no line down the Check lane from the gate to
-  Stop (the `no` label and its arrow sit in the empty row), and no dashed
-  loop under the lanes; the loop's label `new failure` sits under the
-  lanes on its own.
+- **Connector lines.** As on D8, the straight arrows are the library's
+  `FlowLine` (library #133 and #137), across in 16 px columns and down in
+  the 12 px between cards, and the long amber line down the Check lane
+  from the gate to Stop with `no` beside it, in `small` text (12/16)
+  against Figma's smaller label. There is no elbow from Blinding into the
+  grades or from the grades into Aggregate (a straight line at each row
+  instead), and no dashed loop under the lanes; the loop's label
+  `new failure` sits under the lanes on its own (gap: Workflow flow by
+  phase).
 - **Loop label.** The `new failure` label is a `Badge variant="tag"` in
   12 px mono, 91 × 21 against Figma's 74 × 18 bordered pill, and it sits
   79 px lower with the taller flow (`label · new failure` x -8.8, y +77.3,
@@ -116,3 +118,9 @@ a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   Figma's is the agent purple, and it is about 3 px taller with a
   slightly larger label. It is a secondary `Button` (gap: Agent link
   chip).
+
+## Library connectors
+
+After the move to `FlowLine`, `pnpm fidelity` on every built frame of inbox, workspaces, artifacts
+and toolkit (2026-11-18, library 1.0.0-beta.31) gives T18 the same results as
+before: the same text, position and rule results.
