@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { badgeLayer, badgeLook, badgeResult, casesLabel, chartSeries, evalsRow, openEvals, roundsEnd } from './blocks/evalsView.ts'
+import {
+  badgeLayer,
+  badgeLook,
+  badgeResult,
+  casesLabel,
+  chartSeries,
+  evalsRow,
+  openEvals,
+  roundsEnd,
+} from './blocks/evalsView.ts'
 import { openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ToolkitData, ToolkitEvals, ToolkitUi } from './types.ts'
