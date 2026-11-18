@@ -9,7 +9,8 @@
 // is a `Badge variant="outline"`, the chips `Badge variant="outline"` with the
 // kind's icon (LIBRARY_GAPS.md, How it works use chip) and the repeat a
 // `Badge variant="tag" tone="needsYou"`. Every card of a row has one height:
-// the steps' grid makes its rows equal. Props only.
+// the steps' grid makes its rows equal. On a tablet or the phone (T10, `compact`) the card is a row as wide as the
+// list: the number at the start, and beside it the title, the line and the uses side by side. Props only.
 import {
   AgentIcon,
   Badge,
@@ -44,6 +45,21 @@ const card = css.raw({
 })
 // D14 460:48: a step that repeats has the amber border, as FlowDiagram's loop card.
 const repeating = css.raw({ borderColor: 'status.needsYou.border' })
+// T10 461:268: as wide as the list, the number 13 in (12 and the border) and 10 in from the top and foot; the text 10
+// after the number, its lines 4 apart. The arrow's row under a card is 16 high against Figma's 14 (ToolkitHowColumn),
+// so 10 above the content (Figma's place) and 8 under it make a card with no uses 60 high (61) and one with uses 86 (88,
+// its chips 22 high against 23): each card and its arrow are within 1 px of Figma's 75 and 102.
+const compactCard = css.raw({
+  display: 'grid',
+  gridTemplateColumns: '[auto 1fr]',
+  alignItems: 'start',
+  columnGap: '10',
+  pt: '10',
+  pb: '8',
+})
+const compactText = css({ display: 'flex', flexDirection: 'column', gap: '4', minW: '[0]' })
+// T10 461:283: the chips in a row, 5 apart (4), 4 under the line.
+const compactUses = css({ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '4' })
 // D14 460:4: the number (24 × 19) and the title 8 apart.
 const top = css({ display: 'flex', alignItems: 'center', gap: '8' })
 const title = css({ textStyle: 'label', color: 'fg.default' })
@@ -76,23 +92,17 @@ export type ToolkitHowStepProps = {
   step: Step
   /** The grid cell the card takes, from the steps' grid. */
   className?: string | undefined
+  /** A tablet or the phone (T10): the card is a row, the number beside the text and the uses side by side. */
+  compact?: boolean | undefined
 }
 
-export function ToolkitHowStep({ step, className }: ToolkitHowStepProps) {
+export function ToolkitHowStep({ step, className, compact = false }: ToolkitHowStepProps) {
   const repeats = step.repeats !== undefined && step.repeats !== ''
-  return (
-    <li
-      // css() merges the raw styles, so a repeating step's border wins over the card's.
-      className={cx(css(card, repeats ? repeating : {}), className)}
-      data-figma={`step ${step.number}`}
-    >
-      <div className={top}>
-        <Badge variant="outline" label={step.number} />
-        <h4 className={title}>{step.title}</h4>
-      </div>
+  const lines = (
+    <>
       {step.description === undefined ? null : <p className={description}>{step.description}</p>}
       {step.uses.length === 0 && !repeats ? null : (
-        <ul className={uses} aria-label="Uses">
+        <ul className={compact ? compactUses : uses} aria-label="Uses">
           {step.uses.map((u) => (
             <li key={u.label} data-figma={`uses · ${u.label}`}>
               <Badge
@@ -109,6 +119,28 @@ export function ToolkitHowStep({ step, className }: ToolkitHowStepProps) {
           ) : null}
         </ul>
       )}
+    </>
+  )
+  // css() merges the raw styles, so a repeating step's border wins over the card's.
+  const cardClass = cx(css(card, compact ? compactCard : {}, repeats ? repeating : {}), className)
+  if (compact) {
+    return (
+      <li className={cardClass} data-figma={`step ${step.number}`}>
+        <Badge variant="outline" label={step.number} />
+        <div className={compactText}>
+          <h4 className={title}>{step.title}</h4>
+          {lines}
+        </div>
+      </li>
+    )
+  }
+  return (
+    <li className={cardClass} data-figma={`step ${step.number}`}>
+      <div className={top}>
+        <Badge variant="outline" label={step.number} />
+        <h4 className={title}>{step.title}</h4>
+      </div>
+      {lines}
     </li>
   )
 }

@@ -48,3 +48,26 @@ describe('the How it works steps', () => {
     expect(cards.filter((c) => Math.round(c.top) === top)).toHaveLength(4)
   })
 })
+
+// T10: on a tablet the tab has no box, header, legend or source line; when the item loads spans the item, and a step's
+// uses sit side by side, beside the step's number.
+describe('the How it works tab on a tablet (T10)', () => {
+  it('draws the trigger across the item, then the steps as rows, with no header', async () => {
+    await page.viewport(756, 1129)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=skillHowItWorksTablet'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(8)
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
+    expect(Math.round(trigger?.width ?? 0)).toBe(Math.round(list?.width ?? -1))
+    expect(document.querySelector('[aria-label="Legend"]')).toBeNull()
+    expect(document.querySelector('[data-figma="how it works"]')).toBeNull()
+    const file = document.querySelector('[data-figma="uses · references/<form>.md"]')?.getBoundingClientRect()
+    const rule = document.querySelector('[data-figma="uses · ste100"]')?.getBoundingClientRect()
+    expect(Math.round(rule?.top ?? -1)).toBe(Math.round(file?.top ?? 0))
+    expect(rule?.left ?? 0).toBeGreaterThan(file?.right ?? 0)
+  })
+})

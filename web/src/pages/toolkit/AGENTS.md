@@ -125,6 +125,13 @@ what each file of a page folder is for.
   file in the label, so it shows in capitals, and uses `elsewhere` for the
   only inputs it gets. A hook (D39, `hookHowItWorks`, D9's data) names its
   script's comments in the label, has five steps (the fifth starts a second
-  row) and uses `elsewhere` for its tests. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  row) and uses `elsewhere` for its tests. On a tablet (T10,
+  `skillHowItWorksTablet`, D14's data with the tablet's shorter trigger and
+  step lines) the tab is `ToolkitHowColumn`: no box, header, legend or
+  source line; the trigger spans the item, the steps stand in one column
+  (`ToolkitHowStep compact`: the number beside the text, the uses side by
+  side) and the chat path follows. The back row names the item (Toolkit ›
+  writer, `ToolkitItemBack named`), and the kind badge and path rows are
+  left out. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

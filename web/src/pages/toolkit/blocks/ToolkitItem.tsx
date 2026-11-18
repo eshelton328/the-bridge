@@ -9,7 +9,8 @@
 // Show on map at its end, stays at the top, and only the item under it
 // scrolls; opened from another item's links (T7), the back row is a
 // breadcrumb back to that item (`ToolkitItemBack`). On the phone (M2) the actions are icon buttons and when the item
-// changed sits beside the kind badge. Nothing edits the item (R35). Props
+// changed sits beside the kind badge. On How it works on a tablet (T10) the back row names the item (Toolkit ›
+// writer), and the kind badge and path rows are left out: the title sits over the tabs. Nothing edits the item (R35). Props
 // only.
 import {
   AgentIcon,
@@ -41,6 +42,9 @@ const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap:
 // 32 high against Figma's 36, so 20 above the meta row and 12 between the rows keep each row within 3 px of Figma's
 // (the tabs' panel adds 16 above the description, Figma's 14).
 const page = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '20' })
+// T10 461:64: on How it works the title (461:255) starts 12 under the back row (461:244, which ends at 77), and the rows
+// are 12 apart. The BackRow is 32 high against Figma's 36, so 16 above the title keeps it in place.
+const howPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '16' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
 // D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
@@ -102,7 +106,16 @@ const howHeaderLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '495:948',
   'hooks/commit-msg': '495:1574',
 }
+// On How it works on a tablet: writer in T10 (461:255).
+const tabletHowTitleLayers: Readonly<Record<string, string>> = {
+  'skills/writer/': '461:255',
+}
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
+const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {
+  desktop: howTitleLayers,
+  tablet: tabletHowTitleLayers,
+  phone: {},
+}
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).
 const itemLayer = { desktop: 'toolkit item', tablet: 'toolkit item', phone: 'toolkit' }
 
@@ -150,34 +163,40 @@ export function ToolkitItem({
   const { item, detail, tab } = open
   const desktop = layout === 'desktop'
   const phone = layout === 'phone'
+  // How it works on a tablet or phone (T10): no kind badge or path row, and the back row names the item.
+  const narrowHow = !desktop && tab === 'how'
   const actions = (
     <ToolkitItemActions gap={desktop ? '10' : '8'} iconOnly={phone} onDiscuss={onDiscuss} onShowOnMap={onShowOnMap} />
   )
   const article = (
     <article
       aria-label={item.name}
-      className={desktop ? pane : phone ? phonePage : page}
+      className={desktop ? pane : narrowHow ? howPage : phone ? phonePage : page}
       data-figma={itemLayer[layout]}
     >
-      <div className={desktop ? metaRow : phone ? metaRowPhone : metaRowPage} data-figma="meta row">
-        <div data-figma="kind badge">
-          <KindBadge kind={item.kind} icon={kindIcons[item.kind]} />
+      {narrowHow ? null : (
+        <div className={desktop ? metaRow : phone ? metaRowPhone : metaRowPage} data-figma="meta row">
+          <div data-figma="kind badge">
+            <KindBadge kind={item.kind} icon={kindIcons[item.kind]} />
+          </div>
+          {desktop ? actions : null}
+          {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
         </div>
-        {desktop ? actions : null}
-        {phone ? <ToolkitItemChanged changed={detail.changed} /> : null}
-      </div>
+      )}
       <h2
         className={title}
-        data-figma={desktop && tab === 'how' ? howTitleLayers[item.path] : titleLayersOf[layout][item.path]}
+        data-figma={tab === 'how' ? howTitleLayersOf[layout][item.path] : titleLayersOf[layout][item.path]}
       >
         {item.name}
       </h2>
-      <ToolkitItemPath
-        location={detail.location}
-        changed={phone ? '' : detail.changed}
-        onCopyPath={onCopyPath}
-        layer={phone ? null : 'path row'}
-      />
+      {narrowHow ? null : (
+        <ToolkitItemPath
+          location={detail.location}
+          changed={phone ? '' : detail.changed}
+          onCopyPath={onCopyPath}
+          layer={phone ? null : 'path row'}
+        />
+      )}
       {/* Figma draws the selected tab's label cyan on every layout (D3, T3, M2); on a tablet and the phone the tabs
           start at the list's edge with 10 px sides (T3 and M2 `item tabs`), on the desktop with the default space. */}
       <ItemTabs
@@ -215,7 +234,7 @@ export function ToolkitItem({
   return (
     <DetailFrame
       layout={layout}
-      back={<ToolkitItemBack name={item.name} from={from} onBack={back} actions={actions} />}
+      back={<ToolkitItemBack name={item.name} from={from} named={narrowHow} onBack={back} actions={actions} />}
     >
       {article}
     </DetailFrame>

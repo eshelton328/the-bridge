@@ -402,3 +402,22 @@ export const HookHowItWorks: Story = {
     await expect(within(item).queryByText('When it runs')).toBeNull()
   },
 }
+
+export const SkillHowItWorksTablet: Story = {
+  name: 'T10: a skill open on a tablet, on How it works',
+  args: {
+    data: toolkitStates.skillHowItWorksTablet.data,
+    ui: toolkitStates.skillHowItWorksTablet.ui,
+    viewport: 'tablet',
+  },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the steps in one column under Back. The play
+  // test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('Who reads it and what they do next.')).toBeVisible()
+    await expect(within(steps).getByText('Fix every fail; run it again after an edit.')).toBeVisible()
+    await expect(within(item).getByText('Loads when a task writes text that another person reads')).toBeVisible()
+  },
+}
