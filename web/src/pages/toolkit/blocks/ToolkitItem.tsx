@@ -82,18 +82,20 @@ const phoneTitleLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '487:2043',
 }
 // On the How it works tab the frame is another one, so another node id: writer in D14 (459:367), the rule skills in
-// D37 (495:334), the agent writing-reviewer in D38 (495:846).
+// D37 (495:334), the agent writing-reviewer in D38 (495:846), the hook commit-msg in D39 (495:1443).
 const howTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '459:367',
   'rules/skills.md': '495:334',
   'agents/writing-reviewer.md': '495:846',
+  'hooks/commit-msg': '495:1443',
 }
 // The How it works header is a layer named `header`, as the list's header is, so its node id: D14 459:599, D37 495:398,
-// D38 495:948.
+// D38 495:948, D39 495:1574.
 const howHeaderLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '459:599',
   'rules/skills.md': '495:398',
   'agents/writing-reviewer.md': '495:948',
+  'hooks/commit-msg': '495:1574',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 // The item's Figma frame: `toolkit item` on the desktop and a tablet (427:250, 428:542), `toolkit` on the phone (429:284).

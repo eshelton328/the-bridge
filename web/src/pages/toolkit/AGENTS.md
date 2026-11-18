@@ -123,6 +123,8 @@ what each file of a page folder is for.
   place, `elsewhere`: one line on what Codex does instead, in a notice
   `Panel`. An agent (D38, `agentHowItWorks`, D7's data) names its prompt
   file in the label, so it shows in capitals, and uses `elsewhere` for the
-  only inputs it gets. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  only inputs it gets. A hook (D39, `hookHowItWorks`, D9's data) names its
+  script's comments in the label, has five steps (the fifth starts a second
+  row) and uses `elsewhere` for its tests. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

@@ -380,3 +380,25 @@ export const AgentHowItWorks: Story = {
     await expect(within(item).queryByText('How it runs')).toBeNull()
   },
 }
+
+export const HookHowItWorks: Story = {
+  name: 'D39: a hook open beside the list, on How it works',
+  args: { data: toolkitStates.hookHowItWorks.data, ui: toolkitStates.hookHowItWorks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    // Five steps: the fifth starts a second row.
+    await expect(within(steps).getAllByRole('heading', { level: 4 })).toHaveLength(5)
+    await expect(within(steps).getByRole('heading', { name: 'Pass or block' })).toBeVisible()
+    await expect(within(steps).getByText('commits-and-prs')).toBeVisible()
+    await expect(within(steps).getByText('git commit')).toBeVisible()
+    // Its tests take the chat path's place.
+    await expect(within(item).getByText('Tests')).toBeVisible()
+    await expect(
+      within(item).getByText('test-commit-msg runs 43 cases through the hook. The last run passed all 43.'),
+    ).toBeVisible()
+    // The hook's Overview is not drawn: no When it runs cards.
+    await expect(within(item).queryByText('When it runs')).toBeNull()
+  },
+}
