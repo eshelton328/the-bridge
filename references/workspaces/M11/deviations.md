@@ -3,7 +3,7 @@
 What still differs from Figma M11 · New chat, keyboard open (the New chat
 form on the phone while Erik types its name, `phoneNewChatKeyboard`),
 after the last fidelity run (`pnpm fidelity workspaces`, 2026-11-18,
-library 1.0.0-beta.27), each with its reason. The library gaps are in
+library 1.0.0-beta.30), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M7's
 `PhoneNewChat` with `ui.keyboardOpen`: Cancel and the title in a
 `ScrollFrame` header, `NewChatFields` in the body and Start chat alone in
@@ -32,14 +32,14 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
   fail:
   - `148:80` (the folders field): y +6, h +3.
   - `148:82` (the folders box): y +7, h +2.
-  - `147:230` (the start bar): y +354, h -8.
-  - `147:231` (Start chat): y +356, h -2.
+  - `147:230` (the start bar): y +350.
+  - `147:231` (Start chat): y +352.
 - Rules: pass.
 
 ## Deviations
 
 - **No keyboard; the screen keeps its full height (Phone keyboard),
-  `147:230` y +354, h -8, `147:231` y +356, text `MODEL`,
+  `147:230` y +350, `147:231` y +352, text `MODEL`,
   `Sonnet 5.5 · high effort`, `FIRST MESSAGE`,
   `What should it do? Type / for a skill.`.** Figma draws the iOS keyboard
   and Safari's form bar over the lower 380 points (148:2, design-only
@@ -51,8 +51,9 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
   inline style or raw value), so the render keeps the full height: the
   model and the first message show under the folders, and the start bar
   sits at the bottom of the screen over the 34 px safe area, where Figma
-  has the keyboard. The bar is 8 lower (52 high against 60) because the
-  safe area, not 8 px of padding, is under it, and Start chat is
+  has the keyboard. The bar is 56 high against 60: the safe area, not
+  8 px of padding, is under it, and the bar pads 4 under Start chat so
+  the footer does not cut its focus ring (as in M07). Start chat is
   `Button size="xl"` (44) against Figma's 46. The first message box still
   draws `Composer`'s send button (Composer in a form, as in M07).
 - **The fields are 2 px taller, so the folders sit 6 to 7 px lower (Select
