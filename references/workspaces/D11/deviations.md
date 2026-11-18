@@ -2,7 +2,7 @@
 
 What still differs from Figma after the build of three panes
 (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.16), each with its reason. The library gaps are in
+1.0.0-beta.16; measured on 1.0.0-beta.20), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D09's: the
 sidebar beside the workbench. Brain git, dropped below drift check (D10),
 now has its own pane: `WorkbenchPanes` gives the three panes to the
@@ -14,21 +14,19 @@ changed, so the split stays general for D12 to D14.
 
 ## Checks
 
-- Text: fails on one percentage, `78%` (402:3920): the hono server row's
-  meta is cut 2 px short (see `hiddenOverflow` below), as on D02 to D10.
-  Every other string passes, the three panes' text included. `Artifacts`
-  and `Toolkit` (rail, d-105) are excepted as on D01 to D10.
+- Text: pass. Every string passes, the three panes' text and the hono
+  server row's `78%` (402:3920) included. `Artifacts` and `Toolkit` (rail,
+  d-105) are excepted as on D01 to D10.
 - Position: 16 of 25 layers pass; `402:4133`, `402:4148`, `402:4173`,
   `402:4178`, `402:4191`, `402:4220`, `402:4249`, `402:4262` and
   `402:4274` fail. Each pane's x and width match Figma's within 3 px, and
   brain git's terminal (402:4295) passes.
-- Rules: `hiddenOverflow` on the hono server row's meta line (402:3910).
-- Earlier frames: `pnpm fidelity workspaces D01 D02 D02b D03 D04 D05 D06
-  D07 D08 D09 D10 --skip-build` after the D11 build gives the same
-  results as their own deviations.md files list (D01 9 of 17, D02 22 of
-  27, D02b 23 of 27, D03 23 of 43, D04 16 of 35, D05 8 of 21, D06 20 of
-  24, D07 15 of 20, D08 15 of 22, D09 15 of 23, D10 15 of 25 layers pass,
-  with the same text and rule results). None got worse.
+- Rules: pass.
+- Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
+  results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
+  D02b 23 of 27, D03 24 of 43, D04 16 of 35, D05 8 of 21, D06 20 of 24,
+  D07 15 of 20, D08 15 of 22, D09 15 of 23, D10 15 of 25 layers pass, with
+  the same text and rule results). None got worse than on 1.0.0-beta.16.
 
 ## Deviations
 
@@ -61,10 +59,6 @@ changed, so the split stays general for D12 to D14.
   "/"; the story does not focus the box.
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 402:3910 and the `78%` text: the hono server row's meta ("Sonnet
-  5.5" and "78%") is 152 px in a 150 px column beside its `Needs you`
-  pill, so the end of "78%" is cut 2 px, as on D02 to D10.
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against
   Figma's 14 px icons with no button box, as on D07 to D10.

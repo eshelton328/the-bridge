@@ -2,7 +2,7 @@
 
 What still differs from Figma after the build of a third chat dragged
 below a pane (`pnpm fidelity workspaces`, 2026-11-17, against the
-library's 1.0.0-beta.16), each with its reason. The library gaps are in
+library's 1.0.0-beta.16; measured on 1.0.0-beta.20), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D09's: the
 sidebar beside the workbench, with bridge themes and drift check side by
 side. Erik drags brain git from the sidebar near the bottom edge of drift
@@ -15,22 +15,20 @@ full height. No block changed: the zone is an overlay of the pane that
 
 ## Checks
 
-- Text: fails on one percentage, `78%` (402:3284): the hono server row's
-  meta is cut 2 px short (see `hiddenOverflow` below), as on D02 to D09.
-  Every other string passes, the drop zone's two lines and the dragged
-  chat's `brain git`, `shell · zsh` and `Idle` included. `Artifacts` and
-  `Toolkit` (rail, d-105) are excepted as on D01 to D09.
+- Text: pass. Every string passes, the drop zone's two lines, the dragged
+  chat's `brain git`, `shell · zsh` and `Idle` and the hono server row's
+  `78%` (402:3284) included. `Artifacts` and `Toolkit` (rail, d-105) are
+  excepted as on D01 to D09.
 - Position: 15 of 25 layers pass; `402:3497`, `402:3512`, `402:3537`,
   `402:3542`, `402:3555`, `402:3583`, `402:3612`, `402:3625`, `402:3637`
   and `402:3651` fail. The panes' x and width, and the zone's x and width,
   match Figma's within 2 px.
-- Rules: `hiddenOverflow` on the hono server row's meta line (402:3274).
-- Earlier frames: `pnpm fidelity workspaces D01 D02 D02b D03 D04 D05 D06
-  D07 D08 D09 --skip-build` after the D10 build gives the same results as
-  their own deviations.md files list (D01 9 of 17, D02 22 of 27, D02b 23
-  of 27, D03 23 of 43, D04 16 of 35, D05 8 of 21, D06 20 of 24, D07 15 of
-  20, D08 15 of 22, D09 15 of 23 layers pass, with the same text and rule
-  results). None got worse.
+- Rules: pass.
+- Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
+  results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
+  D02b 23 of 27, D03 24 of 43, D04 16 of 35, D05 8 of 21, D06 20 of 24,
+  D07 15 of 20, D08 15 of 22, D09 15 of 23 layers pass, with the same text
+  and rule results). None got worse than on 1.0.0-beta.16.
 
 ## Deviations
 
@@ -71,10 +69,6 @@ full height. No block changed: the zone is an overlay of the pane that
   box. The composers keep the layout of the earlier frames (d-107).
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 402:3274 and the `78%` text: the hono server row's meta ("Sonnet
-  5.5" and "78%") is 152 px in a 150 px column beside its `Needs you`
-  pill, so the end of "78%" is cut 2 px, as on D02 to D09.
 - **Faded row.** The brain git row fades with `opacity.disabled` (0.45),
   as drift check's does on D08 (d-100).
 - **Group header icons (Sidebar group header).** The ⋯, rename and close

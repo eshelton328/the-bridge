@@ -2,7 +2,7 @@
 
 What still differs from Figma after the build of four panes
 (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.16), each with its reason. The library gaps are in
+1.0.0-beta.16; measured on 1.0.0-beta.20), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is D11's: the
 sidebar beside the workbench. The workbench holds its most, four panes,
 clockwise from the top left: bridge themes (focused), drift check, the
@@ -15,25 +15,22 @@ replace drift check. The dragged chat sits at the zone's bottom end
 
 ## Checks
 
-- Text: fails on one percentage, `78%` (402:5024). Three Figma layers say
-  `78%` (the sidebar's hono server row 402:4565, the empty pane's row
-  402:4982 and the dragged chat 402:5024); the render shows two in full,
-  as the sidebar row's meta is cut 2 px short (see `hiddenOverflow`
-  below), as on D02 to D11. Every other string passes, the drop zone's
-  two lines and the four panes' text included. `Artifacts` and `Toolkit`
-  (rail, d-105) are excepted as on D01 to D11.
+- Text: pass. Every string passes, the drop zone's two lines, the four
+  panes' text and all three `78%` layers (the sidebar's hono server row
+  402:4565, the empty pane's row 402:4982 and the dragged chat 402:5024)
+  included. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
+  to D11.
 - Position: 15 of 30 layers pass; `402:4778`, `402:4794`, `402:4819`,
   `402:4824`, `402:4837`, `402:4920`, `402:4941`, `402:4865`, `402:4894`,
   `402:4907`, `402:5000`, `402:5014`, `402:4951`, `402:4972` and
   `402:4986` fail. The sidebar and its rows pass.
-- Rules: `hiddenOverflow` on the hono server row's meta line in the
-  sidebar (402:4555).
-- Earlier frames: `pnpm fidelity workspaces D01 D02 D02b D03 D04 D05 D06
-  D07 D08 D09 D10 D11 --skip-build` after the D12 build gives the same
-  results as their own deviations.md files list (D01 9 of 17, D02 22 of
-  27, D02b 23 of 27, D03 23 of 43, D04 16 of 35, D05 8 of 21, D06 20 of
-  24, D07 15 of 20, D08 15 of 22, D09 15 of 23, D10 15 of 25, D11 16 of
-  25 layers pass, with the same text and rule results). None got worse.
+- Rules: pass.
+- Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
+  results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
+  D02b 23 of 27, D03 24 of 43, D04 16 of 35, D05 8 of 21, D06 20 of 24,
+  D07 15 of 20, D08 15 of 22, D09 15 of 23, D10 15 of 25, D11 16 of 25
+  layers pass, with the same text and rule results). None got worse than
+  on 1.0.0-beta.16.
 
 ## Deviations
 
@@ -82,10 +79,6 @@ replace drift check. The dragged chat sits at the zone's bottom end
   Figma, as its cyan fill is brighter than Figma's.
 - **Attachment remove × (Composer attachment remove).** Figma's × on the
   attached file is bold; `Composer` draws its own thin `CloseIcon`.
-- **Context meter in sidebar rows (Sidebar chat row).** `hiddenOverflow`
-  on 402:4555 and the `78%` text: the hono server row's meta ("Sonnet
-  5.5" and "78%") is 152 px in a 150 px column beside its `Needs you`
-  pill, so the end of "78%" is cut 2 px, as on D02 to D11.
 - **Empty pane rows (Empty pane rows).** `402:4972` y -8, h +6 and
   `402:4986` h +6: `ListRow density="compact"` rows are 56 px high
   against Figma's 50, as on D01 and D05.

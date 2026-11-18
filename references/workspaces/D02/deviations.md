@@ -2,7 +2,7 @@
 
 What still differs from Figma after the first build of Workspaces and side
 chat (`pnpm fidelity workspaces`, 2026-11-17, against the library's
-1.0.0-beta.18), each with its reason. The library gaps are
+1.0.0-beta.18; measured on 1.0.0-beta.20), each with its reason. The library gaps are
 in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -29,7 +29,7 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   each run against the clip box of every DOM ancestor, so with `tilt` or
   past the sidebar's scrolling body it reports the row's text as cut,
   though nothing cuts it on screen. So the row is straight and ends at
-  the rows' end (266 wide). Its meta is 132 px in 112, so "23%" is cut
+  the rows' end (266 wide). Its meta is 132 px in 116, so "23%" is cut
   off (`hiddenOverflow`). It starts 50 in and 12 under the group header,
   Figma's place, in spacing tokens (40 and 10, 12; d-100).
 - **Drop hint (Drag preview).** The hint is `DragPreview`'s pill: cyan
