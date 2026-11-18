@@ -60,3 +60,24 @@ results as before T33.
   (`button · Discuss` x -5.1, h -2). Gap: Item action buttons.
 - **Item tabs.** The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
+
+## Second review
+
+The blind review of the side-by-side (2026-11-18) found three differences.
+
+- **Selected file.** writing-reviewer.md is drawn with a cyan name and icon on a
+  tinted fill, where Figma draws the selected file in the default text
+  colour with no fill (`tree · writing-reviewer.md` 494:3477). `FileTree` (through `TreeView`)
+  styles the selected row itself and has no prop for it. Gap: File tree
+  rows.
+- **Kind badge.** The Agent badge is a tinted pill with no outline, its
+  label dimmer and the pill shorter than Figma's 25 px label row in a
+  27 px pill with a lavender outline (`kind badge` 494:3198). T33 draws
+  it with the same `KindBadge kind="agent"` as T07 and T37, which render
+  it the same way; `KindBadge` has no prop for an outline. Gap: Kind
+  badge outline.
+- **Breadcrumb gap.** The first `›` is about 15 px after Toolkit against
+  Figma's 9 (494:3180 ends at 97, `›` 494:3181 starts at 103): `BackRow`'s
+  button pads 6 after Toolkit and the trail puts the `›` 6 after the
+  button, where Figma has 6 in all. T07 and T37 draw the same row with
+  the same `ToolkitItemBack`. Gap: Item breadcrumb.

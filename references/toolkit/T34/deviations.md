@@ -57,3 +57,17 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T34.
   (`button · Discuss` x -5.1, h -2). Gap: Item action buttons.
 - **Item tabs.** The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
+
+## Second review
+
+The blind review of the side-by-side (2026-11-18) found one difference.
+
+- **Harness script rows.** The six scripts under harness/ (run.sh to
+  aggregate.py) start their icons and names about 19 px further right,
+  past the folder's chevron, and their line counts end at the row's
+  right edge, in line with the folder's count 6. In Figma the icons sit
+  under the chevron (`icon/code` 494:3940 at 40, `icon/down` 494:3925 at
+  39) and the counts (`156 lines` 494:3939) end at 680, 37 px left of
+  the folder's count (494:3932, 717). `FileTree` indents a folder's files
+  16 px past its chevron and puts every count at the row's end, with no
+  prop for either. Gap: File tree rows.

@@ -54,3 +54,18 @@ D33 to D36, T04, T06, T07 and T19 give the same results as before T32.
   (`button · Discuss` x -5.1, h -2). Gap: Item action buttons.
 - **Item tabs.** The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
+
+## Second review
+
+The blind review of the side-by-side (2026-11-18) found two differences.
+
+- **Selected file.** skills.md is drawn with a cyan name and icon on a
+  tinted fill, where Figma draws the selected file in the default text
+  colour with no fill (`tree · skills.md` 494:3106). `FileTree` (through `TreeView`)
+  styles the selected row itself and has no prop for it. Gap: File tree
+  rows.
+- **Item tabs.** `ItemTabs density="compact" tone="accent"`, as on T07,
+  T10 and the other tablet frames, draws each label a little wider than
+  Figma's, so each gap looks 1 to 2 px wider and Activity ends about 6 to
+  9 px further right, as T10 records (Activity about 8 px right). The
+  library's compact tabs set it.
