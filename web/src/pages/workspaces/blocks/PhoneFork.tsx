@@ -15,6 +15,7 @@ import { ForkFields } from './ForkFields.tsx'
 // more) and 16 apart; the name sits 16 under the title row (its 8 below the title, the sheet's 2 and 6 here).
 // M18 422:300: Fork spans the sheet, 40 high; no button is 40, and `lg` (36) is as near as `xl` (44) and keeps the
 // fields above nearer Figma's places, as the sheet grows upward from the bottom (LIBRARY_GAPS.md: Phone fork sheet).
+// Its label "Fork" (422:304) is Geist Medium 12, which is `textSize="xs"` (`labelXs`).
 const body = css({ display: 'flex', flexDirection: 'column', gap: '16', px: '4', pt: '6' })
 
 export type PhoneForkProps = {
@@ -42,8 +43,8 @@ export function PhoneFork({ form, chat, open, onOpenChange, layers }: PhoneForkP
       }}
     >
       <div ref={ref} className={body}>
-        <ForkFields form={form} chat={chat} layers={layers} />
-        <Button variant="primary" size="lg" textSize="smStrong" data-figma={layers?.submit}>
+        <ForkFields form={form} chat={chat} layers={layers} size="phone" />
+        <Button variant="primary" size="lg" textSize="xs" data-figma={layers?.submit}>
           <ArrowUpIcon size="16" />
           {form.submit}
         </Button>

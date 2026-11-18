@@ -36,6 +36,22 @@ describe('fork a chat on the phone', () => {
     await expect.element(page.getByRole('button', { name: 'Cancel' })).not.toBeInTheDocument()
   })
 
+  it('draws Fork in Medium 12 and the choices in Medium 13, as Figma does', async () => {
+    // M18 422:304: "Fork" is Geist Medium 12 (`labelXs`); 422:238 and 422:244: the choices are Geist Medium 13.
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneFork
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const font = (name: string) => {
+      const button = page.getByRole('button', { name, exact: true }).element()
+      const style = getComputedStyle(button)
+      return `${style.fontSize}/${style.fontWeight}`
+    }
+    await expect.element(page.getByRole('button', { name: 'Fork', exact: true })).toBeVisible()
+    expect(font('Fork')).toBe('12px/500')
+    expect(font('Whole chat')).toBe('13px/500')
+    expect(font('Up to a message…')).toBe('13px/500')
+  })
+
   it('opens from the chat actions and closes with ×', async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneFork

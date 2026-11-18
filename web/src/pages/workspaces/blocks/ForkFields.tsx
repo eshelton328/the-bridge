@@ -24,9 +24,14 @@ export type ForkFieldsProps = {
   /** The title of the chat to fork; it fills `{chat}` in the name. */
   chat: string
   layers?: ForkFieldsLayers | undefined
+  /**
+   * `phone` draws the choices' labels in Geist Medium 13 (`labelSm`), as M18 does (422:238, 422:244); `desktop` (the
+   * default) keeps the Button's `label` (Medium 14).
+   */
+  size?: 'desktop' | 'phone' | undefined
 }
 
-export function ForkFields({ form, chat, layers }: ForkFieldsProps) {
+export function ForkFields({ form, chat, layers, size = 'desktop' }: ForkFieldsProps) {
   const { labels } = form
   const [chosen, setChosen] = useState(form.startFrom.value)
   return (
@@ -40,6 +45,7 @@ export function ForkFields({ form, chat, layers }: ForkFieldsProps) {
             <Button
               key={o.value}
               size="lg"
+              textSize={size === 'phone' ? 'sm' : 'md'}
               pressed={o.value === chosen}
               onClick={() => {
                 setChosen(o.value)
