@@ -37,7 +37,9 @@
 // tablet's backdrop, shell and tab bar, whose More goes to its page. T2 draws
 // the chat with its side chat sheet at a tablet's width, with no tab bar;
 // there the chat's ⋯ opens the desktop's chat actions menu (T2b,
-// ChatActionsMenu) in place of the phone's sheet.
+// ChatActionsMenu) in place of the phone's sheet. T3 draws the chat's
+// subagents at a tablet's width, with Start a subtask under the cards, which
+// opens the Subtask form over the chat.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -174,6 +176,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
           view="detail"
           detail={
             <PhoneSubagents
+              device={device}
               panel={data.subagents}
               chat={focused.head.title}
               onBack={() => {
@@ -188,6 +191,14 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
                   ? undefined
                   : (subagentFor) => {
                       onUiChange({ phoneView: 'transcript', subagentFor })
+                    }
+              }
+              // T3: Start a subtask opens the Subtask form over the chat, as the chat actions' Subtask does (M20).
+              onStartSubtask={
+                data.subtask === undefined
+                  ? undefined
+                  : () => {
+                      onUiChange({ phoneView: 'chat', chatDialog: 'subtask' })
                     }
               }
               layers={data.layers}

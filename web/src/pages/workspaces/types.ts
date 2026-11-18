@@ -202,6 +202,13 @@ export const SubagentsPanel = z.object({
    */
   openTranscript: z.string().optional(),
   /**
+   * The words before the chat's name at the end of the count line, such as "started from" in "3 · 2 running · started
+   * from bridge themes" (T3 105:2029); without them, the count line ends with the running subagents.
+   */
+  startedFrom: z.string().optional(),
+  /** The label of the button under the cards that starts a subtask, such as "Start a subtask" (T3 105:2087). */
+  startSubtask: z.string().optional(),
+  /**
    * The labels of a subagent's full transcript on the phone (M12): the trail's name for assistive technology, the
    * label over the task, such as "Task from {chat}", and the note at the foot, such as "Read-only: the result
    * returns to {chat} when it finishes"; {chat} is the chat the subagent works for.
@@ -501,6 +508,8 @@ export const SidebarLayers = z.object({
   subagentsTitle: z.string().optional(),
   subagentsCount: z.string().optional(),
   subagentChevrons: z.record(z.string(), z.string()).optional(),
+  /** The button under the cards that starts a subtask (T3 105:2087). */
+  subagentsStart: z.string().optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
