@@ -2,7 +2,7 @@
 
 What still differs from Figma after round 3 of the fidelity loop
 (`pnpm fidelity toolkit D06 D03 D07 D14 D13 T07`, 2026-11-17, against the
-installed library 1.0.0-beta.28), each with its reason. The library gaps
+installed library 1.0.0-beta.31), each with its reason. The library gaps
 are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/skillFiles.ts`: D3's data (the list has T1's
 data), with writer open on its Files tab. D03, D07, D14, D13 and T07 give

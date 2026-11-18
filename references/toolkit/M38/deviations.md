@@ -1,7 +1,7 @@
 # M38 deviations
 
 What still differs from Figma after the fidelity loop
-(`pnpm fidelity toolkit M38`, 2026-11-18, against library 1.0.0-beta.28),
+(`pnpm fidelity toolkit M38`, 2026-11-18, against library 1.0.0-beta.31),
 each with its reason. The library gaps are in
 `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/hookFilesPhone.ts`: T35's files
