@@ -93,8 +93,9 @@ what each file of a page folder is for.
   text keeps Figma's lines, and the files sit 24 under the code. On the phone (M22, `hookOpenPhone`, D9's
   data) the hook opens as M19's rule does: the When it runs cards sit two by
   two (`ToolkitAgentRuns` `columns="2"`, with T19's notice variant), the
-  overview's rows are 8 apart, and the script runs under the tab bar, as in
-  Figma. A workflow (D8, `workflowOpen`, D9's list)
+  overview's rows are 8 apart, the script's long lines wrap (`CodeLines`
+  `wrap`, `ToolkitFilePreview` `wrapCode`) and the script runs under the
+  tab bar, as in Figma. A workflow (D8, `workflowOpen`, D9's list)
   adds `flow` to its details: its steps by phase
   (`ToolkitWorkflowFlow`, each card a `ToolkitFlowStep`), drawn in a grid
   whose card rows are equal, so every card has one size; a phase's

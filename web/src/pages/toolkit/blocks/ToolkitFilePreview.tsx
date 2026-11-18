@@ -3,7 +3,8 @@
 // library's MarkdownView. The view parses no Markdown; the state gives the
 // blocks. A file shown as code (a hook's script, D9 433:1572) shows the code
 // icon in the bar and its lines with their numbers in the library's
-// CodeLines. Props only.
+// CodeLines; on the phone (M22 487:2231) a long line wraps under itself.
+// Props only.
 import { CodeIcon, CodeLines, FileIcon, LockIcon, MarkdownView, ScrollFrame } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -127,9 +128,20 @@ export type ToolkitFilePreviewProps = {
   code?: Code | undefined
   /** Lets the file references wrap as one line of text, as on the phone (M2); a row of separate paths when not set. */
   wrapRefs?: boolean | undefined
+  /** Wraps a long line of `code` under itself, as on the phone (M22 487:2231); the code scrolls sideways when not set. */
+  wrapCode?: boolean | undefined
 }
 
-export function ToolkitFilePreview({ file, meta, blocks, code, wrapRefs = false }: ToolkitFilePreviewProps) {
+export function ToolkitFilePreview({
+  file,
+  meta,
+  blocks,
+  code,
+  wrapRefs = false,
+  wrapCode = false,
+}: ToolkitFilePreviewProps) {
+  // Each line's text, from its coloured pieces.
+  const lines = (code ?? []).map((line) => line.map((piece) => piece.text).join(''))
   return (
     <section aria-label={file} className={box} data-figma="file preview">
       <div className={bar} data-figma="preview bar">
@@ -153,11 +165,18 @@ export function ToolkitFilePreview({ file, meta, blocks, code, wrapRefs = false 
       ) : (
         // D9 433:1583: the lines 19 apart, numbered, the comments green.
         <div data-figma="code">
-          <ScrollFrame>
-            <div className={codeWidth}>
-              <CodeLines lines={code.map((line) => line.map((piece) => piece.text).join(''))} segments={code} />
-            </div>
-          </ScrollFrame>
+          {wrapCode ? (
+            // M22 487:2231: on the phone lines 3, 4, 5 and 8 wrap in the text column, their number on the first line,
+            // and nothing scrolls sideways. A wrapped line is 32 high (two lines of the 12/16 mono style, d-090), where
+            // Figma draws 34; no line-height token has 17 (d-050).
+            <CodeLines lines={lines} segments={code} wrap />
+          ) : (
+            <ScrollFrame>
+              <div className={codeWidth}>
+                <CodeLines lines={lines} segments={code} />
+              </div>
+            </ScrollFrame>
+          )}
         </div>
       )}
     </section>
