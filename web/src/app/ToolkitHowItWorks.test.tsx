@@ -197,3 +197,32 @@ describe('the How it works tab of a rule on the phone (M39)', () => {
     expect(list?.bottom ?? Number.POSITIVE_INFINITY).toBeLessThan(tabBar?.top ?? 0)
   })
 })
+
+// M40: an agent's How it works on the phone keeps the item's header, as on its Overview (M20), with no breadcrumb,
+// then the column with its rows 12 apart, as M39's are, and nothing under the steps.
+describe('the How it works tab of an agent on the phone (M40)', () => {
+  it('keeps the header over the column, the trigger 8 under the tab list and the steps 6 under it', async () => {
+    await page.viewport(390, 806)
+    const router = createRouter({
+      routeTree,
+      history: createMemoryHistory({ initialEntries: ['/toolkit?state=agentHowItWorksPhone'] }),
+    })
+    ;({ unmount } = await testRender(<RouterProvider router={router} />))
+    await expect.poll(() => document.querySelectorAll('[data-figma^="step "]').length).toBe(4)
+    expect(document.querySelector('nav[aria-label="Breadcrumb"]')).toBeNull()
+    expect(document.querySelector('[data-figma="kind badge"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="path badge"]')).not.toBeNull()
+    expect(document.querySelector('[data-figma="495:3255"]')).not.toBeNull()
+    // Figma's trigger starts 12 under the tabs (495:3382 ends at 249, 495:3395 starts at 261); `ItemTabs` pads its
+    // list 2 above and below (LIBRARY_GAPS.md, Item tab spacing), so the trigger starts 8 under the list.
+    const tabs = document.querySelector('[role="tablist"]')?.getBoundingClientRect()
+    const trigger = document.querySelector('[data-figma="trigger"]')?.getBoundingClientRect()
+    expect(Math.round((trigger?.top ?? 0) - (tabs?.bottom ?? -1))).toBe(8)
+    // Figma's steps start 12 under the two-line trigger (495:3395 ends at 309, 495:3397 starts at 321); the notice
+    // Panel makes the trigger 6 px taller (LIBRARY_GAPS.md, How it works trigger), so the steps start 6 under it.
+    const list = document.querySelector('[data-figma="steps"]')?.getBoundingClientRect()
+    expect(Math.round((list?.top ?? 0) - (trigger?.bottom ?? -1))).toBe(6)
+    const tabBar = document.querySelector('[data-figma="tab bar"]')?.getBoundingClientRect()
+    expect(list?.bottom ?? Number.POSITIVE_INFINITY).toBeLessThan(tabBar?.top ?? 0)
+  })
+})

@@ -526,3 +526,23 @@ export const RuleHowItWorksPhone: Story = {
     await expect(within(item).queryByText('In Codex')).toBeNull()
   },
 }
+
+export const AgentHowItWorksPhone: Story = {
+  name: 'M40: an agent open on the phone, on How it works',
+  args: {
+    data: toolkitStates.agentHowItWorksPhone.data,
+    ui: toolkitStates.agentHowItWorksPhone.ui,
+    viewport: 'phone',
+  },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the agent's steps in one column under its
+  // header. The play test checks what every width shows; src/app/ToolkitHowItWorks.test.tsx checks the column.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writing-reviewer' })
+    await expect(within(item).getByRole('tab', { name: 'How it works' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByText('changed 6 days ago')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    await expect(canvas.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    const steps = within(item).getByRole('list', { name: 'Steps' })
+    await expect(within(steps).getByText('PASS, FAIL or NA for each, returned as JSON.')).toBeVisible()
+  },
+}

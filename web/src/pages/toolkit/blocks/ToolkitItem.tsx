@@ -118,9 +118,10 @@ const tabletHowTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '461:255',
   'rules/skills.md': '495:1827',
 }
-// On How it works on the phone: writer in M12 (461:560).
+// On How it works on the phone: writer in M12 (461:560), the agent writing-reviewer in M40 (495:3255).
 const phoneHowTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '461:560',
+  'agents/writing-reviewer.md': '495:3255',
 }
 const titleLayersOf = { desktop: titleLayers, tablet: pageTitleLayers, phone: phoneTitleLayers }
 const howTitleLayersOf: Readonly<Record<Viewport, Readonly<Record<string, string>>>> = {

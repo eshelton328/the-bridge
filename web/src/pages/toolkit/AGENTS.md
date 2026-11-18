@@ -147,6 +147,8 @@ what each file of a page folder is for.
   is the same column (`ToolkitHowColumn layout="phone"`), with the title in
   the smaller title style and the rows 10 apart. A rule on the phone (M39,
   `ruleHowItWorksPhone`, T36's data) keeps M19's header over the same column,
-  whose rows are then 12 apart, as the header's are. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  whose rows are then 12 apart, as the header's are. An agent on the phone
+  (M40, `agentHowItWorksPhone`, T37's data with no `ui.from`, as on M20)
+  keeps M20's header, with no breadcrumb, over the same column. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.
