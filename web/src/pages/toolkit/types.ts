@@ -315,6 +315,8 @@ const ToolkitFileView = z.object({
    * 494:4338): drawn rendered with no Rendered and Source switch, since they have no source of their own.
    */
   summary: z.literal(true).optional(),
+  /** A line under the source on a file's own page on the phone (M6 435:555), such as how its long lines wrap. */
+  footnote: z.string().optional(),
 })
 export type ToolkitFileView = z.infer<typeof ToolkitFileView>
 

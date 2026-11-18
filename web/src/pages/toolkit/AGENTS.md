@@ -252,7 +252,14 @@ what each file of a page folder is for.
   file opened last (`ui.file`, `marked`), and every file with a view opens on
   its page (`selectFile`'s `phone`). A browser with a `badge` leaves out the
   path row too, and the copy button joins the back row's icon buttons
-  (`ToolkitItemActions` `copy`). Only the
+  (`ToolkitItemActions` `copy`). A file on its page on the phone (M6,
+  `scriptCodePhone`, M5's files with the phone's source of check, as Figma
+  numbers its lines, and D10's explanation, on Code) has no title: the path
+  badge names the file with its icon and no copy button, and the copy button
+  joins the back row. `ToolkitFilePage layout="phone"` puts the file's meta
+  line over the switch, and on Code the line on what runs it after
+  Read-only, the source wrapped (`CodeLines` `wrap`) in a box and the view's
+  `footnote` under it. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

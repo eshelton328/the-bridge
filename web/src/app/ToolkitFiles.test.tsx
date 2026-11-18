@@ -450,3 +450,57 @@ describe('the Files tab on the phone (M5)', () => {
     await view.unmount()
   })
 })
+
+// A script on its own page on the phone, on Code (M6): no title, the path badge names the script with no copy button,
+// and the back row's copy button copies its path in the toolkit. The source wraps its long lines in a box as wide as
+// the item, under the line on what runs it, and nothing scrolls sideways. Explain shows the explanation, and Back to
+// Files goes back to the tree.
+describe('a script on its own page on the phone (M6)', () => {
+  it('shows the source wrapped, switches to Explain and goes back to the tree', async () => {
+    await page.viewport(390, 806)
+    const view = await renderToolkit('scriptCodePhone')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="code"]')).not.toBeNull()
+    await document.fonts.ready
+    const box = (selector: string) => {
+      const el = root.querySelector(selector)
+      if (el === null) throw new Error(`no ${selector}`)
+      return el.getBoundingClientRect()
+    }
+    expect(root.querySelector('[data-figma="tree"]')).toBeNull()
+    expect(root.querySelector('article h2')).toBeNull()
+    expect(root.querySelector('[data-figma="kind badge"]')).toBeNull()
+    expect(root.querySelector('[data-figma="path badge"]')?.textContent).toBe('scripts/check')
+    expect(root.querySelector('[data-figma="path badge"] button')).toBeNull()
+    expect(
+      root.querySelector('[data-figma="back row"] [aria-label="Copy toolkit/skills/writer/scripts/check"]'),
+    ).not.toBeNull()
+    // M6 435:498, 435:503: what runs the script over the code, the code as wide as the item, with no sideways scroll.
+    const code = box('[data-figma="code"]')
+    expect(code.top).toBeGreaterThan(box('[data-figma="read-only"]').bottom)
+    expect(code.width).toBeCloseTo(box('[data-figma="toolkit"]').width, 0)
+    const codeBox = root.querySelector('[data-figma="code"]')
+    if (codeBox === null) throw new Error('no code')
+    expect(codeBox.scrollWidth).toBeLessThanOrEqual(codeBox.clientWidth)
+    // Explain shows the explanation in place of the source; Back to Files shows the tree with the script marked.
+    const explain = [...root.querySelectorAll('[data-figma="toggle · Explain | Code"] label')].find(
+      (el) => el.textContent === 'Explain',
+    )
+    if (explain === undefined) throw new Error('no Explain item')
+    await userEvent.click(explain)
+    await expect.poll(() => root.querySelector('[data-figma="explain"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="code"]')).toBeNull()
+    const back = [...root.querySelectorAll('[data-figma="back row"] button')].find((el) =>
+      el.textContent.includes('Files'),
+    )
+    if (back === undefined) throw new Error('no Back to Files')
+    await userEvent.click(back)
+    await expect.poll(() => root.querySelector('[data-figma="tree"]')).not.toBeNull()
+    expect(root.querySelector('article h2')?.textContent).toBe('writer')
+    await view.unmount()
+  })
+})

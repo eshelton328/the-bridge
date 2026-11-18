@@ -881,3 +881,18 @@ export const SkillFilesPhone: Story = {
     await expect(within(tree).queryByRole('treeitem', { name: /^doc\.md/ })).toBeNull()
   },
 }
+
+export const ScriptCodePhone: Story = {
+  name: 'M6: a skill’s script on the phone, on a page of its own, on Code',
+  args: { data: toolkitStates.scriptCodePhone.data, ui: toolkitStates.scriptCodePhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the script on a page of its own, under Back to
+  // Files. The play test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's page.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'writer' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script opens on Code: the phone's source, as Figma numbers its lines, and what runs it.
+    await expect(within(item).getByRole('radio', { name: 'Code' })).toBeChecked()
+    await expect(within(item).getByText('draft against toolkit/rules/writing.md.')).toBeVisible()
+    await expect(within(item).getByText(/Step 6 of SKILL\.md runs this script\.$/)).toBeVisible()
+  },
+}
