@@ -69,12 +69,11 @@ artifacts`): the text, position and rules results did not change.
   are 352 wide, 20 in and 12 apart (Figma 349, 22 and 14, d-100), so the
   descriptions break where Figma's do. Library gaps "Sort and Filter
   button widths" and "Card body and line heights".
-- **New badge, page title and thumbnails.** As T1, under the scrim: New
-  sits 8 px after the card title, not at the end of the row; "Artifacts"
+- **Page title and thumbnails.** As T1, under the scrim: "Artifacts"
   uses the phone title size (28 px type), a little smaller than Figma's;
   the chart bars are a brighter cyan and the ui preview draws lines where
-  Figma has a plain panel. Library gaps "Card badge at the end of the
-  title row", "Desktop page title size" and "Thumbnail colour".
+  Figma has a plain panel. Library gaps "Desktop page title size" and
+  "Thumbnail colour".
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier. The button is 46 high in Figma (407:1720) and
   `size="xl"` matches it within the tolerance, as the Inbox's M7 sheet.

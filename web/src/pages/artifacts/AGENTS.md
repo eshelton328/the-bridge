@@ -167,7 +167,8 @@ each file of a page folder is for.
   Grid or List `ViewSwitch`; with `data.filterMenu` Filter opens the
   Filter menu, D3; with `data.sortMenu` Sort opens the Sort menu, D6), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
-  New as `Badge tone="working"`, and a `MetaLine` with the `KindMark`,
+  New as `Badge tone="working"` at the end of the title row
+  (`badgePosition="end"`), and a `MetaLine` with the `KindMark`,
   source, project and age; `onOpen` makes it a button). For D2:
   `RowGroup` (rows 2 apart) and `ArtifactRow` (`ListRow padding="sm"
   trailingAlign="center"` with a `Thumbnail size="sm"`, the kind mark and
