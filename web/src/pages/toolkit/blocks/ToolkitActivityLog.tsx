@@ -28,7 +28,7 @@ export function ToolkitActivityLog({ log }: ToolkitActivityLogProps) {
     <section className={fill} aria-label={log.label} data-figma={panelLayer(log.label, 'desktop')}>
       <Panel>
         <div className={body}>
-          <ToolkitEvalsHeader label={log.label} end={{ type: 'note', label: log.meta }} />
+          <ToolkitEvalsHeader level={2} label={log.label} end={{ type: 'note', label: log.meta }} />
           <ul className={lines}>
             {log.rows.map((r) => (
               <li key={`${r.time} ${r.text}`} className={line} data-figma={logLayer(r)}>

@@ -53,7 +53,7 @@ export function ToolkitActivityRuns({ running, layout, open, onOpen }: ToolkitAc
       <section className={fill} aria-label={running.label} data-figma={panelLayer(running.label, layout)}>
         <Panel>
           <div className={body}>
-            <ToolkitEvalsHeader label={running.label} end={{ type: 'note', label: running.meta }} />
+            <ToolkitEvalsHeader level={2} label={running.label} end={{ type: 'note', label: running.meta }} />
             {list}
           </div>
         </Panel>

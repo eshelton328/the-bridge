@@ -13,7 +13,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitRun } from '../types.ts'
 
 /** Why Open the session in Workbench does nothing yet: its title. */
-export const sessionWaiting = 'The Workbench cannot open a toolkit run’s session yet'
+const sessionWaiting = 'The Workbench cannot open a toolkit run’s session yet'
 
 const root = css({ display: 'flex', flexDirection: 'column', gap: '12', minW: '[0]' })
 const text = css({ textStyle: 'small', color: 'fg.muted', m: '0' })

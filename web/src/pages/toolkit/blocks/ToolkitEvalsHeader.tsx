@@ -37,12 +37,14 @@ export type ToolkitEvalsHeaderProps = {
   /** The panel's label, as written; it shows in capitals. */
   label: string
   end?: ToolkitEvalsHeaderEnd | null | undefined
+  /** The label's heading level: 3 under an item's title, 2 in the Activity view, straight under the page's title. */
+  level?: 2 | 3 | undefined
 }
 
-export function ToolkitEvalsHeader({ label: text, end }: ToolkitEvalsHeaderProps) {
+export function ToolkitEvalsHeader({ label: text, end, level = 3 }: ToolkitEvalsHeaderProps) {
   return (
     <div className={header}>
-      <h3 className={label}>{text}</h3>
+      {level === 2 ? <h2 className={label}>{text}</h2> : <h3 className={label}>{text}</h3>}
       {end === undefined || end === null || end.label === '' ? null : end.type === 'link' ? (
         <button
           type="button"

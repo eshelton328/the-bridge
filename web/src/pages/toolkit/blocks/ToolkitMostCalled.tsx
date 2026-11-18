@@ -49,6 +49,7 @@ export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCal
       <Panel>
         <div className={body}>
           <ToolkitEvalsHeader
+            level={2}
             label={mostCalled.label}
             end={mostCalled.meta === undefined ? null : { type: 'note', label: mostCalled.meta }}
           />

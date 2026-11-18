@@ -34,7 +34,7 @@ export function ToolkitCallsPerDay({ perDay, layout }: ToolkitCallsPerDayProps) 
     <section className={fill} aria-label={perDay.label} data-figma={panelLayer(perDay.label, layout)}>
       <Panel>
         <div className={body[layout]}>
-          <ToolkitEvalsHeader label={perDay.label} end={{ type: 'note', label: perDay.meta }} />
+          <ToolkitEvalsHeader level={2} label={perDay.label} end={{ type: 'note', label: perDay.meta }} />
           {perDay.series.map((s, i) => (
             <div key={s.source} data-figma={layout === 'desktop' ? `chart · ${s.name}` : undefined}>
               <DailyBarChart
