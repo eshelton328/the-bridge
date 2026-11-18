@@ -314,3 +314,21 @@ export const MoveToWorkspace: Story = {
     await expect(body.queryByRole('menuitem', { name: 'omni-brain' })).toBeNull()
   },
 }
+
+export const MovedChat: Story = {
+  name: 'D20: the chat moved to the-bridge, with a toast and Undo',
+  args: { data: workspacesStates.movedChat.data, ui: workspacesStates.movedChat.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // The chat and its subtask chat now head the-bridge's list.
+    const header = canvas.getByRole('button', { name: /the-bridge/i, expanded: true })
+    const rows = document.getElementById(header.getAttribute('aria-controls') ?? '')
+    await expect(rows).toContainElement(canvas.getByRole('button', { name: 'bridge themes', current: true }))
+    await expect(rows).toContainElement(canvas.getByText('theme tokens'))
+    await expect(canvas.getByText('the-bridge', { selector: 'header span' })).toBeVisible()
+    // The toast stays open: the fidelity check renders the story after its play test.
+    const toast = canvas.getByRole('status')
+    await expect(toast).toHaveTextContent('Moved bridge themes to the-bridge')
+    await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
+  },
+}

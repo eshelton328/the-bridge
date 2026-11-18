@@ -103,7 +103,10 @@ first: it says what each file of a page folder is for.
   started is an `event` entry. D19 needs no new block: `ChatActionsMenu`
   opens Move to workspace's list (`ui.moveOpen`, the highlighted workspace
   in `ui.moveTarget`), which the library puts beside the menu, on the left
-  where the window has no room on the right. Later frames add to these
+  where the window has no room on the right. D20 adds `ChatToast` (the
+  library's static `Toast` with its button, centred), which `MainChat`
+  draws in `ChatPane`'s `above` slot, over the composer, while
+  `ui.toastOpen`; its button closes it. Later frames add to these
   blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -133,7 +136,10 @@ first: it says what each file of a page folder is for.
   `chatActions`, without the side chat and the menu: the subtask layout
   notes under bridge themes, Running, and the line where it started),
   D19 `moveToWorkspace` (from `chatActions`, without the side chat:
-  Move to workspace's list open, the-bridge highlighted).
+  Move to workspace's list open, the-bridge highlighted), D20
+  `movedChat` (from `chatActions`, without the side chat and the menu:
+  bridge themes and theme tokens moved to the-bridge, now `current`, and
+  the toast with Undo).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -152,7 +158,8 @@ first: it says what each file of a page folder is for.
   `layers.emptyClose`; for D14 `split`, `resizeHint` and its layer in
   `layers.resizeHint`; for D15 `fork`, the Fork form; for D16 a sidebar
   chat's `mark`, a pane head's `origin` and the `event` chat entry; for
-  D17 `subtask`, the Subtask form) and
+  D17 `subtask`, the Subtask form; for D20 `toast`, the toast's text and
+  button, and its layer in `layers.toast`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -163,6 +170,7 @@ first: it says what each file of a page folder is for.
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
   of a rows-first split and its sizes, and `splitSizes`, each handle's
   sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
-  the chat action whose dialog is open, `subtask` in D17), each a Zod schema.
+  the chat action whose dialog is open, `subtask` in D17; for D20
+  `toastOpen`, the toast shown), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

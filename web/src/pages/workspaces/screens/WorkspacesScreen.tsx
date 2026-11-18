@@ -16,7 +16,7 @@
 // place of the chat alone (D7), and a chat dragged over one of its panes
 // shows the drop zone over that pane (D8). A chat action's dialog, such as
 // Fork (D15) or Subtask (D17), opens over the screen for the chat shown
-// alone.
+// alone, and a toast over its composer confirms a move, with Undo (D20).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -27,6 +27,7 @@ import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
@@ -139,6 +140,17 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           figma={data.layers?.dropZone}
         />
       )
+    const toast =
+      ui.toastOpen === true && data.toast !== undefined ? (
+        <ChatToast
+          text={data.toast.text}
+          action={data.toast.action}
+          onAction={() => {
+            change({ toastOpen: false })
+          }}
+          figma={data.layers?.toast}
+        />
+      ) : undefined
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -189,6 +201,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
                   )
                 }
                 layers={data.layers}
+                above={toast}
                 overlay={dropZone}
               />
             )

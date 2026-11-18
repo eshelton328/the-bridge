@@ -319,6 +319,8 @@ export const SidebarLayers = z.object({
   subagentCards: z.record(z.string(), z.string()).optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
+  /** The toast over the composer of the chat shown alone (D20 toast · moved). */
+  toast: z.string().optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -438,6 +440,11 @@ export const WorkspacesData = z.object({
   split: z.enum(['rows']).optional(),
   /** The readout beside a handle while Erik drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
   resizeHint: z.string().optional(),
+  /**
+   * A toast over the composer of the chat shown alone that confirms what Erik just did, with its button, such as
+   * "Moved bridge themes to the-bridge" and Undo (D20). `ui.toastOpen` shows it.
+   */
+  toast: z.object({ text: z.string(), action: z.string() }).optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
@@ -509,6 +516,8 @@ export const WorkspacesUi = z.object({
    * others as they are; `resize` sets its own handle's sizes over these.
    */
   splitSizes: z.partialRecord(ResizePart, z.array(z.number())).optional(),
+  /** `data.toast` shows over the composer of the chat shown alone (D20); its button closes it. */
+  toastOpen: z.boolean().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 
