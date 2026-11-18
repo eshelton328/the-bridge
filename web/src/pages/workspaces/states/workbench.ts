@@ -129,6 +129,97 @@ export const workbench = {
       { value: 'rename', label: 'Rename chat' },
       { value: 'close', label: 'Close pane' },
     ],
+    // Each workspace's most recent chat, which its tab opens alone in one pane until it has a layout (R6). Figma
+    // draws only omni-brain's panes, so these are mock chats with the sidebar's titles (D2).
+    lastChats: {
+      'omni-brain': {
+        type: 'chat',
+        id: 'bridge-themes',
+        head: {
+          kind: 'claude',
+          title: 'bridge themes',
+          model: 'Opus 5.5',
+          context: 42,
+          status: { label: 'Working', tone: 'working' },
+        },
+        entries: [{ type: 'user', text: 'Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.' }],
+        composer: {
+          placeholder: 'Message, or / for a skill',
+          text: '',
+          attachments: [],
+          model: 'Opus 5.5',
+          running: true,
+        },
+      },
+      'the-bridge': {
+        type: 'chat',
+        id: 'hono-server',
+        head: {
+          kind: 'claude',
+          title: 'hono server',
+          model: 'Sonnet 5.5',
+          context: 78,
+          status: { label: 'Needs you', tone: 'needsYou' },
+        },
+        entries: [
+          { type: 'user', text: 'Add a Hono server that serves the mock states.' },
+          {
+            type: 'approval',
+            label: 'APPROVAL NEEDED',
+            title: 'Claude wants to run a command',
+            command: 'pnpm add hono',
+            actions: ['Allow once', 'Always allow', 'Deny'],
+          },
+        ],
+        composer: {
+          placeholder: 'Message, or / for a skill',
+          text: '',
+          attachments: [],
+          model: 'Sonnet 5.5',
+          running: false,
+        },
+      },
+      omni: {
+        type: 'chat',
+        id: 'release-notes',
+        head: {
+          kind: 'codex',
+          title: 'release notes',
+          model: 'GPT-5.5',
+          context: 18,
+          status: { label: 'Done', tone: 'done' },
+        },
+        entries: [
+          { type: 'user', text: 'Draft the release notes for the next omni release.' },
+          {
+            type: 'assistant',
+            kind: 'codex',
+            name: 'Codex',
+            text: 'The draft is in RELEASE_NOTES.md: two features, three fixes and one breaking change.',
+          },
+        ],
+        composer: { placeholder: 'Reply to Codex', text: '', attachments: [], running: false },
+      },
+      'skill-evals': {
+        type: 'chat',
+        id: 'eval-round',
+        head: {
+          kind: 'claude',
+          title: 'eval round',
+          model: 'Opus 5.5',
+          context: 31,
+          status: { label: 'Idle', tone: 'idle' },
+        },
+        entries: [{ type: 'user', text: 'Run the next eval round for the writer skill.' }],
+        composer: {
+          placeholder: 'Message, or / for a skill',
+          text: '',
+          attachments: [],
+          model: 'Opus 5.5',
+          running: false,
+        },
+      },
+    },
     newWorkspace: 'New workspace…',
     skillsLabel: 'SKILLS',
     skills: [

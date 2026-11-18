@@ -772,6 +772,11 @@ export const WorkspacesData = z.object({
    * tab bar (T1), or a chat with no tab bar (T2). When not set, a tablet's width draws the desktop layout.
    */
   tabletList: z.boolean().optional(),
+  /**
+   * The most recent chat of each workspace, by workspace id, as a pane (R6). A click on the tab of a workspace with no
+   * layout yet opens this chat alone in one pane.
+   */
+  lastChats: z.record(z.string(), WorkbenchPane).optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
