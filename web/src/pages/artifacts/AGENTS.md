@@ -91,7 +91,8 @@ each file of a page folder is for.
   that Back shows M1's library, and that its ⋯ opens File in a project
   (M7); and it scrolls M9's page and checks the
   nav, the card and the reply box stay put, that a long draft keeps Send
-  in reach, and that M2's Discuss opens M9 and its Back returns to M2;
+  in reach, that M2's Discuss opens M9 and its Back returns to M2, and
+  that the card's model picker opens its menu and keeps M9;
   it scrolls M10's page as T5's and checks that Apply returns to M2,
   Updated, and that Discuss then shows the applied proposal.
 - `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
@@ -234,7 +235,8 @@ each file of a page folder is for.
   `DiscussedArtifactCard` (a `Panel variant="notice"` with the title, New
   as `StatusPill tone="working"`, a chevron whose button covers the card
   and returns to the artifact, the source, project and age, and
-  `DiscussionGuard`).
+  `DiscussionGuard`; on the phone the `model` sits above that cover, so a
+  press on the model picker opens its menu and stays on the discussion).
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
   open artifact), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with

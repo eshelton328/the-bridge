@@ -12,6 +12,9 @@ import { DiscussionGuard } from './DiscussionGuard.tsx'
 
 // The chevron's button covers the card, as the library Card's action does, so the whole card is one press.
 const card = css({ position: 'relative' })
+// The phone's model picker (M9) sits inside the card. Positioned, it paints after the chevron's overlay, so a press on
+// it opens the model menu instead of returning to the artifact.
+const above = css({ position: 'relative' })
 // 452:3780: SemiBold 15, as the Inbox's task card (T17 402:11176).
 const title = css({ textStyle: 'paneTitle', color: 'fg.default', m: '0', flex: '1', minW: '[0]' })
 const meta = css({ textStyle: 'monoSm', color: 'fg.muted', m: '0' })
@@ -63,7 +66,7 @@ export function DiscussedArtifactCard({ artifact, badge, guard, onOpen, model }:
             </button>
           </Inline>
           <p className={meta}>{[artifact.sourceLabel, artifact.project, artifact.updated].join(' · ')}</p>
-          {model}
+          {model === undefined ? null : <div className={above}>{model}</div>}
           <DiscussionGuard text={guard} />
         </Stack>
       </Panel>

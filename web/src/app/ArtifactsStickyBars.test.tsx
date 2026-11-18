@@ -371,6 +371,19 @@ describe('the discussion page on the phone (d-107)', () => {
       .toBeChecked()
     await view.unmount()
   })
+
+  it("keeps the discussion open when the card's model picker is pressed (M9)", async () => {
+    await page.viewport(390, 844)
+    const { view, root } = await renderRoot('discussPhone')
+    await expect.poll(() => root.querySelector('[data-figma="artifact · discussing"]')).not.toBeNull()
+    const model = root.querySelector('[data-figma="artifact · discussing"] [data-figma="model and context"] button')
+    if (!(model instanceof HTMLElement)) throw new Error('no model picker')
+    await userEvent.click(model)
+    await expect.poll(() => document.querySelector('[role="menu"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="artifact · discussing"]')).not.toBeNull()
+    expect(root.querySelector('[data-figma="top bar"]')).toBeNull()
+    await view.unmount()
+  })
 })
 
 describe('the proposed update on the tablet (T5)', () => {
