@@ -23,6 +23,9 @@ const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: 
 // sheet is open; Figma keeps the ⋯ bare under M4's sheet (105:2891), so the border stays transparent.
 const moreButton = css({ color: 'fg.default', me: '-2', _expanded: { borderColor: 'transparent' } })
 const icon = css({ display: 'flex' })
+// Figma's back chevron is 20 wide at the header's start (105:2750, x 16) and the kind mark 8 after it (105:2752). The
+// 24 px button reaches 2 out on each side, so the chevron is centred where Figma's is and the mark starts at x 44.
+const backButton = css({ mx: '-2' })
 
 export type PhoneChatProps = {
   pane: Extract<WorkbenchPane, { type: 'chat' }>
@@ -76,6 +79,7 @@ export function PhoneChat(props: PhoneChatProps) {
             variant="text"
             size="xs"
             iconOnly
+            className={backButton}
             aria-label={backLabel}
             onClick={onBack}
             data-figma={layers?.phoneBack}
