@@ -72,8 +72,12 @@ async function sendUntilOverflow(root: HTMLElement, scope: string, composer: str
   const message = `${scope} [data-figma="message · Erik"]`
   for (let n = 1; n <= 12; n++) {
     const before = root.querySelectorAll(message).length
-    await userEvent.click(find(root, `${composer} textarea`))
-    await userEvent.keyboard(`Message ${String(n)}: why does the review run after the draft and not before it?{Enter}`)
+    // fill types the whole message at once, so twelve of them fit in the test's time.
+    await userEvent.fill(
+      find(root, `${composer} textarea`),
+      `Message ${String(n)}: why does the review run after the draft?`,
+    )
+    await userEvent.keyboard('{Enter}')
     await expect.poll(() => root.querySelectorAll(message).length).toBe(before + 1)
   }
   const last = [...root.querySelectorAll<HTMLElement>(message)].at(-1)
