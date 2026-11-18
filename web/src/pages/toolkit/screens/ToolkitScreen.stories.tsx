@@ -1726,7 +1726,8 @@ export const ToolkitActivityChatsTablet: Story = {
   // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Back.
   play: async ({ canvas }) => {
     await expect(canvas.getByText('Harness status in omni brain')).toBeVisible()
-    await expect(canvas.getByRole('button', { name: 'Show all 8 chats' })).toHaveAttribute('aria-disabled', 'true')
+    // At any width Show all 8 chats waits with a title: the data knows five of the eight chats.
+    await expect(canvas.getByRole('button', { name: 'Show all 8 chats' }).getAttribute('title')).toContain('5 of the 8')
   },
 }
 
@@ -1753,9 +1754,9 @@ export const ToolkitActivityChatTablet: Story = {
   },
   // Storybook opens at desktop; pick Tablet in the viewport menu to see the page under Activity › Chats.
   play: async ({ canvas }) => {
-    const chat = canvas.getByRole('article', { name: 'Writer rules, skills, and agents' })
-    await expect(within(chat).getByText('the session’s folder and branch')).toBeVisible()
-    await expect(within(chat).getByText('SendMessage')).toBeVisible()
+    // At the desktop width the chat opens in the side panel; at the tablet's, on its own page.
+    await expect(canvas.getByText('the session’s folder and branch')).toBeVisible()
+    await expect(canvas.getByText('SendMessage')).toBeVisible()
   },
 }
 
@@ -1796,10 +1797,9 @@ export const ToolkitActivityChatPhone: Story = {
   },
   // Storybook opens at desktop; pick Phone in the viewport menu to see the page under Activity › Chats.
   play: async ({ canvas }) => {
-    const chat = canvas.getByRole('article', { name: 'Writer rules, skills, and agents' })
     await expect(
-      within(chat).getByText('A chat from the Claude Code CLI. Every value is real, from its session file.'),
+      canvas.getByText('A chat from the Claude Code CLI. Every value is real, from its session file.'),
     ).toBeVisible()
-    await expect(within(chat).queryByText('hook messages')).toBeNull()
+    await expect(canvas.queryByText('hook messages')).toBeNull()
   },
 }
