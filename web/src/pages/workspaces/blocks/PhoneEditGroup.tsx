@@ -20,8 +20,10 @@ import { ChatNameField } from './ChatNameField.tsx'
 import { PhoneRenameRow } from './PhoneRenameRow.tsx'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
 
-// As SidebarGroup draws the header's buttons: 24 high in the 28 px header, in the header's grey (M2 105:2530).
-const headerAction = css({ color: 'fg.muted', my: '-4' })
+// As SidebarGroup draws the header's buttons: 24 high in the 28 px header, in the header's grey (M2 105:2530). Figma's
+// × ends at the header's end padding (105:2530, 357 to 372); the 24 px button reaches 4 into that padding, so its icon
+// is centred where Figma's is.
+const headerAction = css({ color: 'fg.muted', my: '-4', me: '-4' })
 // M2 105:2604: the handle 4 in (105:2605), the chevron 8 after it (105:2612) and the field to 6 from the end
 // (105:2614). The field is 28 high (control.sm) where Figma's is 25, so the header pads 6, not 8, above and below.
 const renameHeader = css({ ps: '4', pe: '6', py: '6' })
