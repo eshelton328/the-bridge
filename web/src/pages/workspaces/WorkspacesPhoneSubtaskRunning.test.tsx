@@ -8,7 +8,8 @@ import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { workspacesStates } from './states/index.ts'
 
 // A subtask running on the phone (M21): the chat keeps working with Stop, a line marks where the subtask started, the
-// chat actions count 3 subagents, and Back returns to the list, where layout notes is under bridge themes (D18).
+// chat actions count 3 subagents, and Back returns to the list, where layout notes is nested under bridge themes,
+// Running (D18).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -40,15 +41,33 @@ describe('a subtask running on the phone', () => {
     await expect.element(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Subagents · 3')).toBeVisible()
   })
 
-  it('goes back to the list, where layout notes is under bridge themes', async () => {
+  it('goes back to the list, where layout notes is nested under bridge themes, Running', async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneSubtaskRunning
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
     await userEvent.click(page.getByRole('button', { name: 'Back to Workspaces' }))
-    const parent = page.getByText('bridge themes', { exact: true })
-    const subtask = page.getByText('layout notes', { exact: true })
-    await expect.element(parent).toBeVisible()
-    await expect.element(subtask).toBeVisible()
-    expect(subtask.element().getBoundingClientRect().top).toBeGreaterThan(parent.element().getBoundingClientRect().top)
+    // omni-brain's header controls its rows; bridge themes' nested rows follow it there, layout notes after theme
+    // tokens, as in D18.
+    const header = page.getByRole('button', { name: /omni-brain/i, expanded: true })
+    await expect.element(header).toBeVisible()
+    const rows = page.elementLocator(
+      document.getElementById(header.element().getAttribute('aria-controls') ?? '') ?? document.body,
+    )
+    const rowElements = [...rows.element().children]
+    // The row of a chat in omni-brain's rows, and where it stands among them.
+    const row = (title: string) => {
+      const text = rows.getByText(title, { exact: true }).element()
+      const at = rowElements.findIndex((r) => r.contains(text))
+      return { at, element: rowElements[at] as HTMLElement }
+    }
+    const parent = row('bridge themes')
+    const sibling = row('theme tokens')
+    const subtask = row('layout notes')
+    expect([parent.at, sibling.at, subtask.at]).toEqual([0, 1, 2])
+    // A nested row is drawn a level in (ListRow's data-level), as theme tokens is; bridge themes is not.
+    expect(parent.element.querySelector('[data-level]')).toBeNull()
+    expect(sibling.element.querySelector('[data-level]')?.getAttribute('data-level')).toBe('1')
+    expect(subtask.element.querySelector('[data-level]')?.getAttribute('data-level')).toBe('1')
+    await expect.element(page.elementLocator(subtask.element).getByText('Running', { exact: true })).toBeVisible()
   })
 })
