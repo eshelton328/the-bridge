@@ -35,12 +35,20 @@ library default for a menu trigger.
   220. The menu keeps its end under +'s end, as Figma does, so its start
   is 20 px further left and covers "themes" in bridge themes' name, which
   Figma leaves clear. The render is wrong, so no exception covers it.
+  The library's `Menu` change (branch `menu-phone-size`: a 220 px box,
+  42 px rows, 18 px icons) will fix it once its beta is installed; the
+  text failure is pending that change, not an exception, and no
+  `exceptions.json` covers it.
 - **The menu's rows are 2 px taller and the icons larger (Phone new
   menu), `208:521` x -16 y -5.5, `208:529` x -16, `208:515` h +6.**
   `Menu size="lg"` draws 44 px rows with 20 px icons against Figma's
   42 px rows 2 apart with 18 px icons. The labels are Regular 15, as
   Figma's. The icons sit 16 px left of Figma's because the box starts
-  20 px further left.
+  20 px further left. The same library change fixes both.
+- **The menu's icons are grey (Phone new menu).** Figma draws them
+  near-white, in the labels' colour; `Menu` draws them in `fg.muted`.
+  The library's `Menu` change (branch `menu-phone-size`) adds the icon
+  tone.
 - **Lower workspaces start higher (Sidebar group header), `208:434` to
   `208:500` y -6 to -8.** As in M01 and M14: `GroupHeader
   variant="sidebar"` is 30 high against Figma's 28 and its rows start

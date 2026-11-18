@@ -37,6 +37,16 @@ workspace, Close workspace), none highlighted.
   about where Figma has it, and Close workspace's 8 px higher, so the
   sheet shows more empty room under its last row. The icons are 20 px
   against Figma's 18, 2 px further in.
+- **The sheet's top and grabber are 10 px higher (Phone chat actions
+  sheet).** Figma's sheet (208:235) starts at y 651 with its grabber 9
+  down and the title 2 under the grabber (y 667). The render's title is
+  at 667 too, but `BottomSheet size="sm"` puts the title 12 under the
+  grabber, so the sheet starts at 641 and its grabber is at 650; the
+  sheet is 203 high against 193. `BottomSheet` takes no padding prop or
+  `className`.
+- **Rename workspace's icon has no line (Edit icon with a line).**
+  Figma's icon (208:240) is a pencil over a baseline; `EditIcon` is the
+  pencil alone, and the icon set has no edit icon with the line.
 - **The action labels are smaller and Medium, and the title sits further
   in (Phone chat actions sheet).** Figma draws the labels in Regular 15
   and the title at x 13; `OptionList` draws `label` (Medium 14) and

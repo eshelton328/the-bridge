@@ -54,3 +54,6 @@ shorter, below Figma's status bar (d-102), and the position check adds
   draws the Inbox phone frame's stars at fixed places, not M16's.
 - **Status bar and home indicator.** The app draws none (d-089), so the
   side-by-side shows a blank band at the top.
+- **Square corners.** Figma's rounded corners are the phone's device
+  frame, not the screen; the app draws none, as in the other phone
+  frames.
