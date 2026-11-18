@@ -45,6 +45,17 @@ page restyle.
   card pads 16 by 12 against 15 by 13, so the summary breaks after "in"
   where Figma's breaks after "rules/"; and the explanation ends 14 px
   higher (`explain` h -14). Gap: Script explanation.
+- **Overview card spacing.** In the narrow layout OVERVIEW sits about
+  3 px nearer the card's top than Figma's, and the In row about 3 px
+  nearer the summary, so the card is about 7 px shorter. This is the
+  library's own spacing inside `ScriptExplanation`, which the page must
+  not restyle. Gap: Script explanation.
+- **Item tab spacing.** Each item tab starts about 1 px further right
+  than the one before it, so Evals starts about 5 px right of Figma's.
+  `ItemTabs` sets the gap; this branch does not change it.
+- **Status bar and corners (not real).** Figma's 9:41 status bar and the
+  rounded device corners are design-only chrome (d-089); the app draws
+  neither.
 - **Under the tab bar.** Figma draws the walkthrough down past the
   frame's foot (`explain` 440:1630 ends at 1088); step 4 starts above the
   tab bar and runs under it. The tab bar lies over the page (AppShell

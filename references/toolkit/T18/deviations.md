@@ -126,6 +126,13 @@ After the move to `FlowLine`, `pnpm fidelity` on every built frame of inbox, wor
 and toolkit (2026-11-18, library 1.0.0-beta.31) gives T18 the same results as
 before: the same text, position and rule results.
 
+- **Status bar and corners (not real).** Figma's 9:41 status bar and the
+  rounded device corners are design-only chrome (d-089); the app draws
+  neither.
+- **Background dots.** The faint dots behind the page are the app
+  frame's backdrop, and they fall in other places than Figma's (one on
+  the "s" of Evals). The app frame is outside this page.
+
 ## Library beta.36 parts
 
 The elbows and the loop moved to `FlowElbow` and `FlowLoop end="up"`
