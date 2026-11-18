@@ -30,6 +30,15 @@ changed, so the split stays general for D12 to D14.
 
 ## Deviations
 
+- **Text sizes (Workbench status bar text, Pane header text, Message
+  text).** Figma draws the status bar in Geist Mono 11, a pane header's
+  title in SemiBold 13 with its model and context in Geist Mono 11, Erik's
+  message in 13/19 and an agent's name in SemiBold 12 (D08 402:1033,
+  402:1042, 402:1066, 402:1072). The library's `Workbench` status bar
+  draws `mono` (12), `Pane` draws `label` (14/500) and `mono` (12), and
+  `Message` draws `body` (14/20) and `label` (14/500); none takes a text
+  size, so each is about one size larger than Figma's (fidelity review D08
+  F1, F2, F4).
 - **Resize handles (Resize handle).** Figma draws both handles at rest:
   a 4 × 44 pill between the columns (402:4305) and a 44 × 4 pill between
   drift check and brain git (402:4306). `SplitPanes` draws each handle as

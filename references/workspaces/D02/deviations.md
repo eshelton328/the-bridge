@@ -22,6 +22,11 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Deviations
 
+- **Text sizes (Message text).** Figma draws Erik's message in 13/19 and
+  an agent's name in SemiBold 12 (D08 402:1066, 402:1072). The library's
+  `Message` draws `body` (14/20) and `label` (14/500) and takes no text
+  size, so both are about one size larger than Figma's (fidelity review
+  D08 F2, F4).
 - **Dragged chat (Drag preview).** `105:960` w -26.3, h -15.1: the chat
   is `DragPreview` (cyan border and shadow) around its row, not turned.
   Figma turns it about 3° and lets it pass the sidebar's right edge. The

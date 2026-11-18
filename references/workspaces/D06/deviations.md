@@ -21,6 +21,11 @@ is the drop zone (`ui.paneDrag`, edge `right`).
 
 ## Deviations
 
+- **Text sizes (Message text).** Figma draws Erik's message in 13/19 and
+  an agent's name in SemiBold 12 (D08 402:1066, 402:1072). The library's
+  `Message` draws `body` (14/20) and `label` (14/500) and takes no text
+  size, so both are about one size larger than Figma's (fidelity review
+  D08 F2, F4).
 - **Dragged chat in the drop zone (Drop zone).** `158:1034` x +37,
   y -71, w +8: Figma draws the chat where the pointer holds it, 111 under
   the hint and 75 in from the zone's left edge. The largest spacing token

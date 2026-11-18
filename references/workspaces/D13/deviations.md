@@ -32,6 +32,15 @@ under it, the shortcut Cmd+W (`emptiedPane`, the empty pane's `close`).
 
 ## Deviations
 
+- **Text sizes (Workbench status bar text, Pane header text, Message
+  text).** Figma draws the status bar in Geist Mono 11, a pane header's
+  title in SemiBold 13 with its model and context in Geist Mono 11, Erik's
+  message in 13/19 and an agent's name in SemiBold 12 (D08 402:1033,
+  402:1042, 402:1066, 402:1072). The library's `Workbench` status bar
+  draws `mono` (12), `Pane` draws `label` (14/500) and `mono` (12), and
+  `Message` draws `body` (14/20) and `label` (14/500); none takes a text
+  size, so each is about one size larger than Figma's (fidelity review D08
+  F1, F2, F4).
 - **Close pane and Cmd+W (Close pane button).** `402:6502` x -12, y -6,
   w +12 and `402:6504` x -4.6, y -8, w +4.6: Figma's Close pane is 94 ×
   30 with a cyan border, the selected fill and a cyan label; the render's

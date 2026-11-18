@@ -34,6 +34,15 @@ replace drift check. The dragged chat sits at the zone's bottom end
 
 ## Deviations
 
+- **Text sizes (Workbench status bar text, Pane header text, Message
+  text).** Figma draws the status bar in Geist Mono 11, a pane header's
+  title in SemiBold 13 with its model and context in Geist Mono 11, Erik's
+  message in 13/19 and an agent's name in SemiBold 12 (D08 402:1033,
+  402:1042, 402:1066, 402:1072). The library's `Workbench` status bar
+  draws `mono` (12), `Pane` draws `label` (14/500) and `mono` (12), and
+  `Message` draws `body` (14/20) and `label` (14/500); none takes a text
+  size, so each is about one size larger than Figma's (fidelity review D08
+  F1, F2, F4).
 - **Bottom row's column gap (Four-pane split).** `402:4920` w +21,
   `402:4941` w +21 and `402:4951` x +19, w -19: Figma splits the rows
   first, so the bottom row has its own column gap, 20 px left of the top
