@@ -52,8 +52,8 @@ type Span = { left: number; right: number }
 /**
  * How far the tab list scrolls so its selected tab shows (M15 `item tabs` 474:1050: on the phone Activity is the last
  * tab, past the screen's edge, and Figma scrolls the list so it ends at the list's end): the new `scrollLeft`, or null
- * when the tab's middle is already in the list's box. A tab cut by a few px at the edge (M18's Evals) keeps the list
- * where it is, so the tabs before it stay at Figma's x.
+ * when the tab's middle is already in the list's box. A tab cut by a few px at the edge keeps the list where it is, so
+ * the tabs before it stay at Figma's x; M18's Evals (319.5 to 376.4 since library #153) ends inside the list.
  */
 export function tabScroll(list: Span & { scrollLeft: number }, tab: Span): number | null {
   const middle = (tab.left + tab.right) / 2

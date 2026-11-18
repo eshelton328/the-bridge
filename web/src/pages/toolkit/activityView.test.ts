@@ -84,7 +84,7 @@ describe('tabScroll', () => {
     expect(tabScroll({ ...list, scrollLeft: 83 }, { left: -71, right: 11 })).toBe(0)
   })
 
-  it('keeps the list where it is when the tab’s middle shows (M18 Evals, cut 6 px at the edge)', () => {
+  it('keeps the list where it is when the tab’s middle shows, even with its end past the list’s end', () => {
     expect(tabScroll(list, { left: 327.5, right: 384.3 })).toBeNull()
     expect(tabScroll(list, { left: 15, right: 120 })).toBeNull()
   })
