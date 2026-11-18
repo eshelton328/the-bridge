@@ -37,14 +37,14 @@ export const focusId = 'item'
 // tallest column starts 46 down (493:108) and ends 12 over the foot (493:142); a shorter column is centred on it, as
 // is the open item. With one or two items the graph is 148 high inside its border (D29 493:695, D31 493:2163): the
 // columns centre on a box 90 high.
-// T15 `links graph` 487:6 is 712 wide (710 inside its border) and its tallest column starts 43 down and ends 11 over the
-// foot; with one item (T28 493:3385) the columns centre on a box 94 high, so the graph is 148 high inside its border, as
-// on the desktop. The tablet's Container pads the item 24 at the sides against Figma's 22 (LIBRARY_GAPS.md, Tablet item
-// spacing), so the graph is 706 wide inside its border: MapGraph draws a canvas of a fixed width, and a wider one would
-// scroll sideways.
+// T15 to T31 draw the graph on a tablet 712 wide (710 inside its border), with the desktop's places in height: the
+// tallest column 46 down and 12 over the foot (T29 493:3850), and one or two items centred on a box 90 high (T28
+// 493:3385, T30 493:4506). T15 (487:6) alone starts its column 43 down and ends it 11 over the foot, 4 px shorter. The
+// tablet's Container pads the item 24 at the sides against Figma's 22 (LIBRARY_GAPS.md, Tablet item spacing), so the
+// graph is 706 wide inside its border: MapGraph draws a canvas of a fixed width, and a wider one would scroll sideways.
 const sizes = {
   desktop: { width: 946, top: 46, foot: 12, minHeight: 90 },
-  tablet: { width: 706, top: 43, foot: 11, minHeight: 94 },
+  tablet: { width: 706, top: 46, foot: 12, minHeight: 90 },
 }
 const node = { width: 180, height: 32 }
 const inset = 15

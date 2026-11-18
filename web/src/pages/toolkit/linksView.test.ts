@@ -98,3 +98,19 @@ describe('the Links tab (D19)', () => {
     })
   })
 })
+
+describe('the links graph on a tablet (T15 to T31)', () => {
+  it('draws the graph 706 wide with the desktop’s places in height', () => {
+    const links = linksOf(skillLinks)
+    const desktop = linksGraph(links, writer)
+    const tablet = linksGraph(links, writer, 'tablet')
+    expect(tablet.width).toBe(706)
+    expect(tablet.height).toBe(desktop.height)
+    // The right column ends 15 in from the graph's right edge, and the open item stays in the middle.
+    const right = tablet.nodes.filter((n) => n.id.startsWith('to:'))
+    expect(right.every((n) => n.x + tablet.nodeSize.width === 706 - 15)).toBe(true)
+    const focus = tablet.nodes.find((n) => n.id === focusId)
+    expect(focus === undefined ? null : focus.x + tablet.nodeSize.width / 2).toBe(353)
+    expect(tablet.columns.map((c) => c.x)).toEqual([15, 706 - 15 - 180])
+  })
+})

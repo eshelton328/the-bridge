@@ -254,10 +254,12 @@ const linksTitleLayers: Readonly<Record<string, string>> = {
   'agents/writing-reviewer.md': '493:1201',
   'workflows/skill-eval-round.md': '493:1984',
 }
-// On the Links tab of a tablet: writer in T15 (482:735), the rule skills in T28 (493:3270).
+// On the Links tab of a tablet: writer in T15 (482:735), the rule skills in T28 (493:3270), writing-reviewer in T29
+// (493:3697).
 const tabletLinksTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '482:735',
   'rules/skills.md': '493:3270',
+  'agents/writing-reviewer.md': '493:3697',
 }
 // T15's graph has a layer named `links` too, so the tab's node id (482:908).
 const tabletLinksLayers: Readonly<Record<string, string>> = {
@@ -593,8 +595,13 @@ export function ToolkitItem({
             label: t.label,
             // T8 448:215: a workflow's own page starts 12 under the tabs; the tabs' panel puts it 15 under them.
             // T4 434:408: on the Files tab of a tablet the tree starts 14 under the tabs, where the tabs' panel puts it.
+            // T15 482:909: a named Links tab starts 12 under the tabs, so it takes no space above it either.
             content:
-              desktop || full || narrowFiles || panel === null ? panel : <div className={panelPage}>{panel}</div>,
+              desktop || full || narrowFiles || panel === null || (narrowHow && tab === 'links') ? (
+                panel
+              ) : (
+                <div className={panelPage}>{panel}</div>
+              ),
           }
         })}
       />

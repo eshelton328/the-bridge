@@ -177,3 +177,21 @@ describe('a rule’s Links tab on a tablet (T28)', () => {
     expect(root.querySelectorAll('[data-figma="links graph"] button')).toHaveLength(2)
   })
 })
+
+describe('an agent’s Links tab on a tablet (T29)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps the breadcrumb back to writer over the agent’s header, the two writers each with its own node', async () => {
+    const { root } = await renderTablet('agentLinksTablet', 'links')
+    expect(root.querySelector('nav[aria-label="Breadcrumb"]')?.textContent).toContain('writer')
+    expect(root.querySelector('article[aria-label="writing-reviewer"] [data-figma="kind badge"]')).not.toBeNull()
+    const nodes = [...root.querySelectorAll('[data-figma="links graph"] button')]
+    expect(nodes).toHaveLength(8)
+    expect(nodes.filter((n) => n.textContent === 'writer')).toHaveLength(3)
+    const from = box(root, '[data-figma="panel · linked from"]')
+    const to = box(root, '[data-figma="panel · links to"]')
+    expect(to.top).toBeGreaterThan(from.bottom)
+  })
+})
