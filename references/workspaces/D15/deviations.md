@@ -67,3 +67,10 @@ it (`forkDialog`, `ui.chatDialog: 'fork'`).
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **Up to a message… is brighter (Runs in choice).** Figma draws the
+  unchosen label in `fg.muted` (#8a97b8, 417:332); a secondary `Button`
+  draws an unpressed label in `fg.default` and has no option to mute it,
+  so it reads near-white, as on T08.
+- **The name hint is brighter (Field hint).** Figma draws "you can
+  rename it later" in #4a5675 (417:318); `FormField` draws it in
+  `fg.subtle` (#7986a6), the faintest dark text token, as on T08.

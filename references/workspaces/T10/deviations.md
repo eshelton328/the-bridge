@@ -98,4 +98,16 @@ makes the chat under it inert: no exception is needed.
   screen with rounded corners (the device frame); the app draws square
   corners, as it draws no device chrome (d-089, review T01 F3).
 - **Actions still to build.** As on D17, Start subtask starts nothing.
+- **The task text is brighter (Composer in a form).** Figma draws the
+  typed task (420:980) in `fg.muted` (#8a97b8), as the typed values of the
+  other forms' fields; `Composer` draws its value in `fg.default` and
+  takes no tone, so it reads near-white (review T10 F2). The state keeps the task a
+  typed value, as D17 and M20 do.
+- **The chat's composer shows no outline under the dialog (Composer
+  under a dialog).** Figma draws it with the cyan focus border (420:883:
+  #5ee1ff at 0.6), which reads teal-grey under the scrim (#070b14 at
+  0.65, the same as `overlay.scrim`). The focus is in the dialog, so
+  `Composer` draws its resting `border.default` (#24314f), which the
+  scrim makes near-invisible; it takes no prop for the focus border
+  without the focus (review T10 F1).
 - **No exceptions.**

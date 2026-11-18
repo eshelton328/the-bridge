@@ -93,4 +93,18 @@ chat under it inert: no exception is needed.
   corners, as it draws no device chrome (d-089, review T01 F3).
 - **Actions still to build.** As on D15, Fork starts nothing, and Up to
   a message… is chosen but does not yet ask for the message.
+- **Up to a message… is brighter (Runs in choice).** Figma draws the
+  unchosen label in `fg.muted` (#8a97b8, 420:571); a secondary `Button`
+  draws an unpressed label in `fg.default` and has no option to mute it,
+  so it reads near-white (review T08 F1).
+- **The name hint is brighter (Field hint).** Figma draws "you can
+  rename it later" in #4a5675 (420:557); `FormField` draws it in
+  `fg.subtle` (#7986a6), the faintest dark text token (review T08 F3).
+- **The chat's composer shows no outline under the dialog (Composer
+  under a dialog).** Figma draws it with the cyan focus border (420:520:
+  #5ee1ff at 0.6), which reads teal-grey under the scrim (#070b14 at
+  0.65, the same as `overlay.scrim`). The focus is in the dialog, so
+  `Composer` draws its resting `border.default` (#24314f), which the
+  scrim makes near-invisible; it takes no prop for the focus border
+  without the focus (review T08 F2).
 - **No exceptions.**
