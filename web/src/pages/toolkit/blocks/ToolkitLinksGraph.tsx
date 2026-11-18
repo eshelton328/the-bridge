@@ -10,14 +10,19 @@
 // it, selects it, so only its line stays lit (`litNode`); MapGraph has no
 // hover of its own, so the block reads the pointer and the focus from the
 // events that bubble out of its node buttons. On the phone the open item
-// stays selected. A side with no links says why in its column (D29
-// 493:895). Props only: the pointer and the focus are the block's own state.
+// stays selected. The open item is Figma's 150 × 40; when the library's
+// label style cuts its name (writing-reviewer, T29 and M32), the block
+// measures the cut after render and once the fonts load, and draws the open
+// item as wide as the side items, centred on the same point (`widenFocus`).
+// A side with no links says why in its column (D29 493:895). Props only:
+// the pointer, the focus and the wider open item are the block's own state.
 import { MapGraph } from '@eshelton328/component-library-1701'
-import { type SyntheticEvent, useState } from 'react'
+import { type SyntheticEvent, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitKind, ToolkitLinks } from '../types.ts'
-import { type LinksGraph, linksGraph, litNode, tapNode } from './linksView.ts'
+import { type LinksGraph, linksGraph, litNode, tapNode, widenFocus } from './linksView.ts'
+import { useWideFocus } from './useWideFocus.ts'
 
 const root = css({ position: 'relative' })
 // D29 493:895: the reason sits in the left column, 16 in, centred on the open item. The graph's columns start 46 down
@@ -66,7 +71,13 @@ export type ToolkitLinksGraphProps = {
 }
 
 export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem }: ToolkitLinksGraphProps) {
-  const graph = linksGraph(links, item, layout)
+  const ref = useRef<HTMLDivElement>(null)
+  // The item whose open node is drawn wider, as its name does not fit at 150 px.
+  const [wideItem, setWideItem] = useState<string | null>(null)
+  const wide = wideItem === item.path
+  const base = linksGraph(links, item, layout)
+  const graph = wide ? widenFocus(base) : base
+  useWideFocus(ref, graph, item.path, wide, setWideItem)
   const [pointer, setPointer] = useState<Marked | null>(null)
   const [focus, setFocus] = useState<Marked | null>(null)
   const on = (m: Marked | null) => (m !== null && m.item === item.path ? m.id : null)
@@ -74,6 +85,7 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
   const empty = links.from.links.length === 0 ? links.from.empty?.graph : undefined
   return (
     <div
+      ref={ref}
       className={root}
       data-figma="links graph"
       onPointerOver={(e) => {

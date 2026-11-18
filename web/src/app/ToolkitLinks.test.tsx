@@ -602,3 +602,45 @@ describe('the links graph’s nodes and lines (D19)', () => {
     expect(getComputedStyle(row).borderTopColor).toBe(colourOf(root, 'var(--colors-kind-border-faint-skill)'))
   })
 })
+
+// The open item's node in the graph (the pressed node), its box and whether its name shows whole: no element of its
+// label is wider than its box.
+function openNode(root: HTMLElement) {
+  const node = root.querySelector('[data-figma="links graph"] button[aria-pressed="true"]')
+  const label = node?.lastElementChild
+  if (!(node instanceof HTMLElement) || label === null || label === undefined) throw new Error('no open item')
+  const whole = [label, ...label.querySelectorAll('*')].every((el) => el.scrollWidth <= el.clientWidth)
+  return { name: node.textContent, rect: node.getBoundingClientRect(), whole }
+}
+
+describe('the open item’s name in the links graph (D19, T29, M32)', () => {
+  afterEach(async () => {
+    await page.viewport(1512, 982)
+  })
+
+  it('keeps writer’s open node Figma’s 150 wide on the desktop (D19)', async () => {
+    const { root } = await renderToolkit('skillLinks')
+    const open = openNode(root)
+    expect(open.name).toBe('writer')
+    expect(open.whole).toBe(true)
+    expect(open.rect.width).toBe(150)
+  })
+
+  it('shows writing-reviewer’s whole name in its open node on a tablet (T29)', async () => {
+    const { root } = await renderTablet('agentLinksTablet', 'links')
+    await expect.poll(() => openNode(root).rect.width).toBe(180)
+    const open = openNode(root)
+    expect(open.name).toBe('writing-reviewer')
+    expect(open.whole).toBe(true)
+    expect(open.rect.height).toBe(40)
+  })
+
+  it('shows writing-reviewer’s whole name in its open node on the phone (M32)', async () => {
+    const { root } = await renderPhone('agentLinksPhone')
+    await expect.poll(() => openNode(root).rect.width).toBe(162)
+    const open = openNode(root)
+    expect(open.name).toBe('writing-reviewer')
+    expect(open.whole).toBe(true)
+    expect(open.rect.height).toBe(40)
+  })
+})

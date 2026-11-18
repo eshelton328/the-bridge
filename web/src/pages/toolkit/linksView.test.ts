@@ -3,6 +3,7 @@ import { openFile as openBrowserFile, findFile, sourceAt } from './blocks/filesV
 import { focusId, linkCount, linkFile, linksGraph, sideLabel } from './blocks/linksView.ts'
 import { linkLine } from './blocks/linksView.ts'
 import { litNode, tapNode } from './blocks/linksView.ts'
+import { widenFocus } from './blocks/linksView.ts'
 import { openFile, openItem } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -353,5 +354,22 @@ describe('a tap, the pointer and the focus on the links graph', () => {
     const phone = linksGraph(linksOf(skillLinks), writer, 'phone')
     expect(litNode(phone, 'phone', audit, writing)).toBe(focusId)
     expect(litNode(graph, 'desktop', audit, null)).toBe(audit)
+  })
+})
+
+describe('a wider open item, for a name its node cuts (T29, M32)', () => {
+  it('draws the open item as wide as the side items, 40 high, centred on the same point, and moves nothing else', () => {
+    for (const layout of ['desktop', 'tablet', 'phone'] as const) {
+      const graph = linksGraph(linksOf(skillLinks), writer, layout)
+      const wide = widenFocus(graph)
+      const before = graph.nodes.find((n) => n.id === focusId)
+      const after = wide.nodes.find((n) => n.id === focusId)
+      if (before === undefined || after === undefined) throw new Error('no open item')
+      expect(after.size).toEqual({ width: graph.nodeSize.width, height: 40 })
+      expect(after.x + graph.nodeSize.width / 2).toBe(before.x + 75)
+      expect(after.y).toBe(before.y)
+      expect(wide.nodes.filter((n) => n.id !== focusId)).toEqual(graph.nodes.filter((n) => n.id !== focusId))
+      expect(wide.edges).toEqual(graph.edges)
+    }
   })
 })

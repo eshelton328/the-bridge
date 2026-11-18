@@ -219,6 +219,25 @@ function phoneGraph(links: ToolkitLinks, item: { path: string; name: string; kin
 }
 
 /**
+ * The graph with its open item as wide as the side items (`nodeSize`) and still Figma's 40 high, centred on the same
+ * point: for an open item whose name the 150 px node cuts. MapNode's label style leaves a name 104 px of Figma's 150
+ * (its 16 px icon and 8 px gap, where Figma's 15 px icon and 6 px gap leave 108), so `writing-reviewer` (D30 493:1502,
+ * T29 493:4045, M32 493:6090) would end in an ellipsis (LIBRARY_GAPS.md, Links graph). `ToolkitLinksGraph` measures
+ * the name and calls this when it is cut.
+ */
+export function widenFocus(graph: LinksGraph): LinksGraph {
+  const width = graph.nodeSize.width
+  return {
+    ...graph,
+    nodes: graph.nodes.map((n) =>
+      n.id === focusId
+        ? { ...n, x: n.x + focusSize.width / 2 - width / 2, size: { width, height: focusSize.height } }
+        : n,
+    ),
+  }
+}
+
+/**
  * The item a tap on `id` in the graph opens (D19 hint "Tap an item to open it"): one tap on an item at a side opens
  * it, on every layout. A tap on the open item, or Escape (`null`), opens nothing.
  */
