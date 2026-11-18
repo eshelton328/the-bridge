@@ -120,9 +120,11 @@ export function ChatPane(props: ChatPaneProps) {
   useEffect(() => {
     if (!autoFocus) return
     const area = areaRef.current?.querySelector('textarea')
-    // The caret goes after the text, where typing goes on.
-    area?.focus()
-    area?.setSelectionRange(area.value.length, area.value.length)
+    // A "/" Erik types opens the list with the focus already in the box: the caret stays where he typed it.
+    if (!area || area.ownerDocument.activeElement === area) return
+    // Otherwise the caret goes after the text, where typing goes on.
+    area.focus()
+    area.setSelectionRange(area.value.length, area.value.length)
   }, [autoFocus])
   const onValueChange = (text: string) => {
     const open = text.startsWith('/')

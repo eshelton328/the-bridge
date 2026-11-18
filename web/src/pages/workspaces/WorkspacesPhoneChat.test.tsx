@@ -6,10 +6,20 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { workspacesStates } from './states/index.ts'
+import type { WorkbenchPane } from './types.ts'
 
 // A chat on the phone (M3): the header, the transcript, the skills after "/" and the composer, with no tab bar.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
+
+// M3 with the skills closed and `text` as the draft in the message box.
+function draftChat(text: string) {
+  const { data, ui } = workspacesStates.phoneChat
+  const panes: WorkbenchPane[] = data.panes.map((p) =>
+    p.type === 'chat' ? { ...p, composer: { ...p.composer, text } } : p,
+  )
+  return <WorkspacesScreen data={{ ...data, panes }} ui={{ ...ui, skillsFor: null }} viewport="phone" />
+}
 
 let view: { unmount: () => Promise<void> } | undefined
 
@@ -44,5 +54,21 @@ describe('a chat on the phone', () => {
     await userEvent.click(page.getByRole('button', { name: 'bridge themes', exact: true }))
     await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
     await expect.element(page.getByRole('radio', { name: /\/writer/ })).not.toBeInTheDocument()
+  })
+
+  it('keeps the caret where Erik put it when "/" at the start of a draft lists the skills', async () => {
+    await page.viewport(390, 844)
+    view = await testRender(draftChat('layouts'))
+    const box = page.getByRole('textbox')
+    await userEvent.click(box)
+    const area = box.element()
+    if (!(area instanceof HTMLTextAreaElement)) throw new Error('the message box is not a textarea')
+    area.setSelectionRange(0, 0)
+    await userEvent.keyboard('/')
+    await expect.element(page.getByRole('radio', { name: /\/writer/ })).toBeVisible()
+    await userEvent.keyboard('writer ')
+    await expect.element(box).toHaveValue('/writer layouts')
+    expect(area.selectionStart).toBe(8)
+    expect(area.selectionEnd).toBe(8)
   })
 })
