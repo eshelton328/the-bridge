@@ -304,6 +304,9 @@ first: it says what each file of a page folder is for.
   of the foot), `size="tabletSheet"` to `FolderPickerList` (every part and
   row 10 apart) and `extraAfterLabel` to `ChatHead` (the folders chip after
   "context", not in its place).
+  T6 needs no new block: T2's chat fills the screen with "/" typed after
+  an attachment and the focus in the message box, the skills closed, as
+  M17 does; the tablet has no split panes and no drop targets.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -405,7 +408,10 @@ first: it says what each file of a page folder is for.
   listed, and Claude's second reply: the chat on the tablet while Erik
   types), T5 `tabletFolders` (from `tabletChatActions`, without the menu,
   with Erik's message and Claude's reply alone, M8's folders sheet and D4's
-  picker with Documents: the chat's folders on the tablet, the picker open).
+  picker with Documents: the chat's folders on the tablet, the picker open),
+  T6 `tabletOneChat` (from `tabletChatActions`, without the menu, with
+  T4's composer and M17's focus in the message box: the chat full screen
+  on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
