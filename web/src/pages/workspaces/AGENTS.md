@@ -10,7 +10,12 @@ first: it says what each file of a page folder is for.
 - `workspacesStore.ts`: the page's view store (`createAppStore`, as
   Inbox's). It holds the changes to the shown state's `ui`, so a visit to
   another page keeps them (`app/WorkspacesRoute.test.tsx`), and drops
-  them when another `?state=` is shown.
+  them when another `?state=` is shown. What Erik types in a chat's
+  composer is one of them: `ui.drafts` by chat id, which the composer in a
+  pane and in the chat alone starts from (`blocks/chatDraft.ts`), so a
+  pane that unmounts keeps its draft. The composer is uncontrolled, so
+  each `ChatPane` is keyed by its chat's id: a switch to another chat
+  mounts that chat's composer from its own draft.
 - The screen lays out by its width (`ViewportFrame`, as Inbox does): a
   state with `data.phone` (the phone's labels) draws
   `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
@@ -547,7 +552,8 @@ first: it says what each file of a page folder is for.
   `SplitPanes`' handles too: `columns`, `left`, `right`); for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
-  and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
+  and `names`, the names Erik gave chats, and `drafts`, the text Erik typed
+  in each chat's composer; for M2 `editing`, the phone list's
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
   fills the phone's screen, `subagents` in M6, `transcript` in M12 with

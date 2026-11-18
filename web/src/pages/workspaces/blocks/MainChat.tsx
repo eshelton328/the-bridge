@@ -8,6 +8,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import { ChatPane } from './ChatPane.tsx'
+import { withDraft } from './chatDraft.ts'
 
 // The detail slot is a flex column; the chat fills it.
 const column = css({
@@ -37,11 +38,28 @@ export type MainChatProps = {
   above?: ReactNode
   /** Drawn over the whole chat, header included, such as the drop zone of a dragged chat (D6 158:1025). */
   overlay?: ReactNode
+  /** Erik's draft in the composer, in place of the data's text (`ui.drafts`). */
+  draft?: string | undefined
+  /** Called with the composer's text as Erik types. */
+  onTextChange?: ((text: string) => void) | undefined
 }
 
 export function MainChat(props: MainChatProps) {
-  const { pane, workspace, contextLabel, skills, onSkillsOpenChange, menu, folders, layers, rename, above, overlay } =
-    props
+  const {
+    pane,
+    workspace,
+    contextLabel,
+    skills,
+    onSkillsOpenChange,
+    menu,
+    folders,
+    layers,
+    rename,
+    above,
+    overlay,
+    draft,
+    onTextChange,
+  } = props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
       <ChatHead
@@ -53,13 +71,17 @@ export function MainChat(props: MainChatProps) {
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
+        // The composer keeps what Erik types in its own state, so each chat gets its own: switching the chat shown
+        // alone (a fork and its original) mounts the other chat's composer from its draft.
+        key={pane.id}
         size="full"
         figma={{
           composer: layers?.composer ?? '105:889',
           entries: layers?.entries ?? ['105:869', undefined, '105:874'],
         }}
         entries={pane.entries}
-        composer={pane.composer}
+        composer={withDraft(pane.composer, draft)}
+        onTextChange={onTextChange}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         folders={folders}

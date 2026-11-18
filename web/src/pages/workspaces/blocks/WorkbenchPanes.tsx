@@ -5,11 +5,14 @@
 // zone over the part of the pane where it would open (D8). With `data.split`
 // `rows` the split is rows first (D14), and a dragged handle shows its
 // readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
+// A chat's composer starts from Erik's draft (`ui.drafts`) and reports what
+// he types, so the draft outlives the pane: a page visit, a closed pane.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import { ChatPane } from './ChatPane.tsx'
+import { withDraft } from './chatDraft.ts'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
 import { PaneFrame } from './PaneFrame.tsx'
@@ -107,9 +110,12 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
       >
         {pane.type === 'chat' ? (
           <ChatPane
+            // Each chat its own composer, whose text is its state: a pane that shows another chat starts from its draft.
+            key={pane.id}
             figma={layers}
             entries={pane.entries}
-            composer={pane.composer}
+            composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
+            onTextChange={(text) => onUiChange?.({ drafts: { ...ui.drafts, [pane.id]: text } })}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,
