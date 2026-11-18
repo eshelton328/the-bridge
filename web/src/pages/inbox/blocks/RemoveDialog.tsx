@@ -83,6 +83,8 @@ export function RemoveDialog({ proposal, open, onOpenChange, onConfirm, layout =
     <Dialog
       role="alertdialog"
       title={confirm.title}
+      // D20 403:3915: the meta line sits 4 under the title, in one frame with it (library beta.45, #158).
+      meta={confirm.meta}
       open={open}
       onOpenChange={onOpenChange}
       data-figma="dialog · Remove this task"
@@ -99,7 +101,6 @@ export function RemoveDialog({ proposal, open, onOpenChange, onConfirm, layout =
         </>
       }
     >
-      <p className={meta}>{confirm.meta}</p>
       <p className={text}>{confirm.text}</p>
       <Reason proposal={proposal} />
     </Dialog>
