@@ -5,7 +5,8 @@
 // On the phone (M1 406:121) the library is a list of these rows: the age
 // sits at the end of the title line and New, as the cards' badge, under it.
 // In the phone's search (M5 408:76) a row marks the match in its title, or
-// shows the line that matched under the meta line, the match marked.
+// shows the line that matched under the meta line, the match marked; the age
+// is alone on the title line and New ends the meta line (408:99).
 // With `onOpen` the row is a button. Props only.
 import {
   Badge,
@@ -25,13 +26,17 @@ import type { ArtifactCard } from '../types.ts'
 // Phone row preview drawing).
 const thumb = css({ alignSelf: 'center' })
 // M1: the age over New (406:138, 406:144), one column 4 apart; New is Figma's 48 × 16 pill with its filled star
-// (`Badge size="xs"`, `SparkFilledIcon`).
+// (`Badge size="xs"`, which draws `SparkFilledIcon` at 8 px, library beta.43).
 const phoneEnd = css({ alignItems: 'flex-end' })
+const newBadge = <Badge label="New" tone="working" size="xs" icon={<SparkFilledIcon />} />
 
 export type ArtifactRowProps = {
   card: ArtifactCard
   selected?: boolean | undefined
-  /** `phone` puts the age on the title line and New under it (M1); `list` (the default) the New dot before the age (D2). */
+  /**
+   * `phone` puts the age on the title line and New under it (M1), or at the end of the meta line in a search (M5);
+   * `list` (the default) the New dot before the age (D2).
+   */
   layout?: 'list' | 'phone' | undefined
   /** The search, whose match is marked in the title or in `matchLine` (M5). */
   query?: string | undefined
@@ -68,6 +73,10 @@ export function ArtifactRow({
   // rows pad 4 at the sides (the preview at 16 of a row at 12, the age and New ending at 374) and 10 above and below.
   const list = layout === 'list'
   const dot = list && card.isNew
+  // M5 408:76: a phone search row puts the age alone at the end of the title line (408:93, `trailingPlacement="title"`,
+  // library beta.47), so the meta line runs on under it to x 374, where New ends it (408:99, `metaTrailing`).
+  const phoneSearch = layout === 'phone' && query !== ''
+  const metaEnd = phoneSearch && card.isNew ? { metaTrailing: newBadge } : {}
   return (
     <div data-figma={`artifact row · ${card.title}`}>
       <ListRow
@@ -79,17 +88,19 @@ export function ArtifactRow({
           </span>
         }
         meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}
+        {...metaEnd}
         trailing={
-          layout === 'phone' ? (
+          layout === 'phone' && !phoneSearch ? (
             <Stack gap="4" className={phoneEnd}>
               {card.age}
-              {card.isNew ? <Badge label="New" tone="working" size="xs" icon={<SparkFilledIcon size="12" />} /> : null}
+              {card.isNew ? newBadge : null}
             </Stack>
           ) : (
             card.age
           )
         }
         padding={list ? 'sm' : 'phone'}
+        trailingPlacement={phoneSearch ? 'title' : 'column'}
         trailingAlign={list ? 'center' : 'start'}
         dot={dot ? 'working' : undefined}
         dotLabel={dot ? 'New' : undefined}

@@ -42,16 +42,16 @@ under its meta line, the match marked (`Highlight`).
   2 apart, as Figma's (408:76, 408:297, 408:329; `ListRow
   padding="phone"` pads 8 inside the border), and each starts 2 below
   Figma's (y 206, 274 and 354 against 204, 272 and 352), as the matches'
-  header above them is 36 high against Figma's 34 (408:290). New sits
-  under the age, at x 321.7, y 235, 51.3 × 16, against Figma's badge at
-  the end of the meta line (408:99: x 326, y 240.5, 48 × 16), level
-  with the meta line: the render's is 5.5 higher and ends at x 373
-  against 374. Library gap "New badge position".
+  header above them is 36 high against Figma's 34 (408:290). As
+  Figma's, the age ends the title line (408:93) and New ends the meta
+  line (408:99: x 326 to 374, 48 × 16), level with it (`ListRow
+  trailingPlacement="title"` and `metaTrailing`, library beta.47);
+  `ArtifactRowLayout.test.tsx` checks New's size, end and level.
   The row's content sits 4 in from the row's sides, as
   Figma's (M1).
-- **New badge.** As M1: `Badge size="xs"` with `SparkFilledIcon`, 16 high
-  in Figma's teal, 51.3 wide against 48, as its star is 12 px against 9
-  (408:99, 408:100). Library gap "New badge".
+- **New badge.** As M1: `Badge size="xs"` with `SparkFilledIcon` at
+  8 px, 16 high in Figma's teal and within 1 px of Figma's 48 wide; the
+  star is 8 px against Figma's 9 (408:100, the 4 px grid, d-100).
 - **Source chips.** As M1: 6 apart against Figma's 5 (d-072), with
   Figma's 9 px sides; within the tolerance here. Library gap "Compact
   chip spacing".

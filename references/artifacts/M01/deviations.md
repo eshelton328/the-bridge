@@ -54,10 +54,10 @@ M1 is D1's library on the phone as a list of rows
   1.0.0-beta.39) pads 4 at the sides inside its 1 px border, and the row
   is the list's 366 px.
 - **New badge.** New is `Badge tone="working" size="xs"` with
-  `SparkFilledIcon size="12"` (library 1.0.0-beta.36): 16 high with a
-  filled four-point star in Figma's teal, as Figma's (406:144). It is
-  51.3 wide against 48, as its star is 12 px against Figma's 9
-  (406:145). Library gap "New badge".
+  `SparkFilledIcon` (library 1.0.0-beta.47): 16 high with a filled
+  four-point star in Figma's teal, and within 1 px of Figma's 48 wide
+  (406:144). The star is 8 px against Figma's 9 (406:145, the 4 px
+  grid, d-100).
 ## Values picked (d-100)
 
 - Page: 4 under the status bar and 12 in, as Figma (406:69).
