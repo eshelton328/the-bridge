@@ -300,6 +300,27 @@ export const NewChatLayers = z.object({
 })
 export type NewChatLayers = z.infer<typeof NewChatLayers>
 
+/** The New chat dialog's layers in a frame other than D3, whose ids `NewChatDialog` keeps as its defaults (T7). */
+export const NewChatDialogLayers = z.object({
+  dialog: z.string(),
+  fields: z.object({
+    name: z.string(),
+    runsIn: z.string(),
+    workspace: z.string(),
+    folders: z.string(),
+    model: z.string(),
+    message: z.string(),
+  }),
+  /** D3 names no box for the name. */
+  boxes: z.object({ name: z.string().optional(), workspace: z.string(), model: z.string(), message: z.string() }),
+  runsIn: z.record(AgentKind, z.string()),
+  folders: z.array(z.string()),
+  addFolder: z.string(),
+  cancel: z.string(),
+  start: z.string(),
+})
+export type NewChatDialogLayers = z.infer<typeof NewChatDialogLayers>
+
 /**
  * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
  * `name.value` is the forked chat's title.
@@ -546,6 +567,8 @@ export const SidebarLayers = z.object({
   liftedMenu: z.string().optional(),
   /** The New chat form on the phone (M7). */
   newChatForm: NewChatLayers.optional(),
+  /** The New chat dialog over the tablet's chat (T7); D3's layers when not set. */
+  newChatDialog: NewChatDialogLayers.optional(),
   /** A subagent's full transcript on the phone (M12). */
   subagentTranscript: SubagentTranscriptLayers.optional(),
   /** The folders sheet on the phone (M8). */

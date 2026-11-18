@@ -790,3 +790,18 @@ export const TabletOneChat: Story = {
     await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
   },
 }
+
+export const TabletNewChat: Story = {
+  name: 'T7: New chat on the tablet, in a dialog over the chat',
+  args: { data: workspacesStates.tabletNewChat.data, ui: workspacesStates.tabletNewChat.ui, viewport: 'tablet' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat form over it; the tablet's menu draws T7's form over the tablet's chat. The dialog renders in a
+    // portal, outside the story's canvas, and makes the rest of the page inert.
+    const body = within(document.body)
+    const dialog = await body.findByRole('dialog', { name: 'New chat' })
+    await expect(dialog).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Start chat' })).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'WORKSPACE: the-bridge' })).toBeVisible()
+  },
+}

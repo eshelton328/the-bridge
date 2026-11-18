@@ -39,7 +39,8 @@
 // there the chat's ⋯ opens the desktop's chat actions menu (T2b,
 // ChatActionsMenu) in place of the phone's sheet. T3 draws the chat's
 // subagents at a tablet's width, with Start a subtask under the cards, which
-// opens the Subtask form over the chat.
+// opens the Subtask form over the chat. T7 opens New chat over the tablet's
+// chat as D3's dialog (NewChatDialog), from the chat actions' New chat.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -49,6 +50,7 @@ import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
+import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
@@ -112,7 +114,8 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
       renamingWorkspaces: { [id]: untitled },
     })
   }
-  if (ui.newChatOpen === true && data.newChat !== undefined)
+  // On the tablet New chat opens over the chat as D3's dialog (T7), drawn with the chat below.
+  if (ui.newChatOpen === true && data.newChat !== undefined && (device === 'phone' || chat === undefined))
     return (
       <Backdrop size={device}>
         <AppShell
@@ -220,6 +223,9 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
     ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   // An action picked in the chat's actions, the phone's sheet (M4) or the tablet's menu (T2b).
   const pickChatAction = (action: string) => {
+    // T7: New chat opens in the current chat's workspace.
+    if (action === 'newChat' && data.newChat !== undefined)
+      onUiChange({ newChatOpen: true, newChatWorkspace: data.current })
     if (action === 'rename')
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
     if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
@@ -401,6 +407,17 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
               onUiChange({ chatDialog: open ? 'subtask' : null })
             }}
             layers={data.layers?.phoneSubtask}
+          />
+        )}
+        {device === 'phone' || data.newChat === undefined ? null : (
+          <NewChatDialog
+            form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
+            workspaces={data.workspaces}
+            open={ui.newChatOpen === true}
+            onOpenChange={(newChatOpen) => {
+              onUiChange({ newChatOpen })
+            }}
+            layers={data.layers?.newChatDialog}
           />
         )}
       </Backdrop>
