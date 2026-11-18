@@ -19,12 +19,15 @@ The frame has no `exceptions.json`.
   - `commit-msg`, `hooks/commit-msg` and `→1 ←1` (495:311, 495:312,
     495:314): the taller list rows push the last row past the frame's
     bottom edge (see Row height).
-- Position: 21 of 44 layers pass, among them the How it works header
+- Position: 27 of 50 layers pass, among them the How it works header
   (`495:398`), the four legend items and the three use chips
   (`uses · link.sh`, `uses · paths:`, `uses · eval-cases`); and
   `toolkit list`, `read-only`, `filter · chips`, `search`,
   `group · RULES`, `toolkit item`, `meta row`, `kind badge`, both buttons,
   `495:334`, `path row` and `path badge`.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D14 and D09

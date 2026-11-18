@@ -14,9 +14,11 @@ Idle, with the fork line under the copied messages (`forkedChat`).
   themes` and `Forked from bridge themes here · the messages above are a
   copy` included. `Artifacts` and `Toolkit` (rail, d-105) are excepted as
   on D01 to D15.
-- Position: 18 of 22 layers pass; `417:568`, `417:603`, `417:654` and
+- Position: 21 of 28 layers pass; `417:568`, `417:603`, `417:654` and
   `417:667` fail. The fork's row (`417:697`), the chat header (`417:621`)
   and Erik's message (`417:649`) pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -55,5 +57,8 @@ Idle, with the fork line under the copied messages (`forkedChat`).
   Figma's. No text style is SemiBold 16, and `Composer` and `Message`
   take no text size. The workspace line and "context" under the title
   are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

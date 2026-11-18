@@ -16,13 +16,16 @@ and rule results are unchanged). The frame has no `exceptions.json`.
   text is covered by another element. Two strings are not visible:
   `Workflows` and `2` (495:740, 495:741), the Workflows chip, which the
   chip row cuts at the list pane's edge, as Figma does (see Kind chips).
-- Position: 22 of 38 layers pass, among them the How it works header
+- Position: 28 of 44 layers pass, among them the How it works header
   (`495:948`), the title (`495:846`), the four legend items and the three
   use chips (`uses · writer/scripts/check`, `uses · references/<form>.md`,
   `uses · ls, grep, git ls-files`); and `toolkit list`, `read-only`,
   `filter · chips`, `search`, `group · SKILLS`, `group · AGENTS`,
   `toolkit item`, `meta row`, `kind badge`, both buttons, `path row` and
   `path badge`.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. One `hiddenOverflow` finding: the kind chips scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`), as
   in D37. This frame takes no exceptions.

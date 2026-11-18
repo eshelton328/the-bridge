@@ -14,7 +14,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   `exceptions.json`. Dismiss is new this round: the stricter check gives
   each Figma layer its own text run, so "Dismissed: already done by hand"
   no longer covers it.
-- Position: 9 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
+- Position: 12 of 20 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -81,6 +83,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   Workspaces in Figma (346:6297, 346:6303). D7's text boxes (346:3082,
   346:3088) have the same height; Open chat's type was not read from
   Figma.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

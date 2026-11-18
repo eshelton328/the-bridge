@@ -16,11 +16,13 @@ results as before M19.
 - Text: fail. Every Figma string is in the render; no extra text and no
   covered text. One string is not visible: `Evals` (487:1282), see Item
   tabs.
-- Position: 12 of 15 layers pass (`back row`, `button · map`,
+- Position: 17 of 20 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1264`, `path badge`, `487:1403`,
   `when it loads`, `file preview`, `preview bar`, `rendered markdown`,
   `tab bar`). The 3 that fail (`button · Discuss`, `toolkit`, `columns`)
   are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the item's ScrollFrame
   body (`div.scroll-frame__body`) and the item tabs' list
   (`div.item-tabs__list`); see Under the tab bar and Item tabs.

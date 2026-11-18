@@ -15,10 +15,12 @@ between the top row's panes to 60 : 40 (`ui.resize`), and the readout
 - Text: pass. Every string passes, the readout's and the sidebar's hono
   server row's `78%` (402:6764) included. `Artifacts` and `Toolkit` (rail,
   d-105) are excepted as on D01 to D13.
-- Position: 16 of 26 layers pass; `402:6977`, `402:6993`, `402:7018`,
+- Position: 19 of 32 layers pass; `402:6977`, `402:6993`, `402:7018`,
   `402:7023`, `402:7036`, `402:7151`, `402:7064`, `402:7093`, `402:7106`
   and `402:7118` fail. The sidebar and its rows pass, and the panes'
   widths match Figma's 60 : 40 split (654 and 436 against 652 and 436).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 - Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
   results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
@@ -77,8 +79,11 @@ between the top row's panes to 60 : 40 (`ui.resize`), and the readout
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against
   Figma's 14 px icons with no button box, as on D07 to D13.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Smallest pane.** The note proposes that a pane stops shrinking at
   400 px wide or 240 px tall. It is a proposal, not a decision, and
   `Splitter` takes its minimum in percent (10 % by default), so the build

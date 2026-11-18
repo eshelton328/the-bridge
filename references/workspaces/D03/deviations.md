@@ -13,9 +13,11 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   `42%`, `23%` and `18%` pass, and both of Figma's `78%`, in the hono
   server row (105:1164) and the chat header (105:1235), show in full.
   `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 and D02b.
-- Position: 24 of 43 layers pass. `105:1277`, `105:1283`, `105:1358`, `105:1379`, `114:2`, `105:1404`, `105:1389`, `105:1393`,
+- Position: 27 of 49 layers pass. `105:1277`, `105:1283`, `105:1358`, `105:1379`, `114:2`, `105:1404`, `105:1389`, `105:1393`,
   `105:1399`, `105:1414`, `105:1409`, `128:2`, `128:8`, `128:12`,
   `128:19`, `105:1422`, `105:1417`, `105:1438` and `105:1427` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass, with nothing excepted. `exceptions.json` still excepts a
   `scrollBar` finding on the name field's input (Chrome's `clientWidth` of
   an `<input>` leaves out its 10 px side padding, so the rule read the
@@ -71,8 +73,11 @@ the New chat form (`Dialog size="lg"`, 540) open over it.
   main chat's header and composer stay in view; only the cards and the
   transcript scroll. The frame shows the top of the scroll, so this
   changes no pixel here.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Focus of the first message.** Figma draws the first message with the
   cyan border of a focused field; the dialog moves the focus there when it
   opens (`initialFocus`), but the screenshot may show it without focus.

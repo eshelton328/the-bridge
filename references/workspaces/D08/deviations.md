@@ -18,8 +18,10 @@ title, one line, no icon and no hint, and the dragged chat in
   since 1.0.0-beta.18's smaller `StatusPill` the hono server row's `78%`
   (402:814) fits beside its `Needs you` pill, as on D02b to D07.
   `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 to D07.
-- Position: 15 of 22 layers pass; `402:1027`, `402:1041`, `402:1066`,
+- Position: 18 of 28 layers pass; `402:1027`, `402:1041`, `402:1066`,
   `402:1071`, `402:1084`, `402:1112` and `402:1126` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 - Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
   results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
@@ -77,8 +79,11 @@ title, one line, no icon and no hint, and the dragged chat in
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against
   Figma's 14 px icons with no button box, as on D07.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Value picks (d-100)
 

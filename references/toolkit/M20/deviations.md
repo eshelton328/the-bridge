@@ -22,11 +22,13 @@ delta and rule finding).
   a reader who has none of its author’s context. You see what that reader
   will see: the draft, and the sources a careful reader could open to
   check it.` (487:1663) and `Inputs` (487:1664), see Under the tab bar.
-- Position: 15 of 24 layers pass (`back row`, `button · map`,
+- Position: 20 of 29 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1474`, `path badge`, `487:1613`,
   `kind section · agent`, `facts`, `fact · Claude`, `fact · Codex`,
   `fact · Tools`, `fact · Context`, `preview bar`, `tab bar`). The 9 that
   fail are listed below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Three `hiddenOverflow` findings: the item's ScrollFrame
   body (`div.scroll-frame__body`), the item tabs' list
   (`div.item-tabs__list`) and the file preview

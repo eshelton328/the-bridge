@@ -23,9 +23,12 @@ header, the chips, the canvas, the selection and the tab bar.
   where Figma shows it in full (see Node labels). Nine names that Figma
   also cuts with an ellipsis (428:421, 428:466, 428:487, 428:497,
   428:502, 428:507, 428:512, 428:523, 428:529) are in `exceptions.json`.
-- Position: 6 of 8 layers pass (`header`, `read-only`,
+- Position: 12 of 14 layers pass (`header`, `read-only`,
   `view · List, Map or Activity`, `filter · chips`, `map canvas`,
   `tab bar`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -59,10 +62,6 @@ header, the chips, the canvas, the selection and the tab bar.
   next to each other (project-setup to agents-md) and 65.7 for six rows,
   so the short curves stand further out and the long ones hug the column
   (gap: Map link bow).
-- **Tab bar.** The shared `AppTabBar` (`device="tablet"`, More selected,
-  d-105) spreads its six tabs over the full width; Figma keeps them 76 px
-  wide in the middle. Its box passes the position check; this frame does
-  not change the shared block.
 - **Open writer.** The bar's button has no action yet: the item page
   (D3) is a later frame.
 

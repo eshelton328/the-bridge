@@ -18,10 +18,12 @@ under it, the shortcut Cmd+W (`emptiedPane`, the empty pane's `close`).
   and the render draws it as the library's `CloseIcon` before "Close
   pane". `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 to
   D12.
-- Position: 15 of 30 layers pass; `402:6280`, `402:6296`, `402:6321`,
+- Position: 18 of 36 layers pass; `402:6280`, `402:6296`, `402:6321`,
   `402:6326`, `402:6339`, `402:6422`, `402:6443`, `402:6367`,
   `402:6396`, `402:6409`, `402:6453`, `402:6502`, `402:6504`, `402:6474`
   and `402:6488` fail. The sidebar and its rows pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 - Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
   results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
@@ -85,8 +87,11 @@ under it, the shortcut Cmd+W (`emptiedPane`, the empty pane's `close`).
   Figma's 14 px icons with no button box, as on D07 to D12.
 - **Resize handles.** Figma draws no handle in D13; `SplitPanes` has
   three, each hidden at rest, so none shows, as in Figma.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Value picks (d-100)
 

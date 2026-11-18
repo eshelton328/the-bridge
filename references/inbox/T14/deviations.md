@@ -8,7 +8,7 @@ against the installed library 1.0.0-beta.7, which has #107 and #108; updated on 
 ## Checks
 
 - Text: pass (85 strings).
-- Position: 6 of 9 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
+- Position: 7 of 15 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -50,9 +50,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   it is `Popover surface="raised"`: an opaque `surface.raised` fill
   (#17213a), as Figma fills it (D4 346:1737), so the list no longer
   shows through it.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width;
-  Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
-  Library gap: Tablet tab bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Newest and Filter take `Button textSize="sm"`
   (Medium 13, #105), as Figma draws them. The approval row's Allow
   once, Deny and Open chat take `textSize="xs"` (`labelXs`, Medium

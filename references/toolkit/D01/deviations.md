@@ -12,9 +12,12 @@ the run with library 1.0.0-beta.15 and the props that library #115 added:
 - Text: pass. Eight card descriptions are cut with an ellipsis, as
   Figma cuts them; `exceptions.json` names each layer (425:85, 425:99,
   425:113, 425:142, 425:184, 425:199, 425:235, 425:250).
-- Position: 7 of 25 layers pass (`header`, `read-only`,
+- Position: 13 of 31 layers pass (`header`, `read-only`,
   `view · List, Map or Activity`, `list tools`, `search`,
   `counts legend`, `group · SKILLS`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: pass. The `hiddenOverflow` findings on the eight cut
   descriptions are in `exceptions.json`.
 

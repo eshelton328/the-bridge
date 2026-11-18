@@ -14,10 +14,13 @@ iPad mini; most differences are D1's (`../D01/deviations.md`).
   405:279, 405:302, 405:303) lie under the tab bar in Figma and in the
   render, and Figma cuts the Tailscale description (414:667) with an
   ellipsis; they are `missing` exceptions (`exceptions.json`).
-- Position: 12 of 18 layers pass (`header`, `found status`, `list tools`,
+- Position: 18 of 24 layers pass (`header`, `found status`, `list tools`,
   both groups, the six cards and `tab bar`). `button · Add a link`,
   `filter · chips`, `search`, `button · Sort`, `button · Filter` and
   `view · Grid or List` fail; see below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass. The scrolling pane and the two cut descriptions that Figma
   also hides (Tailscale, versioning) are `hiddenOverflow` exceptions.
 
@@ -61,10 +64,6 @@ iPad mini; most differences are D1's (`../D01/deviations.md`).
   gap "Thumbnail colour".
 - **Card kind mark.** The Claude and Codex marks are 12 px against
   Figma's 14. Library gap "Card kind mark size".
-- **Tab bar.** The shared tab bar (`AppTabBar device="tablet"`, not
-  changed here: another chat holds it) spreads its six tabs over the full
-  width; Figma groups them, 76 wide each, in the middle (405:65 to
-  405:95, x 150 to 606). The `tab bar` box itself matches.
 
 ## Values picked (d-100)
 

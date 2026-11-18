@@ -16,10 +16,13 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
   Figma and in the render, and the Tailscale description (414:711) lies
   under the sheet; they are `missing` exceptions (`exceptions.json`), as
   in T1.
-- Position: 17 of 37 layers pass (`header`, `found status`, `list tools`,
+- Position: 23 of 43 layers pass (`header`, `found status`, `list tools`,
   both groups, the six cards, `tab bar`,
   `group · UPDATED`, `check · Today`, `check · This week`, the footer
   `407:1719` and `button · Show 7 artifacts`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass, as T1. The scrolling pane and the two cut descriptions
   under the sheet (Tailscale, versioning) are `hiddenOverflow`
   exceptions, as in T1.
@@ -69,11 +72,6 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier. The button is 46 high in Figma (407:1720) and
   `size="xl"` matches it within the tolerance, as the Inbox's M7 sheet.
-- **Tab bar.** As T1: the shared tab bar (`AppTabBar device="tablet"`,
-  not changed here: a library change for it is in progress) spreads its
-  six tabs over the full width; Figma groups them, 76 wide each, in the
-  middle (407:1466 to 407:1496, x 150 to 606). The scrim and the sheet
-  cover it in both; the `tab bar` box itself matches.
 - **Device chrome.** The status bar (9:41), the home indicator (407:1504)
   and the screen corners are not drawn (d-089); the checks measure the
   render 29 px shorter, under Figma's status bar (d-102).

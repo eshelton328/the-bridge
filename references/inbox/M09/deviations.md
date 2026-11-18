@@ -9,7 +9,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 ## Checks
 
 - Text: pass (30 strings checked; 3 Figma strings under exceptions.json).
-- Position: 7 of 17 layers pass (`nav`, `task bar`, `title block`, `button · Change`, `sheet actions`, `button · Edit prompt`, `button · Copy`).
+- Position: 7 of 22 layers pass (`nav`, `task bar`, `title block`, `button · Change`, `sheet actions`, `button · Edit prompt`, `button · Copy`).
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers
@@ -98,3 +98,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   #108) move these layers: `346:10794` x +0, y -10, w +0, h +11 (was x
   +0, y +54, w +0, h -53). The cause is the whole prompt in `bodyLg`
   (Regular 15/24, d-100; Figma 15/23; was `body`, 14/20).
+- **Tabs under the sheet.** The frame draws no tab bar (see Under the
+  sheet); the app keeps the page's tab bar under the sheet, so its tabs
+  (`tab · Home`, `tab · Inbox`, `tab · Workspaces`, `tab · Projects` and
+  `tab · More`) have no layer, as `tab bar`.

@@ -20,9 +20,12 @@ library #115 added: `ViewSwitch tone="accent"` and
   `rules/releases.md`, `skills`, `rules/skills.md` and `→1 ←0`. The
   ste100 and writing names and counts (428:288, 428:291, 428:298,
   428:301) lie under Figma's tab bar too; `exceptions.json` names them.
-- Position: 7 of 32 layers pass (`header`, `read-only`,
+- Position: 13 of 38 layers pass (`header`, `read-only`,
   `view · List, Map or Activity`, `filter · chips`, `search`,
   `group · SKILLS`, `tab bar`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass. The `hiddenOverflow` finding on the scrolling detail
   (`main.app-shell__detail`) is in `exceptions.json`: Figma's list runs
   on under the pinned tab bar, as the render's does.
@@ -68,11 +71,6 @@ library #115 added: `ViewSwitch tone="accent"` and
 - **Group headers.** SKILLS, AGENTS and RULES are 30 px high against
   Figma's 27 (`GroupHeader variant="sidebar"`; gap: Toolkit group
   header).
-- **Tab bar.** The shared `AppTabBar` (`device="tablet"`, More selected,
-  d-105) spreads its six tabs over the full width; Figma keeps them 76 px
-  wide in the middle (424:3864 to 424:3899). Its box passes the position
-  check; the tab places are the shared block's, which this frame does
-  not change.
 - **Workflows and Hooks.** The frame shows only the Skills, Agents and
   Rules rows, so the state has no items for the other two kinds; their
   chips show Figma's counts (2 and 1).

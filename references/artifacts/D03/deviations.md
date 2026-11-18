@@ -11,9 +11,11 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   (`ViewSwitch iconOnly`, library #121). `Toolkit` is an `extra` exception,
   and the four descriptions that Figma cuts with an ellipsis are `missing`
   exceptions (`exceptions.json`).
-- Position: 7 of 37 layers pass (`header`, `found status`,
+- Position: 11 of 43 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
   `group · FOUND SINCE YOU LAST LOOKED`, `group · EARLIER`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass. The library's scrolling pane and the four cut descriptions
   are `hiddenOverflow` exceptions, as in D01.
 
@@ -74,10 +76,10 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   line's marks are 12 px against 14. Library gaps "Card badge at the end
   of the title row", "Desktop page title size", "Thumbnail colour" and
   "Card kind mark size".
-- **Rail.** The shared rail (`AppRail`, not changed here: another chat
-  holds the navigation) has a Toolkit item after Artifacts (d-105), which
-  this frame does not draw, so More sits one item lower. Its items are
-  50 high and 56 apart, as Figma's (library #115).
+- **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
+  has no layer, and `rail · More` sits 52 px lower (y +52). The design
+  predates d-105, which adds the Toolkit (and Artifacts) item; the app
+  draws the six-item navigation.
 - **Show.** Show 7 closes the menu. The cards carry no finder or update
   data yet, so the grid does not narrow to the seven artifacts; the note
   and the Show count are the state's text.

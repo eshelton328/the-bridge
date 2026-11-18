@@ -11,7 +11,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 9 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+- Position: 13 of 22 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -72,6 +74,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   (SemiBold 13) and Open in Workspaces `textSize="sm"` (Medium 13), as
   T4 sets them in Figma (346:6297, 346:6303); D6's text boxes (346:2703,
   346:2709) have the same size.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

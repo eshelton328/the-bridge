@@ -17,12 +17,15 @@ library 1.0.0-beta.15 and `FilterChips padding="none"`, which library
   Rules, Workflows and Hooks list text that lies below the frame's bottom
   edge in the render (see List scroll); and the Skills and Agents list
   text that the render shows where Figma has scrolled it away.
-- Position: 15 of 49 layers pass (`toolkit list`, `header`, `read-only`,
+- Position: 21 of 55 layers pass (`toolkit list`, `header`, `read-only`,
   `filter · chips`, `search`, `toolkit item`, `meta row`, `kind badge`,
   `button · Discuss`, `button · Show on map`, `427:626`, `path row`,
   `path badge`, `when it loads`, `columns`). The Skills and Agents groups
   and their rows (16 layers) are in `exceptions.json`: the frame has no
   layer for them.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`, as
   in D03: the list pane scrolls on its own (`[data-figma="toolkit list"]`),
   and the kind chips scroll sideways, cut at the pane's edge

@@ -8,7 +8,7 @@ against the installed library 1.0.0-beta.7, which has #107 and #108), each with 
 ## Checks
 
 - Text: pass.
-- Position: 4 of 13 layers pass (`nav · back`, `task bar`, `title block`, `tab bar`).
+- Position: 4 of 19 layers pass (`nav · back`, `task bar`, `title block`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -72,10 +72,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   below it starts higher by that much. The change line ("Changed in a
   discussion · just now" with Undo) is in place beside Read the whole
   prompt (`change history`), and Undo takes the change back.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width
-  (about 148 px each, Home at x 8); Figma centres five 91 px tabs from
-  x 150. The bar itself (`tab bar`) is in place. Library gap: Tablet tab
-  bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Discuss, Snooze, Dismiss, Reset, Edit and Change
   take `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's
   Medium 12, and Start takes `textSize="smStrong"` (`labelSmStrong`,

@@ -8,7 +8,7 @@ library 1.0.0-beta.7, which has #107 and #108; updated on 2026-11-17 with librar
 ## Checks
 
 - Text: pass (59 strings; 1 excepted in `exceptions.json`).
-- Position: 8 of 13 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `section · RUN IN`, `start`, `tab bar`, `run in picker`).
+- Position: 8 of 19 layers pass (`nav · back`, `task bar`, `title block`, `section · WHY`, `section · RUN IN`, `start`, `tab bar`, `run in picker`).
 - Rules: pass.
 
 ## Failing layers
@@ -69,9 +69,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Figma's 13 px placeholder. Since beta.9 it is `Popover
   surface="raised"`: an opaque `surface.raised` fill (#17213a), as Figma
   fills it (D3 346:1234), so the page no longer shows through it.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width;
-  Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
-  Library gap: Tablet tab bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Snooze, Dismiss, Reset, Done and Change take
   `Button textSize="xs"` (`labelXs`, Medium 12/16), Figma's Medium 12,
   and Start takes `textSize="smStrong"` (`labelSmStrong`, SemiBold

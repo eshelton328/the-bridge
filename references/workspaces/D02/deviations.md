@@ -14,9 +14,11 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   - `Artifacts` and `Toolkit` (extra): the shared `AppRail` adds them before
     More (d-105), as on D01, where they are excepted. D02 has no
     `exceptions.json`.
-- Position: 22 of 27 layers pass; `105:960`, `105:874`, `105:889`,
+- Position: 25 of 33 layers pass; `105:960`, `105:874`, `105:889`,
   `105:933` and `105:935` fail. The drop hint (105:976) is not measured:
   `DragPreview` takes no `data-figma` (Drag preview).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: `hiddenOverflow` on one row meta line (the dragged row
   105:960).
 
@@ -77,5 +79,8 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   14 px icon).
 - **Skill-evals.** Figma draws skill-evals closed, so the state lists none
   of its chats; opening it shows no rows, though its count is 1.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

@@ -8,7 +8,9 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 ## Checks
 
 - Text: pass (56 strings checked; 1 Figma strings under exceptions.json).
-- Position: 8 of 11 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
+- Position: 13 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `filters applied`, `group · NEEDS YOU`, `group · NEXT STEPS`, `tab bar`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass (2 findings under exceptions.json).
 
 ## Failing layers

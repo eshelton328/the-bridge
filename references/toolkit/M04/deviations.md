@@ -47,8 +47,10 @@ has all its text and is the same in both.
     `skills/project-setup/`, `→1 ←0` and `Search the toolkit`.
   - The Inbox tab's badge `4` (424:6912) is in `exceptions.json`: the
     drawer covers it in Figma as in the render.
-- Position: 6 of 38 layers pass (`header`, `tab bar`, `icon/layers`,
+- Position: 11 of 43 layers pass (`header`, `tab bar`, `icon/layers`,
   `icon/toolkit`, `icon/brain`, `icon/flow`).
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`,
   as in M01: the Toolkit list scrolls under the pinned tab bar
   (`main.app-shell__detail`), and its kind chips scroll sideways

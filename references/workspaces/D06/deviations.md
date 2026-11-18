@@ -15,8 +15,10 @@ is the drop zone (`ui.paneDrag`, edge `right`).
   hono server row (158:760) and the dragged chat (158:1044), show in
   full. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
   to D05.
-- Position: 20 of 24 layers pass; `158:919`, `158:934`, `158:1048` and
+- Position: 23 of 30 layers pass; `158:919`, `158:934`, `158:1048` and
   `158:1034` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -58,5 +60,8 @@ is the drop zone (`ui.paneDrag`, edge `right`).
   Figma's grey.
 - **Chat actions button (Chat header).** The ⋯ is a `Button size="xs"`,
   24 px high against Figma's 30 × 22, as on D02b.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

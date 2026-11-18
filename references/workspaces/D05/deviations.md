@@ -14,13 +14,15 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   158:282, `78%` 158:390, `64%` 158:404) pass without an exception:
   `ContextMeter` draws each as one text node. `Artifacts` and `Toolkit` on
   the rail are excepted as on D01 to D04 (d-105).
-- Position: 8 of 21 layers pass (`nav rail`, `158:119`, `158:186`,
+- Position: 11 of 27 layers pass (`nav rail`, `158:119`, `158:186`,
   `158:219`, `158:326`, `158:271`, `158:313`, `158:357`). `158:168`,
   `158:224`, `158:239`, `158:518`, `158:530`, `158:531`, `158:533`,
   `open as pane`, `158:545`, `158:347`, `158:300`, `158:380` and
   `158:394` fail. The empty pane's list (158:378) is not measured:
   `EmptyPane` takes no `data-figma` (Empty pane rows); its two rows
   (158:380, 158:394) are.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -82,5 +84,8 @@ chat of bridge themes drawn inside that pane, over the chat's right side
   the raised fill with a border, as Figma draws it beside Always allow.
 - **Bridge themes under the side chat.** The chat's user bubble, reply
   and composer (with Stop and send) run under the side chat as in Figma.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

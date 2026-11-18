@@ -14,10 +14,12 @@ the left of the menu (`moveToWorkspace`).
 - Text: pass. Every Figma string shows, the list's `the-bridge`, `omni`,
   `skill-evals` and `New workspace…` included. `Artifacts` and `Toolkit`
   (rail, d-105) are excepted as on D01 to D18.
-- Position: 20 of 22 layers pass; `417:1697` and `417:1710` fail. The
+- Position: 23 of 28 layers pass; `417:1697` and `417:1710` fail. The
   chat actions menu (`417:1740`), the ⋯ (`417:1675`), the chat header
   (`417:1664`), Erik's message (`417:1692`) and every sidebar row and
   group header pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -51,5 +53,8 @@ the left of the menu (`moveToWorkspace`).
   Figma's. No text style is SemiBold 16, and `Composer` and `Message`
   take no text size. The workspace line and "context" under the title
   are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

@@ -115,9 +115,9 @@ first: it says what each file of a page folder is for.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
-  `SubagentsPane` do it with the library's `ScrollFrame`; a long draft
-  stops at `min(50vh, 50cqh)` (half the window, or half the pane: each
-  `PaneFrame` is a size container) and scrolls inside. `app/WorkspacesStickyBars.test.tsx`
+  `SubagentsPane` do it with the library's `ScrollFrame`; the Composer
+  stops a long draft at 30% of its pane (each `PaneFrame` is a size
+  container) and scrolls inside. `app/WorkspacesStickyBars.test.tsx`
   scrolls each and checks that the bars stay in view.
 - `states/`: D1 `workbench`, D2 `sideChat`, D2b `chatActions`, D3
   `subagents` (from `chatActions`), D4 `folders` (from `chatActions`, with

@@ -2,8 +2,10 @@
 // needs-you count on Inbox (d-045, d-047: More comes last). The tablet adds
 // Artifacts before More; the phone keeps five tabs and opens Artifacts and
 // Toolkit from More, and the tablet opens Toolkit from More (d-105). It takes the
-// place of the desktop rail (AppRail). Props only; the page entry does the
-// navigation.
+// place of the desktop rail (AppRail). On the tablet the tabs are one centred
+// group, as Figma draws them (`size="tablet"`); each tab carries its Figma
+// layer name (`tab · Home`) for the fidelity check. Props only; the page
+// entry does the navigation.
 import {
   ArtifactsIcon,
   HomeIcon,
@@ -29,15 +31,18 @@ export function AppTabBar({ selected, device, inboxBadge, onSelect }: AppTabBarP
   return (
     <div data-figma="tab bar">
       <TabBar
+        size={device}
         selected={selected}
         onSelect={onSelect}
         items={[
-          { value: 'home', label: 'Home', icon: <HomeIcon /> },
-          { value: 'inbox', label: 'Inbox', icon: <InboxIcon />, badge: inboxBadge },
-          { value: 'workspaces', label: 'Workspaces', icon: <WorkspacesIcon /> },
-          { value: 'projects', label: 'Projects', icon: <ProjectsIcon /> },
-          ...(device === 'tablet' ? [{ value: 'artifacts', label: 'Artifacts', icon: <ArtifactsIcon /> }] : []),
-          { value: 'more', label: 'More', icon: <MoreIcon /> },
+          { value: 'home', label: 'Home', figma: 'tab · Home', icon: <HomeIcon /> },
+          { value: 'inbox', label: 'Inbox', figma: 'tab · Inbox', icon: <InboxIcon />, badge: inboxBadge },
+          { value: 'workspaces', label: 'Workspaces', figma: 'tab · Workspaces', icon: <WorkspacesIcon /> },
+          { value: 'projects', label: 'Projects', figma: 'tab · Projects', icon: <ProjectsIcon /> },
+          ...(device === 'tablet'
+            ? [{ value: 'artifacts', label: 'Artifacts', figma: 'tab · Artifacts', icon: <ArtifactsIcon /> }]
+            : []),
+          { value: 'more', label: 'More', figma: 'tab · More', icon: <MoreIcon /> },
         ]}
       />
     </div>

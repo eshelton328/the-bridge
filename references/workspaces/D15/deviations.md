@@ -13,10 +13,12 @@ it (`forkDialog`, `ui.chatDialog: 'fork'`).
 - Text: pass. Every Figma string shows, the name field's value
   `bridge themes · fork` included. `Artifacts` and `Toolkit` (rail,
   d-105) are excepted as on D01 to D14.
-- Position: 25 of 29 layers pass; `417:261`, `417:274`, `417:393` and
+- Position: 28 of 35 layers pass; `417:261`, `417:274`, `417:393` and
   `417:386` fail. The dialog (`417:305`), the name field (`417:312`), the
   start-from field (`417:319`), both choices (`417:323`, `417:327`) and
   Fork (`417:388`) pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -60,5 +62,8 @@ it (`forkDialog`, `ui.chatDialog: 'fork'`).
   Figma's. No text style is SemiBold 16, and `Composer` and `Message`
   take no text size. The workspace line and "context" under the title
   are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

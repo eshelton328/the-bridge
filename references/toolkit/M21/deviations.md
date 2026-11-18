@@ -22,13 +22,15 @@ position delta and rule finding).
 - Text: fail. Every Figma string is in the render; no extra text and no
   covered text. One string is not visible: `Evals` (487:1740), see Item
   tabs.
-- Position: 14 of 23 layers pass (`back row`, `button · map`,
+- Position: 19 of 28 layers pass (`back row`, `button · map`,
   `meta row`, `kind badge`, `487:1722`, `path badge`, `487:1862`,
   `kind section · workflow`, `steps header`, `runs`,
   `link · eval-grader`, `487:2275`, `preview bar`, `tab bar`). The 9 that
   fail are listed below: `button · Discuss`, `toolkit`,
   `button · Open full page`, `columns`, `file preview`,
   `rendered markdown`, `side`, `files` and `file · skill-eval-round.md`.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: fail. Three `hiddenOverflow` findings: the item tabs' list
   (`div.item-tabs__list`), the steps' header (`[data-figma="steps header"]`)
   and the agents' row (`[data-figma="runs"]`); see Item tabs and One-line

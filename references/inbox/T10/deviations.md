@@ -9,7 +9,7 @@ with its reason. The library gaps are in
 ## Checks
 
 - Text: pass (40 strings; 2 excepted in `exceptions.json`).
-- Position: 7 of 9 layers pass (`header`, `filter · chips`, `list tools`, `search summary`, `group · NEEDS YOU`, `group · RUNNING`, `tab bar`).
+- Position: 7 of 15 layers pass (`header`, `filter · chips`, `list tools`, `search summary`, `group · NEEDS YOU`, `group · RUNNING`, `tab bar`).
 - Rules: pass.
 
 ## Failing layers
@@ -46,9 +46,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Layer names as text.** `exceptions.json` excepts the strings that
   get_metadata gives as a layer's name instead of its characters, with
   the text frame.png shows, as D09, D10 and D13 do.
-- **Tab bar.** `TabBar` spreads its five tabs over the full width;
-  Figma centres five 91 px tabs. The bar itself (`tab bar`) is in place.
-  Library gap: Tablet tab bar.
+- **Tab bar.** The tabs are one centred group, 456 px wide from x 150
+  (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
+  place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
+  draws six of 76, so `tab · Home`, `tab · Inbox`, `tab · Workspaces`,
+  `tab · Projects` and `tab · More` are off in x and w (Home w -15.2,
+  More x +15.2) and `tab · Artifacts` has no layer. The design predates
+  d-105, which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Button labels.** Newest and Filter use `Button textSize="sm"`
   (Medium 13), as Figma's (beta.5, #105). No other button shows. The
   labels match Figma's.

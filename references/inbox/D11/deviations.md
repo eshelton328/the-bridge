@@ -12,7 +12,9 @@ the checks and offsets below are from the beta.8 run.
 ## Checks
 
 - Text: pass; the hidden Reset and Edit are excepted in `exceptions.json`.
-- Position: 9 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+- Position: 13 of 22 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 
 ## Failing layers
 
@@ -88,6 +90,11 @@ Render minus Figma, in px.
   `group · NEXT STEPS` within the tolerance (was x +0, y +6, w +1, h
   +2); `group · SNOOZED` x +0, y +6, w +1, h +2 (was y +14);
   `group · RUNNING` x +0, y +8, w +1, h +2 (was y +16). The cause is 2 px less per project heading above each group.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

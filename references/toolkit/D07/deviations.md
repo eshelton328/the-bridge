@@ -14,7 +14,7 @@ the same results as before D07 (D03: text fail with the same four strings,
 
 - Text: pass. In `exceptions.json`: the Workflows chip's label and count
   (433:185, 433:186), which Figma cuts at the list pane's edge too.
-- Position: 21 of 36 layers pass (`toolkit list`, `header`, `read-only`,
+- Position: 27 of 42 layers pass (`toolkit list`, `header`, `read-only`,
   `filter · chips`, `search`, `group · SKILLS`, `group · AGENTS`,
   `toolkit item`, `meta row`, `kind badge`, `button · Discuss`,
   `button · Show on map`, `433:524`, `path row`, `path badge`,
@@ -22,6 +22,9 @@ the same results as before D07 (D03: text fail with the same four strings,
   `fact · Tools`, `fact · Context`). The agent writer's row has no
   `data-figma`: the skill writer (in the closed Skills group) shares the
   layer name `toolkit row · writer`, as in D03.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: pass. One `hiddenOverflow` finding is in `exceptions.json`, as
   in D03 and D04: the kind chips scroll sideways, cut at the pane's edge
   (`[data-figma="filter · chips"] > div.filter-chips__root`).

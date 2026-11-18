@@ -13,10 +13,12 @@ open over it (`subtaskDialog`, `ui.chatDialog: 'subtask'`).
 - Text: pass. Every Figma string shows, the task's value "Draft layout
   notes for the three directions, one page each." included. `Artifacts`
   and `Toolkit` (rail, d-105) are excepted as on D01 to D16.
-- Position: 19 of 29 layers pass; `417:982`, `417:995`, `417:1026`,
+- Position: 22 of 35 layers pass; `417:982`, `417:995`, `417:1026`,
   `417:1087`, `417:1090`, `417:1095`, `417:1098`, `417:1114`, `417:1107`
   and `417:1109` fail. The sidebar, the chat header and the first
   message pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -77,5 +79,8 @@ open over it (`subtaskDialog`, `ui.chatDialog: 'subtask'`).
   with a 2 px stroke, so the square reads emptier. `TextArea` would drop
   the send button but draws `surface.inset` with no room for the clip in
   its box, so the form keeps `Composer`.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

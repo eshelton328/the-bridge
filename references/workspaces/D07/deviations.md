@@ -15,8 +15,10 @@ sidebar has the toggle, so the tab bar has none.
   without an exception:
   `ContextMeter` draws each as one text node. `Artifacts` and `Toolkit`
   (rail, d-105) are excepted as on D01 to D06.
-- Position: 15 of 20 layers pass; `402:471`, `402:485`, `402:510`,
+- Position: 18 of 26 layers pass; `402:471`, `402:485`, `402:510`,
   `402:515` and `402:528` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -54,8 +56,11 @@ sidebar has the toggle, so the tab bar has none.
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box, as on D02b. They are drawn in `fg.muted`,
   Figma's grey.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 No value in this build needed a d-100 pick: the new parts reuse the
 blocks and tokens of D01 and D02b.

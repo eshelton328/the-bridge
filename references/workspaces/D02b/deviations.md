@@ -12,8 +12,10 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
   without an exception:
   `ContextMeter` draws each as one text node. `Artifacts` and `Toolkit`
   (rail, d-105) are excepted as on D01.
-- Position: 23 of 27 layers pass; `402:5390`, `402:5403`, `402:5441` and
+- Position: 26 of 33 layers pass; `402:5390`, `402:5403`, `402:5441` and
   `402:5443` fail.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -48,8 +50,11 @@ the drag, with the ⋯ of the chat header pressed and its menu open.
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against Figma's
   14 px icons with no button box, as on D02. They are drawn in `fg.muted`,
   Figma's grey.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 - **Figma layers.** Each sidebar block takes the frame's layer ids from the
   state's `data.layers` (D02b's node ids differ from D02's) and keeps D02's
   when a state sets none. This changes no pixel.

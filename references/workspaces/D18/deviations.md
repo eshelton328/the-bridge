@@ -14,9 +14,11 @@ subtask started under its reply (`subtaskRunning`).
 - Text: pass. Every Figma string shows, `layout notes`, `4%` and
   `Subtask layout notes started · returns its result here` included.
   `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 to D17.
-- Position: 18 of 22 layers pass; `417:1289`, `417:1324`, `417:1375` and
+- Position: 21 of 28 layers pass; `417:1289`, `417:1324`, `417:1375` and
   `417:1388` fail. The subtask's row (`417:1418`), the chat header
   (`417:1342`) and Erik's message (`417:1370`) pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -52,5 +54,8 @@ subtask started under its reply (`subtaskRunning`).
 - **Agent name (Message text).** "Claude" over the reply is `label`
   (14/500) against Figma's SemiBold 12 (`labelXsStrong`); `Message`
   takes no size.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.

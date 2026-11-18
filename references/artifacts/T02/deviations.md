@@ -10,11 +10,14 @@ D2's (`../D02/deviations.md`).
 ## Checks
 
 - Text: passes. Nothing is missing, hidden or extra.
-- Position: 13 of 18 layers pass (`top bar`, `button · Discuss`,
+- Position: 19 of 24 layers pass (`top bar`, `button · Discuss`,
   `button · copy`, `button · trash`, `title block`, `status`,
   `pill · New`, `chip · Claude artifact`, `button · Open artifact`,
   `link`, `section · MADE IN`, `made in` and `tab bar`). Five fail;
   see below.
+  The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
+  `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
+  `tab · More`.
 - Rules: pass.
 
 ## Deviations
@@ -50,10 +53,6 @@ D2's (`../D02/deviations.md`).
   about 2 px right of Figma's (x 24 against 22) and its stroke is a
   little thinner (1.7 px, the icon's 2 at 20 px). D2's mark in the
   preview's footer is drawn the same way.
-- **Tab bar.** The shared tab bar (`AppTabBar device="tablet"`, not
-  changed here: another chat holds it) spreads its six tabs over the full
-  width; Figma groups them, 76 wide each, in the middle (405:373 to
-  405:403, x 150 to 606). The `tab bar` box itself matches.
 - **Buttons with no screen yet.** Discuss opens the discussion page (T4).
   Copy link, Remove, the project chip, Open artifact and Open in
   workspace have no action, as in D2. Back returns to the library (T1).

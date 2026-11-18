@@ -24,12 +24,15 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
   Row height). No text is covered by another element. In
   `exceptions.json`: the Workflows chip's label and count (433:810,
   433:811), which Figma cuts at the list pane's edge too.
-- Position: 29 of 52 layers pass (`toolkit list`, `header`, `read-only`,
+- Position: 35 of 58 layers pass (`toolkit list`, `header`, `read-only`,
   `filter · chips`, `search`, `group · RULES`, `toolkit item`,
   `meta row`, `kind badge`, `button · Discuss`, `button · Show on map`,
   `433:1032`, `path row`, `path badge`, `kind section · workflow`,
   `steps header`, `flow · by phase`, all ten step cards, `runs`,
   `link · eval-grader`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. One `hiddenOverflow` finding: the list pane
   (`[data-figma="toolkit list"]`) is 1066 px high in a 982 px frame and
   scrolls, because of the taller rows (see Row height), as in D9. In

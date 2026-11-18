@@ -14,12 +14,11 @@ import type { ArtifactProposalProps } from '../blocks/ArtifactProposal.tsx'
 import { DiscussedArtifactCard } from '../blocks/DiscussedArtifactCard.tsx'
 import { DiscussionEmpty } from '../blocks/DiscussionEmpty.tsx'
 import { DiscussionEntry } from '../blocks/DiscussionEntry.tsx'
-import { discussionReply } from '../blocks/discussionReply.ts'
 import { ModelContext } from '../blocks/ModelContext.tsx'
 import type { ArtifactDetail, ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
 
-// The page fills the detail's height and no more, so only the messages scroll; the reply box measures its cap
-// against the page's height (cqh), as the desktop panel's against the panel's.
+// The page fills the detail's height and no more, so only the messages scroll; the Composer caps a long draft at 30%
+// of the page's height (cqh), as the desktop panel's at 30% of the panel's.
 const page = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]', containerType: 'size' })
 // 452:3769: the nav is 40 high, 4 under the status bar, and the card 8 under it (452:3778). The Container pads 12 at
 // the top; the nav takes 8 of it back and pads its 32 px buttons 4 above and below.
@@ -92,7 +91,7 @@ export function ArtifactDiscussionPage({
         }
         footer={
           <div className={footer}>
-            <div className={discussionReply} data-figma="composer · discussion">
+            <div data-figma="composer · discussion">
               <Composer
                 label={discussion.placeholder}
                 placeholder={discussion.placeholder}

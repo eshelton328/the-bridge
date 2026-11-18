@@ -15,7 +15,9 @@ the checks and offsets below are from the beta.9 run.
   radio, checkbox, hidden and password inputs, so the option ids inside
   `OptionList` rows no longer count as visible text.
   One exception in `exceptions.json` (the "|" Figma draws as the editor's caret).
-- Position: 11 of 16 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`, `section · RUN IN`, `start`).
+- Position: 17 of 22 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `task pane`, `task bar`, `title block`, `section · RUN IN`, `start`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass. The `hiddenOverflow` on `[data-figma="run in picker"]` of round 5 is gone: the picker no longer scrolls (below).
 
 ## Deviations
@@ -103,6 +105,11 @@ the checks and offsets below are from the beta.9 run.
   `SearchField surface="raised"`, which draws the placeholder and the
   clear icon in `fg.muted`; the picker's search uses it in place of the
   app's own placeholder style. The colour does not change.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

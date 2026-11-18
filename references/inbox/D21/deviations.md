@@ -11,7 +11,9 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 ## Checks
 
 - Text: pass; the hidden Snooze, Dismiss, Reset and Edit are excepted in `exceptions.json`.
-- Position: 9 of 14 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
+- Position: 12 of 20 layers pass (`inbox list`, `header`, `filter · chips`, `list tools`, `group · TODAY`, `group · YESTERDAY`, `task pane`, `task bar`, `title block`).
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 
 ## Deviations
@@ -73,6 +75,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   in `textSize="smStrong"` (SemiBold 13), as T4 sets Reply here in Figma
   (346:6297). Restore is `textSize="sm"` (Medium 13), the type read
   from Figma (403:4282, d-106); no layer of this frame moved.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Second review
 

@@ -11,7 +11,6 @@ import { Composer, ScrollFrame, Stack } from '@eshelton328/component-library-170
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
 import type { ArtifactProposalProps } from './ArtifactProposal.tsx'
-import { discussionReply } from './discussionReply.ts'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
 import { DiscussionEntry } from './DiscussionEntry.tsx'
 import { DiscussionHeader } from './DiscussionHeader.tsx'
@@ -25,7 +24,7 @@ const panel = css({
   flex: '1',
   // The panel fills the detail's height and no more, so its ScrollFrame scrolls the discussion (d-107).
   minH: '[0]',
-  // The reply box measures its cap against the panel's own height (cqh).
+  // The Composer caps a long draft at 30% of its size container (cqh): here the panel's own height.
   containerType: 'size',
   // A flex item keeps its content's width unless it clips.
   overflow: 'hidden',
@@ -80,7 +79,7 @@ export function DiscussionPanel({
         bodyClassName={bodyGap}
         header={<DiscussionHeader discussion={discussion} onOpenInWorkspace={onOpenInWorkspace} onClose={onClose} />}
         footer={
-          <div className={discussionReply} data-figma="composer · discussion">
+          <div data-figma="composer · discussion">
             <Composer
               label={discussion.placeholder}
               placeholder={discussion.placeholder}

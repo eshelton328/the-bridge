@@ -20,10 +20,12 @@ replace drift check. The dragged chat sits at the zone's bottom end
   402:4565, the empty pane's row 402:4982 and the dragged chat 402:5024)
   included. `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01
   to D11.
-- Position: 15 of 30 layers pass; `402:4778`, `402:4794`, `402:4819`,
+- Position: 18 of 36 layers pass; `402:4778`, `402:4794`, `402:4819`,
   `402:4824`, `402:4837`, `402:4920`, `402:4941`, `402:4865`, `402:4894`,
   `402:4907`, `402:5000`, `402:5014`, `402:4951`, `402:4972` and
   `402:4986` fail. The sidebar and its rows pass.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces` and `rail · Projects`.
 - Rules: pass.
 - Earlier frames: `pnpm fidelity workspaces` on 1.0.0-beta.20 gives the
   results their own deviations.md files list (D01 9 of 17, D02 22 of 27,
@@ -101,8 +103,11 @@ replace drift check. The dragged chat sits at the zone's bottom end
 - **Group header icons (Sidebar group header).** The ⋯, rename and close
   buttons are 24 px (`Button size="xs"`) with 12 px icons, against
   Figma's 14 px icons with no button box, as on D07 to D11.
-- **Rail.** The shared `AppRail` adds Artifacts and Toolkit before More
-  (d-105), so More sits lower than Figma's.
+- **Nav rail.** Figma's rail has no Artifacts or Toolkit item, so
+  `rail · Artifacts` and `rail · Toolkit` have no layer, and
+  `rail · More` sits 108 px lower (y +108). The design predates d-105,
+  which adds the Toolkit (and Artifacts) item; the app draws the
+  six-item navigation.
 
 ## Value picks (d-100)
 

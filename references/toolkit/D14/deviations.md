@@ -19,7 +19,7 @@ and rule results are unchanged). The frame has no `exceptions.json`.
     `agents/eval-grader.md` and `→0 ←2` (459:305, 459:306, 459:308): the
     taller list rows push them past the frame's bottom edge (see Row
     height).
-- Position: 35 of 62 layers pass, among them every layer of the How it
+- Position: 41 of 68 layers pass, among them every layer of the How it
   works tab but two: `how it works`, `459:599` (its header), the four
   legend items, `steps`, all eight step cards (`step 1` to `step 8`), all
   six use chips (`uses · references/<form>.md`, `uses · ste100`,
@@ -28,6 +28,9 @@ and rule results are unchanged). The frame has no `exceptions.json`.
   `filter · chips`, `search`, `group · SKILLS`, `toolkit item`,
   `meta row`, `kind badge`, both buttons, `459:367`, `path row` and
   `path badge`.
+  The shared navigation's items pass too: `rail · Inbox`,
+  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
+  `rail · Toolkit` and `rail · More`.
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D03 has the
