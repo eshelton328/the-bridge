@@ -54,8 +54,7 @@ D2's (`../D02/deviations.md`).
   changed here: another chat holds it) spreads its six tabs over the full
   width; Figma groups them, 76 wide each, in the middle (405:373 to
   405:403, x 150 to 606). The `tab bar` box itself matches.
-- **Buttons with no screen yet.** Discuss opens the discussion (T4) in
-  Figma's note; T4 is a later run, so on the tablet Discuss does nothing.
+- **Buttons with no screen yet.** Discuss opens the discussion page (T4).
   Copy link, Remove, the project chip, Open artifact and Open in
   workspace have no action, as in D2. Back returns to the library (T1).
 
