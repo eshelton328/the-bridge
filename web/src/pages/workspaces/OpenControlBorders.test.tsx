@@ -1,7 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
@@ -63,8 +63,17 @@ describe('the borders of open controls', () => {
 
 // A selected toggle chip (aria-pressed, not a trigger) follows its Figma frame where that is a token: the
 // workspace's own folder chip (M7 128:30, #5ee1ff at 0.6) and the sheet's chosen recent folder (M8 128:766, at 0.5)
-// draw border.selected, not the pressed border.active.
-describe('the borders of selected chips on the phone', () => {
+// draw border.selected (`pressedBorder="selected"`), not the pressed border.active, in both modes. In light mode the
+// two tokens are the same colour, so only dark mode tells them apart.
+describe.each(['dark', 'light'] as const)('the borders of selected chips on the phone (%s)', (mode) => {
+  beforeEach(() => {
+    document.documentElement.classList.toggle('dark', mode === 'dark')
+  })
+
+  afterEach(() => {
+    document.documentElement.classList.add('dark')
+  })
+
   it("draws New chat's own folder chip with border.selected (M7)", async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneNewChat
