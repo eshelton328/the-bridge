@@ -90,7 +90,9 @@ export function DiscussionPage({
         }
         before={
           <div data-figma="task · discussing">
-            <Panel>
+            {/* Figma's task card (M18 and T17 task · discussing) pads 10 at the top and bottom and 12 at the sides: the
+                notice Panel, not the section one (12 and 16). */}
+            <Panel variant="notice">
               <Stack gap="4">
                 <Inline gap="8" align="center">
                   <h1 className={phone ? cx(title, oneLine) : title}>
