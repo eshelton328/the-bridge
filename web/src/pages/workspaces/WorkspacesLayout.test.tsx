@@ -65,6 +65,22 @@ describe('the Workspaces screen by width', () => {
     await expect.element(releaseNotes()).not.toBeInTheDocument()
   })
 
+  it('keeps a workspace closed on the phone gone at a tablet and a desktop width', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneCloseWorkspace
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Close', exact: true }))
+    await expect.element(page.getByRole('alertdialog')).not.toBeInTheDocument()
+    await expect.element(page.getByText('drift check', { exact: true })).not.toBeInTheDocument()
+    for (const width of [1024, 1512]) {
+      await page.viewport(width, 982)
+      await expect.element(page.getByRole('button', { name: 'Hide the workspace sidebar' })).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /^the-bridge/ }).first()).toBeVisible()
+      await expect.element(page.getByRole('button', { name: /^omni-brain/ })).not.toBeInTheDocument()
+      await expect.element(page.getByText('drift check', { exact: true })).not.toBeInTheDocument()
+    }
+  })
+
   it("opens the More drawer from the phone tab bar's More, and Toolkit goes to its page", async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneHome

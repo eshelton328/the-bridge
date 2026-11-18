@@ -92,12 +92,19 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
   const names = ui.names ?? {}
   // The names Erik gave workspaces in the phone's edit mode (M2) take the place of their labels.
   const workspaceNames = ui.workspaceNames ?? {}
-  const workspaces = data.workspaces.map((w) => {
-    const label = workspaceNames[w.id] ?? w.label
-    return w.chats === undefined
-      ? { ...w, label }
-      : { ...w, label, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) }
-  })
+  // The workspaces Erik added with the phone's New workspace (M15) follow the others, with no chats yet.
+  const added = (ui.addedWorkspaces ?? []).map((w) => ({ ...w, count: 0, needsYou: false, chats: [] }))
+  // The workspaces Erik closed with the phone's close dialog (M13) leave both layouts, so a wider window keeps them
+  // closed.
+  const closed = ui.closedWorkspaces ?? []
+  const workspaces = [...data.workspaces, ...added]
+    .filter((w) => !closed.includes(w.id))
+    .map((w) => {
+      const label = workspaceNames[w.id] ?? w.label
+      return w.chats === undefined
+        ? { ...w, label }
+        : { ...w, label, chats: w.chats.map((c) => ({ ...c, title: names[c.id] ?? c.title })) }
+    })
   const panes = data.panes.map((p) =>
     p.type === 'chat' ? { ...p, head: { ...p.head, title: names[p.id] ?? p.head.title } } : p,
   )
@@ -278,7 +285,8 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         />
         {data.newChat === undefined ? null : (
           <NewChatDialog
-            form={data.newChat}
+            // The workspace New chat was picked for (M14, M15) stays chosen when the window widens past a phone's.
+            form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
             workspaces={data.workspaces}
             open={ui.newChatOpen === true}
             onOpenChange={(open) => {

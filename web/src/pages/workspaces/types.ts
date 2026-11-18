@@ -347,6 +347,18 @@ export const SidebarText = z.object({
 export type SidebarText = z.infer<typeof SidebarText>
 
 /**
+ * The dialog that asks before a workspace closes (M13 208:765): Cancel, Close, and each workspace's title and text,
+ * by workspace id. "{workspace}" in the title or text is the workspace's current name, so a renamed workspace is
+ * asked about by its new name. × on a workspace without text here draws only.
+ */
+export const CloseWorkspaceText = z.object({
+  cancel: z.string(),
+  close: z.string(),
+  workspaces: z.record(z.string(), z.object({ title: z.string(), text: z.string() })),
+})
+export type CloseWorkspaceText = z.infer<typeof CloseWorkspaceText>
+
+/**
  * The phone's labels (M1 105:2302): the page title, Edit and the accessible name of +, which opens New chat or New
  * workspace. A state without them draws the desktop layout at a phone's width.
  */
@@ -368,6 +380,20 @@ export const PhoneText = z.object({
    * Rename first. Without it, a hold does nothing and the row's ⋯ draws only.
    */
   rowMenu: z.array(PaneAction).optional(),
+  /** The dialog that × on a workspace in edit mode opens (M13). Without it, × draws only. */
+  closeWorkspace: CloseWorkspaceText.optional(),
+  /**
+   * The actions sheet of a workspace in the phone's list (M14 208:235), in order: what the ⋯ of its header opens.
+   * "{workspace}" in a label is the workspace's name ("New chat in {workspace}"). `close` asks first with
+   * `closeWorkspace` (M13). Without it, the header's ⋯ draws only.
+   */
+  workspaceMenu: z.array(PaneAction).optional(),
+  /**
+   * The menu that + at the top of the phone's list opens (M15 208:515): New chat, which opens New chat (M7) in the
+   * current workspace, and New workspace, which adds a workspace named `untitled` and opens its name as a field in
+   * edit mode. Without it, + draws only.
+   */
+  addMenu: z.object({ newChat: z.string(), newWorkspace: z.string(), untitled: z.string() }).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -504,6 +530,13 @@ export const SidebarLayers = z.object({
   subagentTranscript: SubagentTranscriptLayers.optional(),
   /** The folders sheet on the phone (M8). */
   phoneFolders: PhoneFoldersLayers.optional(),
+  /** The dialog that asks before a workspace closes, and its Cancel and Close (M13 208:765, 208:769, 208:771). */
+  closeDialog: z.object({ dialog: z.string(), cancel: z.string(), close: z.string() }).optional(),
+  /**
+   * The menu that + opens on the phone (M15 208:515) and its icons, by action (208:521, 208:529): `Menu`'s rows take
+   * no `data-*`, so the icons carry the rows' places.
+   */
+  addMenu: z.object({ menu: z.string(), icons: z.record(z.string(), z.string()) }).optional(),
 })
 export type SidebarLayers = z.infer<typeof SidebarLayers>
 
@@ -751,6 +784,18 @@ export const WorkspacesUi = z.object({
    * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
    */
   keyboardOpen: z.boolean().optional(),
+  /** The workspace whose close dialog is open over the phone's list (M13), or null. */
+  closing: z.string().nullable().optional(),
+  /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
+  closedWorkspaces: z.array(z.string()).optional(),
+  /** The workspace whose actions sheet is open over the phone's list (M14), or null. */
+  workspaceMenuFor: z.string().nullable().optional(),
+  /** The menu that + opens at the top of the phone's list is open (M15). */
+  addMenuOpen: z.boolean().optional(),
+  /** The workspaces Erik added with that menu's New workspace, by id, with the name each started with. */
+  addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
+  /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
+  newChatWorkspace: z.string().nullable().optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 

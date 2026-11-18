@@ -6,7 +6,9 @@
 // has no list of actions for a sheet, so the rows are `OptionList`s with no
 // check (LIBRARY_GAPS.md: Phone chat actions sheet). A held row of the phone's
 // list opens the same sheet with no trigger, Rename first and highlighted
-// (M9 146:273). Props only.
+// (M9 146:273). A workspace's ⋯ in the list opens it too, titled with the
+// workspace's name, with its three actions and no Move to workspace (M14
+// 208:235). Props only.
 import {
   BottomSheet,
   BranchIcon,

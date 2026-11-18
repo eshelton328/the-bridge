@@ -2,7 +2,8 @@
 // with its drag handle and × to close the workspace, then its chats, each
 // with its handle and no ⋯. A tap on a chat's name opens its name as a field
 // (PhoneRenameRow); a workspace in `renaming` shows its name as a field in
-// place of the name, the count and × (105:2614). Props only.
+// place of the name, the count and × (105:2614). × asks before the workspace
+// closes (M13, `onClose`). Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -47,12 +48,24 @@ export type PhoneEditGroupProps = {
   onChatRenamed?: ((chat: string, name?: string) => void) | undefined
   /** Called with the workspace's new name, or with none when Erik undoes the change. */
   onRenamed?: ((name?: string) => void) | undefined
+  /** × was pressed: ask before the workspace closes (M13). Without it, × draws only. */
+  onClose?: (() => void) | undefined
   layers?: SidebarLayers | undefined
 }
 
 export function PhoneEditGroup(props: PhoneEditGroupProps) {
-  const { workspace, open, onOpenChange, renaming, renamingChats, focus, onRenameChat, onChatRenamed, onRenamed } =
-    props
+  const {
+    workspace,
+    open,
+    onOpenChange,
+    renaming,
+    renamingChats,
+    focus,
+    onRenameChat,
+    onChatRenamed,
+    onRenamed,
+    onClose,
+  } = props
   const { layers } = props
   const rowsId = useId()
   const name = workspace.label
@@ -71,7 +84,14 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
             contentId={rowsId}
             leading={<GripIcon size="12" />}
             actions={
-              <Button variant="text" size="xs" iconOnly className={headerAction} aria-label={`Close ${name}`}>
+              <Button
+                variant="text"
+                size="xs"
+                iconOnly
+                className={headerAction}
+                aria-label={`Close ${name}`}
+                onClick={onClose}
+              >
                 <CloseIcon size="12" />
               </Button>
             }

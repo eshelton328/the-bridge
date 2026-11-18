@@ -531,3 +531,67 @@ export const PhoneSubagentTranscript: Story = {
     await expect(canvas.queryByText('Read-only: the result returns to bridge themes when it finishes.')).toBeNull()
   },
 }
+
+export const PhoneCloseWorkspace: Story = {
+  name: 'M13: the phone asks before a workspace closes',
+  args: {
+    data: workspacesStates.phoneCloseWorkspace.data,
+    ui: workspacesStates.phoneCloseWorkspace.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M13, the dialog over the list in edit mode. WorkspacesPhoneCloseWorkspace.test.tsx
+    // checks the dialog at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('alertdialog', { name: 'Close omni-brain?' })).toBeNull()
+  },
+}
+
+export const PhoneWorkspaceActions: Story = {
+  name: 'M14: a workspace’s actions in a sheet over the phone list',
+  args: {
+    data: workspacesStates.phoneWorkspaceActions.data,
+    ui: workspacesStates.phoneWorkspaceActions.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width omni-brain's actions open in a sheet (M14). WorkspacesPhoneWorkspaceActions.test.tsx checks
+    // the sheet and its actions at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('dialog', { name: 'omni-brain' })).toBeNull()
+  },
+}
+
+export const PhoneAddMenu: Story = {
+  name: 'M15: the menu that + opens over the phone list',
+  args: {
+    data: workspacesStates.phoneAddMenu.data,
+    ui: workspacesStates.phoneAddMenu.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone;
+    // at a phone's width + opens New chat and New workspace (M15). WorkspacesPhoneAddMenu.test.tsx checks the menu
+    // and what each action does at a phone's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(within(document.body).queryByRole('menuitem', { name: 'New workspace' })).toBeNull()
+  },
+}
+
+export const PhoneTapChat: Story = {
+  name: 'M16: a tap on a chat in the phone list, which opens it',
+  args: { data: workspacesStates.phoneTapChat.data, ui: workspacesStates.phoneTapChat.ui, viewport: 'phone' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the phone's menu draws M16. WorkspacesPhoneTapChat.test.tsx checks that a tap opens the chat full screen.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('release notes')).toBeVisible()
+    await expect(within(document.body).queryByRole('menu')).toBeNull()
+    await expect(within(document.body).queryByRole('dialog')).toBeNull()
+  },
+}
