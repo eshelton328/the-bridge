@@ -130,6 +130,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `proposal · REMOVE THIS TASK` now fails (y -5, w +148, h +8 px): the messages above it
   are shorter than Figma's (`message · discussion` h -18), and the
   4 px of card padding hid part of that offset before.
+- **Reason box (2026-11-18).** The reason box is now the `notice`
+  `Panel` (10/12), as in D20: `dialog · Remove this task` is x -10,
+  y +7, w +20, h +15 px (was x -10, y +5, w +20, h +19). The rest is the
+  4 px grid and the 12 px title-to-meta gap, as in D20.
 
 ## Second review, round 2
 

@@ -138,3 +138,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `notice` `Panel` (10 px at the top and bottom, 12 at the sides), as
   Figma's card, not the `section` one (12 and 16): `task · discussing` h +6 px (was h +10 px); `guard` within tolerance (was w -8 px). The
   entries under the card start 4 px higher.
+- **Reason box (2026-11-18).** The reason box is now the `notice`
+  `Panel` (10/12), not the `section` one (12/16): `402:7846`
+  passes (was h +8 px). `sheet · Remove this task` is x +13, y +56,
+  w -26, h -91 px (was y +52, h -87): the sheet is 4 px shorter.

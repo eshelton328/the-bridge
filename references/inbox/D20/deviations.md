@@ -134,6 +134,14 @@ the checks and offsets below are from the beta.9 run.
 - **Model and context label (2026-11-18).** "context" is `smallXs`
   (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
   group is now within tolerance (was `model and context` w +6.4).
+- **Reason box (2026-11-18).** The reason box is now the `notice`
+  `Panel` (10/12), not the `section` one (12/16). Figma's box
+  (403:3919) has its 14 px label 11 under the border and 13 in; the
+  `eyebrow` line is 16, so 10 keeps the label's centre at Figma's.
+  `dialog · Remove this task` is y -7.5, h +15 px (was y -9.5, h +19).
+  The rest is the 4 px grid (title 24 against 22, meta 16 against 14,
+  text 40 against 38, reason 82 against 78) and the 12 px gap from the
+  title to the meta line, where Figma's title frame (403:3915) has 4.
 
 ## Second review
 
