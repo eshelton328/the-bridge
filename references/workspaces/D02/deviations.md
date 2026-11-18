@@ -75,7 +75,9 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   (Figma 17), and the bubble icon and "/btw" use `accent.discuss`.
 - **Sidebar toggle.** The toggle (158:6) is a pressed `Button size="sm"`,
   28 px against Figma's 30; it sits after the title through the panel's
-  `meta` slot. + is a `Button size="sm"` with a 16 px icon (Figma 36 × 28,
+  `meta` slot. Figma draws its border #5ee1ff at about 0.6, an alpha no
+  token has; it snaps to the nearest token, `border.selected` (0.5), in
+  place of the pressed button's `border.active` (0.7). + is a `Button size="sm"` with a 16 px icon (Figma 36 × 28,
   14 px icon).
 - **Skill-evals.** Figma draws skill-evals closed, so the state lists none
   of its chats; opening it shows no rows, though its count is 1.
