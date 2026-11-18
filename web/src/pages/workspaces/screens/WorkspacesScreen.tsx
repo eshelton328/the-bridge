@@ -14,7 +14,8 @@
 // fades in the sidebar, and the drop zone shows where it would open (D6).
 // A chat opened from the sidebar can show in the workbench beside it, in
 // place of the chat alone (D7), and a chat dragged over one of its panes
-// shows the drop zone over that pane (D8).
+// shows the drop zone over that pane (D8). A chat action's dialog, such as
+// Fork, opens over the screen for the chat shown alone (D15).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -24,6 +25,7 @@ import { MainChat } from '../blocks/MainChat.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { FolderPickerPane } from '../blocks/FolderPickerPane.tsx'
 import { FoldersControl } from '../blocks/FoldersControl.tsx'
 import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
@@ -199,6 +201,16 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
             open={ui.newChatOpen === true}
             onOpenChange={(open) => {
               change({ newChatOpen: open })
+            }}
+          />
+        )}
+        {data.fork === undefined || chat === undefined ? null : (
+          <ForkDialog
+            form={data.fork}
+            chat={chat.head.title}
+            open={ui.chatDialog === 'fork'}
+            onOpenChange={(open) => {
+              change({ chatDialog: open ? 'fork' : null })
             }}
           />
         )}

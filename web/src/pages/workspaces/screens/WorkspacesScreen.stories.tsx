@@ -232,3 +232,21 @@ export const ResizedPanes: Story = {
     await expect(canvas.getByLabelText('Resize rows')).toBeVisible()
   },
 }
+
+export const ForkDialog: Story = {
+  name: 'D15: Fork asks for a name and where the copy starts',
+  args: { data: workspacesStates.forkDialog.data, ui: workspacesStates.forkDialog.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.'),
+    ).toBeVisible()
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'Fork bridge themes' }))
+    await expect(dialog.getByRole('textbox', { name: 'NAME' })).toHaveValue('bridge themes · fork')
+    await expect(dialog.getByRole('button', { name: 'Whole chat' })).toHaveAttribute('aria-pressed', 'true')
+    await expect(dialog.getByRole('button', { name: 'Up to a message…' })).toHaveAttribute('aria-pressed', 'false')
+    await expect(
+      dialog.getByText('The fork copies the messages and the context. The original keeps running.'),
+    ).toBeVisible()
+  },
+}

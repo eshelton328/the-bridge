@@ -202,6 +202,25 @@ export const NewChatForm = z.object({
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
 
+/**
+ * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
+ * `name.value` is the forked chat's title.
+ */
+export const ForkForm = z.object({
+  title: z.string(),
+  /** The field labels, as Figma writes them, in capitals. */
+  labels: z.object({ name: z.string(), startFrom: z.string() }),
+  /** The name the copy gets, which Erik can change, and the hint inside the field. */
+  name: z.object({ value: z.string(), hint: z.string() }),
+  /** Where the copy starts: the whole chat, or up to a message Erik picks next. */
+  startFrom: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The line under the choice that says what the fork copies. */
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type ForkForm = z.infer<typeof ForkForm>
+
 /** The workspace sidebar's labels (D2 105:611). */
 export const SidebarText = z.object({
   title: z.string(),
@@ -370,6 +389,8 @@ export const WorkspacesData = z.object({
   subagents: SubagentsPanel.optional(),
   /** The New chat form (D3). */
   newChat: NewChatForm.optional(),
+  /** The Fork form of a chat action (D15). */
+  fork: ForkForm.optional(),
   /** `false`: the chat header has no ⋯, as D4 draws it. */
   chatActions: z.boolean().optional(),
   /** The folders of the chat shown alone (D4). */
@@ -424,6 +445,8 @@ export const WorkspacesUi = z.object({
   transcripts: z.array(z.string()).optional(),
   /** The New chat form is open over the screen (D3). */
   newChatOpen: z.boolean().optional(),
+  /** The chat action whose dialog is open over the screen, for the focused chat, such as `fork` (D15), or null. */
+  chatDialog: PaneAction.shape.value.nullable().optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */

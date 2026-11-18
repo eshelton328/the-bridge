@@ -87,8 +87,11 @@ first: it says what each file of a page folder is for.
   in the top row, the others in the bottom row, as `SplitPanes` cannot
   split the rows first) and `ResizeReadout` (`ui.resize`, the dragged
   handle and its sizes, shown as `data.resizeHint`'s ratio in the
-  library's outline `Badge` over the pane before the handle). Later
-  frames add to these blocks.
+  library's outline `Badge` over the pane before the handle). D15 adds
+  `ForkDialog` (the Fork form in `Dialog size="lg"`: the copy's name, a
+  two-way start-from choice, a note, Cancel and Fork), which opens over
+  the chat alone when `ui.chatDialog` is `fork`. Later frames add to these
+  blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -108,7 +111,9 @@ first: it says what each file of a page folder is for.
   over a pane), D13 `emptiedPane` (D12's panes and status bar on
   `threePanes`, without the drag, and Close pane on the empty pane), D14
   `resizedPanes` (from `emptiedPane` with D11's panes, rows first, and
-  the top row's handle dragged to 60 : 40).
+  the top row's handle dragged to 60 : 40), D15 `forkDialog` (from
+  `chatActions`, without the side chat and the menu, and the Fork form
+  open).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -125,7 +130,7 @@ first: it says what each file of a page folder is for.
   `icon` and the zone's layers in `layers.dropZone`, for D12 its
   `preview`; for D13 the empty pane's `close` and its layers in
   `layers.emptyClose`; for D14 `split`, `resizeHint` and its layer in
-  `layers.resizeHint`) and
+  `layers.resizeHint`; for D15 `fork`, the Fork form) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -135,6 +140,7 @@ first: it says what each file of a page folder is for.
   workbench beside the sidebar; for D8 `paneDrag.pane`, the pane of the
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
   of a rows-first split and its sizes, and `splitSizes`, each handle's
-  sizes, so a drag of one handle leaves the others), each a Zod schema.
+  sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
+  the chat action whose dialog is open), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
