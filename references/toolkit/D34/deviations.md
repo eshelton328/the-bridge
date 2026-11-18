@@ -65,3 +65,12 @@ unchanged). The frame has no `exceptions.json`.
 - **Buttons.** Discuss and Show on map are both 32 px high, against
   Figma's 34 and 36, as on D7 (gap: Item action buttons). Both pass the
   position check.
+
+## Second review
+
+- **Code gutter.** The line numbers and the code start about 5 px
+  further left than Figma's. Figma puts the numbers 14 px in and the
+  code 50 px in on every Files frame (D06, D33, D34 `code` 494:1188).
+  `CodeLines` sizes its number column to the widest number, and this
+  file has 137 lines, so the column differs from Figma's fixed one
+  (gap: File preview).
