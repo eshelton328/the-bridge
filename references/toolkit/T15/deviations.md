@@ -52,7 +52,12 @@ same results as before T15. The frame has no `exceptions.json`.
 - **Graph.** The open item is 180 × 32 with its name in mono, where
   Figma's `node · writer (focus)` (487:21) is 150 × 40 with its name in
   the label style, and each line ends in a 3 px dot (gap: Links graph).
-  The graph is 708 wide against 712, as the Container pads 24.
+  The graph is 708 wide against 712, as the Container pads 24, and 320
+  high against 316: `linksGraph` keeps the desktop's places in height
+  (the tallest column 46 down and 12 over the foot, as on T29), where
+  T15's column starts 43 down and ends 11 over the foot. The tab starts
+  12 under the tabs, as Figma's, so the panels stay within 2 px of
+  Figma's.
 - **Panel rows.** Each link's node is 28 high against 29 and its file and
   line is a plain button in mono (gap: Links panel rows); each row stays
   within 1 px of Figma's.
