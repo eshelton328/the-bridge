@@ -85,6 +85,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Medium 12, and Start takes `textSize="smStrong"` (`labelSmStrong`,
   SemiBold 13/16), Figma's SemiBold 13 (d-100). The labels match
   Figma's.
+- **Kept prompt box (2026-11-18).** The applied prompt's `Clamp` takes
+  `reserve`, as in D16: `section · SUGGESTED PROMPT` is y +10 px (was
+  y +10, h -42), and the sections under it move from y -17 to -31 px to
+  y +9 to +23 px. `task · next step` is now h +31 px (was h -9): the
+  task runs on under the page's end, and Figma's frame stops at the
+  viewport.
 
 ## Second review, round 2
 

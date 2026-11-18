@@ -134,6 +134,14 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Model and context label (2026-11-18).** "context" is `smallXs`
   (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
   group is now within tolerance (was `model and context` w +6.4).
+- **Compact discussion text and kept prompt box (2026-11-18).** The
+  messages take 13 px text, as in D15: `message · you` passes (was
+  h +21 px), `message · discussion` y +5 px (was y +25, h +21),
+  `proposal · UPDATE THIS TASK` y +6, h +8 px (was y +46, h +8). The
+  applied prompt's `Clamp` takes `reserve` (library #150), so its box
+  keeps five lines' height, as Figma's 128 px box (403:1854): `section ·
+  SUGGESTED PROMPT` is y +10 px (was y +10, h -42), and the sections under
+  it move from y -20 to -31 px to y +9 to +20 px, the offset above them.
 
 ## Second review
 

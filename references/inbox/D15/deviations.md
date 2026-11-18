@@ -118,6 +118,12 @@ the checks and offsets below are from the beta.9 run.
 - **Model and context label (2026-11-18).** "context" is `smallXs`
   (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
   group is now within tolerance (was `model and context` w +6.4).
+- **Compact discussion text (2026-11-18).** Erik's message is
+  `Message size="sm"` and the reply's body `bodySm` (13/20, d-090), as
+  Figma's Regular 13/19 (403:1442, 403:1444); they were `body` (14/20)
+  and wrapped one more line. `message · you` passes (was h +21 px),
+  `message · discussion` is y +5 px (was y +25, h +21) and
+  `proposal · UPDATE THIS TASK` y +6, h +6 px (was y +46, h +6).
 
 ## Second review
 

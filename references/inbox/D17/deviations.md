@@ -152,6 +152,9 @@ Render minus Figma, in px.
 - **Model and context label (2026-11-18).** "context" is `smallXs`
   (Geist Regular 11), 38 px wide as Figma's, not `monoSm` (46 px). The
   group is now within tolerance (was `model and context` w +6.4).
+- **Compact discussion text (2026-11-18).** The reply's body is
+  `bodySm` (13/20), as in D15: `message · discussion` is y +5 px (was
+  y +5, h +21) and `proposal · CREATE 3 TASKS` y +6 px (was y +26).
 
 ## Second review
 

@@ -181,7 +181,9 @@ export function PromptSection({
             {/* `Clamp` takes its parent's text style and cuts at five of its lines. The style sits on a block: on an
                 inline span the 13 px text in the panel's 14 px line makes 21 px lines, and the cut hides the fifth. */}
             <div className={text}>
-              <Clamp lines={5} fade>
+              {/* After an applied update, Figma keeps the prompt box at its five lines' height (128, D16 403:1854;
+                  T19) for the shorter prompt; a short prompt with no change line hugs its text (D4). */}
+              <Clamp lines={5} fade reserve={changeLine !== null}>
                 {breakAfterSlashes(current)}
               </Clamp>
             </div>
