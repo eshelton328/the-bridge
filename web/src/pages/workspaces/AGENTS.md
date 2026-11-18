@@ -29,7 +29,9 @@ first: it says what each file of a page folder is for.
   (`ui.folderPickerOpen`); M9 is a chat held in the list: the same
   actions sheet opens over the list (`ui.menuFor` on a list chat,
   `data.phone.rowMenu`) and the row lifts over its scrim; M10 is the chat
-  with the keyboard up (`ui.keyboardOpen`), whose header is one line. Every other width, and a state without `data.phone` (D1 to D21), draws
+  with the keyboard up (`ui.keyboardOpen`), whose header is one line; M11
+  is New chat with the keyboard up, the name in focus and Start chat alone
+  in the start bar. Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
   Later phone frames add their views to `WorkspacesPhone`.
@@ -204,7 +206,12 @@ first: it says what each file of a page folder is for.
   `ChatPane`'s skills (the word typed from "/" before the caret filters
   the list, whose label becomes `data.skillsMatching`). The app does not
   size the screen to the visible area above the keyboard
-  (LIBRARY_GAPS.md: Phone keyboard). Later frames add to these blocks.
+  (LIBRARY_GAPS.md: Phone keyboard). M11 adds `keyboardOpen` to
+  `PhoneNewChat` (no summary over Start chat) and, to `NewChatFields` and
+  `NewChatDialog`, the typed name (`form.name.value`, which hides the
+  hint), the field with the focus (`form.focus`) and, on the phone only,
+  `form.foldersBox` (the folders as one field-high box, such as
+  "~/omni-brain +1"). Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -260,7 +267,10 @@ first: it says what each file of a page folder is for.
   with Rename first and highlighted, Move to workspace closed), M10
   `phoneKeyboard` (from `phoneChat`, with D4's two folders and M8's chip:
   Erik's message and Claude's reply without Copy, "/wri" typed at the end
-  of a message, /writer listed alone, the keyboard up).
+  of a message, /writer listed alone, the keyboard up), M11
+  `phoneNewChatKeyboard` (from `phoneNewChat`: "theme tokens" typed in the
+  name, which has the focus, Runs in without shell, omni-brain, the
+  folders as one box, the keyboard up).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -295,7 +305,9 @@ first: it says what each file of a page folder is for.
   folders' `chip` and the sheet's layers in `layers.phoneFolders`; for M9
   `phone.rowMenu`, a list chat's actions, and the lifted copy's layers in
   `layers.liftedRow` and `liftedMenu`; for M10 `skillsMatching`, the
-  skill list's label once more than "/" is typed) and
+  skill list's label once more than "/" is typed; for M11 the New chat
+  form's `name.value`, `focus` and `foldersBox`, and the optional layers
+  of `newChatForm` that M11 does not show) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -312,6 +324,6 @@ first: it says what each file of a page folder is for.
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
   fills the phone's screen, `subagents` in M6; for M10 `keyboardOpen`, the
-  keyboard up over the phone's chat), each a Zod schema.
+  keyboard up over the phone's chat, and in M11 over New chat), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

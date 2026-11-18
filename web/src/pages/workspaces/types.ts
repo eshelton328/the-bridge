@@ -211,14 +211,24 @@ export const NewChatForm = z.object({
     model: z.string(),
     message: z.string(),
   }),
-  /** The random name a blank name becomes, shown as the placeholder, and the hint that says so. */
-  name: z.object({ placeholder: z.string(), hint: z.string() }),
+  /**
+   * The random name a blank name becomes, shown as the placeholder, and the hint that says so; `value` is the name
+   * Erik has typed (M11 147:212), which hides the hint.
+   */
+  name: z.object({ placeholder: z.string(), hint: z.string(), value: z.string().optional() }),
+  /** The field with the focus when the form opens: the first message unless set, the name in M11 (147:211). */
+  focus: z.enum(['name', 'message']).optional(),
   runsIn: z.object({ options: z.array(z.object({ kind: AgentKind, label: z.string() })), value: AgentKind }),
   /** The workspace the chat starts in, by id. */
   workspace: z.string(),
   /** The folders the chat may read; the first is the workspace's own. */
   folders: z.array(z.string()),
   addFolder: z.string(),
+  /**
+   * On the phone, the folders as one field-high box in place of the chips (M11 148:82): `{first}` is the first
+   * folder and `{more}` the number of the others, such as "~/omni-brain  +1". Without it, the chips.
+   */
+  foldersBox: z.string().optional(),
   /** The models; `short` names a model in the summary, such as "Sonnet 5.5" for "Sonnet 5.5 · high effort". */
   model: z.object({
     options: z.array(z.object({ value: z.string(), label: z.string(), short: z.string().optional() })),
@@ -244,20 +254,29 @@ export const NewChatLayers = z.object({
   header: z.string(),
   cancel: z.string(),
   title: z.string(),
+  /** M11 (147:174) shows the fields above the keyboard alone, so the model and the first message have no layer. */
   fields: z.object({
     name: z.string(),
     runsIn: z.string(),
     workspace: z.string(),
     folders: z.string(),
-    model: z.string(),
-    message: z.string(),
+    model: z.string().optional(),
+    message: z.string().optional(),
   }),
-  boxes: z.object({ name: z.string(), workspace: z.string(), model: z.string(), message: z.string() }),
+  /** `folders` is the box of `foldersBox` (M11 148:82). */
+  boxes: z.object({
+    name: z.string(),
+    workspace: z.string(),
+    folders: z.string().optional(),
+    model: z.string().optional(),
+    message: z.string().optional(),
+  }),
   runsIn: z.partialRecord(AgentKind, z.string()),
   folders: z.array(z.string()),
-  addFolder: z.string(),
+  addFolder: z.string().optional(),
   startBar: z.string(),
-  summary: z.string(),
+  /** M11 has no summary: it hides while the keyboard is up. */
+  summary: z.string().optional(),
   start: z.string(),
 })
 export type NewChatLayers = z.infer<typeof NewChatLayers>
@@ -688,7 +707,8 @@ export const WorkspacesUi = z.object({
   phoneView: z.enum(['list', 'chat', 'subagents']).optional(),
   /**
    * The on-screen keyboard is up over the phone's chat (M10): the chat's header shrinks to one line, the model, the
-   * context used and the folders under the title. The app does not measure the keyboard yet, and the screen does
+   * context used and the folders under the title. Over New chat (M11) the start bar keeps Start chat alone, with no
+   * summary. The app does not measure the keyboard yet, and the screen does
    * not size itself to the visible area (LIBRARY_GAPS.md: Phone keyboard).
    */
   keyboardOpen: z.boolean().optional(),

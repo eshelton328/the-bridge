@@ -45,4 +45,19 @@ describe('New chat on the phone', () => {
     await expect.element(page.getByRole('region', { name: 'New chat' })).not.toBeInTheDocument()
     await expect.element(page.getByRole('heading', { name: 'Workspaces' })).toBeVisible()
   })
+
+  it('keeps the typed name in focus and Start chat alone in the start bar with the keyboard up (M11)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneNewChatKeyboard
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const form = page.getByRole('region', { name: 'New chat' })
+    const name = form.getByRole('textbox', { name: 'NAME · OPTIONAL' })
+    await expect.element(name).toHaveValue('theme tokens')
+    await expect.element(name).toHaveFocus()
+    await expect.element(form.getByText('random if blank')).not.toBeInTheDocument()
+    await expect.element(form.getByRole('button', { name: 'FOLDERS: ~/omni-brain, ~/the-bridge' })).toBeVisible()
+    await expect.element(form.getByRole('button', { name: 'shell' })).not.toBeInTheDocument()
+    await expect.element(form.getByText(/^Runs in /)).not.toBeInTheDocument()
+    await expect.element(form.getByRole('button', { name: 'Start chat' })).toBeVisible()
+  })
 })

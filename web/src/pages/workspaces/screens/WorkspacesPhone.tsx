@@ -15,6 +15,8 @@
 // its actions open in the same sheet (`ui.menuFor`, PhoneChatActions with
 // `data.phone.rowMenu`) and its row lifts over the scrim. M10 is the chat
 // with the keyboard up (`ui.keyboardOpen`): its header shrinks to one line.
+// M11 is New chat with the keyboard up: the name has the focus and the start
+// bar keeps Start chat alone.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -60,8 +62,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
               form={data.newChat}
               workspaces={data.workspaces}
               onCancel={() => {
-                onUiChange({ newChatOpen: false })
+                onUiChange({ newChatOpen: false, keyboardOpen: false })
               }}
+              keyboardOpen={ui.keyboardOpen === true}
               layers={data.layers?.newChatForm}
             />
           }

@@ -490,3 +490,25 @@ export const PhoneKeyboard: Story = {
     await expect(body.queryByRole('radio', { name: /\/readme/ })).toBeNull()
   },
 }
+
+export const PhoneNewChatKeyboard: Story = {
+  name: 'M11: New chat on the phone with the keyboard open',
+  args: {
+    data: workspacesStates.phoneNewChatKeyboard.data,
+    ui: workspacesStates.phoneNewChatKeyboard.ui,
+    viewport: 'phone',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat dialog over it, the name typed; at a phone's width the form fills the screen (M11).
+    // The open dialog hides the screen behind it from assistive technology, so its roles need `hidden`.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes', hidden: true })).toBeVisible()
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'New chat' }))
+    const name = dialog.getByRole('textbox', { name: 'NAME · OPTIONAL' })
+    await expect(name).toHaveValue('theme tokens')
+    await expect(dialog.queryByText('random if blank')).toBeNull()
+    await expect(dialog.getByRole('button', { name: 'WORKSPACE: omni-brain' })).toBeVisible()
+    await expect(dialog.queryByRole('button', { name: /shell/ })).toBeNull()
+    await expectTrapFocus(name)
+  },
+}

@@ -1,7 +1,8 @@
 // The fields of the New chat form on the phone (M7 105:3282): the optional
-// name with "random if blank", Runs in as one full-width choice per row with
-// a check on the chosen one, the workspace, the folders as chips with Add
-// folder, the model, and the first message with its attach button. D3's
+// name with "random if blank" (hidden once a name is typed, M11), Runs in as
+// one full-width choice per row with a check on the chosen one, the
+// workspace, the folders as chips with Add folder (or as one field-high box,
+// M11 148:82), the model, and the first message with its attach button. D3's
 // dialog draws the same form in `NewChatDialog`; this one stacks the choices
 // for a phone's width. Props only.
 import {
@@ -31,23 +32,41 @@ const choice = css({ w: '[100%]', justifyContent: 'flex-start' })
 const choiceLabel = css({ flex: '1', textAlign: 'start', color: 'fg.muted' })
 const chosenLabel = css({ flex: '1', textAlign: 'start' })
 const check = css({ display: 'flex', color: 'fg.accent' })
+// M11 148:82: the folders as one box, the text at the start as in the workspace box.
+const box = css({ w: '[100%]', justifyContent: 'flex-start' })
+// Figma keeps two spaces before "+1" (148:83).
+const keepSpaces = css({ whiteSpace: 'pre' })
+
+/** Fills in a `foldersBox` text: the first folder and the number of the others. */
+function foldersText(template: string, folders: readonly string[]): string {
+  return template.replace('{first}', folders[0] ?? '').replace('{more}', String(Math.max(folders.length - 1, 0)))
+}
 
 export type NewChatFieldsProps = {
   form: NewChatForm
   workspaces: readonly Workspace[]
   /** The box of the first message, which gets the focus when the form opens. */
   messageRef?: RefObject<HTMLDivElement | null> | undefined
+  /** The box of the name, which gets the focus when `form.focus` is `name` (M11). */
+  nameRef?: RefObject<HTMLDivElement | null> | undefined
   /** The frame's Figma layers. */
   layers?: NewChatLayers | undefined
 }
 
-export function NewChatFields({ form, workspaces, messageRef, layers }: NewChatFieldsProps) {
+export function NewChatFields({ form, workspaces, messageRef, nameRef, layers }: NewChatFieldsProps) {
   const { labels } = form
+  const typed = form.name.value !== undefined && form.name.value !== ''
   return (
     <>
-      <FormField label={labels.name} hint={form.name.hint} figma={layers?.fields.name}>
-        <div className={wide} data-figma={layers?.boxes.name}>
-          <TextField label={labels.name} labelHidden size="xl" placeholder={form.name.placeholder} />
+      <FormField label={labels.name} hint={typed ? undefined : form.name.hint} figma={layers?.fields.name}>
+        <div ref={nameRef} className={wide} data-figma={layers?.boxes.name}>
+          <TextField
+            label={labels.name}
+            labelHidden
+            size="xl"
+            placeholder={form.name.placeholder}
+            defaultValue={form.name.value}
+          />
         </div>
       </FormField>
       <FormField label={labels.runsIn} figma={layers?.fields.runsIn}>
@@ -81,26 +100,37 @@ export function NewChatFields({ form, workspaces, messageRef, layers }: NewChatF
         />
       </FormField>
       <FormField label={labels.folders} figma={layers?.fields.folders}>
-        <Inline gap="6" align="center" wrap>
-          {form.folders.map((path, i) =>
-            i === 0 ? (
-              <Button key={path} size="sm" pressed data-figma={layers?.folders[i]}>
-                <FolderIcon size="12" />
-                {path}
-              </Button>
-            ) : (
-              <Button key={path} size="sm" aria-label={`Remove ${path}`} data-figma={layers?.folders[i]}>
-                <FolderIcon size="12" />
-                {path}
-                <CloseIcon size="12" />
-              </Button>
-            ),
-          )}
-          <Button size="sm" textSize="xs" className={dashed} data-figma={layers?.addFolder}>
-            <PlusIcon size="12" />
-            {form.addFolder}
+        {form.foldersBox === undefined ? (
+          <Inline gap="6" align="center" wrap>
+            {form.folders.map((path, i) =>
+              i === 0 ? (
+                <Button key={path} size="sm" pressed data-figma={layers?.folders[i]}>
+                  <FolderIcon size="12" />
+                  {path}
+                </Button>
+              ) : (
+                <Button key={path} size="sm" aria-label={`Remove ${path}`} data-figma={layers?.folders[i]}>
+                  <FolderIcon size="12" />
+                  {path}
+                  <CloseIcon size="12" />
+                </Button>
+              ),
+            )}
+            <Button size="sm" textSize="xs" className={dashed} data-figma={layers?.addFolder}>
+              <PlusIcon size="12" />
+              {form.addFolder}
+            </Button>
+          </Inline>
+        ) : (
+          <Button
+            size="xl"
+            className={box}
+            aria-label={`${labels.folders}: ${form.folders.join(', ')}`}
+            data-figma={layers?.boxes.folders}
+          >
+            <span className={keepSpaces}>{foldersText(form.foldersBox, form.folders)}</span>
           </Button>
-        </Inline>
+        )}
       </FormField>
       <FormField label={labels.model} figma={layers?.fields.model}>
         <SelectField
