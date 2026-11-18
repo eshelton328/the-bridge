@@ -15,6 +15,11 @@ import { AddLinkFields, type AddLinkSource } from './AddLinkFields.tsx'
 // takes the larger, 16 (d-072, LIBRARY_GAPS.md "Sheet form spacing").
 const body = css({ px: '4' })
 const description = css({ textStyle: 'small', color: 'fg.muted' })
+// M3 407:405, M6 408:707 and 408:711, M7 407:1100: Figma lines a header text button's label up with the sheet's
+// content edge (17 from the screen's side). A `text` Button pads its label 8 inside a 1 px border, so the button
+// reaches 8 past the header's edge on that side and its label sits 1 px inside Figma's.
+const headerStart = css({ ms: '-8' })
+const headerEnd = css({ me: '-8' })
 
 export type AddLinkSheetProps = {
   form: AddLinkForm
@@ -38,14 +43,14 @@ export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange,
       leading={
         // M6 408:707: Cancel is a cyan text button at the start of the title row.
         <BottomSheetClose>
-          <Button variant="text" size="sm">
+          <Button variant="text" size="sm" className={headerStart}>
             {form.cancel}
           </Button>
         </BottomSheetClose>
       }
       actions={
         // M6 408:711: Add is a cyan text button at the end of the title row.
-        <Button variant="text" size="sm" onClick={onSubmit}>
+        <Button variant="text" size="sm" className={headerEnd} onClick={onSubmit}>
           {form.submit}
         </Button>
       }

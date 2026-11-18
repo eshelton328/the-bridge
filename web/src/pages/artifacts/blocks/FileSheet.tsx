@@ -32,6 +32,10 @@ const rule = css({ borderTopWidth: 'default', borderTopStyle: 'solid', borderTop
 const remove = css({ w: '[100%]', justifyContent: 'flex-start', px: '12' })
 // M7 407:1101: the body runs 8 past the note (801 to 809), as the Sort sheet's.
 const body = css({ pb: '8' })
+// M3 407:405, M6 408:707 and 408:711, M7 407:1100: Figma lines a header text button's label up with the sheet's
+// content edge (17 from the screen's side). A `text` Button pads its label 8 inside a 1 px border, so the button
+// reaches 8 past the header's edge on that side and its label sits 1 px inside Figma's.
+const headerEnd = css({ me: '-8' })
 
 /** The value of the Not in a project choice. */
 const noProject = 'none'
@@ -70,7 +74,7 @@ export function FileSheet({
       actions={
         // M7 407:1100: Done is a cyan text button at the end of the title row.
         <BottomSheetClose>
-          <Button variant="text" size="sm">
+          <Button variant="text" size="sm" className={headerEnd}>
             {menu.done}
           </Button>
         </BottomSheetClose>

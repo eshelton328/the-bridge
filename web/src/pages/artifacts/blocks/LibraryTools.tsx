@@ -30,6 +30,9 @@ import { SortSheet } from './SortSheet.tsx'
 
 // Figma's search and the space before the switch share the row's free width (402:15398, 402:15418).
 const grow = css({ flex: '1', overflow: 'hidden' })
+// M1 406:100, 406:107: the phone's icon-only Sort and Filter draw their icons in the muted grey (`fg.muted`), also
+// while pressed (M3 407:61); a secondary Button draws its content in `fg.default`.
+const mutedIcon = css({ display: 'inline-flex', color: 'fg.muted' })
 
 export type LibraryToolsProps = {
   placeholder: string
@@ -119,7 +122,9 @@ export function LibraryTools({
         <span data-figma="button · Sort">
           {iconOnly ? (
             <Button size={size} iconOnly aria-label={`Sort: ${sortLabel}`} onClick={onSortClick}>
-              <SortDescIcon />
+              <span className={mutedIcon}>
+                <SortDescIcon />
+              </span>
             </Button>
           ) : (
             <Button size={size} textSize="sm" onClick={onSortClick}>
@@ -152,7 +157,9 @@ export function LibraryTools({
         <span data-figma="button · Filter">
           {iconOnly ? (
             <Button size={size} iconOnly aria-label="Filter" onClick={onFilterClick}>
-              <FilterIcon />
+              <span className={mutedIcon}>
+                <FilterIcon />
+              </span>
             </Button>
           ) : (
             <Button size={size} textSize="sm" onClick={onFilterClick}>

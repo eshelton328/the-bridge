@@ -13,6 +13,9 @@ import type { ArtifactSortMenu } from '../types.ts'
 const note = css({ textStyle: 'small', color: 'fg.muted' })
 // M4 407:821: the sheet's body runs 8 past the note (801 to 809), as the Filter sheet's (T3 407:1624).
 const body = css({ pb: '8' })
+// M1 406:100, 406:107: the phone's icon-only Sort and Filter draw their icons in the muted grey (`fg.muted`), also
+// while pressed (M3 407:61); a secondary Button draws its content in `fg.default`.
+const mutedIcon = css({ display: 'inline-flex', color: 'fg.muted' })
 
 export type SortSheetProps = {
   menu: ArtifactSortMenu
@@ -36,7 +39,9 @@ export function SortSheet({ menu, sort, sortLabel, open, onOpenChange, onSortCha
         // M1 406:97: the phone's Sort is the 36 px icon-only button. M4 draws it under the scrim as M1 does, not
         // pressed (407:558), so the open sheet does not press it.
         <Button size="lg" iconOnly aria-label={`Sort: ${sortLabel}`} data-figma="button · Sort">
-          <SortDescIcon />
+          <span className={mutedIcon}>
+            <SortDescIcon />
+          </span>
         </Button>
       }
       open={open}

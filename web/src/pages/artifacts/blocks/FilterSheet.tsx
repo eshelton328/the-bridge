@@ -17,6 +17,13 @@ const foot = css({ px: '4', pt: '8' })
 const wide = css({ w: '[100%]' })
 // T3 407:1624: the sheet's body runs 8 past its last row (1059 to 1067), so Show sits 18 under the boxes.
 const body = css({ pb: '8' })
+// M1 406:100, 406:107: the phone's icon-only Sort and Filter draw their icons in the muted grey (`fg.muted`), also
+// while pressed (M3 407:61); a secondary Button draws its content in `fg.default`.
+const mutedIcon = css({ display: 'inline-flex', color: 'fg.muted' })
+// M3 407:405, M6 408:707 and 408:711, M7 407:1100: Figma lines a header text button's label up with the sheet's
+// content edge (17 from the screen's side). A `text` Button pads its label 8 inside a 1 px border, so the button
+// reaches 8 past the header's edge on that side and its label sits 1 px inside Figma's.
+const headerEnd = css({ me: '-8' })
 
 export type FilterSheetProps = {
   menu: ArtifactFilterMenu
@@ -57,7 +64,13 @@ export function FilterSheet({
           indicator={checks.length > 0 && !open}
           data-figma="button · Filter"
         >
-          <FilterIcon />
+          {iconOnly ? (
+            <span className={mutedIcon}>
+              <FilterIcon />
+            </span>
+          ) : (
+            <FilterIcon />
+          )}
           {iconOnly ? null : 'Filter'}
         </Button>
       }
@@ -70,6 +83,7 @@ export function FilterSheet({
           <Button
             variant="text"
             size="sm"
+            className={headerEnd}
             onClick={() => {
               onChecksChange?.([])
             }}
