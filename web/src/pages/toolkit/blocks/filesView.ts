@@ -42,14 +42,17 @@ export type FileMode = 'explain' | 'rendered' | 'code'
 
 /** Whether a view is a Markdown file drawn from its blocks, with no code of its own (T4 doc.md). */
 const isMarkdown = (view: ToolkitFileView | undefined): boolean =>
-  view !== undefined && view.code === undefined && view.blocks.length > 0
+  view !== undefined && view.code === undefined && view.blocks.length > 0 && view.summary !== true
 
 /**
  * The view of the selected file: Explain, the default of a script with an explanation and code, unless `mode`
  * (`ui.fileView`) asks for Code; Rendered, the default of a Markdown file, unless `mode` asks for its source (Code);
- * Code for any other file, which has no switch.
+ * Rendered with no switch for a file summed up by its blocks (`summary`, T35); Code for any other file, which has no
+ * switch.
  */
 export function fileMode(view: ToolkitFileView | undefined, mode?: FileMode): FileMode {
+  // T35: a script summed up by its blocks shows them, with no switch.
+  if (view?.summary === true) return 'rendered'
   if (isMarkdown(view)) return mode === 'code' ? 'code' : 'rendered'
   if (view?.explain === undefined || view.code === undefined) return 'code'
   return mode === 'code' ? 'code' : 'explain'

@@ -310,6 +310,11 @@ const ToolkitFileView = z.object({
   usedBy: z.object({ kind: ToolkitKind, text: z.string() }).optional(),
   /** A script's explanation (D10); a script with one and `code` opens on it, with the Explain and Code switch. */
   explain: ToolkitFileExplain.optional(),
+  /**
+   * The blocks summarise a file that is not Markdown, such as a script's header comment (T35 `rendered markdown`
+   * 494:4338): drawn rendered with no Rendered and Source switch, since they have no source of their own.
+   */
+  summary: z.literal(true).optional(),
 })
 export type ToolkitFileView = z.infer<typeof ToolkitFileView>
 

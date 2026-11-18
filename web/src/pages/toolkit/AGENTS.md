@@ -228,7 +228,10 @@ what each file of a page folder is for.
   rule rendered under the tree; an agent (T33, `agentFilesTablet`, D34's list,
   opened from writer as on T7) does the same under T7's breadcrumb, and a
   workflow (T34, `workflowFilesTablet`, D35's list) with the harness/ folder
-  open and each script's count in lines. A
+  open and each script's count in lines; a hook (T35, `hookFilesTablet`,
+  D36's list) sums up its tests in the viewer: a view with `summary` draws its
+  blocks rendered with no Rendered and Source switch (`fileMode`), since a
+  script's summary has no Markdown source. A
   Markdown file (a view with blocks and no code) opens rendered
   (`ToolkitFileBody`), with the Rendered and Source switch under its text; Source
   shows the source written back from the blocks (`markdownSource`), and

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fileMode, findFile, openFile } from './blocks/filesView.ts'
+import { fileMode, fileModes, findFile, openFile } from './blocks/filesView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { skillFiles, scriptExplained } = toolkitStates
@@ -49,5 +49,20 @@ describe('fileMode', () => {
     expect(fileMode(openFile(browser).view)).toBe('code')
     expect(fileMode(openFile(browser).view, 'explain')).toBe('code')
     expect(fileMode(undefined, 'explain')).toBe('code')
+  })
+})
+
+describe('a file summed up by its blocks (T35)', () => {
+  it('shows its blocks rendered with no switch, whatever the view asked for', () => {
+    const view = {
+      path: 'test-commit-msg',
+      blocks: [{ type: 'title' as const, text: 'test-commit-msg' }],
+      summary: true as const,
+    }
+    expect(fileMode(view)).toBe('rendered')
+    expect(fileMode(view, 'code')).toBe('rendered')
+    expect(fileModes(view)).toEqual([])
+    // The same blocks without `summary` are a Markdown file, with the Rendered and Source switch.
+    expect(fileModes({ path: view.path, blocks: view.blocks }).map((m) => m.value)).toEqual(['rendered', 'code'])
   })
 })

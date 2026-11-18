@@ -845,3 +845,21 @@ export const WorkflowFilesTablet: Story = {
     await expect(within(viewer).getByRole('radio', { name: 'Rendered' })).toBeChecked()
   },
 }
+
+export const HookFilesTablet: Story = {
+  name: 'T35: a hook’s files on a tablet, its tests summed up under the tree',
+  args: { data: toolkitStates.hookFilesTablet.data, ui: toolkitStates.hookFilesTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the viewer under the tree, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the tablet's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getByText('The hook. Git runs it on every commit. 142 lines.')).toBeVisible()
+    await expect(within(tree).getByRole('treeitem', { name: /^test-commit-msg/, selected: true })).toBeVisible()
+    // The tests are summed up rendered, with no Rendered and Source switch.
+    const viewer = within(item).getByRole('region', { name: 'test-commit-msg' })
+    await expect(within(viewer).getByRole('heading', { name: 'test-commit-msg' })).toBeVisible()
+    await expect(within(viewer).queryByRole('radio', { name: 'Source' })).toBeNull()
+  },
+}
