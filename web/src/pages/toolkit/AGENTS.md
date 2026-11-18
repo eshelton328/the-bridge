@@ -145,6 +145,8 @@ what each file of a page folder is for.
   the full header the steps start 14 under the trigger, where T10's start
   12 under it. On the phone (M12, `skillHowItWorksPhone`, T10's data) the tab
   is the same column (`ToolkitHowColumn layout="phone"`), with the title in
-  the smaller title style and the rows 10 apart. Only the selected tab's panel is drawn. Later frames of the open item fill the
+  the smaller title style and the rows 10 apart. A rule on the phone (M39,
+  `ruleHowItWorksPhone`, T36's data) keeps M19's header over the same column,
+  whose rows are then 12 apart, as the header's are. Only the selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

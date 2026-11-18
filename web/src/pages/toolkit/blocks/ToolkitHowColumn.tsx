@@ -4,7 +4,7 @@
 // between them; then the shorter path a chat answer takes (the library's `ChatPath`) or what happens elsewhere instead
 // (one line in a notice Panel). It takes any list of steps, so a rule's, an agent's or a hook's draw the same way.
 // On the phone (M12 461:570 to 501:142) the rows are 10 apart. Under the item's full header (T36, a rule) it starts
-// where the tabs' panel puts it. Props only.
+// where the tabs' panel puts it; on the phone under that header (M39, a rule) the rows are 12 apart. Props only.
 import { ArrowDownIcon, ChatPath, Panel } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -22,6 +22,9 @@ const column = css({ display: 'flex', flexDirection: 'column', gap: '12', mt: '-
 const headedColumn = css({ display: 'flex', flexDirection: 'column', gap: '12' })
 // M12 461:561 to 501:142: on the phone the rows are 10 apart, and the trigger starts 10 under the tabs, so 6 higher.
 const phoneColumn = css({ display: 'flex', flexDirection: 'column', gap: '10', mt: '-6' })
+// M39 495:3048 to 495:3050: on the phone under the item's full header the rows are 12 apart, as the header's are, and
+// the trigger starts 12 under the tabs: the tabs' panel puts it 16 under them, so 4 higher.
+const phoneHeadedColumn = css({ display: 'flex', flexDirection: 'column', gap: '12', mt: '-4' })
 // T10 461:265: a green-bordered box across the item, its text 11 in and 7 above and below, with no icon. The notice
 // Panel pads it 10/12, so it is 38 high against 31 (LIBRARY_GAPS.md, How it works trigger); the steps start 4 under it,
 // not 12, 2 above Figma's place, so the 1 px each card and its arrow add (ToolkitHowStep) ends the column at Figma's.
@@ -32,7 +35,8 @@ const triggerText = css({ textStyle: 'small', color: 'status.done.fg' })
 // 1 px above Figma's.
 const steps = css({ display: 'flex', flexDirection: 'column', listStyle: 'none', m: '0', p: '0', mt: '-8' })
 // T36 495:1938 and T37 495:2336: under the item's full header the steps start 14 under the trigger, not 12; the
-// trigger is 7 px taller, so 6 higher (not 8) puts them 1 px above Figma's.
+// trigger is 7 px taller, so 6 higher (not 8) puts them 1 px above Figma's. M39 495:3050: on the phone they start 12
+// under it, in a column whose rows are 12 apart, so the same 6 puts them in Figma's place.
 const headedSteps = css({ display: 'flex', flexDirection: 'column', listStyle: 'none', m: '0', p: '0', mt: '-6' })
 const down = css({ display: 'flex', justifyContent: 'center', py: '2', color: 'fg.muted' })
 const elsewhereLine = css({ display: 'flex', alignItems: 'center', gap: '8' })
@@ -41,13 +45,19 @@ const elsewhereText = css({ textStyle: 'small', color: 'fg.muted' })
 
 export type ToolkitHowColumnProps = {
   how: How
-  /** A tablet (T10) puts the rows 12 apart, the phone (M12) 10. */
+  /** A tablet (T10) puts the rows 12 apart, the phone (M12) 10, or 12 under the item's full header (M39). */
   layout?: Exclude<Viewport, 'desktop'> | undefined
 }
 
+const columnOf = {
+  tablet: { named: column, headed: headedColumn },
+  phone: { named: phoneColumn, headed: phoneHeadedColumn },
+}
+
 export function ToolkitHowColumn({ how, layout = 'tablet' }: ToolkitHowColumnProps) {
+  const named = how.named === true
   return (
-    <div className={layout === 'phone' ? phoneColumn : how.named === true ? column : headedColumn}>
+    <div className={columnOf[layout][named ? 'named' : 'headed']}>
       {how.trigger === undefined ? null : (
         <div data-figma="trigger">
           <Panel variant="notice" tone="done">
@@ -55,11 +65,7 @@ export function ToolkitHowColumn({ how, layout = 'tablet' }: ToolkitHowColumnPro
           </Panel>
         </div>
       )}
-      <ol
-        className={layout === 'tablet' && how.named !== true ? headedSteps : steps}
-        aria-label="Steps"
-        data-figma="steps"
-      >
+      <ol className={named ? steps : headedSteps} aria-label="Steps" data-figma="steps">
         {how.steps.map((step, i) => (
           <Fragment key={step.number}>
             {i === 0 ? null : (

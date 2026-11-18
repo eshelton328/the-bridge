@@ -30,6 +30,7 @@ import { skillHowItWorksPhone } from './skillHowItWorksPhone.ts'
 import { ruleHowItWorksTablet } from './ruleHowItWorksTablet.ts'
 import { agentHowItWorksTablet } from './agentHowItWorksTablet.ts'
 import { hookHowItWorksTablet } from './hookHowItWorksTablet.ts'
+import { ruleHowItWorksPhone } from './ruleHowItWorksPhone.ts'
 
 export const toolkitStates = {
   toolkitList,
@@ -61,4 +62,5 @@ export const toolkitStates = {
   ruleHowItWorksTablet,
   agentHowItWorksTablet,
   hookHowItWorksTablet,
+  ruleHowItWorksPhone,
 }
