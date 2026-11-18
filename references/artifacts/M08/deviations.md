@@ -1,15 +1,16 @@
 # M08 deviations
 
-What still differs from Figma after the review fix round of the
-fidelity loop (`pnpm fidelity artifacts M08`, 2026-11-18, against the
-installed library 1.0.0-beta.27), each with its reason. That round
-changed only the library under the scrim (the rows' side padding, the
-group gap and the Sort and Filter icons); the drawer is unchanged. The library gaps are in
-`web/src/pages/artifacts/LIBRARY_GAPS.md`. M8 is M1's library on the
-phone with the More drawer open over the tab bar (`ui.moreOpen`). The
-drawer is the shared block `web/src/blocks/MoreDrawer.tsx`, on the
-library's `MoreDrawer`, as in Toolkit M4; this page does not change it.
-The library under the scrim has M1's differences (`../M01/deviations.md`).
+What still differs from Figma after the review fix round of the fidelity
+loop (`pnpm fidelity artifacts M08`, 2026-11-18, against the installed
+library 1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each
+with its reason. That round changed only the library under the scrim (the
+rows' side padding, the group gap and the Sort and Filter icons); the
+drawer is unchanged. The library gaps are in
+`web/src/pages/artifacts/LIBRARY_GAPS.md`. M8 is M1's library on the phone
+with the More drawer open over the tab bar (`ui.moreOpen`). The drawer is
+the shared block `web/src/blocks/MoreDrawer.tsx`, on the library's
+`MoreDrawer`, as in Toolkit M4; this page does not change it. The library
+under the scrim has M1's differences (`../M01/deviations.md`).
 
 ## Checks
 
@@ -63,16 +64,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Deviations: the library under the scrim (as M1)
 
-- **Source chips.** `filter · chips` w +4.2, h +2: `FilterChips
-  size="compact"` puts the chips 6 apart with 8 px sides, Figma 5 and 9.
-  Library gap "Compact chip spacing".
-- **Rows.** The row previews are smaller than Figma's 76 × 48, drawn in
-  the library's colours, and the rows are 62 high and 6 apart against
-  66 and 2. Library gaps "List row thumbnail", "Thumbnail colour" and
-  "List row padding and age".
-- **New badge.** New is a 57 × 20 pill with a 12 px outline spark
-  against Figma's 48 × 16 pill with a filled four-point star (415:99,
-  415:100); the fill is Figma's teal. Library gap "New badge".
+- **Source chips.** `filter · chips` w +4.2, h +2: the chips are 6 apart
+  against Figma's 5 (d-072), with Figma's 9 px sides. Library gap
+  "Compact chip spacing".
+- **Rows.** As M1: the previews are `Thumbnail size="md"`, 76 × 48 as
+  Figma's, but drawn as D2's row drawing scaled up, with window dots and
+  smaller cells (library gap "Phone row preview drawing"), and the rows
+  are 70 high against Figma's 66, at Figma's 68 px pitch (library gap
+  "List row padding and age"). New is `Badge size="xs"` with
+  `SparkFilledIcon`, 51.3 × 16 against Figma's 48 × 16, as its filled star
+  is 12 px against 9 (415:99, 415:100; library gap "New badge"). The
+  previews' colours differ as in M1 (library gap "Thumbnail colour").
 - **Device chrome.** The status bar (9:41), the home indicator
   (415:312) and the screen corners are not drawn (d-089); the checks
   measure the render 38 px shorter, under Figma's status bar (d-102).

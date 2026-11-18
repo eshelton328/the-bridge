@@ -2,12 +2,12 @@
 
 What still differs from Figma after fix round 3 of the fidelity loop
 (`pnpm fidelity artifacts M05`, 2026-11-17, against the installed library
-1.0.0-beta.27), each with its reason. A run on 2026-11-18, after the
-phone rows' side padding and the tool icons changed, still passes all
-three checks. The library gaps are in
-`web/src/pages/artifacts/LIBRARY_GAPS.md`. M5 is M1's library on the
-phone with "eval" in the search (`searchPhone`): `LibraryPhone` drops the
-found status and shows one `RowGroup` of the matches (no count), and each
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+reason. A run on 2026-11-18, after the phone rows' side padding and the
+tool icons changed, still passes all three checks. The library gaps are in
+`web/src/pages/artifacts/LIBRARY_GAPS.md`. M5 is M1's library on the phone
+with "eval" in the search (`searchPhone`): `LibraryPhone` drops the found
+status and shows one `RowGroup` of the matches (no count), and each
 `ArtifactRow` marks the match in its title or shows the line that matched
 under its meta line, the match marked (`Highlight`).
 
@@ -33,24 +33,23 @@ under its meta line, the match marked (`Highlight`).
   hides its tab bar while the keyboard is open because its frame has no
   tab bar layer; M5 has one, so the render keeps it, and the tab bar's
   text and items pass the checks.
-- **Row previews.** As M1: each preview is 44 × 27.5 against Figma's
-  76 × 48, so the title and meta start left of Figma's. The three
-  previews are charts, as Figma's (408:77, 408:298, 408:330), drawn by
-  `Thumbnail shape="compact"` with brighter bars. Library gaps "List row
-  thumbnail" and "Thumbnail colour".
-- **Row height and New.** As M1: the rows are shorter than Figma's 66
-  and 78, and New is a 20 px badge under the age against Figma's 16 px
-  badge at the end of the meta line (408:99). The matches sit 0 apart
-  against Figma's 2, so each row starts within 4 px of Figma's. Library
-  gap "List row padding and age". The row's content sits 4 in from the
-  row's sides, as Figma's (M1).
-- **New badge.** New's spark is a 12 px outline (`SparkIcon`) where
-  Figma draws a filled four-point star of 9 px (408:100), and the badge
-  is 57 × 20 against 48 × 16 (408:99); the fill is Figma's teal. The
-  library has no filled spark and no 16 px badge. Library gap "New
-  badge".
-- **Source chips.** As M1: 6 apart with 8 px sides against Figma's 5 and
-  9; within the tolerance here. Library gap "Compact chip spacing".
+- **Row previews.** As M1: each preview is `Thumbnail size="md"`,
+  76 × 48 as Figma's, drawn as D2's row drawing scaled up (library gap
+  "Phone row preview drawing"). The three previews are charts, as
+  Figma's (408:77, 408:298, 408:330), with brighter bars (library gap
+  "Thumbnail colour").
+- **Row height and New.** As M1: the rows are 70 and 82 high against
+  Figma's 66 and 78, and New sits under the age against Figma's badge at
+  the end of the meta line (408:99). Each match after the first starts
+  2 up, so each starts within 2 px of Figma's. Library gap "List row
+  padding and age". The row's content sits 4 in from the row's sides, as
+  Figma's (M1).
+- **New badge.** As M1: `Badge size="xs"` with `SparkFilledIcon`, 16 high
+  in Figma's teal, 51.3 wide against 48, as its star is 12 px against 9
+  (408:99, 408:100). Library gap "New badge".
+- **Source chips.** As M1: 6 apart against Figma's 5 (d-072), with
+  Figma's 9 px sides; within the tolerance here. Library gap "Compact
+  chip spacing".
 - **Clear button.** The search's clear button (408:288) is `SearchField`'s
   thin grey `CloseIcon`; Figma draws it bold and bright white in the
   focused field. Library gap "Search clear button".

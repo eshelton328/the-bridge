@@ -7,6 +7,9 @@ reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. T1 is D1's library on the
 iPad mini; most differences are D1's (`../D01/deviations.md`).
 
+Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
+artifacts`): the text, position and rules results did not change.
+
 ## Checks
 
 - Text: passes. Hono server spike's description (405:220) shows whole,
@@ -36,8 +39,10 @@ iPad mini; most differences are D1's (`../D01/deviations.md`).
   free width as in Figma, is narrower. Library gap "Sort and Filter
   button widths".
 - **Source chips.** `filter · chips` w +4.2. `FilterChips size="compact"`
-  puts the chips 6 apart with 8 px sides; Figma has 5 and 9. Library gap
-  "Compact chip spacing".
+  draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
+  chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
+  tie takes the larger (d-072), so no library change closes it. Library
+  gap "Compact chip spacing".
 - **Grid or List.** `view · Grid or List` x +6: `ViewSwitch iconOnly
   size="lg"` is 68 wide against Figma's 72 (405:152), and with the page's
   20 px sides its right edge is at 736 against Figma's 734. Library gap

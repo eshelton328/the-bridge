@@ -1,28 +1,32 @@
 # T04 deviations
 
-What still differs from Figma after round 2 of the fidelity loop
-(`pnpm fidelity artifacts T04`, 2026-11-17, against the installed
-library 1.0.0-beta.19), each with its reason. The library gaps are in
-`web/src/pages/artifacts/LIBRARY_GAPS.md`. T4 is D7's discussion
-(`../D07/deviations.md`) on the iPad mini, as a page of its own in the
-place of T2's artifact page, with no tab bar, as the Inbox's T17. All
-three checks render the page 29 px shorter, below Figma's status bar
-(d-102), and the position check adds 29 to each render y.
+What still differs from Figma after round 2 of the fidelity loop (`pnpm
+fidelity artifacts T04`, 2026-11-17, against the installed library
+1.0.0-beta.19; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+T4 is D7's discussion (`../D07/deviations.md`) on the iPad mini, as a page
+of its own in the place of T2's artifact page, with no tab bar, as the
+Inbox's T17. All three checks render the page 29 px shorter, below Figma's
+status bar (d-102), and the position check adds 29 to each render y.
 
 ## Checks
 
 - Text: passes. Nothing is missing, hidden or extra, with no exception.
-- Position: 8 of 12 layers pass (`nav`, `452:3837` (Open in workspace),
+- Position: 9 of 12 layers pass (`nav`, `452:3837` (Open in workspace),
   `artifact · discussing`, `pill · New`, `chevron · open artifact`,
-  `guard`, `suggestions` and `composer · discussion`). Four fail; see
+  `guard`, `suggestions`, `model and context` and
+  `composer · discussion`). Three fail; see
   below.
 - Rules: pass.
 
 ## Deviations
 
-- **Model and context.** `model and context` w +6.2: `ModelChip` pads
-  its sides more than Figma's 83 px picker, so the row is 226 wide
-  against 220, as in D7. Library gap "Model chip width".
+- **Model and context.** Passes (218 × 26 against 220 × 22): since
+  library #142 `ModelChip` is 82.2 wide against Figma's 83 and its chevron
+  takes the label's tone, and "context" is `smallXs` (Regular 11/16),
+  38 wide as Figma's 11 px label (454:329), in place of the 46 px wide
+  `monoSm`. The chip is 26 high against 22 and the label's line 16
+  against 14, on the 4 px grid (d-072). Library gap "Model chip width".
 - **Discussion area.** `discussion` h -121: Figma's `discussion` frame
   (452:3793) holds the reply box too, down to y 1125. The page keeps the
   reply box in the shared `DetailFrame`'s sticky footer, so it stays at

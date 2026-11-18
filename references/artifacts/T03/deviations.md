@@ -8,6 +8,9 @@ iPad mini with the Filter menu open as a sheet over the tab bar; the
 library under the scrim has T1's differences (`../T01/deviations.md`),
 and the sheet's rows have D3's (`../D03/deviations.md`).
 
+Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
+artifacts`): the text, position and rules results did not change.
+
 ## Checks
 
 - Text: passes, as T1: Hono server spike's description (407:1376) shows
@@ -56,9 +59,11 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
   wider and the search narrower. Filter shows no dot while the sheet is
   open, as Figma draws it (407:1303); it shows the dot once the sheet
   closes on checked boxes. Library gap "Sort and Filter button widths".
-- **Source chips.** `filter · chips` w +4.2, as T1: the chips are 6 apart
-  with 8 px sides against Figma's 5 and 9. Library gap "Compact chip
-  spacing".
+- **Source chips.** `filter · chips` w +4.2, as T1. `FilterChips
+  size="compact"` draws Figma's 9 px sides (8 px padding in a 1 px border)
+  and puts the chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px
+  grid and the tie takes the larger (d-072), so no library change closes
+  it. Library gap "Compact chip spacing".
 - **Grid or List and cards.** `view · Grid or List` x +6, as T1: the
   68 px `ViewSwitch` (Figma 72) ends at the page's 20 px side. The cards
   are 352 wide, 20 in and 12 apart (Figma 349, 22 and 14, d-100), so the

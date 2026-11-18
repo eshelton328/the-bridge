@@ -2,7 +2,8 @@
 
 What still differs from Figma after the fidelity loop
 (`pnpm fidelity artifacts D09`, 2026-11-17, against the installed
-library 1.0.0-beta.15, the version this branch pins), each with its
+library 1.0.0-beta.15, the version this branch pins;
+checked again 2026-11-18 with 1.0.0-beta.36), each with its
 reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -11,11 +12,12 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   preview's chart has no median line or label (see Preview chart below).
   `Toolkit` is an `extra` exception (`exceptions.json`). The context
   meter's `49%` (454:366) matches with no exception, as in D07 and D08.
-- Position: 22 of 35 layers pass, among them the artifact bar,
+- Position: 23 of 35 layers pass, among them the artifact bar,
   `pill · New` (which says Updated), the title block, preview, "Made
   in", both Open in workspace buttons (`452:3634`, `452:3644`), the
   panel's `header`, `button · x`, `guard`, `message · you` and
-  `composer · discussion`. Eleven fail, the same layers as in D08; each
+  `model and context` and `composer · discussion`. Twelve fail, the same
+  layers as in D08; each
   is listed below.
   The shared navigation's items pass too: `rail · Inbox`,
   `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
@@ -58,8 +60,12 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   w -16.8, `chip · updated 12m ago` x -10.8, as in D08: the project chip
   is a read-only `MetaChip` with no chevron. Library gap "Project chip
   menu".
-- **Model and context.** `model and context` w +10: `ModelChip` pads its
-  sides more than Figma's 83 px picker. Library gap "Model chip width".
+- **Model and context.** Passes (218 × 26 against 220 × 22): since
+  library #142 `ModelChip` is 82.2 wide against Figma's 83 and its chevron
+  takes the label's tone, and "context" is `smallXs` (Regular 11/16),
+  38 wide as Figma's 11 px label (454:329), in place of the 46 px wide
+  `monoSm`. The chip is 26 high against 22 and the label's line 16
+  against 14, on the 4 px grid (d-072). Library gap "Model chip width".
 - **Discussion area.** `discussion` h -7, as in D08: `Composer` is a few
   px taller than Figma's 75 px reply box. It has no clip button (library
   gap "Attach in the discussion reply box") and no caret or violet focus

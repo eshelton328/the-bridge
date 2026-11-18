@@ -2,7 +2,8 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D04`, 2026-11-17, against the installed
-library 1.0.0-beta.19), each with its reason. The library gaps are in
+library 1.0.0-beta.19; checked again 2026-11-18 with 1.0.0-beta.36),
+each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
@@ -11,32 +12,30 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   (`ViewSwitch iconOnly`, library #121). Every string is visible. Each
   "eval" mark counts in its title, description or link. `Toolkit` is an
   `extra` exception (`exceptions.json`).
-- Position: 10 of 21 layers pass (`header`, `found status`,
+- Position: 15 of 21 layers pass (`header`, `found status`,
   `button · Add a link`, `list tools`, `view · Grid or List`,
-  `group · matches`). Nine fail;
-  each is listed below.
+  `group · matches`, `result list`, the three artifact rows and `hint`).
+  Six fail (`rail · Toolkit`, `rail · More`, `filter · chips`, `search`,
+  `button · Sort`, `button · Filter`); each is listed below.
   The shared navigation's items pass too: `rail · Inbox`,
   `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass.
 
 ## Deviations
 
-- **Row previews and row heights.** `artifact row · Skill eval pass rates`
-  h -14, `artifact row · readme cold-reader run` y -12, h -14,
-  `artifact row · Writer cross-family round x1` y -26, h -14,
-  `result list` h -42 and `hint` y -40. Figma's previews are 128 × 72;
-  no size token is 128, so each preview is a 44 px wide `Thumbnail
-  shape="wide"` (`control.xl`, as D2's row previews), 24.75 high. The
-  text column (60 px) then sets the row's height: each row is 84 high
-  against Figma's 98, so each row after the first starts 14 px higher than
-  the one before it, and the hint follows them up. The text starts about
-  91 px further left than Figma's (x 162 against 253: 16 px after a
-  128 px preview there, 10 after 44 here). Library gap "List row thumbnail".
+- **Row previews and row heights.** The previews are `Thumbnail
+  size="lg" shape="wide"`, 128 × 72 as Figma's (403:8217, library
+  1.0.0-beta.36), so the text starts where Figma's does. Each row is
+  96 high against Figma's 98 (`ListRow` pads 10 inside the box's and its
+  own 1 px borders, Figma 12 inside one); the rows are 8 apart against
+  Figma's 6, so they keep Figma's 104 px pitch and the three rows,
+  `result list` (h -2) and `hint` pass. Library gap "List row padding
+  and age".
 - **Row layout.** The match place, the age and Open sit at the top of the
   row, on the title line; Figma centres them down the row. The row's box
   (border, radius and pane fill) is drawn with the Card's tokens around a
-  `ListRow`, as `ListRow` has no border, and its content is 12 in (Figma 13).
-  Library gap "List row padding and age".
+  `ListRow`, as `ListRow` has no border, and its content is 12 in (Figma
+  13). Library gap "List row padding and age".
 - **New dot.** The cyan dot of the new Skill eval pass rates sits at the
   start of the trailing items, before "in title"; Figma puts it 8 px after
   the title. `ListRow` takes the title as text only. Library gap "New dot in
@@ -55,8 +54,11 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
   (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
   bold and bright white. `SearchField` sets the clear button's colour and
   takes no tone for it. Library gap "Search clear button".
-- **Source chips.** `filter · chips` w +6.8: the chips are 6 apart with
-  8 px sides against Figma's 5 and 9. Library gap "Compact chip spacing".
+- **Source chips.** `filter · chips` w +6.8. `FilterChips size="compact"`
+  draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
+  chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
+  tie takes the larger (d-072), so no library change closes it. Library
+  gap "Compact chip spacing".
 - **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
   not amber. `Thumbnail` draws one colour set per kind. Library gap
   "Thumbnail colour".
@@ -74,9 +76,10 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 
 Each value with no token is recorded for the library in
 `LIBRARY_GAPS.md` and drawn with the library's part until it lands: the
-row preview 128 (Figma's, on the 4 px grid; drawn 44, `control.xl`) and
+row preview 128 (Figma's, `Thumbnail size="lg"` since beta.36) and
 the match pill with 8 px sides, round, 20 high (Figma's sides; 21 on the
-4 px grid is 20; drawn `Badge variant="tag"`). The rows are 6 apart and
+4 px grid is 20; drawn `Badge variant="tag"`). The rows are 8 apart (Figma
+6, around 2 px shorter rows, so the pitch stays Figma's 104) and
 the groups, rows and hint 12 apart (Figma's, spacing `6` and `12`); the
 match place, age and Open are 16 apart (Figma's, spacing `16`). The marks
 take `Highlight`'s default `strong` variant (cyan, semibold, underlined,

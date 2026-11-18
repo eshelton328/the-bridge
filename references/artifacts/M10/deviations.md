@@ -1,9 +1,9 @@
 # M10 deviations
 
-What still differs from Figma after the review fix round of the
-fidelity loop (`pnpm fidelity artifacts M10`, 2026-11-18, against the
-installed
-library 1.0.0-beta.27), each with its reason. The library gaps are in
+What still differs from Figma after the review fix round of the fidelity
+loop (`pnpm fidelity artifacts M10`, 2026-11-18, against the installed
+library 1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each
+with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M10 is D8's proposed update
 (`../D08/deviations.md`) on M9's discussion page (`../M09/deviations.md`),
 as T5 is on T4's (`../T05/deviations.md`): the same nav, card and reply
@@ -14,9 +14,9 @@ status bar (d-102), and the position check adds 38 to each render y.
 ## Checks
 
 - Text: passes. Nothing is missing, hidden or extra, with no exception.
-- Position: 5 of 13 layers pass (`nav`, `452:4181` (Open in workspace),
-  `pill · New`, `chevron · open artifact` and `composer · discussion`).
-  Eight fail: `artifact · discussing`, `model and context`, `guard`,
+- Position: 6 of 13 layers pass (`nav`, `452:4181` (Open in workspace),
+  `pill · New`, `chevron · open artifact`, `model and context` and
+  `composer · discussion`). Seven fail: `artifact · discussing`, `guard`,
   `discussion`, `message · you`, `message · discussion`,
   `proposal · UPDATE THIS ARTIFACT` and `diff · CHART`; see below.
 - Rules: pass. The entries fit between the card and the reply box with
@@ -35,9 +35,12 @@ status bar (d-102), and the position check adds 38 to each render y.
   SemiBold 14 in an 18 px line), as in M9. The library has no SemiBold
   14 text style: `label` is Medium 14 and `paneTitle` SemiBold 15.
   Library gap "Discussed artifact title size".
-- **Model and context.** `model and context` w +6.2 (226 against 220):
-  `ModelChip` pads its sides more than Figma's 83 px picker, as in D7,
-  T4 and M9. Library gap "Model chip width".
+- **Model and context.** Passes (218 × 26 against 220 × 22): the row
+  hugs its width in the card, `ModelChip` is 82.2 wide against Figma's 83
+  (library #142, its chevron in the label's tone), and "context" is
+  `smallXs`, 38 wide as Figma's 11 px label, in place of `monoSm`. The
+  chip stays 26 high against Figma's 22: `control.xs` (24) is not for
+  phone touch targets. Library gap "Model chip width".
 - **Discussion area.** `discussion` y +9, h -112: the area starts 9
   lower because the card above is 9 taller. Figma's `discussion` frame
   (452:4130) holds the reply box too, down to y 811. The page keeps the
