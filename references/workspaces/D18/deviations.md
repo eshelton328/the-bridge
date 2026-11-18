@@ -14,7 +14,7 @@ subtask started under its reply (`subtaskRunning`).
 - Text: pass. Every Figma string shows, `layout notes`, `4%` and
   `Subtask layout notes started · returns its result here` included.
   `Artifacts` and `Toolkit` (rail, d-105) are excepted as on D01 to D17.
-- Position: 22 of 26 layers pass; `417:1289`, `417:1324`, `417:1375` and
+- Position: 18 of 22 layers pass; `417:1289`, `417:1324`, `417:1375` and
   `417:1388` fail. The subtask's row (`417:1418`), the chat header
   (`417:1342`) and Erik's message (`417:1370`) pass.
 - Rules: pass.
