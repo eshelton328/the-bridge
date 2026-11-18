@@ -11,6 +11,12 @@ D09, D10, D13, D14 and D33 give the same results as before D31 (each
 report's text, position and rule results are unchanged). The frame has no
 `exceptions.json`.
 
+The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
+2026-11-18) used the installed library 1.0.0-beta.39 (#148, #151).
+Text fails, 30 of 43 position layers pass and the rules fail: the same
+results, failing keys and findings as the run on beta.39 before this
+change, so the checks below still hold.
+
 ## Checks
 
 - Text: fail. All Figma strings are in the render, nothing extra shows,
@@ -55,20 +61,20 @@ report's text, position and rule results are unchanged). The frame has no
 - **Kind chips.** The chip row is wider than the list pane and scrolls
   sideways; Figma cuts the Workflows chip at the same edge, so `Workflows`
   and `2` are not visible in either.
-- **Graph's open item.** skill-eval-round in the middle of the graph is
-  180 × 32 with its name in mono, as the items at the sides are, against
-  Figma's 150 × 40 with a larger icon and its name in the label style; its
-  lines start and end 15 px further out. `MapGraph` takes one size for
-  every node (gap: Links graph).
-- **Line ends.** Each line of the graph ends in a small dot; Figma's lines
-  end at the node's edge (gap: Links graph).
-- **Node borders.** Each item at a side of the graph and at the start of
-  each link row has a border in the full colour of its kind (cyan for a
-  skill, violet for an agent, amber for a rule, green for a workflow).
-  Figma draws the same colour at about 60 % alpha in the graph and 45 %
-  in the rows, so its borders look muted; the icons are full colour in
-  both. `MapNode` has no state for a muted kind border and no token has
-  a kind colour at part alpha (gap: Links graph, Links panel rows).
+- **Graph's open item.** skill-eval-round in the middle of the graph has
+  its name in the label style, as Figma's, since library beta.39
+  (`labelStyle: 'label'`, #151), but is 180 × 32, as the items at the
+  sides are, against Figma's 150 × 40 with a 15 px icon; it is centred
+  where Figma centres it, so its lines start and end 15 px further out.
+  beta.39 gives a node its own `size`, but four tests of
+  `linksView.test.ts` assert the open item at 180 × 32, and a change to
+  those lines waits for Erik (gap: Links graph).
+- **Node borders.** Since library beta.39 (#151) each item at a side of
+  the graph has its kind's colour at 60 % alpha (`MapGraph
+  nodeTone="muted"`, `kindBorder.*`) and each link row's node at 45 %
+  (`MapNode tone="faint"`, `kindBorderFaint.*`), with the icons in the
+  full kind colour, as in Figma. The icons are 16 px against Figma's 13:
+  `MapNode` takes no icon size (gap: Links graph, Links panel rows).
 - **Link nodes.** The item at the start of each link row is a `MapNode`
   28 px high against Figma's 29 and a few px wider, and the file and line
   at the row's end is a plain mono button in the accent colour (gap: Links
