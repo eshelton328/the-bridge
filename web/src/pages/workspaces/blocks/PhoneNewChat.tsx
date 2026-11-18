@@ -33,10 +33,6 @@ const bar = css({ display: 'flex', flexDirection: 'column', gap: '8', px: '16', 
 // The summary is as wide as its text, as Figma's (147:9).
 const summary = css({ alignSelf: 'flex-start', textStyle: 'monoSm', color: 'fg.subtle', m: '0' })
 const start = css({ w: '[100%]' })
-// The start bar ends at the screen's safe area and spans the screen. `ScrollFrame`'s footer pads 4 round its content
-// for a focus ring and reaches 4 past the frame on each side and below, which would make the screen 4 px wider and
-// scroll it; Start chat draws its focus inside the bar's padding, so the footer keeps only its top padding.
-const frame = css({ '& > .scroll-frame__footer': { px: '0', mx: '0', pb: '0', mb: '0' } })
 
 export type PhoneNewChatProps = {
   form: NewChatForm
@@ -79,7 +75,6 @@ export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen
   return (
     <section aria-label={form.title} className={column}>
       <ScrollFrame
-        className={frame}
         bodyClassName={body}
         header={
           <div className={header} data-figma={layers?.header}>

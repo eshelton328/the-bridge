@@ -2,13 +2,14 @@
 
 What still differs from Figma M8 · Folders (D4's folders and folder picker
 in a sheet over drift check on the phone, `phoneFolders`), after the last
-fidelity run (`pnpm fidelity workspaces M08`, 2026-11-17, library
-1.0.0-beta.27), each with its reason. The library gaps are in
+fidelity run (`pnpm fidelity workspaces M08`, 2026-11-18, library
+1.0.0-beta.30), each with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M3's
 `PhoneChat` with drift check, no ⋯ and the folders chip in place of the
 context label; `PhoneFolders` (`BottomSheet` titled Folders with its
 close button) holds D4's `FolderRows`, a rule, `FolderPickerList
-size="sheet"` and Add ~/the-bridge in a `ScrollFrame` footer, and the
+size="sheet"` and Add ~/the-bridge as the direct child of a `ScrollFrame`
+footer (so its focus ring is drawn inside it, whole), and the
 search has the focus with its caret after "~/the-".
 
 ## Checks
@@ -21,30 +22,31 @@ search has the focus with its caret after "~/the-".
 - Position: fail, 3 of 17 layers pass: the header (`128:671`), the back
   button (`128:673`) and Erik's message (`128:701`). Fourteen fail:
   - `128:695` (the folders chip): w +4.9.
-  - `128:716` (~/omni-brain): y +130.
-  - `128:722` (~/omni): y +129.
-  - `128:730` (Add folder): y +128.
-  - `128:735` (the rule over the picker): y +126.
-  - `128:736` (the picker's title row): y +126, h +6.
-  - `128:747` (the search): y +132.
-  - `128:754`, `128:760`, `128:766` (the recent folders): y +134, +133,
-    +132.
-  - `128:779`, `128:786`, `128:793` (the folders of ~/): y +132, +133,
-    +134.
+  - `128:716` (~/omni-brain): y +134.
+  - `128:722` (~/omni): y +133.
+  - `128:730` (Add folder): y +132.
+  - `128:735` (the rule over the picker): y +130.
+  - `128:736` (the picker's title row): y +130, h +6.
+  - `128:747` (the search): y +136.
+  - `128:754`, `128:760`, `128:766` (the recent folders): y +138, +137,
+    +136.
+  - `128:779`, `128:786`, `128:793` (the folders of ~/): y +136, +137,
+    +138.
   - `128:802` (Add ~/the-bridge): y -16.
 - Rules: pass.
 
 ## Deviations
 
 - **The sheet is shorter and starts much lower (Phone folders sheet),
-  `128:716` y +130, `128:722` y +129, `128:730` y +128, `128:735` y +126,
-  `128:736` y +126, `128:747` y +132, `128:754` y +134, `128:760` y +133,
-  `128:766` y +132, `128:779` y +132, `128:786` y +133, `128:793`
-  y +134.** Figma's sheet is 786 high from y 58, with a 147 px empty space
+  `128:716` y +134, `128:722` y +133, `128:730` y +132, `128:735` y +130,
+  `128:736` y +130, `128:747` y +136, `128:754` y +138, `128:760` y +137,
+  `128:766` y +136, `128:779` y +136, `128:786` y +137, `128:793`
+  y +138.** Figma's sheet is 786 high from y 58, with a 147 px empty space
   over Add. `BottomSheet` is as high as its content and no size token
-  gives Figma's height, so the sheet starts at about y 204: the title row,
-  the folders and the picker sit about 130 px lower, with no empty space
-  over Add, and Erik's message and the header's second row show above the
+  gives Figma's height, so the sheet starts at about y 208: the title row,
+  the folders and the picker sit about 134 px lower, with no empty space
+  over Add (library beta.30's `ScrollFrame` footer, #134, no longer pads
+  4 above Add, so the sheet is 4 px shorter than with beta.28), and Erik's message and the header's second row show above the
   sheet, under the scrim.
 - **The title row is taller (Phone folders sheet).** `BottomSheet`'s title
   row with its close button is 46 high against Figma's 22 row and its
