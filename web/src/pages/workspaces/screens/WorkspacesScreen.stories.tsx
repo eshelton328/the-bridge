@@ -805,3 +805,19 @@ export const TabletNewChat: Story = {
     await expect(within(dialog).getByRole('button', { name: 'WORKSPACE: the-bridge' })).toBeVisible()
   },
 }
+
+export const TabletFork: Story = {
+  name: 'T8: Fork a chat on the tablet, in a dialog over the chat',
+  args: { data: workspacesStates.tabletFork.data, ui: workspacesStates.tabletFork.ui, viewport: 'tablet' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D15's Fork dialog over it; the tablet's menu draws T8's dialog over the tablet's chat in place of M18's sheet. The
+    // dialog renders in a portal, outside the story's canvas, and makes the rest of the page inert.
+    const body = within(document.body)
+    const dialog = await body.findByRole('dialog', { name: 'Fork bridge themes' })
+    await expect(dialog).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Cancel' })).toBeVisible()
+    await expect(within(dialog).getByText('you can rename it later')).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Whole chat' })).toHaveAttribute('aria-pressed', 'true')
+  },
+}
