@@ -2,7 +2,7 @@
 
 What still differs from Figma M9 · Long-press a chat (drift check held in
 the phone's list, `phoneHoldChat`), after the last fidelity run
-(`pnpm fidelity workspaces M09`, 2026-11-17, library 1.0.0-beta.27), each
+(`pnpm fidelity workspaces`, 2026-11-18, library 1.0.0-beta.27), each
 with its reason. The library gaps are in
 `web/src/pages/workspaces/LIBRARY_GAPS.md`. The screen is M1's
 `PhoneWorkspaceList` with `ui.menuFor` on drift check: its row's copy lifts
@@ -58,6 +58,15 @@ highlighted from `ui.menuHighlight`) and Move to workspace closed.
 - **The row ⋯ is lighter (Phone chat row).** As in M01, the 20 px thin
   `MoreIcon` in `fg.muted` against Figma's heavy 18 px dots, on every row
   and on the lifted copy.
+- **The nested row starts 14 to 19 px further left (Phone chat row).**
+  As in M01, Figma's theme tokens
+  row (199:28) pads 44 at the start and puts its
+  parts 8 apart: the ↳ at x 56, the kind mark at 77 and the title at
+  101. `ListRow level={1}` pads 24 inside its 1 px border and puts its
+  parts 10 apart, so the render draws them at 37, 61 and 87. No spacing
+  token is 44, and `ListRow` takes no class and draws the ↳ before
+  `leading`, so the page cannot move it. These parts carry no
+  `data-figma`, so the position check does not measure them.
 - **Header (Phone page header).** As in M01, `PageHeader size="phone"`
   is 40 high against Figma's 44; the header pads 4 under it.
 - **The lifted row is the page's own (Held row lift).** The library has
