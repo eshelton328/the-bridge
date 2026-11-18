@@ -44,8 +44,8 @@ M1 is D1's library on the phone as a list of rows
   "Thumbnail colour".
 - **Row height and New.** The rows are 70 high against Figma's 66
   (406:121): `ListRow padding="phone"` pads 10 above and below inside
-  its 1 px border around the 48 px preview, as d-072 took Figma's 9 to
-  10. `RowGroup`'s `mt: -2` starts each row after the first 2 up, so the
+  its 1 px border around the 48 px preview, where Figma has 8 inside the
+  border (its 9 from the row's edge). `RowGroup`'s `mt: -2` starts each row after the first 2 up, so the
   pitch is Figma's 68 and each row starts where Figma's does. Library gap
   "ListRow phone height 70 vs 66". The age sits on the title line and
   New 4 under it in one column at the row's end. At the sides the row's content sits
