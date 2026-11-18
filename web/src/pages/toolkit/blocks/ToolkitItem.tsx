@@ -60,10 +60,11 @@ const titleLayers: Readonly<Record<string, string>> = {
   'workflows/skill-eval-round.md': '433:1032',
 }
 // On a tablet the SKILL.md title has the same text, so the node id again: writer in T3 (428:567), the rule skills in
-// T17 (487:355).
+// T17 (487:355), the hook commit-msg in T19 (487:980).
 const pageTitleLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '428:567',
   'rules/skills.md': '487:355',
+  'hooks/commit-msg': '487:980',
 }
 // On the phone: writer in M2 (429:303), the rule skills in M19 (487:1264).
 const phoneTitleLayers: Readonly<Record<string, string>> = {

@@ -89,6 +89,39 @@ describe('the open item on a tablet (d-107)', () => {
     expect(box(loads).width).toBe(box(item).width)
     await view.unmount()
   })
+
+  it('opens the hook commit-msg under Back, its four cards in one row and its files above the tab bar (T19)', async () => {
+    await page.viewport(756, 1158)
+    const view = await renderToolkit('hookOpenTablet')
+    onTestFinished(view.unmount)
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    await expect.poll(() => root.querySelector('[data-figma="facts"]')).not.toBeNull()
+    const backRow = root.querySelector('[data-figma="back row"]')
+    const item = root.querySelector('article[aria-label="commit-msg"]')
+    const cards = [...root.querySelectorAll('[data-figma^="fact · "]')]
+    const lastFile = root.querySelector('[data-figma="file · test-commit-msg"]')
+    const tabBar = root.querySelector('[data-figma="tab bar"]')
+    if (backRow === null || item === null || lastFile === null || tabBar === null) {
+      throw new Error('no back row, item, file or tab bar')
+    }
+    expect(box(backRow).bottom).toBeLessThanOrEqual(box(item).top)
+    // The four When it runs cards share one row and one height, as T19's 170 × 109 cards (487:1130 to 487:1156), and
+    // none is taller than Figma's by a line: each value and caption keeps Figma's lines.
+    expect(cards).toHaveLength(4)
+    const [first] = cards
+    if (first === undefined) throw new Error('no card')
+    for (const card of cards) {
+      expect(box(card).top).toBe(box(first).top)
+      expect(box(card).height).toBe(box(first).height)
+    }
+    expect(box(first).height).toBeLessThan(109 + 4)
+    // The hook's last file line ends above the tab bar, so the item needs no scroll to show it (487:1214).
+    expect(box(lastFile).bottom).toBeLessThanOrEqual(box(tabBar).top)
+    await view.unmount()
+  })
 })
 
 describe('the open item on the phone (d-107)', () => {

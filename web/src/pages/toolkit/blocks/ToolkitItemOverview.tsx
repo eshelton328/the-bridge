@@ -26,6 +26,10 @@ const phoneOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' 
 // space token has 14, and the Panel pads the box 12 where Figma has 10, so it is 4 px taller. 12 apart keeps each row
 // within 2 px of Figma's (LIBRARY_GAPS.md, Tablet item spacing).
 const ruleTabletOverview = css({ display: 'flex', flexDirection: 'column', gap: '12' })
+// T19: a hook on a tablet has its description (487:1126), when it runs (487:1127) and the code (487:1164) 14 apart too,
+// so they are 12 apart as T17's. The files (487:1207) are 16 under the code box, which CodeLines draws 6 px shorter
+// than Figma's (LIBRARY_GAPS.md, File preview): 24 under it (12 more than the rows' 12) keeps them within 1 px.
+const sideAfterCode = css({ pt: '12' })
 // M19: a rule on the phone has its description (487:1403), the load box (487:1404) and the file (487:1410) 12 apart.
 // The tabs' list is 36 high (Figma 32) and the Panel makes the box 58 high (Figma 56), so at 12 apart the file runs
 // 5 px low and its last line (487:1427, which Figma ends 1 px over the tab bar) goes under the tab bar. 8 apart keeps
@@ -60,10 +64,12 @@ const descriptionLayers: Readonly<Record<string, string>> = {
   'hooks/commit-msg': '433:1537',
   'workflows/skill-eval-round.md': '433:1033',
 }
-// T3: the description of writer on a tablet (487:78); T17: the rule skills's (487:501).
+// T3: the description of writer on a tablet (487:78); T17: the rule skills's (487:501); T19: the hook commit-msg's
+// (487:1126).
 const pageDescriptionLayers: Readonly<Record<string, string>> = {
   'skills/writer/': '487:78',
   'rules/skills.md': '487:501',
+  'hooks/commit-msg': '487:1126',
 }
 // M2: the description of writer on the phone (487:142); M19: the rule skills's (487:1403).
 const phoneDescriptionLayers: Readonly<Record<string, string>> = {
@@ -115,7 +121,7 @@ export function ToolkitItemOverview({
           ? detail.loads === undefined
             ? phoneOverview
             : rulePhoneOverview
-          : layout === 'tablet' && detail.loads !== undefined
+          : layout === 'tablet' && (detail.loads !== undefined || kind === 'hook')
             ? ruleTabletOverview
             : overview
       }
@@ -137,7 +143,7 @@ export function ToolkitItemOverview({
         </div>
       )}
       {detail.runs === undefined ? null : (
-        <ToolkitAgentRuns runs={detail.runs} kind={kind === 'hook' ? 'hook' : 'agent'} />
+        <ToolkitAgentRuns runs={detail.runs} kind={kind === 'hook' ? 'hook' : 'agent'} compact={layout === 'tablet'} />
       )}
       {detail.flow === undefined ? null : (
         <ToolkitWorkflowFlow flow={detail.flow} onOpenFullPage={onOpenFullPage} onOpenItem={onOpenItem} />
@@ -152,7 +158,11 @@ export function ToolkitItemOverview({
         />
         {desktop ? sideColumn : null}
       </div>
-      {desktop ? null : sideColumn}
+      {desktop ? null : layout === 'tablet' && kind === 'hook' && sideColumn !== null ? (
+        <div className={sideAfterCode}>{sideColumn}</div>
+      ) : (
+        sideColumn
+      )}
     </div>
   )
 }

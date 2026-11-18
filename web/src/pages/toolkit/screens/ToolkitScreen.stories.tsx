@@ -230,3 +230,22 @@ export const RuleOpenPhone: Story = {
     await expect(within(item).getByRole('region', { name: 'rules/skills.md' })).toBeVisible()
   },
 }
+
+export const HookOpenTablet: Story = {
+  name: 'T19: a hook open on a tablet, in place of the list',
+  args: { data: toolkitStates.hookOpenTablet.data, ui: toolkitStates.hookOpenTablet.ui, viewport: 'tablet' },
+  // Storybook opens at desktop; pick Tablet in the viewport menu to see the hook in place of the list, under Back.
+  // The play test checks what every width shows; src/app/ToolkitStickyBack.test.tsx checks the tablet's Back.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('heading', { level: 2, name: 'commit-msg' })).toBeVisible()
+    await expect(within(item).getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true')
+    await expect(canvas.getByRole('button', { name: 'Discuss' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Show on map' })).toBeVisible()
+    const runs = within(item).getByRole('region', { name: 'When it runs' })
+    await expect(within(runs).getByText('core.hooksPath = toolkit/hooks, set by link.sh')).toBeVisible()
+    await expect(within(item).getByText('bash · 142 lines')).toBeVisible()
+    await expect(within(item).getByText('MAX=72')).toBeVisible()
+    await expect(within(item).getByText('97 lines')).toBeVisible()
+  },
+}
