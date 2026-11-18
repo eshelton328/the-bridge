@@ -8,8 +8,9 @@
 // the list fills the screen on the backdrop, with the page's large title.
 // The rows and counts come from listView (Erik's sort, search, filters and
 // snoozed items over the state's groups); the menus report through
-// onUiChange. On the phone a long-press on a row opens its actions sheet
-// (M6), which snoozes, marks done or dismisses it; a state with
+// onUiChange. On a tablet or phone a tap on a row opens it: the state's
+// item its detail, any other row its own page (R11); a long-press on a row
+// opens its actions sheet (M6), which snoozes, marks done or dismisses it; a state with
 // `ui.actionsFor` shows the sheet at any width. On the phone the chip row
 // scrolls the selected chip into view (M12), and a sort other than the first
 // shows a line under the tools with Reset (M15). Props only.
@@ -88,6 +89,7 @@ function Rows({
   onSelectItem,
   onActions,
   openable,
+  onOpenRow,
   phone,
 }: {
   rows: InboxGroupView['rows']
@@ -95,8 +97,10 @@ function Rows({
   selectedId: string | null
   query: string | undefined
   onSelectItem: ((id: string) => void) | undefined
-  /** The row that opens: the item the state has a detail for. */
+  /** The row that opens its detail: the item the state has a detail for. */
   openable: string | undefined
+  /** Opens another row's own page on a tablet or phone (R11); the desktop has none. */
+  onOpenRow: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
   onActions: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
   phone: boolean
 }) {
@@ -108,11 +112,17 @@ function Rows({
       query={query}
       phone={phone}
       onSelect={
-        onSelectItem === undefined || row.id !== openable
-          ? undefined
-          : () => {
-              onSelectItem(row.id)
-            }
+        row.id === openable
+          ? onSelectItem === undefined
+            ? undefined
+            : () => {
+                onSelectItem(row.id)
+              }
+          : onOpenRow === undefined
+            ? undefined
+            : () => {
+                onOpenRow(row.id)
+              }
       }
       // A finished row (in Done) has nothing left to snooze, mark done or dismiss, so it has no actions.
       onActions={
@@ -136,6 +146,12 @@ export type InboxListPaneProps = {
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
   onSelectItem?: ((id: string) => void) | undefined
+  /** A tap on a row the state has no detail for, on a tablet or phone: its own page (R11). */
+  onOpenRow?: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
+  /** Where the list was scrolled when Erik last opened a row from it; the list scrolls back there. */
+  scrollTop?: number | undefined
+  /** Reports the list's scroll as Erik opens a row, so Back returns to the same place. */
+  onScrollSave?: ((top: number) => void) | undefined
   /** The text Erik typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
@@ -156,7 +172,10 @@ export function InboxListPane({
   layout = 'desktop',
   onFilterChange,
   onGroupOpenChange,
-  onSelectItem,
+  onSelectItem: selectItem,
+  onOpenRow: openRow,
+  scrollTop,
+  onScrollSave,
   query,
   onQueryChange,
   onUiChange,
@@ -164,12 +183,33 @@ export function InboxListPane({
   onPutAway,
 }: InboxListPaneProps) {
   const desktop = layout === 'desktop'
-  const onActions =
-    layout === 'phone'
-      ? (id: InboxGroupView['rows'][number]['id']) => {
-          onUiChange?.({ actionsFor: id })
+  // On a tablet or phone the list fills the shell's scrolling detail (`main`), and an open row takes its place. The
+  // list notes its scroll as a row opens and scrolls back there when Back shows it again.
+  const sectionRef = useRef<HTMLElement>(null)
+  const leave = () => {
+    const scroller = sectionRef.current?.closest('main')
+    if (!desktop && scroller != null) onScrollSave?.(scroller.scrollTop)
+  }
+  const onSelectItem =
+    selectItem === undefined
+      ? undefined
+      : (id: string) => {
+          leave()
+          selectItem(id)
         }
-      : undefined
+  const onOpenRow =
+    desktop || openRow === undefined
+      ? undefined
+      : (id: InboxGroupView['rows'][number]['id']) => {
+          leave()
+          openRow(id)
+        }
+  // A long press or the context menu on a row opens its actions sheet on a tablet or phone (M6, R11).
+  const onActions = !desktop
+    ? (id: InboxGroupView['rows'][number]['id']) => {
+        onUiChange?.({ actionsFor: id })
+      }
+    : undefined
   const q = query ?? data.search?.query ?? ''
   const view = listView(data, ui, q)
   const marked = q.trim() === '' ? undefined : q
@@ -182,6 +222,11 @@ export function InboxListPane({
   useLayoutEffect(() => {
     chipsRef.current?.querySelector('[data-state="on"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [ui.filter])
+  // After the chip row's own scroll into view, so the list ends where Erik left it.
+  useLayoutEffect(() => {
+    const scroller = sectionRef.current?.closest('main')
+    if (!desktop && scroller != null && scrollTop !== undefined) scroller.scrollTop = scrollTop
+  }, [desktop, scrollTop])
   const sortFirst = data.sortMenu.options[0]
   const sorted = data.sortMenu.options.find((o) => o.value === ui.sort)
   const setFilters = (filters: string[]) => {
@@ -189,6 +234,7 @@ export function InboxListPane({
   }
   const list = (
     <section
+      ref={sectionRef}
       aria-label="Inbox list"
       className={desktop ? pane : cx(compactPane, data.toast === undefined ? undefined : compactFill)}
       data-figma={data.toast === undefined ? 'inbox list' : undefined}
@@ -299,6 +345,7 @@ export function InboxListPane({
                 onSelectItem={onSelectItem}
                 onActions={onActions}
                 openable={data.detail?.id}
+                onOpenRow={onOpenRow}
                 phone={layout === 'phone'}
               />
             ) : null}
@@ -313,6 +360,7 @@ export function InboxListPane({
                       onSelectItem={onSelectItem}
                       onActions={onActions}
                       openable={data.detail?.id}
+                      onOpenRow={onOpenRow}
                       phone={layout === 'phone'}
                     />
                   </Stack>

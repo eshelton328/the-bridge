@@ -336,6 +336,7 @@ export const nextStep = {
     sortOpen: false,
     snoozeOpen: false,
     actionsFor: null,
+    rowOpen: null,
     promptOpen: false,
     discussOpen: false,
     chatOpen: false,

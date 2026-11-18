@@ -4,7 +4,8 @@
 // buttons. A search marks its query in the meta line. With `onActions`, a
 // long-press (a touch held for half a second) or the context menu (a right
 // click, the menu key, Shift+F10) opens the row's actions (M6); a row that
-// does not open is a button that opens them. Props only.
+// does not open is a button that opens them. On the tablet and phone every
+// row opens (R11). Props only.
 import {
   Button,
   CheckIcon,
@@ -175,7 +176,8 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
   )
   // Only a phone row gets the wrapper, so the desktop and tablet lists keep their boxes; a finished row in the phone's
   // Done has no actions, but lines up with the others.
-  if (!phone) return item
+  // A tablet row with actions (R11) gets a plain wrapper for its long-press and context menu.
+  if (!phone && onActions === undefined) return item
   if (onActions === undefined) return <div className={phoneRow}>{item}</div>
   // A row that does not open is not a button itself, so the wrapper is the row's control: a tap, Enter or Space opens
   // its actions, and a keyboard or screen reader reaches it. A row that opens keeps its own button, and the context
@@ -195,7 +197,7 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
         }
       : {}
   return (
-    <div className={phoneRow} {...control} {...press}>
+    <div className={phone ? phoneRow : undefined} {...control} {...press}>
       {item}
     </div>
   )

@@ -17,6 +17,8 @@ import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import { RemoveDialog } from '../blocks/RemoveDialog.tsx'
+import { RowActionsSheet } from '../blocks/RowActionsSheet.tsx'
+import { RowDetail } from '../blocks/RowDetail.tsx'
 import type { InboxDraftField, InboxDrafts, InboxData, InboxGroupId, InboxPutAway, InboxUi } from '../types.ts'
 import { DiscussionPage } from './DiscussionPage.tsx'
 import {
@@ -70,6 +72,8 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const desktop = layout === 'desktop'
   // On the phone the tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
+  // Where the tablet or phone list was scrolled when Erik opened a row, so Back shows the list at the same place.
+  const [listScroll, setListScroll] = useState<number | undefined>(undefined)
   // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
   // closes the chat and shows the list; the task opens again from its row. On the desktop, View task in the chat's
   // header or a click on the task's row closes the chat and shows the task.
@@ -99,9 +103,17 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     onSelectItem === undefined
       ? undefined
       : (id: string) => {
-          if (ui.chatOpen) onUiChange?.({ chatOpen: false })
+          if (ui.chatOpen || ui.rowOpen !== null) onUiChange?.({ chatOpen: false, rowOpen: null })
           onSelectItem(id)
         }
+  // R11: on a tablet or phone a tap on a row the state has no detail for opens the row's own page, from its view.
+  const rowOpened =
+    desktop || open !== null || ui.rowOpen === null
+      ? undefined
+      : data.groups.flatMap((g) => g.rows).find((r) => r.id === ui.rowOpen)
+  const closeRow = () => {
+    onUiChange?.({ rowOpen: null, actionsFor: null })
+  }
   const run = (effect: DiscussionEffect) => {
     if (effect.prompt !== undefined) drafts.onChange('prompt', effect.prompt)
     if (effect.removeOpen !== undefined) onRemoveOpenChange?.(effect.removeOpen)
@@ -134,7 +146,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const putAway: InboxPutAway = (id, to) => {
     const snoozed = ui.snoozed.filter((s) => s.id !== id)
     const finished = ui.finished.filter((f) => f.id !== id)
-    const closed = { snoozeOpen: false, actionsFor: null }
+    const closed = { snoozeOpen: false, actionsFor: null, rowOpen: null }
     onUiChange?.(
       'until' in to
         ? { ...closed, snoozed: [...snoozed, { id, until: to.until }], finished }
@@ -155,6 +167,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
       onFilterChange={props.onFilterChange}
       onGroupOpenChange={props.onGroupOpenChange}
       onSelectItem={selectItem}
+      onOpenRow={(id) => {
+        onUiChange?.({ rowOpen: id })
+      }}
+      scrollTop={listScroll}
+      onScrollSave={setListScroll}
       query={props.query}
       onQueryChange={props.onQueryChange}
       onUiChange={onUiChange}
@@ -178,6 +195,37 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         drafts={drafts}
         onSend={send}
       />
+    ) : rowOpened !== undefined ? (
+      <>
+        <RowDetail
+          row={rowOpened}
+          onBack={closeRow}
+          onActions={
+            rowOpened.outcome === undefined
+              ? () => {
+                  onUiChange?.({ actionsFor: rowOpened.id })
+                }
+              : undefined
+          }
+        />
+        {ui.actionsFor === rowOpened.id ? (
+          <RowActionsSheet
+            row={rowOpened}
+            kindLabel={data.filterMenu.sections[0]?.items.find((k) => k.value === rowOpened.kind)?.label ?? ''}
+            menu={data.snoozeMenu}
+            open
+            onOpenChange={(next) => {
+              if (!next) onUiChange?.({ actionsFor: null })
+            }}
+            onPick={(until) => {
+              putAway(rowOpened.id, until === null ? { result: 'done' } : { until })
+            }}
+            onDismiss={() => {
+              putAway(rowOpened.id, { result: 'dismissed' })
+            }}
+          />
+        ) : null}
+      </>
     ) : shown === null ? undefined : (
       <InboxDetail
         detail={shown}
@@ -256,7 +304,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     <Backdrop size={layout}>
       <AppShell
         size={layout}
-        view={open === null ? 'list' : 'detail'}
+        view={open === null && rowOpened === undefined ? 'list' : 'detail'}
         rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
         tabBarOverlay
         tabBar={

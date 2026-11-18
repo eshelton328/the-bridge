@@ -38,7 +38,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   and Dismiss are icons in the nav, Start and the answer are pinned above
   the tab bar (`PinnedAction`), Sort and Filter are icons, the Filter menu
   and the Run in picker are sheets, a long-press on a row opens its
-  actions sheet (`RowActionsSheet`, `ui.actionsFor`), and while the prompt
+  actions sheet (`RowActionsSheet`, `ui.actionsFor`; on the tablet too), and while the prompt
   editor is open the keyboard hides Start and the tab bar. The phone's
   Sort menu is a sheet too; an applied sort or filter puts a dot on its
   icon, a sort other than the first adds a line with Reset under the
@@ -47,7 +47,10 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   with no Done days then lists its search's `done`. The Running row of
   the list states (T6, M11) opens the task page (T4), as the notes say;
   Open in Workspaces is disabled until the Workspaces page exists
-  (`OpenInWorkspaces`). Reply here
+  (`OpenInWorkspaces`). On a tablet or phone a tap on a row the state has
+  no detail for opens its own page (`RowDetail`, `ui.rowOpen`, screen
+  review R11): what its row knows, Back, and ⋯, which opens its actions
+  sheet. Back shows the list at the scroll it had when the row opened. Reply here
   on a started task's run card shows its chat (`ui.chatOpen`, the card's
   `chat`) in the task's place at every size; Back closes it. In the
   whole prompt's dialog or sheet, Edit prompt opens the editor and Copy
@@ -87,7 +90,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
 - `blocks/`: `BackToInbox` (Back on a tablet or phone), `InboxRow` (one row of a group), `ListTools` and
   `FilterMenu` (search, Sort and its menu, Filter and its menu),
   `MenuSection` (a menu's labelled section, in a popover or a sheet),
-  `PinnedAction`, `RowActionsSheet`,
+  `PinnedAction`, `RowActionsSheet`, `RowDetail` (the page of a row with no detail, R11),
   `DetailHead` (with the Snooze menu), `DetailSection`, `PromptSection`
   and `PromptDialog` (a sheet on a tablet or phone), `RunInCard` and `RunInPicker`, `RunCard` (a started
   next step's chat, or how a removed one ended) and `OpenInWorkspaces` (disabled

@@ -764,27 +764,85 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
   })
 
-  it('opens only the row with a detail, and a tap on another row opens its actions', async () => {
+  // R11 (Erik, on his phone): a tap on an item opens a page with its details, not its actions sheet.
+  const rowPage = (text: string) => page.getByRole('heading', { level: 1, name: text })
+
+  it('opens the page of each row without a detail with a tap, and Back returns to the list', async () => {
     await phone('list')
     const titles = ['drift check wants to run git mv', 'Pick the header logo', 'Commit the brain: 34 changes']
     for (const text of titles) {
-      await expect.element(page.getByText(text, { exact: true })).toBeVisible()
-      expect(page.getByRole('button', { name: text, exact: true }).elements()).toHaveLength(0)
+      await page.getByText(text, { exact: true }).click()
+      await expect.element(rowPage(text)).toBeVisible()
+      expect(page.getByRole('dialog', { name: text }).elements()).toHaveLength(0)
+      await page.getByRole('button', { name: 'Back to Inbox' }).click()
+      await expect.element(rowPage(text)).not.toBeInTheDocument()
+      await expect.element(searchbox()).toBeVisible()
     }
-    await expect.element(page.getByRole('button', { name: 'Write the tickets for increment one' })).toBeVisible()
-    // A tap on a row without a detail opens its actions, not a task.
-    await page.getByText('Pick the header logo', { exact: true }).click()
-    await expect.element(sheet('Pick the header logo')).toBeVisible()
-    await expect.element(title()).not.toBeInTheDocument()
   })
 
-  it('opens the actions of a row without a detail from the keyboard', async () => {
+  it('keeps the answer buttons of an approval on its page', async () => {
+    await phone('list')
+    await page.getByText('drift check wants to run git mv', { exact: true }).click()
+    await expect.element(rowPage('drift check wants to run git mv')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Allow once' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Deny' })).toBeVisible()
+  })
+
+  it('opens the page of a row without a detail from the keyboard', async () => {
     await phone('list')
     const control = page.getByRole('button', { name: /^Pick the header logo/ })
     control.element().focus()
     await expect.element(control).toHaveFocus()
     await userEvent.keyboard('{Enter}')
+    await expect.element(rowPage('Pick the header logo')).toBeVisible()
+  })
+
+  it('opens the row’s actions from ⋯ on its page and snoozes it', async () => {
+    await phone('list')
+    await page.getByText('Pick the header logo', { exact: true }).click()
+    await page.getByRole('button', { name: 'More actions for Pick the header logo' }).click()
     await expect.element(sheet('Pick the header logo')).toBeVisible()
+    await sheet('Pick the header logo').getByText('In 1 hour').click()
+    await expect.element(sheet('Pick the header logo')).not.toBeInTheDocument()
+    await expect.element(searchbox()).toBeVisible()
+    await expect.element(page.getByText('6 tasks')).toBeInTheDocument()
+  })
+
+  it('shows the list at the same scroll after Back from a row’s page', async () => {
+    await page.viewport(390, 500)
+    view = await renderInbox('list').rendered
+    // The app's root fills the window, as `#root` does in index.css, so the shell's detail scrolls the list.
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    const scroller = () => searchbox().element().closest('main')
+    await expect.poll(() => (scroller()?.scrollHeight ?? 0) > (scroller()?.clientHeight ?? 0)).toBe(true)
+    // Half way down the list; a DOM click opens the row without scrolling it into view first.
+    const before = Math.floor(((scroller()?.scrollHeight ?? 0) - (scroller()?.clientHeight ?? 0)) / 2)
+    expect(before).toBeGreaterThan(0)
+    scroller()?.scrollTo({ top: before })
+    await expect.poll(() => scroller()?.scrollTop).toBe(before)
+    const target = row('Commit the brain: 34 changes')
+    if (!(target instanceof HTMLElement)) throw new Error('no row')
+    target.click()
+    await expect.element(rowPage('Commit the brain: 34 changes')).toBeVisible()
+    await page.getByRole('button', { name: 'Back to Inbox' }).click()
+    await expect.element(searchbox()).toBeInTheDocument()
+    await expect.poll(() => scroller()?.scrollTop).toBe(before)
+  })
+
+  it('opens a row’s page with a tap and its actions with a long touch on the tablet', async () => {
+    await page.viewport(756, 1158)
+    view = await renderInbox('list').rendered
+    const target = row('Pick the header logo')
+    target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await expect.element(sheet('Pick the header logo')).toBeVisible()
+    target.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'touch' }))
+    await userEvent.keyboard('{Escape}')
+    await expect.element(sheet('Pick the header logo')).not.toBeInTheDocument()
+    await page.getByText('Pick the header logo', { exact: true }).click()
+    await expect.element(rowPage('Pick the header logo')).toBeVisible()
   })
 
   it('gives a finished row in Done no actions, so Done keeps its count', async () => {
