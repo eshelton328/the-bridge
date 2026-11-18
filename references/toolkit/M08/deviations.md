@@ -66,3 +66,19 @@ text check passes.
   `border.selected` at half alpha (no solid selected token, d-050).
 - **Explain and Code switch.** `ViewSwitch size="md"` is 32 high against
   34, within the position check. Gap: Explain and Code switch.
+
+## Second review
+
+A blind side-by-side review of M08 (Figma left, render right, 390 × 844)
+found the differences below. Nothing in `web/` changed for them: the
+library part draws each one, and LIBRARY_GAPS.md records the Figma
+values. The checks give the same results as before.
+
+- **Overview facts.** Figma puts each key (`In` 440:1635, `Out`
+  440:1638, `Exit` 440:1641) in a 40 px column and its value 10 after
+  it, 50 from the key's start (x 77). The library's `facts` slot sizes
+  the key column to its widest key (`auto`, 10 apart), so the values
+  start about 38 px from the keys' start and Exit nearly touches
+  "0 pass". `ToolkitFilePage`'s phone override restyles only the root,
+  the steps, each step and the line link, not the facts, so it does not
+  cause this. Gap: Script explanation.

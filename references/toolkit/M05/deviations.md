@@ -56,3 +56,18 @@ M05.
 - **Tree box.** The tree box is drawn with the Panel's tokens (border,
   radius, `surface.pane`), as on T04; the library has no file browser
   frame. Gap: File browser.
+
+## Second review
+
+A blind side-by-side review of M05 (Figma left, render right, 390 × 844)
+found the differences below. Nothing in `web/` changed for them: the
+library part draws each one, and LIBRARY_GAPS.md records the Figma
+values. The checks give the same results as before.
+
+- **Tree icons.** Figma draws the row's icon 16 × 16, 12 in from the
+  tree's edge (x 25) and centred on the row, beside the name and its
+  role line together (`icon/file` 435:215, `icon/folder` 435:225, `icon/code` 435:245). `FileTree` draws its icons at a fixed
+  12 px and `TreeView` aligns a row's parts to the top after its padding,
+  so the icon is about 4 px smaller each way, level with the name's line
+  only, and starts about 5 px further right; the names start at Figma's
+  x. The library sets all three. Gap: File tree rows.

@@ -57,3 +57,18 @@ T06, and M06 has no such layer; the phone leaves the name out.
   `border.selected` at half alpha (no solid selected token, d-050).
 - **Explain and Code switch.** `ViewSwitch size="md"` is 32 high against
   34, within the position check. Gap: Explain and Code switch.
+
+## Second review
+
+A blind side-by-side review of M06 (Figma left, render right, 390 × 844)
+found the differences below. Nothing in `web/` changed for them: the
+library part draws each one, and LIBRARY_GAPS.md records the Figma
+values. The checks give the same results as before.
+
+- **Code column.** Figma's line numbers (` 1` 435:505) start 11 in from
+  the box (the digit about 18 in) and the code (435:506) at x 48, 36 in
+  from the box and 10 after the numbers' column. `CodeLines` pads 16,
+  sizes its number column to the widest number and puts the code 16
+  after it, so the numbers start about 5 px further in (accepted) and
+  the code about 12 px further in. `CodeLines` has no prop for these.
+  Gap: File preview.

@@ -46,3 +46,22 @@ M38.
   half alpha (no solid selected token, d-050).
 - **Copy icon.** The path badge's copy icon is a plain button with
   `CopyIcon`, as on M22. Gap: Path badge copy button.
+
+## Second review
+
+A blind side-by-side review of M38 (Figma left, render right, 390 × 844)
+found the differences below. Nothing in `web/` changed for them: the
+library part draws each one, and LIBRARY_GAPS.md records the Figma
+values. The checks give the same results as before.
+
+- **Tree rows.** Figma's two rows (`tree · commit-msg` 494:5645 and
+  `tree · test-commit-msg` 494:5657, 364 × 54) are 54 apart, each name
+  10 under its row's top. `TreeView` pads its root 12 and each row 4 and
+  draws a row as high as its two lines, 2 apart, so the rows are about
+  44 apart, with about 25 px over the first name and 27 under the last,
+  in a box of about Figma's height (`tree` passes). Gap: File tree rows.
+- **Code icons.** Figma's `icon/code` (494:5655, 494:5667) is 16 × 16 at
+  x 25, centred on the row. `FileTree` draws `CodeIcon` at a fixed
+  12 px, top-aligned after `TreeView`'s padding, so the icons are about
+  12 wide and start about 7 px further right; the names start at
+  Figma's x (51). Gap: File tree rows.
