@@ -888,3 +888,21 @@ export const TabletMoveToWorkspace: Story = {
     await expect(await body.findByRole('menuitem', { name: 'New workspace…' })).toBeVisible()
   },
 }
+
+export const TabletMovedChat: Story = {
+  name: 'T13: the chat moved to the-bridge on the tablet, with a toast and Undo',
+  args: {
+    data: workspacesStates.tabletMovedChat.data,
+    ui: workspacesStates.tabletMovedChat.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D20's toast over its composer, and the tablet's menu draws T13's chat full screen, still Working with Stop.
+    // The toast stays open: the fidelity check renders the story after its play test.
+    const toast = canvas.getByRole('status')
+    await expect(toast).toHaveTextContent('Moved bridge themes to the-bridge')
+    await expect(within(toast).getByRole('button', { name: 'Undo' })).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+  },
+}

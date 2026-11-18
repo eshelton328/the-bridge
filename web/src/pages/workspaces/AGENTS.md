@@ -331,6 +331,10 @@ first: it says what each file of a page folder is for.
   T12 needs no new block: T2b's `ChatActionsMenu` under the tablet's ⋯
   opens Move to workspace's list (`ui.moveOpen`, the-bridge in
   `ui.moveTarget`) as D19 does, which the library puts on the menu's left.
+  T13 needs no new block: the chat fills the screen as T11's does, still
+  Working with Stop and an empty composer in focus, its header names the
+  workspace it moved to, and D20's `ChatToast` sits over the composer in
+  `PhoneChat`'s `above` slot while `ui.toastOpen`, as in M22.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -448,7 +452,11 @@ first: it says what each file of a page folder is for.
   and D18's subtask row, line and chat actions: the chat full screen on
   the tablet, Working, with the line where the subtask started), T12
   `tabletMoveToWorkspace` (from `tabletChatActions`, with D19's list
-  open on the-bridge: Move to workspace on the tablet).
+  open on the-bridge: Move to workspace on the tablet), T13
+  `tabletMovedChat` (from `tabletOneChat`, with M19's empty composer,
+  D20's move of bridge themes and theme tokens to the-bridge, now
+  `current`, and its toast: the chat full screen on the tablet with the
+  toast "Moved bridge themes to the-bridge" and Undo).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
