@@ -117,4 +117,11 @@ inert, so its composer's text is not counted: no exception is needed.
   is about 7% wider (review T06 F1).
 - **Actions still to build.** Start chat, Add folder, the folder's ×
   and the attach button draw only, as on D03.
+- **The chat's composer shows no outline under the dialog (Composer
+  under a dialog).** Figma draws it with the cyan focus border (420:298:
+  #5ee1ff at 0.6), which reads teal-grey under the scrim (#070b14 at
+  0.65, the same as `overlay.scrim`). The focus is in the dialog, so
+  `Composer` draws its resting `border.default` (#24314f), which the
+  scrim makes near-invisible; it takes no prop for the focus border
+  without the focus (review T08 F2, T10 F1, the same case).
 - **No exceptions.**

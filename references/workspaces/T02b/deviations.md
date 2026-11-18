@@ -82,3 +82,9 @@ tab bar, so the render has no Artifacts tab, and no exception is needed.
 - **Erik's message is larger (Message text).** Figma draws it in Geist
   13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
   is about 7% wider (review T06 F1).
+- **The reply shows through the menu (Menu surface opacity).** Figma's
+  chat actions menu (402:5721) is #0f1626 at 0.95 with a 12 px background
+  blur, so nothing under it shows. `Menu` draws `surface.overlay`
+  (rgba(15, 22, 38, 0.98)) with no backdrop blur, so Claude's reply under
+  it shows through, sharp, between Subagents · 2 and Folders…; the menu
+  is on top of the reply (review T12 F1).

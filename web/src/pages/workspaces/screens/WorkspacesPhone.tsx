@@ -40,7 +40,10 @@
 // ChatActionsMenu) in place of the phone's sheet. T3 draws the chat's
 // subagents at a tablet's width, with Start a subtask under the cards, which
 // opens the Subtask form over the chat. T7 opens New chat over the tablet's
-// chat as D3's dialog (NewChatDialog), from the chat actions' New chat.
+// chat as D3's dialog (NewChatDialog), from the chat actions' New chat. T8
+// opens the actions' Fork over it as D15's dialog (ForkDialog) in place of
+// M18's sheet, and T10 the actions' Subtask as D17's dialog (SubtaskDialog)
+// in place of M20's sheet.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -50,6 +53,7 @@ import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
+import { ForkDialog } from '../blocks/ForkDialog.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
@@ -61,6 +65,7 @@ import { PhoneSubagentTranscript } from '../blocks/PhoneSubagentTranscript.tsx'
 import { PhoneSubagents } from '../blocks/PhoneSubagents.tsx'
 import { PhoneSubtask } from '../blocks/PhoneSubtask.tsx'
 import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
+import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
 export type WorkspacesPhoneProps = {
@@ -269,7 +274,8 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
                       onUiChange(afterRename)
                     }}
                     figma={data.layers?.renameField}
-                    size="phone"
+                    // T14: at a tablet's width the field is D21's, 300 wide.
+                    size={device === 'tablet' ? 'full' : 'phone'}
                   />
                 ) : undefined
               }
@@ -388,7 +394,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
             layers={data.layers}
           />
         )}
-        {data.fork === undefined ? null : (
+        {data.fork === undefined || device !== 'phone' ? null : (
           <PhoneFork
             form={data.fork}
             chat={chat.head.title}
@@ -399,7 +405,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
             layers={data.layers?.phoneFork}
           />
         )}
-        {data.subtask === undefined ? null : (
+        {data.subtask === undefined || device !== 'phone' ? null : (
           <PhoneSubtask
             form={data.subtask}
             open={ui.chatDialog === 'subtask'}
@@ -407,6 +413,27 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
               onUiChange({ chatDialog: open ? 'subtask' : null })
             }}
             layers={data.layers?.phoneSubtask}
+          />
+        )}
+        {device === 'phone' || data.fork === undefined ? null : (
+          <ForkDialog
+            form={data.fork}
+            chat={chat.head.title}
+            open={ui.chatDialog === 'fork'}
+            onOpenChange={(open) => {
+              onUiChange({ chatDialog: open ? 'fork' : null })
+            }}
+            layers={data.layers?.forkDialog}
+          />
+        )}
+        {device === 'phone' || data.subtask === undefined ? null : (
+          <SubtaskDialog
+            form={data.subtask}
+            open={ui.chatDialog === 'subtask'}
+            onOpenChange={(open) => {
+              onUiChange({ chatDialog: open ? 'subtask' : null })
+            }}
+            layers={data.layers?.subtaskDialog}
           />
         )}
         {device === 'phone' || data.newChat === undefined ? null : (

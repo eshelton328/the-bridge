@@ -33,6 +33,22 @@ describe('a subtask running on the phone', () => {
     await expect.element(page.getByRole('textbox')).toHaveValue('')
   })
 
+  it('keeps the subtask line inside the transcript on a 320 px phone', async () => {
+    await page.viewport(320, 806)
+    const { data, ui } = workspacesStates.phoneSubtaskRunning
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const text = page.getByText('Subtask layout notes started · returns here')
+    await expect.element(text).toBeInTheDocument()
+    // No box between the line and the page is wider than it shows, so nothing scrolls sideways.
+    const wide: string[] = []
+    for (let box = text.element().parentElement; box !== null; box = box.parentElement) {
+      if (box.scrollWidth > box.clientWidth)
+        wide.push(`${box.tagName} ${String(box.scrollWidth)} > ${String(box.clientWidth)}`)
+    }
+    expect(wide).toEqual([])
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(320)
+  })
+
   it('counts 3 subagents in the chat actions', async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneSubtaskRunning

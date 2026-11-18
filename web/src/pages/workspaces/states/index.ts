@@ -54,6 +54,13 @@ import { tabletComposing } from './tabletComposing.ts'
 import { tabletFolders } from './tabletFolders.ts'
 import { tabletOneChat } from './tabletOneChat.ts'
 import { tabletNewChat } from './tabletNewChat.ts'
+import { tabletFork } from './tabletFork.ts'
+import { tabletForkedChat } from './tabletForkedChat.ts'
+import { tabletSubtask } from './tabletSubtask.ts'
+import { tabletSubtaskRunning } from './tabletSubtaskRunning.ts'
+import { tabletMoveToWorkspace } from './tabletMoveToWorkspace.ts'
+import { tabletMovedChat } from './tabletMovedChat.ts'
+import { tabletRenameChat } from './tabletRenameChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -109,4 +116,11 @@ export const workspacesStates = {
   tabletFolders,
   tabletOneChat,
   tabletNewChat,
+  tabletFork,
+  tabletForkedChat,
+  tabletSubtask,
+  tabletSubtaskRunning,
+  tabletMoveToWorkspace,
+  tabletMovedChat,
+  tabletRenameChat,
 }

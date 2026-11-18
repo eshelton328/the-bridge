@@ -84,3 +84,9 @@ open over it (`subtaskDialog`, `ui.chatDialog: 'subtask'`).
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **The task text is brighter (Composer in a form).** On T10, D17's form
+  over the tablet chat, Figma draws the typed task (420:980) in
+  `fg.muted` (#8a97b8), as the typed values of the other forms' fields;
+  D17's own text node (417:1099) was not read. `Composer` draws its value
+  in `fg.default` and takes no tone, so it reads near-white, as on T10.
+  The state keeps the task a typed value, as T10 and M20 do.

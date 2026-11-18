@@ -311,6 +311,35 @@ first: it says what each file of a page folder is for.
   tablet's width `ui.newChatOpen` opens D3's dialog over T2's chat in
   place of M7's full-screen form, and the chat actions' New chat opens it
   in the current chat's workspace.
+  T8 adds `layers` to `ForkDialog` (D15's ids when not set): at a
+  tablet's width `ui.chatDialog: 'fork'` opens D15's dialog over T2's
+  chat in place of M18's sheet.
+  T9 needs no new block: the fork fills the screen as T6's chat does, with
+  D16's origin and fork line (`ChatEntryView` puts an `event` entry's
+  layer on a box as wide as its text), and Back returns to the list, where
+  `SidebarChatRow` draws the fork under bridge themes with D16's branch
+  mark.
+  T10 adds `layers` to `SubtaskDialog` (D17's ids when not set): at a
+  tablet's width `ui.chatDialog: 'subtask'` opens D17's dialog over T2's
+  chat in place of M20's sheet, from the chat actions' Subtask or T3's Start
+  a subtask.
+  T11 needs no new block: the chat fills the screen as T6's does, still
+  Working with Stop and an empty composer in focus, D18's line where the
+  subtask started under Claude's reply, and D18's chat actions with
+  Subagents · 3; Back returns to the list, where layout notes is D18's
+  nested row under bridge themes.
+  T12 needs no new block: T2b's `ChatActionsMenu` under the tablet's ⋯
+  opens Move to workspace's list (`ui.moveOpen`, the-bridge in
+  `ui.moveTarget`) as D19 does, which the library puts on the menu's left.
+  T13 needs no new block: the chat fills the screen as T11's does, still
+  Working with Stop and an empty composer in focus, its header names the
+  workspace it moved to, and D20's `ChatToast` sits over the composer in
+  `PhoneChat`'s `above` slot while `ui.toastOpen`, as in M22.
+  T14 needs no new block: the chat fills the screen as T11's does, and
+  Rename chat in T2b's menu opens M23's field (`ui.renaming`), at a
+  tablet's width D21's `ChatNameField`, 300 wide; a tap outside saves the
+  name, × undoes the change, and either gives the focus back to the
+  message box if it had it before (`ui.refocusMessage`).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -417,7 +446,25 @@ first: it says what each file of a page folder is for.
   T4's composer and M17's focus in the message box: the chat full screen
   on the tablet), T7 `tabletNewChat` (from `tabletChatActions`, without
   the menu, with D3's New chat form open: the form in a dialog over the
-  chat on the tablet).
+  chat on the tablet), T8 `tabletFork` (from `tabletChatActions`, without
+  the menu, with D15's Fork form open: the form in a dialog over the chat
+  on the tablet), T9 `tabletForkedChat` (from `tabletOneChat`, with D16's
+  fork under bridge themes and M19's empty composer: the fork full screen
+  on the tablet, Idle with no Stop and the focus in the message box), T10
+  `tabletSubtask` (from `tabletChatActions`, without the menu, with D17's
+  Subtask form open: the form in a dialog over the chat on the tablet), T11
+  `tabletSubtaskRunning` (from `tabletOneChat`, with M19's empty composer
+  and D18's subtask row, line and chat actions: the chat full screen on
+  the tablet, Working, with the line where the subtask started), T12
+  `tabletMoveToWorkspace` (from `tabletChatActions`, with D19's list
+  open on the-bridge: Move to workspace on the tablet), T13
+  `tabletMovedChat` (from `tabletOneChat`, with M19's empty composer,
+  D20's move of bridge themes and theme tokens to the-bridge, now
+  `current`, and its toast: the chat full screen on the tablet with the
+  toast "Moved bridge themes to the-bridge" and Undo), T14
+  `tabletRenameChat` (from `tabletOneChat`, with M19's empty composer and
+  D21's rename: the chat full screen on the tablet with its name a field
+  in the header, the focus in the field).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -467,7 +514,9 @@ first: it says what each file of a page folder is for.
   row and Cancel in `layers.phoneFolders` (`title`, `cancel`); for T3 the subagents'
   `startedFrom` and `startSubtask` labels and Start a subtask's layer in
   `layers.subagentsStart`; for T7 the New chat dialog's layers in
-  `layers.newChatDialog`) and
+  `layers.newChatDialog`; for T8 the Fork dialog's layers in
+  `layers.forkDialog`; for T10 the Subtask dialog's layers in
+  `layers.subtaskDialog`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
