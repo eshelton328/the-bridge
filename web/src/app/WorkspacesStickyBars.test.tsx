@@ -289,4 +289,40 @@ describe('a short window in the Workbench (d-107)', () => {
     expect(panel.scrollTop).toBe(0)
     expect(box(composer).bottom).toBe(before)
   })
+  it('keeps the side chat composer whole and reachable in a pane resized to 15% high (D5)', async () => {
+    const view = await renderWorkspaces('sideChatInPane')
+    onTestFinished(view.unmount)
+    const root = await appRoot()
+    await expect.poll(() => root.querySelector('[data-figma="158:518"]')).not.toBeNull()
+    await document.fonts.ready
+    const panel = root.querySelector<HTMLElement>('[data-figma="158:518"]')
+    const composer = root.querySelector<HTMLElement>('[data-figma="158:545"]')
+    if (panel === null || composer === null) throw new Error('no side chat or composer')
+    expect(composer.querySelector('textarea')?.placeholder).toBe('Ask a side question')
+    // The left column's rows handle, between the side chat's pane (top left) and the pane under it: Home takes the
+    // top pane to its 10% minimum, and five steps of 1% bring it to 15%.
+    const handle = root.querySelector<HTMLElement>('button[aria-label="Resize rows"]')
+    if (handle === null) throw new Error('no rows handle')
+    const pane = panel.closest<HTMLElement>('[data-figma="158:186"]')
+    if (pane === null) throw new Error('the side chat is not in the top-left pane')
+    const tall = box(pane).height
+    handle.focus()
+    await userEvent.keyboard('{Home}{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}{ArrowDown}')
+    await expect.poll(() => box(pane).height).toBeLessThan(tall / 2)
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    // The one-row composer keeps its own height (40 px or more), however short the pane.
+    expect(box(composer).height).toBeGreaterThanOrEqual(40)
+    // Where the panel cannot show its title row and composer, it scrolls; scrolled to its end, the whole composer
+    // lies inside the panel's box.
+    panel.scrollTop = panel.scrollHeight
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    const outer = box(panel)
+    const inner = box(composer)
+    expect(inner.top).toBeGreaterThanOrEqual(outer.top - 0.5)
+    expect(inner.bottom).toBeLessThanOrEqual(outer.bottom + 0.5)
+    const send = [...composer.querySelectorAll('button')].at(-1)
+    if (send === undefined) throw new Error('no Send')
+    expect(box(send).height).toBeGreaterThan(0)
+    expect(box(send).bottom).toBeLessThanOrEqual(outer.bottom + 0.5)
+  })
 })

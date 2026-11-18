@@ -20,6 +20,8 @@ const placements = {
   }),
   // D5 158:518: 330 × 393, 4 in from the pane's body on the right, top and bottom, padded 15, its parts 10 apart.
   // The panel does not scroll: its title row and composer stay in view, and only its note and transcript scroll (d-107).
+  // In a pane too short for the title row, a line of transcript and the composer, the panel scrolls, so the composer,
+  // which keeps its height, can still be reached (ChatPane `inset`).
   pane: css({
     position: 'absolute',
     zIndex: '1',
@@ -35,6 +37,8 @@ const placements = {
     borderColor: 'border.active',
     borderRadius: 'lg',
     boxShadow: 'overlay',
+    overflowY: 'auto',
+    overscrollBehavior: 'contain',
   }),
 }
 const tops = {

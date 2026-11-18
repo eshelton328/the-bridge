@@ -56,7 +56,9 @@ first: it says what each file of a page folder is for.
   D5 adds `placement="pane"` to `SideChatPanel` (the side chat over its
   pane's chat, with Open as its own pane over a one-row composer,
   `ChatPane layout="inline"`; the panel does not scroll, and its note
-  scrolls with the transcript as `ChatPane`'s `lead`), which `ChatPane`
+  scrolls with the transcript as `ChatPane`'s `lead`; the composer keeps
+  its height, so in a pane too short for the title row, a line of
+  transcript and the composer the panel scrolls instead), which `ChatPane`
   draws as its `overlay`. D6 adds `PaneDropZone` (the drop zone over the part of the
   chat alone where a dragged chat would open, with the dragged chat in
   `DragPreview`), which

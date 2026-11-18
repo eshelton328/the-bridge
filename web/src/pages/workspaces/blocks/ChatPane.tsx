@@ -41,6 +41,15 @@ const gaps = {
   // token, d-100) and scrolls with the note; the title row and the composer stay in view (d-107).
   inset: { body: css({ gap: '10', minH: 'control.lg' }), footer: css({ gap: '10', pt: '10' }) },
 } satisfies Record<keyof typeof sizes, { body: string; footer: string }>
+// The side chat in a pane: its one-row composer never shrinks below its own height, however short the pane. The
+// library's ScrollFrame lets its footer shrink (and scroll) so a long draft leaves the transcript room; the inline
+// composer caps its own draft, so here the footer keeps its height and the panel scrolls instead (SideChatPanel).
+const frames = {
+  pane: undefined,
+  full: undefined,
+  side: undefined,
+  inset: css({ '& > .scroll-frame__footer': { flexShrink: '0' } }),
+} satisfies Record<keyof typeof sizes, string | undefined>
 const footer = css({ display: 'flex', flexDirection: 'column' })
 export type ChatPaneProps = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
@@ -149,6 +158,7 @@ export function ChatPane(props: ChatPaneProps) {
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
+        className={frames[size]}
         bodyClassName={gaps[size].body}
         footer={
           <div className={cx(footer, gaps[size].footer)}>
