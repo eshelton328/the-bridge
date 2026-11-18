@@ -15,13 +15,18 @@ each file of a page folder is for.
 - `screens/ArtifactsScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail (`AppRail`, Artifacts
   selected) and the library in the shell's `detail`, which scrolls; on a
-  tablet or phone the library over the tab bar (`AppTabBar`; the phone
+  tablet or phone the library with the tab bar (`AppTabBar`) laid over
+  its foot (AppShell `tabBarOverlay`), so the library runs under the bar
+  and its end scrolls clear of it (the phone
   selects More, which opens Artifacts, d-105). Do not change `AppRail` or
   `AppTabBar` from this page; a difference goes in `deviations.md`.
   With an artifact open (`data.open`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
   `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
-  `screens/ArtifactPage.tsx`, over the tab bar: the shared `DetailFrame`
+  `screens/ArtifactPage.tsx`, above the tab bar (the shell sets no
+  `tabBarOverlay` while an artifact is open, as
+  `ArtifactsStickyBars.test.tsx` checks that the page ends at the bar):
+  the shared `DetailFrame`
   with `ArtifactTopBar` (Back, Discuss, and Copy link and Remove as icons)
   in its header, so the Back bar stays at the top and only the page under
   it scrolls (d-107), then `ArtifactTitleBlock` with `ArtifactStatus`

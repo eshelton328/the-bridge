@@ -6,21 +6,6 @@
       "reason": "Figma draws the Filter sheet (407:1617, y 523) over this description (y 797), so frame.png does not show it; the render draws the sheet over it the same way, and the card cuts the one line with an ellipsis, as T1's Figma does (414:667)."
     },
     {
-      "text": "the-bridge theme ideas",
-      "layers": ["407:1433"],
-      "reason": "Figma draws the third card row's body (407:1431, y 1105) under the tab bar (407:1465, y 1081) and the Filter sheet (y 523), so frame.png does not show this title. The render scrolls the row under the tab bar the same way, as T1."
-    },
-    {
-      "text": "Viewscreen, Captain’s Log, Engineering and Console",
-      "layers": ["407:1434"],
-      "reason": "This description (y 1141) is under Figma's tab bar (y 1081) and the Filter sheet, and frame.png does not show it. The render scrolls the row under the tab bar the same way, as T1."
-    },
-    {
-      "text": "Application versioning and releases",
-      "layers": ["407:1457"],
-      "reason": "Figma draws the third card row's body (407:1455, y 1105) under the tab bar (y 1081) and the Filter sheet, so frame.png does not show this title. The render scrolls the row under the tab bar the same way, as T1."
-    },
-    {
       "text": "Research report: versioning, changelogs and release automation",
       "layers": ["407:1458"],
       "reason": "This description (y 1141) is under Figma's tab bar (y 1081) and the Filter sheet, and frame.png does not show it. The render scrolls the row under the tab bar the same way, as T1."

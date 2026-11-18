@@ -16,8 +16,13 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   (`InboxListPane`) and the detail (`InboxDetail`) side by side, with the
   open task's row drawn selected (d-101); on a
   tablet or phone the list, or the open item under Back
-  (`BackToInbox`), full width over the tab bar (`AppTabBar`), which a
-  chat hides. The `viewport` prop applies only until the width is
+  (`BackToInbox`), full width, with the tab bar (`AppTabBar`) laid over
+  the page's foot (AppShell `tabBarOverlay`): the page runs under it
+  and its end scrolls clear of it. A chat hides the tab bar. On a tablet
+  or phone the item's `DetailFrame` is the shell detail's own child, so
+  Start, the answer and the run card stick above the bar
+  (`bottom: var(--scroll-frame-inset, 0px)`); `app/PhoneTabBar.test.tsx`
+  checks it on M2, and the list's end on Toolkit M1. The `viewport` prop applies only until the width is
   measured; `InboxLayout.test.tsx` checks both layouts. `InboxListPane`
   shows the list through `screens/listView.ts` (pure, tested in
   `listView.test.ts` beside this file): the state's groups less the items snoozed, marked

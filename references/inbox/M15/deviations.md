@@ -7,7 +7,7 @@ fidelity run (`pnpm fidelity inbox`, 2026-11-17, library
 
 ## Checks
 
-- Text: pass (58 strings checked; 4 Figma strings under exceptions.json).
+- Text: pass (62 strings checked; none under exceptions.json).
 - Position: 13 of 15 layers pass (`header`, `filter · chips`, `list tools`, `sort applied`, `group · NEXT STEPS`, `group · SNOOZED`, `group · RUNNING`, `tab bar`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
@@ -71,7 +71,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   high against Figma's 18 (`sort applied` h -2). Each group has a
   heading per project (`GroupHeader variant="project"`).
 - **Below the fold.** SNOOZED and RUNNING lie under the tab bar in
-  Figma and in the render (the exceptions say why).
+  Figma and in the render; the list runs under the bar (AppShell
+  `tabBarOverlay`, library 1.0.0-beta.26), so the text check passes them
+  with no exception.
 - **Last next step above the tab bar.** The checks render 806 px high,
   the screen below the status bar (d-102). With the 24 px project
   headings (beta.8) the last Next steps row shows whole above the tab

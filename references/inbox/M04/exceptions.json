@@ -4,11 +4,6 @@
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review.",
       "layers": ["346:9698"],
       "reason": "Figma cuts the prompt under the sheet: the text layer 346:9698 runs past its prompt box, and the sheet (346:9742) covers the rest. The render's Clamp cuts it after five lines, under the same sheet."
-    },
-    {
-      "text": "f-005 the-bridge",
-      "layers": ["346:9663", "346:9725"],
-      "reason": "Layer 346:9725 is a source in the hidden SOURCES section (346:9715 sits at y 625, over RUN IN; frame.png does not show it). The render keeps Sources lower on the page, under the sheet. The visible chip with the same text (346:9663) is no longer checked (open request fidelity-layer-scoped-exceptions)."
     }
   ],
   "extra": [
@@ -44,7 +39,7 @@
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "div.app-shell__root > main.app-shell__detail > article > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
       "reason": "The task page scrolls on the phone, as in M2 (the note there: the page scrolls to My notes); the sheet covers the rest of it."
     },
     {

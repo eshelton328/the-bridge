@@ -44,7 +44,11 @@ has all its text and is the same in both.
     `→1 ←2`, `eval-cases`, `skills/eval-cases/`, `→3 ←3`,
     `mermaid-diagrams`, `skills/mermaid-diagrams/`, `→2 ←2`,
     `pr-description`, `skills/pr-description/`, `project-setup`,
-    `skills/project-setup/`, `→1 ←0` and `Search the toolkit`.
+    `skills/project-setup/`, `→1 ←0`, `readme`, `skills/readme/` and
+    `Search the toolkit`. Since the tab bar lies over the page (AppShell
+    `tabBarOverlay`, library 1.0.0-beta.26), the list runs under the
+    tab bar, so the readme row there counts as shown under the drawer
+    too (`readme`, `skills/readme/`).
   - The Inbox tab's badge `4` (424:6912) is in `exceptions.json`: the
     drawer covers it in Figma as in the render.
 - Position: 11 of 43 layers pass (`header`, `tab bar`, `icon/layers`,

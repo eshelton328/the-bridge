@@ -11,7 +11,9 @@ what each file of a page folder is for.
   `onUiChange` and the rail's navigation.
 - `screens/ToolkitScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail (`AppRail`) and the list; on
-  a tablet or phone the list over the tab bar (`AppTabBar`, Toolkit opens
+  a tablet or phone the list, with the tab bar (`AppTabBar`) laid over
+  its foot (AppShell `tabBarOverlay`: the page runs under the bar, as
+  Figma's M2, M20 and M22 do, and its end scrolls clear of it; Toolkit opens
   from More; on the phone More opens the shared `MoreDrawer`, kept
   open by `ui.moreOpen`, M4). Without `onUiChange` it keeps the changes itself, so a story
   or canvas board can use the chips, the search and the groups.

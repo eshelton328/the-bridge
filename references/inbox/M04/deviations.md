@@ -8,7 +8,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 
 ## Checks
 
-- Text: pass (45 strings checked; 3 Figma strings under exceptions.json).
+- Text: pass (47 strings checked; 1 Figma string under exceptions.json). Since the tab bar lies over the page (AppShell `tabBarOverlay`, library 1.0.0-beta.26), both `f-005 the-bridge` layers (346:9663, 346:9725) pass, and their exception is gone.
 - Position: 3 of 19 layers pass (`nav`, `task bar`, `title block`).
 - Rules: pass (2 findings under exceptions.json).
 

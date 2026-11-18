@@ -8,7 +8,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 
 ## Checks
 
-- Text: pass (30 strings checked; 3 Figma strings under exceptions.json).
+- Text: pass (31 strings checked; 2 Figma strings under exceptions.json). Since the tab bar lies over the page (AppShell `tabBarOverlay`, library 1.0.0-beta.26), `f-005 the-bridge` (346:10770) passes, and its exception is gone.
 - Position: 7 of 22 layers pass (`nav`, `task bar`, `title block`, `button · Change`, `sheet actions`, `button · Edit prompt`, `button · Copy`).
 - Rules: pass (2 findings under exceptions.json).
 

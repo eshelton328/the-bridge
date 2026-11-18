@@ -6,21 +6,6 @@
       "reason": "Figma cuts this one-line description with an ellipsis (\"…the owner check on…\" in frame.png), as the card's TruncatedText does; the full text shows in its tooltip. The layer holds the whole string, so the check expects it in full."
     },
     {
-      "text": "the-bridge theme ideas",
-      "layers": ["405:278"],
-      "reason": "Figma draws the third card row's body (405:276, y 1105) under the tab bar (405:64, y 1081), so frame.png does not show this title; the text check counts it as shown because it lies inside the frame. The render scrolls the row under the tab bar the same way."
-    },
-    {
-      "text": "Viewscreen, Captain’s Log, Engineering and Console",
-      "layers": ["405:279"],
-      "reason": "This description (y 1141) is under Figma's tab bar (y 1081), and frame.png does not show it. The render scrolls the row under the tab bar the same way."
-    },
-    {
-      "text": "Application versioning and releases",
-      "layers": ["405:302"],
-      "reason": "Figma draws the third card row's body (405:300, y 1105) under the tab bar (405:64, y 1081), so frame.png does not show this title. The render scrolls the row under the tab bar the same way."
-    },
-    {
       "text": "Research report: versioning, changelogs and release automation",
       "layers": ["405:303"],
       "reason": "This description (y 1141) is under Figma's tab bar (y 1081), and frame.png does not show it. The render scrolls the row under the tab bar the same way."

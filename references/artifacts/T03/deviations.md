@@ -11,11 +11,12 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
 ## Checks
 
 - Text: passes, as T1: Hono server spike's description (407:1376) shows
-  whole. The four strings of the third card row's body (407:1433,
-  407:1434, 407:1457, 407:1458) lie under the tab bar and the sheet in
-  Figma and in the render, and the Tailscale description (414:711) lies
-  under the sheet; they are `missing` exceptions (`exceptions.json`), as
-  in T1.
+  whole. The third card row's body lies under the tab bar and the sheet
+  in Figma and in the render; as the library runs under the tab bar
+  (AppShell `tabBarOverlay`, library 1.0.0-beta.26), its first three
+  strings (407:1433, 407:1434, 407:1457) pass. The fourth (407:1458) and
+  the Tailscale description (414:711), under the sheet, are `missing`
+  exceptions (`exceptions.json`), as in T1.
 - Position: 23 of 43 layers pass (`header`, `found status`, `list tools`,
   both groups, the six cards, `tab bar`,
   `group · UPDATED`, `check · Today`, `check · This week`, the footer

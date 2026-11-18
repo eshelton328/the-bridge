@@ -12,14 +12,17 @@ library #115 added: `ViewSwitch tone="accent"` and
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. Fourteen strings of
+- Text: fail. Every Figma string is in the render. Thirteen strings of
   the Rules rows are not visible, because the taller rows push those rows
   under the tab bar (see Row height): `rules/commits-and-prs.md`,
-  `rules/diagrams.md`, `linear`, `rules/linear.md`, `→0 ←0` (428:251 and
-  428:271), `readmes`, `rules/readmes.md`, `→1 ←4`, `releases`,
+  `rules/diagrams.md`, `linear`, `rules/linear.md`, `→0 ←0` (428:251),
+  `readmes`, `rules/readmes.md`, `→1 ←4`, `releases`,
   `rules/releases.md`, `skills`, `rules/skills.md` and `→1 ←0`. The
   ste100 and writing names and counts (428:288, 428:291, 428:298,
   428:301) lie under Figma's tab bar too; `exceptions.json` names them.
+  Since the tab bar lies over the page (AppShell `tabBarOverlay`,
+  library 1.0.0-beta.26), the list runs under the bar as Figma's does,
+  and `→0 ←0` (428:271) passes.
 - Position: 13 of 38 layers pass (`header`, `read-only`,
   `view · List, Map or Activity`, `filter · chips`, `search`,
   `group · SKILLS`, `tab bar`).

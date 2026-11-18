@@ -4,11 +4,6 @@
       "text": "Read f-005-the-bridge/increment-1.md and write one Linear ticket per screen in the NCC project, following toolkit/rules/linear.md. Link each ticket to its requirement IDs and leave them in Backlog for me to review. Group the tickets under one milestone named Increment 1, and give each a short acceptance list taken from the increment’s acceptance section. Skip screens the requirements mark desktop only when the ticket is for the phone, and list anything you could not map to a requirement at the end, with the reason.",
       "layers": ["346:10737", "346:10794"],
       "reason": "Figma cuts the prompt on the page: the text layer 346:10737 is 210 high inside its 128 px prompt box, under a fade, and the sheet covers the rest. The render's Clamp cuts it after five lines. The same text in the sheet (346:10794) is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions); the sheet shows it in full in the render (sideBySide)."
-    },
-    {
-      "text": "f-005 the-bridge",
-      "layers": ["346:10770"],
-      "reason": "The source's detail (346:10770, y 646 to 660) is in the SOURCES section (346:10760), which lies under the prompt sheet (346:10787, y 403 to 844), so Figma does not show it; the render's sheet covers it too. The same text in the title block's chip is still checked."
     }
   ],
   "extra": [
@@ -44,7 +39,7 @@
   "rules": [
     {
       "rule": "hiddenOverflow",
-      "selector": "div.app-shell__root > main.app-shell__detail > article > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
       "reason": "The task page scrolls on the phone, as in M2 (the note there: the page scrolls to My notes); the sheet covers the rest of it."
     },
     {

@@ -8,7 +8,7 @@ the installed library 1.0.0-beta.7, which has #107 and #108), each with its reas
 
 ## Checks
 
-- Text: pass (52 strings checked; 3 Figma strings under exceptions.json).
+- Text: pass (55 strings checked; none under exceptions.json).
 - Position: 12 of 14 layers pass (`header`, `filter · chips`, `list tools`, `group · NEEDS YOU`, `group · NEXT STEPS`, `group · SNOOZED`, `tab bar`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
@@ -61,8 +61,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   exception says why). Library gap: Chip row fade.
 - **Running row.** The started task sits under Running at the bottom,
   as Figma draws it, with its chat line and Working pill; both lie
-  partly or wholly under the tab bar in Figma and in the render (the
-  exceptions say why). Pills are 22 px against Figma's 20. Library gap:
+  partly or wholly under the tab bar in Figma and in the render. The
+  list runs under the bar (AppShell `tabBarOverlay`, library
+  1.0.0-beta.26), so the text check passes them with no exception. Pills are 22 px against Figma's 20. Library gap:
   Pill height.
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square.
 - **Running row below the fold.** The checks render 806 px high, the
@@ -70,7 +71,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   lower than Figma's (`group · RUNNING` y +6), and its row's title
   (`Write the tickets for increment one`) and age (`2h`) show above the
   tab bar, as in Figma, so the text check passes. Its subtitle runs under
-  the tab bar in Figma too (the exception says why).
+  the tab bar in Figma and in the render, and the text check passes it.
 - **Button labels.** The approval row's Allow once, Deny and Open chat
   are `Button textSize="xs"` (`labelXs`, Medium 12/16), as Figma's
   Medium 12 (d-100). Sort and Filter are icons. The labels match.
