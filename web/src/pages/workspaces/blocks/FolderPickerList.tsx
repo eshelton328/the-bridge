@@ -2,7 +2,7 @@
 // a note, the search, the recent folders (those the chat has are marked
 // added; the chosen one has the cyan border) and the folders of one path,
 // each opening its own. The side panel beside the chat (D4, FolderPickerPane)
-// and the phone's folders sheet (M8, PhoneFolders) draw it, each with its own
+// and the folders sheet of the phone (M8) and the tablet (T5, PhoneFolders) draw it, each with its own
 // buttons under it. The library has no folder picker (LIBRARY_GAPS.md:
 // Folder picker). Props only.
 import {
@@ -38,9 +38,8 @@ const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign:
 const name = css({ textStyle: 'body', flex: '1', textAlign: 'start' })
 // Figma's Close is the panel's grey (fg.muted, D4 128:338), not the text button's accent.
 const close = css({ color: 'fg.muted' })
-// M8 128:766: the sheet's chosen recent folder draws #5ee1ff at 0.5 (border.selected), not the pressed
-// border.active (0.7). `Button` has no prop for it (LIBRARY_GAPS.md: Selected toggle border).
-const chosenInSheet = css({ _pressed: { borderColor: 'border.selected' } })
+// Figma draws a listed folder's chevron grey (#8A97B8, fg.muted: D4 128:372, T5 128:610), under the row's fg.default.
+const chevron = css({ display: 'inline-flex', color: 'fg.muted' })
 
 /** The Figma layers of the picker's parts, for the fidelity checks; a part with no layer has none. */
 type FolderPickerLayers = {
@@ -61,14 +60,16 @@ export type FolderPickerListProps = {
   layers?: FolderPickerLayers | undefined
   /**
    * `side` (the default): the side panel's spacing (D4); `sheet`: the phone's folders sheet, whose parts and rows are
-   * all 8 apart (M8 128:747 to 128:793), and the chosen folder's icon is in the accent colour (128:767).
+   * all 8 apart (M8 128:747 to 128:793), and the chosen folder's icon is in the accent colour (128:767); `tabletSheet`:
+   * the tablet's folders sheet, the same with every part and row 10 apart (T5 128:569 to 128:626).
    */
-  size?: 'side' | 'sheet' | undefined
+  size?: 'side' | 'sheet' | 'tabletSheet' | undefined
 }
 
 export function FolderPickerList(props: FolderPickerListProps) {
   const { picker, picked, onPick, onClose, layers = d4, size = 'side' } = props
-  const sheet = size === 'sheet'
+  const sheet = size !== 'side'
+  const tablet = size === 'tabletSheet'
   return (
     <>
       <Inline gap="8" align="center" data-figma={layers.title}>
@@ -90,15 +91,17 @@ export function FolderPickerList(props: FolderPickerListProps) {
           clearIcon={<CloseIcon size="12" />}
         />
       </div>
-      <Stack gap={sheet ? '8' : '12'}>
-        <Stack gap={sheet ? '8' : '10'}>
+      <Stack gap={tablet ? '10' : sheet ? '8' : '12'}>
+        <Stack gap={tablet ? '10' : sheet ? '8' : '10'}>
           <span className={label}>{picker.recentLabel}</span>
           {picker.recent.map((f, i) => (
             <Button
               key={f.path}
               variant={f.path === picked ? 'secondary' : 'text'}
               pressed={f.path === picked}
-              className={cx(row, plain, sheet ? chosenInSheet : undefined)}
+              // M8 128:766: the sheet's chosen recent folder draws #5ee1ff at 0.5 (border.selected), not border.active.
+              pressedBorder={sheet ? 'selected' : undefined}
+              className={cx(row, plain)}
               data-figma={layers.recent[i]}
               onClick={() => onPick?.(f.path)}
             >
@@ -114,7 +117,7 @@ export function FolderPickerList(props: FolderPickerListProps) {
             </Button>
           ))}
         </Stack>
-        <Stack gap="8">
+        <Stack gap={tablet ? '10' : '8'}>
           <Inline gap="8" align="center">
             <span className={label}>{picker.browseLabel}</span> <span className={subtle}>{picker.browsePath}</span>
           </Inline>
@@ -128,7 +131,9 @@ export function FolderPickerList(props: FolderPickerListProps) {
             >
               <FolderIcon size="16" />
               <span className={name}>{folder}</span>
-              <ChevronRightIcon size="12" />
+              <span className={chevron}>
+                <ChevronRightIcon size="12" />
+              </span>
             </Button>
           ))}
         </Stack>

@@ -3,7 +3,9 @@
 // sits beside the main chat (D2 105:920); `placement="pane"` sits inside its
 // pane of the split, over the chat's right side, with "Open as its own
 // pane" over a one-row composer (D5 158:518); `placement="sheet"` fills the
-// phone's side chat sheet under its grabber (M5 105:3106), with a larger title. Props only.
+// phone's side chat sheet under its grabber (M5 105:3106), with a larger title. In
+// the tablet's sheet (T2 105:1914, `device="tablet"`) its parts sit 23 in from the
+// sheet's edges and the note is 13 px. Props only.
 import { BubbleIcon, Button, CloseIcon, type IconSize, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
@@ -45,6 +47,8 @@ const placements = {
   // of 2). The panel shrinks with the sheet, so only the transcript scrolls (d-107).
   sheet: css({ flex: '1', px: '4', pt: '10' }),
 }
+// T2 105:1914: the tablet's sheet puts its parts 23 in from its edges (its 1 px border, 12 of padding and 10).
+const tabletSheet = css({ flex: '1', px: '10', pt: '10' })
 const tops = {
   side: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '16' }),
   pane: css({ display: 'flex', flexDirection: 'column', gap: '10' }),
@@ -71,17 +75,22 @@ const commands = {
 const closeTones = { side: undefined, pane: undefined, sheet: css({ color: 'fg.muted' }) }
 const iconSizes: Record<'side' | 'pane' | 'sheet', IconSize> = { side: '16', pane: '16', sheet: '20' }
 const note = css({ textStyle: 'small', color: 'fg.muted', m: '0' })
+// T2 105:1928: the tablet's note is Geist 13 on a 19 px line, `bodySm` (13/20) on the grid.
+const tabletNote = css({ textStyle: 'bodySm', color: 'fg.muted', m: '0' })
 
 export type SideChatPanelProps = {
   chat: SideChat
   /** Beside the main chat (D2), inside its pane of the split (D5) or in the phone's sheet (M5); `side` when not set. */
   placement?: 'side' | 'pane' | 'sheet' | undefined
   onClose?: (() => void) | undefined
+  /** In a sheet, the device whose width it has: the phone (the default) or a tablet (T2). */
+  device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
 }
 
-export function SideChatPanel({ chat, placement = 'side', onClose, layers }: SideChatPanelProps) {
+export function SideChatPanel({ chat, placement = 'side', onClose, device = 'phone', layers }: SideChatPanelProps) {
+  const tablet = placement === 'sheet' && device === 'tablet'
   const openAsPane =
     chat.openAsPane === undefined ? undefined : (
       <Inline>
@@ -94,7 +103,7 @@ export function SideChatPanel({ chat, placement = 'side', onClose, layers }: Sid
   // Beside the chat (D2) and in the phone's sheet (M5) the note stays under the title; in a pane (D5) it scrolls with
   // the transcript, so a short pane keeps the title, a line of transcript and the one-row composer in view (d-107).
   const noteText = (
-    <p className={note} data-figma={layers?.sideNote ?? '105:932'}>
+    <p className={tablet ? tabletNote : note} data-figma={layers?.sideNote ?? '105:932'}>
       {chat.note}
     </p>
   )
@@ -102,7 +111,7 @@ export function SideChatPanel({ chat, placement = 'side', onClose, layers }: Sid
     <aside
       data-figma={layers?.sideChat ?? (placement === 'sheet' ? undefined : '105:920')}
       aria-label={chat.title}
-      className={cx(panel, placements[placement])}
+      className={cx(panel, tablet ? tabletSheet : placements[placement])}
     >
       <div className={tops[placement]}>
         <Inline gap="8" align="center" data-figma={layers?.sideHeader}>

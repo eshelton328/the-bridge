@@ -3,7 +3,9 @@
 // chat, which goes on under the scrim. The sheet has no title row of its own:
 // `SideChatPanel placement="sheet"` draws the title with its command and ×.
 // The title and the composer stay put and only the transcript scrolls
-// (d-107). The focus goes to the message box when it opens. Props only.
+// (d-107). The focus goes to the message box when it opens. At a tablet's
+// width (T2 105:1914, `device="tablet"`) the panel's parts sit further in and
+// its note is larger. Props only.
 import { BottomSheet } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -17,11 +19,13 @@ export type PhoneSideChatProps = {
   chat: SideChat
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
+  /** The device whose width the sheet has: the phone (the default) or a tablet (T2). */
+  device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
 
-export function PhoneSideChat({ chat, open, onOpenChange, layers }: PhoneSideChatProps) {
+export function PhoneSideChat({ chat, open, onOpenChange, device, layers }: PhoneSideChatProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -35,6 +39,7 @@ export function PhoneSideChat({ chat, open, onOpenChange, layers }: PhoneSideCha
         <SideChatPanel
           chat={chat}
           placement="sheet"
+          device={device}
           layers={layers}
           onClose={() => {
             onOpenChange?.(false)

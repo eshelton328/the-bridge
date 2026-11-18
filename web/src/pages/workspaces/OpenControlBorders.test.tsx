@@ -1,7 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
@@ -31,8 +31,8 @@ function tokenColor(token: string): string {
   return color
 }
 
-// The border rule: a trigger draws border.active while its menu is open, a disclosure toggle keeps its own border
-// while expanded, and the open sidebar's toggle draws border.selected (Figma's off-token alpha snapped to a token).
+// The border rule: a trigger draws border.active while its menu is open, and a disclosure toggle keeps its own border
+// while expanded. A selected toggle draws border.selected (below).
 describe('the borders of open controls', () => {
   it('draws the bare pane ⋯ with border.active while its menu is open (D1)', async () => {
     await page.viewport(1512, 982)
@@ -51,6 +51,20 @@ describe('the borders of open controls', () => {
     await expect.element(toggle).toHaveAttribute('aria-expanded', 'true')
     expect(getComputedStyle(toggle.element()).borderTopColor).toBe(tokenColor('border-default'))
   })
+})
+
+// A selected toggle (aria-pressed, not a trigger) follows its Figma frame where that is a token: the open sidebar's
+// toggle (D2 158:6, #5ee1ff at about 0.6), the workspace's own folder chip (M7 128:30, at 0.6) and the sheet's
+// chosen recent folder (M8 128:766, at 0.5) draw border.selected (`pressedBorder="selected"`), not the pressed
+// border.active, in both modes. In light mode the two tokens are the same colour, so only dark mode tells them apart.
+describe.each(['dark', 'light'] as const)('the borders of selected toggles (%s)', (mode) => {
+  beforeEach(() => {
+    document.documentElement.classList.toggle('dark', mode === 'dark')
+  })
+
+  afterEach(() => {
+    document.documentElement.classList.add('dark')
+  })
 
   it('draws the open sidebar toggle with border.selected (D2)', async () => {
     await page.viewport(1512, 982)
@@ -59,12 +73,7 @@ describe('the borders of open controls', () => {
     await expect.element(toggle).toHaveAttribute('aria-pressed', 'true')
     expect(getComputedStyle(toggle.element()).borderTopColor).toBe(tokenColor('border-selected'))
   })
-})
 
-// A selected toggle chip (aria-pressed, not a trigger) follows its Figma frame where that is a token: the
-// workspace's own folder chip (M7 128:30, #5ee1ff at 0.6) and the sheet's chosen recent folder (M8 128:766, at 0.5)
-// draw border.selected, not the pressed border.active.
-describe('the borders of selected chips on the phone', () => {
   it("draws New chat's own folder chip with border.selected (M7)", async () => {
     await page.viewport(390, 806)
     const { data, ui } = workspacesStates.phoneNewChat

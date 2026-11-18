@@ -33,14 +33,24 @@
 // (`ui.renaming`, ChatNameField), which the actions' Rename opens: a tap
 // outside saves the name in `ui.names`, × undoes the change; either gives the
 // focus back to the message box if it had it before (`ui.refocusMessage`).
+// T1 draws the list in edit mode at a tablet's width (`device="tablet"`): the
+// tablet's backdrop, shell and tab bar, whose More goes to its page. T2 draws
+// the chat with its side chat sheet at a tablet's width, with no tab bar;
+// there the chat's ⋯ opens the desktop's chat actions menu (T2b,
+// ChatActionsMenu) in place of the phone's sheet. T3 draws the chat's
+// subagents at a tablet's width, with Start a subtask under the cards, which
+// opens the Subtask form over the chat. T7 opens New chat over the tablet's
+// chat as D3's dialog (NewChatDialog), from the chat actions' New chat.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
+import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
+import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { PhoneChat } from '../blocks/PhoneChat.tsx'
 import { PhoneChatActions } from '../blocks/PhoneChatActions.tsx'
 import { PhoneFolders } from '../blocks/PhoneFolders.tsx'
@@ -54,6 +64,8 @@ import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
 export type WorkspacesPhoneProps = {
+  /** The device whose width the screen has: the phone, or a tablet in a state with `tabletList` (T1). */
+  device: 'phone' | 'tablet'
   /** The state's data, with the names Erik gave chats in place of their titles. */
   data: WorkspacesData
   /** The phone's labels. */
@@ -63,7 +75,7 @@ export type WorkspacesPhoneProps = {
   onUiChange: (change: Partial<WorkspacesUi>) => void
 }
 
-export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
+export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
@@ -102,11 +114,12 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
       renamingWorkspaces: { [id]: untitled },
     })
   }
-  if (ui.newChatOpen === true && data.newChat !== undefined)
+  // On the tablet New chat opens over the chat as D3's dialog (T7), drawn with the chat below.
+  if (ui.newChatOpen === true && data.newChat !== undefined && (device === 'phone' || chat === undefined))
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneNewChat
@@ -132,9 +145,9 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     transcript !== undefined
   )
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneSubagentTranscript
@@ -160,12 +173,13 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
     data.subagents !== undefined
   )
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneSubagents
+              device={device}
               panel={data.subagents}
               chat={focused.head.title}
               onBack={() => {
@@ -180,6 +194,14 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                   ? undefined
                   : (subagentFor) => {
                       onUiChange({ phoneView: 'transcript', subagentFor })
+                    }
+              }
+              // T3: Start a subtask opens the Subtask form over the chat, as the chat actions' Subtask does (M20).
+              onStartSubtask={
+                data.subtask === undefined
+                  ? undefined
+                  : () => {
+                      onUiChange({ phoneView: 'chat', chatDialog: 'subtask' })
                     }
               }
               layers={data.layers}
@@ -199,11 +221,24 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
   // M23: the name field closes, saved or undone, and the focus goes back to the message box if it had it before.
   const afterRename: Partial<WorkspacesUi> =
     ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
+  // An action picked in the chat's actions, the phone's sheet (M4) or the tablet's menu (T2b).
+  const pickChatAction = (action: string) => {
+    // T7: New chat opens in the current chat's workspace.
+    if (action === 'newChat' && data.newChat !== undefined)
+      onUiChange({ newChatOpen: true, newChatWorkspace: data.current })
+    if (action === 'rename')
+      onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
+    if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
+    if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
+    if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
+    if (action === 'subagents' && data.subagents !== undefined)
+      onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })
+  }
   if (chat !== undefined)
     return (
-      <Backdrop size="phone">
+      <Backdrop size={device}>
         <AppShell
-          size="phone"
+          size={device}
           view="detail"
           detail={
             <PhoneChat
@@ -254,12 +289,11 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                 onUiChange({ skillsFor: open ? chat.id : null })
               }}
               renderMenu={
-                text.chatMenu === undefined
-                  ? undefined
-                  : (trigger) => (
-                      <PhoneChatActions
+                device === 'tablet' && data.chatMenu !== undefined
+                  ? (trigger) => (
+                      <ChatActionsMenu
                         title={chat.head.title}
-                        actions={text.chatMenu ?? []}
+                        actions={data.chatMenu ?? []}
                         targets={data.workspaces.filter((w) => w.id !== data.current)}
                         newWorkspace={data.newWorkspace}
                         trigger={trigger}
@@ -271,27 +305,47 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                         onMoveOpenChange={(moveOpen) => {
                           onUiChange({ moveOpen })
                         }}
+                        highlighted={ui.menuHighlight}
+                        onHighlightChange={(menuHighlight) => {
+                          onUiChange({ menuHighlight })
+                        }}
                         moveTarget={ui.moveTarget}
                         onMoveTargetChange={(moveTarget) => {
                           onUiChange({ moveTarget })
                         }}
-                        highlight={ui.menuHighlight}
                         onSelect={(action) => {
-                          if (action === 'rename')
-                            onUiChange({
-                              renaming: true,
-                              messageFocus: false,
-                              refocusMessage: ui.messageFocus === true,
-                            })
-                          if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
-                          if (action === 'fork' && data.fork !== undefined) onUiChange({ chatDialog: 'fork' })
-                          if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
-                          if (action === 'subagents' && data.subagents !== undefined)
-                            onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })
+                          onUiChange({ menuFor: null, moveOpen: false })
+                          pickChatAction(action)
                         }}
-                        layers={data.layers?.sheetIcons}
+                        figma={{ menu: data.layers?.chatMenu }}
                       />
                     )
+                  : text.chatMenu === undefined
+                    ? undefined
+                    : (trigger) => (
+                        <PhoneChatActions
+                          title={chat.head.title}
+                          actions={text.chatMenu ?? []}
+                          targets={data.workspaces.filter((w) => w.id !== data.current)}
+                          newWorkspace={data.newWorkspace}
+                          trigger={trigger}
+                          open={ui.menuFor === chat.id}
+                          onOpenChange={(open) => {
+                            onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })
+                          }}
+                          moveOpen={ui.menuFor === chat.id && ui.moveOpen}
+                          onMoveOpenChange={(moveOpen) => {
+                            onUiChange({ moveOpen })
+                          }}
+                          moveTarget={ui.moveTarget}
+                          onMoveTargetChange={(moveTarget) => {
+                            onUiChange({ moveTarget })
+                          }}
+                          highlight={ui.menuHighlight}
+                          onSelect={pickChatAction}
+                          layers={data.layers?.sheetIcons}
+                        />
+                      )
               }
               noActions={data.chatActions === false}
               folders={
@@ -312,10 +366,13 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
                     onPick={(pickedFolder) => {
                       onUiChange({ pickedFolder })
                     }}
+                    device={device}
+                    chat={chat.head.title}
                     layers={data.layers?.phoneFolders}
                   />
                 )
               }
+              device={device}
               layers={data.layers}
             />
           }
@@ -323,6 +380,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
         {data.sideChat === undefined ? null : (
           <PhoneSideChat
             chat={data.sideChat}
+            device={device}
             open={ui.sideChatOpen === true}
             onOpenChange={(sideChatOpen) => {
               onUiChange({ sideChatOpen })
@@ -351,12 +409,23 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
             layers={data.layers?.phoneSubtask}
           />
         )}
+        {device === 'phone' || data.newChat === undefined ? null : (
+          <NewChatDialog
+            form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
+            workspaces={data.workspaces}
+            open={ui.newChatOpen === true}
+            onOpenChange={(newChatOpen) => {
+              onUiChange({ newChatOpen })
+            }}
+            layers={data.layers?.newChatDialog}
+          />
+        )}
       </Backdrop>
     )
   return (
-    <Backdrop size="phone">
+    <Backdrop size={device}>
       <AppShell
-        size="phone"
+        size={device}
         view="list"
         // The list runs under the tab bar, as Figma draws the phone pages; its last workspace scrolls clear of the bar
         // (PhoneTabBar.test.tsx). The chat, its subagents and New chat have no tab bar.
@@ -364,16 +433,18 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
         tabBar={
           <AppTabBar
             selected="workspaces"
-            device="phone"
+            device={device}
             inboxBadge={data.railBadge}
             onSelect={(next) => {
-              if (next === 'more') setMoreOpen(true)
+              // The tablet has no More drawer: More goes to its page, as on the Inbox's tablet.
+              if (next === 'more' && device === 'phone') setMoreOpen(true)
               else onNavigate?.(next)
             }}
           />
         }
         list={
           <PhoneWorkspaceList
+            device={device}
             text={text}
             workspaces={data.workspaces}
             selected={ui.focusedPane}
@@ -424,7 +495,7 @@ export function WorkspacesPhone({ data, text, ui, onNavigate, onUiChange }: Work
           layers={data.layers?.sheetIcons}
         />
       )}
-      <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} />
+      {device === 'phone' ? <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} /> : null}
     </Backdrop>
   )
 }

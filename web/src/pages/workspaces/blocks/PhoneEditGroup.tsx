@@ -3,7 +3,8 @@
 // with its handle and no ⋯. A tap on a chat's name opens its name as a field
 // (PhoneRenameRow); a workspace in `renaming` shows its name as a field in
 // place of the name, the count and × (105:2614). × asks before the workspace
-// closes (M13, `onClose`). Props only.
+// closes (M13, `onClose`). A chat in `moveTo` shows Move to… in place of
+// its status (T1 105:1594). Props only.
 import {
   Button,
   ChevronDownIcon,
@@ -18,6 +19,7 @@ import { useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Workspace } from '../types.ts'
 import { ChatNameField } from './ChatNameField.tsx'
+import { MoveButton } from './MoveButton.tsx'
 import { PhoneRenameRow } from './PhoneRenameRow.tsx'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
 
@@ -28,11 +30,16 @@ const headerAction = css({ color: 'fg.muted', my: '-4', me: '-4' })
 // M2 105:2604: the handle 4 in (105:2605), the chevron 8 after it (105:2612) and the field to 6 from the end
 // (105:2614). The field is 28 high (control.sm) where Figma's is 25, so the header pads 6, not 8, above and below.
 const renameHeader = css({ ps: '4', pe: '6', py: '6' })
+// T1 105:1622: on the tablet the field ends 6 from the header's end (105:1632) where the Container pads 2 more than
+// Figma's 22, so the header pads 4 at its end.
+const tabletRenameHeader = css({ ps: '4', pe: '4', py: '6' })
 const grip = css({ color: 'fg.subtle', flexShrink: '0' })
 // The chevron's 24 px button reaches 6 into the gaps on each side, so the icon sits where Figma draws it.
 const chevron = css({ color: 'fg.muted', mx: '-6' })
 
 export type PhoneEditGroupProps = {
+  /** The phone, or a tablet in a state with `tabletList` (T1): the field's end inset follows it. */
+  device?: 'phone' | 'tablet' | undefined
   workspace: Workspace
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
@@ -50,11 +57,16 @@ export type PhoneEditGroupProps = {
   onRenamed?: ((name?: string) => void) | undefined
   /** × was pressed: ask before the workspace closes (M13). Without it, × draws only. */
   onClose?: (() => void) | undefined
+  /** Move to… in place of the status of the chats it lists (T1 105:1594). */
+  moveTo?: { label: string; chats: readonly string[] } | undefined
+  /** Move to… on a chat was pressed. Without it, the button draws only. */
+  onMove?: ((chat: string) => void) | undefined
   layers?: SidebarLayers | undefined
 }
 
 export function PhoneEditGroup(props: PhoneEditGroupProps) {
   const {
+    device = 'phone',
     workspace,
     open,
     onOpenChange,
@@ -65,6 +77,8 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
     onChatRenamed,
     onRenamed,
     onClose,
+    moveTo,
+    onMove,
   } = props
   const { layers } = props
   const rowsId = useId()
@@ -98,7 +112,12 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
           />
         </div>
       ) : (
-        <Inline gap="8" align="center" className={renameHeader} data-figma={layers?.headers?.[workspace.id]}>
+        <Inline
+          gap="8"
+          align="center"
+          className={device === 'tablet' ? tabletRenameHeader : renameHeader}
+          data-figma={layers?.headers?.[workspace.id]}
+        >
           <span className={grip}>
             <GripIcon size="12" />
           </span>
@@ -138,6 +157,21 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
                 figma={layers?.rows?.[chat.id]}
                 grip
                 onSelect={() => onRenameChat?.(chat.id)}
+                menu={
+                  moveTo?.chats.includes(chat.id) === true ? (
+                    <MoveButton
+                      label={moveTo.label}
+                      onMove={
+                        onMove === undefined
+                          ? undefined
+                          : () => {
+                              onMove(chat.id)
+                            }
+                      }
+                      figma={layers?.rowMoves?.[chat.id]}
+                    />
+                  ) : undefined
+                }
               />
             ) : (
               <PhoneRenameRow

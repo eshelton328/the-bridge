@@ -692,3 +692,116 @@ export const PhoneRenameChat: Story = {
     await expect(canvas.getByRole('button', { name: 'Undo the rename' })).toBeVisible()
   },
 }
+
+export const TabletEdit: Story = {
+  name: 'T1: edit mode on the tablet, with a workspace renamed in place and Move to…',
+  args: { data: workspacesStates.tabletEdit.data, ui: workspacesStates.tabletEdit.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // and the tablet's menu draws T1. WorkspacesTabletEdit.test.tsx checks edit mode at a tablet's width.
+    await expect(canvas.getByText('drift check')).toBeVisible()
+    await expect(canvas.queryByText('theme tokens')).toBeNull()
+    await expect(canvas.queryByText('theme explorations')).toBeNull()
+  },
+}
+
+export const TabletSideChat: Story = {
+  name: 'T2: the side chat on the tablet, in a sheet over the main chat',
+  args: { data: workspacesStates.tabletSideChat.data, ui: workspacesStates.tabletSideChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the side chat beside it; the tablet's menu draws T2's sheet over the chat.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Nothing here enters bridge themes. Close the sheet and the main chat carries on.'),
+    ).toBeVisible()
+  },
+}
+
+export const TabletChatActions: Story = {
+  name: 'T2b: the chat actions on the tablet, in a menu under the chat’s ⋯',
+  args: {
+    data: workspacesStates.tabletChatActions.data,
+    ui: workspacesStates.tabletChatActions.ui,
+    viewport: 'tablet',
+  },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its chat actions menu open; the tablet's menu draws T2b's chat with the menu under its ⋯.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    // The menu renders in a portal, outside the story's canvas.
+    const body = within(document.body)
+    await expect(await body.findByRole('menuitem', { name: 'Side chat (/btw)' })).toBeVisible()
+    await expect(await body.findByRole('menuitem', { name: 'Rename chat' })).toBeVisible()
+  },
+}
+
+export const TabletSubagents: Story = {
+  name: "T3: a chat's subagents on the tablet, with Start a subtask",
+  args: { data: workspacesStates.tabletSubagents.data, ui: workspacesStates.tabletSubagents.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the subagents panel beside it; the tablet's menu draws T3's subagents at a tablet's width.
+    // WorkspacesTabletSubagents.test.tsx checks them at a tablet's width.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const panel = canvas.getByRole('complementary', { name: 'Subagents' })
+    await expect(within(panel).getByText('› Writing layout-notes.md')).toBeVisible()
+    await expect(within(panel).getByRole('button', { name: 'Hide transcript' })).toBeVisible()
+  },
+}
+
+export const TabletComposing: Story = {
+  name: 'T4: a chat on the tablet while Erik types, with the skills listed after "/"',
+  args: { data: workspacesStates.tabletComposing.data, ui: workspacesStates.tabletComposing.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // its skills open; the tablet's menu draws T4's chat with the skills over the composer.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Writing the layout notes now; the subtask is drafting the theme tokens.'),
+    ).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(await within(document.body).findByRole('radio', { name: /\/writer/ })).toBeChecked()
+  },
+}
+
+export const TabletFolders: Story = {
+  name: "T5: the chat's folders on the tablet, in a sheet with the folder picker",
+  args: { data: workspacesStates.tabletFolders.data, ui: workspacesStates.tabletFolders.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D4's folders list and picker beside it; the tablet's menu draws T5's sheet over the chat.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    const body = within(document.body)
+    await expect(await body.findByRole('button', { name: /Add ~\/the-bridge/ })).toBeVisible()
+    await expect(body.getByRole('button', { name: /Documents/ })).toBeVisible()
+  },
+}
+
+export const TabletOneChat: Story = {
+  name: 'T6: a chat full screen on the tablet, with no split panes',
+  args: { data: workspacesStates.tabletOneChat.data, ui: workspacesStates.tabletOneChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone,
+    // "/" typed after requirements.md and no skill list open; the tablet's menu draws T6's chat full screen.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(canvas.getByText('requirements.md')).toBeVisible()
+    await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
+    await expect(within(document.body).queryByRole('radio', { name: /\/writer/ })).toBeNull()
+  },
+}
+
+export const TabletNewChat: Story = {
+  name: 'T7: New chat on the tablet, in a dialog over the chat',
+  args: { data: workspacesStates.tabletNewChat.data, ui: workspacesStates.tabletNewChat.ui, viewport: 'tablet' },
+  play: async () => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // D3's New chat form over it; the tablet's menu draws T7's form over the tablet's chat. The dialog renders in a
+    // portal, outside the story's canvas, and makes the rest of the page inert.
+    const body = within(document.body)
+    const dialog = await body.findByRole('dialog', { name: 'New chat' })
+    await expect(dialog).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'Start chat' })).toBeVisible()
+    await expect(within(dialog).getByRole('button', { name: 'WORKSPACE: the-bridge' })).toBeVisible()
+  },
+}

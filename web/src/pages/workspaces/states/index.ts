@@ -46,6 +46,14 @@ import { phoneSubtask } from './phoneSubtask.ts'
 import { phoneSubtaskRunning } from './phoneSubtaskRunning.ts'
 import { phoneMovedChat } from './phoneMovedChat.ts'
 import { phoneRenameChat } from './phoneRenameChat.ts'
+import { tabletEdit } from './tabletEdit.ts'
+import { tabletSideChat } from './tabletSideChat.ts'
+import { tabletChatActions } from './tabletChatActions.ts'
+import { tabletSubagents } from './tabletSubagents.ts'
+import { tabletComposing } from './tabletComposing.ts'
+import { tabletFolders } from './tabletFolders.ts'
+import { tabletOneChat } from './tabletOneChat.ts'
+import { tabletNewChat } from './tabletNewChat.ts'
 
 export const workspacesStates = {
   workbench,
@@ -93,4 +101,12 @@ export const workspacesStates = {
   phoneSubtaskRunning,
   phoneMovedChat,
   phoneRenameChat,
+  tabletEdit,
+  tabletSideChat,
+  tabletChatActions,
+  tabletSubagents,
+  tabletComposing,
+  tabletFolders,
+  tabletOneChat,
+  tabletNewChat,
 }

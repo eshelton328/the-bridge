@@ -15,8 +15,13 @@ first: it says what each file of a page folder is for.
   and its last workspace scrolls clear of it (`app/PhoneTabBar.test.tsx`).
   The views with no tab bar keep their footers (the composer, New chat's
   start bar) in `ScrollFrame` footers, which the library lifts above a bar.
-  The page has no tablet layout: a tablet draws the desktop layout, with
-  the rail and no tab bar. M1 is its home, `PhoneWorkspaceList`;
+  A tablet draws the desktop layout, with the rail and no tab bar, except
+  for a state with `data.tabletList` (T1): it draws the phone's views at
+  the tablet's width (`WorkspacesPhone device="tablet"`), with the
+  tablet's backdrop, shell and tab bar, whose More goes to its page; T2 is
+  M3's chat at the tablet's width with M5's side chat sheet over it, with no
+  tab bar, and T2b the same chat with D2b's chat actions menu under its ⋯; T3 is
+  M6's subagents at the tablet's width, with no tab bar. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
@@ -269,6 +274,43 @@ first: it says what each file of a page folder is for.
   outside saves the name in `ui.names`, × undoes the change. Either
   gives the focus back to the message box if it had it before Rename
   (`ui.refocusMessage`).
+  T1 adds `MoveButton` (Move to…, a `Button size="xs"` with the move
+  mark) and `moveTo` and `onMove` to `PhoneEditGroup`: in edit mode a chat
+  in `data.phone.moveTo` shows Move to… in place of its status, which opens
+  its actions (`ui.menuFor`, M9's sheet) with Move to workspace's list
+  open; and `device` to `PhoneWorkspaceList` and `PhoneEditGroup` (the
+  tablet's Container inset and header ends).
+  T2 adds `device` to `PhoneChat` (at a tablet's width the header is
+  `ChatHead size="full"`, 12 under the status bar, over `ChatPane
+  size="tablet"`, 24 in from the sides and 16 under the rule) and to
+  `PhoneSideChat` and `SideChatPanel` (in the tablet's sheet the parts sit
+  23 in from its edges and the note is `bodySm`).
+  T2b adds `trigger` to `ChatActionsMenu`: at a tablet's width the chat's
+  bare ⋯ opens D2b's chat actions menu (`data.chatMenu`, `ui.menuFor`)
+  in place of M4's sheet.
+  T3 adds `device` to `PhoneSubagents` (the tablet's inset, the cards 12
+  apart and no chevrons), `startedFrom` to the count line ("· started from
+  bridge themes") and `onStartSubtask` (Start a subtask under the cards,
+  with `panel.startSubtask`), which opens the Subtask form over the chat
+  (`ui.chatDialog: 'subtask'`) when the state has `data.subtask`.
+  T4 needs no new block: T2's chat with "/" typed after an attachment
+  lists the skills over the composer as M3 does (`SkillPicker
+  layout="phone"`), and the screen keeps its full height under the
+  keyboard (LIBRARY_GAPS.md: Phone keyboard).
+  T5 adds `device` and `chat` to `PhoneFolders` (at a tablet's width the
+  sheet's title row is Folders with the chat's name after it and ×, drawn
+  in the `ScrollFrame`'s header as the library's title row takes a string;
+  the parts sit 23 in and 10 apart, and D4's Cancel and Add sit at the end
+  of the foot), `size="tabletSheet"` to `FolderPickerList` (every part and
+  row 10 apart) and `extraAfterLabel` to `ChatHead` (the folders chip after
+  "context", not in its place).
+  T6 needs no new block: T2's chat fills the screen with "/" typed after
+  an attachment and the focus in the message box, the skills closed, as
+  M17 does; the tablet has no split panes and no drop targets.
+  T7 adds `layers` to `NewChatDialog` (D3's ids when not set): at a
+  tablet's width `ui.newChatOpen` opens D3's dialog over T2's chat in
+  place of M7's full-screen form, and the chat actions' New chat opens it
+  in the current chat's workspace.
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -355,7 +397,27 @@ first: it says what each file of a page folder is for.
   "Moved to the-bridge" and Undo), M23 `phoneRenameChat` (from
   `phoneChatFull`, with M18's empty message box, M4's chat actions and
   D21's rename: the chat full screen with its name a field in the header,
-  the focus in the field).
+  the focus in the field), T1 `tabletEdit` (from `phoneEdit`, with
+  bridge themes' name no field and M9's chat actions: edit mode on the
+  tablet, the-bridge's name a field and Move to… on drift check), T2
+  `tabletSideChat` (from `phoneSideChat`, with `tabletList` and T2's note:
+  the side chat in a sheet over the chat on the tablet), T2b
+  `tabletChatActions` (from `tabletSideChat`, without the sheet, with
+  D2b's chat actions and Opus 5.5 in the composer: the chat actions menu
+  under the ⋯ on the tablet), T3 `tabletSubagents` (from
+  `tabletChatActions`, without the menu, with M6's subagents, no chevrons,
+  and D17's Subtask form: the chat's subagents on the tablet with Start a
+  subtask), T4 `tabletComposing` (from `tabletChatActions`, without the
+  menu, with M3's "/" typed, requirements.md attached and the skills
+  listed, and Claude's second reply: the chat on the tablet while Erik
+  types), T5 `tabletFolders` (from `tabletChatActions`, without the menu,
+  with Erik's message and Claude's reply alone, M8's folders sheet and D4's
+  picker with Documents: the chat's folders on the tablet, the picker open),
+  T6 `tabletOneChat` (from `tabletChatActions`, without the menu, with
+  T4's composer and M17's focus in the message box: the chat full screen
+  on the tablet), T7 `tabletNewChat` (from `tabletChatActions`, without
+  the menu, with D3's New chat form open: the form in a dialog over the
+  chat on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -400,7 +462,12 @@ first: it says what each file of a page folder is for.
   the labels of the menu that + opens, and its layers in
   `layers.addMenu`; for M18 the Fork form's optional `name.hint` and the
   sheet's layers in `layers.phoneFork`; for M20 the Subtask sheet's layers
-  in `layers.phoneSubtask`) and
+  in `layers.phoneSubtask`; for T1 `tabletList`, `phone.moveTo` and the
+  Move to… buttons' layers in `layers.rowMoves`; for T5 the tablet's title
+  row and Cancel in `layers.phoneFolders` (`title`, `cancel`); for T3 the subagents'
+  `startedFrom` and `startSubtask` labels and Start a subtask's layer in
+  `layers.subagentsStart`; for T7 the New chat dialog's layers in
+  `layers.newChatDialog`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel

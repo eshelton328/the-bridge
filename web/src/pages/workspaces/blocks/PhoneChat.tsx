@@ -9,7 +9,9 @@
 // under the title (M10). `focusMessage` puts the focus in the message box with
 // the skills closed (M17). `above` sits over the composer, such as the toast
 // after a move (M22). `rename` takes the title's place while Erik renames the
-// chat, such as the name field (M23).
+// chat, such as the name field (M23). At a tablet's width (T2 105:1810,
+// `device="tablet"`) the header is 12 under the status bar, as the chat alone
+// draws it, and the transcript 16 under the rule and 24 in from the sides.
 // Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -50,7 +52,10 @@ export type PhoneChatProps = {
   renderMenu?: ((trigger: ReactElement) => ReactNode) | undefined
   /** Without the chat actions: the header has no ⋯ (M8 128:672). */
   noActions?: boolean | undefined
-  /** Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8). */
+  /**
+   * Drawn in the header after the context used, in place of its label, such as the folders chip and its sheet (M8);
+   * on a tablet after the label (T5 128:520).
+   */
   folders?: ReactNode
   /**
    * The header on one line, this under the title in place of the workspace and the model row, such as "Opus 5.5 ·
@@ -63,6 +68,8 @@ export type PhoneChatProps = {
   above?: ReactNode
   /** Drawn in the header in place of the title while Erik renames the chat, such as the name field (M23 422:925). */
   rename?: ReactNode
+  /** The device whose width the chat has: the phone (the default), or a tablet (T2). */
+  device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
 }
@@ -83,6 +90,7 @@ export function PhoneChat(props: PhoneChatProps) {
     focusMessage = false,
     above,
     rename,
+    device = 'phone',
     layers,
   } = props
   const more = (
@@ -95,7 +103,7 @@ export function PhoneChat(props: PhoneChatProps) {
   return (
     <section aria-label={pane.head.title} className={column}>
       <ChatHead
-        size="phone"
+        size={device === 'tablet' ? 'full' : 'phone'}
         head={pane.head}
         workspace={workspace}
         contextLabel={contextLabel}
@@ -114,12 +122,13 @@ export function PhoneChat(props: PhoneChatProps) {
         }
         menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
         extra={folders}
+        extraAfterLabel={device === 'tablet'}
         meta={meta}
         rename={rename}
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
-        size="phone"
+        size={device}
         figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
         entries={pane.entries}
         composer={pane.composer}

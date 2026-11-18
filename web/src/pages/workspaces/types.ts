@@ -202,6 +202,13 @@ export const SubagentsPanel = z.object({
    */
   openTranscript: z.string().optional(),
   /**
+   * The words before the chat's name at the end of the count line, such as "started from" in "3 · 2 running · started
+   * from bridge themes" (T3 105:2029); without them, the count line ends with the running subagents.
+   */
+  startedFrom: z.string().optional(),
+  /** The label of the button under the cards that starts a subtask, such as "Start a subtask" (T3 105:2087). */
+  startSubtask: z.string().optional(),
+  /**
    * The labels of a subagent's full transcript on the phone (M12): the trail's name for assistive technology, the
    * label over the task, such as "Task from {chat}", and the note at the foot, such as "Read-only: the result
    * returns to {chat} when it finishes"; {chat} is the chat the subagent works for.
@@ -292,6 +299,27 @@ export const NewChatLayers = z.object({
   start: z.string(),
 })
 export type NewChatLayers = z.infer<typeof NewChatLayers>
+
+/** The New chat dialog's layers in a frame other than D3, whose ids `NewChatDialog` keeps as its defaults (T7). */
+export const NewChatDialogLayers = z.object({
+  dialog: z.string(),
+  fields: z.object({
+    name: z.string(),
+    runsIn: z.string(),
+    workspace: z.string(),
+    folders: z.string(),
+    model: z.string(),
+    message: z.string(),
+  }),
+  /** D3 names no box for the name. */
+  boxes: z.object({ name: z.string().optional(), workspace: z.string(), model: z.string(), message: z.string() }),
+  runsIn: z.record(AgentKind, z.string()),
+  folders: z.array(z.string()),
+  addFolder: z.string(),
+  cancel: z.string(),
+  start: z.string(),
+})
+export type NewChatDialogLayers = z.infer<typeof NewChatDialogLayers>
 
 /**
  * The Fork form (D15 417:305): the copy's name and how much of the chat it copies. `{chat}` in `title` and
@@ -394,6 +422,11 @@ export const PhoneText = z.object({
    * edit mode. Without it, + draws only.
    */
   addMenu: z.object({ newChat: z.string(), newWorkspace: z.string(), untitled: z.string() }).optional(),
+  /**
+   * Move to… in edit mode (T1 105:1594): the button that takes the place of the status of each chat in `chats`. With
+   * `rowMenu`, it opens the chat's actions with Move to workspace's list open; without it, it draws only.
+   */
+  moveTo: z.object({ label: z.string(), chats: z.array(z.string()) }).optional(),
 })
 export type PhoneText = z.infer<typeof PhoneText>
 
@@ -404,6 +437,8 @@ export type PhoneText = z.infer<typeof PhoneText>
  */
 export const PhoneFoldersLayers = z.object({
   chip: z.string(),
+  /** The tablet's title row, Folders with the chat's name and × (T5 128:540). */
+  title: z.string().optional(),
   rows: z.array(z.string()),
   add: z.string(),
   rule: z.string(),
@@ -412,6 +447,8 @@ export const PhoneFoldersLayers = z.object({
   recent: z.array(z.string()),
   browse: z.array(z.string()),
   addFolder: z.string(),
+  /** The tablet's Cancel before Add (T5 128:636). */
+  cancel: z.string().optional(),
 })
 export type PhoneFoldersLayers = z.infer<typeof PhoneFoldersLayers>
 
@@ -496,6 +533,8 @@ export const SidebarLayers = z.object({
   subagentsTitle: z.string().optional(),
   subagentsCount: z.string().optional(),
   subagentChevrons: z.record(z.string(), z.string()).optional(),
+  /** The button under the cards that starts a subtask (T3 105:2087). */
+  subagentsStart: z.string().optional(),
   /** The drop zone of a dragged chat, the dragged chat in it and its hint (D6 158:1025, 158:1034, 158:1048). */
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
@@ -511,6 +550,8 @@ export const SidebarLayers = z.object({
   rowMenus: z.record(z.string(), z.string()).optional(),
   /** The fields that rename a chat or a workspace in the phone's list, by chat or workspace id (M2 146:37, 105:2614). */
   renameFields: z.record(z.string(), z.string()).optional(),
+  /** Move to… in place of a chat row's status in the tablet's edit mode, by chat id (T1 105:1594). */
+  rowMoves: z.record(z.string(), z.string()).optional(),
   /** The back button over a chat on the phone (M3 105:2750). */
   phoneBack: z.string().optional(),
   /** The skill list after "/" in the chat's composer; D1's (105:406) when not set. */
@@ -526,6 +567,8 @@ export const SidebarLayers = z.object({
   liftedMenu: z.string().optional(),
   /** The New chat form on the phone (M7). */
   newChatForm: NewChatLayers.optional(),
+  /** The New chat dialog over the tablet's chat (T7); D3's layers when not set. */
+  newChatDialog: NewChatDialogLayers.optional(),
   /** A subagent's full transcript on the phone (M12). */
   subagentTranscript: SubagentTranscriptLayers.optional(),
   /** The folders sheet on the phone (M8). */
@@ -694,6 +737,11 @@ export const WorkspacesData = z.object({
   toast: z.object({ text: z.string(), action: z.string() }).optional(),
   /** The phone's labels (M1); with them, a phone's width draws the phone layout: the list and the tab bar. */
   phone: PhoneText.optional(),
+  /**
+   * `true` (T1, T2): with the phone's labels, a tablet's width draws the phone's views too: the list with the tablet's
+   * tab bar (T1), or a chat with no tab bar (T2). When not set, a tablet's width draws the desktop layout.
+   */
+  tabletList: z.boolean().optional(),
 })
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 

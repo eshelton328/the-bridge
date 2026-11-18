@@ -9,7 +9,8 @@
 // such as the side chat in a pane (D5 158:518), sits over the body's right
 // side. The composer stays at the bottom of its pane and only the transcript
 // above it scrolls (d-107, `ScrollFrame`). `size="phone"` is the chat on the
-// phone (M3 105:2784), with the skill list as wide as the composer, and
+// phone (M3 105:2784), with the skill list as wide as the composer,
+// `size="tablet"` the same chat at a tablet's width (T2 105:1894) and
 // `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106). Props only.
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
@@ -39,6 +40,9 @@ const sizes = {
   // over Figma's 21 px home indicator band, 31 from the screen's end; `AppShell` keeps a 34 px safe area there with no
   // tab bar, so the body pads nothing under the composer.
   phone: css({ px: '16', pt: '12', pb: '0' }),
+  // T2 105:1894: the transcript 16 under the header's rule and 22 in from the screen's sides (24 on the grid); as on the
+  // phone, `AppShell` keeps the safe area under the composer.
+  tablet: css({ px: '24', pt: '16', pb: '0' }),
   // M5 105:3106: the side chat in the phone's sheet, whose panel pads the sides; the transcript 12 under the note, and
   // the sheet keeps the safe area under the composer.
   sheet: css({ px: '0', pt: '12', pb: '0' }),
@@ -51,6 +55,8 @@ const gaps = {
   side: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   // M3: the entries 12 apart (105:2785 to 105:2790).
   phone: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
+  // T2: the entries 14 apart (105:1895 to 105:1900), 12 on the grid.
+  tablet: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   // M5: the entries 12 apart (105:3121, 105:3123).
   sheet: { body: css({ gap: '12' }), footer: css({ gap: '12', pt: '12' }) },
   // The side chat in a pane: in a short pane its transcript keeps two 17 px lines (`control.lg`, 36, the nearest size
@@ -61,10 +67,15 @@ const gaps = {
 // library's ScrollFrame lets its footer shrink (and scroll) so a long draft leaves the transcript room; the inline
 // composer caps its own draft, so here the footer keeps its height (`footerShrink={false}`, library beta.27) and the
 // panel scrolls instead (SideChatPanel).
-const footerShrinks = { pane: true, full: true, side: true, phone: true, sheet: true, inset: false } satisfies Record<
-  keyof typeof sizes,
-  boolean
->
+const footerShrinks = {
+  pane: true,
+  full: true,
+  side: true,
+  phone: true,
+  tablet: true,
+  sheet: true,
+  inset: false,
+} satisfies Record<keyof typeof sizes, boolean>
 const footer = css({ display: 'flex', flexDirection: 'column' })
 
 export type ChatPaneProps = {
@@ -191,7 +202,7 @@ export function ChatPane(props: ChatPaneProps) {
         skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
         value={skills.value}
         open={skills.open}
-        layout={size === 'phone' ? 'phone' : 'pane'}
+        layout={size === 'phone' || size === 'tablet' ? 'phone' : 'pane'}
         figma={figma.skills}
         onOpenChange={(open) => {
           // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
