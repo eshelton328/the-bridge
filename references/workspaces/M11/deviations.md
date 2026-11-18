@@ -74,6 +74,10 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
 - **No caret.** Figma draws the caret after "theme tokens" (147:213, a
   rectangle, not text). The name field has the focus (its border is cyan)
   with the caret at the end, but the screenshots hide the caret.
+- **The chosen Runs in row's border is lighter (Selected toggle
+  border).** As in M07: Figma draws Claude Code's border (147:216) in
+  opaque #5ee1ff; a pressed `Button` draws `border.active` (0.7), and no
+  selected-border token is opaque.
 - **The Codex mark keeps its colour.** Figma dims it; its name is
   `fg.muted`, as Figma's, as in M07.
 - **Status bar and home indicator.** Figma draws a 38 px status bar

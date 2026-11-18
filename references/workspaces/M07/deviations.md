@@ -62,6 +62,11 @@ Start chat, as the footer.
   names and the Workspace and Model values are in `label` (Medium 14)
   against Figma's Regular 14, and the Codex and shell marks keep their
   colour where Figma dims them; their names are `fg.muted`, as Figma's.
+- **The chosen Runs in row's border is lighter (Selected toggle
+  border).** Figma draws Claude Code's border (105:3284) in opaque
+  #5ee1ff; a pressed `Button` draws `border.active` (#5ee1ff at 0.7), and
+  no selected-border token is opaque. The workspace's own folder chip
+  (128:30, at 0.6) draws `border.selected`, as Figma's.
 - **Cancel is a text button whose box reaches 8 px before the word.** The
   word carries the layer and sits where Figma's does.
 - **No home indicator.** The app draws no status bar or home indicator

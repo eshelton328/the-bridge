@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
+import { workspacesStates } from './states/index.ts'
 import { sideChat } from './states/sideChat.ts'
 import { subagents } from './states/subagents.ts'
 import { workbench } from './states/workbench.ts'
@@ -17,6 +18,7 @@ let view: { unmount: () => Promise<void> } | undefined
 afterEach(async () => {
   await view?.unmount()
   view = undefined
+  await page.viewport(1512, 982)
 })
 
 // The colour a token resolves to, as the browser computes it.
@@ -56,5 +58,29 @@ describe('the borders of open controls', () => {
     const toggle = page.getByRole('button', { name: 'Hide the workspace sidebar' })
     await expect.element(toggle).toHaveAttribute('aria-pressed', 'true')
     expect(getComputedStyle(toggle.element()).borderTopColor).toBe(tokenColor('border-selected'))
+  })
+})
+
+// A selected toggle chip (aria-pressed, not a trigger) follows its Figma frame where that is a token: the
+// workspace's own folder chip (M7 128:30, #5ee1ff at 0.6) and the sheet's chosen recent folder (M8 128:766, at 0.5)
+// draw border.selected, not the pressed border.active.
+describe('the borders of selected chips on the phone', () => {
+  it("draws New chat's own folder chip with border.selected (M7)", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneNewChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const chip = page.getByRole('button', { name: '~/the-bridge', exact: true })
+    await expect.element(chip).toHaveAttribute('aria-pressed', 'true')
+    expect(getComputedStyle(chip.element()).borderTopColor).toBe(tokenColor('border-selected'))
+  })
+
+  it("draws the folders sheet's chosen recent folder with border.selected (M8)", async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneFolders
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    const sheet = page.getByRole('dialog', { name: 'Folders' })
+    const row = sheet.getByRole('button', { name: /^~\/the-bridge/, pressed: true })
+    await expect.element(row).toBeVisible()
+    expect(getComputedStyle(row.element()).borderTopColor).toBe(tokenColor('border-selected'))
   })
 })

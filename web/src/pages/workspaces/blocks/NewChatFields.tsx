@@ -36,6 +36,9 @@ const check = css({ display: 'flex', color: 'fg.accent' })
 const box = css({ w: '[100%]', justifyContent: 'flex-start' })
 // Figma keeps two spaces before "+1" (148:83).
 const keepSpaces = css({ whiteSpace: 'pre' })
+// M7 128:30: the workspace's own folder chip draws #5ee1ff at 0.6, border.selected's colour (0.5), not the
+// pressed border.active (0.7). `Button` has no prop for it (LIBRARY_GAPS.md: Selected toggle border).
+const ownFolder = css({ _pressed: { borderColor: 'border.selected' } })
 
 /** Fills in a `foldersBox` text: the first folder and the number of the others. */
 function foldersText(template: string, folders: readonly string[]): string {
@@ -104,7 +107,7 @@ export function NewChatFields({ form, workspaces, messageRef, nameRef, layers }:
           <Inline gap="6" align="center" wrap>
             {form.folders.map((path, i) =>
               i === 0 ? (
-                <Button key={path} size="sm" pressed data-figma={layers?.folders[i]}>
+                <Button key={path} size="sm" pressed className={ownFolder} data-figma={layers?.folders[i]}>
                   <FolderIcon size="12" />
                   {path}
                 </Button>

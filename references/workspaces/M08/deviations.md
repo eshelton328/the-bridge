@@ -75,7 +75,9 @@ search has the focus with its caret after "~/the-".
   (`Button size="lg"`) against 37, Add folder 28 against 30 (its border
   dashed, as Figma's 128:730), the recent rows 32 against 33 and
   35 (the chosen ~/the-bridge), the folders of ~/ 32 against 31; all
-  within the tolerance. "working folder" is `fg.muted`, as in D04.
+  within the tolerance. "working folder" is `fg.muted`, as in D04. The
+  chosen ~/the-bridge draws `border.selected`, as Figma's 128:766
+  (#5ee1ff at 0.5).
 - **Chat header (Chat header, Chat header text).** As in M03: the title is
   `subtitle` (17/24) against Figma's SemiBold 16 and the model chip 26
   high against 22; Figma's header here has no ⋯ and no "context" label,
