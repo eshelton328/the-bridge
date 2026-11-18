@@ -704,3 +704,16 @@ export const TabletEdit: Story = {
     await expect(canvas.queryByText('theme explorations')).toBeNull()
   },
 }
+
+export const TabletSideChat: Story = {
+  name: 'T2: the side chat on the tablet, in a sheet over the main chat',
+  args: { data: workspacesStates.tabletSideChat.data, ui: workspacesStates.tabletSideChat.ui, viewport: 'tablet' },
+  play: async ({ canvas }) => {
+    // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and
+    // the side chat beside it; the tablet's menu draws T2's sheet over the chat.
+    await expect(canvas.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect(
+      canvas.getByText('Nothing here enters bridge themes. Close the sheet and the main chat carries on.'),
+    ).toBeVisible()
+  },
+}

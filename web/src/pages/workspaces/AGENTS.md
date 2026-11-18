@@ -18,7 +18,9 @@ first: it says what each file of a page folder is for.
   A tablet draws the desktop layout, with the rail and no tab bar, except
   for a state with `data.tabletList` (T1): it draws the phone's views at
   the tablet's width (`WorkspacesPhone device="tablet"`), with the
-  tablet's backdrop, shell and tab bar, whose More goes to its page. M1 is its home, `PhoneWorkspaceList`;
+  tablet's backdrop, shell and tab bar, whose More goes to its page; T2 is
+  M3's chat at the tablet's width with M5's side chat sheet over it, with no
+  tab bar. M1 is its home, `PhoneWorkspaceList`;
   M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
   'chat'`, `PhoneChat`), which fills the screen with no tab bar; M4 is
   that chat's actions sheet (`ui.menuFor`, `PhoneChatActions`); M5 is
@@ -277,6 +279,11 @@ first: it says what each file of a page folder is for.
   its actions (`ui.menuFor`, M9's sheet) with Move to workspace's list
   open; and `device` to `PhoneWorkspaceList` and `PhoneEditGroup` (the
   tablet's Container inset and header ends).
+  T2 adds `device` to `PhoneChat` (at a tablet's width the header is
+  `ChatHead size="full"`, 12 under the status bar, over `ChatPane
+  size="tablet"`, 24 in from the sides and 16 under the rule) and to
+  `PhoneSideChat` and `SideChatPanel` (in the tablet's sheet the parts sit
+  23 in from its edges and the note is `bodySm`).
   Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
@@ -365,7 +372,9 @@ first: it says what each file of a page folder is for.
   D21's rename: the chat full screen with its name a field in the header,
   the focus in the field), T1 `tabletEdit` (from `phoneEdit`, with
   bridge themes' name no field and M9's chat actions: edit mode on the
-  tablet, the-bridge's name a field and Move to… on drift check).
+  tablet, the-bridge's name a field and Move to… on drift check), T2
+  `tabletSideChat` (from `phoneSideChat`, with `tabletList` and T2's note:
+  the side chat in a sheet over the chat on the tablet).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a

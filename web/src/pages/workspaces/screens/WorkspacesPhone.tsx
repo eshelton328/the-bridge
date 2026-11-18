@@ -34,7 +34,8 @@
 // outside saves the name in `ui.names`, × undoes the change; either gives the
 // focus back to the message box if it had it before (`ui.refocusMessage`).
 // T1 draws the list in edit mode at a tablet's width (`device="tablet"`): the
-// tablet's backdrop, shell and tab bar, whose More goes to its page.
+// tablet's backdrop, shell and tab bar, whose More goes to its page. T2 draws
+// the chat with its side chat sheet at a tablet's width, with no tab bar.
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -320,6 +321,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
                   />
                 )
               }
+              device={device}
               layers={data.layers}
             />
           }
@@ -327,6 +329,7 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
         {data.sideChat === undefined ? null : (
           <PhoneSideChat
             chat={data.sideChat}
+            device={device}
             open={ui.sideChatOpen === true}
             onOpenChange={(sideChatOpen) => {
               onUiChange({ sideChatOpen })

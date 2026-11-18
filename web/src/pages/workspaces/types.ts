@@ -702,8 +702,8 @@ export const WorkspacesData = z.object({
   /** The phone's labels (M1); with them, a phone's width draws the phone layout: the list and the tab bar. */
   phone: PhoneText.optional(),
   /**
-   * `true` (T1): with the phone's labels, a tablet's width draws the phone's list too, with the tablet's tab bar. When
-   * not set, a tablet's width draws the desktop layout.
+   * `true` (T1, T2): with the phone's labels, a tablet's width draws the phone's views too: the list with the tablet's
+   * tab bar (T1), or a chat with no tab bar (T2). When not set, a tablet's width draws the desktop layout.
    */
   tabletList: z.boolean().optional(),
 })
