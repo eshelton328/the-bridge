@@ -1,0 +1,8 @@
+{
+  "extra": [
+    {
+      "text": "Open in workspace ›",
+      "reason": "M2's artifact page puts Open in workspace as a link under Made in's meta line (452:4229). In M7 the File in a project sheet covers Made in (the sheet starts at y 411, Made in at 600), so the link is under the sheet and not seen. Figma's M7 copy of the page has no such layer, and the text check does not know the sheet covers it. The page under the sheet stays M2's page."
+    }
+  ]
+}
