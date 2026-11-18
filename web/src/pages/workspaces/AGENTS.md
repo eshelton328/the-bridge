@@ -11,7 +11,8 @@ first: it says what each file of a page folder is for.
   `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
   M1 to M23: one view at a time over the shared `AppTabBar`, whose More
   opens the shared `MoreDrawer`. M1 is its home, `PhoneWorkspaceList`;
-  M2 is its edit mode (`ui.editing`).
+  M2 is its edit mode (`ui.editing`); M3 is a chat (`ui.phoneView:
+  'chat'`, `PhoneChat`), which fills the screen with no tab bar.
   Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
   so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
@@ -134,8 +135,13 @@ first: it says what each file of a page folder is for.
   chat's name opens its field), `PhoneRenameRow` (a chat row whose name is
   a field over the meta line) and `ChatMeta` (a chat's model and context,
   which `SidebarChatRow` uses too); it adds `grip` to `SidebarChatRow`, and
-  `draft`, `autoFocus` and `fill` to `ChatNameField`. Later frames add to
-  these blocks.
+  `draft`, `autoFocus` and `fill` to `ChatNameField`. M3 adds `PhoneChat`
+  (the chat on the phone: `ChatHead size="phone"` with the back button in
+  its `back` slot and a bare ⋯, over `ChatPane size="phone"`), `autoFocus`
+  to `ChatPane` (the focus in the message box) and `layout="phone"` to
+  `SkillPicker` (as wide as the composer, compact, and the focus stays in
+  the box); a tap on a chat in the phone's list opens it, and the back
+  button returns to the list. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -174,7 +180,9 @@ first: it says what each file of a page folder is for.
   draws bridge themes alone beside the sidebar), M2 `phoneEdit` (from
   `phoneHome`, in edit mode: bridge themes' name a field with "theme
   explorations", the-bridge's name a field, without theme tokens, and
-  drift check with no status).
+  drift check with no status), M3 `phoneChat` (from `phoneHome`, with
+  D1's bridge themes pane without the composer's model chip: "/" typed,
+  the skills listed, the chat open on the phone).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -198,7 +206,8 @@ first: it says what each file of a page folder is for.
   in `layers.renameField`; for M1 `phone`, the phone's labels, and the
   phone list's layers in `layers.phoneList`, `phoneHeader`, `phoneEdit`,
   `phoneAdd` and `rowMenus`; for M2 `phone.done`, a chat's `hideStatus`
-  and the fields' layers in `layers.renameFields`) and
+  and the fields' layers in `layers.renameFields`; for M3 `phone.back`
+  and the layers `phoneBack` and `skills`) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -213,6 +222,7 @@ first: it says what each file of a page folder is for.
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
   and `names`, the names Erik gave chats; for M2 `editing`, the phone list's
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
-  fields with their text, and `workspaceNames`), each a Zod schema.
+  fields with their text, and `workspaceNames`; for M3 `phoneView`, what
+  fills the phone's screen), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
