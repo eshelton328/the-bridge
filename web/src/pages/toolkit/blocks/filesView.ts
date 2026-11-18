@@ -93,7 +93,7 @@ export function markdownSource(blocks: readonly ToolkitMarkdownBlock[]): string[
 }
 
 /** Whether a file opens on a page of its own on a tablet or phone (T6): a script with an explanation. */
-export function opensOwnPage(view: ToolkitFileView | undefined): boolean {
+function opensOwnPage(view: ToolkitFileView | undefined): boolean {
   return fileModes(view).some((m) => m.value === 'explain')
 }
 

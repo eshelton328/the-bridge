@@ -244,7 +244,7 @@ what each file of a page folder is for.
   the script (the badge's folder and the file's path), and `ToolkitFilePage`
   puts the Explain and Code switch in a row over the box. Back to Files shows
   the tree with the script under it, still selected; a tap on its row opens its
-  page again (`opensOwnPage`; the library's FileTree reports no tap on the
+  page again (`opensPage`; the library's FileTree reports no tap on the
   selected row, so `ToolkitFileBrowser` handles it). On the phone (M5,
   `skillFilesPhone`, T4's files with the phone's shorter role lines and only
   scripts/ open) the Files tab has no viewer: the item's folder in the toolkit
@@ -269,7 +269,8 @@ what each file of a page folder is for.
   marked until a file is opened. An agent on the phone (M36,
   `agentFilesPhone`, T33's files with no `ui.from`, as on M20) does the
   same under Back to Toolkit, and a workflow (M37, `workflowFilesPhone`,
-  T34's files) shows its doc and the harness/ folder open. Only the
+  T34's files) shows its doc and the harness/ folder open; a hook (M38,
+  `hookFilesPhone`, T35's files) its script and its tests. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

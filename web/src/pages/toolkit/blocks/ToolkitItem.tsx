@@ -222,9 +222,10 @@ const filesTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, string
     'workflows/skill-eval-round.md': '494:3571',
     'hooks/commit-msg': '494:4073',
   },
-  // On the phone: writer in M5 (435:210), the rule skills in M35 (494:4452), writing-reviewer in M36 (494:4717) and
-  // skill-eval-round in M37 (494:5021).
+  // On the phone: writer in M5 (435:210), the rule skills in M35 (494:4452), writing-reviewer in M36 (494:4717),
+  // skill-eval-round in M37 (494:5021) and the hook commit-msg in M38 (494:5369).
   phone: {
+    'hooks/commit-msg': '494:5369',
     'skills/writer/': '435:210',
     'rules/skills.md': '494:4452',
     'agents/writing-reviewer.md': '494:4717',

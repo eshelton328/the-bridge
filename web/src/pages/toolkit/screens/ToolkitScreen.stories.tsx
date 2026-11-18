@@ -960,3 +960,19 @@ export const WorkflowFilesPhone: Story = {
     await expect(within(tree).getByText('208 lines')).toBeVisible()
   },
 }
+
+export const HookFilesPhone: Story = {
+  name: 'M38: a hook’s files on the phone, the script and its tests',
+  args: { data: toolkitStates.hookFilesPhone.data, ui: toolkitStates.hookFilesPhone.ui, viewport: 'phone' },
+  // Storybook opens at desktop; pick Phone in the viewport menu to see the tree with no viewer, under Back. The play
+  // test checks what every width shows; src/app/ToolkitFiles.test.tsx checks the phone's layout.
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Files' })).toHaveAttribute('aria-selected', 'true')
+    // The script and its tests, with the phone's role lines: each one's length and kind.
+    const tree = within(item).getByRole('tree', { name: 'Files' })
+    await expect(within(tree).getAllByRole('treeitem')).toHaveLength(2)
+    await expect(within(tree).getByText('142 lines · script')).toBeVisible()
+    await expect(within(tree).getByText('97 lines · script')).toBeVisible()
+  },
+}
