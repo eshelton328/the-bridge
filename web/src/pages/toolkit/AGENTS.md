@@ -288,7 +288,9 @@ what each file of a page folder is for.
   agent (D30, `agentLinks`, D7's data) has two items named writer on one
   side, the skill and the agent: each node and row keys on the item's
   path. A workflow (D31, `workflowLinks`, D8's data) names the stage
-  before it and the agent it runs. Only the
+  before it and the agent it runs, and a hook (D32, `hookLinks`, D9's
+  data) and the rule it enforces name each other, so the rule stands on
+  both sides. Only the
   selected tab's panel is drawn. Later frames of the open item fill the
   other tabs.
 - [LIBRARY_GAPS.md](LIBRARY_GAPS.md): what the library cannot draw yet.

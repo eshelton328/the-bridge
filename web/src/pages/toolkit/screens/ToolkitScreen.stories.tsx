@@ -1034,3 +1034,17 @@ export const WorkflowLinks: Story = {
     await expect(within(to).getByRole('button', { name: 'skill-eval-round.md:46' })).toBeVisible()
   },
 }
+
+export const HookLinks: Story = {
+  name: 'D32: a hook open beside the list, on Links',
+  args: { data: toolkitStates.hookLinks.data, ui: toolkitStates.hookLinks.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    const item = canvas.getByRole('article', { name: 'commit-msg' })
+    await expect(within(item).getByRole('tab', { name: 'Links' })).toHaveAttribute('aria-selected', 'true')
+    await expect(within(item).getByRole('heading', { name: 'Links 2' })).toBeVisible()
+    const from = within(item).getByRole('region', { name: 'Linked from 1' })
+    await expect(within(from).getByRole('button', { name: 'rules/commits-and-prs.md:182' })).toBeVisible()
+    const to = within(item).getByRole('region', { name: 'Links to 1' })
+    await expect(within(to).getByRole('button', { name: 'commit-msg:3' })).toBeVisible()
+  },
+}

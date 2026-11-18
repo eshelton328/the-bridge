@@ -246,8 +246,9 @@ const explainTitleLayers: Readonly<Record<Viewport, Readonly<Record<string, stri
   phone: {},
 }
 // On the Links tab: writer in D19 (482:367), the rule skills in D29 (493:626), writing-reviewer in D30 (493:1201),
-// skill-eval-round in D31 (493:1984).
+// skill-eval-round in D31 (493:1984), the hook commit-msg in D32 (493:2794).
 const linksTitleLayers: Readonly<Record<string, string>> = {
+  'hooks/commit-msg': '493:2794',
   'skills/writer/': '482:367',
   'rules/skills.md': '493:626',
   'agents/writing-reviewer.md': '493:1201',
