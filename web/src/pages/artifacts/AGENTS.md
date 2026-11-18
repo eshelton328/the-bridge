@@ -189,7 +189,9 @@ each file of a page folder is for.
   and closes it, and the scrim and Escape close it and keep them, so both
   return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
   `GroupHeader` over rows 6 apart, Figma's 104 px pitch) and `LibraryRow`
-  (`ListRow surface="card" padding="lg" trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the title
+  (`ListRow surface="card" padding="lg" leadingGap="16" bodyAlign="center"
+  trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the text 16
+  after it and centred down the row, the title
   with the New dot 8 after it (`dot="working"`) and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
   it, and at the end, centred down the row, the place as `Badge variant="tag"`, the
