@@ -233,6 +233,24 @@ export const ForkForm = z.object({
 })
 export type ForkForm = z.infer<typeof ForkForm>
 
+/**
+ * The Subtask form (D17 417:1026): what the subagent should do and which model runs it. The subtask gets the chat's
+ * full context and returns its result to the chat.
+ */
+export const SubtaskForm = z.object({
+  title: z.string(),
+  /** The field labels, as Figma writes them, in capitals. */
+  labels: z.object({ model: z.string(), task: z.string() }),
+  model: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
+  /** The task as the form opens with it, and the placeholder of an empty task. */
+  task: z.object({ value: z.string(), placeholder: z.string().optional() }),
+  /** The line under the task that says what the subtask gets and where its result goes. */
+  note: z.string(),
+  cancel: z.string(),
+  submit: z.string(),
+})
+export type SubtaskForm = z.infer<typeof SubtaskForm>
+
 /** The workspace sidebar's labels (D2 105:611). */
 export const SidebarText = z.object({
   title: z.string(),
@@ -403,6 +421,8 @@ export const WorkspacesData = z.object({
   newChat: NewChatForm.optional(),
   /** The Fork form of a chat action (D15). */
   fork: ForkForm.optional(),
+  /** The Subtask form of a chat action (D17). */
+  subtask: SubtaskForm.optional(),
   /** `false`: the chat header has no ⋯, as D4 draws it. */
   chatActions: z.boolean().optional(),
   /** The folders of the chat shown alone (D4). */

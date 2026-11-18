@@ -18,6 +18,7 @@ import { emptiedPane } from './emptiedPane.ts'
 import { resizedPanes } from './resizedPanes.ts'
 import { forkDialog } from './forkDialog.ts'
 import { forkedChat } from './forkedChat.ts'
+import { subtaskDialog } from './subtaskDialog.ts'
 
 export const workspacesStates = {
   workbench,
@@ -37,4 +38,5 @@ export const workspacesStates = {
   resizedPanes,
   forkDialog,
   forkedChat,
+  subtaskDialog,
 }

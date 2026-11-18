@@ -264,3 +264,21 @@ export const ForkedChat: Story = {
     await expect(canvas.queryByRole('button', { name: /Stop/ })).toBeNull()
   },
 }
+
+export const SubtaskDialog: Story = {
+  name: 'D17: Subtask asks what the subagent should do and which model runs it',
+  args: { data: workspacesStates.subtaskDialog.data, ui: workspacesStates.subtaskDialog.ui, viewport: 'desktop' },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.'),
+    ).toBeVisible()
+    // The dialog renders in a portal, outside the story's canvas.
+    const dialog = within(await within(document.body).findByRole('dialog', { name: 'Start a subtask' }))
+    await expect(dialog.getByRole('button', { name: 'MODEL: Sonnet 5.5 · high effort' })).toBeVisible()
+    const task = dialog.getByRole('textbox', { name: 'WHAT SHOULD THE SUBTASK DO?' })
+    await expect(task).toHaveValue('Draft layout notes for the three directions, one page each.')
+    await expect(task).toHaveFocus()
+    await expect(dialog.getByText('Gets this chat’s full context. Returns its result here.')).toBeVisible()
+    await expect(dialog.getByRole('button', { name: 'Start subtask' })).toBeVisible()
+  },
+}

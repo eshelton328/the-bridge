@@ -94,7 +94,11 @@ first: it says what each file of a page folder is for.
   `SidebarChatRow` draws a chat's `mark` (`fork`: the branch mark before
   the kind mark of a nested row), `ChatHead` puts the chat's `origin` after
   its workspace, and `ChatEntryView` draws an `event` entry (where a fork
-  starts) as the library's `ToolLine`. Later frames add to these blocks.
+  starts) as the library's `ToolLine`. D17 adds `SubtaskDialog` (the
+  Subtask form in `Dialog size="lg"`: the model in a `SelectField`, the
+  task in a `Composer` with its attach button and the focus, a note,
+  Cancel and Start subtask), which opens over the chat alone when
+  `ui.chatDialog` is `subtask`. Later frames add to these blocks.
 - Sticky bars (d-107): a composer stays at the bottom and a header at the
   top of its pane, the chat alone, the side chat and the subagents panel,
   and only the content between them scrolls. `ChatPane` and
@@ -117,7 +121,9 @@ first: it says what each file of a page folder is for.
   the top row's handle dragged to 60 : 40), D15 `forkDialog` (from
   `chatActions`, without the side chat and the menu, and the Fork form
   open), D16 `forkedChat` (from `chatActions`, without the side chat and
-  the menu: the fork under bridge themes, focused, Idle).
+  the menu: the fork under bridge themes, focused, Idle), D17
+  `subtaskDialog` (from `chatActions`, without the side chat and the
+  menu, and the Subtask form open).
   Later states start from
   `workbench`; the first key of `states/index.ts` is the page's default.
 - `types.ts`: `WorkspacesData` (the workspaces, the current one's panes, a
@@ -135,7 +141,8 @@ first: it says what each file of a page folder is for.
   `preview`; for D13 the empty pane's `close` and its layers in
   `layers.emptyClose`; for D14 `split`, `resizeHint` and its layer in
   `layers.resizeHint`; for D15 `fork`, the Fork form; for D16 a sidebar
-  chat's `mark`, a pane head's `origin` and the `event` chat entry) and
+  chat's `mark`, a pane head's `origin` and the `event` chat entry; for
+  D17 `subtask`, the Subtask form) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
@@ -146,6 +153,6 @@ first: it says what each file of a page folder is for.
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
   of a rows-first split and its sizes, and `splitSizes`, each handle's
   sizes, so a drag of one handle leaves the others; for D15 `chatDialog`,
-  the chat action whose dialog is open), each a Zod schema.
+  the chat action whose dialog is open, `subtask` in D17), each a Zod schema.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.
