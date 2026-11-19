@@ -19,7 +19,9 @@ what each file of a page folder is for.
   its foot (AppShell `tabBarOverlay`: the page runs under the bar, as
   Figma's M2, M20 and M22 do, and its end scrolls clear of it; Toolkit opens
   from More; on the phone More opens the shared `MoreDrawer`, kept
-  open by `ui.moreOpen`, M4). Without `onUiChange` it keeps the changes itself, so a story
+  open by `ui.moreOpen`, M4). On a tablet or phone the list notes the
+  shell's scroll as an item opens from it, and Back shows the list at that
+  scroll again, as the Inbox's list does (R11). Without `onUiChange` it keeps the changes itself, so a story
   or canvas board can use the chips, the search and the groups.
   `screens/listView.ts` (pure, tested in `listView.test.ts` beside this
   file) narrows the groups by the kind chip and the search.
@@ -37,6 +39,22 @@ what each file of a page folder is for.
   and Discuss and Show on map (`ToolkitItemActions`). On the map the list tools show no Sort and
   their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
+- `home.ts`: `toolkitHome`, what `/toolkit` shows with no `?state=`:
+  D4's list (every group, with T1's counts) and D1's list view with no
+  item, map selection, sheet or More drawer open. Its data is the state
+  files' data put together, imported, so an item opens from the home as
+  complete as any state shows it: the More drawer's Artifacts count, the
+  map, the Activity view (D11), every item's details with each tab the
+  desktop states fill (`mergeDetails`: the How it works, Files with D10's
+  explanation, Links and Evals states, the workflow's page; each browser
+  also takes the files and excerpts of the item's other browsers and its
+  link target's, so a Links row's file opens at its line), the link
+  targets' browsers and the skills the evals open. Only five items have
+  details in any state; the others open with what the list and their link
+  target know. The screen lays it out for the window (D1's cards beside
+  the rail, T1's or M1's rows over the tab bar) and changes on resize. It
+  is not a Figma state, so it sits outside `states/` with no frame, story,
+  board or fidelity check (`app/ToolkitHome.test.tsx`).
 - `types.ts`: the view models: items, groups, kind chips, the map, an open item's details, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
