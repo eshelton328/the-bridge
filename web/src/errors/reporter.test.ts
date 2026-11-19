@@ -104,4 +104,13 @@ describe('report', () => {
     report(new Error('Live data failed; showing mock data', { cause: failed }), 'handler')
     expect(getReports().map((r) => [r.source, r.error])).toEqual([['query', failed]])
   })
+
+  it('keeps an error whose message holds an @ from two places, since the header is not a frame', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const fromHere = () => new Error('no answer from owner@host')
+    const fromThere = () => new Error('no answer from owner@host')
+    report(fromHere(), 'handler')
+    report(fromThere(), 'handler')
+    expect(getReports()).toHaveLength(2)
+  })
 })

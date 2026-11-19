@@ -53,10 +53,18 @@ function isControlFlow(thrown: unknown): boolean {
   return typeof thrown === 'object' && thrown !== null && 'name' in thrown && thrown.name === 'AbortError'
 }
 
-/** The first frame of a stack: the line after the "Name: message" header in Chromium, the first line elsewhere. */
+/** The first frame of a stack: the first line after the "Name: message" header in Chromium, the first line elsewhere. */
 function firstFrame(error: Error): string {
-  const lines = (error.stack ?? '').split('\n').map((line) => line.trim())
-  return lines.find((line) => line.startsWith('at ') || line.includes('@')) ?? ''
+  const stack = error.stack ?? ''
+  // Chromium starts the stack with the "Name: message" header, which can hold an @ or span lines; drop it.
+  const header = String(error)
+  const frames = stack.startsWith(header) ? stack.slice(header.length) : stack
+  return (
+    frames
+      .split('\n')
+      .map((line) => line.trim())
+      .find((line) => line.startsWith('at ') || line.includes('@')) ?? ''
+  )
 }
 
 /** What makes two reports the same error, such as one thrown again on each tick. */
