@@ -153,8 +153,10 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
             label="Reply"
             placeholder={detail.reply}
             running
-            // Figma draws the Stop square at 12 (D5 346:2285, T5 346:6426, M8 346:10896).
+            // Figma draws Stop with a 12 px icon and a 12 px Medium label in every reply box (D5 346:2285 and 346:2287,
+            // T5 346:6426 and 346:6428, M8 346:10896 and 346:10898).
             stopIconSize="12"
+            stopTextSize="xs"
             onAttach={() => undefined}
             {...draftProps(drafts, 'reply')}
             // The tablet's and phone's reply box (346:6416, 346:10886) has no model chip.
