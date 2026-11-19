@@ -37,6 +37,13 @@ what each file of a page folder is for.
   and Discuss and Show on map (`ToolkitItemActions`). On the map the list tools show no Sort and
   their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
+- `home.ts`: `toolkitHome`, what `/toolkit` shows with no `?state=`:
+  `toolkitListTablet`'s data (D1's list with the Rules group, as T1 and
+  M1 draw it) and D1's list view with no item, map selection, sheet or
+  More drawer open. The screen lays it out for the window (D1's cards
+  beside the rail, T1's or M1's rows over the tab bar) and changes on
+  resize. It is not a Figma state, so it sits outside `states/` with no
+  frame, story, board or fidelity check (`app/ToolkitHome.test.tsx`).
 - `types.ts`: the view models: items, groups, kind chips, the map, an open item's details, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to

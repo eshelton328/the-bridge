@@ -23,7 +23,7 @@ Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 | `search.ts`, `load<Page>State.ts` | The URL search schema and the route loader, which reads through `lib/dataSource.ts`      |
 | `definition.ts`                   | The page as the canvas sees it (`PageDefinition`)                                        |
 | `index.ts`                        | The public entry: routes and `design/` import only this                                  |
-| `home.ts`                         | The page's home: what it shows with no `?state=` (Workspaces, Artifacts, Inbox)          |
+| `home.ts`                         | The page's home: what it shows with no `?state=` (every page)                            |
 
 ## The home state
 
@@ -31,10 +31,8 @@ With no `?state=` (and always in a production build) a page shows its
 home: the base data with every menu, popover, list and dialog closed,
 with the data each layout needs, so the screen lays out for the window.
 The loader passes it to `readState()` as `{ key: 'home', state }`
-(`lib/dataSource.ts`). A page without one still opens on a state file
-(the first state of Toolkit). To adopt
-it, a page adds `home.ts` (outside `states/`, so it has no frame or
-story) with the data of each layout its screen draws by width
+(`lib/dataSource.ts`). Every page has one. A new page adds `home.ts`
+(outside `states/`, so it has no frame or story) with the data of each layout its screen draws by width
 (`ViewportFrame`), passes it in `load<Page>State.ts`, and adds a route
 test like `app/WorkspacesHome.test.tsx`.
 
