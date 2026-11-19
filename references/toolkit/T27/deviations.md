@@ -8,16 +8,15 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 keeps T19's header. Every other Toolkit frame (T03, T04, T06 to T08,
 T10, T15, T17 to T19 and T28 to T38 and the list frames) gives the same
 text, position and rule results as before the Evals tab. The frame's
-`exceptions.json` excepts the string below, with the entry that records
-it; with it the text and rules checks now pass. A later run (after the
-review's fixes and the icons in the test line) gives the same results,
-but for the text check, which the icons fail.
+text and rules checks pass. A later run (after the review's fixes and
+the icons in the test line) gives the same results; since the text
+check change of 2026-11-19 it needs no exception, so the frame has no
+`exceptions.json` (see Cross mark).
 
 ## Checks
 
-- Text: fail. 1 string is not visible: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
-  (492:3729): the check does not see the ✗ and ✓ that the library's
-  `Glyph` keeps in the text (see Cross mark). Every other
+- Text: pass. The test line (492:3729) passes: the check sees the ✗ and
+  ✓ of the library's `Glyph` by its icons (see Cross mark). Every
   Figma string is in the render and visible, and nothing extra shows.
 - Position: 24 of 27 layers pass. The 3 that fail: `button · Discuss` x
   -5.1 y -1 w +2.5 h -2; `toolkit item` x +2 y +32 w -4 h -528;
@@ -55,12 +54,10 @@ but for the text check, which the icons fail.
   `Glyph` (`symbol="cross"` and `"check"`, 12, the text's size, in its
   colour): the line's text is Figma's string, ✗ and ✓ included, and the
   glyph draws Figma's slanted cross and thin check in their place. The
-  glyph keeps each character at font size 0 and transparent, and the
-  text check takes a text run with no 1 px box as not shown, so it does
-  not see the two characters and reports the string as not visible,
-  though the screen shows Figma's line. The frame's `exceptions.json`
-  keeps its entry for this layer, with that reason (gap: Symbol
-  glyphs).
+  glyph keeps each character at font size 0 and transparent; since the
+  text check change of 2026-11-19 the check measures a Glyph's character
+  by its icon (shown, at least 1 px, in view and not covered), so it sees
+  the line whole and the frame needs no exception for it.
 - **Line break.** The test line breaks after "so the", where Figma's
   breaks after "rule": the text box is 674 px wide against Figma's 678
   (the Container's 24 px sides, d-107), and with "rule" the first line

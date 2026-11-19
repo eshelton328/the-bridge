@@ -10,7 +10,8 @@ open on its Evals tab. Every other Toolkit frame (D03, D04, D06 to D10,
 D13, D14, D19 and D29 to D39 and the list frames) gives the same text,
 position and rule results as before the Evals tab. The frame's
 `exceptions.json` excepts the strings and the `hiddenOverflow` findings
-below, each with the entry that records it; with them the text and rules
+below (the test line's needs none since the text check change of
+2026-11-19, see Cross mark), each with the entry that records it; with them the text and rules
 checks now pass.
 
 ## Checks
@@ -20,10 +21,10 @@ From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
 fade="none"` (library 1.0.0-beta.65), with the frame's
 `exceptions.json`.
 
-- Text: pass. `exceptions.json` excepts 3 Figma strings (`A hook has no
-  eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓
-  examples through the hook, so the rule and the hook cannot drift
-  apart.`, `Workflows`, `2`); each is explained below.
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below. The test line (492:2185) passes with no
+  exception: the check sees the ✗ and ✓ of the library's `Glyph` by its
+  icons (see Cross mark).
 - Position: 43 of 44 layers pass. The 1 that fail: `group · WORKFLOWS` y
   -5. Each is explained below.
 - Rules: pass. 1 finding is excepted in `exceptions.json`:
@@ -75,9 +76,7 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   `Glyph` (`symbol="cross"` and `"check"`, 12, the text's size, in its
   colour): the line's text is Figma's string, ✗ and ✓ included, and the
   glyph draws Figma's slanted cross and thin check in their place. The
-  glyph keeps each character at font size 0 and transparent, and the
-  text check takes a text run with no 1 px box as not shown, so it does
-  not see the two characters and reports the string as not visible,
-  though the screen shows Figma's line. The frame's `exceptions.json`
-  keeps its entry for this layer, with that reason (gap: Symbol
-  glyphs).
+  glyph keeps each character at font size 0 and transparent; since the
+  text check change of 2026-11-19 the check measures a Glyph's character
+  by its icon (shown, at least 1 px, in view and not covered), so it sees
+  the line whole and the frame needs no exception for it.

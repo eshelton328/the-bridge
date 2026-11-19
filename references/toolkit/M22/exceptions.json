@@ -1,11 +1,4 @@
 {
-  "missing": [
-    {
-      "text": "runs the rule’s ✗ and ✓ examples",
-      "layers": ["487:2218"],
-      "reason": "The render draws the ✗ and ✓ with the library's Glyph, which keeps each character in the text, at font size 0 and transparent, and draws Figma's mark in its place; the text check takes a text run with no 1 px box as not shown, so it does not see the two characters and finds the string cut, though the screen shows Figma's line (deviations.md \"Cross glyph.\"; LIBRARY_GAPS.md \"Symbol glyphs\")."
-    }
-  ],
   "rules": [
     {
       "rule": "hiddenOverflow",
