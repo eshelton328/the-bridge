@@ -92,7 +92,7 @@ first: it says what each file of a page folder is for.
   "/" before the caret, opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
   `SkillPicker` (the skills after "/": `Popover width="composer"`, 40%
   of the composer from 240 to 400 (screen review R8; `SkillListWidth.test.tsx`
-  checks the widths), and a mono `OptionList` with no check), `ShellPane` (the library's `TerminalLines`
+  checks the widths), and a mono `OptionList` with no check, both compact, as Figma draws the list 173 high (`SkillListHeight.test.tsx`)), `ShellPane` (the library's `TerminalLines`
   in a `ScrollFrame`) and `EmptyPane` (the library's `EmptyPane`: start a
   chat, or open one of the workspace). D2 adds
   `WorkspaceSidebar` (the title, the toggle, + and the groups; only a

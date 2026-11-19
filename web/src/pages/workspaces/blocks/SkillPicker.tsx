@@ -4,19 +4,23 @@
 // (R8, Erik's screen review of 2026-11-18): in a pane and on the tablet it
 // is 40% of the composer's width, from 240 to 400 (`width="composer"`); on
 // the phone (M3 105:2805) it is as wide as the composer (`width="trigger"`).
-// The phone's and the tablet's lists are compact, with no rule after their
-// label, and the focus stays in the message box. Props only.
+// Every list is compact, as Figma draws each one 173 high (D1 105:406, T4
+// 105:2246, M3 105:2805). On the phone and the tablet the focus stays in the
+// message box. Props only.
 import { OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
 import type { ReactElement } from 'react'
 import type { Skill } from '../types.ts'
 
-// `pane`: the desktop's list (D1; Figma draws it 160 wide). `tablet`: T4's list (105:2246; Figma 360). `phone`:
-// Figma's 358 × 173 box with 44 px rows (M3 105:2805), as wide as the composer. The compact spacing draws the label's
-// 20 px row and the rows as Figma does; Figma's SKILLS spacer (105:2808) draws no line.
+// `pane`: the desktop's list (D1 105:406; Figma 160 × 173). `tablet`: T4's list (105:2246; Figma 360 × 173). `phone`:
+// Figma's 358 × 173 box (M3 105:2805), as wide as the composer. Each draws the same box: 7 from its edge to the
+// SKILLS row (21 high), then 44 px rows 2 apart. The compact spacing draws that (6 padding and a 1 px border, the
+// label's 20 px row, 44 px rows); the default one draws 9, 26 and 50 px rows, 200 high in all, which covers the
+// transcript line over D1's list. Figma's SKILLS spacer (105:409, 105:2808) draws no line. `keepFocus`: the popover
+// leaves the focus in the message box.
 const layouts = {
-  pane: { width: 'composer', compact: false },
-  tablet: { width: 'composer', compact: true },
-  phone: { width: 'trigger', compact: true },
+  pane: { width: 'composer', keepFocus: false },
+  tablet: { width: 'composer', keepFocus: true },
+  phone: { width: 'trigger', keepFocus: true },
 } as const
 
 export type SkillPickerProps = {
@@ -55,9 +59,9 @@ export function SkillPicker({
   figma,
   children,
 }: SkillPickerProps) {
-  const { width, compact } = layouts[layout]
+  const { width, keepFocus } = layouts[layout]
   // The phone's popover does not take the focus when it opens (M3), so nothing has to hand it back to the box.
-  const autoFocus = !compact
+  const autoFocus = !keepFocus
   return (
     <Popover
       data-figma={open ? (figma ?? '105:406') : undefined}
@@ -66,7 +70,7 @@ export function SkillPicker({
       onOpenChange={onOpenChange}
       placement="top-start"
       width={width}
-      density={compact ? 'compact' : 'default'}
+      density="compact"
       autoFocus={autoFocus}
       flip={false}
       trigger={children}
@@ -79,7 +83,7 @@ export function SkillPicker({
             labelStyle="mono"
             check={false}
             selectedFill
-            density={compact ? 'compact' : 'default'}
+            density="compact"
             value={value}
             onItemSelect={onPick}
             items={skills.map((s) => ({ value: s.name, label: s.name, description: s.description }))}
