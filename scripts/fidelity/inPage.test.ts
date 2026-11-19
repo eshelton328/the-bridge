@@ -11,6 +11,7 @@ import {
   fieldText,
   fieldTextLines,
   fullyVisible,
+  iconHasMark,
   iconHitPaints,
   isGlyphChar,
   isPortalRoot,
@@ -86,6 +87,7 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /fieldTextLines: function fieldTextLines\(/)
   assert.match(script, /coveredAt: function coveredAt\(/)
   assert.match(script, /isGlyphChar: function isGlyphChar\(/)
+  assert.match(script, /iconHasMark: function iconHasMark\(/)
 })
 
 void test('a checkbox, radio, hidden or password value is not field text; a text value is', () => {
@@ -419,9 +421,26 @@ void test("only the character span of a Glyph's root is a glyph character", () =
   assert.equal(isGlyphChar({ classes: [], parentClasses: ['glyph__root'] }), false)
 })
 
+void test('an icon has a mark only when a shown shape with a box strokes or fills', () => {
+  const shape = { shown: true, width: 8, height: 14, stroke: 'rgb(0, 0, 0)', fill: 'none' }
+  assert.equal(iconHasMark([shape], paints), true)
+  assert.equal(iconHasMark([{ ...shape, stroke: 'none', fill: 'rgb(0, 0, 0)' }], paints), true)
+  // A straight line has one side of zero and still draws.
+  assert.equal(iconHasMark([{ ...shape, height: 0 }], paints), true)
+  assert.equal(iconHasMark([], paints), false)
+  assert.equal(iconHasMark([{ ...shape, shown: false }], paints), false)
+  assert.equal(iconHasMark([{ ...shape, width: 0, height: 0 }], paints), false)
+  assert.equal(iconHasMark([{ ...shape, stroke: 'none' }], paints), false)
+  assert.equal(iconHasMark([{ ...shape, stroke: 'transparent' }], paints), false)
+  assert.equal(iconHasMark([{ ...shape, stroke: 'rgba(0, 0, 0, 0)' }], paints), false)
+  assert.equal(iconHasMark([{ ...shape, stroke: 'none' }, shape], paints), true)
+})
+
+const xPaths = '<path d="M8 5C10 9 12 14.5 14.5 19"></path><path d="M18.5 4C14.5 8.5 10.5 13.5 6 20"></path>'
+
 /** A Glyph as the library renders it: the icon, then the hidden character. */
-const glyph = (char: string, iconStyle = '') =>
-  `<span class="glyph__root" style="display:inline;white-space:nowrap"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" style="${iconStyle}"><path d="M8 5C10 9 12 14.5 14.5 19"></path><path d="M18.5 4C14.5 8.5 10.5 13.5 6 20"></path></svg><span class="glyph__char" style="display:inline;font-size:0;line-height:0;color:transparent">${char}</span></span>`
+const glyph = (char: string, iconStyle = '', shapes = xPaths) =>
+  `<span class="glyph__root" style="display:inline;white-space:nowrap"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" style="${iconStyle}">${shapes}</svg><span class="glyph__char" style="display:inline;font-size:0;line-height:0;color:transparent">${char}</span></span>`
 
 async function glyphCheck(line: string, text: string) {
   const measured = await measureHtml(`<body style="margin:0;font:16px/20px sans-serif">
@@ -465,6 +484,19 @@ void test('in Chromium a Glyph whose icon is hidden, clipped or covered is not s
     text,
   )
   assert.deepEqual(covered.notVisible, [{ id: '4:1', text, covered: true }])
+})
+
+void test('in Chromium a Glyph whose sized icon draws no mark is not shown', async () => {
+  const text = 'blocks ✗ rm -rf'
+  const at = (inner: string) => `<p style="position:absolute;top:20px;left:20px;margin:0">${inner}</p>`
+  const empty = await glyphCheck(at(`blocks ${glyph('✗', '', '')} rm -rf`), text)
+  assert.deepEqual(empty.notVisible, [{ id: '4:1', text }])
+  const hiddenPaths = xPaths.replaceAll('<path ', '<path style="visibility:hidden" ')
+  const hidden = await glyphCheck(at(`blocks ${glyph('✗', '', hiddenPaths)} rm -rf`), text)
+  assert.deepEqual(hidden.notVisible, [{ id: '4:1', text }])
+  const unpainted = xPaths.replaceAll('<path ', '<path stroke="none" fill="none" ')
+  const none = await glyphCheck(at(`blocks ${glyph('✗', '', unpainted)} rm -rf`), text)
+  assert.deepEqual(none.notVisible, [{ id: '4:1', text }])
 })
 
 void test('in Chromium a zero-size character outside a Glyph is still not shown', async () => {

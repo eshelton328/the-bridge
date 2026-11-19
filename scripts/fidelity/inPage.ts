@@ -213,6 +213,29 @@ export function iconHitPaints(
   return fills({ ...el, tagName: el.tagName.toLowerCase() === 'svg' ? 'g' : el.tagName })
 }
 
+/** What iconHasMark reads from one shape of an icon (a path, a circle, a use). */
+export type IconShape = {
+  /** checkVisibility with opacity and visibility: not hidden, not opacity 0. */
+  shown: boolean
+  width: number
+  height: number
+  /** The computed stroke and fill: 'none', a colour or a paint server url. */
+  stroke: string
+  fill: string
+}
+
+/**
+ * True when an icon draws a mark: one of its shapes shows, has a box (a
+ * straight line has one side of zero) and strokes or fills with a colour
+ * that is not none or fully transparent (paints judges the colour). An svg
+ * with a size but no shape, hidden shapes or unpainted ones draws nothing.
+ */
+export function iconHasMark(shapes: readonly IconShape[], fills: typeof paints): boolean {
+  const colours = (c: string) =>
+    c.trim() !== 'none' && fills({ tagName: 'g', backgroundColor: c, backgroundImage: 'none', backdropFilter: 'none' })
+  return shapes.some((s) => s.shown && (s.width > 0 || s.height > 0) && (colours(s.stroke) || colours(s.fill)))
+}
+
 /**
  * True when a text node's element is the character of a library Glyph (a
  * `glyph__char` span in a `glyph__root`): the ✗ or ✓ that the Glyph keeps
@@ -266,11 +289,12 @@ type Helpers = {
   coveredAt: typeof coveredAt
   iconHitPaints: typeof iconHitPaints
   isGlyphChar: typeof isGlyphChar
+  iconHasMark: typeof iconHasMark
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()}, iconHitPaints: ${iconHitPaints.toString()}, isGlyphChar: ${isGlyphChar.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()}, iconHitPaints: ${iconHitPaints.toString()}, isGlyphChar: ${isGlyphChar.toString()}, iconHasMark: ${iconHasMark.toString()} })`
 }
 
 export type PageMeasure = {
@@ -461,6 +485,19 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
       helpers.isGlyphChar({ classes: [...parent.classList], parentClasses: [...glyphRoot.classList] })
     const own = glyph ? glyphRoot.querySelector(':scope > svg') : parent
     if (own === null || !shown(own)) continue
+    // A sized icon with no shape, or only hidden or unpainted ones, shows no mark.
+    if (
+      glyph &&
+      !helpers.iconHasMark(
+        [...own.querySelectorAll('path, circle, rect, line, polyline, polygon, ellipse, use')].map((s) => {
+          const box = s.getBoundingClientRect()
+          const ss = getComputedStyle(s)
+          return { shown: shown(s), width: box.width, height: box.height, stroke: ss.stroke, fill: ss.fill }
+        }),
+        helpers.paints,
+      )
+    )
+      continue
     let rects: DOMRect[]
     if (glyph) rects = [own.getBoundingClientRect()]
     else {
