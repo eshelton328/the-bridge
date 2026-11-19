@@ -76,7 +76,7 @@ item tabs' `tone` and `density` props (2026-11-17).
   lower in its box, and the box is 3 px taller (gap: File preview).
 - **Copy button and preview bar.** As on M02 and T17: the copy icon is a
   plain button with `CopyIcon` (gap: Path badge copy button), and the
-  preview box and bar are drawn with the Panel's tokens (gap: File
+  preview box and bar are drawn by the library's `FileFrame` (gap: File
   preview).
 - **Side.** Figma has an empty `side` layer (487:1428, 366 × 1) under the
   file; a rule has no side column (D4), so the render draws nothing there.

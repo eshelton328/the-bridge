@@ -28,6 +28,11 @@ export type ToolkitFilePreviewProps = {
   wrapRefs?: boolean | undefined
   /** Wraps a long line of `code` under itself, as on the phone (M22 487:2231); the code scrolls sideways when not set. */
   wrapCode?: boolean | undefined
+  /**
+   * Lets the box cut the bar's end, so the name and its meta stay whole (FileFrame `barEnd="cut"`), as on the phone
+   * (M20 487:1650: Read-only 487:1660 starts past the box). The bar's end holds only Read-only.
+   */
+  cutBarEnd?: boolean | undefined
 }
 
 export function ToolkitFilePreview({
@@ -37,6 +42,7 @@ export function ToolkitFilePreview({
   code,
   wrapRefs = false,
   wrapCode = false,
+  cutBarEnd = false,
 }: ToolkitFilePreviewProps) {
   // Each line's text, from its coloured pieces.
   const lines = (code ?? []).map((line) => line.map((piece) => piece.text).join(''))
@@ -47,6 +53,7 @@ export function ToolkitFilePreview({
       icon={code === undefined ? 'file' : 'code'}
       meta={meta}
       readOnly
+      barEnd={cutBarEnd ? 'cut' : 'keep'}
       figma={{ root: 'file preview', bar: 'preview bar' }}
     >
       {code === undefined ? (

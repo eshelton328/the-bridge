@@ -115,8 +115,7 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
 - **Buttons, copy button, preview bar.** As in D3, D4, D7 and D9: Discuss
   and Show on map are both 32 px high against Figma's 34 and 36 (gap:
   Item action buttons); the copy icon is a plain button with `CopyIcon`
-  (gap: Path badge copy button); the preview box and bar are drawn with
-  the Panel's tokens, with a 16 px file icon against 14 (gap: File
+  (gap: Path badge copy button); the preview box and bar are drawn by the library's `FileFrame`, with a 16 px file icon against 14 (gap: File
   preview). The three pass the position check.
 - **Selected tab.** `ItemTabs tone="accent"` (library #126, beta.21)
   draws Overview's label cyan, as Figma's. The outline stays

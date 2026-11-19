@@ -55,7 +55,8 @@ item tabs' `tone` and `density` props (2026-11-17).
   390 px screen and only Activity runs past it (the list's sideways scroll is the second `hiddenOverflow`, which Figma's
   row has too). The outline stays `border.selected` at half alpha where
   Figma's is solid cyan (no solid selected token, d-050).
-- **Preview bar.** As in Figma, the bar is one line: the name, then
+- **Preview bar.** `FileFrame barEnd="cut"` (library #273) draws it as
+  Figma does. The bar is one line: the name, then
   `137 lines · the prompt`, and the lock and Read-only run past the box's
   right edge, where the box cuts them (Figma's Read-only, 487:1660,
   starts at 390, past the 378 px box). The box's cut is the third

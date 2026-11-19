@@ -86,7 +86,7 @@ before M02. The Checks below are from a rerun with library 1.0.0-beta.26
   does; the render's code glyphs are a little wider (Geist Mono).
 - **Copy button and preview bar.** As on D03 and T03: the copy icon is a
   plain button with `CopyIcon` (gap: Path badge copy button), and the
-  preview box and bar are drawn with the Panel's tokens (gap: File
+  preview box and bar are drawn by the library's `FileFrame` (gap: File
   preview).
 - **Tab bar.** The shared `AppTabBar` passes the position check, and its
   five items line up with Figma's.
