@@ -91,8 +91,7 @@ export function PromptSection({
   // The suggestion keeps its own length after Reset; any other text is as long as the state's prompt.
   const long = current === suggested.text ? suggested.long : prompt.long
   // Edit puts the focus in the editor it opens; a state that starts with the editor open leaves the focus alone.
-  const clampRef = useRef<HTMLDivElement>(null)
-  const wide = useWideDetail(clampRef)
+  const [clampRef, wide] = useWideDetail()
   const editorRef = useRef<HTMLDivElement>(null)
   const focusEditorRef = useRef(false)
   useEffect(() => {

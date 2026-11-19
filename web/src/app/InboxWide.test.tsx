@@ -30,9 +30,10 @@ async function open(state: string, w: number, h: number) {
   view = await testRender(<RouterProvider router={router} />)
 }
 
+const readWhole = page.getByRole('link', { name: 'Read the whole prompt' })
+
 /** The prompt's line count (D13's Sent prompt), from the variant class of its `Clamp` (`clamp--lines_5`). */
-async function promptLines() {
-  await expect.element(page.getByRole('link', { name: 'Read the whole prompt' })).toBeInTheDocument()
+function promptLines() {
   const pane = document.querySelector('[data-figma="task pane"]')
   return [...(pane?.querySelectorAll('[class*="clamp--lines_"]') ?? [])].map(
     (el) => /clamp--lines_(\d+)/.exec(el.className)?.[1],
@@ -42,11 +43,20 @@ async function promptLines() {
 describe('the Inbox on a wide screen', () => {
   it('shows five lines of the prompt in a 1512 px window (D13)', async () => {
     await open('filtered', 1512, 982)
+    await expect.element(readWhole).toBeInTheDocument()
     await expect.poll(promptLines).toEqual(['5'])
   })
 
   it('shows eight lines of the prompt in a detail at least 1600 px wide (R2)', async () => {
     await open('filtered', 3540, 1300)
+    await expect.element(readWhole).toBeInTheDocument()
+    await expect.poll(promptLines).toEqual(['8'])
+  })
+
+  it('shows eight lines after the prompt editor closes in a wide detail (D3, R2)', async () => {
+    await open('promptEditing', 3540, 1300)
+    await page.getByRole('button', { name: 'Done' }).click()
+    await expect.element(page.getByRole('button', { name: 'Edit' })).toBeInTheDocument()
     await expect.poll(promptLines).toEqual(['8'])
   })
 
