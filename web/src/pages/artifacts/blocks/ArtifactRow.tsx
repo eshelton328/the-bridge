@@ -19,6 +19,7 @@ import {
   Thumbnail,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { ArtifactCard } from '../types.ts'
 
 // Figma's row preview is 64 × 40 on the desktop (403:194, `Thumbnail size="sm"`) and 76 × 48 on the phone (406:122,
@@ -84,11 +85,14 @@ export function ArtifactRow({
         highlight={titleMatch ? query : undefined}
         leading={
           <span className={thumb}>
-            <Thumbnail
-              kind={card.preview}
-              size={layout === 'phone' ? 'md' : 'sm'}
-              {...(card.tone === undefined ? {} : { tone: card.tone })}
-            />
+            {/* d-084: a preview that fails to render shows its fallback; the row's text stays. */}
+            <BlockBoundary contentKey={card.id}>
+              <Thumbnail
+                kind={card.preview}
+                size={layout === 'phone' ? 'md' : 'sm'}
+                {...(card.tone === undefined ? {} : { tone: card.tone })}
+              />
+            </BlockBoundary>
           </span>
         }
         meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}

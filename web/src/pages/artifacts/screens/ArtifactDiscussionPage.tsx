@@ -17,7 +17,7 @@ import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import type { ArtifactProposalProps } from '../blocks/ArtifactProposal.tsx'
 import { DiscussedArtifactCard } from '../blocks/DiscussedArtifactCard.tsx'
 import { DiscussionEmpty } from '../blocks/DiscussionEmpty.tsx'
-import { DiscussionEntry } from '../blocks/DiscussionEntry.tsx'
+import { DiscussionEntries } from '../blocks/DiscussionEntries.tsx'
 import { ModelContext } from '../blocks/ModelContext.tsx'
 import type { ArtifactDetail, ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
 
@@ -162,11 +162,7 @@ export function ArtifactDiscussionPage({
               <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} place={phone ? 'phone' : 'page'} />
             </div>
           ) : (
-            <Stack gap="12">
-              {entries.map((entry, i) => (
-                <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} applied={applied} onAct={onAct} />
-              ))}
-            </Stack>
+            <DiscussionEntries artifactId={artifact.id} entries={entries} applied={applied} onAct={onAct} />
           )}
         </div>
       </DetailFrame>

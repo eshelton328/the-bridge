@@ -5,6 +5,7 @@
 // card is a button. Props only.
 import { Badge, Card, KindMark, MetaLine, SparkIcon, Thumbnail } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { ArtifactCard } from '../types.ts'
 
 // The meta line takes the card's width, so the age sits at its end (402:15467).
@@ -26,7 +27,10 @@ export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProp
       <Card
         title={card.title}
         media={
-          <Thumbnail kind={card.preview} framed={false} {...(card.tone === undefined ? {} : { tone: card.tone })} />
+          // d-084: a preview that fails to render shows its fallback; the card's title and meta line stay.
+          <BlockBoundary contentKey={card.id}>
+            <Thumbnail kind={card.preview} framed={false} {...(card.tone === undefined ? {} : { tone: card.tone })} />
+          </BlockBoundary>
         }
         badge={card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : undefined}
         badgePosition="end"

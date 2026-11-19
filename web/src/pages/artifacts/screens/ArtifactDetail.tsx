@@ -12,6 +12,7 @@ import { Container, DetailSplit, Stack } from '@eshelton328/component-library-17
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { ArtifactBar } from '../blocks/ArtifactBar.tsx'
 import { ArtifactPreview } from '../blocks/ArtifactPreview.tsx'
 import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
@@ -69,7 +70,10 @@ export function ArtifactDetail({
         copyLinkStatus={copyLinkStatus}
       />
       <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
-      <ArtifactPreview artifact={artifact} />
+      {/* d-084: a preview that fails to render shows its fallback; the bar and the title stay. */}
+      <BlockBoundary contentKey={artifact.id}>
+        <ArtifactPreview artifact={artifact} />
+      </BlockBoundary>
       {/* A card opened from the library names no chat, so it has no Made in. */}
       {artifact.madeIn === undefined ? null : (
         <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : madeInLayer} />

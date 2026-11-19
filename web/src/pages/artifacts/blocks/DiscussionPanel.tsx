@@ -7,12 +7,12 @@
 // the Inbox's: no file flow is designed. The header stays at the top and
 // the reply box at the bottom; only the discussion between them scrolls
 // (d-107, ScrollFrame). Props only.
-import { Composer, ScrollFrame, Stack } from '@eshelton328/component-library-1701'
+import { Composer, ScrollFrame } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ArtifactDiscussion, ArtifactDiscussionEntry } from '../types.ts'
 import type { ArtifactProposalProps } from './ArtifactProposal.tsx'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
-import { DiscussionEntry } from './DiscussionEntry.tsx'
+import { DiscussionEntries } from './DiscussionEntries.tsx'
 import { DiscussionHeader } from './DiscussionHeader.tsx'
 
 // Figma's panel is 628 wide, what is left beside the 820 px artifact pane. It is DetailSplit's side, which takes what
@@ -46,6 +46,8 @@ const middle = css({ justifyContent: 'center' })
 const bodyGap = css({ gap: '12' })
 
 export type DiscussionPanelProps = {
+  /** The id of the artifact the discussion is about; it keys each entry's BlockBoundary. */
+  artifactId: string
   discussion: ArtifactDiscussion
   /** What the owner has typed in the reply box. */
   draft?: string | undefined
@@ -62,6 +64,7 @@ export type DiscussionPanelProps = {
 }
 
 export function DiscussionPanel({
+  artifactId,
   discussion,
   draft = '',
   entries = [],
@@ -99,11 +102,7 @@ export function DiscussionPanel({
           {empty ? (
             <DiscussionEmpty empty={discussion.empty} onPick={onDraftChange} />
           ) : (
-            <Stack gap="12">
-              {entries.map((entry, i) => (
-                <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} applied={applied} onAct={onAct} />
-              ))}
-            </Stack>
+            <DiscussionEntries artifactId={artifactId} entries={entries} applied={applied} onAct={onAct} />
           )}
         </div>
       </ScrollFrame>

@@ -18,6 +18,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { ArtifactStatus } from '../blocks/ArtifactStatus.tsx'
 import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
 import { ArtifactTopBar } from '../blocks/ArtifactTopBar.tsx'
@@ -93,12 +94,15 @@ export function ArtifactPage({
           status={<ArtifactStatus badge={badge} found={artifact.found} />}
         />
         <div data-figma="preview">
-          <Thumbnail
-            kind={artifact.preview}
-            shape="wide"
-            label={`${artifact.title} preview`}
-            {...(artifact.reference === undefined ? {} : { reference: artifact.reference })}
-          />
+          {/* d-084: a preview that fails to render shows its fallback; the bar and the title stay. */}
+          <BlockBoundary contentKey={artifact.id}>
+            <Thumbnail
+              kind={artifact.preview}
+              shape="wide"
+              label={`${artifact.title} preview`}
+              {...(artifact.reference === undefined ? {} : { reference: artifact.reference })}
+            />
+          </BlockBoundary>
         </div>
         <span data-figma="button · Open artifact">
           <Button variant="primary" size="xl" className={wide} onClick={onOpenArtifact}>

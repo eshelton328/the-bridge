@@ -17,6 +17,7 @@ import {
   MetaLine,
   Thumbnail,
 } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { ArtifactCard, MatchPlace } from '../types.ts'
 
 export type LibraryRowProps = {
@@ -49,13 +50,16 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
         dotLabel={card.isNew ? 'New' : undefined}
         highlight={place === 'title' ? query : undefined}
         // Figma's preview is 128 × 72 (403:8217): the card's drawing at 16:9.
+        // d-084: a preview that fails to render shows its fallback; the row's text stays.
         leading={
-          <Thumbnail
-            kind={card.preview}
-            size="lg"
-            shape="wide"
-            {...(card.tone === undefined ? {} : { tone: card.tone })}
-          />
+          <BlockBoundary contentKey={card.id}>
+            <Thumbnail
+              kind={card.preview}
+              size="lg"
+              shape="wide"
+              {...(card.tone === undefined ? {} : { tone: card.tone })}
+            />
+          </BlockBoundary>
         }
         trailing={
           <Inline gap="16" align="center">

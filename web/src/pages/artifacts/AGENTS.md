@@ -29,6 +29,10 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
   clipboard and passes back `copiedLink`, which the control shows as
   Copied or Copy failed for 2 s (audit W-6,
   `app/ArtifactsCopyLink.test.tsx`, which opens from the list).
+- Each rich block (the preview, each thumbnail, each discussion entry)
+  sits in its own `BlockBoundary`, keyed by its id; a fallback under a
+  title button's cover is lifted over it (d-084,
+  `ArtifactBlockBoundaries.test.tsx`, `ArtifactThumbnailRetry.test.tsx`).
 - On the phone, More opens Artifacts and stays selected (d-105).
 - The phone's keyboard is the device's own: a state draws none and keeps
   the tab bar, as Figma does (d-089).
