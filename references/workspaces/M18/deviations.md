@@ -73,8 +73,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   against 41. Copy is about 67 × 24 against Figma's 63 × 22.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:188` y -12, h +7.** As in M17: `Composer` draws
-  its text in `body` and Stop as `Button size="sm"`, so the box is 112
-  high against 105, and `AppShell` keeps a 34 px safe area under it.
+  its text in `body`, so the box is 112 high against 105, and `AppShell` keeps a 34 px safe area under it.
   Figma puts M18's composer 2 px lower than M17's (y 710 against 708),
   so the offset is 2 px more than M17's.
 - **The header is 4 px taller, the back chevron thinner and the ⋯ lighter

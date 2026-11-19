@@ -52,11 +52,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   against Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is
   24 high against 22; the reply wraps at another word ("long" moves to
   the second line).
-- **The composer is 3 px taller and Stop is larger (Composer text).**
-  `Composer` draws the placeholder in `body` and Stop as
-  `Button size="sm"`, so Stop is wider and its label larger than
-  Figma's 61 px Stop with an 11 px label; the height is within the
-  tolerance.
+- **The composer is 3 px taller (Composer text).** `Composer` draws the
+  placeholder in `body`; the height is within the tolerance. Stop draws
+  Figma's 12 px icon and a 12 px label, the 4 px grid's size for Figma's
+  11 (`stopIconSize`, `stopTextSize`, library beta.80, d-100), as wide
+  as Figma's 61 px Stop.
 - **No caret.** The message box has the focus (its border is cyan), but
   the screenshots hide the caret; Figma draws none here either.
 - **The ⋯ is lighter and the header is 2 px taller (Chat header, Chat

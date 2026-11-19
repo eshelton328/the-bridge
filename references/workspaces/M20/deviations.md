@@ -81,8 +81,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   against Figma's 63 × 22.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
   Phone safe area), `422:491` y -12, h +7.** As in M18: `Composer` draws
-  its text in `body` and Stop as `Button size="sm"`, so the box is 112
-  high against 105, and `AppShell` keeps a 34 px safe area under it.
+  its text in `body`, so the box is 112 high against 105, and `AppShell` keeps a 34 px safe area under it.
 - **The header is 4 px taller, the back chevron thinner and the ⋯ lighter
   (Chat header, Chat header text).** As in M17: the title is `subtitle`
   (17/24) against SemiBold 16 at 21, the model chip 26 high against 22,

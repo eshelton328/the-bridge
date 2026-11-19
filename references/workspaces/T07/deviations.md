@@ -100,9 +100,9 @@ inert, so its composer's text is not counted: no exception is needed.
   `textSize="xs"` would make both buttons 3 to 5 px narrower than
   Figma's and fail D03's position check, so the dialog keeps them
   (review T07 F1).
-- **Stop in the chat's composer is larger (Composer text).** Figma's
-  Stop label is 11 px; `Composer` draws it as `Button size="sm"` with
-  `label` (14) (review T07 F2).
+- **Stop in the chat's composer (review T07 F2).** Figma's Stop label is
+  11 px; `stopTextSize="xs"` (library beta.80) draws it at 12, the 4 px
+  grid's size (d-100), with Figma's 12 px icon.
 - **Thin icons (Icon stroke weight).** Figma draws the dialog's ×
   (420:326, 18 px), the back chevron, the model chips' chevrons and the
   composer's paperclips with a 2 px stroke at their own size, so they

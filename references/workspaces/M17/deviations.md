@@ -42,12 +42,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Medium 11.
 - **The composer is 7 px taller and starts 10 px higher (Composer text,
   Phone safe area), `402:10833` y -10, h +7.** `Composer` draws its text
-  in `body` and Stop as `Button size="sm"` (14 px label, 16 px icon), so
-  the box is 112 high against Figma's 105 and Stop is about 67 wide
-  against 61. Figma ends the composer 10 above its 21 px home indicator
-  band; `AppShell` keeps a 34 px safe area under the detail when there is
-  no tab bar, so the composer ends 3 px higher. Both push its top up: 698
-  against 708.
+  in `body`, so the box is 112 high against Figma's 105. Stop draws
+  Figma's 12 px icon and a 12 px label, the 4 px grid's size for Figma's
+  11 (`stopIconSize`, `stopTextSize`, library beta.80, d-100), 61 × 28
+  against Figma's 61 × 26. Figma ends the composer 10 above its 21 px
+  home indicator band; `AppShell` keeps a 34 px safe area under the
+  detail when there is no tab bar, so the composer ends 3 px higher.
+  Both push its top up: 698 against 708.
 - **The header is 4 px taller (Chat header, Chat header text).** Its 1 px
   rule is Figma's (402:10800, `border.default` in both). The title
   is `subtitle` (17/24) against Figma's SemiBold 16 at 21, and the model

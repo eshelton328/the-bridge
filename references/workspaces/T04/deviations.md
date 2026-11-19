@@ -46,8 +46,7 @@ bar, so the render has no Artifacts tab, and no exception is needed.
   SemiBold 12, and Copy is 24 high against 22; the first reply wraps at
   another word, so the second reply starts 4 lower.
 - **The composer is 7 px taller (Composer text, Composer attachment
-  remove), `105:2261` h +7.** `Composer` draws its text in `body` and
-  Stop as `Button size="sm"`, so Stop is wider than Figma's 61; the
+  remove), `105:2261` h +7.** `Composer` draws its text in `body`, and the
   attachment chip is 26 high against Figma's 22, with a thin paperclip
   and × against Figma's heavy ones.
 - **The skill list (Skill picker).** /writer is white on its filled row

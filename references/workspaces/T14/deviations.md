@@ -64,11 +64,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   cyan border of a focused box while the caret is in the name field.
   Only one element can have the focus: the name field has it, so the
   `Composer` draws its resting border (the decision recorded on M23).
-- **The composer is 3 px taller and Stop is larger (Composer text).**
-  `Composer` draws the placeholder in `body` and Stop as
-  `Button size="sm"`, so Stop is wider and its label larger than
-  Figma's 61 px Stop with an 11 px label; the height is within the
-  tolerance.
+- **The composer is 3 px taller (Composer text).** `Composer` draws the
+  placeholder in `body`; the height is within the tolerance. Stop draws
+  Figma's 12 px icon and a 12 px label, the 4 px grid's size for Figma's
+  11 (`stopIconSize`, `stopTextSize`, library beta.80, d-100), as wide
+  as Figma's 61 px Stop.
 - **The ⋯ is lighter (Chat header).** As on T06: a thin 20 px
   `MoreIcon` against Figma's heavy 18 px icon; within the tolerance.
 - **The transcript sits 24 in from the sides, Figma's 22,** on the 4 px
