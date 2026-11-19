@@ -15,6 +15,7 @@
 import {
   AgentIcon,
   CodeIcon,
+  BareIconButton,
   CopyIcon,
   FileIcon,
   HookIcon,
@@ -23,7 +24,6 @@ import {
   SkillIcon,
   ViewSwitch,
   WorkflowIcon,
-  focusRing,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
@@ -69,19 +69,6 @@ const readOnly = css({
   gap: '8',
   textStyle: 'small',
   whiteSpace: 'nowrap',
-})
-// D6 432:2297: the copy icon is a bare 12 px icon, as the path badge's (D3 457:50); the library's smallest button is 24
-// high (LIBRARY_GAPS.md, Path badge copy button).
-const copy = css({
-  display: 'inline-flex',
-  p: '0',
-  color: 'fg.muted',
-  bg: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  _hover: { color: 'fg.default' },
-  outline: 'none',
-  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 // D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code.
 const usedBy = css({
@@ -155,9 +142,8 @@ export function ToolkitFileViewer({
             </span>
           )}
           {inBox ? null : (
-            <button type="button" className={copy} aria-label={`Copy ${path}`} onClick={onCopy}>
-              <CopyIcon size="12" />
-            </button>
+            // D6 432:2297: the bare 12 px copy icon, as the path badge's (D3 457:50).
+            <BareIconButton label={`Copy ${path}`} icon={<CopyIcon size="12" />} onClick={onCopy} />
           )}
           <span className={readOnly}>
             <LockIcon size="12" />

@@ -37,6 +37,8 @@ export function ToolkitDiscussEntry({ entry, onCopy, ref }: ToolkitDiscussEntryP
       <Message
         from="assistant"
         kind="claude"
+        // D5 438:29: a 15 px author mark, drawn at 16.
+        markSize="16"
         name={entry.name}
         actions={
           <span data-figma="button · Copy">

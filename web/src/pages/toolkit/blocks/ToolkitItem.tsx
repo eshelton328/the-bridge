@@ -541,6 +541,7 @@ export function ToolkitItem({
         location={pageFile.path}
         changed=""
         icon={opened?.type === 'code' ? <CodeIcon /> : <FileIcon />}
+        iconSize="md"
         copyable={false}
         layer={null}
       />

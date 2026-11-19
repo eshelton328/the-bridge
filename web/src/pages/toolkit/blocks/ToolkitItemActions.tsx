@@ -7,8 +7,8 @@
 import { Button, ChatIcon, CopyIcon, MapIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 
-// D3 427:258: Show on map is 36 high, but the lg button is 9 px wider than Figma's 136, so it takes the md size, as
-// Discuss does (34 in Figma).
+// D3 427:258: Show on map is 136 × 36; `lg` with `padding="compact"` draws it 136.7 × 36. Discuss (432:1086, 97 × 34)
+// takes `md` with `padding="compact"`, 95.5 × 32: 34 is off the 4 px grid (LIBRARY_GAPS.md, Item action buttons).
 const actions = {
   '10': css({ display: 'flex', alignItems: 'center', gap: '10', ms: 'auto' }),
   '8': css({ display: 'flex', alignItems: 'center', gap: '8', ms: 'auto' }),
@@ -34,8 +34,8 @@ export function ToolkitItemActions({
   copy,
 }: ToolkitItemActionsProps) {
   if (iconOnly) {
-    // M2 496:2 is 36 × 28 with a 14 px icon and 429:291 36 × 36 with a 17 px icon; an icon-only `Button` is square, so
-    // Discuss takes `sm` (28 × 28) and Show on map `lg` (36 × 36), each with its 16 px icon (LIBRARY_GAPS.md, Item
+    // M2 496:2 is 36 × 28 with a 14 px icon and 429:291 36 × 36 with a 17 px icon: Discuss takes `sm` with
+    // `iconOnlyWidth="lg"` (36 × 28) and Show on map `lg` (36 × 36), each with its 16 px icon (LIBRARY_GAPS.md, Item
     // action buttons).
     return (
       <div className={actions[gap]}>
@@ -56,6 +56,7 @@ export function ToolkitItemActions({
           variant="primary"
           size="sm"
           iconOnly
+          iconOnlyWidth="lg"
           aria-label="Discuss"
           data-figma="button · Discuss"
           onClick={onDiscuss}
@@ -77,11 +78,11 @@ export function ToolkitItemActions({
   }
   return (
     <div className={actions[gap]}>
-      <Button variant="primary" data-figma="button · Discuss" onClick={onDiscuss}>
+      <Button variant="primary" padding="compact" data-figma="button · Discuss" onClick={onDiscuss}>
         <ChatIcon />
         Discuss
       </Button>
-      <Button variant="secondary" data-figma="button · Show on map" onClick={onShowOnMap}>
+      <Button variant="secondary" size="lg" padding="compact" data-figma="button · Show on map" onClick={onShowOnMap}>
         <MapIcon />
         Show on map
       </Button>
