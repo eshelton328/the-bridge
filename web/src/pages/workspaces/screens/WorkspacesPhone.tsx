@@ -51,6 +51,7 @@ import { type ReactNode, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
+import { SlotBoundary } from '../../../errors/SlotBoundary.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
@@ -145,6 +146,22 @@ export function WorkspacesPhone({
       renamingWorkspaces: { [id]: untitled },
     })
   }
+  // A view that fills the screen has no tab bar, so its slot's fallback (audit W-4) goes back to the list.
+  const backToList = {
+    label: 'Back to the list',
+    onClick: () => {
+      onUiChange({
+        phoneView: 'list',
+        newChatOpen: false,
+        keyboardOpen: false,
+        subagentFor: null,
+        skillsFor: null,
+        menuFor: null,
+        moveOpen: false,
+        sideChatOpen: false,
+      })
+    },
+  }
   // On the tablet New chat opens over the chat as D3's dialog (T7), drawn with the chat below.
   if (ui.newChatOpen === true && data.newChat !== undefined && (device === 'phone' || chat === undefined))
     return (
@@ -154,15 +171,17 @@ export function WorkspacesPhone({
           size={device}
           view="detail"
           detail={
-            <PhoneNewChat
-              form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
-              workspaces={data.workspaces}
-              onCancel={() => {
-                onUiChange({ newChatOpen: false, keyboardOpen: false })
-              }}
-              keyboardOpen={ui.keyboardOpen === true}
-              layers={data.layers?.newChatForm}
-            />
+            <SlotBoundary contentKey="newChat" secondary={backToList}>
+              <PhoneNewChat
+                form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
+                workspaces={data.workspaces}
+                onCancel={() => {
+                  onUiChange({ newChatOpen: false, keyboardOpen: false })
+                }}
+                keyboardOpen={ui.keyboardOpen === true}
+                layers={data.layers?.newChatForm}
+              />
+            </SlotBoundary>
           }
         />
       </Backdrop>
@@ -183,18 +202,20 @@ export function WorkspacesPhone({
           size={device}
           view="detail"
           detail={
-            <PhoneSubagentTranscript
-              item={transcript}
-              chat={focused.head.title}
-              labels={{ ...fullLabels, title: data.subagents.title, stop: data.subagents.stop }}
-              onChat={() => {
-                onUiChange({ phoneView: 'chat', subagentFor: null })
-              }}
-              onSubagents={() => {
-                onUiChange({ phoneView: 'subagents', subagentFor: null })
-              }}
-              layers={data.layers?.subagentTranscript}
-            />
+            <SlotBoundary contentKey={`transcript:${transcript.id}`} secondary={backToList}>
+              <PhoneSubagentTranscript
+                item={transcript}
+                chat={focused.head.title}
+                labels={{ ...fullLabels, title: data.subagents.title, stop: data.subagents.stop }}
+                onChat={() => {
+                  onUiChange({ phoneView: 'chat', subagentFor: null })
+                }}
+                onSubagents={() => {
+                  onUiChange({ phoneView: 'subagents', subagentFor: null })
+                }}
+                layers={data.layers?.subagentTranscript}
+              />
+            </SlotBoundary>
           }
         />
       </Backdrop>
@@ -212,34 +233,36 @@ export function WorkspacesPhone({
           size={device}
           view="detail"
           detail={
-            <PhoneSubagents
-              device={device}
-              panel={data.subagents}
-              chat={focused.head.title}
-              onBack={() => {
-                onUiChange({ phoneView: 'chat' })
-              }}
-              open={ui.transcripts ?? []}
-              onOpenChange={(transcripts) => {
-                onUiChange({ transcripts })
-              }}
-              onOpenTranscript={
-                fullLabels === undefined
-                  ? undefined
-                  : (subagentFor) => {
-                      onUiChange({ phoneView: 'transcript', subagentFor })
-                    }
-              }
-              // T3: Start a subtask opens the Subtask form over the chat, as the chat actions' Subtask does (M20).
-              onStartSubtask={
-                data.subtask === undefined
-                  ? undefined
-                  : () => {
-                      onUiChange({ phoneView: 'chat', chatDialog: 'subtask' })
-                    }
-              }
-              layers={data.layers}
-            />
+            <SlotBoundary contentKey={`subagents:${focused.id}`} secondary={backToList}>
+              <PhoneSubagents
+                device={device}
+                panel={data.subagents}
+                chat={focused.head.title}
+                onBack={() => {
+                  onUiChange({ phoneView: 'chat' })
+                }}
+                open={ui.transcripts ?? []}
+                onOpenChange={(transcripts) => {
+                  onUiChange({ transcripts })
+                }}
+                onOpenTranscript={
+                  fullLabels === undefined
+                    ? undefined
+                    : (subagentFor) => {
+                        onUiChange({ phoneView: 'transcript', subagentFor })
+                      }
+                }
+                // T3: Start a subtask opens the Subtask form over the chat, as the chat actions' Subtask does (M20).
+                onStartSubtask={
+                  data.subtask === undefined
+                    ? undefined
+                    : () => {
+                        onUiChange({ phoneView: 'chat', chatDialog: 'subtask' })
+                      }
+                }
+                layers={data.layers}
+              />
+            </SlotBoundary>
           }
         />
       </Backdrop>
@@ -276,98 +299,73 @@ export function WorkspacesPhone({
           size={device}
           view="detail"
           detail={
-            <PhoneChat
-              pane={chat}
-              workspace={data.workspaces.find((w) => w.id === chatWorkspace)?.label ?? chatWorkspace ?? ''}
-              contextLabel={data.sidebar?.contextLabel ?? ''}
-              backLabel={text.back ?? text.title}
-              notice={notice}
-              onBack={() => {
-                onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false, sideChatOpen: false })
-              }}
-              skills={{
-                label: data.skillsLabel,
-                matching: data.skillsMatching,
-                items: data.skills,
-                value: ui.skill,
-                open: ui.skillsFor === chat.id,
-              }}
-              meta={meta}
-              focusMessage={ui.messageFocus}
-              draft={ui.drafts?.[chat.id]}
-              onTextChange={(draft) => {
-                onDraftChange(chat.id, draft)
-              }}
-              onSend={onSend && ((message) => onSend(chat.id, message))}
-              rename={
-                ui.renaming === true ? (
-                  <ChatNameField
-                    name={chat.head.title}
-                    onSave={(name) => {
-                      onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
-                    }}
-                    onCancel={() => {
-                      onUiChange(afterRename)
-                    }}
-                    figma={data.layers?.renameField}
-                    // T14: at a tablet's width the field is D21's, 300 wide.
-                    size={device === 'tablet' ? 'full' : 'phone'}
-                  />
-                ) : undefined
-              }
-              above={
-                ui.toastOpen === true && data.toast !== undefined ? (
-                  <ChatToast
-                    text={data.toast.text}
-                    action={data.toast.action}
-                    onAction={() => {
-                      onUiChange({ toastOpen: false })
-                    }}
-                    figma={data.layers?.toast}
-                  />
-                ) : undefined
-              }
-              onSkillsOpenChange={(open) => {
-                onUiChange({ skillsFor: open ? chat.id : null })
-              }}
-              renderMenu={
-                device === 'tablet' && data.chatMenu !== undefined
-                  ? (trigger) => (
-                      <ChatActionsMenu
-                        title={chat.head.title}
-                        actions={data.chatMenu ?? []}
-                        targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
-                        newWorkspace={data.newWorkspace}
-                        trigger={trigger}
-                        open={ui.menuFor === chat.id}
-                        onOpenChange={(open) => {
-                          onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })
-                        }}
-                        moveOpen={ui.menuFor === chat.id && ui.moveOpen}
-                        onMoveOpenChange={(moveOpen) => {
-                          onUiChange({ moveOpen })
-                        }}
-                        highlighted={ui.menuHighlight}
-                        onHighlightChange={(menuHighlight) => {
-                          onUiChange({ menuHighlight })
-                        }}
-                        moveTarget={ui.moveTarget}
-                        onMoveTargetChange={(moveTarget) => {
-                          onUiChange({ moveTarget })
-                        }}
-                        onSelect={(action) => {
-                          onUiChange({ menuFor: null, moveOpen: false })
-                          pickChatAction(action)
-                        }}
-                        figma={{ menu: data.layers?.chatMenu }}
-                      />
-                    )
-                  : text.chatMenu === undefined
-                    ? undefined
-                    : (trigger) => (
-                        <PhoneChatActions
+            <SlotBoundary contentKey={chat.id} secondary={backToList}>
+              <PhoneChat
+                pane={chat}
+                workspace={data.workspaces.find((w) => w.id === chatWorkspace)?.label ?? chatWorkspace ?? ''}
+                contextLabel={data.sidebar?.contextLabel ?? ''}
+                backLabel={text.back ?? text.title}
+                notice={notice}
+                onBack={() => {
+                  onUiChange({
+                    phoneView: 'list',
+                    skillsFor: null,
+                    menuFor: null,
+                    moveOpen: false,
+                    sideChatOpen: false,
+                  })
+                }}
+                skills={{
+                  label: data.skillsLabel,
+                  matching: data.skillsMatching,
+                  items: data.skills,
+                  value: ui.skill,
+                  open: ui.skillsFor === chat.id,
+                }}
+                meta={meta}
+                focusMessage={ui.messageFocus}
+                draft={ui.drafts?.[chat.id]}
+                onTextChange={(draft) => {
+                  onDraftChange(chat.id, draft)
+                }}
+                onSend={onSend && ((message) => onSend(chat.id, message))}
+                rename={
+                  ui.renaming === true ? (
+                    <ChatNameField
+                      name={chat.head.title}
+                      onSave={(name) => {
+                        onUiChange({ ...afterRename, names: { ...ui.names, [chat.id]: name } })
+                      }}
+                      onCancel={() => {
+                        onUiChange(afterRename)
+                      }}
+                      figma={data.layers?.renameField}
+                      // T14: at a tablet's width the field is D21's, 300 wide.
+                      size={device === 'tablet' ? 'full' : 'phone'}
+                    />
+                  ) : undefined
+                }
+                above={
+                  ui.toastOpen === true && data.toast !== undefined ? (
+                    <ChatToast
+                      text={data.toast.text}
+                      action={data.toast.action}
+                      onAction={() => {
+                        onUiChange({ toastOpen: false })
+                      }}
+                      figma={data.layers?.toast}
+                    />
+                  ) : undefined
+                }
+                onSkillsOpenChange={(open) => {
+                  onUiChange({ skillsFor: open ? chat.id : null })
+                }}
+                renderMenu={
+                  device === 'tablet' && data.chatMenu !== undefined
+                    ? (trigger) => (
+                        <ChatActionsMenu
                           title={chat.head.title}
-                          actions={text.chatMenu ?? []}
+                          actions={data.chatMenu ?? []}
                           targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                           newWorkspace={data.newWorkspace}
                           trigger={trigger}
@@ -379,44 +377,77 @@ export function WorkspacesPhone({
                           onMoveOpenChange={(moveOpen) => {
                             onUiChange({ moveOpen })
                           }}
+                          highlighted={ui.menuHighlight}
+                          onHighlightChange={(menuHighlight) => {
+                            onUiChange({ menuHighlight })
+                          }}
                           moveTarget={ui.moveTarget}
                           onMoveTargetChange={(moveTarget) => {
                             onUiChange({ moveTarget })
                           }}
-                          highlight={ui.menuHighlight}
-                          onSelect={pickChatAction}
-                          layers={data.layers?.sheetIcons}
+                          onSelect={(action) => {
+                            onUiChange({ menuFor: null, moveOpen: false })
+                            pickChatAction(action)
+                          }}
+                          figma={{ menu: data.layers?.chatMenu }}
                         />
                       )
-              }
-              noActions={data.chatActions === false}
-              folders={
-                data.folders?.chip === undefined ? undefined : (
-                  <PhoneFolders
-                    folders={data.folders}
-                    chip={data.folders.chip}
-                    picker={data.folderPicker}
-                    open={ui.foldersOpen === true}
-                    onOpenChange={(foldersOpen) => {
-                      onUiChange({ foldersOpen })
-                    }}
-                    pickerOpen={ui.folderPickerOpen === true}
-                    onPickerOpenChange={(folderPickerOpen) => {
-                      onUiChange({ folderPickerOpen })
-                    }}
-                    picked={ui.pickedFolder ?? null}
-                    onPick={(pickedFolder) => {
-                      onUiChange({ pickedFolder })
-                    }}
-                    device={device}
-                    chat={chat.head.title}
-                    layers={data.layers?.phoneFolders}
-                  />
-                )
-              }
-              device={device}
-              layers={data.layers}
-            />
+                    : text.chatMenu === undefined
+                      ? undefined
+                      : (trigger) => (
+                          <PhoneChatActions
+                            title={chat.head.title}
+                            actions={text.chatMenu ?? []}
+                            targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
+                            newWorkspace={data.newWorkspace}
+                            trigger={trigger}
+                            open={ui.menuFor === chat.id}
+                            onOpenChange={(open) => {
+                              onUiChange({ menuFor: open ? chat.id : null, moveOpen: false })
+                            }}
+                            moveOpen={ui.menuFor === chat.id && ui.moveOpen}
+                            onMoveOpenChange={(moveOpen) => {
+                              onUiChange({ moveOpen })
+                            }}
+                            moveTarget={ui.moveTarget}
+                            onMoveTargetChange={(moveTarget) => {
+                              onUiChange({ moveTarget })
+                            }}
+                            highlight={ui.menuHighlight}
+                            onSelect={pickChatAction}
+                            layers={data.layers?.sheetIcons}
+                          />
+                        )
+                }
+                noActions={data.chatActions === false}
+                folders={
+                  data.folders?.chip === undefined ? undefined : (
+                    <PhoneFolders
+                      folders={data.folders}
+                      chip={data.folders.chip}
+                      picker={data.folderPicker}
+                      open={ui.foldersOpen === true}
+                      onOpenChange={(foldersOpen) => {
+                        onUiChange({ foldersOpen })
+                      }}
+                      pickerOpen={ui.folderPickerOpen === true}
+                      onPickerOpenChange={(folderPickerOpen) => {
+                        onUiChange({ folderPickerOpen })
+                      }}
+                      picked={ui.pickedFolder ?? null}
+                      onPick={(pickedFolder) => {
+                        onUiChange({ pickedFolder })
+                      }}
+                      device={device}
+                      chat={chat.head.title}
+                      layers={data.layers?.phoneFolders}
+                    />
+                  )
+                }
+                device={device}
+                layers={data.layers}
+              />
+            </SlotBoundary>
           }
         />
         {data.sideChat === undefined ? null : (
@@ -507,19 +538,21 @@ export function WorkspacesPhone({
           />
         }
         list={
-          <PhoneWorkspaceList
-            device={device}
-            text={text}
-            workspaces={data.workspaces}
-            selected={ui.focusedPane}
-            openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
-            ui={ui}
-            onUiChange={onUiChange}
-            onAdd={add}
-            layers={data.layers}
-            heldRow={heldRowRef}
-            notice={notice}
-          />
+          <SlotBoundary contentKey="list">
+            <PhoneWorkspaceList
+              device={device}
+              text={text}
+              workspaces={data.workspaces}
+              selected={ui.focusedPane}
+              openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
+              ui={ui}
+              onUiChange={onUiChange}
+              onAdd={add}
+              layers={data.layers}
+              heldRow={heldRowRef}
+              notice={notice}
+            />
+          </SlotBoundary>
         }
       />
       {held === undefined || text.rowMenu === undefined ? null : (
