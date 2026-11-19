@@ -15,17 +15,5 @@
       "selector": "[data-figma=\"panel · linked from\"] > section.panel__root > div.panel__body",
       "reason": "The Linked from panel's body scrolls sideways (388 px in 332): a long file and line does not fit beside its node in the 332 px row, and Figma runs it past the panel's and the frame's edge; the render keeps it on one line rather than cut or wrap it (deviations.md \"Long file and line.\")."
     }
-  ],
-  "position": [
-    {
-      "layer": "500:11127",
-      "iconSize": 16,
-      "reason": "Figma draws the Links graph's side node icon (icon/workflow 500:11127) at 13 px; MapNode draws it at 16, or at 12 with nodeDensity=\"compact\", which also draws the open item's icon at 12 against Figma's 15 and moves every name 4 px left, so the graph keeps the default 16 (LIBRARY_GAPS.md, Links graph and MapNode icon size)."
-    },
-    {
-      "layer": "500:11131",
-      "iconSize": 16,
-      "reason": "Figma draws the Links graph's side node icon (icon/skill 500:11131) at 13 px; MapNode draws it at 16, or at 12 with nodeDensity=\"compact\", which also draws the open item's icon at 12 against Figma's 15 and moves every name 4 px left, so the graph keeps the default 16 (LIBRARY_GAPS.md, Links graph and MapNode icon size)."
-    }
   ]
 }

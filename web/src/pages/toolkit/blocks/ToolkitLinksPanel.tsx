@@ -70,6 +70,8 @@ export function ToolkitLinksPanel({ side, layer, onOpenItem, onOpenLine }: Toolk
                   label={l.name}
                   kind={l.kind}
                   tone="faint"
+                  // D19 500:9871: Figma's 13 px kind icon draws at 12 (no icon token has 13, d-100).
+                  iconSize="12"
                   onClick={() => {
                     onOpenItem?.(l.path)
                   }}

@@ -91,6 +91,6 @@ the same.
 - **Path badge.** The copy icon is the badge's bare `icon/copy` (gap:
   Path badge copy button). The badge passes the position check.
 - **Links graph icons.** Figma's side node icons are 13 px (500:10974);
-  `MapNode` draws them at 16, and `nodeDensity="compact"` (12) would draw
-  the open item's 15 px icon at 12 too, so the graph keeps 16 and
-  `exceptions.json` names 500:10974 (gap: Links graph).
+  MapGraph `nodeIconSize="12"`
+  (library #265) draws them at 12, within the icon check's 2 px, and the
+  open item keeps its icon at 16 (its node's `iconSize`).

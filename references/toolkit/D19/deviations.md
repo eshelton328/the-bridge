@@ -118,6 +118,5 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
   names 482:142, as for `icon/artifacts`.
 - **Link row icons.** Figma draws each link row's kind icon in the Links
-  panel at 13 px; `MapNode` draws it at 16 (12 only with
-  `density="compact"`, which also changes the node's height and text), so
-  `exceptions.json` pins each icon at 16 (gap: MapNode icon size).
+  panel at 13 px; `MapNode iconSize="12"` (library #265) draws it at 12,
+  within the icon check's 2 px.
