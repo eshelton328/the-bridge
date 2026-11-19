@@ -15,6 +15,14 @@ function withSearch(search: string) {
   })
 }
 
+/** Sets `navigator.webdriver` for this test, as Playwright sets it to true; the browser's own value comes back after it. */
+function withWebdriver(value: boolean) {
+  Object.defineProperty(navigator, 'webdriver', { configurable: true, value })
+  onTestFinished(() => {
+    Reflect.deleteProperty(navigator, 'webdriver')
+  })
+}
+
 type FetchSwitch = (url: string, init: RequestInit) => Promise<Response>
 
 const answer =
@@ -77,6 +85,7 @@ describe('keyboard trace switch', () => {
 
   it('runs the chat sessions with no overlay when the switch is on, asking it once with no cache', async () => {
     withSearch('')
+    withWebdriver(false)
     const fetchSwitch = vi.fn<FetchSwitch>(answer({ enabled: true }))
     const route = { pathname: '/inbox', search: '' }
     let changed: () => void = () => undefined
@@ -110,7 +119,10 @@ describe('keyboard trace switch', () => {
 
   it('does not trace when the switch is off', async () => {
     withSearch('')
-    const { running, posts } = await start(answer({ enabled: false }))
+    withWebdriver(false)
+    const fetchSwitch = vi.fn<FetchSwitch>(answer({ enabled: false }))
+    const { running, posts } = await start(fetchSwitch)
+    expect(fetchSwitch).toHaveBeenCalledTimes(1)
     expect(running).toBeUndefined()
     expect(overlay()).toBeNull()
     expect(posts).toEqual([])
@@ -118,6 +130,7 @@ describe('keyboard trace switch', () => {
 
   it('does not trace, and shows no error, when the switch fails, is slow or answers oddly', async () => {
     withSearch('')
+    withWebdriver(false)
     const errors = vi.spyOn(console, 'error')
     onTestFinished(() => {
       errors.mockRestore()
@@ -128,19 +141,46 @@ describe('keyboard trace switch', () => {
           fail(new DOMException('aborted', 'AbortError'))
         })
       })
-    for (const fetchSwitch of [
+    for (const answerSwitch of [
       () => Promise.reject(new TypeError('Failed to fetch')),
       slow,
       answer({ enabled: true }, 500),
       answer({ enabled: 'true' }),
       () => Promise.resolve(new Response('not json', { status: 200 })),
     ]) {
+      const fetchSwitch = vi.fn<FetchSwitch>(answerSwitch)
       expect(await keyboardTraceMode({ fetchSwitch, timeoutMs: 50 })).toBe('off')
       const { running, posts } = await start(fetchSwitch, 50)
+      // The switch was asked each time, so the answer, not automation, turned the trace off.
+      expect(fetchSwitch).toHaveBeenCalledTimes(2)
       expect(running).toBeUndefined()
       expect(posts).toEqual([])
     }
     expect(overlay()).toBeNull()
     expect(errors).not.toHaveBeenCalled()
+  })
+
+  it('starts nothing from the switch under automation, and never asks it', async () => {
+    withSearch('')
+    withWebdriver(true)
+    const fetchSwitch = vi.fn<FetchSwitch>(answer({ enabled: true }))
+    expect(await keyboardTraceMode({ fetchSwitch })).toBe('off')
+    const { running, posts } = await start(fetchSwitch)
+    expect(running).toBeUndefined()
+    const composer = mountPhoneComposer()
+    composer.focus()
+    composer.blur()
+    await new Promise((done) => setTimeout(done, 150))
+    expect(fetchSwitch).not.toHaveBeenCalled()
+    expect(posts).toEqual([])
+  })
+
+  it('still traces from the param under automation, and marks the trace automated', async () => {
+    withSearch('?keyboard-trace')
+    withWebdriver(true)
+    const { running, posts } = await start(answer({ enabled: false }))
+    expect(running).toBeDefined()
+    await expect.poll(() => posts.length).toBeGreaterThan(0)
+    expect(JSON.parse(posts[0] ?? '')).toMatchObject({ automated: true })
   })
 })

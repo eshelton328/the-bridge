@@ -74,7 +74,8 @@ last day; no client text reaches the path. It takes only `POST` with
 `{ startedAt, userAgent, samples[] }` (400). A body may also have
 `displayMode` (`standalone` or `browser`), `screenHeight`, `screenWidth`,
 `devicePixelRatio` (numbers), `safeArea` (`{ top, right, bottom, left }`,
-numbers), `route` (`{ pathname, state }`: a path of `/`-separated
+numbers), `reducedMotion` and `automated` (booleans), `kbExperiment` (a
+key of letters, digits, `_` and `-`, at most 32, or null), `route` (`{ pathname, state }`: a path of `/`-separated
 letters, digits, `_` and `-`, and a state key of letters and digits or
 null) and `chat` (`{ state, device }`: a state key or null, and `phone`
 or `tablet`); `route` and `chat` take no other keys. Each is checked when

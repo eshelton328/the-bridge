@@ -137,6 +137,17 @@ void test('a trace with the display header is taken, and so is one from an older
   assert.equal((await post(url, trace({ displayMode: 'browser', samples: [{ t: 3 }] }))).status, 204)
 })
 
+void test('a trace with reduced motion, automated and a kb-experiment key is taken, the key may be null', async () => {
+  const dir = tempDir()
+  const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const extra = { reducedMotion: true, automated: false, kbExperiment: 'dock_v2-a' }
+  const full = trace({ ...HEADER, ...extra, samples: [{ t: 1 }] })
+  assert.equal((await post(url, full)).status, 204)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), full)
+  const none = { reducedMotion: false, automated: true, kbExperiment: null }
+  assert.equal((await post(url, trace({ ...HEADER, ...none, samples: [{ t: 2 }] }))).status, 204)
+})
+
 void test('a chat session trace with its route and chat is taken, the state key may be null', async () => {
   const dir = tempDir()
   const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
@@ -184,6 +195,16 @@ void test('a trace with a malformed display header is refused', async () => {
     { chat: { state: 1, device: 'phone' } },
     { chat: { state: 'phoneChatFull', device: 'phone', title: 'bridge themes' } },
     { chat: ['phoneChatFull', 'phone'] },
+    { reducedMotion: 'true' },
+    { reducedMotion: 1 },
+    { automated: 'yes' },
+    { automated: null },
+    { kbExperiment: '' },
+    { kbExperiment: 'x'.repeat(33) },
+    { kbExperiment: 'my chat' },
+    { kbExperiment: 'a.b' },
+    { kbExperiment: 7 },
+    { kbExperiment: ['a'] },
   ]) {
     assert.equal((await post(url, trace({ ...HEADER, ...bad }))).status, 400, JSON.stringify(bad))
   }

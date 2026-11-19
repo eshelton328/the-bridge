@@ -6,7 +6,9 @@
 // (keyboardChatTrace.ts): one short trace per keyboard open in a Workspaces
 // chat, so bridge-coord can trace the installed Home Screen app, where no one
 // can type a URL. A failed, slow or odd answer means off, with no error
-// shown. main.ts calls this only under `import.meta.env.DEV`, and both trace
+// shown. Under automation (`navigator.webdriver`, as Playwright sets it) the
+// switch starts nothing, so a test run's traces never mix with the owner's;
+// the param still traces, and its header says `automated: true`. main.ts calls this only under `import.meta.env.DEV`, and both trace
 // modules are dynamic imports, so a build has none of them.
 import type { ChatTraceOptions, RouteSource } from './keyboardChatTrace.ts'
 import type { TraceOptions } from './keyboardTrace.ts'
@@ -47,13 +49,14 @@ async function switchIsOn(fetchSwitch: NonNullable<SwitchOptions['fetchSwitch']>
   }
 }
 
-/** The trace's mode: the URL param first, else the dev server's switch. */
+/** The trace's mode: the URL param first, else the dev server's switch, which automation never asks. */
 export async function keyboardTraceMode({
   win = window,
   fetchSwitch = (url, init) => win.fetch(url, init),
   timeoutMs = SWITCH_TIMEOUT_MS,
 }: SwitchOptions = {}): Promise<KeyboardTraceMode> {
   if (new URLSearchParams(win.location.search).has('keyboard-trace')) return 'overlay'
+  if (win.navigator.webdriver) return 'off'
   return (await switchIsOn(fetchSwitch, timeoutMs)) ? 'quiet' : 'off'
 }
 

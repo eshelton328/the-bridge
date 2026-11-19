@@ -46,6 +46,12 @@ export type KeyboardTraceHeader = {
   screenWidth: number
   devicePixelRatio: number
   safeArea: SafeArea
+  /** Whether `prefers-reduced-motion: reduce` matches. */
+  reducedMotion: boolean
+  /** The `kb-experiment` search param when it is a short key (`KB_EXPERIMENT`), else null; no other search param is read. */
+  kbExperiment: string | null
+  /** True when `navigator.webdriver` is: a trace from Playwright or other automation. */
+  automated: boolean
   /** A chat session only (keyboardChatTrace.ts). */
   route?: TraceRoute
   /** A chat session only (keyboardChatTrace.ts). */
@@ -101,6 +107,20 @@ export function readSample(type: string, target: EventTarget | null, win: Window
 export function readDisplayMode(win: Window = window): KeyboardTraceHeader['displayMode'] {
   const fromQuery = typeof win.matchMedia === 'function' && win.matchMedia('(display-mode: standalone)').matches
   return fromQuery || Reflect.get(win.navigator, 'standalone') === true ? 'standalone' : 'browser'
+}
+
+/** A `kb-experiment` key: letters, digits, `_` and `-`, at most 32, so no free text gets in. */
+const KB_EXPERIMENT = /^[A-Za-z0-9_-]{1,32}$/
+
+/** The `kb-experiment` search param when it is a short key, else null. */
+export function readKbExperiment(win: Window = window): string | null {
+  const value = new URLSearchParams(win.location.search).get('kb-experiment')
+  return value !== null && KB_EXPERIMENT.test(value) ? value : null
+}
+
+/** Whether the user asks for reduced motion. */
+function readReducedMotion(win: Window = window): boolean {
+  return typeof win.matchMedia === 'function' && win.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 const px = (value: string) => {
@@ -163,10 +183,16 @@ function readHeaderNow(win: Window, startedAt: string): Omit<KeyboardTraceHeader
     screenHeight: win.screen.height,
     screenWidth: win.screen.width,
     devicePixelRatio: win.devicePixelRatio,
+    reducedMotion: readReducedMotion(win),
+    kbExperiment: readKbExperiment(win),
+    automated: win.navigator.webdriver,
   }
 }
 
-/** The trace's header: its start time, the browser, the display mode, the screen and the safe area. */
+/**
+ * The trace's header: its start time, the browser, the display mode, the screen, the safe area, reduced motion, the
+ * `kb-experiment` key and whether automation runs the page.
+ */
 export async function readHeader(
   win: Window = window,
   startedAt: string = new Date().toISOString(),

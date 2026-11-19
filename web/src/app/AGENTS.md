@@ -38,4 +38,7 @@ tracing on or off, or change what a trace records.
 - The trace only reads: it changes no frame, navigation or AppShell
   behaviour.
 - A trace never records message text, a chat title, a name or a field's
-  value (`keyboardChatTrace.test.ts`).
+  value (`keyboardChatTrace.test.ts`), and no search param but `state`
+  and a short `kb-experiment` key (`keyboardTrace.test.ts`).
+- Under automation (`navigator.webdriver`) the switch starts no trace;
+  the param still traces, marked `automated` (`keyboardTraceSwitch.test.ts`).

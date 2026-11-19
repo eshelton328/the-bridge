@@ -23,7 +23,9 @@ Figma sizes), and a pinch on the Toolkit map zoomed the whole app.
   document. `DocumentScroll.test.tsx` calls `markApp()` for the locked
   case and checks that the document scrolls without it.
 - `index.html`: the viewport meta sets `maximum-scale=1,
-  user-scalable=no` for every platform.
+  user-scalable=no` for every platform, and `viewport-fit=cover`, so iOS
+  draws the app under the status bar and the home indicator and the
+  library's AppShell pads its panes by `env(safe-area-inset-*)`.
 - `pageZoom.ts`: iOS Safari ignores `user-scalable=no`, so on iOS (and
   iPadOS, which reports a Mac with touch points) a non-passive listener
   cancels each `gesturestart` and `gesturechange` on the document. A part
@@ -49,7 +51,10 @@ while the file `ENABLED` is in the traces folder ([../../../scripts/README.md](.
 bridge-coord turns tracing on with `touch <traces>/ENABLED` and off by
 deleting the file; the app reads the switch on its next load. A failed
 answer, an answer slower than 2 s or any answer but `{ "enabled": true }`
-means off, with no error shown.
+means off, with no error shown. Under automation (`navigator.webdriver`
+is true, as Playwright sets it) the app does not ask the switch and
+starts no trace, so a test run's traces stay apart from the owner's; the
+param still traces, and its header says `automated: true`.
 
 `main.ts` calls `startKeyboardTraceIfOn()` (`keyboardTraceSwitch.ts`)
 only when `import.meta.env.DEV` is true, and that function imports
@@ -104,9 +109,13 @@ Both modes record the same way:
   `screenWidth`, `devicePixelRatio` and `safeArea` (`top`, `right`,
   `bottom`, `left` in px: a fixed, hidden probe with
   `padding: env(safe-area-inset-*)` is appended, read two animation
-  frames later and removed; no POST goes before it is read). `env()` is 0
-  on every side while the viewport meta in `index.html` has no
-  `viewport-fit=cover`, which it has not today.
+  frames later and removed; no POST goes before it is read). The viewport
+  meta in `index.html` has `viewport-fit=cover`, so on iOS `env()` gives
+  the device's insets; without it every side is 0. The header also has
+  `reducedMotion` (whether `prefers-reduced-motion: reduce` matches),
+  `kbExperiment` (the `kb-experiment` search param when it is a key of
+  letters, digits, `_` and `-`, at most 32, else null; no other search
+  param is recorded) and `automated` (`navigator.webdriver`).
 - With the param, a fixed overlay in the top right corner shows the live
   values; from the switch there is none. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,

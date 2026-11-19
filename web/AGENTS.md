@@ -11,8 +11,10 @@ Storybook and the canvas bundle. Styles come from the component library
 - `styled-system/` is Panda's output from `pnpm codegen`; never edit it.
 - `index.html`'s viewport meta turns page zoom off
   (`maximum-scale=1, user-scalable=no`): the owner's decision of
-  2026-11-18, so iOS does not zoom into a field under 16 px. Keep it;
-  `src/app/viewport.test.ts` checks it.
+  2026-11-18, so iOS does not zoom into a field under 16 px. It also has
+  `viewport-fit=cover`, so AppShell pads by the safe-area insets
+  (bridge-shell, brain 681246a). Keep both; `src/app/viewport.test.ts`
+  checks it.
 
 ## The library dependency
 
