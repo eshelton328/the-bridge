@@ -128,3 +128,44 @@ describe('the Toolkit list on the phone (M1)', () => {
     expect(Math.abs(middle(trailing.getBoundingClientRect()) - middle(row))).toBeLessThanOrEqual(1)
   })
 })
+
+describe('the list beside an open item (D3)', () => {
+  it('draws each row 52 high, Figma 53, with the counts centred at its end (ListRow padding pane, 427:94)', async () => {
+    await setViewport(1512, 982)
+    const root = await renderToolkit('skillOpen', 'toolkit row · agents-md')
+    const listRow = layer(root, 'toolkit row · agents-md')
+    const row = listRow.getBoundingClientRect()
+    // 53 is off the 4 px grid (d-100): 6 above and below, a 20 px name over a 16 px path, inside a 1 px border.
+    expect(row.height).toBe(52)
+    const counts = byText(listRow, '→0 ←1').getBoundingClientRect()
+    expect(Math.abs(middle(counts) - middle(row))).toBeLessThanOrEqual(1)
+    // The counts end the row 10 in from its border, as Figma's end 10 in (427:102 ends at 457 in a row ending at 467).
+    expect(row.right - counts.right).toBeLessThanOrEqual(11)
+  })
+
+  it('keeps the open item’s row 52 high, so opening an item does not move the list (427:166)', async () => {
+    await setViewport(1512, 982)
+    const root = await renderToolkit('skillOpen', 'toolkit list')
+    const selected = root.querySelector('[data-figma="toolkit list"] [aria-current]')?.closest('.list-row__root')
+    if (!(selected instanceof HTMLElement)) throw new Error('no selected row')
+    expect(selected.getBoundingClientRect().height).toBe(52)
+  })
+
+  it('centres the Skill evals chevron down its box (ListRow trailingAlign center, 427:383)', async () => {
+    await setViewport(1512, 982)
+    const root = await renderToolkit('skillOpen', 'evals link')
+    const listRow = layer(root, 'evals link')
+    const trailing = listRow.querySelector('.list-row__trailing')
+    if (trailing === null) throw new Error('no trailing part')
+    expect(Math.abs(middle(trailing.getBoundingClientRect()) - middle(listRow.getBoundingClientRect()))).toBeLessThanOrEqual(1)
+  })
+
+  it('cuts the kind chips at the pane’s edge with no fade (FilterChips fade none, D17 491:4396)', async () => {
+    await setViewport(1512, 982)
+    const root = await renderToolkit('skillActivity', 'filter · chips')
+    const chips = layer(root, 'filter · chips')
+    // The row still runs past the pane's edge, so without fade="none" its end would fade out.
+    await expect.poll(() => chips.hasAttribute('data-overflow-end')).toBe(true)
+    expect(getComputedStyle(chips).maskImage).toBe('none')
+  })
+})
