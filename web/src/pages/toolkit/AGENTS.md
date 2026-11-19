@@ -38,12 +38,19 @@ what each file of a page folder is for.
   their own legend. On the phone the header shows the views as icon
   buttons, and Read-only moves under the search. Props only.
 - `home.ts`: `toolkitHome`, what `/toolkit` shows with no `?state=`:
-  `toolkitListTablet`'s data (D1's list with the Rules group, as T1 and
-  M1 draw it) and D1's list view with no item, map selection, sheet or
-  More drawer open. The screen lays it out for the window (D1's cards
-  beside the rail, T1's or M1's rows over the tab bar) and changes on
-  resize. It is not a Figma state, so it sits outside `states/` with no
-  frame, story, board or fidelity check (`app/ToolkitHome.test.tsx`).
+  D4's list (every group, with T1's counts) and D1's list view with no
+  item, map selection, sheet or More drawer open. Its data is the state
+  files' data put together, imported, so an item opens from the home as
+  complete as any state shows it: the More drawer's Artifacts count, the
+  map, the Activity view (D11), every item's details with each tab the
+  desktop states fill (`mergeDetails`: the How it works, Files with D10's
+  explanation, Links and Evals states, the workflow's page), the link
+  targets' browsers and the skills the evals open. Only five items have
+  details in any state; the others open with what the list and their link
+  target know. The screen lays it out for the window (D1's cards beside
+  the rail, T1's or M1's rows over the tab bar) and changes on resize. It
+  is not a Figma state, so it sits outside `states/` with no frame, story,
+  board or fidelity check (`app/ToolkitHome.test.tsx`).
 - `types.ts`: the view models: items, groups, kind chips, the map, an open item's details, and the `ui`.
 - `states/`: one file per Figma state, each with a story in
   `screens/ToolkitScreen.stories.tsx`. A new list frame adds its frame to
