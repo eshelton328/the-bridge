@@ -43,7 +43,8 @@ Workspaces chat (`?state=phoneChatFull`, R20) and the Inbox chat
 
 1. puts a fake `window.visualViewport` in the page before the app loads,
    as `WorkspacesChatDock.test.tsx` does;
-2. taps the composer, scrolls the window by the keyboard's height as iOS
+2. blurs a focused field and waits 600 ms (a state can open with the
+   composer focused), then taps the composer, scrolls the window by the keyboard's height as iOS
    does for a focused field, and shrinks the fake viewport by 336 px on
    the library's keyboard curve (250 ms, `cubic-bezier(0.38, 0.7, 0.125,
    1)`), one step each frame;
@@ -51,8 +52,9 @@ Workspaces chat (`?state=phoneChatFull`, R20) and the Inbox chat
 4. samples every animation frame and checks Erik's acceptance rules
    (R22): the header's top is the same in every frame, `window.scrollY`
    is 0, the lowest text of the message list stays above the composer,
-   and the shell, the chat and its header, list and composer keep an
-   opacity of 1.
+   the shell, the chat and its header, list and composer keep an
+   opacity of 1, and with the keyboard all the way open the composer
+   ends above it.
 
 It writes `<chat>-frames.json` and `<chat>-sheet.png` (24 frames of a
 recording, the keyboard drawn grey) to `reports/keyboard/<time>/`, which
