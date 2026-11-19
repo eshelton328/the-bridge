@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports } from '../../errors/reporter.ts'
 import { workspacesHome } from './home.ts'
-import { modelLabel, toWorkspaces, watchLiveWorkspaces, withLiveWorkspaces } from './liveWorkspaces.ts'
+import { fetchWorkspaces, modelLabel, toWorkspaces, watchLiveWorkspaces, withLiveWorkspaces } from './liveWorkspaces.ts'
 import { sideChat } from './states/sideChat.ts'
 import { workbench } from './states/workbench.ts'
 
@@ -94,6 +94,7 @@ const response = WorkspacesResponse.parse({
 
 afterEach(() => {
   clearReports()
+  vi.unstubAllGlobals()
 })
 
 describe('the live mapper', () => {
@@ -353,5 +354,55 @@ describe('watchLiveWorkspaces', () => {
     const state = await withLiveWorkspaces(workspacesHome, { client: queries, fetch: () => Promise.resolve(response) })
     expect(state.data.status.alert).toBe(notice)
     stop()
+  })
+})
+
+describe('fetchWorkspaces with an error answer (W-1)', () => {
+  const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const answer = (body: string, status: number) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.resolve(new Response(body, { status }))),
+    )
+  }
+
+  it('names the status of a 502 that is not JSON, as the Vite proxy or tailscale serve sends', async () => {
+    answer('', 502)
+    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: fetchWorkspaces })
+    expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
+    expect(state.data.status.alert).toBe(
+      'Live data is not available (the server answered 502); the page shows mock data.',
+    )
+    expect(state.data.status.alert).not.toMatch(/JSON/)
+  })
+
+  it('names the status of an HTML error page', async () => {
+    answer('<html><body>Bad Gateway</body></html>', 502)
+    await expect(fetchWorkspaces()).rejects.toMatchObject({
+      message: 'the server answered 502',
+      status: 502,
+      kind: undefined,
+      requestId: undefined,
+    })
+  })
+
+  it("gives an error body's kind and request ID, not [object Object]", async () => {
+    answer(JSON.stringify({ error: { kind: 'unreachable', requestId: 'r-42' } }), 502)
+    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: fetchWorkspaces })
+    expect(state.data.status.alert).toBe(
+      'Live data is not available (the server answered 502 (unreachable, request r-42)); the page shows mock data.',
+    )
+    expect(state.data.status.alert).not.toMatch(/object Object/)
+    await expect(fetchWorkspaces()).rejects.toMatchObject({ status: 502, kind: 'unreachable', requestId: 'r-42' })
+  })
+
+  it("gives an error body's message and drops its reason", async () => {
+    answer(JSON.stringify({ error: 'herdr is not running', reason: 'connect ENOENT herdr.sock' }), 502)
+    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 502: herdr is not running' })
+  })
+
+  it('names only the status of a JSON body that is not an error body', async () => {
+    answer(JSON.stringify({ error: 7 }), 500)
+    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 500', status: 500 })
   })
 })

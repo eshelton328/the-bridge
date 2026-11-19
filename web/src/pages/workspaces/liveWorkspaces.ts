@@ -9,6 +9,7 @@
 // page to load again, at most once each `settleMs`.
 import { type ChatSummary, LiveEvent, splitId, type WorkspaceSummary, WorkspacesResponse } from '@bridge/contract'
 import type { QueryClient } from '@tanstack/react-query'
+import { z } from 'zod'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
@@ -93,14 +94,47 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
 
-/** Reads the workspaces through the RPC client and checks them against the contract. */
-async function fetchWorkspaces(): Promise<WorkspacesResponse> {
-  const res = await api.api.workspaces.$get()
-  const body: unknown = await res.json()
-  if (!res.ok) {
-    const reason = typeof body === 'object' && body !== null && 'error' in body ? String(body.error) : ''
-    throw new Error(`the server answered ${String(res.status)}${reason ? `: ${reason}` : ''}`)
+/**
+ * The body of an error answer from the server: a message, or a kind and a request ID (d-115). A local schema
+ * until the contract exports one for every non-2xx answer (S-4, backend-coord's); keys it does not name, such as
+ * `reason`, are dropped, so a socket path never reaches the page.
+ */
+const ErrorBody = z.object({
+  error: z.union([z.string(), z.object({ kind: z.string(), requestId: z.string() })]),
+})
+
+/** A read the server answered with a status that is not 2xx; `kind` and `requestId` come from its body when it has them. */
+class LiveReadError extends Error {
+  readonly status: number
+  readonly kind: string | undefined
+  readonly requestId: string | undefined
+
+  constructor(status: number, body: string) {
+    const parsed = ErrorBody.safeParse(readJson(body))
+    const error = parsed.success ? parsed.data.error : undefined
+    const detail =
+      error === undefined
+        ? ''
+        : typeof error === 'string'
+          ? `: ${error}`
+          : ` (${error.kind}, request ${error.requestId})`
+    super(`the server answered ${String(status)}${detail}`)
+    this.name = 'LiveReadError'
+    this.status = status
+    this.kind = typeof error === 'object' ? error.kind : undefined
+    this.requestId = typeof error === 'object' ? error.requestId : undefined
   }
+}
+
+/**
+ * Reads the workspaces through the RPC client and checks them against the contract. The status comes first: an
+ * error answer may not be JSON (the Vite proxy or `tailscale serve` with the server down), so its body is read as
+ * text and parsed only if it can be.
+ */
+export async function fetchWorkspaces(): Promise<WorkspacesResponse> {
+  const res = await api.api.workspaces.$get()
+  if (!res.ok) throw new LiveReadError(res.status, await res.text())
+  const body: unknown = await res.json()
   return WorkspacesResponse.parse(body)
 }
 
