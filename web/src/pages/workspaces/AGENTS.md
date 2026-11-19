@@ -551,7 +551,9 @@ first: it says what each file of a page folder is for.
   `layers.subagentsStart`; for T7 the New chat dialog's layers in
   `layers.newChatDialog`; for T8 the Fork dialog's layers in
   `layers.forkDialog`; for T10 the Subtask dialog's layers in
-  `layers.subtaskDialog`) and
+  `layers.subtaskDialog`; for R6 `lastChats`, each workspace's most
+  recent chat as a pane, mock chats in D1's `states/workbench.ts` that a
+  workspace tab with no layout opens) and
   `WorkspacesUi` (the focused pane, the open menu and
   list with their highlighted row and workspace, the open skill list;
   for D2 the sidebar, closed groups, the hovered header, the drag and the side chat; for D3 the subagents panel
