@@ -7,6 +7,7 @@ import { MarkdownView } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitMarkdownBlock } from '../types.ts'
+import { ToolkitGlyphText } from './ToolkitGlyphText.tsx'
 
 // D3 427:290: the file references sit on one line, two spaces apart.
 const refs = css({ display: 'flex', flexWrap: 'wrap', columnGap: '16' })
@@ -36,7 +37,12 @@ function Block({ block, wrapRefs }: { block: ToolkitMarkdownBlock; wrapRefs: boo
     case 'heading':
       return <h2>{block.text}</h2>
     case 'paragraph':
-      return <p>{block.text}</p>
+      // T35 494:4340: a paragraph's ✗ and ✓ are the library's glyphs.
+      return (
+        <p>
+          <ToolkitGlyphText text={block.text} />
+        </p>
+      )
     case 'pre':
       return (
         <pre>

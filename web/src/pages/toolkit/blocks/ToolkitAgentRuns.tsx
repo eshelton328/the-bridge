@@ -22,6 +22,7 @@ import {
 import { Fragment, type ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
+import { ToolkitGlyphText } from './ToolkitGlyphText.tsx'
 
 type Runs = NonNullable<ToolkitItemDetailView['runs']>
 type Fact = Runs['facts'][number]
@@ -88,14 +89,15 @@ function FactValue({ f }: { f: Fact }) {
 
 /**
  * T19 487:1147: Figma breaks a narrow card's caption after a path's slash ("toolkit/" over "hooks, set by link.sh");
- * the browser does not break there, so a `wbr` after each slash allows it. The text stays the same.
+ * the browser does not break there, so a `wbr` after each slash allows it. The text stays the same, its ✗ and ✓
+ * drawn as the library's glyphs (D9 Test: "runs the rule’s ✗ and ✓ examples").
  */
 function Breakable({ text }: { text: string }) {
   const parts = text.split('/')
   return parts.map((part, i) => (
     // The parts of one caption never reorder, so a part's place and text name it.
     <Fragment key={`${String(i)}:${part}`}>
-      {part}
+      <ToolkitGlyphText text={part} />
       {i < parts.length - 1 ? (
         <>
           /<wbr />
@@ -123,7 +125,9 @@ export function ToolkitAgentRuns({ runs, kind = 'agent', compact = false, column
                   {f.label}
                 </span>
                 <FactValue f={f} />
-                <span className={captions[kind]}>{compact ? <Breakable text={f.caption} /> : f.caption}</span>
+                <span className={captions[kind]}>
+                  {compact ? <Breakable text={f.caption} /> : <ToolkitGlyphText text={f.caption} />}
+                </span>
               </div>
             </Panel>
           </div>

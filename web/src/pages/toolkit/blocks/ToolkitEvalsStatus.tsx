@@ -10,12 +10,12 @@
 // its Evals tab; the library's Badge takes no press, so the button around it
 // is a plain one styled with tokens (LIBRARY_GAPS.md, Evals panels). An item
 // with no evals (D25, D27) has no badges: the line says why. Props only.
-import { Badge, CheckIcon, CloseCircleIcon, CloseIcon, Panel, focusRing } from '@eshelton328/component-library-1701'
-import { Fragment } from 'react'
+import { Badge, CheckIcon, CloseCircleIcon, Panel, focusRing } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvals } from '../types.ts'
 import { badgeLayer, badgeLook, badgeResult } from './evalsView.ts'
 import { ToolkitEvalsHeader } from './ToolkitEvalsHeader.tsx'
+import { ToolkitGlyphText } from './ToolkitGlyphText.tsx'
 
 // D20 482:1900: the badges 6 apart; on the phone (M18 482:2570) they wrap, the rows 6 apart. The library's Badge is 2
 // px wider than Figma's (D1 Quality 4.5), so the badges sit 4 apart, which keeps each within 3 px of Figma's x.
@@ -37,35 +37,6 @@ const press = css({
 const text = css({ textStyle: 'small', color: 'fg.muted', mt: '2' })
 
 const icons = { check: <CheckIcon size="12" />, cross: <CloseCircleIcon size="12" /> }
-
-// D28 492:2185: a pass or fail mark in the line, Figma's ✓ and ✗, as the library's check and cross at the text's 12
-// px, in the line's colour; the icon's title is its accessible text. The marks are characters of Figma's text layer,
-// not layers of their own, so they have no `data-figma`.
-const mark = css({ display: 'inline-flex', verticalAlign: 'middle', color: 'fg.muted' })
-const marks = {
-  pass: <CheckIcon size="12" title="pass" />,
-  fail: <CloseIcon size="12" title="fail" />,
-}
-
-function MarkedText({ text }: { text: ToolkitEvals['status']['text'] }) {
-  if (typeof text === 'string') return text
-  // Each run is keyed by where it starts in the line.
-  let at = 0
-  const runs = text.map((run) => {
-    const start = at
-    at += typeof run === 'string' ? run.length : 1
-    return { run, start }
-  })
-  return runs.map(({ run, start }) =>
-    typeof run === 'string' ? (
-      <Fragment key={start}>{run}</Fragment>
-    ) : (
-      <span key={start} className={mark}>
-        {marks[run.mark]}
-      </span>
-    ),
-  )
-}
 
 export type ToolkitEvalsStatusProps = {
   status: ToolkitEvals['status']
@@ -120,7 +91,8 @@ export function ToolkitEvalsStatus({ status, onOpenEvals }: ToolkitEvalsStatusPr
           </div>
         )}
         <p className={text}>
-          <MarkedText text={status.text} />
+          {/* D28 492:2185: Figma's ✗ and ✓ in the hook's test line are the library's glyphs. */}
+          <ToolkitGlyphText text={status.text} />
         </p>
       </Panel>
     </section>

@@ -433,16 +433,6 @@ const ToolkitEvalsEnd = z.discriminatedUnion('type', [
 ])
 
 /**
- * A line of text with pass and fail marks in it (D28 492:2185: Figma's ✓ and ✗ in the hook's test line): plain text, or
- * its runs, each a string or a mark, which the line draws as the library's check or cross icon with "pass" or "fail"
- * as its accessible text.
- */
-const ToolkitMarkedText = z.union([
-  z.string(),
-  z.array(z.union([z.string(), z.object({ mark: z.enum(['pass', 'fail']) })])),
-])
-
-/**
  * The Evals tab of an open item (D20 `evals` 482:1894), from the item's ledger, its cases or its tests: the status
  * panel (its label in capitals, the text at the header's end, the badges and a line on what they mean), the pass rate
  * by round as grouped bars (`chart`, D20 `panel · opus by round` 482:1927), the cases with their scores (`cases`, D20
@@ -455,7 +445,7 @@ const ToolkitEvals = z.object({
     label: z.string(),
     meta: z.string().optional(),
     badges: z.array(ToolkitEvalBadge).optional(),
-    text: ToolkitMarkedText,
+    text: z.string(),
   }),
   chart: z
     .object({
