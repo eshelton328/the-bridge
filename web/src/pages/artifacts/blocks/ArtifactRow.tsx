@@ -25,7 +25,10 @@ import type { ArtifactCard } from '../types.ts'
 // Figma's row preview is 64 × 40 on the desktop (403:194, `Thumbnail size="sm"`) and 76 × 48 on the phone (406:122,
 // `size="md"`), each centred down the row. Since library beta.71 (PR 221) `md` draws Figma's phone row drawing
 // (406:122 to 406:278): a top bar with no window dots and larger shapes.
-const thumb = css({ alignSelf: 'center' })
+// The title's button covers the row (ListRow's title, an `::after` at inset 0), and the preview comes before it, so a
+// preview's fallback (d-084) is lifted over that cover, or a press on Retry would open the artifact. A working preview
+// stays under the cover, so a press on it still opens the row.
+const thumb = css({ alignSelf: 'center', '& [role="alert"]': { position: 'relative', zIndex: '1' } })
 // M1: the age over New (406:138, 406:144), one column 4 apart; New is Figma's 48 × 16 pill with its filled star
 // (`Badge size="xs"`, which draws `SparkFilledIcon` at 8 px, library beta.43).
 const phoneEnd = css({ alignItems: 'flex-end' })

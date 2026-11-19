@@ -13,6 +13,10 @@ const metaWide = css({ flex: '1', overflow: 'hidden' })
 // The mark alone is aria-hidden, so a card that hides the source's name
 // still gives it to a screen reader.
 const srOnly = css({ srOnly: true })
+// The title's button covers the card (Card's action, an `::after` at inset 0), and the preview comes before it, so a
+// preview's fallback (d-084) would sit under that cover and a press on Retry would open the artifact. Lifted, the
+// fallback takes its own presses; a working preview stays under the cover, so a press on it still opens the card.
+const liftFallback = css({ '& [role="alert"]': { position: 'relative', zIndex: '1' } })
 
 export type LibraryCardProps = {
   card: ArtifactCard
@@ -23,7 +27,7 @@ export type LibraryCardProps = {
 
 export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProps) {
   return (
-    <div data-figma={`artifact card · ${card.title}`}>
+    <div className={liftFallback} data-figma={`artifact card · ${card.title}`}>
       <Card
         title={card.title}
         media={
