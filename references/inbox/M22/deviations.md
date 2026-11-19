@@ -32,8 +32,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **List rows and group headers.** As in M01: `ListRow
   density="compact"` rows are 56 px against Figma's 55 and group
   headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
@@ -47,11 +46,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (`SearchField textSize="sm"`, `bodySm`), and an idle chip's count is
   `fg.subtle` (#7986a6, beta.5); Figma's #4a5675 stays out by d-099,
   because it fails WCAG AA (d-055).
-- **Rows and chips on the phone.** As in M01: the rows are pulled 6 px
-  out of the list's padding so the kind tiles line up under the group
-  chevrons (Library gap: List row padding on the phone), and each chip
-  pads its label 8 against Figma's 12 (Library gap: Filter chip padding
-  on the phone). The chip row scrolls sideways and clips, as Figma's
+- **Rows and chips on the phone.** As in M01: the rows pad 4 at the sides
+  (`ListRow padding="phoneSides"`), so the kind tiles line up under
+  the group chevrons, and each chip pads its label 12
+  inside its 1 px border, 13 from its edge against Figma's 12
+  (`FilterChips size="phone"`, so each chip is 2 px wider). The chip row scrolls sideways and clips, as Figma's
   does; the fade is missing (Library gap: Chip row fade).
 - **Needs you closed.** Figma closes Needs you on the phone, where T21
   opens it, so M22 has its own state. Figma keeps the closed group's

@@ -38,8 +38,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   so text under its bottom edge counts as not shown, and the position
   check adds 29 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 29 px
-  lower, under a blank band where Figma has the bar. Library gap:
-  Top and bottom safe areas on the tablet.
+  lower, under a blank band where Figma has the bar. Waiting for a design: Device chrome (d-089).
 - **Task card under the nav.** The card sits 8 under the nav, as
   Figma draws it (was 16). The card is still 6 px lower than Figma's
   (`task · discussing` y +6), because the header above it sits lower
@@ -68,8 +67,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `discussion` area is shorter.
   Figma draws the reply box focused behind the dialog, with a caret;
   the modal dialog holds the focus, so the reply box is not focused
-  here. Library gaps: Top and
-  bottom safe areas on the tablet, Composer focus.
+  here. Library gap: Composer focus. Waiting for a design: Device chrome (d-089).
 - **Context meter value.** `exceptions.json` excepts the meter's
   percentage: `ContextMeter` draws the number and the % sign as two text
   nodes, so the text check cannot match the whole string; the meter

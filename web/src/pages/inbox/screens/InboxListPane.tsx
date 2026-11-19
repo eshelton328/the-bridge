@@ -254,7 +254,8 @@ export function InboxListPane({
           items={view.filters}
           value={[ui.filter]}
           multiple={false}
-          size="compact"
+          // M1 346:9014: the phone's chips pad their label 12 at the sides (`phone`); the desktop and tablet keep 8.
+          size={layout === 'phone' ? 'phone' : 'compact'}
           onValueChange={(values) => {
             const [first] = values
             if (first !== undefined) onFilterChange?.(first)

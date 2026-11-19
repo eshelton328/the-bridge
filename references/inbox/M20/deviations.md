@@ -39,8 +39,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **Same page as M2.** The task page is M2's (`taskPage`), so its
   differences are M2's, with the same causes: `nav` h -8 (`BackRow` and
   32 px buttons against Figma's 40 px row); the sections 20 apart

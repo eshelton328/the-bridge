@@ -37,8 +37,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **Discussion page header.** As on the tablet (T17), but the phone
   puts the model and context in the task card, under the task's place,
   as Figma draws them (`model and context` 454:216), and the nav keeps

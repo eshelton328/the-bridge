@@ -40,8 +40,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **Nav and detail.** As in M02: the nav is 32 px high against Figma's
   40 (`nav` h -8); sections are 20 apart against Figma's 18 (d-072), the
   title is `title` (20/28) against Figma's 22 px and the prompt's lines

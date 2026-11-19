@@ -33,8 +33,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **List rows and group headers.** As in D01 and T01: `ListRow
   density="compact"` rows are 56 px against Figma's 55 and group
   headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
@@ -52,17 +51,16 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Library gap: Breakpoint tokens.
 - **Row inset and title.** Figma's phone rows pad their content 4 at
   the sides (346:9052), so the kind tiles line up under the group
-  chevrons; `ListRow` pads 10 inside a 1 px border. The phone pulls each
-  row 6 px out of the list's padding, so the tile sits at x 17 against
-  16 and the age ends at 373, as in Figma; the row's own box is 6 px
-  wider each side, which shows only on a selected row. The large title
-  sits 4 in from the header's edge (x 16), as in Figma. Library gap:
-  List row padding on the phone.
+  chevrons; `ListRow padding="phoneSides"` (beta.78) pads 4 inside its 1 px
+  border, so the tile sits at x 17 against 16 and the age ends at 373,
+  as in Figma. The large title
+  sits 4 in from the header's edge (x 16), as in Figma.
 - **Chip size.** Figma's phone chips pad their label 12 at the sides
-  (`chip · All` 346:9014, 51 wide); `FilterChips size="compact"` pads
-  8 with a 1 px border, as the tablet's chips (T1), so each chip is 6 px
-  narrower and the row starts 2 px in. The gaps between the chips are 6,
-  as in Figma. Library gap: Filter chip padding on the phone.
+  (`chip · All` 346:9014, 51 wide); `FilterChips size="phone"`
+  (library beta.79) pads 12 inside its 1 px border, so the label is 13 in
+  against Figma's 12 and each chip is 2 px wider (11 is no spacing token,
+  d-100). The row starts 2 px in (its focus-ring padding). The gaps
+  between the chips are 6, as in Figma.
 - **Chip row.** Figma's chip row runs past the list and scrolls
   sideways, the Done chip cut at the list's edge; the render does the
   same (the `hiddenOverflow` exception says why) and fades the

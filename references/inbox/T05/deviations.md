@@ -34,8 +34,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   so text under its bottom edge counts as not shown, and the position
   check adds 29 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 29 px
-  lower, under a blank band where Figma has the bar. Library gap:
-  Top and bottom safe areas on the tablet.
+  lower, under a blank band where Figma has the bar. Waiting for a design: Device chrome (d-089).
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Chat header.** Back with Workspaces is `BackRow` (28 px) with a
@@ -54,8 +53,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   reply box; `AppShell` keeps it only on the phone, so the reply box
   sits 20 px lower (`346:6416` y +20). The story focuses the reply box,
   as Figma draws it with a caret; the focused border is cyan, not
-  Figma's lighter grey (library gaps: Top and bottom safe areas on the
-  tablet, Composer focus).
+  Figma's lighter grey (library gap: Composer focus; waiting for a design: Device chrome, d-089).
 - **Messages.** Messages are `body` (14/20) against Figma's 13/19, so
   Claude's reply wraps three words earlier. Library gap: Message author
   icon and small text.
@@ -63,9 +61,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Button size="xs" textSize="xs"`: 24 px high against Figma's 22, the
   4 px grid value (d-100), with a Medium 12 label (`labelXs`) against
   Figma's Medium 11 (346:6409, read from Figma), because no label style
-  is 11. Stop and send are
-  `Composer`'s 28 px controls with 14 px labels, against Figma's 26.
-  Library gap: Button label size.
+  is 11 (library gap: Button label size). Stop draws Figma's 12 px icon and Medium 12 label (`stopIconSize="12"`
+  and `stopTextSize="xs"`, library beta.80), so it is about 59 × 28
+  against Figma's 61 × 26; Stop and send are `Composer`'s 28 px controls
+  (`control.sm`) against Figma's 26, within 2 px on the 4 px grid
+  (d-100).
 - **Home indicator on the tablet (2026-11-18).** Library beta.42 keeps
   the home indicator's 34 px (`shell.safeAreaBottom`) under a tablet page
   with no tab bar, and the page pads its foot 6 in place of the tablet
@@ -89,7 +89,8 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   library's `Button size="sm"` and `Composer` controls are 28 px high
   with 14 px labels (library gap: Button label size). (Copy fixed in
   part by beta.7: `Button size="xs" textSize="xs"`, 24 px high with a
-  12 px label, d-100. Stop and send stay.)
+  12 px label, d-100. Beta.80 draws Stop's icon and label at 12;
+  Stop and send stay 28 high.)
 - 17 px from the task card to the first message against 23: fixed. The
   chat starts 24 below the card (Figma 22, 24 on the grid, d-072).
 - Back did not return to the list (caller's review). Fixed: Back closes

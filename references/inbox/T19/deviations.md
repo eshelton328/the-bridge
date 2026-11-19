@@ -36,8 +36,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   so text under its bottom edge counts as not shown, and the position
   check adds 29 to each render y (d-101), so a layer anchored to the top or to the
   bottom compares true, and the side-by-side draws the render 29 px
-  lower, under a blank band where Figma has the bar. Library gap:
-  Top and bottom safe areas on the tablet.
+  lower, under a blank band where Figma has the bar. Waiting for a design: Device chrome (d-089).
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Detail spacing.** As in T02: sections are 24 px apart against

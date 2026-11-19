@@ -28,10 +28,6 @@ const runs = css({ color: 'fg.accent' })
 const finished = css({ color: 'status.done.fg' })
 const dismissed = css({ color: 'fg.subtle' })
 const removed = css({ color: 'status.danger.fg' })
-// M1 346:9052: the phone's rows pad their content 4 at the sides, against `ListRow`'s 10 (with its 1 px border, 11),
-// so the kind tile lines up under the group's chevron (16) and the age ends 16 from the screen's edge. The row
-// takes the 6 px difference outside the list's padding (LIBRARY_GAPS.md: List row padding on the phone).
-const phoneRow = css({ mx: '-6' })
 // M22 402:7553, D18, T21: Figma puts each line of a row 4 under the one above. A compact `ListRow` puts its lines 2
 // apart, because its 16 px text lines are taller than Figma's 14 and 17; a 20 px pill does not grow, so its line takes
 // the other 2, and a New row is 80 high, Figma's 81 on the 4 px grid.
@@ -138,6 +134,9 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
   const item = (
     <ListRow
       density="compact"
+      // M1 346:9052: the phone's rows pad their content 4 at the sides (`phoneSides`), so the kind tile lines up under
+      // the group's chevron and the age ends 16 from the screen's edge.
+      padding={phone ? 'phoneSides' : undefined}
       title={row.title}
       meta={query === undefined ? row.meta : <Highlight text={row.meta} query={query} variant="colour" />}
       leading={<KindTile kind={row.kind} />}
@@ -174,11 +173,8 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
       {lines ? <Lines row={row} /> : undefined}
     </ListRow>
   )
-  // Only a phone row gets the wrapper, so the desktop and tablet lists keep their boxes; a finished row in the phone's
-  // Done has no actions, but lines up with the others.
-  // A tablet row with actions (R11) gets a plain wrapper for its long-press and context menu.
-  if (!phone && onActions === undefined) return item
-  if (onActions === undefined) return <div className={phoneRow}>{item}</div>
+  // A row with actions (R11) gets a plain wrapper for its long-press and context menu.
+  if (onActions === undefined) return item
   // A row that does not open is not a button itself, so the wrapper is the row's control: a tap, Enter or Space opens
   // its actions, and a keyboard or screen reader reaches it. A row that opens keeps its own button, and the context
   // menu key on that button opens the actions through the wrapper.
@@ -197,7 +193,7 @@ export function InboxRow({ row, selected, onSelect, query, onActions, phone = fa
         }
       : {}
   return (
-    <div className={phone ? phoneRow : undefined} {...control} {...press}>
+    <div {...control} {...press}>
       {item}
     </div>
   )
