@@ -8,12 +8,16 @@
 // live-unavailable notice's Retry loads it again; each live chat pane reads
 // its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A chat's Send goes to the page
 // store's `send`; a failed send is reported and the composer keeps the draft.
+// The composer drafts are saved in sessionStorage as they change and read
+// back on load, so Reload app keeps them; a sent chat's draft leaves it
+// (draftStorage.ts).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
+import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
@@ -44,10 +48,15 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
+  // The drafts saved before the last reload, read once; what the owner types after it wins.
+  const [saved] = useState(() => loadDrafts(search.state))
   // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
   // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
   const current = state.data.current
-  const ui = useMemo(() => withLoadedLayouts(state.ui, changed, current), [state.ui, changed, current])
+  const ui = useMemo(() => {
+    const merged = withLoadedLayouts(state.ui, changed, current)
+    return Object.keys(saved).length === 0 ? merged : { ...merged, drafts: { ...saved, ...merged.drafts } }
+  }, [state.ui, changed, current, saved])
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   return (
     <WorkspacesScreen
@@ -55,6 +64,8 @@ export function WorkspacesPage() {
       ui={ui}
       viewport="desktop"
       onUiChange={(change) => {
+        // Saved before the render, so a keystroke that crashes the page is kept for Reload app.
+        if (change.drafts !== undefined) saveDrafts(search.state, change.drafts)
         // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
         // replaces only what he changed before it came.
         setUi(search.state, {

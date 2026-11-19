@@ -100,4 +100,33 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     await expect.element(page.getByRole('button', { name: 'Retry' }).first()).toBeVisible()
     expect(page.getByRole('button', { name: 'Reload app' }).elements()).toHaveLength(1)
   })
+
+  it('brings the draft back after a reload', async () => {
+    view = await renderAt('/workspaces')
+    await page.getByText('bridge themes', { exact: true }).click()
+    await userEvent.type(page.getByRole('textbox'), 'keep this')
+    await view.unmount()
+    // A reload: memory starts empty, and sessionStorage keeps what the tab saved.
+    const keys = Array.from({ length: window.sessionStorage.length }, (_, i) => window.sessionStorage.key(i) ?? '')
+    const tab = keys.map((key) => [key, window.sessionStorage.getItem(key) ?? ''] as const)
+    resetAllStores()
+    for (const [key, value] of tab) window.sessionStorage.setItem(key, value)
+    view = await renderAt('/workspaces')
+    await page.getByText('bridge themes', { exact: true }).click()
+    await expect.element(page.getByRole('textbox')).toHaveValue('keep this')
+  })
+
+  it('keeps the keystroke that crashed the page for the reload', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    view = await renderAt('/workspaces')
+    await page.getByText('bridge themes', { exact: true }).click()
+    await userEvent.type(page.getByRole('textbox'), 'almost')
+    crash.shell = true
+    await userEvent.type(page.getByRole('textbox'), '!')
+    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
+    crash.shell = false
+    await view.unmount()
+    const saved = window.sessionStorage.getItem('bridge/workspaces/drafts') ?? ''
+    expect(saved).toContain('almost!')
+  })
 })

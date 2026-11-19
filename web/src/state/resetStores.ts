@@ -5,7 +5,7 @@
 
 const resets = new Set<() => void>()
 
-/** Adds a store's reset. createAppStore calls it; nothing else should. */
+/** Adds a store's reset. createAppStore calls it, and a page file that keeps store state in storage (draftStorage.ts). */
 export function registerReset(reset: () => void): void {
   resets.add(reset)
 }
