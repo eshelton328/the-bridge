@@ -30,8 +30,9 @@ const fill = css({ flex: '1' })
 // The chat fills the detail's height and no more: the Back bar stays at the top, the reply box at the bottom, and only
 // the started task and the chat between them scroll (d-107).
 const frame = css({ flex: '1', minH: '[0]' })
-// The started task and the chat, 16 apart, as the stack around them was.
-const bodyGap = css({ gap: '16' })
+// The started task and the chat, 16 apart, as the stack around them was. The list is the containing block of what a
+// message positions absolutely (its hidden name), so that scrolls with the list and stays above the reply box (R22).
+const bodyGap = css({ gap: '16', position: 'relative' })
 // The reply box is an unnamed layer: 346:6416 in T5, 346:10886 in M8.
 const replyLayer = { desktop: undefined, tablet: '346:6416', phone: '346:10886' } as const satisfies Record<
   Viewport,
