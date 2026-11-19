@@ -11,7 +11,8 @@ import { mountApp } from './mountApp.ts'
 // error and an unhandled rejection each reach the reporter, and the dev ErrorTray counts them.
 const crash = new Error('the route crashed on purpose')
 
-function crashingRouter() {
+/** A router whose route throws; with `aboveRoutes`, its Wrap throws, so AppBoundary catches the crash. */
+function crashingRouter(aboveRoutes = false) {
   const root = createRootRoute()
   const home = createRoute({
     getParentRoute: () => root,
@@ -24,6 +25,14 @@ function crashingRouter() {
     routeTree: root.addChildren([home]),
     history: createMemoryHistory({ initialEntries: ['/'] }),
     defaultErrorComponent: RouteError,
+    // The router's Wrap renders outside its own error boundaries, so a throw there reaches AppBoundary.
+    ...(aboveRoutes
+      ? {
+          Wrap: () => {
+            throw crash
+          },
+        }
+      : {}),
     defaultNotFoundComponent: NotFound,
   })
 }
@@ -33,10 +42,10 @@ const events = new EventTarget()
 let unmount: (() => void) | undefined
 let container: HTMLElement | undefined
 
-function mount() {
+function mount(aboveRoutes = false) {
   container = document.createElement('div')
   document.body.append(container)
-  unmount = mountApp(container, { router: crashingRouter(), events })
+  unmount = mountApp(container, { router: crashingRouter(aboveRoutes), events })
 }
 
 afterEach(() => {
@@ -75,5 +84,13 @@ describe('mountApp', () => {
       ['rejection', reason],
     ])
     expect(container?.childElementCount).toBe(0)
+  })
+
+  it('still shows the ErrorTray when AppBoundary catches a crash and replaces the app (audit W-11)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    mount(true)
+    await expect.element(page.getByRole('heading', { name: 'The Bridge hit an error' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: '1 error' })).toBeVisible()
+    expect(getReports().map((r) => r.error)).toEqual([crash])
   })
 })

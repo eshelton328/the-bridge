@@ -1,6 +1,6 @@
 // Mounts the app in a container: the window handlers and React's root error
 // hooks feed the reporter, AppBoundary catches what nothing else does, and
-// the dev ErrorTray lists the reports. main.ts calls it on #root; a test
+// the dev ErrorTray beside it lists the reports. main.ts calls it on #root; a test
 // calls it with a memory-history router and unmounts it after.
 import { type AnyRouter, RouterProvider } from '@tanstack/react-router'
 import { createElement, Fragment, StrictMode } from 'react'
@@ -23,10 +23,12 @@ export function mountApp(container: Element, options: MountOptions = {}): () => 
     createElement(
       StrictMode,
       null,
+      // The tray is AppBoundary's sibling, so it still lists a crash that replaces the whole app (audit W-11).
       createElement(
-        AppBoundary,
+        Fragment,
         null,
-        createElement(Fragment, null, createElement(RouterProvider, { router: appRouter }), createElement(ErrorTray)),
+        createElement(AppBoundary, null, createElement(RouterProvider, { router: appRouter })),
+        createElement(ErrorTray),
       ),
     ),
   )
