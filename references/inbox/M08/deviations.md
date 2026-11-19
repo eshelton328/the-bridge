@@ -35,8 +35,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **Chat header.** As in T5: the nav pads 4 around the 28 px
   `BackRow`, so it is 36 px high against Figma's 38, and the started
   task sits 8 under it. The header is the notice `Panel` (10 and 12)

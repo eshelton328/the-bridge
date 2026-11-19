@@ -39,8 +39,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bottom compares true, and the side-by-side draws the render 38 px
   lower, under a blank band where Figma has the bar. Figma's home indicator (the bar at the bottom) and the frame's
   rounded corners are device chrome too (d-089): the render draws
-  neither. Library gap:
-  Top and bottom safe areas on the phone.
+  neither. Waiting for a design: Device chrome (d-089).
 - **List rows and group headers.** As in M01: `ListRow
   density="compact"` rows are 56 px against Figma's 55 and group
   headers 36 against 34, the 4 px grid values nearest Figma's (d-100,
