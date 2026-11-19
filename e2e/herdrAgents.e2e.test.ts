@@ -4,6 +4,7 @@ import { MachineId } from '@bridge/contract'
 import { describe, expect, inject, it } from 'vitest'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
+import { reportAgent } from './reportAgent.ts'
 
 const machine = MachineId.parse('e2e-mac')
 const port = () =>
@@ -12,7 +13,8 @@ const port = () =>
 describeAgentPort('herdr (real session)', () =>
   Promise.resolve({
     port: port(),
-    expected: { workspace: inject('fakeChat').workspace, chat: inject('fakeChat').title },
+    expected: { workspace: inject('fakeChat').workspace, chat: inject('statusChat').title },
+    setStatus: reportAgent,
   }),
 )
 

@@ -1,7 +1,8 @@
 // The E2E suite's global setup: a separate herdr session (never the owner's),
 // a workspace in it and the fake agent in that workspace's pane, in a
-// temporary folder. It gives the tests the socket, the Claude projects
-// folder and the fake chat, and stops and deletes the session after them.
+// temporary folder, and a second fake chat with no session whose status
+// the tests set. It gives the tests the socket, the Claude projects folder
+// and both chats, and stops and deletes the session after them.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
 import { mkdtempSync, realpathSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -14,6 +15,8 @@ declare module 'vitest' {
     herdrSocket: string
     claudeProjects: string
     fakeChat: { workspace: string; title: string }
+    /** The fake chat with no session, whose status a test sets, and its herdr pane (reportAgent.ts). */
+    statusChat: { title: string; pane: string }
   }
 }
 
@@ -23,6 +26,7 @@ const herdr = (...args: string[]) =>
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const Created = z.object({ result: z.object({ root_pane: z.object({ pane_id: z.string() }) }) })
+const Split = z.object({ result: z.object({ pane: z.object({ pane_id: z.string() }) }) })
 const Sessions = z.string()
 
 /** Waits up to `ms` for `check` to pass. A setup step, so it may wait in steps. */
@@ -58,9 +62,16 @@ export default async function setup(project: TestProject) {
   const fakeAgent = join(import.meta.dirname, 'fakeAgent.ts')
   herdr('pane', 'run', pane, `node ${fakeAgent} ${claudeProjects} fake-e2e-session '${title}'`)
   await until('the fake agent show in herdr', () => herdr('agent', 'list').includes('fake-e2e-session'))
+  // The second fake chat has no session, so herdr takes its status from pane.report_agent.
+  const statusTitle = 'fake status chat'
+  const statusPane = Split.parse(JSON.parse(herdr('pane', 'split', pane, '--direction', 'right', '--no-focus'))).result
+    .pane.pane_id
+  herdr('pane', 'run', statusPane, `node ${fakeAgent} ${claudeProjects} - '${statusTitle}'`)
+  await until('the status chat show in herdr', () => herdr('agent', 'list').includes(statusTitle))
   project.provide('herdrSocket', herdrSocket)
   project.provide('claudeProjects', claudeProjects)
   project.provide('fakeChat', { workspace, title })
+  project.provide('statusChat', { title: statusTitle, pane: statusPane })
   return () => {
     try {
       herdr('server', 'stop')

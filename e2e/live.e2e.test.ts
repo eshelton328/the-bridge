@@ -1,87 +1,25 @@
-// The first E2E flow (d-113): the server and the web dev server on free
-// ports, the page at /workspaces?source=live in Chromium, and the fake
-// chat in its list with its model and status.
-import { type ChildProcess, spawn } from 'node:child_process'
-import { mkdtempSync } from 'node:fs'
-import { createServer } from 'node:net'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+// The live flows (d-113): the server and the web dev server on free ports,
+// the page at /workspaces?source=live in Chromium. Slice 1: the fake chat
+// is in its list with its model and status. Slice 2: when the status
+// chat's status changes in herdr, the page shows the new status with no
+// reload.
 import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest'
+import { reportAgent } from './reportAgent.ts'
+import { startStack, stopStack } from './stack.ts'
 
-const root = join(import.meta.dirname, '..')
-const children: ChildProcess[] = []
 let browser: Browser | undefined
 let web = ''
 
-const freePort = () =>
-  new Promise<number>((resolve, reject) => {
-    const probe = createServer()
-    probe.on('error', reject)
-    probe.listen(0, '127.0.0.1', () => {
-      const address = probe.address()
-      probe.close(() => {
-        if (typeof address === 'object' && address !== null) resolve(address.port)
-        else reject(new Error('no free port'))
-      })
-    })
-  })
-
-/** Starts a process and resolves when its output matches `ready`; its output is kept for the error. */
-function start(command: string, args: string[], env: Record<string, string>, ready: RegExp): Promise<void> {
-  const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env } })
-  children.push(child)
-  let output = ''
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      reject(new Error(`${command} ${args.join(' ')} did not start:\n${output}`))
-    }, 60_000)
-    const read = (chunk: Buffer) => {
-      output += chunk.toString()
-      if (ready.test(output)) {
-        clearTimeout(timer)
-        resolve()
-      }
-    }
-    child.stdout.on('data', read)
-    child.stderr.on('data', read)
-    child.on('exit', (code) => {
-      clearTimeout(timer)
-      reject(new Error(`${command} ended with ${String(code)}:\n${output}`))
-    })
-  })
-}
-
 beforeAll(async () => {
-  const [serverPort, webPort] = [await freePort(), await freePort()]
-  const dir = mkdtempSync(join(tmpdir(), 'bridge-e2e-server-'))
-  await start(
-    'node',
-    ['server/src/main.ts'],
-    {
-      BRIDGE_PORT: String(serverPort),
-      BRIDGE_MACHINE_ID: 'e2e-mac',
-      BRIDGE_OWNER_LOGIN: 'e2e@example.com',
-      BRIDGE_HERDR_SOCKET: inject('herdrSocket'),
-      BRIDGE_BRAIN_DIR: dir,
-      BRIDGE_DB_FILE: join(dir, 'bridge.db'),
-      BRIDGE_CLAUDE_PROJECTS: inject('claudeProjects'),
-    },
-    /the-bridge server on/,
-  )
-  await start(
-    'pnpm',
-    ['--filter', '@bridge/web', 'exec', 'vite', '--port', String(webPort), '--strictPort', '--host', '127.0.0.1'],
-    { BRIDGE_SERVER_URL: `http://127.0.0.1:${String(serverPort)}` },
-    /ready in/,
-  )
+  const { webPort } = await startStack()
   web = `http://localhost:${String(webPort)}`
   browser = await chromium.launch()
 })
 
 afterAll(async () => {
   await browser?.close()
-  for (const child of children) child.kill()
+  stopStack()
 })
 
 describe('/workspaces?source=live', () => {
@@ -100,6 +38,35 @@ describe('/workspaces?source=live', () => {
     expect(text).not.toContain('Live data is not available')
     // The mock workspaces are gone: the list is the herdr session's.
     expect(text).not.toContain('skill-evals')
+    await page.close()
+  })
+
+  it("shows the status chat's new status when herdr changes it, with no reload", async () => {
+    if (!browser) throw new Error('no browser')
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } })
+    // The stream is open once the server has sent the headers of /api/events.
+    const streamOpen = page.waitForResponse((r) => r.url().endsWith('/api/events') && r.status() === 200)
+    await page.goto(`${web}/workspaces?source=live`)
+    const { title } = inject('statusChat')
+    // The status chat's row: the nearest box around its title that holds a status.
+    const statuses = ['Idle', 'Working', 'Needs you'].map((s) => `normalize-space()="${s}"`).join(' or ')
+    const row = page.getByText(title, { exact: true }).first().locator(`xpath=ancestor::*[.//*[${statuses}]][1]`)
+    await row.waitFor({ timeout: 30_000 })
+    await row.getByText('Idle', { exact: true }).waitFor()
+    // A navigation would give the page a new marker; the same marker after the change shows no reload.
+    await page.evaluate(() => {
+      document.body.dataset.e2eMark = 'before'
+    })
+    await streamOpen
+    try {
+      await reportAgent('blocked')
+      await row.getByText('Needs you', { exact: true }).waitFor({ timeout: 10_000 })
+      await reportAgent('working')
+      await row.getByText('Working', { exact: true }).waitFor({ timeout: 10_000 })
+      expect(await page.evaluate(() => document.body.dataset.e2eMark)).toBe('before')
+    } finally {
+      await reportAgent('idle')
+    }
     await page.close()
   })
 })

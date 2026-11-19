@@ -14,11 +14,22 @@ not in CI or `pnpm verify`.
 
 - `herdrSession.ts`: the global setup. It starts the herdr session,
   makes a workspace in a temporary folder, runs the fake agent in its
-  pane, and stops and deletes the session after the tests.
+  pane and a second fake agent with no session (the status chat) beside
+  it, and stops and deletes the session after the tests.
+- `stack.ts`: starts the server and the web dev server of one test
+  file on free ports, with the setup's herdr session.
+- `reportAgent.ts`: sets the status chat's status in herdr
+  (`pane.report_agent`), as an agent's hook would. herdr ignores such a
+  report for a pane with a `herdr:claude` session, whose status it reads
+  from the screen.
 - `fakeAgent.ts`: the fake agent. It writes a Claude Code session file
   where Claude Code puts one, prints a fixed script and reports itself
   to herdr as a Claude agent with that session.
 - `herdrAgents.e2e.test.ts`: the `AgentPort` contract suite on the herdr
   adapter and the real session.
-- `live.e2e.test.ts`: the first flow: `/workspaces?source=live` lists
-  the fake chat with its model and status.
+- `live.e2e.test.ts`: the live flows: `/workspaces?source=live` lists
+  the fake chat with its model and status, and shows a new status when
+  herdr changes the status chat's, with no reload (slice 2).
+- `proxy.e2e.test.ts`: the Vite proxy with Tailscale Serve's headers: a
+  tailnet request with no `Tailscale-User-Login` gets the server's 403,
+  the owner's login gets 200, and the event stream flows through Vite.
