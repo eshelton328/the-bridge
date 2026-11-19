@@ -1,28 +1,16 @@
 // An open item's path row (D3 457:45): the path badge, whose copy button
-// copies the path, then when the item changed in mono. On the phone (M2
+// copies the path (PathBadge `onCopy`), then when the item changed in mono. On the phone (M2
 // 457:188) the row holds only the badge, and when it changed moves to the
 // meta row (`ToolkitItemChanged`). A file on its own page on the phone (M6
 // 435:493) names the file in the badge with its icon and no copy button,
 // since the back row holds the copy button. Props only.
-import { CopyIcon, FileIcon, FolderIcon, PathBadge, focusRing } from '@eshelton328/component-library-1701'
+import { FileIcon, FolderIcon, PathBadge } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
 
 // D3 457:45: the path badge, then when it changed in mono, 10 apart.
 const pathRow = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start', gap: '10' })
-// D3 457:50: the copy icon is a bare 12 px icon inside the badge; the library's smallest button is 24 high.
-const copy = css({
-  display: 'inline-flex',
-  p: '0',
-  color: 'fg.muted',
-  bg: 'transparent',
-  border: 'none',
-  cursor: 'pointer',
-  _hover: { color: 'fg.default' },
-  outline: 'none',
-  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
-})
 
 export type ToolkitItemPathProps = {
   /** The item's path, such as "toolkit/skills/writer/". */
@@ -37,6 +25,8 @@ export type ToolkitItemPathProps = {
   icon?: ReactNode
   /** Whether the badge ends with the copy button; not on a file's own page on the phone (M6). */
   copyable?: boolean | undefined
+  /** The icon's size: `md` (16 px) on a file's own page on the phone (M6 435:494); `sm` (12 px) elsewhere. */
+  iconSize?: 'sm' | 'md' | undefined
 }
 
 export function ToolkitItemPath({
@@ -46,6 +36,7 @@ export function ToolkitItemPath({
   layer = 'path row',
   icon,
   copyable = true,
+  iconSize,
 }: ToolkitItemPathProps) {
   return (
     <div className={pathRow} data-figma={layer ?? undefined}>
@@ -54,19 +45,14 @@ export function ToolkitItemPath({
           path={location}
           // A folder's path ends with "/" (D3 457:47); a file's shows the file icon (D4 457:56).
           icon={icon ?? (location.endsWith('/') ? <FolderIcon /> : <FileIcon />)}
-          trailing={
-            copyable ? (
-              <button
-                type="button"
-                className={copy}
-                aria-label={`Copy ${location}`}
-                onClick={() => {
-                  onCopyPath?.(location)
-                }}
-              >
-                <CopyIcon />
-              </button>
-            ) : undefined
+          iconSize={iconSize}
+          // D3 457:50: the bare 12 px copy icon at the badge's end (PathBadge `onCopy`).
+          onCopy={
+            copyable
+              ? (path) => {
+                  onCopyPath?.(path)
+                }
+              : undefined
           }
         />
       </div>

@@ -121,9 +121,10 @@ const fullBack = css({ pb: '2' })
 // T8 448:206: on a tablet the meta row starts 12 under the breadcrumb row (448:193, 36 high, ends at 77), and the rows
 // are 12 apart.
 const fullNarrowPage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
-// D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (4 above and below its
-// 32 px buttons), so with the pane's 24 the buttons start at Figma's 28.
-const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '4' })
+// D3 427:251: the kind badge at the start, the two buttons at the end. The row is 40 high (2 above and below its
+// 36 px Show on map), so with the pane's 24 the buttons start at 26, 2 above Figma's 28, and the rows under it keep
+// their places.
+const metaRow = css({ display: 'flex', alignItems: 'center', gap: '10', py: '2' })
 // T3 428:561: on a tablet the meta row holds only the kind badge, and is as wide as it.
 const metaRowPage = css({ display: 'flex', alignItems: 'center', alignSelf: 'flex-start' })
 // T8 448:206: on a workflow's own page the meta row spans the item.
@@ -541,6 +542,7 @@ export function ToolkitItem({
         location={pageFile.path}
         changed=""
         icon={opened?.type === 'code' ? <CodeIcon /> : <FileIcon />}
+        iconSize="md"
         copyable={false}
         layer={null}
       />

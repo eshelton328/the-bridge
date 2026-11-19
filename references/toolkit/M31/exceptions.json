@@ -15,7 +15,7 @@
     {
       "layer": "500:10974",
       "iconSize": 16,
-      "reason": "Figma draws the Links graph's side node icon (icon/skill 500:10974) at 13 px; MapNode draws it at 16, or at 12 with nodeDensity=\"compact\", which also draws the open item's icon at 12 against Figma's 15 and moves every name 4 px left, so the graph keeps the default 16 (LIBRARY_GAPS.md, Links graph)."
+      "reason": "Figma draws the Links graph's side node icon (icon/skill 500:10974) at 13 px; MapNode draws it at 16, or at 12 with nodeDensity=\"compact\", which also draws the open item's icon at 12 against Figma's 15 and moves every name 4 px left, so the graph keeps the default 16 (LIBRARY_GAPS.md, Links graph and MapNode icon size)."
     }
   ]
 }

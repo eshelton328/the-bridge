@@ -14,7 +14,9 @@ import { rowLayer, rowTap } from './activityView.ts'
 
 // D17 474:649: the header's note at its end, in the small style.
 const end = css({ textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' })
-const rows = css({ display: 'flex', flexDirection: 'column', listStyle: 'none', m: '0', p: '0' })
+// D17 474:650: each row 51 high and 59 apart; `padding="flush"` draws it 52 high (1 + 6 + 20 + 2 + 16 + 6 + 1), so the
+// rows are 60 apart with the 8 between them.
+const rows = css({ display: 'flex', flexDirection: 'column', gap: '8', listStyle: 'none', m: '0', p: '0' })
 
 export type ToolkitActivityListProps = {
   list: ToolkitActivity['list']
@@ -32,6 +34,9 @@ export function ToolkitActivityList({ list, onOpenEvals }: ToolkitActivityListPr
             return (
               <li key={r.title} data-figma={rowLayer(r)}>
                 <ListRow
+                  // D17 474:650: no side padding, the icons centred, the meta in the small sans style.
+                  padding="flush"
+                  metaStyle="small"
                   title={r.title}
                   meta={r.meta}
                   leading={r.type === 'chat' ? <ChatIcon size="16" /> : undefined}

@@ -28,6 +28,11 @@
       "layer": "493:434",
       "iconSize": 24,
       "reason": "Figma draws the rail's icon/toolkit at 20 px (493:434) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    },
+    {
+      "layer": "500:10345",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/skill (500:10345) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
     }
   ]
 }
