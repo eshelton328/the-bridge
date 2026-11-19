@@ -92,6 +92,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   +20, h +19). Keep it shows a focus ring, as in D20: the dialog gives
   the safe action the first focus. Remove task takes the task out of
   the list and shows the list (`InboxRoute.test.tsx`).
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the dialog, the
+  library's focus tracker marks Keep it `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the dialog with no press, so the
+  render still shows the ring.
 - **Button labels.** The dialog's Keep it takes `Button textSize="sm"`
   (Medium 13, #105), as Figma's (402:12546), and Remove task takes
   `textSize="smStrong"` (`labelSmStrong`, SemiBold 13/16), Figma's

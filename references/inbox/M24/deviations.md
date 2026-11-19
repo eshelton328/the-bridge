@@ -94,6 +94,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   so Enter does not remove the task; Figma draws no focus ring, the
   render shows one on Keep it. Library gaps: Bottom sheet sections and
   data attribute, Bottom sheet as an alert dialog.
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the sheet, the
+  library's focus tracker marks Keep it `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the sheet with no press, so the render
+  still shows the ring.
 - **Sheet content inset.** The meta line, the text, the reason and the
   buttons start 17 from the sheet's edge, under the title, as Figma's
   (402:7842 to 402:7853); they started 13, 4 px left of the title.

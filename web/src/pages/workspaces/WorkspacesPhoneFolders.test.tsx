@@ -57,7 +57,11 @@ describe("the chat's folders on the phone", () => {
     await expect.element(add).toBeVisible()
     const button = add.element()
     if (!(button instanceof HTMLElement)) throw new Error('Add is not an element')
+    // A key press makes the focus a keyboard focus. Since library beta.54 (#177) a focus after a pointer press,
+    // such as the earlier tests' clicks, is quiet and draws no ring.
+    await userEvent.keyboard('{Shift}')
     button.focus({ focusVisible: true })
+    expect(button.hasAttribute('data-focus-quiet')).toBe(false)
     await expect.element(add).toHaveFocus()
     const style = getComputedStyle(button)
     expect(style.outlineStyle).toBe('solid')

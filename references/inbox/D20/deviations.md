@@ -77,6 +77,11 @@ the checks and offsets below are from the beta.9 run.
   it Medium 13 since beta.5 (`Button textSize="sm"`), as Figma's
   403:3924. Keep it has the first
   focus and shows its focus ring (see Second review).
+- **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
+  ring only after a key press: when a tap or click opens the dialog, the
+  library's focus tracker marks Keep it `data-focus-quiet` and draws no
+  ring, as Figma. The story opens the dialog with no press, so the
+  render still shows the ring.
 - **Detail text.** WHY and the prompt use `bodySm` (13/20), and the mono
   lines `monoSm` (11/16), as in D01 to D12. Figma's prompt lines are 21
   px apart and its mono boxes 14 px high; the library keeps 20 and 16 (4
