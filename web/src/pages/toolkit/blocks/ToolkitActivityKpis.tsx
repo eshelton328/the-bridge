@@ -3,7 +3,9 @@
 // calls` 474:585), in a row on the desktop and a tablet and two by two on
 // the phone, where they show no caption (M15 474:1216). The Activity view
 // (D11 `kpis` 444:499) passes its own Figma keys and gap, and its tablet and
-// phone figures have no caption in the data. Props only.
+// phone figures have no caption in the data. Figma shows each caption whole:
+// one too wide for its tile wraps onto a second line (T23 491:8077, D12
+// 445:227) where `KpiTile` would cut it. Props only.
 import { Grid, KpiTile } from '@eshelton328/component-library-1701'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { activityLayout, kpiCaption, kpiLayer } from './activityView.ts'
@@ -26,7 +28,7 @@ export function ToolkitActivityKpis({ kpis, layout, layer = kpiLayer, gap }: Too
     <Grid columns={columns === 4 ? '4' : '2'} gap={gap ?? (columns === 4 ? '12' : '8')} data-figma="kpis">
       {kpis.map((k) => (
         <div key={k.label} data-figma={layer(k)}>
-          <KpiTile value={k.value} label={k.label} caption={kpiCaption(k, layout)} />
+          <KpiTile value={k.value} label={k.label} caption={kpiCaption(k, layout)} captionLines={2} />
         </div>
       ))}
     </Grid>

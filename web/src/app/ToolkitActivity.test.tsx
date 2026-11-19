@@ -198,6 +198,22 @@ describe('the Activity tab on a tablet and the phone', () => {
     expect(root.querySelector('[data-figma="back row"]')?.textContent).toMatch(/Toolkit.*writer.*writing-reviewer/)
   })
 
+  it('shows the hook’s long caption whole on two lines (T23 491:8077)', async () => {
+    const { root } = await renderToolkit('hookActivityTablet', 'tablet')
+    const caption = root.querySelector('[data-figma="panel · kpi rejected"] dd.kpi-tile__caption')
+    const text = caption?.querySelector('.truncated-text')
+    if (!(caption instanceof HTMLElement) || !(text instanceof HTMLElement)) throw new Error('no caption')
+    expect(caption.textContent).toBe('the message broke the rule')
+    // Nothing is cut: no ellipsis, the whole text in its box.
+    expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth)
+    expect(text.scrollHeight).toBeLessThanOrEqual(text.clientHeight + 1)
+    // Two `small` lines (16 px each), where a one-line caption is one.
+    const line = Number.parseFloat(getComputedStyle(text).lineHeight)
+    expect(text.getBoundingClientRect().height).toBeCloseTo(2 * line, 0)
+    const commits = root.querySelector('[data-figma="panel · kpi commits"] dd.kpi-tile__caption .truncated-text')
+    expect(commits?.getBoundingClientRect().height).toBeCloseTo(line, 0)
+  })
+
   it('sets the key figures two by two with no caption and scrolls the tabs to Activity (M15)', async () => {
     const { root } = await renderToolkit('skillActivityPhone', 'phone')
     const calls = box(root, '[data-figma="panel · kpi calls"]')
