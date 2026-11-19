@@ -143,7 +143,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
       footer={
         // A long reply grows the reply box; the library Composer stops it at 30% of the window and scrolls inside. The
         // frame is not a size container: where its parent grows with its content, size containment would collapse it.
-        <div data-figma={replyLayer[layout]}>
+        <div data-figma={replyLayer[layout]} data-keyboard-keep="">
           <Composer
             label="Reply"
             placeholder={detail.reply}

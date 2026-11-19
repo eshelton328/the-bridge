@@ -30,7 +30,7 @@ export function ToolkitDiscussComposer({
   onSend,
 }: ToolkitDiscussComposerProps) {
   return (
-    <div data-figma={layer}>
+    <div data-figma={layer} data-keyboard-keep="">
       <Composer
         label={discussion.placeholder}
         placeholder={discussion.placeholder}

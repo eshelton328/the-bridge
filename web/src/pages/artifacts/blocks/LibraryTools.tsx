@@ -116,7 +116,13 @@ export function LibraryTools({
     if (searchFocus) searchRef.current?.querySelector('input')?.focus()
   }, [searchFocus])
   return (
-    <Inline gap={large && !iconOnly ? '8' : '6'} align="center" className={className} data-figma="list tools">
+    <Inline
+      gap={large && !iconOnly ? '8' : '6'}
+      align="center"
+      className={className}
+      data-figma="list tools"
+      data-keyboard-keep=""
+    >
       <div ref={searchRef} className={grow} data-figma={searchFigma}>
         <SearchField
           label={placeholder}
