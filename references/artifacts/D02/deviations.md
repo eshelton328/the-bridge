@@ -38,11 +38,12 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
 - **Discuss.** `button · Discuss` x -4.2, w +4.8: 95.8 wide against
   Figma's 91, as `Button textSize="sm"` pads its sides more than Figma's
   11 px. Library gap "Sort and Filter button widths".
-- **Project chip.** `project · File in a project` x +6, w -16.8,
-  `chips` w -12.8, `chip · updated 12m ago` x -10.8. The project chip is
-  a read-only `MetaChip` with no chevron and no menu, so it is narrower
-  and the updated chip sits further left. The detail column also starts
-  4 px further right (below). Library gap "Project chip menu".
+- **Project chip.** `project · File in a project` x +6, `chips` w +5.2,
+  `chip · updated 12m ago` x +7.2. The project chip is a `MetaChipButton`
+  with its chevron, 137.2 wide against Figma's 136, and opens the project
+  menu. The detail column starts 4 px further right (below): it pads 40
+  against Figma's 36, by d-072 (LIBRARY_GAPS.md, "Decided with no
+  library change").
 - **Row thumbnails.** None left: since library 1.0.0-beta.36 the rows
   draw `Thumbnail size="sm"`, 64 × 40 as Figma's (403:194), with each
   kind's row drawing (the grid as six round-cornered cells, the ui as a
@@ -59,7 +60,8 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
   block's rows are 10 apart, as Figma's (403:464: the title at 76, the
   description at 120, the chips at 150). What remains: Figma's title is
   a 34 px auto line and the render's 36 (on the 4 px grid), so the chips
-  sit 2 px below Figma's and fail only on width (Project chip, above).
+  sit 2 px below Figma's, and the chips fail on x and width (Project chip,
+  above).
 - **Detail column.** The artifact column is 40 in from the list
   (`Container size="detail"`) against Figma's 36: no spacing token is 36,
   and d-072 takes 40 (LIBRARY_GAPS.md, "Decided with no library change").
@@ -73,7 +75,7 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
   (`Thumbnail tone`, library 1.0.0-beta.68).
 - **Buttons with no screen yet.** Add a link, Discuss, Copy link,
   Remove, Open in workspace, Sort and Filter are buttons with no action;
-  the project chip opens no menu. Discuss opens the discussion (D7) in
+  the project chip opens the project menu. Discuss opens the discussion (D7) in
   Figma's note, but D7's state does not exist on this branch, so it is
   not wired. Open artifact is a button with no action, and the link under
   the preview opens the artifact's address in a new tab.

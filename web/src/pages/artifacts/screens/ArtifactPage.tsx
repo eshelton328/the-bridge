@@ -20,7 +20,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { ArtifactStatus } from '../blocks/ArtifactStatus.tsx'
-import { ArtifactTitleBlock } from '../blocks/ArtifactTitleBlock.tsx'
+import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
 import { ArtifactTopBar } from '../blocks/ArtifactTopBar.tsx'
 import { LinkMark } from '../blocks/LinkMark.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
@@ -45,6 +45,8 @@ export type ArtifactPageProps = {
   onOpenArtifact?: (() => void) | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
+  /** The menu the tablet's project chip opens; on the phone the chip opens File in a project, as the ⋯ button. */
+  projectMenu?: ProjectMenu | undefined
 }
 
 export function ArtifactPage({
@@ -56,6 +58,7 @@ export function ArtifactPage({
   onDiscuss,
   onOpenArtifact,
   onMore,
+  projectMenu,
 }: ArtifactPageProps) {
   const phone = layout === 'phone'
   return (
@@ -71,6 +74,8 @@ export function ArtifactPage({
         <ArtifactTitleBlock
           artifact={artifact}
           layout={phone ? 'phone' : 'tablet'}
+          projectMenu={projectMenu}
+          onProjectPress={phone ? onMore : undefined}
           status={<ArtifactStatus badge={badge} found={artifact.found} />}
         />
         <div data-figma="preview">

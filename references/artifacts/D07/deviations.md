@@ -43,10 +43,10 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   1.4.11) over the pressed fill. Figma's violet fill has no token, so the
   fill stays `surface.selected`. Library gaps
   "Sort and Filter button widths" and "Discuss toggle".
-- **Project chip.** `chips` w -12.8, `project · File in a project` x +6,
-  w -16.8, `chip · updated 12m ago` x -10.8, as in D2: the project chip
-  is a read-only `MetaChip` with no chevron. Library gap "Project chip
-  menu".
+- **Project chip.** `chips` w +5.2, `project · File in a project` x +6,
+  `chip · updated 12m ago` x +7.2, as in D2: the project chip is a
+  `MetaChipButton` with its chevron, and the column pads 40 against
+  Figma's 36 (d-072).
 - **Model and context.** Passes (218 × 26 against 220 × 22): since
   library #142 `ModelChip` is 82.2 wide against Figma's 83 and its chevron
   takes the label's tone, and "context" is `smallXs` (Regular 11/16),

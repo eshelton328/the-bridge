@@ -57,6 +57,21 @@ export const artifactOpen = {
       entries: [],
       layers: { header: '452:2464', madeIn: '452:2406' },
     },
+    // The project menu, in M7's words (references/artifacts/M07/frame.json): the project chip opens it on a desktop
+    // or tablet, and the phone's ⋯ opens it as File in a project. D2 draws it closed.
+    fileMenu: {
+      title: 'File in a project',
+      done: 'Done',
+      none: { label: 'Not in a project', count: '1' },
+      projects: [
+        { value: 'ncc-1701', count: '9 artifacts' },
+        { value: 'omni', count: '6 artifacts' },
+        { value: 'omni-brain', count: '3 artifacts' },
+        { value: 'skill-evals', count: '5 artifacts' },
+      ],
+      remove: 'Remove from the library',
+      note: 'Removing takes the link out of the library only; the artifact stays where it was published.',
+    },
   },
   ui: { ...library.ui },
 } satisfies ScreenState<ArtifactsData, ArtifactsUi>

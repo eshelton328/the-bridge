@@ -11,10 +11,11 @@ D2's (`../D02/deviations.md`).
 ## Checks
 
 - Text: passes. Nothing is missing, hidden or extra.
-- Position: 19 of 24 layers pass (`top bar`, `button · Discuss`,
+- Position: 20 of 24 layers pass (`top bar`, `button · Discuss`,
   `button · copy`, `button · trash`, `title block`, `status`,
-  `pill · New`, `chip · Claude artifact`, `button · Open artifact`,
-  `link`, `section · MADE IN`, `made in` and `tab bar`). Five fail;
+  `pill · New`, `chip · Claude artifact`, `project · File in a project`,
+  `button · Open artifact`, `link`, `section · MADE IN`, `made in` and
+  `tab bar`). Four fail;
   see below.
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
@@ -23,11 +24,10 @@ D2's (`../D02/deviations.md`).
 
 ## Deviations
 
-- **Project chip.** `project · File in a project` x +4, w -16.8,
-  `chips` x +2, w -12.8, `chip · updated 12m ago` x -12.8. The project
-  chip is a read-only `MetaChip` with no chevron (Figma 405:444) and no
-  menu, so it is narrower and the updated chip sits further left. Library
-  gap "Project chip menu".
+- **Project chip.** `chips` x +2, w +5.2, `chip · updated 12m ago`
+  x +5.2. The project chip is a `MetaChipButton` with its chevron (Figma
+  405:444) and opens the project menu; it passes, 1.2 px wider than
+  Figma's, so the updated chip sits a little further right.
 - **Preview.** `preview` x +2, y +3, w -6, h -3.7. The page keeps 24 px
   sides (d-100, as T1) against Figma's 22, and Figma's preview frame is
   714 wide, one px past the page on each side, so the framed

@@ -11,22 +11,20 @@ the phone, on the same page (`screens/ArtifactPage.tsx`,
 ## Checks
 
 - Text: passes. Nothing is missing, hidden or extra.
-- Position: 17 of 23 layers pass (`top bar`, `button · more`,
+- Position: these layers pass (`top bar`, `button · more`,
   `title block`, `status`, `pill · New`, `chip · Claude`, `preview`,
   `button · Open artifact`, `secondary actions`, `button · Copy link`,
-  `button · Discuss`, `tab bar` and the tab bar's five items). Six
-  fail: `chips`, `project · File in a project`, `section · MADE IN`,
-  `made in`, `text` and `link · Open in workspace`; see below.
+  `button · Discuss`, `tab bar` and the tab bar's five items), and since
+  the project chip became a `MetaChipButton` with its chevron (Figma
+  406:388) also `chips` and `project · File in a project`: 19 of 23. Four
+  fail: `section · MADE IN`, `made in`, `text` and
+  `link · Open in workspace`; see below.
   `section · MADE IN`, `made in` and `text` passed before Copy link and
   Discuss became 44 high.
 - Rules: pass.
 
 ## Deviations
 
-- **Project chip.** `project · File in a project` w -16.8, `chips`
-  w -15.6. The project chip is a read-only `MetaChip` with no chevron
-  (Figma 406:388), so it is narrower, and it does not open File in a
-  project; the ⋯ button does. Library gap "Project chip menu".
 - **Made in lower.** `section · MADE IN` y +6.9, `made in` y +5.9 and
   `text` y +5.9 (x -2): Copy link and Discuss are 4 px taller than
   Figma's (below), and the sections are 16 apart against Figma's 14

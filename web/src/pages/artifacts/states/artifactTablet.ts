@@ -16,6 +16,7 @@ export const artifactTablet = {
   data: {
     ...libraryTablet.data,
     open: artifactOpen.data.open,
+    fileMenu: artifactOpen.data.fileMenu,
     discussion: { ...artifactOpen.data.discussion, back: 'Artifact', layers: { header: '452:3837' } },
   },
   ui: { ...libraryTablet.ui },

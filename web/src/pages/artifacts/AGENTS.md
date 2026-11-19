@@ -63,8 +63,9 @@ each file of a page folder is for.
   only the ⋯ button, which sets `ui.fileOpen` and opens File in a
   project as a sheet over the tab bar (M7, `FileSheet` with
   `data.fileMenu`, which `ArtifactsScreen` draws over an open artifact
-  at any width when `ui.fileOpen` is set; only the phone has a button
-  that opens it);
+  at any width when `ui.fileOpen` is set; on the phone the project chip
+  opens it too, and on a desktop or tablet the project chip opens the same
+  choices as a `RadioMenu`, `ArtifactProjectMenu.test.tsx`);
   `ArtifactTitleBlock layout="phone"` puts its rows 8 apart with the
   source and project chips only; Copy link and Discuss sit side by side
   under Open artifact in place of the link, 44 px `Button size="xl"`s
@@ -191,7 +192,8 @@ each file of a page folder is for.
   dotPosition="end"`) and the age centred down the row; the open
   artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
-  source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
+  source, project and updated chips; with `projectMenu` the project chip
+  is a `MetaChipButton` that opens the project menu, `data.fileMenu`), `ArtifactPreview` (a banner
   `Thumbnail` over the link and Open artifact), `LinkMark` (the link's
   chain mark, the library's 12 px `LinkMarkIcon`, also on T2's page) and `MadeIn` (the chat
   that published it and Open in workspace). For D3: `FilterPopover`
@@ -271,7 +273,7 @@ each file of a page folder is for.
   `DiscussionGuard`; on the phone the `model` sits above that cover, so a
   press on the model picker opens its menu and stays on the discussion).
 - `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
-  open artifact), D3 `filterOpen` (D1's data with the Filter menu,
+  open artifact and the project menu, `fileMenu`, in M7's words), D3 `filterOpen` (D1's data with the Filter menu,
   two boxes checked), D4 `searchList` (D1's data in the List view with
   "eval" searched: the chips count the matches, and Earlier gains the
   Writer cross-family round, whose link holds its match) and D5 `addLink`
@@ -296,7 +298,7 @@ each file of a page folder is for.
   workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
   artifacts", and only Earlier's five rows in the frame) and M2
   `artifactPhone` (M1's data with D2's open artifact in the phone's
-  shorter words, M7's File in a project menu, so its ⋯ opens the sheet,
+  shorter words, D2's File in a project menu, so its ⋯ opens the sheet,
   and D7's discussion) and M3 `filterPhone` (M1's data with
   T3's sheet open and its two boxes checked; the menu's `footLayer` is
   M3's node id of the footer around Show; `libraryPhone` does not hold the

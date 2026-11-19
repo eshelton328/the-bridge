@@ -230,6 +230,9 @@ const ArtifactFileMenu = z.object({
 })
 export type ArtifactFileMenu = z.infer<typeof ArtifactFileMenu>
 
+/** The value of the menu's Not in a project choice. */
+export const noProject = 'none'
+
 /** A field of the Add a link dialog (D5): its label, its value and the line under it. */
 const AddLinkField = z.object({
   label: z.string(),

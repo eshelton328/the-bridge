@@ -5,8 +5,8 @@
 // shorter words: who found it, the description, the source chip and where
 // it was made, with Open in workspace as a link. The ⋯ button opens File in
 // a project (M7) and Discuss the discussion (M9); Back closes it and shows
-// M1's library. It holds the File in a project menu, from
-// references/artifacts/M07/frame.json, so its ⋯ opens the sheet, and D7's
+// M1's library. It holds D2's File in a project menu (M7's words), so its ⋯
+// opens the sheet, and D7's
 // discussion, which Discuss opens as its own
 // page (M9); its Back label, the card's source, the label over the stacked
 // suggestions and the node id of its one Open in workspace are from
@@ -35,19 +35,7 @@ export const artifactPhone = {
         action: 'Open in workspace ›',
       },
     },
-    fileMenu: {
-      title: 'File in a project',
-      done: 'Done',
-      none: { label: 'Not in a project', count: '1' },
-      projects: [
-        { value: 'ncc-1701', count: '9 artifacts' },
-        { value: 'omni', count: '6 artifacts' },
-        { value: 'omni-brain', count: '3 artifacts' },
-        { value: 'skill-evals', count: '5 artifacts' },
-      ],
-      remove: 'Remove from the library',
-      note: 'Removing takes the link out of the library only; the artifact stays where it was published.',
-    },
+    fileMenu: artifactOpen.data.fileMenu,
     discussion: {
       ...artifactOpen.data.discussion,
       back: 'Artifact',
