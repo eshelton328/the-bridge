@@ -64,13 +64,20 @@ what each file of a page folder is for.
   sets `ui.view` to `map` and `ui.mapSelected`, and adds `data.map`: the
   columns, each item's column and row, and the links. The tablet map
   (T2, `toolkitMapTablet`) has D2's items with its own first heading and
-  no meta text; `ToolkitMap` draws it with smaller nodes, no legend and no
-  description, and the screen leaves out the search row. The phone map
+  no meta text; `ToolkitMap` draws it with the library's compact nodes
+  (MapGraph `nodeDensity="compact"`), links with no end dot
+  (`edgeEnd="none"`), no legend and no description, and the screen leaves
+  out the search row. The phone map
   (M11) is the same state: the screen shows the header and the map, with
   no chips and no search; `ToolkitMap` draws the tablet's map in a window
   that pinch zooms and drags (MapGraph `zoom`, from the drawing fitted to
   the window up to 3 times; `src/app/ToolkitMapZoom.test.tsx`), the hint
-  at its foot and the selected item's card under the window. The desktop
+  at its foot, the minimap in its top right corner (MapGraph `minimap`)
+  and the selected item's card under the window: the compact
+  `MapSelectionCard` with no close button, whose Show links opens the item
+  on its Links tab (`openLinks` in `screens/itemView.ts`; M11's note names
+  M3, a proposal with no frame), tested in
+  `src/app/ToolkitMapParts.test.tsx`. The desktop
   and tablet maps do not zoom. An open item (D3, `skillOpen`) sets `ui.open` to the
   item's path (and `ui.itemTab` for a tab other than the first) and adds
   `data.details`: for each item, its path badge, when it changed, its
