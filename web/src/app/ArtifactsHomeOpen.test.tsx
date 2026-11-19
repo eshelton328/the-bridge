@@ -97,4 +97,18 @@ describe('opening an artifact from the Artifacts home', () => {
     await expect.poll(() => row('Tailscale access check')).not.toBeNull()
     expect(backButton()).toBeNull()
   })
+
+  it('opens Sort and Filter from the list beside a card it opened at 1512', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/artifacts')
+    await expect.poll(() => card('Hono server spike')).not.toBeNull()
+    await press(cardButton('Hono server spike'))
+    await expect.poll(() => query('[data-figma="library list"]')).not.toBeNull()
+    const list = page.getByRole('region', { name: 'Artifacts list' })
+    await userEvent.click(list.getByRole('button', { name: 'Newest' }))
+    await expect.element(page.getByRole('menuitemradio', { name: /Newest first/ })).toBeVisible()
+    await userEvent.keyboard('{Escape}')
+    await userEvent.click(list.getByRole('button', { name: /^Filter/ }))
+    await expect.element(page.getByRole('dialog', { name: /Filter/ })).toBeVisible()
+  })
 })

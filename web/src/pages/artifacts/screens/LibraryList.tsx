@@ -69,6 +69,28 @@ export function LibraryList({ data, ui, selectedId, onUiChange, onOpenArtifact, 
             onUiChange?.({ query })
           }}
           sortLabel={sort?.label ?? ''}
+          // D6 and D3 beside an open artifact: Sort and Filter open their menus, as in the grid (ArtifactsLibrary).
+          sortMenu={data.sortMenu}
+          sort={ui.sort}
+          sortOpen={ui.sortOpen}
+          onSortOpenChange={(sortOpen) => {
+            onUiChange?.({ sortOpen })
+          }}
+          onSortChange={(picked) => {
+            onUiChange?.({ sort: picked, sortOpen: false })
+          }}
+          filterMenu={data.filterMenu}
+          filterChecks={ui.filterChecks}
+          filterOpen={ui.filterOpen}
+          onFilterOpenChange={(filterOpen) => {
+            onUiChange?.({ filterOpen })
+          }}
+          onFilterChecksChange={(filterChecks) => {
+            onUiChange?.({ filterChecks })
+          }}
+          onFilterApply={() => {
+            onUiChange?.({ filterOpen: false })
+          }}
         />
       </Stack>
       <Stack gap="2">
