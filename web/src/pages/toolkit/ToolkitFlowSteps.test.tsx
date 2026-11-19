@@ -2,12 +2,12 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
 import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import type { FlowPage } from './blocks/flowLayout.ts'
 import { ToolkitFlowColumn } from './blocks/ToolkitFlowColumn.tsx'
 import { ToolkitFlowSteps } from './blocks/ToolkitFlowSteps.tsx'
 import { toolkitStates } from './states/index.ts'
+import { setViewport } from '../../lib/rendering.ts'
 
 // A workflow's page flow on the desktop with input no Figma frame shows: two parallel stages one after the other.
 // The connector between them must reach both cards of the second stage, not point into the gap between them.
@@ -18,7 +18,7 @@ let view: { unmount: () => Promise<void> } | undefined
 afterEach(async () => {
   await view?.unmount()
   view = undefined
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 const base = toolkitStates.workflowFullPage.data.details.find(
@@ -48,7 +48,7 @@ function twoParallelStages(flow: FlowPage): FlowPage {
 describe('the connector between two parallel stages on the desktop', () => {
   it('reaches both cards of the next stage, each tip just short of its card', async () => {
     if (base === undefined) throw new Error('D13 has no flow page')
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await testRender(<ToolkitFlowSteps page={twoParallelStages(base)} />)
     const cards = ['Again 6', 'Again 7'].map((title) => {
       const card = document.querySelector(`[data-figma="step · ${title}"]`)
@@ -84,7 +84,7 @@ describe('the connector between two parallel stages on the desktop', () => {
 describe('the connector between two parallel stages in the tablet column', () => {
   it('reaches both cards of the next stage, each tip just over its card', async () => {
     if (base === undefined) throw new Error('D13 has no flow page')
-    await page.viewport(756, 1129)
+    await setViewport(756, 1129)
     view = await testRender(<ToolkitFlowColumn page={twoParallelStages(base)} />)
     const cards = ['Again 6', 'Again 7'].map((title) => {
       const card = document.querySelector(`[data-figma="step · ${title}"]`)

@@ -3,10 +3,10 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The hook's script in the phone's file preview through the real route (M22, `code` 487:2231), as
 // ToolkitStickyBack.test.tsx tests the open item: Figma wraps a line longer than the 390 px screen under itself, its
@@ -25,7 +25,7 @@ function renderToolkit(state: string) {
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 /** How many text lines high an element is, from its height and its line height. */
@@ -36,7 +36,7 @@ function textLines(el: Element) {
 
 describe('the code in the phone’s file preview (M22)', () => {
   it('wraps the long lines of the hook commit-msg’s script, so no line is cut: lines 3, 4, 5 and 8 (M22)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const view = await renderToolkit('hookOpenPhone')
     onTestFinished(view.unmount)
     // Earlier tests leave their renders in the page, so each query looks only in this one.

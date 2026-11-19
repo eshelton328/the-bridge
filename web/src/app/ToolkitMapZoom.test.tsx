@@ -3,10 +3,11 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Toolkit map's pinch zoom through the real route (M11, `map viewport` 461:866): on the phone the map's window
 // takes a pinch and a drag itself (MapGraph `zoom`), marked `data-allow-pinch` so the app's page zoom block
@@ -16,7 +17,7 @@ document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 async function renderMap(state: string, width: number, height: number) {
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
@@ -55,7 +56,7 @@ function touch(target: EventTarget, type: string, pointerId: number, x: number, 
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 describe('the Toolkit map on the phone (M11)', () => {

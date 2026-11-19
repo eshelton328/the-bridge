@@ -7,6 +7,7 @@ import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Toolkit through the real route and page entry: what the props-only
 // stories cannot show, because they do not navigate.
@@ -26,7 +27,7 @@ describe('the Toolkit route', () => {
       ['Artifacts', '/artifacts'],
       ['Inbox', '/inbox'],
     ] as const)('%s', async (name, path) => {
-      await page.viewport(1512, 982)
+      await setViewport(1512, 982)
       const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/toolkit'] }) })
       const view = await testRender(<RouterProvider router={router} />)
       await router.navigate({ to: '/toolkit' })

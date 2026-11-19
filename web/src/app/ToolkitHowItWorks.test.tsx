@@ -3,10 +3,10 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The How it works tab of an open skill through the real route, with the app's styles and fonts as in main.ts. On
 // the desktop (D14) the steps sit four to a row; on a narrow screen (T10 and M12 draw them in a column) four columns
@@ -18,11 +18,11 @@ let unmount: (() => Promise<void>) | undefined
 afterEach(async () => {
   await unmount?.()
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 async function renderSteps(width: number, height: number) {
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/toolkit?state=skillHowItWorks'] }),
@@ -53,7 +53,7 @@ describe('the How it works steps', () => {
 // uses sit side by side, beside the step's number.
 describe('the How it works tab on a tablet (T10)', () => {
   it('draws the trigger across the item, then the steps as rows, with no header', async () => {
-    await page.viewport(756, 1129)
+    await setViewport(756, 1129)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=skillHowItWorksTablet'] }),
@@ -76,7 +76,7 @@ describe('the How it works tab on a tablet (T10)', () => {
 // with the rows under it 10 apart.
 describe('the How it works tab on the phone (M12)', () => {
   it('draws the column under a smaller title, with the rows 10 apart', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=skillHowItWorksPhone'] }),
@@ -99,7 +99,7 @@ describe('the How it works tab on the phone (M12)', () => {
 // with no breadcrumb, the kind badge and the path row; then T10's column, with nothing under the steps.
 describe('the How it works tab of a rule on a tablet (T36)', () => {
   it('keeps the kind badge and path row over the column, with no breadcrumb', async () => {
-    await page.viewport(756, 1129)
+    await setViewport(756, 1129)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=ruleHowItWorksTablet'] }),
@@ -124,7 +124,7 @@ describe('the How it works tab of a rule on a tablet (T36)', () => {
 // keeps its kind badge and path row, and T10's column follows, with nothing under the steps.
 describe('the How it works tab of an agent on a tablet (T37)', () => {
   it('shows the breadcrumb and the header over the column, the steps 6 under the trigger', async () => {
-    await page.viewport(756, 1129)
+    await setViewport(756, 1129)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=agentHowItWorksTablet'] }),
@@ -147,7 +147,7 @@ describe('the How it works tab of an agent on a tablet (T37)', () => {
 // the five checks, with nothing under the steps; the last step ends above the tab bar.
 describe('the How it works tab of a hook on a tablet (T38)', () => {
   it('keeps the header over five steps in one column, all above the tab bar', async () => {
-    await page.viewport(756, 1129)
+    await setViewport(756, 1129)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=hookHowItWorksTablet'] }),
@@ -172,7 +172,7 @@ describe('the How it works tab of a hook on a tablet (T38)', () => {
 // rows 12 apart, as the header's are, and nothing under the steps.
 describe('the How it works tab of a rule on the phone (M39)', () => {
   it('keeps the header over the column, the trigger 12 under the tab list and the steps 6 under it', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=ruleHowItWorksPhone'] }),
@@ -202,7 +202,7 @@ describe('the How it works tab of a rule on the phone (M39)', () => {
 // then the column with its rows 12 apart, as M39's are, and nothing under the steps.
 describe('the How it works tab of an agent on the phone (M40)', () => {
   it('keeps the header over the column, the trigger 12 under the tab list and the steps 6 under it', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=agentHowItWorksPhone'] }),
@@ -231,7 +231,7 @@ describe('the How it works tab of an agent on the phone (M40)', () => {
 // rows 12 apart, as M39's and M40's are, and its five steps end above the tab bar.
 describe('the How it works tab of a hook on the phone (M41)', () => {
   it('keeps the header over the column, the trigger 12 under the tab list and the five steps above the tab bar', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const router = createRouter({
       routeTree,
       history: createMemoryHistory({ initialEntries: ['/toolkit?state=hookHowItWorksPhone'] }),

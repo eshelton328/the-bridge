@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Toolkit's own blocks draw their focus ring under the library's
 // `focusRing` condition (screen review R16), through the real route and the
@@ -20,14 +21,14 @@ afterEach(async () => {
   await unmount?.()
   unmount = undefined
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 const sizes = { desktop: [1512, 982], tablet: [756, 1158], phone: [390, 844] } as const
 
 async function renderState(state: string, size: keyof typeof sizes) {
   const [width, height] = sizes[size]
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),

@@ -3,10 +3,10 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Toolkit's desktop panes on a very wide screen (screen review R9), through the real route with the app's styles.
 // An open item is the library's `Container size="item"` and a full page its `size="page"`: in the 1512 px Figma frames
@@ -17,11 +17,11 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 async function measure(state: string, layer: string, width: number, height: number) {
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),

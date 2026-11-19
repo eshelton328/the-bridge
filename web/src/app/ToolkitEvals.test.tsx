@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Evals tab of an open item through the real route (D20, `evals` 482:1894): the status panel, the chart and the
 // cases side by side on the desktop and one under the other on a tablet or phone, and each tap Figma implies: the
@@ -20,7 +21,7 @@ const sizes = { desktop: [1512, 982], tablet: [756, 1158], phone: [390, 844] } a
 
 async function renderToolkit(state: string, size: keyof typeof sizes = 'desktop', ready = '[data-figma="evals"]') {
   const [width, height] = sizes[size]
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),

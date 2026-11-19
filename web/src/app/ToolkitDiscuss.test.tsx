@@ -3,10 +3,11 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // An open item's discussion through the real route (D5, T5, M7): on the desktop a side panel at the window's end in
 // the list's place, with the item beside it; on a tablet or phone a page of its own in the item's place, with no tab
@@ -21,7 +22,7 @@ const sizes = { desktop: [1512, 982], tablet: [756, 1158], phone: [390, 844] } a
 
 async function renderToolkit(state: string, size: keyof typeof sizes, ready: string) {
   const [width, height] = sizes[size]
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
@@ -90,7 +91,7 @@ async function sendUntilOverflow(root: HTMLElement, scope: string, composer: str
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 describe('the discussion on the desktop (D5)', () => {

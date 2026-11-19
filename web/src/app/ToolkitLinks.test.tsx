@@ -3,10 +3,11 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Links tab of an open item through the real route (D19, `links` 482:539): the graph and the two panels side by
 // side, a tap on an item opening it from writer, a tap on a link's file and line opening the Files tab, and Show on
@@ -16,7 +17,7 @@ document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 async function renderToolkit(state: string) {
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
@@ -101,7 +102,7 @@ describe('the Links tab of an open item (D19)', () => {
 // The Links tab on a tablet (T15 and on): the item replaces the list in the DetailFrame, the graph is narrower and the
 // two panels stand one under the other.
 async function renderTablet(state: string, tab: string) {
-  await page.viewport(756, 1158)
+  await setViewport(756, 1158)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
@@ -119,7 +120,7 @@ async function renderTablet(state: string, tab: string) {
 
 describe('the Links tab on a tablet', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('stands the panels under the graph, each as wide as the item, with no sideways scroll (T15)', async () => {
@@ -157,7 +158,7 @@ describe('the Links tab on a tablet', () => {
 
 describe('a rule’s Links tab on a tablet (T28)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the rule’s header and says why nothing links to it, the panels under the graph', async () => {
@@ -180,7 +181,7 @@ describe('a rule’s Links tab on a tablet (T28)', () => {
 
 describe('an agent’s Links tab on a tablet (T29)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the breadcrumb back to writer over the agent’s header, the two writers each with its own node', async () => {
@@ -198,7 +199,7 @@ describe('an agent’s Links tab on a tablet (T29)', () => {
 
 describe('a workflow’s Links tab on a tablet (T30)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the workflow’s header over the stage before it and the agent it runs', async () => {
@@ -216,7 +217,7 @@ describe('a workflow’s Links tab on a tablet (T30)', () => {
 
 describe('a hook’s Links tab on a tablet (T31)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the hook’s header and puts the rule it enforces on both sides', async () => {
@@ -234,7 +235,7 @@ describe('a hook’s Links tab on a tablet (T31)', () => {
 // The Links tab on the phone (M17 and on): the item replaces the list under the back row, the graph stands upright and
 // the panels stand one under the other.
 async function renderPhone(state: string) {
-  await page.viewport(390, 806)
+  await setViewport(390, 806)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
@@ -252,7 +253,7 @@ async function renderPhone(state: string) {
 
 describe('the Links tab on the phone (M17)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('stands the graph upright over the panels, with no sideways scroll', async () => {
@@ -295,7 +296,7 @@ describe('the Links tab on the phone (M17)', () => {
 
 describe('a rule’s Links tab on the phone (M31)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the rule’s header and puts the reason in the side over the rule', async () => {
@@ -318,7 +319,7 @@ describe('a rule’s Links tab on the phone (M31)', () => {
 
 describe('an agent’s Links tab on the phone (M32)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('opens under Back to Toolkit with the agent’s header, the two writers over it, each with its own node', async () => {
@@ -346,7 +347,7 @@ describe('an agent’s Links tab on the phone (M32)', () => {
 
 describe('a workflow’s Links tab on the phone (M33)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the workflow’s header, the stage before it and the agent it runs on a row each side', async () => {
@@ -370,7 +371,7 @@ describe('a workflow’s Links tab on the phone (M33)', () => {
 
 describe('a hook’s Links tab on the phone (M34)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps the hook’s header and puts the rule it enforces over it and under it', async () => {
@@ -479,7 +480,7 @@ function onEdge(p: { x: number; y: number }, b: { x: number; y: number; width: n
 
 describe('the phone’s links graph draws its lines (M17)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('draws a line from writer to each linked item, with writer selected, also under the pointer', async () => {
@@ -537,7 +538,7 @@ async function expectHoverAndFocus(root: HTMLElement) {
 
 describe('the pointer and the focus on the links graph (D19, T15)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('lights a side item’s line on hover and on keyboard focus on the desktop (D19)', async () => {
@@ -615,7 +616,7 @@ function openNode(root: HTMLElement) {
 
 describe('the open item’s name in the links graph (D19, T29, M32)', () => {
   afterEach(async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
   })
 
   it('keeps writer’s open node Figma’s 150 wide on the desktop (D19)', async () => {

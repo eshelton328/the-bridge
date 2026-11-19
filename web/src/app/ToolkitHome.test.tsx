@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // /toolkit with no ?state= opens the page's home (pages/toolkit/home.ts): the
 // list with nothing open, laid out for the window's width (D1 on a desktop,
@@ -48,12 +49,12 @@ afterEach(async () => {
   await view?.unmount()
   view = undefined
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 describe('the Toolkit home', () => {
   it('draws the desktop list (D1) at 1512 with nothing open', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/toolkit')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
@@ -63,7 +64,7 @@ describe('the Toolkit home', () => {
   })
 
   it('draws the tablet list (T1) at 756 with nothing open', async () => {
-    await page.viewport(756, 1024)
+    await setViewport(756, 1024)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -75,7 +76,7 @@ describe('the Toolkit home', () => {
   })
 
   it('draws the phone list (M1) at 390 with nothing open', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -87,17 +88,17 @@ describe('the Toolkit home', () => {
   })
 
   it('changes from the desktop to the phone list as the window narrows', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/toolkit')
     await expect.poll(rail).not.toBeNull()
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     expect(phoneMapButton()).not.toBeNull()
   })
 
   it('opens an item tapped on the phone, under Back to Toolkit', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/toolkit')
     await expect.poll(() => layer('toolkit row · agents-md')).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: /^agents-md/ }))
@@ -106,14 +107,14 @@ describe('the Toolkit home', () => {
   })
 
   it('keeps a ?state= on its state file: toolkitList opens D1 without the Rules group', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/toolkit?state=toolkitList')
     await expect.poll(() => layer('toolkit card · agents-md')).not.toBeNull()
     expect(layer('group · RULES')).toBeNull()
   })
 
   it('goes to the Inbox from the tablet tab bar', async () => {
-    await page.viewport(756, 1024)
+    await setViewport(756, 1024)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: /^Inbox/ }))
@@ -121,7 +122,7 @@ describe('the Toolkit home', () => {
   })
 
   it('stays on the Toolkit list from More in the tablet tab bar, as More is the way to it', async () => {
-    await page.viewport(756, 1024)
+    await setViewport(756, 1024)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
@@ -131,7 +132,7 @@ describe('the Toolkit home', () => {
   })
 
   it('opens the More drawer from the phone tab bar and goes to Artifacts from it', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/toolkit')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
@@ -145,7 +146,7 @@ describe('the Toolkit home', () => {
     ['phone', 390, 844],
     ['tablet', 756, 1024],
   ] as const)('goes back to the list from an item opened on the %s', async (_, width, height) => {
-    await page.viewport(width, height)
+    await setViewport(width, height)
     view = await renderAt('/toolkit')
     await expect.poll(() => layer('toolkit row · agents-md')).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: /^agents-md/ }))
@@ -164,7 +165,7 @@ describe('the Toolkit home', () => {
     ['phone', 390, 844],
     ['desktop', 1512, 982],
   ] as const)('opens writer complete from the %s home: its tabs and its SKILL.md', async (_, width, height) => {
-    await page.viewport(width, height)
+    await setViewport(width, height)
     view = await renderAt('/toolkit')
     await expect.poll(() => layer('toolkit card · agents-md') ?? layer('toolkit row · agents-md')).not.toBeNull()
     // Two items are named writer, the skill and the agent; the skill's path finds its card or row. It lies below the
@@ -182,7 +183,7 @@ describe('the Toolkit home', () => {
     ['phone', 390, 844],
     ['desktop', 1512, 982],
   ] as const)('opens the agent writing-reviewer complete from the %s home', async (_, width, height) => {
-    await page.viewport(width, height)
+    await setViewport(width, height)
     view = await renderAt('/toolkit')
     await expect
       .poll(() => layer('toolkit card · writing-reviewer') ?? layer('toolkit row · writing-reviewer'))
@@ -218,7 +219,7 @@ describe('the Toolkit home', () => {
     ['rules/skills.md', 'skills.md:72', 'skills', 'skills.md', 72, 'The eval-cases skill'],
     ['hooks/commit-msg', 'commit-msg:3', 'commit-msg', 'commit-msg', 3, 'Checks a commit message'],
   ] as const)('opens %s’s link %s from the desktop home at its line', async (path, at, name, file, line, text) => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/toolkit')
     await expect.poll(() => layer('toolkit card · agents-md')).not.toBeNull()
     tapItem(path)
@@ -233,7 +234,7 @@ describe('the Toolkit home', () => {
   })
 
   it('shows the phone list at the same scroll after Back from an item', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/toolkit')
     // The app's root fills the window, as `#root` does in index.css, so the shell's detail scrolls the list.
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()

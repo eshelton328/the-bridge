@@ -7,6 +7,7 @@ import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // A workflow on a page of its own (D13) through the real route, with the app's styles and fonts as in main.ts. On
 // the desktop the stages run left to right: the single steps sit level with each other, and the two parallel steps
@@ -19,11 +20,11 @@ let unmount: (() => Promise<void>) | undefined
 afterEach(async () => {
   await unmount?.()
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 async function renderPage(width: number, height: number) {
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/toolkit?state=workflowFullPage'] }),
@@ -71,7 +72,7 @@ describe('a workflow on its own page', () => {
 // panel or header over them; an arrow points at each of the parallel steps (the fork) and one arrow comes out of them
 // (the join); the breadcrumb row is the back row, and the selected step's panel comes under the column.
 async function renderTablet() {
-  await page.viewport(756, 1129)
+  await setViewport(756, 1129)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/toolkit?state=workflowFullPageTablet'] }),
@@ -114,7 +115,7 @@ describe('a workflow on its own page on a tablet', () => {
 // phone's item, with an arrow over each parallel step and one out of them; the breadcrumb names only the workflow after
 // Toolkit, and the page ends with the steps, with no details panel under them.
 async function renderPhone() {
-  await page.viewport(390, 806)
+  await setViewport(390, 806)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/toolkit?state=workflowFullPagePhone'] }),
