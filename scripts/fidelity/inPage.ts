@@ -14,6 +14,8 @@ type TextRun = Box & {
 }
 export type FigmaBox = Box & { key: string; selector: string }
 export type RuleFinding = { rule: string; selector: string; detail: string }
+/** A drawn icon (an outermost svg the viewer sees), in page coordinates. */
+export type IconBox = { selector: string; x: number; y: number; w: number; h: number }
 /** A rectangle by its edges, in viewport coordinates; an edge may be infinite. */
 export type Edges = { left: number; top: number; right: number; bottom: number }
 
@@ -245,6 +247,8 @@ export type PageMeasure = {
   visibleTexts: TextRun[]
   /** Elements with data-figma, with their boxes in page coordinates. */
   figmaBoxes: FigmaBox[]
+  /** Every outermost svg that is shown and has a size: the icons the rules check compares with Figma's. */
+  iconBoxes: IconBox[]
   rules: RuleFinding[]
   /** The box of the story's first element. */
   rootBox: Box
@@ -439,6 +443,21 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
       }
     })
 
+  const iconBoxes: IconBox[] = roots
+    .flatMap((r) => [...r.querySelectorAll('svg')])
+    .filter((el) => el.parentElement?.closest('svg') == null && shown(el))
+    .map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        selector: selectorOf(el),
+        x: r.left + window.scrollX,
+        y: r.top + window.scrollY,
+        w: r.width,
+        h: r.height,
+      }
+    })
+    .filter((b) => b.w > 0 && b.h > 0)
+
   // ---- rules ----
   const rules: RuleFinding[] = []
   const hasTooltip = (el: Element): boolean => {
@@ -525,6 +544,7 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     fieldTexts,
     visibleTexts,
     figmaBoxes,
+    iconBoxes,
     rules,
     rootBox: { x: r.left, y: r.top, w: r.width, h: r.height },
   }

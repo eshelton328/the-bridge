@@ -5,20 +5,23 @@
 // does not (d-089), so fidelity.ts renders the page that much shorter and
 // this check adds the bar's height to each render y (d-101).
 import { statusBarReason, type FrameRef, type Layer } from './figmaMetadata.ts'
-import type { FigmaBox } from './inPage.ts'
+import { iconSizeDiffs, type IconSizeDiff } from './checkIcons.ts'
+import type { FigmaBox, IconBox } from './inPage.ts'
 import type { Exceptions } from './references.ts'
 
-type PositionDiff = {
-  key: string
-  layer: string | null
-  selector: string
-  problem: 'noLayer' | 'ambiguousLayer' | 'duplicateElement' | 'offBy'
-  figma?: { x: number; y: number; w: number; h: number }
-  render?: { x: number; y: number; w: number; h: number }
-  /** render minus Figma, per edge value. */
-  delta?: { x: number; y: number; w: number; h: number }
-  detail: string
-}
+type PositionDiff =
+  | IconSizeDiff
+  | {
+      key: string
+      layer: string | null
+      selector: string
+      problem: 'noLayer' | 'ambiguousLayer' | 'duplicateElement' | 'offBy'
+      figma?: { x: number; y: number; w: number; h: number }
+      render?: { x: number; y: number; w: number; h: number }
+      /** render minus Figma, per edge value. */
+      delta?: { x: number; y: number; w: number; h: number }
+      detail: string
+    }
 
 export type PositionResult = {
   ok: boolean
@@ -26,6 +29,8 @@ export type PositionResult = {
   checked: number
   /** Height of Figma's status bar in px, added to each render y; 0 when the frame has none. */
   statusBar: number
+  /** Figma icons matched to a render icon and compared by size (checkIcons.ts). */
+  iconsChecked: number
   passed: string[]
   diffs: PositionDiff[]
   excepted: string[]
@@ -88,10 +93,11 @@ export function renderViewport(ref: Pick<FrameRef, 'w' | 'h' | 'layers' | 'exclu
  * the frame (fidelity.ts), so each y moves down by that height.
  */
 export function checkPosition(
-  ref: Pick<FrameRef, 'layers' | 'tolerance' | 'exclude'>,
+  ref: Pick<FrameRef, 'layers' | 'tolerance' | 'exclude'> & { h?: number },
   exceptions: Pick<Exceptions, 'position'>,
   boxes: readonly FigmaBox[],
   tolerance = ref.tolerance,
+  icons: readonly IconBox[] = [],
 ): PositionResult {
   // NaN or a negative tolerance would pass or fail every box unseen.
   if (!Number.isFinite(tolerance) || tolerance < 0)
@@ -159,5 +165,19 @@ export function checkPosition(
       })
     } else passed.push(box.key)
   }
-  return { ok: diffs.length === 0, tolerance, statusBar, checked: boxes.length, passed, diffs, excepted }
+  const iconSizes = iconSizeDiffs({ ...ref, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar)
+  for (const diff of iconSizes.diffs) {
+    if (allowed.has(diff.key)) excepted.push(diff.key)
+    else diffs.push(diff)
+  }
+  return {
+    ok: diffs.length === 0,
+    tolerance,
+    statusBar,
+    checked: boxes.length,
+    iconsChecked: iconSizes.checked,
+    passed,
+    diffs,
+    excepted,
+  }
 }
