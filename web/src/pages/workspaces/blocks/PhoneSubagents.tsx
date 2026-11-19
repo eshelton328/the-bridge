@@ -71,7 +71,9 @@ export function PhoneSubagents(props: PhoneSubagentsProps) {
         header={
           <div className={tablet ? tabletHeader : header} data-figma={layers?.subagentsHeader}>
             <div className={back} data-figma={layers?.phoneBack}>
-              <BackRow label={chat} backLabel={backLabel} onBack={onBack} />
+              {/* M6 105:3178: a 16 px chevron and the name in Regular 14 (`size="sm"`). The tablet's (T3 105:2022) is
+                  18 px, which no size draws, so it keeps the 20 px `md`. */}
+              <BackRow size={tablet ? 'md' : 'sm'} label={chat} backLabel={backLabel} onBack={onBack} />
             </div>
             <div className={hug} data-figma={layers?.subagentsTitle}>
               <PageHeader size="phone" title={panel.title} />
