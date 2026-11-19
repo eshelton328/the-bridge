@@ -53,7 +53,7 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
             name={entry.name}
             actions={
               entry.copy === undefined ? undefined : (
-                <Button size="xs" textSize="xs">
+                <Button size="xs" textSize="xs" keepIconSize>
                   <CopyIcon size="12" />
                   {entry.copy}
                 </Button>

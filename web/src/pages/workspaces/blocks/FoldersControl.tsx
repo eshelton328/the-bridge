@@ -27,7 +27,7 @@ export type FoldersControlProps = {
 export function FoldersControl({ folders, open, onOpenChange, onAdd }: FoldersControlProps) {
   const [working] = folders.items
   const trigger = (
-    <Button size="xs" textSize="xs" data-figma="137:9">
+    <Button size="xs" textSize="xs" keepIconSize data-figma="137:9">
       <FolderIcon size="12" />
       <span>{working}</span>{' '}
       {folders.items.length > 1 ? <span className={more}>+{folders.items.length - 1}</span> : null}

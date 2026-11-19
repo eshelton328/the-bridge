@@ -12,10 +12,10 @@ task and the entries in its body, and the read-only note as its footer.
 ## Checks
 
 - Text: pass. Every Figma string shows.
-- Position: fail, 8 of 15 layers pass: the trail (`147:339`), its
+- Position: fail, 7 of 15 layers pass: the trail (`147:339`), its
   chevron (`147:340`), Subagents (`147:344`), the header (`147:345`), the
-  status (`147:351`), the meta line (`147:354`), Stop (`147:356`) and the
-  note (`147:387`). Seven fail:
+  status (`147:351`), the meta line (`147:354`) and the note
+  (`147:387`). Eight fail:
   - `147:342` (the chat in the trail): w +4.1.
   - `147:349` (the title, Layout notes): w -12.7.
   - `147:368` (the task box): h +15.
@@ -23,6 +23,7 @@ task and the entries in its body, and the read-only note as its footer.
   - `147:374` (Read f-005-the-bridge/pages.md): y +14.
   - `147:377` (writer's message): y +14, h +7.
   - `147:383` (Writing layout-notes.md): y +21.
+  - `147:356` (Stop): w -4.2.
 - Rules: pass.
 
 ## Deviations
@@ -61,6 +62,12 @@ task and the entries in its body, and the read-only note as its footer.
   is 21 px lower: 14 from the task box and 7 from the message. The text
   also wraps one word earlier ("Writing each section now." starts the
   third line).
+- **Stop is 4 px narrower, `147:356` w -4.2.** Figma's Stop is 67 × 30
+  with a 12 px stop icon (147:357). The button passes `keepIconSize`, so
+  its icon is 12 as Figma's; `Button size="sm"` is 28 high
+  (`control.sm`) and pads its parts closer than Figma's, so it is 62.8
+  wide. While the button drew its icon at 16, the larger icon made up
+  the width.
 - **The running dot is cyan (Running tool line).** Figma draws the dot of
   Writing layout-notes.md in violet, the colour of the Running pill;
   `ToolLine state="running"` draws `status.working.fg`.

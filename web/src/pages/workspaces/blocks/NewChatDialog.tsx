@@ -125,19 +125,19 @@ export function NewChatDialog({ form, workspaces, open, onOpenChange, layers = d
           {form.folders.map((path, i) =>
             i === 0 ? (
               // 128:8 and T7 420:367 draw #5ee1ff at 0.6, border.selected's colour, not border.active.
-              <Button key={path} size="sm" pressed pressedBorder="selected" data-figma={layers.folders[i]}>
+              <Button key={path} size="sm" keepIconSize pressed pressedBorder="selected" data-figma={layers.folders[i]}>
                 <FolderIcon size="12" />
                 {path}
               </Button>
             ) : (
-              <Button key={path} size="sm" aria-label={`Remove ${path}`} data-figma={layers.folders[i]}>
+              <Button key={path} size="sm" keepIconSize aria-label={`Remove ${path}`} data-figma={layers.folders[i]}>
                 <FolderIcon size="12" />
                 {path}
                 <CloseIcon size="12" />
               </Button>
             ),
           )}
-          <Button size="sm" textSize="xs" className={dashed} data-figma={layers.addFolder}>
+          <Button size="sm" textSize="xs" keepIconSize className={dashed} data-figma={layers.addFolder}>
             <PlusIcon size="12" />
             {form.addFolder}
           </Button>
