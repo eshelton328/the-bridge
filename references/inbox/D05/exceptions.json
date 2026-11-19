@@ -21,11 +21,6 @@
     {
       "layer": "rail · More",
       "reason": "The Inbox frames are older than d-105, which adds Artifacts and Toolkit to the rail as Toolkit D1 (424:106) draws it. The frame has no layer for the new items, and More sits 108 px lower under them."
-    },
-    {
-      "layer": "346:2285",
-      "iconSize": 16,
-      "reason": "Figma draws the Stop icon on the reply box at 12 (icon/stop 346:2285). The library Composer draws Stop's icon at 16 and has no prop for its size; sendIconSize sets only the send arrow (LIBRARY_GAPS.md: Composer Stop icon size)."
     }
   ]
 }
