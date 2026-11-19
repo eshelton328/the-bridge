@@ -40,5 +40,5 @@ tracing on or off, or change what a trace records.
 - A trace never records message text, a chat title, a name or a field's
   value (`keyboardChatTrace.test.ts`).
 - `keyboardExperiment.ts` (dev only) runs `?kb-experiment=proxy|prevent`
-  of screen review R26; it never acts on a `data-keyboard-keep` control
-  (`keyboardExperiment.test.ts`).
+  of screen review R26; it acts only on a press on a composer field,
+  never on Send, Stop or Attach (`keyboardExperiment.test.ts`).
