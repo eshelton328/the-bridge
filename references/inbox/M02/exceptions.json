@@ -9,6 +9,11 @@
       "text": "f-005 the-bridge",
       "layers": ["346:9264", "346:9336"],
       "reason": "Layer 346:9336 is the detail of a source in the hidden SOURCES section (346:9326 sits at y 623, over RUN IN, and frame.png does not show it). The render keeps Sources below My notes, where the page scrolls. The same text in the visible chip (346:9264) is no longer checked, since a missing exception names a text, not a layer (open request fidelity-layer-scoped-exceptions)."
+    },
+    {
+      "text": "SOURCES",
+      "layers": ["346:9328"],
+      "reason": "Layer 346:9328 is the heading of the SOURCES section (346:9326), which Figma keeps at y 623, over RUN IN, and does not draw: frame.png shows the Run in card and My notes there. The render keeps Sources below My notes, where the page scrolls under the pinned Start, so the pinned bar covers the heading. Erik approved this exception (2026-11-19)."
     }
   ],
   "rules": [
