@@ -86,7 +86,8 @@ export function ToolkitActivityPage({
         layout={layout}
         back={
           <div data-figma="back row">
-            <BackRow label="Toolkit" onBack={onBack}>
+            {/* T9 449:236: a 16 px chevron and Toolkit in `body` (449:238, 20 high). */}
+            <BackRow label="Toolkit" onBack={onBack} size="sm">
               <span className={since}>{view.since}</span>
             </BackRow>
           </div>
