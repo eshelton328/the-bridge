@@ -8,7 +8,7 @@
 // count. The chart draws every bar in one colour and its labels in
 // a column as wide as the longest (LIBRARY_GAPS.md, Most called bars).
 // Props only.
-import { HorizontalBarChart, Panel } from '@eshelton328/component-library-1701'
+import { HorizontalBarChart, Panel, focusRing } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitActivityCounts } from '../types.ts'
@@ -42,7 +42,8 @@ const button = css({
   borderRadius: 'sm',
   cursor: 'pointer',
   _hover: { bg: 'surface.selected' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 
 export type ToolkitMostCalledProps = {

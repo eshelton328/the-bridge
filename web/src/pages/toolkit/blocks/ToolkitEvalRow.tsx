@@ -11,7 +11,7 @@
 // behind the text and the chip stays a button of its own. A folder with no
 // skill (T12 `eval · readme-reads folder` 477:1936) has its name as text and
 // no tap. Props only.
-import { ChevronRightIcon, HorizontalBarChart, MapNode } from '@eshelton328/component-library-1701'
+import { ChevronRightIcon, HorizontalBarChart, MapNode, focusRing } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvalGroup } from '../types.ts'
 import { evalLayer, evalShare, linkLayer } from './activitySources.ts'
@@ -26,7 +26,8 @@ const button = css({
   borderRadius: 'md',
   cursor: 'pointer',
   _hover: { bg: 'surface.selected' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 // D16 477:1123 to 477:1135: the top row (29 high), the bar 6 under it and the line 6 under the bar.
 const content = css({ position: 'relative', display: 'flex', flexDirection: 'column', gap: '6', pointerEvents: 'none' })

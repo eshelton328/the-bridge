@@ -6,7 +6,7 @@
 // names a toolkit skill opens it on its Evals tab. The library has no round
 // row and no text link (LIBRARY_GAPS.md, Evals panels): the rows are styled
 // with tokens and the name a plain button. Props only.
-import { Panel } from '@eshelton328/component-library-1701'
+import { Panel, focusRing } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvals } from '../types.ts'
 import { roundsEnd } from './evalsView.ts'
@@ -27,7 +27,8 @@ const press = css({
   border: 'none',
   cursor: 'pointer',
   _hover: { color: 'fg.accent' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
 })
 const meta = css({ textStyle: 'small', color: 'fg.muted' })
 const text = css({ textStyle: 'small', color: 'fg.muted' })

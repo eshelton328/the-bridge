@@ -23,6 +23,7 @@ import {
   SkillIcon,
   ViewSwitch,
   WorkflowIcon,
+  focusRing,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
@@ -79,7 +80,8 @@ const copy = css({
   border: 'none',
   cursor: 'pointer',
   _hover: { color: 'fg.default' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 // D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code.
 const usedBy = css({

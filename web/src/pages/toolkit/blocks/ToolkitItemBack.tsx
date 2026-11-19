@@ -10,7 +10,7 @@
 // Workflows › the workflow, the kind's crumb going back to the list of that
 // kind; its Figma keys differ (`layers`). A file on a page of its own (T6
 // 440:1761) goes back to the Files tab's tree: the row reads Files. Props only.
-import { BackRow } from '@eshelton328/component-library-1701'
+import { BackRow, focusRing } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 
@@ -30,7 +30,8 @@ const crumb = css({
   color: 'fg.muted',
   cursor: 'pointer',
   _hover: { color: 'fg.default' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 const current = css({ textStyle: 'labelLg', color: 'fg.default', truncate: true, minW: '[0]' })
 

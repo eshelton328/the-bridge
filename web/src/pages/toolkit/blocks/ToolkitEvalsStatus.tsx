@@ -10,7 +10,7 @@
 // its Evals tab; the library's Badge takes no press, so the button around it
 // is a plain one styled with tokens (LIBRARY_GAPS.md, Evals panels). An item
 // with no evals (D25, D27) has no badges: the line says why. Props only.
-import { Badge, CheckIcon, CloseCircleIcon, CloseIcon, Panel } from '@eshelton328/component-library-1701'
+import { Badge, CheckIcon, CloseCircleIcon, CloseIcon, Panel, focusRing } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvals } from '../types.ts'
@@ -29,7 +29,8 @@ const press = css({
   border: 'none',
   borderRadius: 'full',
   cursor: 'pointer',
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
 })
 // D20 482:1925, D25 492:428: the line is 8 under the badges and 25 under the header in Figma; the header and the
 // badges are each 1 px shorter in the render (the 16 px text styles, d-072), so 2 more above the line.
