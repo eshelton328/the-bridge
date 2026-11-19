@@ -70,10 +70,14 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   tab is as high as the others (32) and no size token is 34 (gap: Item
   tab width).
 - **Cross mark.** Figma's test line has the ballot cross ✗ (U+2717)
-  and the check ✓ (U+2713), the cross slanted. The line now draws them
-  as the library's `CloseIcon` and `CheckIcon` (12, the text's size, in
-  `fg.muted`, named fail and pass for assistive technology), so the
-  marks are upright line icons, and the render's line has no glyphs:
-  the text check no longer finds Figma's string with ✗ and ✓ in it
-  (a coordinator decision; gap: Symbol glyphs, whose font gap remains
-  only for other text).
+  and the check ✓ (U+2713), the cross slanted. Since library
+  1.0.0-beta.67 (2026-11-19) the line draws them with the library's
+  `Glyph` (`symbol="cross"` and `"check"`, 12, the text's size, in its
+  colour): the line's text is Figma's string, ✗ and ✓ included, and the
+  glyph draws Figma's slanted cross and thin check in their place. The
+  glyph keeps each character at font size 0 and transparent, and the
+  text check takes a text run with no 1 px box as not shown, so it does
+  not see the two characters and reports the string as not visible,
+  though the screen shows Figma's line. The frame's `exceptions.json`
+  keeps its entry for this layer, with that reason (gap: Symbol
+  glyphs).

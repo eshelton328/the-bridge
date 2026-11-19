@@ -3,7 +3,7 @@
     {
       "text": "A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.",
       "layers": ["492:2185"],
-      "reason": "The render draws the line's ✗ and ✓ as the library's CloseIcon and CheckIcon (12 px, named fail and pass for assistive technology), so its text has no glyphs and the text check cannot find Figma's string (deviations.md \"Cross mark.\"; LIBRARY_GAPS.md \"Symbol glyphs\")."
+      "reason": "The render draws the ✗ and ✓ with the library's Glyph, which keeps each character in the text, at font size 0 and transparent, and draws Figma's mark in its place; the text check takes a text run with no 1 px box as not shown, so it does not see the two characters and finds the string cut, though the screen shows Figma's line (deviations.md \"Cross mark.\"; LIBRARY_GAPS.md \"Symbol glyphs\")."
     },
     {
       "text": "Workflows",

@@ -1,11 +1,4 @@
 {
-  "missing": [
-    {
-      "text": "x1",
-      "layers": ["482:2624"],
-      "reason": "GroupedBarChart has one size (16 px bars every 56 px against Figma's 12 every 44), so the chart is 392 px wide in a 332 px panel and scrolls sideways; x1, the last group, lies past the panel's edge (deviations.md \"Chart size.\"; LIBRARY_GAPS.md \"Evals bar chart\")."
-    }
-  ],
   "rules": [
     {
       "rule": "hiddenOverflow",
@@ -16,11 +9,6 @@
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"toolkit\"] > div.item-tabs__root > div.item-tabs__list:nth-of-type(1)",
       "reason": "The item tabs scroll sideways on the phone (438 px of tabs in 366): Activity runs past the screen's right edge in Figma's tab row too (deviations.md \"Item tabs.\")."
-    },
-    {
-      "rule": "hiddenOverflow",
-      "selector": "[data-figma=\"chart\"] > div.grouped-bar-chart__root",
-      "reason": "GroupedBarChart has one size, so the chart is 392 px wide in the 332 px panel and scrolls sideways, where Figma's chart fits in 308 px (deviations.md \"Chart size.\"; LIBRARY_GAPS.md \"Evals bar chart\")."
     }
   ]
 }

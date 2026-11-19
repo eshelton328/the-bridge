@@ -16,7 +16,9 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T35.
 
 ## Checks
 
-- Text: pass (29 strings checked). Nothing lies under the tab bar.
+- Text: fail before the exception (29 strings checked): the tests'
+  paragraph (494:4340) is not visible to the check (see Cross glyph).
+  Nothing lies under the tab bar.
 - Position: 13 of 20 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `tab bar` and the six
   tabs of the navigation). The 7 that fail (`button · Discuss`,
@@ -39,8 +41,16 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T35.
   does. Gap: File browser.
 - **Paragraph wrap.** Figma breaks the paragraph inside the path, after
   toolkit/rules/; the browser breaks only between words, so
-  toolkit/rules/commits-and-prs.md starts the second line. Figma draws the
-  ✗ as a slanted cross where the font draws an upright one.
+  toolkit/rules/commits-and-prs.md starts the second line.
+- **Cross glyph.** The tests' paragraph has Figma's ✗ (U+2717) and ✓ (U+2713). Since
+  library 1.0.0-beta.67 (2026-11-19) they are the library's `Glyph`,
+  which keeps each character in the text and draws Figma's slanted cross
+  and thin check in its place, where the font drew an upright "×". The
+  glyph keeps the character at font size 0 and transparent, and the text
+  check takes a text run with no 1 px box as not shown, so it reports
+  the string (494:4340) as not visible, though the screen shows Figma's
+  text. The frame's `exceptions.json` excepts that layer with this
+  reason (gap: Symbol glyphs).
 - **Boxes.** The tree and the viewer start 2 px further in and are 4 px
   narrower: the Container pads 24 at the sides against Figma's 22. The
   viewer is 12 under the tree against 14, and the summary is 16 in

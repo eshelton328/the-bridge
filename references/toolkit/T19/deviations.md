@@ -15,7 +15,9 @@ and `density` props (2026-11-17).
 
 ## Checks
 
-- Text: pass. Every Figma string is in the render and visible; no extra
+- Text: fail before the exception: the Test card's caption (487:1162) is
+  not visible to the check (see Cross glyph). Every other Figma string is
+  in the render and visible; no extra
   text, and no covered text. No string is drawn under the tab bar, and
   the item does not scroll at this size.
 - Position: 24 of 32 layers pass (`back row`, `button · Show on map`,
@@ -90,6 +92,12 @@ and `density` props (2026-11-17).
 
 ## Second review
 
-- **Cross glyph.** The Test card's "✗" looks like an upright "×", where
-  Figma's is slanted. The text is the same character (U+2717) in both;
-  only the font's glyph differs.
+- **Cross glyph.** The Test card's caption has Figma's ✗ (U+2717) and ✓ (U+2713). Since
+  library 1.0.0-beta.67 (2026-11-19) they are the library's `Glyph`,
+  which keeps each character in the text and draws Figma's slanted cross
+  and thin check in its place, where the font drew an upright "×". The
+  glyph keeps the character at font size 0 and transparent, and the text
+  check takes a text run with no 1 px box as not shown, so it reports
+  the string (487:1162) as not visible, though the screen shows Figma's
+  text. The frame's `exceptions.json` excepts that layer with this
+  reason (gap: Symbol glyphs).

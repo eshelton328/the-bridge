@@ -16,9 +16,9 @@ but for the text check, which the icons fail.
 
 ## Checks
 
-- Text: fail. 1 string is missing: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
-  (492:4990): the render draws its ✗ and ✓ as the library's cross and
-  check icons, so its text has no glyphs (see Cross mark). Every other
+- Text: fail. 1 string is not visible: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
+  (492:4990): the check does not see the ✗ and ✓ that the library's
+  `Glyph` keeps in the text (see Cross mark). Every other
   Figma string is in the render and visible, and nothing extra shows.
 - Position: 22 of 25 layers pass. The 3 that fail: `button · Discuss` x
   +8 w -8; `toolkit` y +36 h -193; `evals` y -1 h -6. Each is explained
@@ -58,13 +58,17 @@ but for the text check, which the icons fail.
   2 px wide, so the render's check is thinner; no icon takes a weight
   (gap: Evals criterion badge).
 - **Cross mark.** Figma's test line has the ballot cross ✗ (U+2717)
-  and the check ✓ (U+2713), the cross slanted. The line now draws them
-  as the library's `CloseIcon` and `CheckIcon` (12, the text's size, in
-  `fg.muted`, named fail and pass for assistive technology), so the
-  marks are upright line icons, and the render's line has no glyphs:
-  the text check no longer finds Figma's string with ✗ and ✓ in it
-  (a coordinator decision; gap: Symbol glyphs, whose font gap remains
-  only for other text).
+  and the check ✓ (U+2713), the cross slanted. Since library
+  1.0.0-beta.67 (2026-11-19) the line draws them with the library's
+  `Glyph` (`symbol="cross"` and `"check"`, 12, the text's size, in its
+  colour): the line's text is Figma's string, ✗ and ✓ included, and the
+  glyph draws Figma's slanted cross and thin check in their place. The
+  glyph keeps each character at font size 0 and transparent, and the
+  text check takes a text run with no 1 px box as not shown, so it does
+  not see the two characters and reports the string as not visible,
+  though the screen shows Figma's line. The frame's `exceptions.json`
+  keeps its entry for this layer, with that reason (gap: Symbol
+  glyphs).
 - **Line breaks.** The test line keeps "messages" on its first line,
   where Figma moves it to the second. The text box is 332 px wide in
   both, and the render's first line with "messages" is 330 px; on the

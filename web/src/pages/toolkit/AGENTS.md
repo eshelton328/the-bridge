@@ -381,16 +381,19 @@ what each file of a page folder is for.
   drafts and one round, a workflow (D27, `workflowEvals`) lists its gates
   and "from the file" opens its Files tab, and a hook (D28, `hookEvals`)
   shows its test run as one badge over its test groups; its status line
-  draws Figma's ✗ and ✓ as the library's cross and check icons (a status
-  `text` with `mark` runs, named fail and pass). On a tablet (T16,
+  keeps Figma's ✗ and ✓ in the text, each drawn as the library's `Glyph`
+  (`blocks/ToolkitGlyphText.tsx`, which the hook's Test card caption and
+  its tests' paragraph use too). On a tablet (T16,
   T24 to T27) and the phone (M18, M27 to M30) the panels stand one under
   the other; T16 and M18 set `named` (Toolkit › writer, no kind badge or
-  path row), and M18's status header is its own. The chart has one size in
-  the library, so it is 392 wide on every layout and scrolls sideways on
-  the phone (LIBRARY_GAPS.md, Evals bar chart; `src/app/ToolkitEvals.test.tsx`).
+  path row), and M18's status header is its own. The chart is 392 wide on
+  the desktop, fills the panel on a tablet (`GroupedBarChart width="fill"`)
+  and takes the phone's size there (`size="sm"`, 308 wide, inside the
+  panel) (LIBRARY_GAPS.md, Evals bar chart; `src/app/ToolkitEvals.test.tsx`).
   The Activity tab (D17, `skillActivity`, D3's data with `ui.itemTab`
   `activity`) draws a detail's `activity` (`ToolkitActivity`): four key
-  figures (`ToolkitActivityKpis`, the library's `KpiTile` in a `Grid`), the
+  figures (`ToolkitActivityKpis`, the library's `KpiTile` in a `Grid`; a
+  caption too wide for its tile wraps onto a second line), the
   counts by day and where the item ran (`ToolkitActivityBars`: a `Panel`
   with the library's `HorizontalBarChart`), side by side on the desktop, the
   chats that loaded it (`ToolkitActivityList`, a `ListRow` each) and the

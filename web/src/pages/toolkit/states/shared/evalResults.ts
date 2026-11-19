@@ -174,14 +174,7 @@ export const hookResults: ToolkitEvals = {
     label: 'Tests · test-commit-msg',
     meta: 'run Nov 14',
     badges: [{ label: '43 of 43 pass', state: 'pass' }],
-    // Figma's ✗ and ✓ (492:2185) are the library's cross and check icons.
-    text: [
-      'A hook has no eval cases. Its test script runs fixed messages and the rule’s ',
-      { mark: 'fail' },
-      ' and ',
-      { mark: 'pass' },
-      ' examples through the hook, so the rule and the hook cannot drift apart.',
-    ],
+    text: 'A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.',
   },
   cases: {
     label: 'Test groups',

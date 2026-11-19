@@ -42,7 +42,7 @@ export function ToolkitEvals({ evals, layout = 'desktop', onTabChange, onOpenEva
       <ToolkitEvalsStatus status={evals.status} onOpenEvals={onOpenEvals} />
       {evals.chart === undefined && evals.cases === undefined ? null : (
         <div className={evalsRow(evals, layout) === 'pair' ? pair : stack} data-figma="row · chart and cases">
-          {evals.chart === undefined ? null : <ToolkitEvalsChart chart={evals.chart} />}
+          {evals.chart === undefined ? null : <ToolkitEvalsChart chart={evals.chart} layout={layout} />}
           {evals.cases === undefined ? null : <ToolkitEvalsCases cases={evals.cases} />}
         </div>
       )}

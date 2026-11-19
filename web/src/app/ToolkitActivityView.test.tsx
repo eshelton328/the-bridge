@@ -203,6 +203,16 @@ describe('the Activity view on the desktop (D11)', () => {
       expect(getComputedStyle(line).textOverflow).not.toBe('ellipsis')
     }
   })
+
+  it('shows the headless runs’ caption whole on two lines beside the run panel (D12 445:227)', async () => {
+    const { root } = await renderToolkit('toolkitActivityRun')
+    const text = element(root, '[data-figma="kpi · from headless runs"] dd.kpi-tile__caption .truncated-text')
+    expect(text.textContent).toBe('claude -p and the SDK, mostly skill evals')
+    expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth)
+    expect(text.scrollHeight).toBeLessThanOrEqual(text.clientHeight + 1)
+    const line = Number.parseFloat(getComputedStyle(text).lineHeight)
+    expect(text.getBoundingClientRect().height).toBeCloseTo(2 * line, 0)
+  })
 })
 
 describe('the Activity view on a tablet (T9) and the phone (M10)', () => {

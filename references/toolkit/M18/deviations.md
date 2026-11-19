@@ -10,24 +10,24 @@ names the item and the title sits over the tabs, as on M12 and M17.
 Every other Toolkit frame (M01, M02, M04 to M06, M08, M09, M11, M12,
 M17, M19 to M22 and M31 to M41 and the list frames) gives the same text,
 position and rule results as before the Evals tab. The frame's
-`exceptions.json` excepts the string and the `hiddenOverflow` findings
-below, each with the entry that records it; with them the text and rules
-checks now pass.
+`exceptions.json` excepts the `hiddenOverflow` findings below, each with
+the entry that records it; with them the rules check now passes. Since
+library 1.0.0-beta.67 (2026-11-19) the chart takes the phone's size
+(`GroupedBarChart size="sm"`), so it fits its panel and its two
+exceptions (`x1`, the chart's scroll) are gone.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render and nothing extra
-  shows. One string is not visible: `x1` (482:2624), the last group of
-  the chart, which scrolls sideways; see Chart size.
+- Text: pass. Every Figma string is in the render and seen, and nothing
+  extra shows.
 - Position: 24 of 33 layers pass. The 9 that fail: `button · Discuss` x
   +6 w -8; `toolkit` y +36 h +250; `evals` y +1 h -12; `badge · D6` x
-  +0.1 w -7.6 h -1; `chart` y -3 w +24 h +25; `panel · rounds` y -5 h
+  +0.1 w -7.6 h -1; `chart` y -3 h +25; `panel · rounds` y -5 h
   -4; `round · r7` y -6 h -2; `round · x1` y -6 h -2; `round · r6` y -8
   h -1. Each is explained below.
-- Rules: fail. 3 `hiddenOverflow` findings:
+- Rules: fail. 2 `hiddenOverflow` findings:
   `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`;
-  `[data-figma="toolkit"] > div.item-tabs__root > div.item-tabs__list:nth-of-type(1)`;
-  `[data-figma="chart"] > div.grouped-bar-chart__root`. Each is
+  `[data-figma="toolkit"] > div.item-tabs__root > div.item-tabs__list:nth-of-type(1)`. Each is
   explained below; the frame's `exceptions.json` excepts them.
 
 ## Deviations
@@ -63,15 +63,12 @@ checks now pass.
   adds up down the tab: `evals` y +1 h -12; `panel · rounds` y -5 h -4;
   `round · r7` y -6 h -2; `round · x1` y -6 h -2; `round · r6` y -8 h -1
   (gap: Evals panels).
-- **Chart size.** Figma draws 12 px bars with a group every 44 px in 308
-  px (482:2602); `GroupedBarChart` has one size, 16 px bars every 56 px,
-  so the chart is 392 wide in a panel 332 wide inside and scrolls
-  sideways (`chart` y -3 w +24 h +25, its box held at the panel's width,
-  and 135 high with its axis inside against 110). r6 is cut at the
-  panel's edge and x1 lies past it, so `x1` is not visible, and the
-  chart's scroll is the `hiddenOverflow` finding
-  `[data-figma="chart"] > div.grouped-bar-chart__root` (gap: Evals bar
-  chart).
+- **Chart size.** The chart is the library's `GroupedBarChart` at its
+  `sm` size, as Figma draws it (482:2602): 12 px bars 4 apart, a group
+  every 44 px, 308 wide in the panel's 332, so every group shows and
+  nothing scrolls. The library still draws the axis inside the chart's
+  own SVG, so the chart is 135 high against Figma's 110 plot layer, its
+  axis 8 under it (`chart` y -3 h +25; gap: Evals bar chart).
 - **Badges.** The criteria are the library's `Badge size="sm"`, each 2
   px wider than Figma's, so they sit 4 apart against Figma's 6 and each
   stays at Figma's x. The checks and the cross are the library's 12 px
