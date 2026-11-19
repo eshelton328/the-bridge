@@ -10,7 +10,11 @@ what each file of a page folder is for.
   until another state loads; it passes them to `ToolkitScreen` with
   `onUiChange` and the rail's navigation.
 - `screens/ToolkitScreen.tsx`: the app shell, laid out by its width
-  (`ViewportFrame`): on the desktop the rail (`AppRail`) and the list; on
+  (`ViewportFrame`): on the desktop the rail (`AppRail`) and the list; the
+  desktop's full pages (the list, the map, the Activity view and a
+  workflow's own page) are the library's `Container size="page"`, 1448
+  wide with 1384 of content at 1512 and at most that, in the detail's
+  middle, from a 1600 px detail (`src/app/ToolkitWideScreen.test.tsx`); on
   a tablet or phone the list, with the tab bar (`AppTabBar`) laid over
   its foot (AppShell `tabBarOverlay`: the page runs under the bar, as
   Figma's M2, M20 and M22 do, and its end scrolls clear of it; Toolkit opens
@@ -56,7 +60,9 @@ what each file of a page folder is for.
   evals. `screens/itemView.ts` (pure, tested in `itemView.test.ts`) finds
   the open item; an item with no details opens with what the list
   knows. On the desktop the list moves into the list pane
-  (`ToolkitListPane`) and `ToolkitItem` fills the rest, with its
+  (`ToolkitListPane`) and `ToolkitItem` fills the rest in the library's
+  `Container size="item"` (1028 wide with 948 of content at 1512; from a
+  1600 px detail at most 1028, in its middle), with its
   Overview (`ToolkitItemOverview`, `ToolkitFilePreview`,
   `ToolkitItemSide`); on a tablet or phone (T3, `skillOpenTablet`, D3's
   data) the item replaces the list in the shared `DetailFrame` (d-107):
