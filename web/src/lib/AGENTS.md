@@ -40,7 +40,10 @@ layer, a store or the router.
   built yet and return a `notBuilt` miss. An unknown source or state is
   a miss too. With no `?state=`, and always in a production build, it
   reads the page's home (`pages/AGENTS.md`). The loader throws a miss
-  as `notFound({ data })`.
+  as `notFound({ data })`. A loader names the state type,
+  `readState<ScreenState<Data, Ui>>(…)`: inferred from a page's states,
+  it is a union of every state's literal type, and the lint's
+  `no-unsafe-enum-assignment` then took 23 s and a 1.39 GB heap on the Inbox loader.
 - `searchHref.ts`: `searchHref()`, an address with some search params
   set or removed and the rest kept, for `navigate({ href })`.
 - `containerSize.ts`: the library `Container` size of a detail column
