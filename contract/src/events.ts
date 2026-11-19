@@ -1,6 +1,7 @@
 // The envelope of every server-sent event (d-111, d-112). Each source, such
-// as one machine's herdr adapter, numbers its own events from 0, so a client
-// that reconnects with Last-Event-ID gets only the events after it.
+// as one machine's herdr adapter, numbers its own events from 0 up, so a
+// client sees the order of one source's events. The event types are in
+// liveEvents.ts.
 import { z } from 'zod'
 
 /** Where an event comes from: "<machine>/<part>", such as "mac-mini/herdr". */

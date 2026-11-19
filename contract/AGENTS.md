@@ -14,6 +14,10 @@ directly; there is no build.
   response of `GET /api/workspaces`.
 - `src/events.ts`: the event envelope: its source, its sequence number,
   its type and its data. Each source has its own sequence numbers.
+- `src/liveEvents.ts`: the events of `GET /api/events` (SSE):
+  `chat.status` (a chat's new status) and `workspaces.changed` (read
+  the workspaces again). A client reads the workspaces again each time
+  the stream opens.
 
 ## Rules
 
