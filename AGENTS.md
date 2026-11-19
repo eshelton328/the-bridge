@@ -22,7 +22,13 @@ pnpm workspace; every version is pinned once in the catalog of
 - [web/AGENTS.md](web/AGENTS.md): the app, its Storybook and the canvas
   bundle. Most work happens here.
 - [shared/AGENTS.md](shared/AGENTS.md): `@bridge/shared`, code that web
-  and a later server both use: the `Result` union and branded ids.
+  and the server both use: the `Result` union and branded ids.
+- [contract/AGENTS.md](contract/AGENTS.md): `@bridge/contract`, the Zod
+  schemas of the API between the server and its clients (d-111).
+- [server/AGENTS.md](server/AGENTS.md): `@bridge/server`, the-bridge
+  server (Hono on Node 24) and its `AgentPort` to herdr (d-110).
+- [e2e/AGENTS.md](e2e/AGENTS.md): the local E2E suite, `pnpm test:e2e`,
+  on real herdr in a separate session with a fake agent (d-113).
 - [scripts/AGENTS.md](scripts/AGENTS.md): the generators, the checks and
   `pnpm new`.
 - [references/AGENTS.md](references/AGENTS.md): the saved Figma frames

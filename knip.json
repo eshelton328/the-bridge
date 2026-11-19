@@ -1,10 +1,16 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignoreBinaries": ["ffmpeg"],
+  "ignoreBinaries": ["ffmpeg", "herdr"],
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.ts", "scripts/fidelity/*.test.ts", "scripts/secrets/*.test.ts"],
-      "project": ["scripts/**/*.ts", "*.{ts,js}"]
+      "entry": [
+        "scripts/*.ts",
+        "scripts/fidelity/*.test.ts",
+        "scripts/secrets/*.test.ts",
+        "e2e/*.e2e.test.ts",
+        "e2e/fakeAgent.ts"
+      ],
+      "project": ["scripts/**/*.ts", "*.{ts,js}", "e2e/**/*.ts"]
     },
     "web": {
       "entry": ["src/routes/**/*.tsx"],
@@ -12,6 +18,12 @@
       "ignoreDependencies": ["@pandacss/preset-base"]
     },
     "shared": {
+      "project": ["src/**/*.ts"]
+    },
+    "contract": {
+      "project": ["src/**/*.ts"]
+    },
+    "server": {
       "project": ["src/**/*.ts"]
     }
   }

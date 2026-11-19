@@ -49,4 +49,22 @@ describe('readState', () => {
       error: { reason: 'unknownState', state: 'third' },
     })
   })
+
+  it('reads the same state with live: true for a page that built live, and still misses mock-api there', () => {
+    const home = { key: 'home', state: { n: 0 } }
+    const built = { built: ['live'] } as const
+    expect(readState(states, { state: undefined, source: 'live' }, home, built)).toEqual({
+      ok: true,
+      value: { key: 'home', state: home.state, live: true },
+    })
+    expect(readState(states, { state: 'second', source: 'live' }, home, built)).toEqual({
+      ok: true,
+      value: { key: 'second', state: states.second, live: true },
+    })
+    expect(readState(states, { state: undefined, source: undefined }, home, built)).toEqual({ ok: true, value: home })
+    expect(readState(states, { state: 'first', source: 'mock-api' }, home, built)).toEqual({
+      ok: false,
+      error: { reason: 'notBuilt', source: 'mock-api' },
+    })
+  })
 })

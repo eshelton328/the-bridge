@@ -85,3 +85,9 @@ void test('Markdown outside web/ and references/ and scripts the fidelity job do
   ])
     assert.equal(isFidelityInput(path, imports), false, path)
 })
+
+void test('the backend packages count as fidelity inputs, as web imports them by package name', () => {
+  const imports = scriptInputs(readRepo, starts)
+  for (const path of ['contract/src/workspaces.ts', 'server/src/client.ts', 'server/package.json', 'e2e/fakeAgent.ts'])
+    assert.equal(isFidelityInput(path, imports), true, path)
+})

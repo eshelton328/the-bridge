@@ -12,12 +12,16 @@ import { WorkspacesState, type WorkspacesData, type WorkspacesUi } from './types
 export function loadWorkspacesState(
   requested: string | undefined,
   source: string | undefined,
-): ScreenState<WorkspacesData, WorkspacesUi> {
+): ScreenState<WorkspacesData, WorkspacesUi> | Promise<ScreenState<WorkspacesData, WorkspacesUi>> {
   const read = readState<ScreenState<WorkspacesData, WorkspacesUi>>(
     workspacesStates,
     { state: requested, source },
     { key: 'home', state: workspacesHome },
+    { built: ['live'] },
   )
   if (!read.ok) throw notFound({ data: read.error })
-  return parseState(WorkspacesState, read.value.state, `workspaces/${read.value.key}`)
+  const state = parseState(WorkspacesState, read.value.state, `workspaces/${read.value.key}`)
+  if (import.meta.env.DEV && read.value.live)
+    return import('./liveWorkspaces.ts').then((live) => live.withLiveWorkspaces(state))
+  return state
 }

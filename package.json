@@ -8,7 +8,7 @@
     "node": ">=24"
   },
   "scripts": {
-    "codegen": "pnpm --filter @bridge/web codegen",
+    "codegen": "pnpm --filter @bridge/web --filter @bridge/server codegen",
     "gen:routes": "node scripts/genRoutes.ts",
     "check:routes": "node scripts/genRoutes.ts --check",
     "gen:registry": "node scripts/genRegistry.ts",
@@ -28,7 +28,8 @@
     "check:states": "node scripts/checkStates.ts",
     "test:scripts": "node --test scripts/*.test.ts scripts/fidelity/*.test.ts",
     "test": "vitest run",
-    "test:unit": "vitest run --project shared --project web ${VITEST_SHARD:+--shard=$VITEST_SHARD}",
+    "test:unit": "vitest run --project shared --project contract --project server --project web ${VITEST_SHARD:+--shard=$VITEST_SHARD}",
+    "test:e2e": "vitest run --config e2e/vitest.config.ts",
     "test:stories": "vitest run --project storybook",
     "build": "pnpm --filter @bridge/web build",
     "build:canvas": "pnpm --filter @bridge/web build:canvas",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@bridge/contract": "workspace:*",
     "@eslint-community/eslint-plugin-eslint-comments": "catalog:",
     "@eslint-react/eslint-plugin": "catalog:",
     "@eslint/js": "catalog:",
