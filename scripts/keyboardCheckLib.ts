@@ -142,3 +142,22 @@ export function sheetArgs(o: {
     o.out,
   ]
 }
+
+/**
+ * The served app's URL: `--url` first, then the `SERVED_APP_URL` environment variable. The repo holds no host, so
+ * with neither set the check stops with a message that names both.
+ */
+export function servedUrl(
+  flag: string | undefined,
+  env: string | undefined,
+): { ok: true; url: string } | { ok: false; error: string } {
+  const value = (flag ?? env ?? '').trim()
+  if (value === '') {
+    return {
+      ok: false,
+      error:
+        'keyboard:served needs the served app URL: pass --url <url> or set SERVED_APP_URL (the served-app facts in the brain give it).',
+    }
+  }
+  return { ok: true, url: value.replace(/\/+$/, '') }
+}

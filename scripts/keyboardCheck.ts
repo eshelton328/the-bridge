@@ -11,11 +11,11 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
 import { devices, webkit } from 'playwright'
-import { checkFrames, cubicBezier, type Frame, sheetArgs } from './keyboardCheckLib.ts'
+import { checkFrames, cubicBezier, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
 
 const { values } = parseArgs({
   options: {
-    url: { type: 'string', default: 'https://amonhen.tail21f8a4.ts.net:5180' },
+    url: { type: 'string' },
     keyboard: { type: 'string', default: '336' },
     only: { type: 'string' },
     out: { type: 'string' },
@@ -32,6 +32,13 @@ const targets = [
   { name: 'discussThread', path: '/inbox?state=changeProposedPage' },
 ].filter((t) => values.only === undefined || t.name === values.only)
 
+// The served app's URL is not in the repo: it comes from --url or SERVED_APP_URL.
+const served = servedUrl(values.url, process.env.SERVED_APP_URL)
+if (!served.ok) {
+  console.error(served.error)
+  process.exit(2)
+}
+const url = served.url
 const keyboard = Number(values.keyboard)
 const out = resolve(values.out ?? join('reports', 'keyboard', new Date().toISOString().replace(/[:.]/g, '-')))
 // The library's durations.keyboard and easings.keyboard (screen review R18).
@@ -91,7 +98,7 @@ for (const target of targets) {
   await context.addInitScript(installKeyboard)
   const videoStart = Date.now()
   const page = await context.newPage()
-  await page.goto(values.url + target.path)
+  await page.goto(url + target.path)
   const field = page.locator('.app-shell__detail > .scroll-frame__root > .scroll-frame__footer textarea').first()
   await field.waitFor()
   await page.evaluate(() => document.fonts.ready)
@@ -266,5 +273,5 @@ for (const target of targets) {
 }
 await browser.close()
 const ok = pages.every((p) => p.ok)
-console.log(JSON.stringify({ ok, url: values.url, keyboard, out, pages }))
+console.log(JSON.stringify({ ok, url, keyboard, out, pages }))
 process.exit(ok ? 0 : 1)
