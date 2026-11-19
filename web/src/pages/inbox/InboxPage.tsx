@@ -55,8 +55,10 @@ export function InboxPage() {
         },
       }}
       onNavigate={(page) => {
-        // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'workspaces' || page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
+        // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
+        // (d-105), as the tablet has no rail. Only the pages that have a route go somewhere; the others wait for theirs.
+        if (page === 'more') void navigate({ to: '/toolkit' })
+        else if (page === 'workspaces' || page === 'artifacts' || page === 'toolkit') void navigate({ to: `/${page}` })
       }}
       ui={ui}
       viewport="desktop"
