@@ -43,9 +43,11 @@ export type ArtifactsScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   /** Reports what the owner changes: the chip, the search, the view and the open groups. */
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
+  /** Copy link on an open artifact was pressed (D2, T2, M2), with the address its link opens. */
+  onCopyLink?: ((link: string) => void) | undefined
 }
 
-export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: ArtifactsScreenProps) {
+export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, onCopyLink }: ArtifactsScreenProps) {
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
@@ -65,6 +67,14 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                 onValueChange: (fileProject: string) => {
                   onUiChange?.({ fileProject, fileFor: view.artifact.id })
                 },
+              }
+        // D2, T2, M2: Copy link copies the address the artifact's link opens; an artifact with no link copies nothing.
+        const link = view?.artifact.link
+        const copyLink =
+          link === undefined || onCopyLink === undefined
+            ? undefined
+            : () => {
+                onCopyLink(`https://${link}`)
               }
         // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
         const openCard = (openId: string) => {
@@ -176,6 +186,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                             onUiChange?.({ discussOpen: true })
                           }
                     }
+                    onCopyLink={copyLink}
                     // M2: the ⋯ button opens File in a project (M7).
                     onMore={() => {
                       onUiChange?.({ fileOpen: true })
@@ -192,6 +203,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                             onUiChange?.({ discussOpen: !discussing })
                           }
                     }
+                    onCopyLink={copyLink}
                     madeInLayer={discussion?.layers.madeIn}
                     projectMenu={projectMenu}
                     side={

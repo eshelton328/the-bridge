@@ -1,9 +1,11 @@
 // The Artifacts page's connected entry: the only component of the page that
 // reads the router. It keeps what the owner changes in the shown state (the chip,
 // the search, the view, the open groups) and passes everything to the
-// props-only screen.
+// props-only screen. Copy link writes the open artifact's link to the
+// clipboard here.
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
+import { copyText } from '../../lib/copyText.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import type { ArtifactsUi } from './types.ts'
 
@@ -29,6 +31,10 @@ export function ArtifactsPage() {
       }}
       onUiChange={(change) => {
         setChanged((c) => ({ of: search.state, ui: { ...(c.of === search.state ? c.ui : {}), ...change } }))
+      }}
+      onCopyLink={(link) => {
+        // Copy link on an open artifact (D2, T2, M2); a page without clipboard access copies nothing.
+        copyText(link)
       }}
     />
   )

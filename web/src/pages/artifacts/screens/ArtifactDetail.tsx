@@ -5,8 +5,8 @@
 // column and gives the discussion the rest of the pane, up to
 // `shell.discussionPane`, as the Inbox's task and discussion (D14); the
 // column and the discussion each scroll on their own (d-107). Copy
-// link, Remove, Open artifact and Open in workspace render as Figma draws
-// them; their screens come with later frames. The project chip opens the
+// link calls `onCopyLink`; Remove, Open artifact and Open in workspace
+// render as Figma draws them; their screens come with later frames. The project chip opens the
 // project menu (`projectMenu`). Props only.
 import { Container, DetailSplit, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
@@ -33,6 +33,8 @@ export type ArtifactDetailProps = {
   badge?: string | undefined
   /** Discuss was pressed; without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
+  /** Copy link was pressed; without it Copy link does nothing. */
+  onCopyLink?: (() => void) | undefined
   /** Beside the artifact, such as its open discussion (D7); Discuss is pressed while it shows. */
   side?: ReactNode
   /**
@@ -44,7 +46,15 @@ export type ArtifactDetailProps = {
   projectMenu?: ProjectMenu | undefined
 }
 
-export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer, projectMenu }: ArtifactDetailProps) {
+export function ArtifactDetail({
+  artifact,
+  badge,
+  onDiscuss,
+  onCopyLink,
+  side,
+  madeInLayer,
+  projectMenu,
+}: ArtifactDetailProps) {
   const parts = (
     <>
       <ArtifactBar
@@ -52,6 +62,7 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer, 
         found={artifact.found}
         discussOpen={side === undefined ? undefined : true}
         onDiscuss={onDiscuss}
+        onCopyLink={onCopyLink}
       />
       <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
       <ArtifactPreview artifact={artifact} />
