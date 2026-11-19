@@ -39,16 +39,17 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Chat header.** Back with Workspaces is `BackRow` (28 px) with a
-  small button, against Figma's 38 px row 4 px under the status bar
-  (`nav` y +8, h -10). The header `Panel` pads 16 against Figma's 12,
-  so the chevron is 6 px left (`chevron · open task` x -6) and the chat line
-  6 px right (`running in` x +6, w -12). Workspaces is
+  small button. The nav pads 4 around it, and the page pads 4 at the
+  top, so the nav is 36 px high, 4 px under the status bar, against
+  Figma's 38. The started task sits 8 under the nav, as in Figma. The
+  header is the notice `Panel`, which pads 10 and 12 as Figma does, so
+  the chevron and the chat line are where Figma draws them. Workspaces is
   `textSize="xs"` (Medium 12/16), Figma's Medium 12 (346:6377, read
   from Figma; library #109, beta.8). The `size="sm"` button is 28 px
   high against Figma's 30 and pads its label less, so it is about 5 px
   narrower (`button · Open in Workspaces` x +2.8, w -4.7, h -2; was
-  x -8.8, w +6.8 with the 14 px `label`). Library gap: Chat header on
-  the tablet.
+  x -8.8, w +6.8 with the 14 px `label`). Library gap: Open in
+  Workspaces in the chat nav.
 - **Reply box.** Figma leaves a 21 px home-indicator area under the
   reply box; `AppShell` keeps it only on the phone, so the reply box
   sits 20 px lower (`346:6416` y +20). The story focuses the reply box,
