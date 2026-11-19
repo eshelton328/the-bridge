@@ -681,6 +681,13 @@ describe('the Inbox on the phone', () => {
 
   const title = () => page.getByRole('heading', { level: 1, name: 'Write the tickets for increment one' })
   const sheet = (name: string) => page.getByRole('dialog', { name })
+  /**
+   * Waits for the sheet's own first focus. The library sheet focuses itself after it opens, one frame or more
+   * later on a busy machine; a focus the test moves before that is taken back, and the next key goes to the sheet.
+   */
+  const sheetFocused = async (name: string) => {
+    await expect.poll(() => sheet(name).query()?.contains(document.activeElement) ?? false).toBe(true)
+  }
   /** The row of a list item, found by its title. */
   const row = (text: string) => page.getByText(text, { exact: true }).element()
 
@@ -989,7 +996,9 @@ describe('the Inbox on the phone', () => {
     await userEvent.keyboard('{Enter}')
     const kind = sheet('Sort').getByRole('radio', { name: /Kind/ })
     await expect.element(kind).toBeVisible()
+    await sheetFocused('Sort')
     kind.element().focus()
+    await expect.element(kind).toHaveFocus()
     await userEvent.keyboard('{Enter}')
     await expect.element(sheet('Sort')).not.toBeInTheDocument()
     await expect.element(page.getByText('Sorted by kind')).toBeVisible()
@@ -998,10 +1007,10 @@ describe('the Inbox on the phone', () => {
   it('moves the sort with an arrow key in the Sort sheet, and Done keeps it', async () => {
     await phone('list')
     await page.getByRole('button', { name: 'Sort', exact: true }).click()
-    sheet('Sort')
-      .getByRole('radio', { name: /Newest first/ })
-      .element()
-      .focus()
+    await sheetFocused('Sort')
+    const newest = sheet('Sort').getByRole('radio', { name: /Newest first/ })
+    newest.element().focus()
+    await expect.element(newest).toHaveFocus()
     await userEvent.keyboard('{ArrowDown}')
     await sheet('Sort').getByRole('button', { name: 'Done' }).click()
     await expect.element(sheet('Sort')).not.toBeInTheDocument()
