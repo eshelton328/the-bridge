@@ -51,4 +51,18 @@ describe('the icons in the page buttons', () => {
     await expect.element(actions).toBeVisible()
     expect(svgBox(actions.element())).toEqual({ width: 12, height: 12 })
   })
+
+  // D06's position exception (158:1026) accepts the split icon at 24 against Figma's 28, as the set has no larger
+  // size; the exception skips its size check, so this pins it at 24.
+  it("draws D06's drop zone split icon at 24 (D6 158:1026)", async () => {
+    const { data, ui } = workspacesStates.dragIntoPane
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
+    const zone = page.getByRole('status').filter({ hasText: data.paneDrop.text })
+    await expect.element(zone).toBeVisible()
+    // The zone also holds the dragged chat's row; the split icon is the svg in its own hidden span.
+    const split = zone.element().querySelector('span[aria-hidden="true"] > svg')
+    if (split === null) throw new Error('the drop zone has no split icon')
+    const { width, height } = split.getBoundingClientRect()
+    expect({ width, height }).toEqual({ width: 24, height: 24 })
+  })
 })
