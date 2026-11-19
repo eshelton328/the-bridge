@@ -230,9 +230,17 @@ describe('herdr agents: subscribe', () => {
     expect(socket.streams()).toEqual([])
   })
 
+  it('tells the app to read the list once the first stream starts', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    subscription.close()
+    expect(events).toEqual([{ type: 'workspacesChanged' }])
+  })
+
   it("maps herdr's blocked to needsYou, with the chat's listed ID", async () => {
     const { events, subscription } = collect()
     await subscription.ready
+    events.length = 0
     socket.push(statusLine('w17:p2', 'blocked'))
     await wait(50)
     subscription.close()
@@ -242,6 +250,7 @@ describe('herdr agents: subscribe', () => {
   it('opens the stream again after a burst of list events, then tells the app once', async () => {
     const { events, subscription } = collect()
     await subscription.ready
+    events.length = 0
     const before = socket.connections()
     socket.push({ event: 'pane_created', data: { type: 'pane_created', pane: { pane_id: 'w17:p9' } } })
     socket.push({ event: 'pane_agent_detected', data: { type: 'pane_agent_detected', pane_id: 'w17:p9' } })
@@ -256,6 +265,7 @@ describe('herdr agents: subscribe', () => {
   it('treats a status line of an unknown pane as a list change', async () => {
     const { events, subscription } = collect()
     await subscription.ready
+    events.length = 0
     socket.push(statusLine('w17:p7', 'working'))
     await wait(400)
     subscription.close()

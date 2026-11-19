@@ -172,7 +172,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
         if (!over) onEvent(event)
       }
 
-      /** Reads the agents, then opens the stream for their panes; `changed` tells the app once it is open. */
+      /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
       const open = async (changed: boolean) => {
         const agents = await call('agent.list', AgentList)
         if (over) return
@@ -213,7 +213,8 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
         }, settleMs)
       }
 
-      void open(false)
+      // The app read the list before this stream started; a change in between is told when it starts.
+      void open(true)
       return {
         ready,
         close: () => {

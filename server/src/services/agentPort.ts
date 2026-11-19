@@ -26,7 +26,8 @@ export type AgentPort = {
   /** The workspaces and their chats, in the order the machine shows them. It reads only when called. */
   listWorkspaces(): Promise<Result<WorkspaceSummary[], AgentPortError>>
   /**
-   * Starts one subscription: `onEvent` gets each change until `close()`. When the host stops answering,
+   * Starts one subscription: `onEvent` gets each change until `close()`. An adapter whose subscription starts
+   * after the call returns tells `workspacesChanged` when it starts, as the list may have changed in between. When the host stops answering,
    * `onEnd` gets why, once, and the subscription is over. It holds the host open only until then (d-112).
    */
   subscribe(onEvent: (event: AgentEvent) => void, onEnd: (error: AgentPortError) => void): AgentSubscription
