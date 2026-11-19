@@ -70,7 +70,9 @@ export function chatComposerDevice(target: EventTarget | null): TraceChat['devic
   if (!(target instanceof HTMLTextAreaElement)) return undefined
   const proxied = target.matches(PROXY)
   const footer = proxied ? target.ownerDocument.querySelector(COMPOSER_FOOTER) : target.closest(COMPOSER_FOOTER)
-  const keep = proxied ? (footer?.querySelector('[data-keyboard-keep]') ?? null) : target.closest('[data-keyboard-keep]')
+  const keep = proxied
+    ? (footer?.querySelector('[data-keyboard-keep]') ?? null)
+    : target.closest('[data-keyboard-keep]')
   if (footer === null || keep === null || !footer.contains(keep)) return undefined
   const root = footer.closest('.app-shell__root')
   return root?.classList.contains('app-shell__root--size_phone') === true ? 'phone' : 'tablet'

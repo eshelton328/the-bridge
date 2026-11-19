@@ -14,7 +14,19 @@ import {
 // kept in a ring buffer and POSTed to the dev server. It reads tag names and
 // roles of focused elements, never their text, value, name or id.
 
-const FIELDS = ['t', 'type', 'innerHeight', 'vvHeight', 'vvOffsetTop', 'vvPageTop', 'scrollY', 'scrollTop', 'rootTop', 'composerTop', 'keyboard']
+const FIELDS = [
+  't',
+  'type',
+  'innerHeight',
+  'vvHeight',
+  'vvOffsetTop',
+  'vvPageTop',
+  'scrollY',
+  'scrollTop',
+  'rootTop',
+  'composerTop',
+  'keyboard',
+]
 
 function mountShell(): HTMLElement {
   const host = document.createElement('div')
@@ -58,7 +70,8 @@ describe('keyboard trace sampler', () => {
     root.style.cssText = 'position:fixed;left:0;right:0;height:100px;top:-403px'
     const footer = document.createElement('div')
     footer.className = 'scroll-frame__footer'
-    footer.innerHTML = '<div data-keyboard-keep="" style="position:fixed;top:331px;height:40px"><textarea></textarea></div>'
+    footer.innerHTML =
+      '<div data-keyboard-keep="" style="position:fixed;top:331px;height:40px"><textarea></textarea></div>'
     document.body.append(footer)
     onTestFinished(() => {
       footer.remove()

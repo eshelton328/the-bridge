@@ -7,10 +7,37 @@ import { checkTrace, slideSamples } from './keyboardSlideLib.ts'
 // keyboard's height. That trace has no scrollTop, rootTop or composerTop yet.
 const r27 = [
   { t: 0, type: 'focusin', innerHeight: 797, vvHeight: 797, vvOffsetTop: 0, vvPageTop: 0, scrollY: 0, keyboard: '' },
-  { t: 178, type: 'vv-resize', innerHeight: 797, vvHeight: 394, vvOffsetTop: 0, vvPageTop: 0, scrollY: 0, keyboard: '' },
+  {
+    t: 178,
+    type: 'vv-resize',
+    innerHeight: 797,
+    vvHeight: 394,
+    vvOffsetTop: 0,
+    vvPageTop: 0,
+    scrollY: 0,
+    keyboard: '',
+  },
   { t: 182, type: 'raf', innerHeight: 797, vvHeight: 394, vvOffsetTop: 0, vvPageTop: 0, scrollY: 0, keyboard: '369px' },
-  { t: 214, type: 'scroll', innerHeight: 394, vvHeight: 394, vvOffsetTop: 403, vvPageTop: 403, scrollY: 403, keyboard: '369px' },
-  { t: 215, type: 'vv-scroll', innerHeight: 394, vvHeight: 394, vvOffsetTop: 0, vvPageTop: 0, scrollY: 0, keyboard: '369px' },
+  {
+    t: 214,
+    type: 'scroll',
+    innerHeight: 394,
+    vvHeight: 394,
+    vvOffsetTop: 403,
+    vvPageTop: 403,
+    scrollY: 403,
+    keyboard: '369px',
+  },
+  {
+    t: 215,
+    type: 'vv-scroll',
+    innerHeight: 394,
+    vvHeight: 394,
+    vvOffsetTop: 0,
+    vvPageTop: 0,
+    scrollY: 0,
+    keyboard: '369px',
+  },
   { t: 248, type: 'raf', innerHeight: 797, vvHeight: 394, vvOffsetTop: 0, vvPageTop: 0, scrollY: 0, keyboard: '369px' },
 ]
 

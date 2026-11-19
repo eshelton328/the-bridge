@@ -119,7 +119,15 @@ function focusThroughProxy(win: Window, field: Field, waitMs: number): Promise<v
   proxy.style.cssText =
     'position:fixed;margin:0;padding:0;border:0;outline:0;resize:none;background:transparent;color:transparent;' +
     'caret-color:transparent;font-size:16px;pointer-events:none;z-index:2147483646;' +
-    'top:' + String(box.top) + 'px;left:' + String(box.left) + 'px;width:' + String(box.width) + 'px;height:' + String(box.height) + 'px'
+    'top:' +
+    String(box.top) +
+    'px;left:' +
+    String(box.left) +
+    'px;width:' +
+    String(box.width) +
+    'px;height:' +
+    String(box.height) +
+    'px'
   doc.body.append(proxy)
   const openHeight = vv?.height ?? win.innerHeight
   proxy.focus({ preventScroll: true })
@@ -240,7 +248,10 @@ export function installKeyboardExperiment({ win = window, current, proxyWaitMs =
   // The keyboard's height, kept for the proxy's place at the next open.
   const vv = win.visualViewport
   const onViewport = () => {
-    if (vv === null || !(doc.activeElement instanceof HTMLTextAreaElement || doc.activeElement instanceof HTMLInputElement))
+    if (
+      vv === null ||
+      !(doc.activeElement instanceof HTMLTextAreaElement || doc.activeElement instanceof HTMLInputElement)
+    )
       return
     const keyboard = win.innerHeight - vv.height
     if (keyboard > KEYBOARD_UP_PX) lastKeyboard = keyboard
@@ -293,17 +304,18 @@ export function startKeyboardExperiment({
     current: () => active,
     ...(proxyWaitMs === undefined ? {} : { proxyWaitMs }),
   })
-  // An object, not a let: the lint narrows a let to false across the await, but stop() can run meanwhile.
-  const run = { stopped: false }
+  let stopped = false
+  // A function, not the variable: the lint narrows the variable to false across the await, but stop() can run meanwhile.
+  const isStopped = () => stopped
   let asking = false
   const ask = async () => {
-    if (run.stopped || asking || doc.visibilityState !== 'visible') return
+    if (stopped || asking || doc.visibilityState !== 'visible') return
     asking = true
     try {
       const res = await fetchSwitch(KEYBOARD_EXPERIMENT_SWITCH_URL, { cache: 'no-store' })
       if (!res.ok) return
       const body: unknown = await res.json()
-      if (run.stopped || typeof body !== 'object' || body === null) return
+      if (isStopped() || typeof body !== 'object' || body === null) return
       active = parseExperiment(Reflect.get(body, 'experiment'))
       mark()
     } catch {
@@ -323,7 +335,7 @@ export function startKeyboardExperiment({
   }
   return {
     stop: () => {
-      run.stopped = true
+      stopped = true
       win.clearInterval(timer)
       doc.removeEventListener('visibilitychange', onVisible)
       stopTaps()

@@ -29,7 +29,11 @@ export function slideSamples(samples: readonly unknown[]): SlideSample[] {
     if (isNumber(first) && isNumber(sample.innerHeight) && sample.innerHeight < first - 1)
       why.push(`innerHeight ${String(sample.innerHeight)}, ${String(first)} at the start`)
     if (why.length > 0)
-      found.push({ t: isNumber(sample.t) ? sample.t : -1, type: typeof sample.type === 'string' ? sample.type : '', why })
+      found.push({
+        t: isNumber(sample.t) ? sample.t : -1,
+        type: typeof sample.type === 'string' ? sample.type : '',
+        why,
+      })
   }
   return found
 }

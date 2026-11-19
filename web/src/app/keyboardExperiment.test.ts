@@ -162,7 +162,12 @@ describe('keyboard experiment', () => {
       detail.remove()
     })
     const rect = field.getBoundingClientRect()
-    expect(dockedBox(field, 300)).toEqual({ top: rect.top - 300, left: rect.left, width: rect.width, height: rect.height })
+    expect(dockedBox(field, 300)).toEqual({
+      top: rect.top - 300,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+    })
     expect(dockedBox(field, 0).top).toBe(rect.top)
   })
 
@@ -171,8 +176,12 @@ describe('keyboard experiment', () => {
     run('prevent')
     expect(tap(field, 'mouse').defaultPrevented).toBe(false)
     expect(tap(send).defaultPrevented).toBe(false)
-    field.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', clientX: 0, clientY: 0 }))
-    field.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'touch', clientX: 0, clientY: 40 }))
+    field.dispatchEvent(
+      new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', clientX: 0, clientY: 0 }),
+    )
+    field.dispatchEvent(
+      new PointerEvent('pointermove', { bubbles: true, pointerType: 'touch', clientX: 0, clientY: 40 }),
+    )
     const scrolled = new Event('touchend', { bubbles: true, cancelable: true })
     field.dispatchEvent(scrolled)
     expect(scrolled.defaultPrevented).toBe(false)
@@ -248,7 +257,9 @@ describe('keyboard experiment switch', () => {
     const running = startKeyboardExperiment({
       pollMs: 20,
       fetchSwitch: () =>
-        fail ? Promise.reject(new Error('away')) : Promise.resolve(new Response(JSON.stringify({ experiment: 'prevent' }))),
+        fail
+          ? Promise.reject(new Error('away'))
+          : Promise.resolve(new Response(JSON.stringify({ experiment: 'prevent' }))),
     })
     onTestFinished(running.stop)
     await expect.poll(running.current).toBe('prevent')
