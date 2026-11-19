@@ -7,6 +7,7 @@ import { within } from 'storybook/test'
 import { afterAll, describe, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { frameSizes } from '../src/lib/screenMap.ts'
+import preview from './preview.ts'
 
 type Device = keyof typeof frameSizes
 type States = Record<string, { frames: readonly { viewport: Device }[] }>
@@ -18,7 +19,9 @@ const isPlayable = (value: unknown): value is Playable =>
   typeof value.run === 'function'
 
 export function devicePlays(stories: Parameters<typeof composeStories>[0], states: States): void {
-  const composed = new Map(Object.entries(composeStories(stories)))
+  // The preview loads the app CSS and fonts, sets the theme and resets the
+  // stores, as in Storybook. Without the CSS an accessible name can lose a space.
+  const composed = new Map(Object.entries(composeStories(stories, preview)))
   const runs = Object.entries(states).flatMap(([state, s]) =>
     [...new Set(s.frames.map((f) => f.viewport))].flatMap((device) =>
       device === 'desktop' ? [] : [{ state, device }],
