@@ -27,8 +27,9 @@ export type ArtifactTitleBlockProps = {
 export function ArtifactTitleBlock({ artifact, status, layout = 'desktop' }: ArtifactTitleBlockProps) {
   const phone = layout === 'phone'
   return (
-    // T2 puts its rows 10 apart (405:426); D2 6; M2 8 (406:370).
-    <Stack gap={phone ? '8' : status === undefined ? '6' : '10'} data-figma="title block">
+    // D2 (403:464: the title at 76, 34 high, the description at 120 and the chips at 150) and T2 (405:426) put their
+    // rows 10 apart; M2 8 (406:370).
+    <Stack gap={phone ? '8' : '10'} data-figma="title block">
       {status}
       <h2 className={layout === 'desktop' ? desktopTitle : title}>{artifact.title}</h2>
       <p className={description}>{artifact.description}</p>

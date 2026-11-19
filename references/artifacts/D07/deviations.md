@@ -75,14 +75,15 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   44 px (`control.xl`) against Figma's 42, as the Inbox's. "It can" is a
   `Panel` with its eyebrow title; the three icons are violet
   (`accent.discuss`).
-- **Artifact column.** The title is 28 px type (`heading`) against about
-  26, the preview's bars are the library's chart drawing in its colours,
+- **Artifact column.** The title is `headingSm` (26/36) since library
+  1.0.0-beta.71 (library PR 222), with its rows 10 apart, as in D2; its
+  line is 36 against Figma's 34. The preview's bars are the library's
+  chart drawing in its colours,
   not Figma's heights and colours, its window dots are about 10 px and 18
   apart against 5 and 9 (452:2374 to 452:2376) and its axis about 557
   wide, 96 in from each side, against 628 and 60 (452:2387), and the
-  column starts 4 px further right, as in D2. Library gaps "Artifact title
-  size", "Thumbnail colour", "Artifact preview frame" and "Detail column
-  inset".
+  column starts 4 px further right, as in D2. Library gaps "Thumbnail
+  colour", "Artifact preview frame" and "Detail column inset".
 - **Discussion blocks.** The Inbox page does not export its
   `DiscussionPanel`, so the Artifacts page has its own `DiscussionPanel`
   and `DiscussionEmpty`, built from the same library parts (`ModelChip`,

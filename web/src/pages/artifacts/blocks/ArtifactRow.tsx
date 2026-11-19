@@ -22,8 +22,8 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactCard } from '../types.ts'
 
 // Figma's row preview is 64 × 40 on the desktop (403:194, `Thumbnail size="sm"`) and 76 × 48 on the phone (406:122,
-// `size="md"`), each centred down the row. The phone's drawing is D2's scaled up; Figma draws its own (LIBRARY_GAPS.md:
-// Phone row preview drawing).
+// `size="md"`), each centred down the row. Since library beta.71 (PR 221) `md` draws Figma's phone row drawing
+// (406:122 to 406:278): a top bar with no window dots and larger shapes.
 const thumb = css({ alignSelf: 'center' })
 // M1: the age over New (406:138, 406:144), one column 4 apart; New is Figma's 48 × 16 pill with its filled star
 // (`Badge size="xs"`, which draws `SparkFilledIcon` at 8 px, library beta.43).

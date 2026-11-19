@@ -72,13 +72,13 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   than Figma's 27 px rows 4 apart. The block has no spark icon before
   its eyebrow, which Figma draws (452:3045). Library gap "Proposal block
   icon and diff rows".
-- **Artifact column.** The title is 28 px type against about 26, and the
-  preview's bars are the library's chart drawing in its colours, not
+- **Artifact column.** The title is `headingSm` (26/36) since library
+  1.0.0-beta.71 (library PR 222), its line 36 against Figma's 34, as in
+  D2. The preview's bars are the library's chart drawing in its colours, not
   Figma's heights and colours, and its window dots and axis inset are the
   library's (about 10 px dots, an axis 96 in from each side, against
   Figma's 5 px and 60, 452:2984 to 452:2986, 452:2997), as in D07. Library
-  gaps "Artifact title size", "Thumbnail colour" and "Artifact preview
-  frame".
+  gaps "Thumbnail colour" and "Artifact preview frame".
 - **Buttons of the proposal.** Discard drops the proposal from the
   discussion. Apply sets `ui.discussProposal` to `applied`, which shows
   D09: the artifact's pill says Updated, its bar "updated just now from

@@ -86,8 +86,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   default text colour (452:3704). The applied block shows only the two
   lines Apply put in and no buttons, as Figma's. Library gap "Proposal
   block icon and diff rows".
-- **Artifact column.** The title is 28 px type against about 26, as in
-  D08. Library gap "Artifact title size".
+- **Artifact column.** The title is `headingSm` (26/36) since library
+  1.0.0-beta.71 (library PR 222), its line 36 against Figma's 34, as in
+  D08.
 - **Apply.** D08's Apply sets `ui.discussProposal` to `applied`; with
   it the artifact shows Updated, "updated just now from the discussion"
   and the chip "updated just now", the meter 49%, and the proposal its

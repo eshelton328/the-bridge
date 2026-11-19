@@ -49,8 +49,8 @@ differences (`../M01/deviations.md`), and the sheet has T3's
   against Figma's 5 (d-072), with Figma's 9 px sides. Library gap
   "Compact chip spacing".
 - **Rows under the scrim.** As M1: the previews are `Thumbnail size="md"`,
-  76 × 48 as Figma's, but drawn as D2's row drawing scaled up, with window
-  dots and smaller cells (library gap "Phone row preview drawing"), and
+  76 × 48 as Figma's, drawn as Figma's phone row drawings since library
+  1.0.0-beta.71 (library PR 221), with M1's small remaining differences, and
   the rows are 66 high and 2 apart, Figma's 68 px pitch (407:76; `ListRow
   padding="phone"` pads 8 inside the border, as Figma's), each 1 below
   Figma's, as in M1. New is `Badge size="xs"` with

@@ -32,6 +32,11 @@ describe('the open artifact title', () => {
     const { data, ui } = artifactsStates.artifactOpen
     view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="desktop" />)
     expect(titleType()).toEqual({ size: '26px', weight: '600', height: 36 })
+    // D2 403:464: the rows are 10 apart (the title 76 to 110, the description at 120, the chips at 150).
+    const rows = Array.from(document.querySelector('[data-figma="title block"]')?.children ?? [], (el) =>
+      el.getBoundingClientRect(),
+    )
+    expect(rows.slice(1).map((r, i) => Math.round(r.top - (rows[i]?.bottom ?? 0)))).toEqual([10, 10])
   })
 
   it('stays heading, 28/40, on the tablet (T2)', async () => {
