@@ -56,9 +56,6 @@ artifacts`): the text, position and rules results did not change.
   the thumbnail is 186.75 high at the card's inner 332 px against Figma's
   188. The card's sides are 16 px against Figma's 14, so its text starts
   2 px further right. Library gap "Card body and line heights".
-- **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
-  against Figma's text box of 29 px, about 24 px type, so the title and
-  count are smaller. Library gap "Desktop page title size".
 - **Thumbnail colours.** The Agent factory doc's title bar is cyan, not
   Figma's green; the Type safety in agentic systems doc's title bar is
   cyan, not violet (402:15716); the readme cold-reader chart is cyan and

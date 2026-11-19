@@ -41,7 +41,13 @@ export function LibraryList({ data, ui, selectedId, onUiChange, onOpenArtifact, 
     <section aria-label="Artifacts list" className={pane} data-figma="library list">
       <Stack gap="8">
         <div className={header} data-figma="header">
-          <PageHeader title={data.title} count={data.count} countLabel={`${String(data.count)} artifacts`}>
+          {/* D2's count is D1's (Regular 16/20, library `countSize="lg"`). */}
+          <PageHeader
+            title={data.title}
+            count={data.count}
+            countLabel={`${String(data.count)} artifacts`}
+            countSize="lg"
+          >
             <span data-figma="button · Add a link">
               <Button iconOnly aria-label={data.addLink} onClick={onAddLink}>
                 <PlusIcon />
