@@ -10,7 +10,11 @@ each file of a page folder is for.
   changes in the shown `?state=` (the source chip, the search, the view
   and the open groups) with `useState`; it passes them to
   `ArtifactsScreen` with `onUiChange`. Rail picks go to the pages that
-  have a route. A later frame that needs the changes to outlive a visit
+  have a route. Copy link on an open artifact (D2's bar, T2's Back bar,
+  M2's button under Open artifact) calls the screen's `onCopyLink` with
+  the address the artifact's link opens (`https://` and `link`), and
+  the entry passes it to `copyText`; an artifact with no link copies
+  nothing. `app/ArtifactsCopyLink.test.tsx` checks it at each width. A later frame that needs the changes to outlive a visit
   moves them to an `artifactsStore.ts` (`createAppStore`).
 - `screens/ArtifactsScreen.tsx`: the app shell, laid out by its width
   (`ViewportFrame`): on the desktop the rail (`AppRail`, Artifacts

@@ -43,6 +43,8 @@ export type ArtifactPageProps = {
   /** Discuss was pressed: the discussion opens as its own page (T4); without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
   onOpenArtifact?: (() => void) | undefined
+  /** Copy link was pressed, in the tablet's bar or under the phone's Open artifact; without it Copy link does nothing. */
+  onCopyLink?: (() => void) | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
   /** The menu the tablet's project chip opens; on the phone the chip opens File in a project, as the ⋯ button. */
@@ -57,6 +59,7 @@ export function ArtifactPage({
   onBack,
   onDiscuss,
   onOpenArtifact,
+  onCopyLink,
   onMore,
   projectMenu,
 }: ArtifactPageProps) {
@@ -65,7 +68,14 @@ export function ArtifactPage({
     <DetailFrame
       layout={layout}
       back={
-        <ArtifactTopBar backLabel={backLabel} layout={layout} onBack={onBack} onDiscuss={onDiscuss} onMore={onMore} />
+        <ArtifactTopBar
+          backLabel={backLabel}
+          layout={layout}
+          onBack={onBack}
+          onDiscuss={onDiscuss}
+          onCopyLink={onCopyLink}
+          onMore={onMore}
+        />
       }
     >
       {/* T2: the sections are 18 apart (405:426 to 405:475), M2 14 (406:370 to 406:420); 20 and 16 on the 4 px grid
@@ -97,7 +107,7 @@ export function ArtifactPage({
           // height); 36 and 44 tie, and the tie takes the larger, the 44 px `xl` (d-072).
           <Grid columns="2" gap="8" data-figma="secondary actions">
             <span data-figma="button · Copy link">
-              <Button size="xl" className={wide}>
+              <Button size="xl" className={wide} onClick={onCopyLink}>
                 <CopyIcon />
                 Copy link
               </Button>
