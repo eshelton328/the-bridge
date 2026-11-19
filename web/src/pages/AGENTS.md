@@ -1,13 +1,18 @@
 # pages
 
-One folder per page of the-bridge: `home`, `inbox`, `workspaces`,
-`projects`, `artifacts` and `toolkit` (the list is in `structure.ts`).
+One folder per page of the-bridge; `structure.ts` lists the pages.
 Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 
-- [inbox/AGENTS.md](inbox/AGENTS.md): the Inbox, the first page built.
-- [artifacts/AGENTS.md](artifacts/AGENTS.md): the Artifacts library: the card grid of Claude artifacts and Codex sites.
-- [toolkit/AGENTS.md](toolkit/AGENTS.md): the Toolkit page: the list of toolkit items (D1).
-- [workspaces/AGENTS.md](workspaces/AGENTS.md): the Workspaces page (Figma Workbench), built from D1 on.
+- [inbox/AGENTS.md](inbox/AGENTS.md): read before you work on the Inbox.
+- [artifacts/AGENTS.md](artifacts/AGENTS.md): read before you work on the
+  Artifacts page.
+- [toolkit/AGENTS.md](toolkit/AGENTS.md): read before you work on the
+  Toolkit page.
+- [workspaces/AGENTS.md](workspaces/AGENTS.md): read before you work on the
+  Workspaces page.
+
+A page's own `AGENTS.md` files (the page, `screens/`, `blocks/`,
+`states/`) hold only what is true for that page.
 
 ## A page folder
 
@@ -18,7 +23,7 @@ Start one with `pnpm new page <page> --state <id> --frame <D1>`.
 | `blocks/`                         | Props-only blocks only this page uses                                                    |
 | `states/`                         | One file per Figma state, `satisfies ScreenState<Data, Ui>`, and `index.ts` listing them |
 | `states/screens.ts`               | The screen map: each screen's state per device, with `screens.test.ts` (R10)             |
-| `<page>Store.ts`                  | The page's view store, made with `createAppStore`, with a test                           |
+| `<page>Store.ts`                  | The page's view store, if it has one, made with `createAppStore`, with a test            |
 | `types.ts`                        | The view-model Zod schemas and their inferred types                                      |
 | `search.ts`, `load<Page>State.ts` | The URL search schema and the route loader, which reads through `lib/dataSource.ts`      |
 | `definition.ts`                   | The page as the canvas sees it (`PageDefinition`)                                        |
