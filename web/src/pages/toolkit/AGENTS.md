@@ -46,9 +46,7 @@ what each file of a page folder is for.
   complete as any state shows it: the More drawer's Artifacts count, the
   map, the Activity view (D11), every item's details with each tab the
   desktop states fill (`mergeDetails`: the How it works, Files with D10's
-  explanation, Links and Evals states, the workflow's page; each browser
-  also takes the files and excerpts of the item's other browsers and its
-  link target's, so a Links row's file opens at its line), the link
+  explanation, Links and Evals states, the workflow's page), the link
   targets' browsers and the skills the evals open. Only five items have
   details in any state; the others open with what the list and their link
   target know. The screen lays it out for the window (D1's cards beside
