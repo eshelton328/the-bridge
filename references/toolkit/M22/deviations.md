@@ -16,7 +16,9 @@ M22. The Checks below are from a rerun with library 1.0.0-beta.28
 
 ## Checks
 
-- Text: pass. Every Figma string is in the render and visible; no extra
+- Text: fail before the exception: the Test card's caption (487:2218) is
+  not visible to the check (see Cross glyph). Every other Figma string is
+  in the render and visible; no extra
   text and no covered text. The three code lines that were cut before
   (487:2240, 487:2243, 487:2246) wrap and pass (see Code lines). `6`
   (487:2248) and `set -u` (487:2249) pass since the tab bar lies over
@@ -125,9 +127,15 @@ M22. The Checks below are from a rerun with library 1.0.0-beta.28
 
 ## Second review
 
-- **Cross glyph.** The Test card's "✗" looks like an upright "×", where
-  Figma's is slanted. The text is the same character (U+2717) in both;
-  only the font's glyph differs, as on T19.
+- **Cross glyph.** The Test card's caption has Figma's ✗ (U+2717) and ✓ (U+2713). Since
+  library 1.0.0-beta.67 (2026-11-19) they are the library's `Glyph`,
+  which keeps each character in the text and draws Figma's slanted cross
+  and thin check in its place, where the font drew an upright "×". The
+  glyph keeps the character at font size 0 and transparent, and the text
+  check takes a text run with no 1 px box as not shown, so it reports
+  the string (487:2218) as not visible, though the screen shows Figma's
+  text. The frame's `exceptions.json` excepts that layer with this
+  reason (gap: Symbol glyphs).
 
 ## Text under the tab bar
 

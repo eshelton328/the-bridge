@@ -25,9 +25,11 @@ From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
 fade="none"` (library 1.0.0-beta.65), with the frame's
 `exceptions.json`.
 
-- Text: pass. `exceptions.json` excepts 3 Figma strings (`Workflows`,
+- Text: pass. `exceptions.json` excepts 4 Figma strings (`Workflows`,
   `2`, `# exits 1 with one line per problem. Git runs it from the top of
-  the work`); each is explained below.
+  the work`, and the Test card's caption `runs the rule’s ✗ and ✓
+  examples`, whose ✗ and ✓ the check does not see in the library's
+  `Glyph`; see Cross glyph); each is explained below.
 - Position: 39 of 49 layers pass. The 10 that fail: `group · WORKFLOWS`
   y -5; `433:1537` w +8; `columns` y -5, h -6; `file preview` y -5, w
   -5.6, h -6; `preview bar` y -5, w -5.6; `code` y -5, w -5.6, h -6;
@@ -111,6 +113,15 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames.
+- **Cross glyph.** The Test card's caption has Figma's ✗ (U+2717) and ✓ (U+2713). Since
+  library 1.0.0-beta.67 (2026-11-19) they are the library's `Glyph`,
+  which keeps each character in the text and draws Figma's slanted cross
+  and thin check in its place, where the font drew an upright "×". The
+  glyph keeps the character at font size 0 and transparent, and the text
+  check takes a text run with no 1 px box as not shown, so it reports
+  the string (433:1570) as not visible, though the screen shows Figma's
+  text. The frame's `exceptions.json` excepts that layer with this
+  reason (gap: Symbol glyphs).
 
 ## Second review
 

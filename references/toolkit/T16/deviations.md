@@ -18,7 +18,8 @@ results as before the Evals tab. The frame has no `exceptions.json`.
 - Position: 29 of 34 layers pass. The 5 that fail: `button · Discuss` x
   -7.1 y -1 w +2.5 h -2; `toolkit item` x +2 y +32 w -4 h -183; `evals`
   x +2 y -1 w -4 h -5; `badge · D6` x +3 y -2 w -7.6 h -1; `chart` x +2
-  y -3 w -238 h +25. Each is explained below.
+  y -3 w +44 h +25 (since library 1.0.0-beta.67, 2026-11-19; w -238
+  before). Each is explained below.
 - Rules: pass.
 
 ## Deviations
@@ -44,11 +45,15 @@ results as before the Evals tab. The frame has no `exceptions.json`.
   px steps on average, and the lines under the badges, the chart and the
   cases 2 px lower, so most rows stay within the tolerance; what remains
   adds up down the tab: `evals` x +2 y -1 w -4 h -5 (gap: Evals panels).
-- **Chart size.** The chart is 392 wide with a group every 56 px,
-  against Figma's 630 with a group every 90 (`chart` x +2 y -3 w -238 h
-  +25), and 135 high with its axis inside against Figma's 110 plot:
-  `GroupedBarChart` has one size. The bars keep the desktop's places, so
-  the right part of the panel is empty (gap: Evals bar chart).
+- **Chart size.** The chart is the library's `GroupedBarChart` with
+  `width="fill"` in a box as wide as the panel, so it spreads the groups
+  over the panel as Figma does (482:2288), each in an equal slot with its
+  bars and label centred. The panel's content is 674 px wide against
+  Figma's 630 px chart, so a group comes every 96 px against 90 and the
+  chart ends at the panel's padding, 44 px further right; no width token
+  gives 630. The chart is 135 high with its axis inside its own SVG
+  against Figma's 110 plot layer (`chart` x +2 y -3 w +44 h +25; gap:
+  Evals bar chart).
 - **Badges.** The criteria are the library's `Badge size="sm"`, each 2
   px wider than Figma's, so they sit 4 apart against Figma's 6 and each
   stays at Figma's x. The checks and the cross are the library's 12 px
