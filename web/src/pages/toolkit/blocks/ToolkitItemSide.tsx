@@ -117,6 +117,8 @@ export function ToolkitItemSide({ detail, onTabChange, compact = false }: Toolki
             title={evals.title}
             meta={evals.caption}
             leading={<ChartIcon size="16" />}
+            // D3 427:383: the chevron sits centred down the box, not level with the title.
+            trailingAlign="center"
             trailing={
               <span className={chevron}>
                 <ChevronRightIcon size="16" />
