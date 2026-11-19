@@ -62,9 +62,6 @@ each with its reason. The library gaps are in
 - **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
   not amber. `Thumbnail` draws one colour set per kind. Library gap
   "Thumbnail colour".
-- **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
-  against Figma's about 24 px, so the title and "3 of 24" are smaller.
-  Library gap "Desktop page title size".
 - **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
   has no layer, and `rail · More` sits 52 px lower (y +52). The design
   predates d-105, which adds the Toolkit (and Artifacts) item; the app

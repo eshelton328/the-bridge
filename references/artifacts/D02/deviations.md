@@ -64,8 +64,6 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   the banner. Library gaps "Thumbnail colour" and "Artifact preview
   frame". The readme cold-reader row's chart is cyan and violet, not
   amber ("Thumbnail colour").
-- **Page title.** "Artifacts" is 20 px type (`PageHeader size="page"`)
-  against Figma's about 24 px. Library gap "Desktop page title size".
 - **Buttons with no screen yet.** Add a link, Discuss, Copy link,
   Remove, Open in workspace, Sort and Filter are buttons with no action;
   the project chip opens no menu. Discuss opens the discussion (D7) in

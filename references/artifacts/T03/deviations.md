@@ -72,7 +72,7 @@ artifacts`): the text, position and rules results did not change.
 - **Page title and thumbnails.** As T1, under the scrim: "Artifacts"
   uses the phone title size (28 px type), a little smaller than Figma's;
   the chart bars are a brighter cyan and the ui preview draws lines where
-  Figma has a plain panel. Library gaps "Desktop page title size" and
+  Figma has a plain panel. Library gaps "Tablet page title size" and
   "Thumbnail colour".
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier. The button is 46 high in Figma (407:1720) and

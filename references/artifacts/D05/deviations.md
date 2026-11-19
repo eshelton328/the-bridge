@@ -107,8 +107,6 @@ artifacts`): the text, position and rules results did not change.
 - **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
   not amber, and the Agent factory doc's bar is not green. Library gap
   "Thumbnail colour".
-- **Page title.** "Artifacts" is 20 px type against Figma's about 24 px.
-  Library gap "Desktop page title size".
 - **Rail.** The shared rail (`AppRail`, not changed here: another chat
   holds the navigation) has a Toolkit item after Artifacts (d-105), which
   this frame does not draw, so More sits one item lower. Its items are

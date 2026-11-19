@@ -61,12 +61,11 @@ artifacts`): the text, position and rules results did not change.
   description and meta lines (4 px grid, d-100) against 17, and a
   186.75 px thumbnail against 188. Library gap "Card body and line
   heights".
-- **Page title, thumbnails and card marks.** As D01: "Artifacts" is
-  20 px type against about 24; the Agent factory doc and the readme
+- **Thumbnails and card marks.** As D01: the Agent factory doc and the readme
   cold-reader chart are cyan and violet, not green and amber, the Type
   safety doc's title bar is cyan, not violet, and the chart bars are a
   brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
-  prop). Library gaps "Desktop page title size" and "Thumbnail colour".
+  prop). Library gap "Thumbnail colour".
 - **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties

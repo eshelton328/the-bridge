@@ -57,7 +57,7 @@ artifacts`): the text, position and rules results did not change.
   heights".
 - **Page title.** "Artifacts" uses the library's phone title (28 px type,
   `PageHeader size="phone"`), the largest it has; Figma's text box is
-  34 high and 110 wide, a little larger. Library gap "Desktop page title
+  34 high and 110 wide, a little larger. Library gap "Tablet page title
   size".
 - **Thumbnails.** The chart bars are a brighter cyan than Figma's muted
   teal-cyan; the ui preview draws a list of lines in its side panel and
