@@ -81,8 +81,15 @@ const server = await serveStatic(storybookDir)
 // wider than on macOS, where the Figma frames were checked; with hinting
 // off, text widths in CI match a Mac's more closely.
 const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
-const summary: { frameId: string; ok: boolean; text?: boolean; position?: boolean; rules?: boolean; error?: string }[] =
-  []
+const summary: {
+  frameId: string
+  ok: boolean
+  gate: boolean
+  text?: boolean
+  position?: boolean
+  rules?: boolean
+  error?: string
+}[] = []
 
 try {
   for (const frameId of frameIds) {
@@ -94,7 +101,7 @@ try {
         join(outDir, `${frameId}.json`),
         `${JSON.stringify({ frameId, ok: false, error: message }, null, 2)}\n`,
       )
-      summary.push({ frameId, ok: false, error: message })
+      summary.push({ frameId, ok: false, gate: false, error: message })
     }
   }
 } finally {
@@ -102,9 +109,12 @@ try {
   await server.close()
 }
 
+// ok: all three checks pass; gate: the checks of --checks pass (all three
+// without it). The exit code follows the gate.
 const ok = summary.length > 0 && summary.every((s) => s.ok)
-console.log(JSON.stringify({ ok, page, checks, reports: outDir, frames: summary }))
-process.exit(ok ? 0 : 1)
+const gate = summary.length > 0 && summary.every((s) => s.gate)
+console.log(JSON.stringify({ ok, gate, page, checks, reports: outDir, frames: summary }))
+process.exit(gate ? 0 : 1)
 
 async function runFrame(b: Browser, origin: string, frameId: string) {
   if (page === undefined) throw new Error('no page')
@@ -137,7 +147,10 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance)
   const rules = checkRules(ref, exceptions, measured)
   const results = { text: text.ok, position: position.ok, rules: rules.ok }
-  const ok = checks.every((c) => results[c]) && errors.length === 0
+  // The report's ok stays the result of all three checks, which
+  // fidelity:check-build reads; gate is the result of the checks picked.
+  const ok = fidelityChecks.every((c) => results[c]) && errors.length === 0
+  const gate = checks.every((c) => results[c]) && errors.length === 0
   const report = {
     frameId,
     name: ref.name,
@@ -147,6 +160,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
     viewport: { w: viewport.w, h: viewport.h },
     checks,
     ok,
+    gate,
     pageErrors: errors,
     text,
     position,
@@ -155,7 +169,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
     note: join(frameDir(page, frameId), 'note.txt'),
   }
   writeFileSync(join(outDir, `${frameId}.json`), `${JSON.stringify(report, null, 2)}\n`)
-  return { frameId, ok, text: text.ok, position: position.ok, rules: rules.ok }
+  return { frameId, ok, gate, text: text.ok, position: position.ok, rules: rules.ok }
 }
 
 /** Opens the story in a new context of `w` × `h` and waits until it has drawn; page errors go to `errors`. */

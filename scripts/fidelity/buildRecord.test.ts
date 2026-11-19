@@ -124,6 +124,17 @@ void test('a fidelity result that differs from the last report fails', () => {
   has(errors, /fidelity\.position is true/)
 })
 
+void test('a report that left out a check with --checks fails', () => {
+  const claimed = record({ status: 'pass', fidelity: { ok: true, text: true, position: true, rules: true } })
+  const partial = report({ ok: true, checks: ['text', 'rules'], position: { ok: true, diffs: [] } })
+  has(checkRecord(claimed, repo({ report: partial })), /left out position \(--checks\)/)
+  const full = report({ ok: true, checks: ['text', 'position', 'rules'], position: { ok: true, diffs: [] } })
+  assert.deepEqual(
+    checkRecord(claimed, repo({ report: full })).filter((e) => e.includes('--checks')),
+    [],
+  )
+})
+
 void test('a record without a report, or with a change after the report, fails', () => {
   has(checkRecord(record(), repo({ report: undefined })), /no report at reports\/fidelity\/inbox\/D13\.json/)
   has(

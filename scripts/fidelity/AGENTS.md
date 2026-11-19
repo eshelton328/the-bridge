@@ -36,8 +36,11 @@ The Figma references the checks read are in
    `pnpm fidelity inbox D01`. It builds Storybook first; add
    `--skip-build` when nothing in `web/` changed since the last build.
    It exits 1 when a check fails. `--checks text,rules` makes only
-   those checks decide the result; the report still holds all three.
-   CI's `fidelity` job runs every frame of each page that way.
+   those checks decide the exit code (the report's `gate`); the report
+   still holds all three, and its `ok` stays the result of all three.
+   `fidelity:check-build` rejects a report made with `--checks` that
+   left out a check. CI's `fidelity` job runs every frame of each page
+   with `--checks text,rules`.
 4. **Read the report** in `reports/fidelity/<page>/` (gitignored):
    `<frameId>.json` has the result of each check, and
    `<frameId>.sideBySide.png` shows Figma left and the render right.
