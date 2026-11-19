@@ -22,32 +22,28 @@ the same.
 
 ## Checks
 
-- Text: fail. All 140 Figma strings are in the render, nothing extra
-  shows, and no text is covered by another element. Six strings are not
-  visible, all in the list pane, which D3 shares:
-  - `Workflows` and `2` (482:181, 482:182), the Workflows chip, which the
-    chip row cuts at the list pane's edge, as Figma does (see Kind chips).
-  - `agents/eval-case-writer.md` (482:296), and `eval-grader`,
-    `agents/eval-grader.md` and `→0 ←2` (482:305, 482:306, 482:308): the
-    taller list rows push them past the frame's bottom edge (see Row
-    height).
-- Position: 36 of 61 layers pass, among them every layer of the Links
-  tab: `links`, `links header`, `links graph`, `row · in and out`,
-  `panel · linked from`, `panel · links to` and all eleven link rows
-  (`link · writing · rules/writing.md:77` to
-  `link · audit-slop · SKILL.md:118`); and `toolkit list`, `header`,
-  `read-only`, `filter · chips`, `search`, `group · SKILLS`, `meta row`,
-  `kind badge`, `button · Discuss`, `button · Show on map`, `482:367`
-  (the title writer), `path row`, `path badge` and the rail's items. The
-  graph's nodes have no `data-figma`: `MapGraph` draws them, and it takes
-  no attribute for a node.
-- Rules: fail. Three `hiddenOverflow` findings: the list pane scrolls on
-  its own (`[data-figma="toolkit list"]`), the kind chips scroll sideways
-  (`[data-figma="filter · chips"] > div.filter-chips__root`), and the item
-  pane scrolls
-  (`div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail`,
-  see Item height). D03 has the first two in its `exceptions.json`; this
-  frame's `exceptions.json` excepts all three.
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 44 of 61 layers pass. The 17 that fail: `group · AGENTS` y
+  -8; `toolkit row · diagram-reviewer` y -5; `toolkit row ·
+  eval-case-writer` y -6; `toolkit row · eval-grader` y -7; `toolkit row
+  · pr-description-checker` y -8; `toolkit row · readme-cold-reader` y
+  -9; `toolkit row · writing-reviewer` y -11; `group · RULES` noLayer;
+  `toolkit row · commits-and-prs` noLayer; `toolkit row · diagrams`
+  noLayer; `toolkit row · linear` noLayer; `toolkit row · readmes`
+  noLayer; `toolkit row · releases` noLayer; `toolkit row · skills`
+  noLayer; `toolkit row · ste100` noLayer; `toolkit row · writing`
+  noLayer; `toolkit item` h +136. Each is explained below.
+- Rules: pass. 3 findings are excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="toolkit list"]`; `hiddenOverflow` on
+  `[data-figma="filter · chips"] > div.filter-chips__root`;
+  `hiddenOverflow` on `div > div.backdrop > div.backdrop >
+  div.app-shell__root > main.app-shell__detail`.
 
 ## Deviations
 
@@ -57,21 +53,25 @@ the same.
   pane, so `toolkit item` is 136 px taller than Figma's (h +136) and the
   rule check reports the pane's scroll as `hiddenOverflow`. The text
   under the frame's foot is in neither view.
-- **Row height.** Each list row is 62 px high against Figma's 53
-  (`h +9` on every row key), as on D3: `ListRow` pads 10 inside a 1 px
-  border (gap: Toolkit row (pane)). The first row starts within the
-  tolerance and each row after it 9 px lower again:
-  `toolkit row · agents-md` h +9; `toolkit row · ambitious` y +12;
-  `toolkit row · audit-slop` y +21; `toolkit row · eval-cases` y +30;
-  `toolkit row · mermaid-diagrams` y +39;
-  `toolkit row · pr-description` y +48;
-  `toolkit row · project-setup` y +57; `toolkit row · readme` y +66;
-  `group · AGENTS` y +82; `toolkit row · diagram-reviewer` y +85;
-  `toolkit row · eval-case-writer` y +94;
-  `toolkit row · eval-grader` y +103;
-  `toolkit row · pr-description-checker` y +112;
-  `toolkit row · readme-cold-reader` y +121;
-  `toolkit row · writing-reviewer` y +139.
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `group · AGENTS` y -8; `toolkit row · diagram-reviewer` y
+  -5; `toolkit row · eval-case-writer` y -6; `toolkit row · eval-grader`
+  y -7; `toolkit row · pr-description-checker` y -8; `toolkit row ·
+  readme-cold-reader` y -9; `toolkit row · writing-reviewer` y -11. With
+  the shorter rows the last rows' text (`agents/eval-case-writer.md`,
+  `eval-grader`, `agents/eval-grader.md`, `→0 ←2`) lies above the
+  frame's foot and is visible, so its exceptions are gone. The list
+  still runs past the frame's foot, so the pane scrolls on its own
+  (`hiddenOverflow` on `[data-figma="toolkit list"]`, in
+  `exceptions.json`).
 - **Rules group.** The list has T1's data, so the Rules group lies below
   the frame: `group · RULES` and its rows `toolkit row · commits-and-prs`,
   `toolkit row · diagrams`, `toolkit row · linear`,
@@ -80,8 +80,10 @@ the same.
   `toolkit row · writing` have no layer in the frame (`noLayer`). D3 has
   the same rows in its `exceptions.json`.
 - **Kind chips.** The chip row is wider than the list pane and scrolls
-  sideways; Figma cuts the Workflows chip at the same edge, so `Workflows`
-  and `2` are not visible in either.
+  sideways; Figma cuts the Workflows chip at the same edge, so
+  `Workflows` and `2` are not visible in either. `FilterChips
+  fade="none"` (library 1.0.0-beta.65) draws the cut chip at full
+  strength up to the pane's edge, as Figma does.
 - **Graph's open item.** writer in the middle of the graph is 150 × 40
   with its name in the label style, at Figma's place, as Figma's
   (library beta.39 node `size` and `labelStyle: 'label'`, #151). Its

@@ -16,23 +16,21 @@ are from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render, no text is extra, and no
-  text is covered by another element. Two strings are not visible:
-  `Workflows` and `2` (495:740, 495:741), the Workflows chip, which the
-  chip row cuts at the list pane's edge, as Figma does (see Kind chips).
-- Position: 28 of 44 layers pass, among them the How it works header
-  (`495:948`), the title (`495:846`), the four legend items and the three
-  use chips (`uses · writer/scripts/check`, `uses · references/<form>.md`,
-  `uses · ls, grep, git ls-files`); and `toolkit list`, `read-only`,
-  `filter · chips`, `search`, `group · SKILLS`, `group · AGENTS`,
-  `toolkit item`, `meta row`, `kind badge`, both buttons, `path row` and
-  `path badge`.
-  The shared navigation's items pass too: `rail · Inbox`,
-  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
-  `rail · Toolkit` and `rail · More`.
-- Rules: fail. One `hiddenOverflow` finding: the kind chips scroll
-  sideways (`[data-figma="filter · chips"] > div.filter-chips__root`), as
-  in D37. This frame's `exceptions.json` excepts it.
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 32 of 44 layers pass. The 12 that fail: `header`
+  ambiguousLayer; `toolkit row · diagram-reviewer` y +6; `toolkit row ·
+  eval-case-writer` y +5; `how it works` h -30; `trigger` h +7; `steps`
+  h -30; `step 1` h -30; `step 2` h -30; `step 3` h -30; `step 4` h -30;
+  `chat path` y -28; `source` y -31. Each is explained below.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
@@ -77,22 +75,23 @@ are from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   12 px sides and 4 apart, as Figma's, and since library #153 (beta.42)
   each tab is within 1.1 px of Figma's width: the list's 2 px inset puts
   Overview at 526 against 524, and Activity ends at 988.3 against 989.
-- **Row height.** Each list row is 62 px high against Figma's 53 (the
-  open row is 62 against 55), and its counts sit level with the name,
-  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). The first row starts 6 px lower and each row after
-  it 9 px lower again: `toolkit row · diagram-reviewer` y +6 h +9;
-  `toolkit row · eval-case-writer` y +15 h +9;
-  `toolkit row · eval-grader` y +24 h +9;
-  `toolkit row · pr-description-checker` y +33 h +9;
-  `toolkit row · readme-cold-reader` y +42 h +9;
-  `toolkit row · writing-reviewer` y +60 h +7. The rows still fit in the
-  frame, as in D07.
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `toolkit row · diagram-reviewer` y +6; `toolkit row ·
+  eval-case-writer` y +5.
 - **Kind chips.** The chip row runs past the list pane's edge and
-  scrolls sideways (`hiddenOverflow` on
-  `[data-figma="filter · chips"] > div.filter-chips__root`), so the
-  Workflows chip's label and count (`Workflows`, `2`) are cut, as Figma
-  cuts them after the chip's dot (495:738).
+  scrolls sideways (`hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`), so the Workflows chip's label and count
+  (`Workflows`, `2`) are cut, as Figma cuts them after the chip's dot
+  (495:738). `FilterChips fade="none"` (library 1.0.0-beta.65) draws the
+  cut chip at full strength up to the pane's edge, as Figma does.
 - **All chip.** The render draws All as the selected chip, because the
   filter is All; Figma D38 draws no chip selected, as D7 does.
 - **Rail.** The rail's items sit 4 to 5 px higher than Figma's, a known

@@ -14,50 +14,48 @@ checks now pass.
 
 ## Checks
 
-- Text: fail. All Figma strings are in the render, nothing extra shows,
-  and no text is covered by another element. Six strings are not visible,
-  all in the list pane, which D6 shares:
-  - `Workflows` and `2` (440:1006, 440:1007), the Workflows chip, which
-    the chip row cuts at the list pane's edge, as Figma does (see Kind
-    chips).
-  - `agents/eval-case-writer.md` (440:1121), and `eval-grader`,
-    `agents/eval-grader.md` and `→0 ←2` (440:1130, 440:1131, 440:1133):
-    the taller list rows push them past the frame's bottom edge (see Row
-    height).
-- Position: 27 of 51 layers pass, among them every layer of the Files tab:
-  `file browser`, `tree`, `viewer`, `viewer bar`,
-  `toggle · Explain | Code`, `explain` and `used by`; and `toolkit list`,
-  `header`, `read-only`, `filter · chips`, `search`, `group · SKILLS`,
-  `toolkit item`, `meta row`, `kind badge`, `button · Discuss`,
-  `button · Show on map`, `440:1198` (the title writer), `path row` and
-  `path badge`, and the rail's items `rail · Inbox`, `rail · Workspaces`,
-  `rail · Projects`, `rail · Artifacts`, `rail · Toolkit` and
-  `rail · More`. The tree's rows and the parts inside the explanation have
-  no `data-figma`: `FileTree` and `ScriptExplanation` draw them, and they
-  take no attribute for a row, a step or the overview card.
-- Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on
-  its own (`[data-figma="toolkit list"]`), and the kind chips scroll
-  sideways (`[data-figma="filter · chips"] > div.filter-chips__root`), as
-  on D6. On Explain no code shows, so D6's third finding (the code's
-  sideways scroll) is not in this frame.
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 35 of 51 layers pass. The 16 that fail: `group · AGENTS` y
+  -8; `toolkit row · diagram-reviewer` y -5; `toolkit row ·
+  eval-case-writer` y -6; `toolkit row · eval-grader` y -7; `toolkit row
+  · pr-description-checker` y -8; `toolkit row · readme-cold-reader` y
+  -9; `toolkit row · writing-reviewer` y -11; `group · RULES` noLayer;
+  `toolkit row · commits-and-prs` noLayer; `toolkit row · diagrams`
+  noLayer; `toolkit row · linear` noLayer; `toolkit row · readmes`
+  noLayer; `toolkit row · releases` noLayer; `toolkit row · skills`
+  noLayer; `toolkit row · ste100` noLayer; `toolkit row · writing`
+  noLayer. Each is explained below.
+- Rules: pass. 2 findings are excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="toolkit list"]`; `hiddenOverflow` on
+  `[data-figma="filter · chips"] > div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53
-  (`h +9` on every row key), as on D3 and D6: `ListRow` pads 10 inside a
-  1 px border (gap: Toolkit row (pane)). The first row starts within the
-  tolerance and each row after it 9 px lower again:
-  `toolkit row · agents-md` h +9; `toolkit row · ambitious` y +12;
-  `toolkit row · audit-slop` y +21; `toolkit row · eval-cases` y +30;
-  `toolkit row · mermaid-diagrams` y +39;
-  `toolkit row · pr-description` y +48;
-  `toolkit row · project-setup` y +57; `toolkit row · readme` y +66;
-  `group · AGENTS` y +82; `toolkit row · diagram-reviewer` y +85;
-  `toolkit row · eval-case-writer` y +94;
-  `toolkit row · eval-grader` y +103;
-  `toolkit row · pr-description-checker` y +112;
-  `toolkit row · readme-cold-reader` y +121;
-  `toolkit row · writing-reviewer` y +139.
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `group · AGENTS` y -8; `toolkit row · diagram-reviewer` y
+  -5; `toolkit row · eval-case-writer` y -6; `toolkit row · eval-grader`
+  y -7; `toolkit row · pr-description-checker` y -8; `toolkit row ·
+  readme-cold-reader` y -9; `toolkit row · writing-reviewer` y -11. With
+  the shorter rows the last rows' text (`agents/eval-case-writer.md`,
+  `eval-grader`, `agents/eval-grader.md`, `→0 ←2`) lies above the
+  frame's foot and is visible, so its exceptions are gone. The list
+  still runs past the frame's foot, so the pane scrolls on its own
+  (`hiddenOverflow` on `[data-figma="toolkit list"]`, in
+  `exceptions.json`).
 - **Rules group.** The list has T1's data, so the Rules group lies below
   the frame: `group · RULES` and its rows `toolkit row · commits-and-prs`,
   `toolkit row · diagrams`, `toolkit row · linear`,
@@ -66,8 +64,10 @@ checks now pass.
   `toolkit row · writing` have no layer in the frame (`noLayer`), as on
   D6.
 - **Kind chips.** The chip row is wider than the list pane and scrolls
-  sideways; Figma cuts the Workflows chip at the same edge, so `Workflows`
-  and `2` are not visible in either.
+  sideways; Figma cuts the Workflows chip at the same edge, so
+  `Workflows` and `2` are not visible in either. `FilterChips
+  fade="none"` (library 1.0.0-beta.65) draws the cut chip at full
+  strength up to the pane's edge, as Figma does.
 - **Explanation spacing.** The library's `ScriptExplanation` pads 20
   where Figma pads 18, and its overview card pads 16 by 12 where Figma's
   pads 15 by 13, so the overview, the walkthrough label and the steps sit

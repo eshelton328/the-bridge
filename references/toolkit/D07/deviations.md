@@ -14,36 +14,37 @@ tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
-- Text: pass. In `exceptions.json`: the Workflows chip's label and count
-  (433:185, 433:186), which Figma cuts at the list pane's edge too.
-- Position: 27 of 42 layers pass (`toolkit list`, `header`, `read-only`,
-  `filter · chips`, `search`, `group · SKILLS`, `group · AGENTS`,
-  `toolkit item`, `meta row`, `kind badge`, `button · Discuss`,
-  `button · Show on map`, `433:524`, `path row`, `path badge`,
-  `kind section · agent`, `facts`, `fact · Claude`, `fact · Codex`,
-  `fact · Tools`, `fact · Context`). The agent writer's row has no
-  `data-figma`: the skill writer (in the closed Skills group) shares the
-  layer name `toolkit row · writer`, as in D03.
-  The shared navigation's items pass too: `rail · Inbox`,
-  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
-  `rail · Toolkit` and `rail · More`.
-- Rules: pass. One `hiddenOverflow` finding is in `exceptions.json`, as
-  in D03 and D04: the kind chips scroll sideways, cut at the pane's edge
-  (`[data-figma="filter · chips"] > div.filter-chips__root`).
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 31 of 42 layers pass. The 11 that fail: `toolkit row ·
+  diagram-reviewer` y +6; `toolkit row · eval-case-writer` y +5;
+  `433:525` w +8; `columns` y -6, h +17; `file preview` y -6, w -5.6, h
+  +17; `preview bar` y -6, w -5.6; `rendered markdown` y -6, w -5.6, h
+  +17; `side` x -5.6, y -6, w +5.6; `used in workflows` x -5.6, y -6, w
+  +5.6; `files` x -5.6, y -5; `file · writing-reviewer.md` x -5.6. Each
+  is explained below.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (the
-  open row is 62 against 55), and its counts sit level with the name,
-  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). The first row starts 6 px lower and each row
-  after it 9 px lower again: `toolkit row · diagram-reviewer` y +6 h +9;
-  `toolkit row · eval-case-writer` y +15 h +9;
-  `toolkit row · eval-grader` y +24 h +9;
-  `toolkit row · pr-description-checker` y +33 h +9;
-  `toolkit row · readme-cold-reader` y +42 h +9;
-  `toolkit row · writing-reviewer` y +60 h +7. The list ends at 722
-  against Figma's 655; nothing lies below it, so no text is lost.
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `toolkit row · diagram-reviewer` y +6; `toolkit row ·
+  eval-case-writer` y +5.
 - **Fact cards.** The four How it runs cards are drawn with `Panel` in a
   four-column `Grid`, 10 apart (gap: Agent fact card). `Panel` is as
   tall as its content, so the Claude, Codex and Tools cards are about

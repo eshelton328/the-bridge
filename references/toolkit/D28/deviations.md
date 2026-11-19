@@ -15,49 +15,47 @@ checks now pass.
 
 ## Checks
 
-- Text: fail. 1 string is missing: `A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.`
-  (492:2185): the render draws its ✗ and ✓ as the library's cross and
-  check icons, so its text has no glyphs (see Cross mark). Every other
-  Figma string is in the render and nothing extra shows. 5 strings are
-  not visible: `Workflows` (492:1871), `2`
-  (492:1872), `hooks/commit-msg` (492:2002), `→1 ←1` (492:2004),
-  `commit-msg` (492:2024); see List pane.
-- Position: 31 of 44 layers pass. The 13 that fail:
-  `toolkit row · commits-and-prs` y +3 h +9; `toolkit row · diagrams` y
-  +12 h +9; `toolkit row · linear` y +21 h +9; `toolkit row · readmes` y
-  +30 h +9; `toolkit row · releases` y +39 h +9; `toolkit row · skills`
-  y +48 h +9; `toolkit row · ste100` y +57 h +9; `toolkit row · writing`
-  y +66 h +9; `group · WORKFLOWS` y +75 w -0.6 h +3;
-  `toolkit row · skill-eval-cases` y +78 h +9;
-  `toolkit row · skill-eval-round` y +87 h +9; `group · HOOKS` y +96 w
-  +0.3 h +3; `toolkit row · commit-msg` y +99 h +7. Each is explained
-  below.
-- Rules: fail. 2 `hiddenOverflow` findings:
-  `[data-figma="toolkit list"]`;
-  `[data-figma="filter · chips"] > div.filter-chips__root`. Each is
-  explained below; the frame's `exceptions.json` excepts them.
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 3 Figma strings (`A hook has no
+  eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓
+  examples through the hook, so the rule and the hook cannot drift
+  apart.`, `Workflows`, `2`); each is explained below.
+- Position: 43 of 44 layers pass. The 1 that fail: `group · WORKFLOWS` y
+  -5. Each is explained below.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (h +9),
-  as on D3 and D4: `ListRow` pads 10 inside a 1 px border (gap: Toolkit
-  row (pane)). Each row after the first starts 9 px lower again, and the
-  group headers 3 px taller: `toolkit row · commits-and-prs` y +3 h +9;
-  `toolkit row · diagrams` y +12 h +9; `toolkit row · linear` y +21 h
-  +9; `toolkit row · readmes` y +30 h +9; `toolkit row · releases` y +39
-  h +9; `toolkit row · skills` y +48 h +9; `toolkit row · ste100` y +57
-  h +9; `toolkit row · writing` y +66 h +9; `group · WORKFLOWS` y +75 w
-  -0.6 h +3; `toolkit row · skill-eval-cases` y +78 h +9;
-  `toolkit row · skill-eval-round` y +87 h +9; `group · HOOKS` y +96 w
-  +0.3 h +3; `toolkit row · commit-msg` y +99 h +7. The last rows lie
-  past the frame's foot, so their text is not visible (the List pane
-  strings above).
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `group · WORKFLOWS` y -5. With the shorter rows the last
+  rows' text (`hooks/commit-msg`, `→1 ←1`, `commit-msg`) lies above the
+  frame's foot and is visible, so its exceptions are gone. The list no
+  longer runs past the frame's foot, so the pane does not scroll on its
+  own and its `hiddenOverflow` exception on `[data-figma="toolkit
+  list"]` is gone.
 - **List pane.** The kind chips are wider than the list pane and scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`);
   Figma cuts the Workflows chip at the same edge, so `Workflows` and `2`
-  are not visible in either. The list pane scrolls on its own
-  (`[data-figma="toolkit list"]`) because its rows are taller (Row
-  height). D3, D4 and D19 have the same findings.
+  are not visible in either. `FilterChips fade="none"` (library
+  1.0.0-beta.65) draws the cut chip at full strength up to the pane's
+  edge, as Figma does; before, it faded out over 24 px. Not visible past
+  the frame's foot: `A hook has no eval cases. Its test script runs
+  fixed messages and the rule’s ✗ and ✓ examples through the hook, so
+  the rule and the hook cannot drift apart.`.
 - **Test badge.** The badge 43 of 43 pass is the library's
   `Badge size="sm" tone="done"` with `CheckIcon` at 12 px, against
   Figma's 11 px icon. Its stroke is 1 px, where Figma's check is about
