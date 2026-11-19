@@ -61,15 +61,17 @@ jobs:
       - run: pnpm test:scripts
 
   # The 2-vCPU runner gives Vitest one worker, so test:unit runs one file
-  # at a time (328 s in main run 44421912057). It runs in two shards here;
-  # VITEST_SHARD adds --shard to the script. Two shards bring it under
-  # test-stories, so a third would cost a setup and save no wall time.
+  # at a time (328 s in main run 44421912057). It runs in three shards
+  # here; VITEST_SHARD adds --shard to the script, and the sequencer in
+  # scripts/testSequencer.ts splits the files by their CI times. With two
+  # shards the slower one took 252 s and its job 317 s, longer than
+  # test-stories; each shard's setup is about 65 s.
   test-unit-shard:
-    name: test-unit (${{ matrix.shard }}/2)
+    name: test-unit (${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2]
+        shard: [1, 2, 3]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -80,7 +82,7 @@ jobs:
       - run: pnpm codegen
       - run: pnpm test:unit
         env:
-          VITEST_SHARD: ${{ matrix.shard }}/2
+          VITEST_SHARD: ${{ matrix.shard }}/3
 
   # The required check: it passes only when every test:unit shard passed.
   test-unit:
