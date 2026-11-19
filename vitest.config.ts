@@ -1,6 +1,7 @@
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
+import { TimedSequencer } from './scripts/testSequencer.ts'
 
 // Each project names its Chromium instance, so the names stay unique.
 const browser = (name: string) => ({
@@ -15,6 +16,8 @@ const browser = (name: string) => ({
 // Chromium. Run one with `pnpm test --project=web`.
 export default defineConfig({
   test: {
+    // With --shard (CI's test-unit shards), files split by measured time.
+    sequence: { sequencer: TimedSequencer },
     projects: [
       {
         test: { name: 'shared', root: './shared', include: ['src/**/*.test.ts'], environment: 'node' },
