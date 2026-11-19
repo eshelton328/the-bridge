@@ -6,6 +6,7 @@
 // (the library's CodeLines; a Markdown file's source is written back from its
 // blocks). A step's line link shows the source (Code). Props only.
 import { CodeLines, ScriptExplanation, ScrollFrame, ViewSwitch } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitFileView } from '../types.ts'
 import { type FileMode, fileModes, markdownSource, sourceAt } from './filesView.ts'
@@ -102,7 +103,9 @@ export function ToolkitFileBody({
       <div data-figma="code">
         <ScrollFrame>
           <div className={codeWidth} ref={lineRef}>
-            <CodeLines lines={lines} segments={at === undefined ? code : at.segments} start={at?.start} />
+            <BlockBoundary contentKey={`${view.path}:${String(at?.start ?? 1)}`}>
+              <CodeLines lines={lines} segments={at === undefined ? code : at.segments} start={at?.start} />
+            </BlockBoundary>
           </div>
         </ScrollFrame>
       </div>

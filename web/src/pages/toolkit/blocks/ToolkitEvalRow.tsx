@@ -12,6 +12,7 @@
 // skill (T12 `eval · readme-reads folder` 477:1936) has its name as text and
 // no tap. Props only.
 import { ChevronRightIcon, HorizontalBarChart, MapNode, focusRing } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvalGroup } from '../types.ts'
 import { evalLayer, evalShare, linkLayer } from './activitySources.ts'
@@ -30,7 +31,15 @@ const button = css({
   [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 // D16 477:1123 to 477:1135: the top row (29 high), the bar 6 under it and the line 6 under the bar.
-const content = css({ position: 'relative', display: 'flex', flexDirection: 'column', gap: '6', pointerEvents: 'none' })
+// A BlockBoundary alert takes the pointer back, so its Retry does not open the row under it.
+const content = css({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6',
+  pointerEvents: 'none',
+  '& [role=alert]': { pointerEvents: 'auto' },
+})
 const top = css({ display: 'flex', alignItems: 'center', gap: '8', minH: 'control.sm', color: 'fg.muted' })
 const node = css({ display: 'inline-grid', h: 'control.sm', pointerEvents: 'auto' })
 const name = css({ textStyle: 'label', color: 'fg.default' })
@@ -79,12 +88,14 @@ export function ToolkitEvalRow({ group, onOpen, onOpenItem }: ToolkitEvalRowProp
           <span className={calls}>{group.calls}</span>
           {skill === undefined ? null : <ChevronRightIcon size="16" />}
         </div>
-        <HorizontalBarChart
-          label={`${group.name}: the share of sessions that loaded an item`}
-          rows={[{ label: '', value: evalShare(group) }]}
-          max={100}
-          formatValue={() => ''}
-        />
+        <BlockBoundary contentKey={group.name}>
+          <HorizontalBarChart
+            label={`${group.name}: the share of sessions that loaded an item`}
+            rows={[{ label: '', value: evalShare(group) }]}
+            max={100}
+            formatValue={() => ''}
+          />
+        </BlockBoundary>
         <span className={meta}>{group.meta}</span>
       </div>
     </li>

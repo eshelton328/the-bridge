@@ -7,6 +7,7 @@
 // where the tablet's is 56 and the phone's 44 (LIBRARY_GAPS.md, Activity
 // daily chart). Props only.
 import { DailyBarChart, Panel } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitActivityCounts } from '../types.ts'
@@ -38,14 +39,16 @@ export function ToolkitCallsPerDay({ perDay, layout }: ToolkitCallsPerDayProps) 
           <ToolkitEvalsHeader level={2} label={perDay.label} end={{ type: 'note', label: perDay.meta }} />
           {perDay.series.map((s, i) => (
             <div key={s.source} data-figma={layout === 'desktop' ? `chart · ${s.name}` : undefined}>
-              <DailyBarChart
-                label={`${s.name} per day`}
-                legend={s.name}
-                valueLabel="calls"
-                tone={seriesTone(s.source)}
-                data={dailyBars(perDay, i)}
-                axisLabels={axisLabels(layout, i === last)}
-              />
+              <BlockBoundary contentKey={`${perDay.label}:${s.source}`}>
+                <DailyBarChart
+                  label={`${s.name} per day`}
+                  legend={s.name}
+                  valueLabel="calls"
+                  tone={seriesTone(s.source)}
+                  data={dailyBars(perDay, i)}
+                  axisLabels={axisLabels(layout, i === last)}
+                />
+              </BlockBoundary>
             </div>
           ))}
         </div>

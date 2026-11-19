@@ -5,6 +5,7 @@
 // and the Files tab's viewer (`ToolkitFileViewer`) use it. Props only.
 import { MarkdownView } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitMarkdownBlock } from '../types.ts'
 import { ToolkitGlyphText } from './ToolkitGlyphText.tsx'
@@ -86,11 +87,14 @@ export type ToolkitMarkdownBlocksProps = {
 }
 
 export function ToolkitMarkdownBlocks({ blocks, wrapRefs = false, padding }: ToolkitMarkdownBlocksProps) {
+  // Rendered file text: a block that fails shows an inline alert, not a failed page (d-084 level 4).
   return (
-    <MarkdownView padding={padding}>
-      {blocks.map((block) => (
-        <Block key={blockKey(block)} block={block} wrapRefs={wrapRefs} />
-      ))}
-    </MarkdownView>
+    <BlockBoundary contentKey={blocks.map(blockKey).join('\n')}>
+      <MarkdownView padding={padding}>
+        {blocks.map((block) => (
+          <Block key={blockKey(block)} block={block} wrapRefs={wrapRefs} />
+        ))}
+      </MarkdownView>
+    </BlockBoundary>
   )
 }

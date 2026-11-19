@@ -9,6 +9,7 @@
 // Read-only, the source in a box with its long lines wrapped, and the line
 // under it. Props only.
 import { CodeLines, LockIcon, ViewSwitch } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileView } from '../types.ts'
@@ -80,7 +81,9 @@ export function ToolkitFilePage({ view, mode, onModeChange, layout = 'tablet', l
           </p>
         )}
         <div className={box} data-figma="code" ref={lineRef}>
-          <CodeLines lines={source.lines} segments={source.segments} start={source.start} wrap />
+          <BlockBoundary contentKey={`${view.path}:${String(source.start)}`}>
+            <CodeLines lines={source.lines} segments={source.segments} start={source.start} wrap />
+          </BlockBoundary>
         </div>
         {view.footnote === undefined ? null : <p className={footnote}>{view.footnote}</p>}
       </>

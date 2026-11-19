@@ -8,6 +8,7 @@
 // draws 12 px bars, a group every 44 (`size="sm"`), 308 wide in the 332 px
 // panel (LIBRARY_GAPS.md, Evals bar chart). Props only.
 import { GroupedBarChart, Panel } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitEvals } from '../types.ts'
@@ -32,14 +33,16 @@ export function ToolkitEvalsChart({ chart, layout = 'desktop' }: ToolkitEvalsCha
       <Panel>
         <ToolkitEvalsHeader label={chart.label} end={{ type: 'note', label: chart.meta }} />
         <div className={layout === 'tablet' ? chartBoxFill : chartBox} data-figma="chart">
-          <GroupedBarChart
-            label={chart.label}
-            series={chartSeries(chart)}
-            groups={chart.groups}
-            max={chart.max}
-            size={layout === 'phone' ? 'sm' : 'md'}
-            width={layout === 'tablet' ? 'fill' : 'content'}
-          />
+          <BlockBoundary contentKey={chart.label}>
+            <GroupedBarChart
+              label={chart.label}
+              series={chartSeries(chart)}
+              groups={chart.groups}
+              max={chart.max}
+              size={layout === 'phone' ? 'sm' : 'md'}
+              width={layout === 'tablet' ? 'fill' : 'content'}
+            />
+          </BlockBoundary>
         </div>
         <p className={note}>{chart.note}</p>
       </Panel>

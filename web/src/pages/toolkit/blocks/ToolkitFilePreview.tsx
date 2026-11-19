@@ -5,6 +5,7 @@
 // CodeLines; on the phone (M22 487:2231) a long line wraps under itself.
 // Props only.
 import { CodeIcon, CodeLines, FileIcon, LockIcon, ScrollFrame } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView, ToolkitMarkdownBlock } from '../types.ts'
 import { ToolkitMarkdownBlocks } from './ToolkitMarkdownBlocks.tsx'
@@ -101,11 +102,15 @@ export function ToolkitFilePreview({
             // M22 487:2231: on the phone lines 3, 4, 5 and 8 wrap in the text column, their number on the first line,
             // and nothing scrolls sideways. A wrapped line is 32 high (two lines of the 12/16 mono style, d-090), where
             // Figma draws 34; no line-height token has 17 (d-050).
-            <CodeLines lines={lines} segments={code} wrap />
+            <BlockBoundary contentKey={file}>
+              <CodeLines lines={lines} segments={code} wrap />
+            </BlockBoundary>
           ) : (
             <ScrollFrame>
               <div className={codeWidth}>
-                <CodeLines lines={lines} segments={code} />
+                <BlockBoundary contentKey={file}>
+                  <CodeLines lines={lines} segments={code} />
+                </BlockBoundary>
               </div>
             </ScrollFrame>
           )}

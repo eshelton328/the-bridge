@@ -18,6 +18,7 @@
 // the pointer, the focus and the wider open item are the block's own state.
 import { MapGraph } from '@eshelton328/component-library-1701'
 import { type SyntheticEvent, useRef, useState } from 'react'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitKind, ToolkitLinks } from '../types.ts'
@@ -101,33 +102,35 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
         setFocus(null)
       }}
     >
-      <MapGraph
-        label={`${item.name} links`}
-        width={graph.width}
-        height={graph.height}
-        nodeSize={graph.nodeSize}
-        nodeTone={graph.nodeTone}
-        edgeEnd={graph.edgeEnd}
-        orientation={graph.orientation}
-        nodes={graph.nodes.map((n) => ({
-          id: n.id,
-          label: n.label,
-          kind: n.kind,
-          x: n.x,
-          y: n.y,
-          size: n.size,
-          labelStyle: n.labelStyle,
-        }))}
-        edges={graph.edges}
-        columns={graph.columns}
-        selectedId={selected}
-        onSelect={(id) => {
-          const open = tapNode(graph, id)
-          if (open !== null) onOpenItem?.(open)
-          // Escape puts the selection back on the open item.
-          else if (id === null) setFocus(null)
-        }}
-      />
+      <BlockBoundary contentKey={`${item.path}:links`}>
+        <MapGraph
+          label={`${item.name} links`}
+          width={graph.width}
+          height={graph.height}
+          nodeSize={graph.nodeSize}
+          nodeTone={graph.nodeTone}
+          edgeEnd={graph.edgeEnd}
+          orientation={graph.orientation}
+          nodes={graph.nodes.map((n) => ({
+            id: n.id,
+            label: n.label,
+            kind: n.kind,
+            x: n.x,
+            y: n.y,
+            size: n.size,
+            labelStyle: n.labelStyle,
+          }))}
+          edges={graph.edges}
+          columns={graph.columns}
+          selectedId={selected}
+          onSelect={(id) => {
+            const open = tapNode(graph, id)
+            if (open !== null) onOpenItem?.(open)
+            // Escape puts the selection back on the open item.
+            else if (id === null) setFocus(null)
+          }}
+        />
+      </BlockBoundary>
       {empty === undefined ? null : (
         <div className={layout === 'phone' ? emptyBoxPhone : emptyBox}>
           <p className={emptyText}>{empty}</p>

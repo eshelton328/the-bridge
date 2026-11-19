@@ -4,6 +4,7 @@
 // `HorizontalBarChart` (each row a label, a bar and its count) and the line
 // under the rows. Props only.
 import { HorizontalBarChart, Panel } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitActivity } from '../types.ts'
 
@@ -21,7 +22,9 @@ export function ToolkitActivityBars({ bars, layer }: ToolkitActivityBarsProps) {
   return (
     <div data-figma={layer}>
       <Panel title={bars.label} actions={<span className={end}>{bars.meta}</span>}>
-        <HorizontalBarChart label={bars.label} rows={bars.rows} />
+        <BlockBoundary contentKey={bars.label}>
+          <HorizontalBarChart label={bars.label} rows={bars.rows} />
+        </BlockBoundary>
         {bars.note === undefined ? null : <p className={note}>{bars.note}</p>}
       </Panel>
     </div>
