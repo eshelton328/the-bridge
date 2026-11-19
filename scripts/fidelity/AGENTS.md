@@ -41,8 +41,10 @@ The Figma references the checks read are in
    those checks decide the exit code (the report's `gate`); the report
    still holds all three, and its `ok` stays the result of all three.
    `fidelity:check-build` rejects a report made with `--checks` that
-   left out a check. CI's `fidelity` job runs every frame of each page
-   with `--checks text,rules`.
+   left out a check. `--checks` also takes `icons`: no `iconSize` diff
+   (below), whatever the other position diffs. CI's `fidelity` job runs
+   every frame of each page with `--checks text,rules`, and adds `icons`
+   for each page in the job's `ICON_GATED_PAGES`.
 4. **Read the report** in `reports/fidelity/<page>/` (gitignored):
    `<frameId>.json` has the result of each check, and
    `<frameId>.sideBySide.png` shows Figma left and the render right.

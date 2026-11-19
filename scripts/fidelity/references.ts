@@ -88,17 +88,37 @@ export function parseTolerance(value: string, source: string): number {
 
 /** The three checks of a frame; `--checks` picks which of them decide its result. */
 export const fidelityChecks = ['text', 'position', 'rules'] as const
-export type FidelityCheck = (typeof fidelityChecks)[number]
+/**
+ * The names --checks takes: the three checks, and `icons`, the iconSize
+ * part of the position check alone, so CI can gate a page's icon sizes
+ * before its other position diffs are gone.
+ */
+export const gateChecks = [...fidelityChecks, 'icons'] as const
+export type GateCheck = (typeof gateChecks)[number]
+
+/** Each gate name's result from a frame's three check results. */
+export function gateResults(r: {
+  text: { ok: boolean }
+  position: { ok: boolean; diffs: readonly { problem: string }[] }
+  rules: { ok: boolean }
+}): Record<GateCheck, boolean> {
+  return {
+    text: r.text.ok,
+    position: r.position.ok,
+    rules: r.rules.ok,
+    icons: !r.position.diffs.some((d) => d.problem === 'iconSize'),
+  }
+}
 
 /** Parses `--checks text,rules`: one or more check names, comma-separated, each once. */
-export function parseChecks(value: string, source: string): FidelityCheck[] {
+export function parseChecks(value: string, source: string): GateCheck[] {
   const names = value.split(',').map((s) => s.trim())
-  const picked: FidelityCheck[] = []
+  const picked: GateCheck[] = []
   for (const name of names) {
-    const check = fidelityChecks.find((c) => c === name)
+    const check = gateChecks.find((c) => c === name)
     if (check === undefined || picked.includes(check))
       throw new Error(
-        `${source}: name each check once, from ${fidelityChecks.join(', ')}, such as text,rules; got "${value}"`,
+        `${source}: name each check once, from ${gateChecks.join(', ')}, such as text,rules; got "${value}"`,
       )
     picked.push(check)
   }

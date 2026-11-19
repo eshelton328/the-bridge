@@ -1,11 +1,12 @@
 // Tests for references.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseChecks, parseExceptions, parseFrameRef, parseTolerance } from './references.ts'
+import { gateResults, parseChecks, parseExceptions, parseFrameRef, parseTolerance } from './references.ts'
 
 void test('parseChecks takes one or more check names, comma-separated', () => {
   assert.deepEqual(parseChecks('text,rules', '--checks'), ['text', 'rules'])
   assert.deepEqual(parseChecks('position', '--checks'), ['position'])
+  assert.deepEqual(parseChecks('text,rules,icons', '--checks'), ['text', 'rules', 'icons'])
   assert.deepEqual(parseChecks('text, position ,rules', '--checks'), ['text', 'position', 'rules'])
 })
 
@@ -57,4 +58,15 @@ void test('a missing exception names the Figma text layers it covers (d-101)', (
       () => parseExceptions({ missing: [{ text: 'Inbox', layers, reason: 'under the task pane' }] }, 'e.json'),
       /e\.json: .*layers/s,
     )
+})
+
+void test('the icons gate fails on an iconSize diff alone, whatever the other position diffs', () => {
+  const ok = { ok: true }
+  const offBy = { problem: 'offBy' }
+  const iconSize = { problem: 'iconSize' }
+  const at = (...diffs: { problem: string }[]) =>
+    gateResults({ text: ok, position: { ok: diffs.length === 0, diffs }, rules: ok })
+  assert.deepEqual(at(), { text: true, position: true, rules: true, icons: true })
+  assert.deepEqual(at(offBy), { text: true, position: false, rules: true, icons: true })
+  assert.deepEqual(at(offBy, iconSize), { text: true, position: false, rules: true, icons: false })
 })
