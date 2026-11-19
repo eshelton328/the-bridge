@@ -1,8 +1,10 @@
 // API integration tests (d-113): the app in process, with the fake adapter.
-import { MachineId, WorkspacesResponse } from '@bridge/contract'
-import { describe, expect, it } from 'vitest'
+import { ErrorBody, MachineId, WorkspacesResponse } from '@bridge/contract'
+import type { InferResponseType } from 'hono/client'
+import { describe, expect, expectTypeOf, it } from 'vitest'
 import { createFakeAgents, fakeWorkspaces } from './adapters/fakeAgents.ts'
 import { createApp } from './app.ts'
+import type { Client } from './client.ts'
 import { memoryLogger } from './logger.ts'
 
 const machine = MachineId.parse('test-mac')
@@ -41,16 +43,53 @@ describe('GET /api/workspaces', () => {
     for (const headers of refused) {
       const res = await app.request('/api/workspaces', { headers })
       expect(res.status).toBe(403)
-      expect(await res.json()).toHaveProperty('error')
+      const body = ErrorBody.parse(await res.json())
+      expect(body.error.kind).toBe('forbidden')
+      expect(body.error.requestId).toBe(res.headers.get('X-Request-Id'))
+      expect(JSON.stringify(body)).not.toContain('someone@example.com')
     }
     expect(agents.reads()).toBe(0)
   })
 
-  it('answers 502 with the reason when the agents do not answer', async () => {
-    const agents = createFakeAgents(machine, { error: { reason: 'unreachable', message: 'herdr socket: ENOENT' } })
-    const res = await createApp({ agents, owner, log }).request('/api/workspaces', { headers: local })
+  it('answers 503 herdr-unavailable when herdr does not answer, with no socket path in the body', async () => {
+    const logger = memoryLogger()
+    const error = { reason: 'unreachable', message: 'herdr socket /home/dev/.config/herdr/herdr.sock: ENOENT' } as const
+    const res = await createApp({ agents: createFakeAgents(machine, { error }), owner, log: logger.log }).request(
+      '/api/workspaces',
+      { headers: local },
+    )
+    expect(res.status).toBe(503)
+    const requestId = res.headers.get('X-Request-Id')
+    expect(await res.json()).toEqual({
+      error: { kind: 'herdr-unavailable', message: 'herdr does not answer', requestId },
+    })
+    // The path stays in the server's log.
+    expect(logger.lines()).toContainEqual(expect.objectContaining({ msg: 'herdr call failed', detail: error.message }))
+  })
+
+  it('answers 502 herdr-bad-reply when herdr answers with something the server does not read', async () => {
+    const error = { reason: 'badReply', message: 'herdr agent.list: unknown shape' } as const
+    const res = await createApp({ agents: createFakeAgents(machine, { error }), owner, log }).request(
+      '/api/workspaces',
+      { headers: local },
+    )
     expect(res.status).toBe(502)
-    expect(await res.json()).toEqual({ error: 'herdr socket: ENOENT', reason: 'unreachable' })
+    expect(ErrorBody.parse(await res.json()).error.kind).toBe('herdr-bad-reply')
+  })
+
+  it('answers 500 internal with the request ID and logs the thrown error once, with its message only there', async () => {
+    const logger = memoryLogger()
+    const agents = { ...createFakeAgents(machine), listWorkspaces: () => Promise.reject(new Error('lost /home/dev/x')) }
+    const res = await createApp({ agents, owner, log: logger.log }).request('/api/workspaces', { headers: local })
+    expect(res.status).toBe(500)
+    const requestId = res.headers.get('X-Request-Id')
+    const body = ErrorBody.parse(await res.json())
+    expect(body.error).toMatchObject({ kind: 'internal', requestId })
+    expect(JSON.stringify(body)).not.toContain('/home/dev/x')
+    const errors = logger.lines().filter((e) => e.msg === 'route error')
+    expect(errors).toHaveLength(1)
+    expect(errors[0]?.requestId).toBe(requestId)
+    expect(JSON.stringify(errors[0]?.err)).toContain('lost /home/dev/x')
   })
 
   it('reads nothing from the agents until a client asks', async () => {
@@ -66,6 +105,7 @@ describe('GET /api/workspaces', () => {
       headers: local,
     })
     expect(res.status).toBe(404)
+    expect(ErrorBody.parse(await res.json()).error).toMatchObject({ kind: 'not-found', path: '/api/nothing' })
   })
 })
 
@@ -99,7 +139,26 @@ describe('request IDs and the request log', () => {
     })
     expect(res.status).toBe(403)
     expect(res.headers.get('X-Request-Id')).not.toBeNull()
-    expect(logger.lines().map((e) => e.status)).toEqual([403])
+    expect(
+      logger
+        .lines()
+        .filter((e) => e.msg === 'request')
+        .map((e) => e.status),
+    ).toEqual([403])
+    expect(
+      logger
+        .lines()
+        .filter((e) => e.msg === 'request refused')
+        .map((e) => e.reason),
+    ).toEqual(['notOwner'])
     expect(JSON.stringify(logger.lines())).not.toContain('someone@example.com')
+  })
+})
+
+describe('the typed error responses', () => {
+  it('gives the RPC client the ErrorBody of each error status of GET /api/workspaces', () => {
+    type Get = Client['api']['workspaces']['$get']
+    expectTypeOf<InferResponseType<Get, 503>>().toEqualTypeOf<ErrorBody>()
+    expectTypeOf<InferResponseType<Get, 502>>().toEqualTypeOf<ErrorBody>()
   })
 })

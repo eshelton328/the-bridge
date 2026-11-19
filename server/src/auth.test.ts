@@ -17,8 +17,11 @@ describe('access', () => {
     })
   })
 
-  it('refuses another login', () => {
-    expect(access(from({ 'Tailscale-User-Login': 'other@example.com' }), 'owner@example.com').ok).toBe(false)
+  it('refuses another login with a reason that does not hold the login', () => {
+    expect(access(from({ 'Tailscale-User-Login': 'other@example.com' }), 'owner@example.com')).toEqual({
+      ok: false,
+      reason: 'notOwner',
+    })
   })
 
   it('lets in localhost with no identity, but not through a proxy', () => {

@@ -7,9 +7,16 @@
 // Slice 2: while the page shows, watchLiveWorkspaces keeps the query cache
 // current from the server's events (`GET /api/events`, SSE) and tells the
 // page to load again, at most once each `settleMs`.
-import { type ChatSummary, LiveEvent, splitId, type WorkspaceSummary, WorkspacesResponse } from '@bridge/contract'
+import {
+  type ChatSummary,
+  ErrorBody,
+  type ErrorKind,
+  LiveEvent,
+  splitId,
+  type WorkspaceSummary,
+  WorkspacesResponse,
+} from '@bridge/contract'
 import type { QueryClient } from '@tanstack/react-query'
-import { z } from 'zod'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
@@ -93,27 +100,6 @@ function workspaceOf(summary: WorkspaceSummary): Workspace {
 export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
-
-const errorBase = { message: z.string(), requestId: z.string() }
-
-/**
- * The kinds of error the server answers with (d-115), each with a message and a request ID: forbidden (403),
- * not-found (404), invalid-input (400), herdr-bad-reply (502), herdr-unavailable (503) and internal (500). A local
- * copy of backend-coord's contract shape (S-4) until `@bridge/contract` exports it; keys it does not name, such as
- * `reason`, are dropped, so a socket path never reaches the page.
- */
-const ErrorKind = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('forbidden'), ...errorBase }),
-  z.object({ kind: z.literal('not-found'), path: z.string(), ...errorBase }),
-  z.object({ kind: z.literal('invalid-input'), issues: z.array(z.string()), ...errorBase }),
-  z.object({ kind: z.literal('herdr-bad-reply'), ...errorBase }),
-  z.object({ kind: z.literal('herdr-unavailable'), ...errorBase }),
-  z.object({ kind: z.literal('internal'), ...errorBase }),
-])
-type ErrorKind = z.infer<typeof ErrorKind>
-
-/** The body of an error answer from the server. */
-const ErrorBody = z.object({ error: ErrorKind })
 
 /**
  * A read the server answered with a status that is not 2xx. `kind` comes from an error body; a body that is not

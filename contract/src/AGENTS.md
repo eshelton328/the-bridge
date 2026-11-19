@@ -13,3 +13,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A live event says what changed, not the new list: a client reads the
   workspaces again on `workspaces.changed` and each time the stream
   opens.
+- Every error response and SSE `error` event is an `ErrorBody`: a `kind`
+  from the `ErrorKind` union, a client message with no path or login,
+  and the request ID (d-115, `errors.test.ts`). A new kind gets a status
+  in `errorStatus`.

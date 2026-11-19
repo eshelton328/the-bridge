@@ -1,6 +1,6 @@
 // API tests of GET /api/events (d-113): the app in process with the fake
 // adapter, the SSE body read as it streams.
-import { ChatId, LiveEvent, MachineId } from '@bridge/contract'
+import { ChatId, ErrorBody, LiveEvent, MachineId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
@@ -90,17 +90,42 @@ describe('GET /api/events', () => {
     expect(agents.subscriptions()).toBe(0)
   })
 
-  it('ends the stream when the agents stop answering', async () => {
+  it('sends one error event with herdr-unavailable and ends the stream when the agents stop answering', async () => {
     const agents = createFakeAgents(machine)
     const res = await createApp({ agents, owner, log }).request('/api/events', { headers: local })
     if (!res.body) throw new Error('no body')
     await frames(res.body, 1)
     await tick()
-    agents.endAll({ reason: 'unreachable', message: 'gone' })
+    agents.endAll({ reason: 'unreachable', message: 'herdr socket /home/dev/herdr.sock: ENOENT' })
+    const [last] = await frames(res.body, 1)
+    expect(last?.event).toBe('error')
+    expect(ErrorBody.parse(JSON.parse(last?.data ?? '')).error).toEqual({
+      kind: 'herdr-unavailable',
+      message: 'herdr does not answer',
+      requestId: res.headers.get('X-Request-Id'),
+    })
     const reader = res.body.getReader()
     let done = false
     while (!done) done = (await reader.read()).done
     expect(done).toBe(true)
+  })
+
+  it('sends an internal error event and no raw message when the stream throws', async () => {
+    const logger = memoryLogger()
+    const agents = {
+      ...createFakeAgents(machine),
+      subscribe: () => {
+        throw new Error('lost /home/dev/secret')
+      },
+    }
+    const res = await createApp({ agents, owner, log: logger.log }).request('/api/events', { headers: local })
+    if (!res.body) throw new Error('no body')
+    const read = await frames(res.body, 2)
+    const text = JSON.stringify(read)
+    expect(text).not.toContain('/home/dev/secret')
+    expect(read[1]?.event).toBe('error')
+    expect(ErrorBody.parse(JSON.parse(read[1]?.data ?? '')).error.kind).toBe('internal')
+    expect(logger.lines().filter((e) => e.msg === 'event stream error')).toHaveLength(1)
   })
 
   it('refuses a proxied request with no login and another login before it subscribes', async () => {

@@ -17,6 +17,11 @@ const logMessages = [
   'uncaught exception',
   'unhandled rejection',
   'log message not listed',
+  'request refused',
+  'herdr call failed',
+  'route error',
+  'event stream error',
+  'event stream ended',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

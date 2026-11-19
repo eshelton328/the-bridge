@@ -5,7 +5,7 @@
 // Tailscale-User-Login gets 403 from the server; with the owner's login it
 // gets 200, and the event stream flows through the proxy.
 import { request } from 'node:http'
-import { WorkspacesResponse } from '@bridge/contract'
+import { ErrorBody, WorkspacesResponse } from '@bridge/contract'
 import { afterAll, beforeAll, describe, expect, inject, it } from 'vitest'
 import { reportAgent } from './reportAgent.ts'
 import { owner, startStack, stopStack } from './stack.ts'
@@ -57,13 +57,17 @@ describe('the Vite proxy with Tailscale headers', () => {
     const res = await get('/api/workspaces', tailscale)
     expect(res.status).toBe(403)
     // The server's refusal, not Vite's host check.
-    expect(JSON.parse(res.body)).toEqual({ error: 'requests must come through Tailscale, signed in' })
+    expect(ErrorBody.parse(JSON.parse(res.body)).error).toMatchObject({
+      kind: 'forbidden',
+      message: 'requests must come through Tailscale, signed in',
+    })
   })
 
   it('gives 403 to another tailnet login', async () => {
     const res = await get('/api/workspaces', { ...tailscale, 'Tailscale-User-Login': 'someone@example.com' })
     expect(res.status).toBe(403)
-    expect(JSON.parse(res.body)).toEqual({ error: 'someone@example.com is not the owner' })
+    expect(ErrorBody.parse(JSON.parse(res.body)).error.kind).toBe('forbidden')
+    expect(res.body).not.toContain('someone@example.com')
   })
 
   it("gives 200 and the herdr session's workspaces to the owner's login", async () => {

@@ -12,6 +12,10 @@ The server's source in three layers: `routes/` call `services/`, and
 - `logger.ts`: the one logger (d-115). A message is a constant
   `LogMessage` and the data goes in fields; redaction reads only fields
   (`logger.test.ts`). No `console` in the server.
+- `errors.ts`: every non-2xx response comes from `errorJson()`, an
+  `ErrorBody` with the request ID; a port error maps to 503 or 502 in a
+  checked switch, and the detail goes to the log only
+  (`app.test.ts`, d-115).
 - `processErrors.ts`: an uncaught error logs at fatal and exits with
   code 1 (`processErrors.test.ts`).
 - `config.ts`: every path and port comes from an environment variable,
