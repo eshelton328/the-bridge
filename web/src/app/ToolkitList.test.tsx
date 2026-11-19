@@ -157,7 +157,9 @@ describe('the list beside an open item (D3)', () => {
     const listRow = layer(root, 'evals link')
     const trailing = listRow.querySelector('.list-row__trailing')
     if (trailing === null) throw new Error('no trailing part')
-    expect(Math.abs(middle(trailing.getBoundingClientRect()) - middle(listRow.getBoundingClientRect()))).toBeLessThanOrEqual(1)
+    expect(
+      Math.abs(middle(trailing.getBoundingClientRect()) - middle(listRow.getBoundingClientRect())),
+    ).toBeLessThanOrEqual(1)
   })
 
   it('cuts the kind chips at the pane’s edge with no fade (FilterChips fade none, D17 491:4396)', async () => {
