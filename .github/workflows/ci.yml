@@ -20,9 +20,75 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Decides what this run must do and fails open: when it cannot show that
+  # a job need not run, or fails itself, every job runs.
+  # - A push to main skips every job when the main commit's tree is the
+  #   tree of the head of a PR merged into main whose ci run passed: the
+  #   squash merge of an up-to-date PR (protect-main) adds no code that
+  #   the PR's checks did not run on.
+  # - On a PR, fidelity is false when scripts/ciPlan.ts finds no changed
+  #   file that can change the fidelity result (only Markdown outside web/
+  #   and references/, or scripts the fidelity scripts do not import). The
+  #   fidelity jobs then pass without their steps, so the required checks
+  #   still report; main passed them, and none of their inputs changed.
+  #   A push to main and a run by hand always run fidelity.
+  plan:
+    runs-on: ubuntu-slim
+    permissions:
+      contents: read
+      pull-requests: read # the PR of a main commit, and a PR's files
+      actions: read # the ci runs of a PR head
+    outputs:
+      skip: ${{ steps.push.outputs.skip }}
+      fidelity: ${{ steps.files.outputs.fidelity }}
+    steps:
+      - id: push
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          tree=$(gh api "repos/$GH_REPO/git/commits/$SHA" --jq .tree.sha)
+          heads=$(gh api "repos/$GH_REPO/commits/$SHA/pulls" --jq '.[] | select(.merged_at != null and .base.ref == "main") | .head.sha')
+          for head in $heads; do
+            if [ "$(gh api "repos/$GH_REPO/git/commits/$head" --jq .tree.sha)" != "$tree" ]; then continue; fi
+            passed=$(gh api "repos/$GH_REPO/actions/workflows/ci.yml/runs?head_sha=$head&event=pull_request&status=success" --jq .total_count)
+            if [ "$passed" -gt 0 ]; then
+              echo "::notice::main $SHA has the tree of PR head $head, whose ci run passed; no job runs again."
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+          echo "::notice::No passed PR head has the tree of main $SHA; every job runs."
+      - if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          sparse-checkout: scripts
+      - id: files
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/$GH_REPO/pulls/$PR/files?per_page=100" --jq '.[] | .filename, (.previous_filename // empty)' > "$RUNNER_TEMP/changed.txt"
+          # The API lists at most 3000 files; with that many, run fidelity.
+          if [ "$(wc -l < "$RUNNER_TEMP/changed.txt")" -ge 3000 ]; then
+            echo "fidelity=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          plan=$(node scripts/ciPlan.ts < "$RUNNER_TEMP/changed.txt")
+          echo "::notice::fidelity plan: $plan"
+          echo "fidelity=$(jq -r .fidelity <<< "$plan")" >> "$GITHUB_OUTPUT"
+
   # Each check is its own job, so a PR shows which one failed. pnpm verify
   # runs the same commands in one go on a laptop.
   typecheck:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -35,6 +101,8 @@ jobs:
       - run: pnpm typecheck
 
   lint:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -53,6 +121,8 @@ jobs:
       - run: pnpm knip
 
   checks:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -77,6 +147,8 @@ jobs:
   # billed minutes (PR 204, run 44550388963).
   test-unit-shard:
     name: test-unit (${{ matrix.shard }}/2)
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     strategy:
       fail-fast: false
       matrix:
@@ -96,8 +168,8 @@ jobs:
   # The required check: it passes only when every test:unit shard passed.
   # It reads one result, so ubuntu-slim (1 vCPU container) is enough.
   test-unit:
-    needs: test-unit-shard
-    if: ${{ !cancelled() }}
+    needs: [plan, test-unit-shard]
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-slim
     steps:
       - name: Require every test:unit shard to pass
@@ -110,6 +182,8 @@ jobs:
           fi
 
   test-stories:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -131,25 +205,35 @@ jobs:
   # stable layout, which fixed its T12 textarea flake on Linux.
   fidelity:
     name: fidelity (${{ matrix.page }})
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     strategy:
       fail-fast: false
       matrix:
         page: [inbox, workspaces, artifacts, toolkit]
-    runs-on: ubuntu-24.04
+    # With no fidelity input changed, the job only reports; ubuntu-slim does that for less.
+    runs-on: ${{ needs.plan.outputs.fidelity == 'false' && 'ubuntu-slim' || 'ubuntu-24.04' }}
     env:
       # The pages whose icon sizes the job gates too (--checks icons: no
       # iconSize diff in the position check). A page joins when it has none.
       ICON_GATED_PAGES: '["inbox", "workspaces", "artifacts", "toolkit"]'
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: ./.github/actions/setup
+      - if: needs.plan.outputs.fidelity == 'false'
+        run: echo "::notice::No changed file can change the fidelity result (plan job); the check passes without a run."
+      - if: needs.plan.outputs.fidelity != 'false'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - if: needs.plan.outputs.fidelity != 'false'
+        uses: ./.github/actions/setup
         with:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
           browser: "true"
-      - run: pnpm codegen
-      - run: pnpm build-storybook
-      - run: pnpm fidelity ${{ matrix.page }} --skip-build --checks ${{ contains(fromJSON(env.ICON_GATED_PAGES), matrix.page) && 'text,rules,icons' || 'text,rules' }}
-      - if: ${{ !cancelled() }}
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm codegen
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm build-storybook
+      - if: needs.plan.outputs.fidelity != 'false'
+        run: pnpm fidelity ${{ matrix.page }} --skip-build --checks ${{ contains(fromJSON(env.ICON_GATED_PAGES), matrix.page) && 'text,rules,icons' || 'text,rules' }}
+      - if: ${{ !cancelled() && needs.plan.outputs.fidelity != 'false' }}
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: fidelity-${{ matrix.page }}
@@ -157,6 +241,8 @@ jobs:
           retention-days: 7
 
   build:
+    needs: plan
+    if: ${{ !cancelled() && needs.plan.outputs.skip != 'true' }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
