@@ -16,11 +16,13 @@ export type WorkspaceTabsProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** The tab bar has the button that shows the sidebar; not when the sidebar shows. */
   toggle: boolean
+  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
+  onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
 }
 
-export function WorkspaceTabs({ data, ui, onUiChange, toggle, onSend }: WorkspaceTabsProps) {
+export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onSend }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
   const view = shownView(data, ui)
@@ -48,6 +50,7 @@ export function WorkspaceTabs({ data, ui, onUiChange, toggle, onSend }: Workspac
               ui={view.ui}
               onUiChange={report}
               onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
+              onDraftChange={onDraftChange}
               onSend={onSend}
             />
           ) : null,

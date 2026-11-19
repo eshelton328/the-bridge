@@ -45,11 +45,13 @@ export type WorkbenchPanesProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Called with a pane's id when the owner closes it with the empty pane's Close pane (D13). */
   onClosePane?: ((pane: string) => void) | undefined
+  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
+  onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
 }
 
-export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onSend }: WorkbenchPanesProps) {
+export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChange, onSend }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
   const chatsLayers = data.layers?.paneChats ?? chatLayers
@@ -122,7 +124,9 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onSend }: Wo
             figma={layers}
             entries={pane.entries}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
-            onTextChange={(text) => onUiChange?.({ drafts: { ...ui.drafts, [pane.id]: text } })}
+            onTextChange={(text) => {
+              onDraftChange(pane.id, text)
+            }}
             onSend={onSend && ((text) => onSend(pane.id, text))}
             skills={{
               label: data.skillsLabel,
