@@ -155,4 +155,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   library cannot draw yet, for the batched library PR.
 
 `/inbox?state=nextStep` shows a state in development; an unknown state is
-a not-found page.
+a not-found page. With no `?state=` the page opens on its home
+(`home.ts`): D1's data with nothing selected and nothing open, so a
+phone or tablet shows the list and the desktop the list beside D1's task
+(`app/InboxHome.test.tsx`).
