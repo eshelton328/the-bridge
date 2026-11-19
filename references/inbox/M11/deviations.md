@@ -50,9 +50,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   chip's count is `fg.subtle` (#7986a6, #106) against Figma's #4a5675,
   which stays out by d-099 because it fails WCAG AA (d-055).
   Library gap: Breakpoint tokens.
-- **Rows and chips on the phone.** As in M01: the rows are pulled 6 px
-  out of the list's padding so the kind tiles line up under the group
-  chevrons (Library gap: List row padding on the phone), and each chip
+- **Rows and chips on the phone.** As in M01: the rows pad 4 at the sides
+  (`ListRow padding="phoneSides"`), so the kind tiles line up under
+  the group chevrons, and each chip
   pads its label 8 against Figma's 12 (Library gap: Filter chip padding
   on the phone).
 - **Chip row.** The chips scroll sideways and the row clips them, as

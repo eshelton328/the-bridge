@@ -53,12 +53,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Library gap: Breakpoint tokens.
 - **Row inset and title.** Figma's phone rows pad their content 4 at
   the sides (346:9052), so the kind tiles line up under the group
-  chevrons; `ListRow` pads 10 inside a 1 px border. The phone pulls each
-  row 6 px out of the list's padding, so the tile sits at x 17 against
-  16 and the age ends at 373, as in Figma; the row's own box is 6 px
-  wider each side, which shows only on a selected row. The large title
-  sits 4 in from the header's edge (x 16), as in Figma. Library gap:
-  List row padding on the phone.
+  chevrons; `ListRow padding="phoneSides"` (beta.78) pads 4 inside its 1 px
+  border, so the tile sits at x 17 against 16 and the age ends at 373,
+  as in Figma. The large title
+  sits 4 in from the header's edge (x 16), as in Figma.
 - **Chip size.** Figma's phone chips pad their label 12 at the sides
   (`chip · All` 346:9014, 51 wide); `FilterChips size="compact"` pads
   8 with a 1 px border, as the tablet's chips (T1), so each chip is 6 px
