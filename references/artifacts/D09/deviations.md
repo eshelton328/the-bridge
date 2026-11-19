@@ -27,6 +27,11 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (452:3221); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 452:3221 (2026-11-19, the same decision on every page's rail).
 - **Preview chart.** Figma's chart after Apply has its bars sorted from
   the lowest to the highest and a dashed amber line at the median,
   labelled `median 71%` in mono (452:3705, 452:3706). The preview is

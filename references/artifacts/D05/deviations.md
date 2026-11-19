@@ -79,6 +79,11 @@ change.
 
 ## Deviations: the library behind it (as D01)
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (414:958); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 414:958 (2026-11-19, the same decision on every page's rail).
 - **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
   `button · Filter` x -11, as D01: Sort (108.4) and Filter (75.4) take
   `padding="compact"` and are Figma's widths, but the search and the

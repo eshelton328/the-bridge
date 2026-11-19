@@ -30,6 +30,11 @@ change.
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (414:966); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 414:966 (2026-11-19, the same decision on every page's rail).
 - **Sort menu place.** `menu · Sort` x -11.5. The menu opens at the
   Sort button's start, as Figma's, and Sort sits 11.4 px left of Figma's
   (see "Search, Sort and Filter"), so the menu does too. `RadioMenu
