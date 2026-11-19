@@ -12,9 +12,7 @@
   "missing": [
     {
       "text": "23%",
-      "layers": [
-        "105:972"
-      ],
+      "layers": ["105:972"],
       "reason": "The dragged row is straight and ends at the rows' end (266 wide), because the text check reads a tilted row, or one past the sidebar's scrolling body, as cut (Drag preview); its meta is 132 px in 116, so 23% is cut off."
     }
   ],
