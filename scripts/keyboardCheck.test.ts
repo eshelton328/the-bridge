@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { checkFrames, cubicBezier, type Frame, sheetArgs } from './keyboardCheckLib.ts'
+import { checkFrames, cubicBezier, type Frame, servedUrl, sheetArgs } from './keyboardCheckLib.ts'
 
 const frame = (over: Partial<Frame>): Frame => ({
   t: 0,
@@ -70,4 +70,16 @@ void test('sheetArgs tiles the frames over the time span', () => {
   const args = sheetArgs({ video: 'v.webm', out: 's.png', start: 1, seconds: 2, count: 24, columns: 8, width: 160 })
   assert.deepEqual(args.slice(3, 9), ['-ss', '1.000', '-t', '2.000', '-i', 'v.webm'])
   assert.equal(args[10], 'fps=12.0000,scale=160:-1,tile=8x3:padding=4:color=white')
+})
+
+void test('the served URL comes from --url, then SERVED_APP_URL, and is required', () => {
+  assert.deepEqual(servedUrl('https://flag.example:5180', 'https://env.example:5180'), {
+    ok: true,
+    url: 'https://flag.example:5180',
+  })
+  assert.deepEqual(servedUrl(undefined, 'https://env.example:5180/'), { ok: true, url: 'https://env.example:5180' })
+  const missing = servedUrl(undefined, undefined)
+  if (missing.ok) assert.fail('no URL must be an error')
+  assert.match(missing.error, /--url <url> or set SERVED_APP_URL/)
+  assert.equal(servedUrl(undefined, '  ').ok, false)
 })
