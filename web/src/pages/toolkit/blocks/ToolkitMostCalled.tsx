@@ -9,6 +9,7 @@
 // a column as wide as the longest (LIBRARY_GAPS.md, Most called bars).
 // Props only.
 import { HorizontalBarChart, Panel, focusRing } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitActivityCounts } from '../types.ts'
@@ -90,10 +91,12 @@ export function ToolkitMostCalled({ mostCalled, layout, onOpen }: ToolkitMostCal
               ))}
             </div>
             <div className={bars}>
-              <HorizontalBarChart
-                label={mostCalled.label}
-                rows={mostCalled.rows.map((r) => ({ label: r.name, value: r.value }))}
-              />
+              <BlockBoundary contentKey={mostCalled.label}>
+                <HorizontalBarChart
+                  label={mostCalled.label}
+                  rows={mostCalled.rows.map((r) => ({ label: r.name, value: r.value }))}
+                />
+              </BlockBoundary>
             </div>
           </div>
         </div>

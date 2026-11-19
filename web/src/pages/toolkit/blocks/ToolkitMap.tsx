@@ -19,6 +19,7 @@
 // and Open side by side, and no close button. Props only.
 import { Badge, MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
 import { type RefObject, useEffect, useRef, useState } from 'react'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitItemView, ToolkitMapView } from '../types.ts'
@@ -186,30 +187,32 @@ export function ToolkitMap({
   const graph = (
     <div ref={wrapperRef} className={phone ? mapWindow : undefined} data-figma={phone ? 'map viewport' : 'map canvas'}>
       <h2 className={srOnly}>Toolkit map</h2>
-      <MapGraph
-        label="Toolkit map"
-        width={canvas.width}
-        height={canvas.height}
-        columns={map.columns.map((label, i) => ({ label, x: heading.x + nodes.column * i, y: heading.y }))}
-        nodes={map.nodes.map((n) => ({
-          id: n.path,
-          label: n.name,
-          kind: n.kind,
-          meta: n.meta,
-          x: nodes.x + nodes.column * n.column,
-          y: nodes.y + nodes.row * n.row,
-        }))}
-        nodeSize={nodeSize}
-        nodeDensity={compact ? 'compact' : 'default'}
-        edgeEnd={compact ? 'none' : 'dot'}
-        edges={map.links}
-        selectedId={selected}
-        onSelect={onSelect}
-        legend={legendSlot}
-        card={phone ? null : card}
-        zoom={zoom}
-        minimap={phone}
-      />
+      <BlockBoundary contentKey="toolkit map">
+        <MapGraph
+          label="Toolkit map"
+          width={canvas.width}
+          height={canvas.height}
+          columns={map.columns.map((label, i) => ({ label, x: heading.x + nodes.column * i, y: heading.y }))}
+          nodes={map.nodes.map((n) => ({
+            id: n.path,
+            label: n.name,
+            kind: n.kind,
+            meta: n.meta,
+            x: nodes.x + nodes.column * n.column,
+            y: nodes.y + nodes.row * n.row,
+          }))}
+          nodeSize={nodeSize}
+          nodeDensity={compact ? 'compact' : 'default'}
+          edgeEnd={compact ? 'none' : 'dot'}
+          edges={map.links}
+          selectedId={selected}
+          onSelect={onSelect}
+          legend={legendSlot}
+          card={phone ? null : card}
+          zoom={zoom}
+          minimap={phone}
+        />
+      </BlockBoundary>
       {phone ? (
         // M11 461:1257: the hint is a pill 10 px in from the window's left and bottom edges; the MapGraph legend
         // slot sits 24 px in, so the pill goes over the map here.

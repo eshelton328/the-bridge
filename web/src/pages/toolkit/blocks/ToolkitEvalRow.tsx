@@ -12,6 +12,7 @@
 // skill (T12 `eval · readme-reads folder` 477:1936) has its name as text and
 // no tap. Props only.
 import { ChevronRightIcon, HorizontalBarChart, MapNode, focusRing } from '@eshelton328/component-library-1701'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitEvalGroup } from '../types.ts'
 import { evalLayer, evalShare, linkLayer } from './activitySources.ts'
@@ -79,12 +80,14 @@ export function ToolkitEvalRow({ group, onOpen, onOpenItem }: ToolkitEvalRowProp
           <span className={calls}>{group.calls}</span>
           {skill === undefined ? null : <ChevronRightIcon size="16" />}
         </div>
-        <HorizontalBarChart
-          label={`${group.name}: the share of sessions that loaded an item`}
-          rows={[{ label: '', value: evalShare(group) }]}
-          max={100}
-          formatValue={() => ''}
-        />
+        <BlockBoundary contentKey={group.name}>
+          <HorizontalBarChart
+            label={`${group.name}: the share of sessions that loaded an item`}
+            rows={[{ label: '', value: evalShare(group) }]}
+            max={100}
+            formatValue={() => ''}
+          />
+        </BlockBoundary>
         <span className={meta}>{group.meta}</span>
       </div>
     </li>
