@@ -1,0 +1,54 @@
+name: pr
+
+# The PR checks that read the PR itself, not the code: its title. They run
+# on every event that can change it, so ci.yml does not rerun the code
+# checks on an edit. The job name is a required check in the protect-main
+# ruleset; keep it.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+
+# A newer event on the same PR carries the newest title, so it replaces an
+# older run.
+concurrency:
+  group: pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-24.04
+    permissions:
+      actions: read # list the ci runs of the head commit
+      issues: read # read the PR's base-branch changes
+      pull-requests: read # the events of an issue that is a PR
+    steps:
+      # A base-branch change is an `edited` event, and ci.yml does not run
+      # on edits. Fail until ci.yml has run on the head commit after the
+      # last base change, so the code checks always cover the current base.
+      - name: Require a ci run after the last base-branch change
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          changed=$(gh api --paginate "repos/$GH_REPO/issues/$PR/events" --jq '.[] | select(.event == "base_ref_changed") | .created_at' | sort | tail -n 1)
+          if [ -z "$changed" ]; then exit 0; fi
+          last=$(gh api --paginate "repos/$GH_REPO/actions/workflows/ci.yml/runs?event=pull_request&head_sha=$HEAD_SHA" --jq '.workflow_runs[].created_at' | sort | tail -n 1)
+          if [ -z "$last" ] || [[ "$last" < "$changed" ]]; then
+            echo "::error::The base branch changed at $changed, and ci.yml has not run on this commit since. Push a commit, or close and reopen the PR, so the code checks run on the new base."
+            exit 1
+          fi
+      - name: Check the title is a Conventional Commits header
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          re='^(feat|fix|perf|refactor|docs|test|build|ci|chore|revert)(\([a-z0-9-]+\))?!?: [a-z].*[^.]$'
+          if ! [[ "$TITLE" =~ $re ]] || [ ${#TITLE} -gt 72 ]; then
+            echo "::error::The PR title becomes the squash commit header. Use 'type(scope): description', lowercase, imperative, at most 72 characters, no final period."
+            exit 1
+          fi
