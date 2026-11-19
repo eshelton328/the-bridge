@@ -260,8 +260,9 @@ each file of a page folder is for.
   does: Discard sets `ui.discussProposal` to `discarded`, Apply to
   `applied`, and Edit first puts the lines the proposal adds in the reply
   box. For D9: with `applied`, `appliedView` (same file) shows the
-  artifact's `applied` pill, bar line and updated chip and the proposal's
-  `apply` context; `ArtifactProposal` draws its `apply` eyebrow, the lines
+  artifact's `applied` pill, bar line and updated chip, the chart's
+  `reference` line (`Thumbnail reference`, "median 71%", checked by
+  `AppliedReference.test.tsx`) and the proposal's `apply` context; `ArtifactProposal` draws its `apply` eyebrow, the lines
   it put in and its note, with no buttons, as the Inbox's applied update
   (Inbox D16). The link stays: Apply republishes to it. For T4:
   `DiscussedArtifactCard` (a `Panel variant="notice"` with the title, New

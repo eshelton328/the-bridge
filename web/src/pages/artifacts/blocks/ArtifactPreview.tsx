@@ -23,14 +23,20 @@ const footer = css({ p: '10', ps: '12', color: 'fg.muted' })
 const link = css({ textStyle: 'mono', color: 'fg.muted', flex: '1', overflow: 'hidden', textDecoration: 'none' })
 
 export type ArtifactPreviewProps = {
-  artifact: Pick<ArtifactDetail, 'title' | 'preview' | 'link'>
+  artifact: Pick<ArtifactDetail, 'title' | 'preview' | 'link' | 'reference'>
   onOpenArtifact?: (() => void) | undefined
 }
 
 export function ArtifactPreview({ artifact, onOpenArtifact }: ArtifactPreviewProps) {
   return (
     <div className={box} data-figma="preview">
-      <Thumbnail kind={artifact.preview} shape="banner" framed={false} label={`${artifact.title} preview`} />
+      <Thumbnail
+        kind={artifact.preview}
+        shape="banner"
+        framed={false}
+        label={`${artifact.title} preview`}
+        {...(artifact.reference === undefined ? {} : { reference: artifact.reference })}
+      />
       <Inline gap="8" align="center" className={footer} data-figma="preview footer">
         {/* A card opened from the library has a link only when its card has; the space keeps Open artifact at the end. */}
         {artifact.link === undefined ? (

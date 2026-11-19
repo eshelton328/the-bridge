@@ -8,9 +8,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on one string. `median 71%` (452:3706) is missing: the
-  preview's chart has no median line or label (see Preview chart below).
-  `Toolkit` is an `extra` exception (`exceptions.json`). The context
+- Text: passes (2026-11-19, library 1.0.0-beta.69): the preview's
+  chart draws `median 71%` (452:3706) with its dashed line through the
+  library's `Thumbnail reference`. `Toolkit` is an `extra` exception (`exceptions.json`). The context
   meter's `49%` (454:366) matches with no exception, as in D07 and D08.
 - Position: 23 of 35 layers pass, among them the artifact bar,
   `pill · New` (which says Updated), the title block, preview, "Made
@@ -30,18 +30,14 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 - **Preview chart.** Figma's chart after Apply has its bars sorted from
   the lowest to the highest and a dashed amber line at the median,
   labelled `median 71%` in mono (452:3705, 452:3706). The preview is
-  the library's `Thumbnail kind="chart"`, a fixed sample chart in the
-  library's colours, and no chart of the library draws a reference
-  line, so the render shows the same bars as D08 and no median line or
-  label. A line and label laid over the thumbnail cannot be placed from
-  tokens: the line's place (161.4 below the thumbnail's top, the label
-  20 above it, both ending 60 from the thumbnail's end) is a point on
-  the library drawing's own axis, no spacing token is 60, 141 or 161,
-  and matching the drawing would copy its internal geometry as raw
-  values. The window dots (about 10 px against 5, 452:3602 to
+  the library's `Thumbnail kind="chart"` with `reference={{ value: 71,
+  label: 'median 71%' }}` (`applied.reference` in `changeProposed`): the
+  library draws the dashed line at 71 on its own axis in
+  `status.needsYou.fg` and the label in mono. The bars are the library's
+  fixed sample, so they are not sorted, as in D08. The window dots (about 10 px against 5, 452:3602 to
   452:3604) and the axis inset (96 against 60, 452:3615) are the
-  library's, as in D07. Library gaps "Chart reference line", "Artifact
-  preview frame" and "Thumbnail colour".
+  library's, as in D07. Library gaps "Artifact preview frame" and
+  "Thumbnail colour".
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
   `discussion panel` x +8, w -8, as in D07 and D08: the artifact keeps
   `Container size="detail"` (828) against Figma's 820 pane, so the panel
@@ -104,5 +100,5 @@ the nearest library part until it lands: the applied line in `bodySm`
 (Figma's 13/19 on the 4 px grid) in `fg.default` (drawn `small` in
 `fg.muted` by `ProposalBlock`'s note), and, as in D08, the messages
 13/20, the diff rows 28 high and 4 apart and a 12 px spark icon slot on
-`ProposalBlock`. The median line and its label wait for a library chart
-with a reference line; no value is picked for them here.
+`ProposalBlock`. The median line and its label are the library's
+`Thumbnail reference` (beta.63); no value is picked for them here.
