@@ -30,6 +30,8 @@ not in CI or `pnpm verify`.
 - `live.e2e.test.ts`: the live flows: `/workspaces?source=live` lists
   the fake chat with its model and status, and shows a new status when
   herdr changes the status chat's, with no reload (slice 2).
+- `stack.e2e.test.ts`: the stack starts with any log level in the
+  caller's shell.
 - `proxy.e2e.test.ts`: the Vite proxy with Tailscale Serve's headers: a
   tailnet request with no `Tailscale-User-Login` gets the server's 403,
   the owner's login gets 200, and the event stream flows through Vite.
