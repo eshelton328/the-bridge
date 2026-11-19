@@ -1,5 +1,7 @@
 // The phone column of the Inbox screens (R10) shows a state's own story at 390 px, and Storybook runs its play
-// there. A state with a tablet and a phone frame has one story, so its play must pass at both widths.
+// there. A state with a tablet and a phone frame has one story, so its play must pass at both widths. The app's styles
+// load as in Storybook's preview: without them a chip's count is inline, and its name loses the space ("Next steps5").
+import '../../index.css'
 import { composeStories } from '@storybook/react-vite'
 import { within } from 'storybook/test'
 import { afterAll, beforeAll, describe, it } from 'vitest'
