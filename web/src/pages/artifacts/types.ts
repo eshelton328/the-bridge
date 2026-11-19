@@ -440,3 +440,9 @@ export type ArtifactsUi = z.infer<typeof ArtifactsUi>
 
 /** The schema of one Artifacts state, for the state checks. */
 export const ArtifactsState = z.object({ data: ArtifactsData, ui: ArtifactsUi })
+
+/** What the last Copy link did, which its control shows for about 2 s (audit W-6): the link copied, or it did not. */
+export type CopyLinkStatus = 'copied' | 'failed'
+
+/** The last Copy link's result and the link it was for, which the page entry holds. */
+export type CopiedLink = { link: string; status: CopyLinkStatus }

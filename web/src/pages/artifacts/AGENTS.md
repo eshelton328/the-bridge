@@ -25,8 +25,10 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
   box at the bottom; only the content between them scrolls (d-107,
   `app/ArtifactsStickyBars.test.tsx`).
 - Every card and open artifact has a `link` (`types.ts`). Copy link
-  goes out through the screen's `onCopyLink`, and the entry writes the
-  clipboard (`app/ArtifactsCopyLink.test.tsx`, which opens from the list).
+  goes out through the screen's `onCopyLink`; the entry writes the
+  clipboard and passes back `copiedLink`, which the control shows as
+  Copied or Copy failed for 2 s (audit W-6,
+  `app/ArtifactsCopyLink.test.tsx`, which opens from the list).
 - On the phone, More opens Artifacts and stays selected (d-105).
 - The phone's keyboard is the device's own: a state draws none and keeps
   the tab bar, as Figma does (d-089).

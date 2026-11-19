@@ -23,7 +23,7 @@ import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
-import type { ArtifactsData, ArtifactsUi } from '../types.ts'
+import type { ArtifactsData, ArtifactsUi, CopiedLink } from '../types.ts'
 import type { ProposalAct } from '../blocks/ArtifactProposal.tsx'
 import { DiscussionPanel } from '../blocks/DiscussionPanel.tsx'
 import { FileSheet } from '../blocks/FileSheet.tsx'
@@ -46,9 +46,19 @@ export type ArtifactsScreenProps = {
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   /** Copy link on an open artifact was pressed (D2, T2, M2), with the address its link opens. */
   onCopyLink?: ((link: string) => void) | undefined
+  /** The last Copy link's result, which the open artifact's Copy link shows while its link is the one copied. */
+  copiedLink?: CopiedLink | undefined
 }
 
-export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, onCopyLink }: ArtifactsScreenProps) {
+export function ArtifactsScreen({
+  data,
+  ui,
+  viewport,
+  onNavigate,
+  onUiChange,
+  onCopyLink,
+  copiedLink,
+}: ArtifactsScreenProps) {
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => {
@@ -76,6 +86,9 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, on
             : () => {
                 onCopyLink(`https://${view.artifact.link}`)
               }
+        // "Copied" or "Copy failed" shows only on the artifact whose link was copied.
+        const copyLinkStatus =
+          view !== undefined && copiedLink?.link === `https://${view.artifact.link}` ? copiedLink.status : undefined
         // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
         const openCard = (openId: string) => {
           onUiChange?.({ openId, artifactClosed: false })
@@ -188,6 +201,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, on
                           }
                     }
                     onCopyLink={copyLink}
+                    copyLinkStatus={copyLinkStatus}
                     // M2: the ⋯ button opens File in a project (M7).
                     onMore={() => {
                       onUiChange?.({ fileOpen: true })
@@ -205,6 +219,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, on
                           }
                     }
                     onCopyLink={copyLink}
+                    copyLinkStatus={copyLinkStatus}
                     madeInLayer={discussion?.layers.madeIn}
                     projectMenu={projectMenu}
                     side={

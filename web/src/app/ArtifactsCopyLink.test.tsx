@@ -4,6 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { clearReports, getReports } from '../errors/reporter.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -35,6 +36,36 @@ function fakeClipboard(): string[] {
     clipboard.writeText = writeText
   })
   return copied
+}
+
+/** The button whose accessible name is `name` now, or null. */
+function buttonNamed(name: string): Element | null {
+  return page.getByRole('button', { name, exact: true }).query()
+}
+
+/** Swaps the clipboard's writeText for one that rejects with `error` for this test. */
+function rejectingClipboard(error: Error): void {
+  const { clipboard } = navigator
+  const writeText = clipboard.writeText.bind(clipboard)
+  clipboard.writeText = () => Promise.reject(error)
+  onTestFinished(() => {
+    clipboard.writeText = writeText
+  })
+}
+
+/** Renders the app at /artifacts, as it opens, and opens the artifact of the card (D1, T1) or row (M1) titled `title`. */
+async function openFromLibrary(layout: 'desktop' | 'tablet' | 'phone', width: number, height: number, title: string) {
+  await page.viewport(width, height)
+  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/artifacts'] }) })
+  const view = await testRender(<RouterProvider router={router} />)
+  onTestFinished(view.unmount)
+  const item = layout === 'phone' ? 'artifact row' : 'artifact card'
+  const opener = () => document.querySelector(`[data-figma="${item} · ${title}"] button`)
+  await expect.poll(opener).not.toBeNull()
+  const button = opener()
+  if (!(button instanceof HTMLElement)) throw new Error(`no ${item} for ${title}`)
+  await userEvent.click(button)
+  await expect.poll(() => document.querySelector('[data-figma="title block"] h2')?.textContent).toBe(title)
 }
 
 describe('Copy link on an open artifact', () => {
@@ -87,5 +118,55 @@ describe('Copy link on an artifact opened from the library', () => {
     await expect.poll(() => document.querySelector('[data-figma="title block"] h2')?.textContent).toBe(title)
     await page.getByRole('button', { name: 'Copy link' }).click()
     await expect.poll(() => copied).toEqual([expected])
+  })
+})
+
+// Copy link says what happened, on the control itself (audit W-6): "Copied"
+// or "Copy failed" for about 2 s, then "Copy link" again, at the same size,
+// and a status region says it to a screen reader. The owner's path: /artifacts
+// with no ?state=, a press on the card or row, then Copy link.
+describe('Copy link says whether it copied', () => {
+  const layouts = [
+    ['desktop', 1512, 982],
+    ['tablet', 756, 1158],
+    ['phone', 390, 844],
+  ] as const
+  const title = 'Skill eval pass rates'
+
+  it.each(layouts)('on a %s (%i × %i) it shows Copied, then Copy link again', async (layout, width, height) => {
+    const copied = fakeClipboard()
+    await openFromLibrary(layout, width, height, title)
+    const control = page.getByRole('button', { name: 'Copy link' })
+    const button = control.element()
+    const before = button.getBoundingClientRect()
+    const pressed = performance.now()
+    await control.click()
+    await expect.poll(() => copied).toEqual(['https://claude.ai/artifact/8f3c2a91-skill-evals'])
+    // The same control now reads Copied.
+    await expect.poll(() => buttonNamed('Copied')).toBe(button)
+    await expect.element(page.getByRole('status').filter({ hasText: 'Copied' })).toBeInTheDocument()
+    // The label changes inside the button's own box, so the bar does not jump.
+    const during = button.getBoundingClientRect()
+    expect([during.width, during.height]).toEqual([before.width, before.height])
+    await expect.poll(() => buttonNamed('Copy link'), { timeout: 5000 }).toBe(button)
+    expect(performance.now() - pressed).toBeGreaterThan(1500)
+  })
+
+  it('on a phone with a clipboard that rejects, it shows Copy failed and reports the error', async () => {
+    clearReports()
+    onTestFinished(clearReports)
+    const broken = new Error('the clipboard broke')
+    rejectingClipboard(broken)
+    await openFromLibrary('phone', 390, 844, title)
+    const control = page.getByRole('button', { name: 'Copy link' })
+    const button = control.element()
+    const before = button.getBoundingClientRect()
+    await control.click()
+    await expect.poll(() => buttonNamed('Copy failed')).toBe(button)
+    await expect.element(page.getByRole('status').filter({ hasText: 'Copy failed' })).toBeInTheDocument()
+    const during = button.getBoundingClientRect()
+    expect([during.width, during.height]).toEqual([before.width, before.height])
+    expect(getReports().map((r) => r.error)).toContain(broken)
+    await expect.poll(() => buttonNamed('Copy link'), { timeout: 5000 }).toBe(button)
   })
 })

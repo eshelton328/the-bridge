@@ -1,20 +1,41 @@
-// Copies text to the clipboard when the page can. A page without the
+// Copies text to the clipboard and says what happened (audit W-6), so a
+// caller can show "Copied" or "Copy failed". 'unavailable': the page has no
 // Clipboard API (an insecure origin, such as plain HTTP that is not
-// localhost) or one that refuses the write copies nothing and throws
-// nothing. Tested in copyText.test.ts.
+// localhost). 'refused': the write threw or rejected. A refusal that is not
+// the browser's NotAllowedError is a fault, so it goes to `report`; lib
+// imports no other layer, so the caller passes the reporter. Tested in
+// copyText.test.ts.
+import { err, ok, type Result } from '@bridge/shared'
 
-/** The part of `navigator.clipboard` this needs; undefined when the page has none. */
-export type ClipboardWriter = Pick<Clipboard, 'writeText'> | undefined
+/** The part of `navigator.clipboard` this needs; null when the page has none. */
+type ClipboardWriter = Pick<Clipboard, 'writeText'> | null
 
-function pageClipboard(): ClipboardWriter {
-  return 'clipboard' in navigator ? navigator.clipboard : undefined
+export type CopyTextOptions = {
+  /** Gets a refusal that is not NotAllowedError, such as `(e) => report(e, 'handler')` (errors/reporter.ts). */
+  readonly report: (error: unknown) => void
+  /** The clipboard to write; the page's own by default, null for none. */
+  readonly clipboard?: ClipboardWriter
 }
 
-export function copyText(text: string, clipboard: ClipboardWriter = pageClipboard()): void {
-  if (clipboard === undefined) return
+function pageClipboard(): ClipboardWriter {
+  return 'clipboard' in navigator ? navigator.clipboard : null
+}
+
+/** The browser refused the write (no permission or no user gesture): expected, not a fault. */
+function isNotAllowed(error: unknown): boolean {
+  return error instanceof DOMException && error.name === 'NotAllowedError'
+}
+
+export async function copyText(
+  text: string,
+  { report, clipboard = pageClipboard() }: CopyTextOptions,
+): Promise<Result<void, 'unavailable' | 'refused'>> {
+  if (clipboard === null) return err('unavailable')
   try {
-    void clipboard.writeText(text).catch(() => undefined)
-  } catch {
-    // A writeText that throws at once copies nothing, as one that rejects does.
+    await clipboard.writeText(text)
+    return ok(undefined)
+  } catch (error) {
+    if (!isNotAllowed(error)) report(error)
+    return err('refused')
   }
 }

@@ -1,8 +1,10 @@
 // The bar over an open artifact (Figma "artifact bar", D2 403:449): New and
 // who found it when (after Apply, D9: Updated and where from), and at the end Discuss, Copy link and Remove. Discuss
 // opens the discussion (D7) and is pressed while it is open. Props only.
-import { Badge, BubbleIcon, Button, CopyIcon, Inline, SparkIcon, TrashIcon } from '@eshelton328/component-library-1701'
+import { Badge, BubbleIcon, Button, Inline, SparkIcon, TrashIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import type { CopyLinkStatus } from '../types.ts'
+import { CopyLinkButton } from './CopyLinkButton.tsx'
 
 const found = css({ textStyle: 'mono', color: 'fg.muted', flex: '1', overflow: 'hidden' })
 
@@ -14,10 +16,20 @@ export type ArtifactBarProps = {
   discussOpen?: boolean | undefined
   onDiscuss?: (() => void) | undefined
   onCopyLink?: (() => void) | undefined
+  /** What the last Copy link did, which its button shows ("Copied" or "Copy failed"). */
+  copyLinkStatus?: CopyLinkStatus | undefined
   onRemove?: (() => void) | undefined
 }
 
-export function ArtifactBar({ badge, found: text, discussOpen, onDiscuss, onCopyLink, onRemove }: ArtifactBarProps) {
+export function ArtifactBar({
+  badge,
+  found: text,
+  discussOpen,
+  onDiscuss,
+  onCopyLink,
+  copyLinkStatus,
+  onRemove,
+}: ArtifactBarProps) {
   return (
     <Inline gap="10" align="center" data-figma="artifact bar">
       {badge === undefined ? null : (
@@ -34,10 +46,7 @@ export function ArtifactBar({ badge, found: text, discussOpen, onDiscuss, onCopy
         </Button>
       </span>
       <span data-figma="button · Copy link">
-        <Button onClick={onCopyLink}>
-          <CopyIcon />
-          Copy link
-        </Button>
+        <CopyLinkButton status={copyLinkStatus} onClick={onCopyLink} />
       </span>
       <span data-figma="button · Remove">
         <Button variant="secondaryDanger" onClick={onRemove}>

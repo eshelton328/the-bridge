@@ -16,7 +16,7 @@ import { ArtifactBar } from '../blocks/ArtifactBar.tsx'
 import { ArtifactPreview } from '../blocks/ArtifactPreview.tsx'
 import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
-import type { ArtifactDetail as Artifact } from '../types.ts'
+import type { ArtifactDetail as Artifact, CopyLinkStatus } from '../types.ts'
 
 // The pane fills the shell's detail column, as Figma's 403:448 does.
 const pane = css({ flex: '1' })
@@ -35,6 +35,8 @@ export type ArtifactDetailProps = {
   onDiscuss?: (() => void) | undefined
   /** Copy link was pressed; without it Copy link does nothing. */
   onCopyLink?: (() => void) | undefined
+  /** What the last Copy link did, which the bar's button shows ("Copied" or "Copy failed"). */
+  copyLinkStatus?: CopyLinkStatus | undefined
   /** Beside the artifact, such as its open discussion (D7); Discuss is pressed while it shows. */
   side?: ReactNode
   /**
@@ -51,6 +53,7 @@ export function ArtifactDetail({
   badge,
   onDiscuss,
   onCopyLink,
+  copyLinkStatus,
   side,
   madeInLayer,
   projectMenu,
@@ -63,6 +66,7 @@ export function ArtifactDetail({
         discussOpen={side === undefined ? undefined : true}
         onDiscuss={onDiscuss}
         onCopyLink={onCopyLink}
+        copyLinkStatus={copyLinkStatus}
       />
       <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
       <ArtifactPreview artifact={artifact} />
