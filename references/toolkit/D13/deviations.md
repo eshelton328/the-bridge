@@ -8,8 +8,8 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 (`workflowOpen`) with the workflow's `flowPage`, its D13 description and
 when it changed, opened full page on How it works with step 4 selected.
 D03, D07, D14, D37, T07 and M19 give the same results as before D13 (each
-report's text, position and rule results are unchanged). The frame has no
-`exceptions.json`.
+report's text, position and rule results are unchanged). The frame's
+`exceptions.json` holds only icon sizes (Deviations).
 
 ## Checks
 
@@ -81,6 +81,14 @@ report's text, position and rule results are unchanged). The frame has no
 - **Other tabs.** Overview opens the workflow's D8 Overview on the same
   page; Files, Links, Evals and Activity show empty panels: they are
   later frames.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (446:137)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 446:137 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (446:142)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 446:142, as for `icon/artifacts`.
 
 ## Second review
 

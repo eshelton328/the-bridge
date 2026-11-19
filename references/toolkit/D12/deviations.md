@@ -149,3 +149,11 @@ From `pnpm fidelity toolkit` on 2026-11-19, against library
   the agents violet (Most called bars). The log's lines are 16 high on
   the 4 px grid (d-072), 1 less than Figma's 17. Both panels end 37 px
   higher, and the source line follows them.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (445:137)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 445:137 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (445:142)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 445:142, as for `icon/artifacts`.

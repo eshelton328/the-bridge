@@ -27,5 +27,17 @@
       "selector": "[data-figma=\"code\"] > div.scroll-frame__root > div.scroll-frame__body",
       "reason": "The script's long lines run past the preview's right edge in Figma too: line 4 (433:1595) ends at x 1101, past the code box's edge at 1083, and Figma cuts it. The render keeps the code at its full width in the library's ScrollFrame, whose body scrolls it sideways and takes the keyboard focus (d-107), so the cut is the frame's own scroll, not lost text."
     }
+  ],
+  "position": [
+    {
+      "layer": "433:1271",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (433:1271, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "433:1276",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (433:1276) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }

@@ -22,5 +22,17 @@
       "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
       "reason": "The kind chips scroll sideways (566 px of chips in 386): Figma's chip row runs past the list pane's right edge and cuts the Workflows chip at the same place (deviations.md \"Kind chips.\"). D03 takes the same exception."
     }
+  ],
+  "position": [
+    {
+      "layer": "459:137",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (459:137, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "459:142",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (459:142) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }

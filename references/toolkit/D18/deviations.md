@@ -140,3 +140,11 @@ library 1.0.0-beta.58, after the runs' lines wrap (see Runs).
   y -4.5). The chips are D1's, 2 px shorter in the library (Kind chip
   row); the switch is `ViewSwitch` 36 high and 16 px narrower than
   Figma's 38 (View switch 38 px).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (478:175)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 478:175 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (478:180)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 478:180, as for `icon/artifacts`.

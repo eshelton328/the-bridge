@@ -47,6 +47,16 @@
     {
       "layer": "toolkit row · writing",
       "reason": "The frame ends at eval-grader (427:200, y 917 to 970), and its layers run on below the frame's bottom edge to writing-reviewer (427:240, y 1169); the Rules group lies below that, and only its chip (Rules 8, 427:76) is in the frame, so the frame has no layer for it. The state's list is T1's, which shows the Rules group, and the render draws that group below the Agents rows, past the frame's bottom, as Figma's list runs on."
+    },
+    {
+      "layer": "427:38",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (427:38, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "427:43",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (427:43) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
     }
   ],
   "rules": [

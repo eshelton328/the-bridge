@@ -5,5 +5,17 @@
       "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
       "reason": "The view scrolls (1008 px in the 982 px window): beside the 420 px side panel each run's line wraps to two lines and the headless runs' caption to two, so the view is 26 px taller than the window (deviations.md \"Runs' lines\" and \"Two-line caption\"; LIBRARY_GAPS.md \"Run side panel\")."
     }
+  ],
+  "position": [
+    {
+      "layer": "445:137",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (445:137, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "445:142",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (445:142) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }

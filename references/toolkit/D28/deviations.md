@@ -80,3 +80,12 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   text check change of 2026-11-19 the check measures a Glyph's character
   by its icon (shown, at least 1 px, in view and not covered), so it sees
   the line whole and the frame needs no exception for it.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px
+  (492:1827) where the other rail icons are 22; the shared AppRail draws
+  every item's icon at 24 (d-100), so the render's icon is 24 and
+  `exceptions.json` names 492:1827 (bridge-coord's shared decision,
+  2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (492:1832)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 492:1832, as for `icon/artifacts`.

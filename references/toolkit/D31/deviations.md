@@ -78,3 +78,12 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   position check.
 - **Copy button.** The path badge's copy icon is a plain button with the
   library's `CopyIcon`, as on D8 (gap: Path badge copy button).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px
+  (493:1786) where the other rail icons are 22; the shared AppRail draws
+  every item's icon at 24 (d-100), so the render's icon is 24 and
+  `exceptions.json` names 493:1786 (bridge-coord's shared decision,
+  2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (493:1791)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 493:1791, as for `icon/artifacts`.

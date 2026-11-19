@@ -69,3 +69,11 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   61 × 34, 2 px lower (y 180 against 178), since `ItemTabs`' selected
   tab is as high as the others (32) and no size token is 34 (gap: Item
   tab width).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (492:137)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 492:137 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (492:142)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 492:142, as for `icon/artifacts`.

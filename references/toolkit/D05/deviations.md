@@ -6,7 +6,8 @@ What still differs from Figma after round 3 of the fidelity loop
 reason. The library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`.
 The state is `web/src/pages/toolkit/states/skillDiscuss.ts`: D3's data
 (`skillOpen`) with writer's discussion open (`ui.discussOpen`) and no
-Used in workflows section. The frame has no `exceptions.json`.
+Used in workflows section. The frame's `exceptions.json` holds only
+icon sizes (Deviations).
 
 ## Checks
 
@@ -68,3 +69,12 @@ Used in workflows section. The frame has no `exceptions.json`.
   name in the header (438:7) are mono 12, as Figma's.
 - **Copy. Copy writes the answer's text to the clipboard through
   `ToolkitPage`, as the path badge's copy does.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px
+  (432:1225) where the other rail icons are 22; the shared AppRail draws
+  every item's icon at 24 (d-100), so the render's icon is 24 and
+  `exceptions.json` names 432:1225 (bridge-coord's shared decision,
+  2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (432:1230)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 432:1230, as for `icon/artifacts`.

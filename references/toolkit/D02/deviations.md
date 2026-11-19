@@ -62,6 +62,14 @@ check measures only the canvas, the legend and the card.
   link bow).
 - **Open writer.** The card's button has no action yet: the item page
   (D3) is a later frame.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (426:37)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 426:37 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (426:42)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 426:42, as for `icon/artifacts`.
 
 ## Second review
 

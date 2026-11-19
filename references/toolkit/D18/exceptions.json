@@ -22,5 +22,17 @@
       "selector": "[data-figma=\"475:374\"] > h2",
       "reason": "The chat title ends with an ellipsis before the badge, as Figma's does (475:378 is 248 wide); the render's panel is 20 px narrower (deviations.md \"Chat title\"; LIBRARY_GAPS.md \"Run side panel\")."
     }
+  ],
+  "position": [
+    {
+      "layer": "478:175",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (478:175, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "478:180",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (478:180) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }

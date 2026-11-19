@@ -87,5 +87,17 @@
       "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
       "reason": "The view scrolls (1084 px in the 982 px window): the cards are 148 px high and the list is 1084 px high, past the frame's foot, as Figma's last card row (425:272) runs to y 1052 in the 982 px frame (deviations.md \"List height.\")."
     }
+  ],
+  "position": [
+    {
+      "layer": "424:141",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (424:141, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "425:7",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (425:7) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }
