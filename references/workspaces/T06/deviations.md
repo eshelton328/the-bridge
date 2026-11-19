@@ -34,8 +34,7 @@ no Artifacts tab, and no exception is needed.
   end, at y 1124, as on T02b and T07. The page cannot lower it without
   a raw value, and the shell's 34 follows T2b (bridge-coord, d-100).
 - **The composer is 7 px taller (Composer text, Composer attachment
-  remove), `402:15201` h +7.** `Composer` draws its text in `body` and
-  Stop as `Button size="sm"`, so Stop is wider than Figma's 61; the
+  remove), `402:15201` h +7.** `Composer` draws its text in `body`, and the
   attachment chip is 26 high against Figma's 22, with a thin paperclip
   and × against Figma's heavy ones.
 - **Claude's reply is taller (Message text), `402:10438` h +8.**

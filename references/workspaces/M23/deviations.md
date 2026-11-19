@@ -49,13 +49,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   about 67 × 24 against Figma's 63 × 22: no button size is 22 and no label
   style is Medium 11.
 - **The composer is 7 px taller and starts 12 px higher (Composer text,
-  Phone safe area), `422:897` y -12, h +7.** `Composer` draws its text in
-  `body` and Stop as `Button size="sm"` (14 px label, 16 px icon), so the
-  box is 112 high against Figma's 105 and Stop is about 67 × 32 against
-  Figma's 61 × 26. Figma ends the composer 8 above its 21 px home
-  indicator band; `AppShell` keeps a 34 px safe area under the detail when
-  there is no tab bar, so the composer ends 5 px higher. Both push its top
-  up: 698 against 710.
+  Phone safe area), `422:897` y -12, h +7.** `Composer` draws its text
+  in `body`, so the box is 112 high against Figma's 105. Stop draws
+  Figma's 12 px icon and a 12 px label, the 4 px grid's size for Figma's
+  11 (`stopIconSize`, `stopTextSize`, library beta.80, d-100), 61 × 28
+  against Figma's 61 × 26. Figma ends the composer 8 above its 21 px
+  home indicator band; `AppShell` keeps a 34 px safe area under the
+  detail when there is no tab bar, so the composer ends 5 px higher.
+  Both push its top up: 698 against 710.
 - **The composer's border is grey.** Figma draws the composer with the
   cyan border of a focused box (as in M22) while the caret is in the name
   field. Only one element can have the focus: the name field has it, so the

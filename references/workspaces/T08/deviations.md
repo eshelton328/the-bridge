@@ -62,11 +62,10 @@ chat under it inert: no exception is needed.
   draws the text in `body` (14/20) and the name in `label` against
   Figma's Geist 13 on a 19 px line and SemiBold 12, and Copy is 24 high
   against 22; the reply wraps at another word.
-- **Erik's message and the composer's text are larger (Message text,
-  Composer text).** Figma draws Erik's message in Geist 13 on a 19 px
-  line and Stop's label at 11 px; `Message from="user"` draws `body`
-  (14/20) and `Composer` draws Stop as `Button size="sm"` with `label`
-  (14).
+- **Erik's message is larger (Message text).** Figma draws Erik's
+  message in Geist 13 on a 19 px line; `Message from="user"` draws `body`
+  (14/20). Stop's label is 12 px against Figma's 11, the 4 px grid's size
+  (`stopTextSize`, library beta.80, d-100).
 - **The ⋯ is lighter and the header is 2 px taller (Chat header, Chat
   header text).** As on T06 and T07: a thin 20 px `MoreIcon` against
   Figma's heavy 18 px icon, and the title in `subtitle` (17/24); within

@@ -51,8 +51,9 @@ the focus in it and × at its end (`renameChat`).
 - **Attachment remove × (Composer attachment remove).** Figma's × on
   theme-ideas.md is bold; `Composer` draws its own thin `CloseIcon`.
 - **Composer text (Composer text).** The placeholder is `body` (14)
-  against Figma's Regular 13 (417:2421), and Stop is `Button size="sm"`
-  with a 14 px label against Figma's 11 px (417:2434).
+  against Figma's Regular 13 (417:2421). Stop's label is 12 px against
+  Figma's 11 (417:2434), the 4 px grid's size (`stopTextSize`, library
+  beta.80, d-100).
 - **Sidebar drift (Sidebar group header, Sidebar chat row).** Every
   sidebar header and row passes the position check within 4 px; the
   selected row and the lower headers sit 2 to 5 px off Figma's, the 2 px

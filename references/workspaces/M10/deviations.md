@@ -65,9 +65,10 @@ the skill list keeps /writer alone under `data.skillsMatching`.
   line and the name at 12, so the reply's three lines are 60 high against
   57 and its text is about 5% wider. The reply has no Copy, as in Figma.
 - **The composer is 9 px taller (Composer text), `147:79` h +9.**
-  `Composer` draws its text in `body` and Stop as `Button size="sm"`, so
-  the box with one line of text is 78 high against Figma's 69, and Stop is
-  wider than Figma's 61.
+  `Composer` draws its text in `body`, so the box with one line of text
+  is 78 high against Figma's 69. Stop draws Figma's 12 px icon and a 12
+  px label, the 4 px grid's size for Figma's 11 (`stopIconSize`,
+  `stopTextSize`, library beta.80, d-100), as wide as Figma's 61.
 - **No caret.** Figma draws the caret after "/wri" (147:82). The message
   box has the focus (its border is cyan), but the screenshots hide the
   caret.

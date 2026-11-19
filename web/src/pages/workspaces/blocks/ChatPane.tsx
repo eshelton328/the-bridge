@@ -272,6 +272,11 @@ export function ChatPane(props: ChatPaneProps) {
       // composer of the page draws the paperclip.
       {...(folders === undefined ? {} : { attachIcon: <PlusIcon size="12" />, attachLabel: 'Add' })}
       sendIconSize={sendIconSize}
+      // Every running chat composer of the page draws Stop with a 12 px stop icon and a 25 × 14 Medium label (D01
+      // 105:253 and 105:255, M03 105:2839, T04 105:2284, D19 417:1730): the 12 px icon and `labelXs` (12), the
+      // nearest text size to Figma's 11 (d-100), in place of the 16 px icon and the 14 px `label` (library beta.80).
+      stopIconSize="12"
+      stopTextSize="xs"
       layout={layout}
       model={
         folders === undefined ? (

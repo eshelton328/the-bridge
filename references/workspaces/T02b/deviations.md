@@ -55,8 +55,7 @@ tab bar, so the render has no Artifacts tab, and no exception is needed.
 - **The composer's border is grey.** Figma draws the composer with a cyan
   border while the menu is open; the focus is in the menu, and the
   library's `Composer` draws `border.default` when its box has no focus.
-  The composer's text and Stop are larger than Figma's 13 and 11 px
-  (Composer text).
+  The composer's text is larger than Figma's 13 px (Composer text).
 - **The transcript sits 24 in from the sides, Figma's 22,** on the 4 px
   grid; within the tolerance.
 - **The stars sit elsewhere (Backdrop stars).** `Backdrop size="tablet"`

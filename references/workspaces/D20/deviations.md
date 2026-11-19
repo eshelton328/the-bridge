@@ -54,10 +54,6 @@ with Undo over the composer (`movedChat`).
   Figma's. No text style is SemiBold 16, and `Composer` and `Message`
   take no text size. The workspace line and "context" under the title
   are `monoSm` and `smallXs`, as Figma's (D19 417:1670, 417:1689).
-- **Stop is wider (Composer text).** `Composer` draws Stop as
-  `Button size="sm"`, a 14 px label with a 16 px icon, about 9 px wider
-  than Figma's 58 px button with an 11 px label and a 12 px icon
-  (417:2127).
 - **Group header icons (Sidebar group header).** Figma's rename and
   close on the OMNI header (D21 417:2326, 417:2329) are 13 px outline
   icons with a 2 px stroke, so they look heavy; `EditIcon` and
