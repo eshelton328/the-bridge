@@ -1,0 +1,21 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["493:1095"],
+      "reason": "The Workflows chip's label (493:1095, x 457) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    },
+    {
+      "text": "2",
+      "layers": ["493:1096"],
+      "reason": "The Workflows chip's count (493:1096, x 533) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways (566 px of chips in 386): Figma's chip row runs past the list pane's right edge and cuts the Workflows chip at the same place (deviations.md \"Kind chips.\"). D03 takes the same exception."
+    }
+  ]
+}

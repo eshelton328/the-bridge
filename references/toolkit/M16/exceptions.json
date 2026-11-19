@@ -1,0 +1,9 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "reason": "The item's DetailFrame body scrolls (807 px in the 774 px window): Figma's item runs on under the tab bar, and the render's page runs under the pinned tab bar (AppShell tabBarOverlay) the same way (deviations.md \"Rules and text under the tab bar\")."
+    }
+  ]
+}

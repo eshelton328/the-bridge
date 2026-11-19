@@ -1,4 +1,16 @@
 {
+  "missing": [
+    {
+      "text": "AGENTS",
+      "layers": ["429:198"],
+      "reason": "`AGENTS` (Figma y 818): the rows are 58 px high against Figma's 53, so the Agents header lies under the tab bar and past the screen's foot, where Figma shows it at y 818; the page scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (phone)\")."
+    },
+    {
+      "text": "7",
+      "layers": ["429:199"],
+      "reason": "`7` (Figma y 818): the rows are 58 px high against Figma's 53, so the Agents header lies under the tab bar and past the screen's foot, where Figma shows it at y 818; the page scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (phone)\")."
+    }
+  ],
   "position": [
     {
       "layer": "group · RULES",

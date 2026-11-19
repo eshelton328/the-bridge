@@ -14,6 +14,21 @@
       "text": "# exits 1 with one line per problem. Git runs it from the top of the work",
       "layers": ["433:1595"],
       "reason": "Figma cuts the fourth line of the script at the preview's right edge: the text layer (433:1595, x 575 to 1101) runs past the code box (433:1583, which ends at 1083), so it shows up to \"the wo\". The render keeps the code at its full width in the library's ScrollFrame, which scrolls it sideways inside the preview the same way, so the line is in the DOM, cut at the same place, and comes into view when the code scrolls."
+    },
+    {
+      "text": "hooks/commit-msg",
+      "layers": ["433:1446"],
+      "reason": "`hooks/commit-msg` is in the commit-msg row (Figma y 918). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "→1  ←1",
+      "layers": ["433:1448"],
+      "reason": "`→1 ←1` is in the commit-msg row (Figma y 908). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "commit-msg",
+      "layers": ["433:1445"],
+      "reason": "`commit-msg` is in the commit-msg row (Figma y 898). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
     }
   ],
   "rules": [
@@ -26,6 +41,11 @@
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"code\"] > div.scroll-frame__root > div.scroll-frame__body",
       "reason": "The script's long lines run past the preview's right edge in Figma too: line 4 (433:1595) ends at x 1101, past the code box's edge at 1083, and Figma cuts it. The render keeps the code at its full width in the library's ScrollFrame, whose body scrolls it sideways and takes the keyboard focus (d-107), so the cut is the frame's own scroll, not lost text."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own (1066 px of rows in the 982 px pane): its rows are 62 px high against Figma's 53, so the last rows lie past the frame's foot (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\"). D03 takes the same exception."
     }
   ]
 }

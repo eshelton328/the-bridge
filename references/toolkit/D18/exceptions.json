@@ -1,0 +1,26 @@
+{
+  "missing": [
+    {
+      "text": "Counts, titles and items come from the Claude Code session files on this Mac, Oct 31 to Nov 15; running now is sample data. Chats are sessions from the CLI or the desktop app.",
+      "layers": ["478:482"],
+      "reason": "The source note (Figma y 895) lies under the window's foot in the render: beside the 420 px side panel the view is 420 px narrower, the runs' lines wrap and the view is taller, so the page scrolls it into view (deviations.md \"Side panel\"; LIBRARY_GAPS.md \"Run side panel\")."
+    },
+    {
+      "text": "Writer rules, skills, and agents",
+      "layers": ["475:378"],
+      "reason": "The chat title in the side panel's header is cut with an ellipsis before the badge, as Figma cuts it too (475:378 is 248 wide); the render's panel is 20 px narrower (deviations.md \"Chat title\"; LIBRARY_GAPS.md \"Run side panel\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (1048 px in the 982 px window): the view is 420 px narrower beside the side panel and the runs' lines wrap, so the view is taller and its source line lies under the window's foot (deviations.md \"Side panel\"; LIBRARY_GAPS.md \"Run side panel\")."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"475:374\"] > h2",
+      "reason": "The chat title ends with an ellipsis before the badge, as Figma's does (475:378 is 248 wide); the render's panel is 20 px narrower (deviations.md \"Chat title\"; LIBRARY_GAPS.md \"Run side panel\")."
+    }
+  ]
+}

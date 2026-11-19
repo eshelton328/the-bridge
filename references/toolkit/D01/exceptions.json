@@ -81,6 +81,11 @@
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"toolkit card · eval-grader\"] > article.card__root > div.card__body > p.card__description > span.truncated-text",
       "reason": "The ellipsis Figma draws on the eval-grader card description (layer 425:250, see its missing entry): the line is cut at the card width, and the tooltip shows it in full."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (1084 px in the 982 px window): the cards are 148 px high and the list is 1084 px high, past the frame's foot, as Figma's last card row (425:272) runs to y 1052 in the 982 px frame (deviations.md \"List height.\")."
     }
   ]
 }

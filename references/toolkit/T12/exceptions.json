@@ -1,0 +1,21 @@
+{
+  "missing": [
+    {
+      "text": "515 sessions · none loaded an item · Nov 9",
+      "layers": ["477:1945"],
+      "reason": "`515 sessions · none loaded an item · Nov 9` (Figma y 1063): under the taller chart the last two evals' lines lie under the tab bar, where Figma shows them over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "404 sessions · 55 loaded an item · Oct 31 to Nov 9",
+      "layers": ["477:1955"],
+      "reason": "`404 sessions · 55 loaded an item · Oct 31 to Nov 9` (Figma y 1128): under the taller chart the last two evals' lines lie under the tab bar, where Figma shows them over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "reason": "The item's DetailFrame body scrolls (1471 px in the 1089 px window): Figma's item runs on under the tab bar, and the render's page runs under the pinned tab bar (AppShell tabBarOverlay) the same way (deviations.md \"Rules and text under the tab bar\")."
+    }
+  ]
+}

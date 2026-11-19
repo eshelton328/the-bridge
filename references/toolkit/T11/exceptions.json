@@ -1,0 +1,31 @@
+{
+  "missing": [
+    {
+      "text": "Harness status in omni brain",
+      "layers": ["477:1553"],
+      "reason": "`Harness status in omni brain` (Figma y 999): under the taller chart and rows the last chat and Show all 8 chats start lower and the opaque tab bar covers this text, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "Nov 8 · omni-brain · 2 hook blocks",
+      "layers": ["477:1554"],
+      "reason": "`Nov 8 · omni-brain · 2 hook blocks` (Figma y 1024): under the taller chart and rows the last chat and Show all 8 chats start lower and the opaque tab bar covers this text, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "agents-md",
+      "layers": ["477:1559"],
+      "reason": "`agents-md` (Figma y 1052): under the taller chart and rows the last chat and Show all 8 chats start lower and the opaque tab bar covers this text, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "Show all 8 chats",
+      "layers": ["477:1562"],
+      "reason": "`Show all 8 chats` (Figma y 1085): under the taller chart and rows the last chat and Show all 8 chats start lower and the opaque tab bar covers this text, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Show all 8 chats\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "reason": "The item's DetailFrame body scrolls (1449 px in the 1089 px window): Figma's item runs on under the tab bar, and the render's page runs under the pinned tab bar (AppShell tabBarOverlay) the same way (deviations.md \"Rules and text under the tab bar\")."
+    }
+  ]
+}

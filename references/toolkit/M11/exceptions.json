@@ -19,6 +19,182 @@
       "text": "ambitious",
       "layers": ["461:1001"],
       "reason": "The node (node · ambitious, 461:998, y 609) lies below the bottom edge of the map window (map viewport 461:866, y 93 to 593), which clips the drawing: frame.png does not show it. The text check reads only the layer's box, which is inside the frame, and cannot see Figma's clip. The render clips the node at the same edge."
+    },
+    {
+      "text": "→7  ←4",
+      "layers": ["461:1266"],
+      "reason": "The phone's selection card writes the counts in words (→ links to 7 ← linked from 4) on their own line, where Figma's card shows →7 ←4 at the title row's end (deviations.md \"Selection card.\"; LIBRARY_GAPS.md \"Map selection card (phone)\")."
+    },
+    {
+      "text": "Show links",
+      "layers": ["461:1274"],
+      "reason": "The phone's selection card has no Show links button: MapSelectionCard has one full-width Open writer button (deviations.md \"Selection card.\"; LIBRARY_GAPS.md \"Map selection card (phone)\")."
+    },
+    {
+      "text": "RULES, HOOKS",
+      "layers": ["461:1062"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "SKILLS",
+      "layers": ["461:1063"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "AGENTS",
+      "layers": ["461:1064"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "WORKFLOWS",
+      "layers": ["461:1065"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "writing",
+      "layers": ["461:1119"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "ste100",
+      "layers": ["461:1124"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "readmes",
+      "layers": ["461:1129"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "commits-and-prs",
+      "layers": ["461:1134"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "diagrams",
+      "layers": ["461:1139"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "skills",
+      "layers": ["461:1144"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "linear",
+      "layers": ["461:1149"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "releases",
+      "layers": ["461:1154"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "commit-msg",
+      "layers": ["461:1159"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "writer",
+      "layers": ["461:1163"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "audit-slop",
+      "layers": ["461:1167"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "pr-description",
+      "layers": ["461:1171"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "readme",
+      "layers": ["461:1175"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "mermaid-diagrams",
+      "layers": ["461:1179"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "eval-cases",
+      "layers": ["461:1183"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "project-setup",
+      "layers": ["461:1187"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "agents-md",
+      "layers": ["461:1191"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "ambitious",
+      "layers": ["461:1195"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "writing-reviewer",
+      "layers": ["461:1200"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "writer",
+      "layers": ["461:1205"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "pr-description-checker",
+      "layers": ["461:1210"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "readme-cold-reader",
+      "layers": ["461:1215"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "diagram-reviewer",
+      "layers": ["461:1220"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "eval-case-writer",
+      "layers": ["461:1225"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "eval-grader",
+      "layers": ["461:1230"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "skill-eval-cases",
+      "layers": ["461:1236"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "skill-eval-round",
+      "layers": ["461:1242"],
+      "reason": "Text of Figma's minimap (minimap bg 461:1255, 93 × 116, in the map window's top right corner). The render has no minimap, so the minimap's names are not drawn (deviations.md \"Minimap.\"; LIBRARY_GAPS.md \"Map minimap\")."
+    },
+    {
+      "text": "pr-description",
+      "layers": ["461:977"],
+      "reason": "The skill node's name ends with an ellipsis: MapNode gives the name 96 px against Figma's 104, with a 16 px kind icon against 13, where Figma shows pr-description in full (deviations.md \"Node labels.\"; LIBRARY_GAPS.md \"Map node 140 px\")."
+    }
+  ],
+  "extra": [
+    {
+      "text": "→ links to 7 ← linked from 4",
+      "reason": "The counts line of the phone's selection card: MapSelectionCard writes the counts in words on their own line, where Figma's card shows →7 ←4 at the title row's end (deviations.md \"Selection card.\"; LIBRARY_GAPS.md \"Map selection card (phone)\")."
     }
   ],
   "rules": [

@@ -1,0 +1,41 @@
+{
+  "missing": [
+    {
+      "text": "MOST CALLED",
+      "layers": ["449:626"],
+      "reason": "`MOST CALLED` (Figma y 714): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "442",
+      "layers": ["449:634"],
+      "reason": "`442` (Figma y 738): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "writer",
+      "layers": ["449:646"],
+      "reason": "`writer` (Figma y 786): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "330",
+      "layers": ["449:648"],
+      "reason": "`330` (Figma y 786): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "agents-md",
+      "layers": ["449:653"],
+      "reason": "`agents-md` (Figma y 810): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "261",
+      "layers": ["449:655"],
+      "reason": "`261` (Figma y 810): under the taller chart Most called starts 65 px lower, so its header and first rows lie under the tab bar, where Figma shows them over it; the page scrolls it into view (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (979 px in the 806 px window): the page runs under the pinned tab bar (AppShell tabBarOverlay) as Figma's does, and under the taller chart Most called starts 65 px lower (deviations.md \"Most called under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ]
+}
