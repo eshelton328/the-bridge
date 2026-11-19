@@ -11,7 +11,7 @@
 // layers.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
-import { movedChat } from './movedChat.ts'
+import { movedChat, moveLastChats } from './movedChat.ts'
 import { phoneChatActions } from './phoneChatActions.ts'
 import { phoneChatFull } from './phoneChatFull.ts'
 import { phoneFork } from './phoneFork.ts'
@@ -26,6 +26,7 @@ export const phoneMovedChat = {
     workspaces: movedChat.data.workspaces,
     current: movedChat.data.current,
     panes: phoneFork.data.panes,
+    lastChats: moveLastChats(phoneChatFull.data.lastChats, phoneFork.data.panes),
     phone: { ...phoneChatFull.data.phone, chatMenu: phoneChatActions.data.phone.chatMenu },
     toast: { text: 'Moved to the-bridge', action: 'Undo' },
     layers: {

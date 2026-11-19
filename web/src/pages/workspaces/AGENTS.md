@@ -395,7 +395,8 @@ first: it says what each file of a page folder is for.
   Move to workspace's list open, the-bridge highlighted), D20
   `movedChat` (from `chatActions`, without the side chat and the menu:
   bridge themes and theme tokens moved to the-bridge, now `current`, and
-  the toast with Undo), D21 `renameChat` (from `chatActions`, without the
+  the toast with Undo; `moveLastChats` moves the last chats too, which M22
+  and T13 use), D21 `renameChat` (from `chatActions`, without the
   side chat and the menu: the chat's name a field in its header), M1
   `phoneHome` (from `chatActions`, without the side chat, the drag, the
   hovered header and the menu, with `data.phone`; at a desktop width it
@@ -564,7 +565,9 @@ first: it says what each file of a page folder is for.
   workbench a chat is dragged over; for D14 `resize`, the dragged handle
   of a rows-first split and its sizes, and `splitSizes`, each handle's
   sizes, so a drag of one handle leaves the others (the columns-first
-  `SplitPanes`' handles too: `columns`, `left`, `right`); for D15 `chatDialog`,
+  `SplitPanes`' handles too: `columns`, `left`, `right`); for R6
+  `workspace`, the workspace whose tab is selected, and `layouts`, each
+  workspace's layout by id; for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
   and `names`, the names Erik gave chats, and `drafts`, the text Erik typed
@@ -580,5 +583,29 @@ first: it says what each file of a page folder is for.
   `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
   box in focus with the skills closed; for M23 `refocusMessage`, the box
   takes the focus back when the name field closes), each a Zod schema.
+- Workspace tabs (Erik's review R6): a click on a tab shows that
+  workspace (`ui.workspace`) with the layout it had when Erik left it:
+  its panes, the sizes of its handles, its focused pane and its side chat
+  (`sideChatOpen`, closed for a workspace that has none), in
+  `ui.layouts` by workspace id (`blocks/workspaceLayout.ts`). A resize or
+  a closed pane (the empty pane's Close pane) changes only the shown
+  workspace's layout, so a later Reset pane sizes can reset one
+  workspace. A workspace with no layout shows the state's panes when it
+  is `data.current`, and its last chat (`data.lastChats`, mock chats in
+  `states/workbench.ts`) alone in one pane when it is another; a state
+  that moves chats to another workspace moves its last chats with them; the status
+  bar counts its panes. `WorkspacesScreen` reads the shown workspace's
+  panes (`shownView`) for the chat alone beside the sidebar, the chats
+  the sidebar can open and the chat actions' targets, so the sidebar
+  shows again on another tab. A switch unmounts the panes of the workspace
+  left, and their drafts stay in `ui.drafts`. The page store keeps the
+  layouts across page visits. The phone and the tablet's list views have no workspace tabs,
+  so this does not apply there; a tablet that draws the desktop layout
+  gets it with the tabs. `WorkspaceTabSwitch.test.tsx` tests it, and
+  `app/WorkspacesRoute.test.tsx` through the route and a page visit.
+- Open questions answered: D1's note (a saved reference) leaves open
+  whether each workspace keeps herdr's own layout (open question 4). On
+  2026-11-18 Erik's answer to review R6 settled it: each workspace keeps
+  its own layout, as above.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

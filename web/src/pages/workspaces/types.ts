@@ -792,6 +792,20 @@ const SplitHandle = z.enum([...ResizePart.options, 'columns', 'left', 'right'])
 
 /** The sizes of each handle of the split, in percent; a handle with none shares its panes equally. */
 const SplitSizes = z.partialRecord(SplitHandle, z.array(z.number()))
+export type SplitSizes = z.infer<typeof SplitSizes>
+
+/**
+ * The layout of one workspace (R6): its panes by id, clockwise from the top left, the sizes of its handles and the
+ * pane that had the focus when Erik left it.
+ */
+export const WorkspaceLayout = z.object({
+  panes: z.array(z.string()),
+  splitSizes: SplitSizes.optional(),
+  focusedPane: z.string().optional(),
+  /** The workspace's side chat is open (`ui.sideChatOpen`); closed when not set. */
+  sideChatOpen: z.boolean().optional(),
+})
+export type WorkspaceLayout = z.infer<typeof WorkspaceLayout>
 
 /** The view state a Figma frame shows. */
 export const WorkspacesUi = z.object({
@@ -854,9 +868,18 @@ export const WorkspacesUi = z.object({
     .optional(),
   /**
    * The sizes of each handle of the split, rows first or columns first, in percent, kept apart so that a drag of one
-   * handle leaves the others as they are; `resize` sets its own handle's sizes over these.
+   * handle leaves the others as they are; `resize` sets its own handle's sizes over these. A workspace's saved layout
+   * has its own (`layouts`).
    */
   splitSizes: SplitSizes.optional(),
+  /** The workspace whose tab is selected (R6); `data.current` when not set. */
+  workspace: z.string().optional(),
+  /**
+   * The layout of each workspace, by workspace id (R6): a click on a tab shows that workspace as Erik left it, and a
+   * resize or a closed pane changes only the shown workspace's. A workspace with none shows the state's panes when it
+   * is `data.current`, and its last chat (`data.lastChats`) alone in one pane when it is another.
+   */
+  layouts: z.record(z.string(), WorkspaceLayout).optional(),
   /**
    * What Erik has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
    * when its pane mounts again, after a visit to another page or a closed pane, so it starts from its draft here.

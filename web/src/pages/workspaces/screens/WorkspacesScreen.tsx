@@ -42,6 +42,7 @@ import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
+import { shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 
@@ -124,14 +125,17 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         onUiChange={change}
       />
     )
-  const current = workspaces.find((w) => w.id === data.current)
+  // The shown workspace (R6): a tab Erik picked shows its own panes, so the focused chat, the chats the sidebar can
+  // open and the chat actions' targets come from its panes, not the state's.
+  const shown = shownView(named, ui).data
+  const current = workspaces.find((w) => w.id === shown.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
       <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
     </div>
   )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
-  const focused = panes.find((p) => p.id === ui.focusedPane)
+  const focused = shown.panes.find((p) => p.id === ui.focusedPane)
   const chat = focused?.type === 'chat' ? focused : undefined
   if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
     const menuOpen = ui.menuFor === chat?.id
@@ -140,7 +144,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         <ChatActionsMenu
           title={chat.head.title}
           actions={data.chatMenu}
-          targets={workspaces.filter((w) => w.id !== data.current)}
+          targets={workspaces.filter((w) => w.id !== shown.current)}
           newWorkspace={data.newWorkspace}
           open={menuOpen}
           onOpenChange={(open) => {
@@ -247,7 +251,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
               text={data.sidebar}
               workspaces={workspaces}
               selected={ui.focusedPane}
-              openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
+              openable={shown.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
               onUiChange={change}
               layers={data.layers}
@@ -259,7 +263,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
             ) : (
               <MainChat
                 pane={chat}
-                workspace={current?.label ?? data.current}
+                workspace={current?.label ?? shown.current}
                 contextLabel={data.sidebar.contextLabel}
                 skills={{
                   label: data.skillsLabel,

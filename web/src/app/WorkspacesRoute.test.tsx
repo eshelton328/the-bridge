@@ -19,6 +19,8 @@ function renderAt(path: string) {
 }
 
 const columns = () => page.getByRole('separator', { name: 'Resize columns' })
+const tab = (label: string) => page.getByRole('tab', { name: new RegExp(`^${label}(?![\\w-])`) })
+const pane = (title: string) => page.getByRole('button', { name: `Maximise ${title}` })
 
 let view: { unmount: () => Promise<void> } | undefined
 
@@ -66,5 +68,34 @@ describe('the Workspaces route', () => {
     await expect.element(composer('bridge themes · fork')).toHaveValue('fork draft')
     await open('bridge themes')
     await expect.element(composer('bridge themes')).toHaveValue('original draft')
+  })
+
+  // R6: each workspace keeps its own layout in the page store, so a tab switch and a page visit both keep it.
+  it('keeps each workspace and its pane sizes across a tab switch and a page visit', async () => {
+    view = await renderAt('/workspaces?state=twoPanes')
+    await userEvent.click(columns())
+    await userEvent.keyboard('{ArrowRight}{ArrowRight}')
+    const resized = columns().element().getAttribute('aria-valuenow')
+    expect(resized).not.toBe('50')
+    await userEvent.click(tab('the-bridge'))
+    await expect.element(pane('hono server')).toBeVisible()
+    await expect.element(pane('bridge themes')).not.toBeInTheDocument()
+    await view.unmount()
+    view = await renderAt('/workspaces?state=twoPanes')
+    await expect.element(tab('the-bridge')).toHaveAttribute('aria-selected', 'true')
+    await expect.element(pane('hono server')).toBeVisible()
+    await userEvent.click(tab('omni-brain'))
+    await expect.element(pane('drift check')).toBeVisible()
+    await expect.element(columns()).toHaveAttribute('aria-valuenow', resized)
+  })
+
+  it('opens a workspace with no layout on its last chat, alone in one pane', async () => {
+    view = await renderAt('/workspaces?state=twoPanes')
+    await userEvent.click(tab('omni'))
+    await expect.element(tab('omni')).toHaveAttribute('aria-selected', 'true')
+    await expect.element(pane('release notes')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: /^Maximise / })).toHaveLength(1)
+    await expect.element(columns()).not.toBeInTheDocument()
+    await expect.element(page.getByText('omni · 1 pane', { exact: true })).toBeVisible()
   })
 })

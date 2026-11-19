@@ -5,6 +5,7 @@
 // zone over the part of the pane where it would open (D8). With `data.split`
 // `rows` the split is rows first (D14), and a dragged handle shows its
 // readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
+// The empty pane's Close pane reports the pane closed (`onClosePane`).
 // A chat's composer starts from Erik's draft (`ui.drafts`) and reports what
 // he types, so the draft outlives the pane: a page visit, a closed pane.
 // Props only; `ui` says which pane is focused and which menu,
@@ -41,9 +42,11 @@ export type WorkbenchPanesProps = {
   data: WorkspacesData
   ui: WorkspacesUi
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
+  /** Called with a pane's id when Erik closes it with the empty pane's Close pane (D13). */
+  onClosePane?: ((pane: string) => void) | undefined
 }
 
-export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
+export function WorkbenchPanes({ data, ui, onUiChange, onClosePane }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
   const chatsLayers = data.layers?.paneChats ?? chatLayers
@@ -66,6 +69,7 @@ export function WorkbenchPanes({ data, ui, onUiChange }: WorkbenchPanesProps) {
       return (
         <EmptyPane
           {...pane}
+          onClose={() => onClosePane?.(pane.id)}
           figma={{ pane: data.layers?.panes?.[place], rows: data.layers?.emptyRows, close: data.layers?.emptyClose }}
         />
       )
