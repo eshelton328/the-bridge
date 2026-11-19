@@ -1,13 +1,14 @@
 // An artifact open beside the library list (Figma "artifact pane", D2
 // 403:448): the bar, the title block, the preview and where it was made,
 // 20 apart in the detail column (748 wide). With its discussion open (D7)
-// the list closes, the artifact keeps its column and the discussion takes
-// the rest of the pane, as the Inbox's task and discussion (D14); the
+// the list closes and the library `DetailSplit` keeps the artifact's
+// column and gives the discussion the rest of the pane, up to
+// `shell.discussionPane`, as the Inbox's task and discussion (D14); the
 // column and the discussion each scroll on their own (d-107). Copy
 // link, Remove, Open artifact and Open in workspace render as Figma draws
 // them; their screens come with later frames. The project chip opens the
 // project menu (`projectMenu`). Props only.
-import { Container, Stack } from '@eshelton328/component-library-1701'
+import { Container, DetailSplit, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
@@ -19,12 +20,11 @@ import type { ArtifactDetail as Artifact } from '../types.ts'
 
 // The pane fills the shell's detail column, as Figma's 403:448 does.
 const pane = css({ flex: '1' })
-// D7: the artifact keeps its column and the side fills the rest. Both fill the detail's height and no more, so the
-// column's DetailFrame and the side's ScrollFrame each scroll on their own (d-107), as the Inbox's task and discussion.
-const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1', minH: '[0]' })
-const column = css({ display: 'flex', flexDirection: 'column', flexShrink: '0', minH: '[0]' })
-// Beside a side the column shrinks to its content; the content keeps its full 748, so the detail Container is 828
-// with its 40 px sides, as the artifact pane beside the list.
+// D7: in DetailSplit's item the column fills the detail's height and no more, so its DetailFrame and the side's
+// ScrollFrame each scroll on their own (d-107), as the Inbox's task and discussion.
+const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
+// DetailSplit's item keeps its content's width; the content keeps its full 748, so the detail Container is 828 with
+// its 40 px sides, as the artifact pane beside the list, and the side takes the 620 left in a 1512 px frame.
 const full = css({ w: 'shell.detail' })
 
 export type ArtifactDetailProps = {
@@ -70,7 +70,7 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer, 
       </div>
     )
   return (
-    <div className={withSide}>
+    <DetailSplit side={side}>
       <div className={column} data-figma="artifact pane">
         <DetailFrame layout="desktop">
           <Stack gap="20" className={full}>
@@ -78,7 +78,6 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer, 
           </Stack>
         </DetailFrame>
       </div>
-      {side}
-    </div>
+    </DetailSplit>
   )
 }

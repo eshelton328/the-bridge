@@ -84,9 +84,11 @@ each file of a page folder is for.
   phone's page shows D8's question, reply and proposal as T5 does, and
   Apply closes the page the same way (`proposalEffect(…, 'page')`), so
   M2 shows Updated and Discuss reopens the applied proposal.
-  With its discussion open (`ui.discussOpen`, D7) the list closes, the
-  artifact keeps its 828 px column and `DiscussionPanel` takes the rest,
-  as the Inbox's task and discussion (D14); Discuss toggles it. The
+  With its discussion open (`ui.discussOpen`, D7) the list closes and
+  the library `DetailSplit` keeps the artifact's 828 px column and gives
+  `DiscussionPanel` the rest, up to `shell.discussionPane` (620 in the
+  1512 px frames), as the Inbox's task and discussion (D14); Discuss
+  toggles it. `ArtifactDetailSplit.test.tsx` checks it. The
   artifact's column (the shared block `DetailFrame`) and the discussion
   (the library `ScrollFrame`) each scroll on their own: the discussion's
   header stays at the top and its reply box, whose long draft the Composer
@@ -165,7 +167,7 @@ each file of a page folder is for.
   `screens/ArtifactDetail.tsx`: the open artifact in a `Container
   size="detail"`: `ArtifactBar`, `ArtifactTitleBlock`, `ArtifactPreview`
   and `MadeIn` (only with `madeIn`), 20 apart, and an optional `side`
-  beside it (D7). `ArtifactPreview` keeps Open artifact at the end of its
+  beside it in `DetailSplit` (D7). `ArtifactPreview` keeps Open artifact at the end of its
   footer when the artifact has no link.
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search

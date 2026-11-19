@@ -15,9 +15,10 @@ import { DiscussionEmpty } from './DiscussionEmpty.tsx'
 import { DiscussionEntry } from './DiscussionEntry.tsx'
 import { DiscussionHeader } from './DiscussionHeader.tsx'
 
-// Figma's panel is 628 wide, what is left beside the 820 px artifact pane. The pane here is Container
-// size="detail" (748 + 2 × 40), so the panel starts 8 px further right; its 12 px start padding keeps the content at
-// Figma's x 905, as the Inbox's panel (LIBRARY_GAPS.md "Discussion panel width").
+// Figma's panel is 628 wide, what is left beside the 820 px artifact pane. It is DetailSplit's side, which takes what
+// the artifact's Container size="detail" (748 + 2 × 40) leaves, up to `shell.discussionPane`: 620 in a 1512 px frame,
+// 8 px further right than Figma's. Its 12 px start padding keeps the content at Figma's x 905, as the Inbox's panel
+// (LIBRARY_GAPS.md "Discussion panel width").
 const panel = css({
   display: 'flex',
   flexDirection: 'column',

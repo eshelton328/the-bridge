@@ -44,11 +44,13 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   library 1.0.0-beta.74, as in D07. Library gaps "Artifact preview frame"
   and "Thumbnail colour".
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
-  `discussion panel` x +8, w -8, as in D07 and D08: the artifact keeps
-  `Container size="detail"` (828) against Figma's 820 pane, so the panel
-  is 620 wide against 628; its 12 px start padding keeps the content at
-  Figma's x 905. Library gap "Discussion panel width"; the 40 px inset is
-  d-072.
+  `discussion panel` x +8, w -8, as in D07 and D08: in the library's
+  `DetailSplit` the artifact keeps `Container size="detail"` (828)
+  against Figma's 820 pane and the panel takes the rest, up to
+  `shell.discussionPane`, so it is 620 wide against 628; its 12 px start
+  padding keeps the content at Figma's x 905. The 8 px is the 40 px
+  inset against Figma's 36 (d-072); "Discussion panel width" is decided
+  with no library change.
 - **Discuss.** `button · Discuss` x -4.2, w +4.8, as in D08: `Button
   textSize="sm"` pads its sides more than Figma's. It is pressed while the
   discussion is open; since library beta.36 (#138) its border is
