@@ -16,7 +16,6 @@ export function eventsRoutes(live: LiveEvents) {
   return new Hono().get('/', (c) =>
     streamSSE(c, async (stream) => {
       let disconnect: (() => void) | undefined
-      let ping: ReturnType<typeof setInterval> | undefined
       let finish: () => void = () => undefined
       const closed = new Promise<void>((resolve) => {
         finish = resolve
@@ -27,6 +26,9 @@ export function eventsRoutes(live: LiveEvents) {
         disconnect = undefined
         finish()
       }
+      const ping = setInterval(() => {
+        void stream.write(': ping\n\n')
+      }, pingMs)
       // The cleanup is in place before the first write, so a client that goes during it leaves nothing open.
       stream.onAbort(done)
       await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
@@ -34,9 +36,6 @@ export function eventsRoutes(live: LiveEvents) {
         done()
         return
       }
-      ping = setInterval(() => {
-        void stream.write(': ping\n\n')
-      }, pingMs)
       disconnect = live.connect({
         send: (event) => {
           const checked = LiveEvent.parse(event)
