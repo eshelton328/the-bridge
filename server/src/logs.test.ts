@@ -32,6 +32,22 @@ describe('pnpm logs', () => {
     expect(formatEntry(entry)).toBe('2026-11-19T10:00:00.000Z INFO  request requestId=a\n  Error: boom\n      at x')
   })
 
+  it('prints the stack of each cause of an error under the error', () => {
+    const entry = parseLine(
+      line({
+        err: {
+          message: 'outer',
+          stack: 'Error: outer\n    at a',
+          cause: { message: 'inner', stack: 'Error: inner\n    at b' },
+        },
+      }),
+    )
+    if (!entry) throw new Error('no entry')
+    expect(formatEntry(entry)).toBe(
+      '2026-11-19T10:00:00.000Z INFO  request\n  Error: outer\n      at a\n  caused by: Error: inner\n      at b',
+    )
+  })
+
   it('reads a time as minutes, hours or days ago, or as an ISO time', () => {
     const now = new Date('2026-11-19T12:00:00Z')
     expect(sinceOf('15m', now)).toEqual(new Date('2026-11-19T11:45:00Z'))

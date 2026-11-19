@@ -46,14 +46,35 @@ function matches(entry: LogEntry, { requestId, level, since }: LogFilter): boole
 
 const levelName = (n: number): string => logLevels.find((l) => levelNumber[l] === n)?.toUpperCase() ?? String(n)
 
+const ErrorShape = z.object({
+  message: z.string().optional(),
+  stack: z.string().optional(),
+  cause: z.unknown().optional(),
+})
+
+/** The stack (or the message) of an error and of each of its causes, outermost first. */
+function errorChain(err: unknown): string[] {
+  const chain: string[] = []
+  for (let at: unknown = err; chain.length < 10; ) {
+    const shape = ErrorShape.safeParse(at)
+    const text = shape.success ? (shape.data.stack ?? shape.data.message) : undefined
+    if (!shape.success || text === undefined) break
+    chain.push(text)
+    at = shape.data.cause
+  }
+  return chain
+}
+
 /** `time LEVEL msg key=value …`, then the error's stack, indented. */
 export function formatEntry(entry: LogEntry): string {
   const { level, time, msg, err, ...fields } = entry
   const pairs = Object.entries(fields).map(([k, v]) => `${k}=${typeof v === 'string' ? v : JSON.stringify(v)}`)
   const head = [time, levelName(level).padEnd(5), msg, ...pairs].join(' ')
-  const stack = z.object({ stack: z.string() }).safeParse(err)
-  if (stack.success) return `${head}\n  ${stack.data.stack.replaceAll('\n', '\n  ')}`
-  return err === undefined ? head : `${head} err=${JSON.stringify(err)}`
+  const chain = errorChain(err)
+  if (chain.length === 0) return err === undefined ? head : `${head} err=${JSON.stringify(err)}`
+  return [head, ...chain.map((text, i) => `  ${i === 0 ? '' : 'caused by: '}${text.replaceAll('\n', '\n  ')}`)].join(
+    '\n',
+  )
 }
 
 /** The entries of every log file in `dir`, oldest file first, that match `filter`. */
