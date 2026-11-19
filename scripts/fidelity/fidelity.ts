@@ -25,10 +25,11 @@ import { waitForAnimations } from './settle.ts'
 import {
   frameDir,
   fidelityChecks,
+  gateResults,
   parseChecks,
   parseTolerance,
   readExceptions,
-  type FidelityCheck,
+  type GateCheck,
   readFrameRef,
   referencesDir,
   repoRoot,
@@ -47,12 +48,14 @@ const { values, positionals } = parseArgs({
 })
 const [page, ...requested] = positionals
 if (page === undefined || !existsSync(join(referencesDir, page))) {
-  console.error('Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules]')
+  console.error(
+    'Usage: pnpm fidelity <page> [frameId…] [--skip-build] [--tolerance <px>] [--checks text,rules[,icons]]',
+  )
   console.error(`Pages with references: ${existsSync(referencesDir) ? readdirSync(referencesDir).join(', ') : 'none'}`)
   process.exit(2)
 }
 let tolerance: number | undefined
-let checks: FidelityCheck[] = [...fidelityChecks]
+let checks: GateCheck[] = [...fidelityChecks]
 try {
   tolerance = values.tolerance === undefined ? undefined : parseTolerance(values.tolerance, '--tolerance')
   if (values.checks !== undefined) checks = parseChecks(values.checks, '--checks')
@@ -147,7 +150,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   const text = checkText(ref, exceptions, measured)
   const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance, measured.iconBoxes)
   const rules = checkRules(ref, exceptions, measured)
-  const results = { text: text.ok, position: position.ok, rules: rules.ok }
+  const results = gateResults({ text, position, rules })
   // The report's ok stays the result of all three checks, which
   // fidelity:check-build reads; gate is the result of the checks picked.
   const ok = fidelityChecks.every((c) => results[c]) && errors.length === 0

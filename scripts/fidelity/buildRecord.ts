@@ -6,7 +6,7 @@
 // that the branch changes no check, test threshold, baseline or reference.
 // checkBuild.ts reads the files and git; everything here is pure.
 import { z } from 'zod'
-import { fidelityChecks } from './references.ts'
+import { fidelityChecks, gateChecks } from './references.ts'
 
 const text = z.string().trim().min(1)
 const repoPath = z
@@ -62,7 +62,7 @@ export function firstObject(reply: string): unknown {
 /** The parts of a `pnpm fidelity` report (reports/fidelity/<page>/<frameId>.json) the checks read. */
 const fidelityReport = z.object({
   ok: z.boolean(),
-  checks: z.array(z.enum(fidelityChecks)).optional(),
+  checks: z.array(z.enum(gateChecks)).optional(),
   state: z.string().optional(),
   text: z.object({
     ok: z.boolean(),
