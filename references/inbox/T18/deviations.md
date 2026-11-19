@@ -45,19 +45,16 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Side inset.** `Container size="tablet"` pads 24 against Figma's 22,
   so every full-width layer is `x +2, w -4` (within the tolerance).
 - **Discussion page header.** Back ("Task") is the library's
-  `BackRow`, 28 px high against Figma's 30 row 4 px under the status
-  bar; `Container size="tablet"` pads 12 at the top, so `nav` sits 8 px
-  lower than Figma's (`nav` y +8). The model and
+  `BackRow`, 28 px high against Figma's 30. The page pads 4 at the top,
+  so the row sits 4 px under the status bar, as Figma draws it. The model and
   context are `ModelChip`, `ContextMeter` and "context" in `monoSm`, as
   in D14; the chip's own padding makes the group 10 px wider and 4 px
   taller (`model and context`). The Discussion pill is `StatusPill
-  tone="running"`. Library gap: Chat header on the tablet.
+  tone="running"`.
 - **Task card.** A `Panel` with the title (`paneTitle`, SemiBold 15),
-  the Next step pill, a chevron, the task's place and the guard. The
-  `Panel` pads 16 against Figma's 12, so the card is 8 px taller
-  (`task · discussing` h +8), the chevron 6 px left (`chevron · open
-  task` x -6) and the guard 6 px right (`guard` x +6, w -12). Library
-  gap: Chat header on the tablet.
+  the Next step pill, a chevron, the task's place and the guard. It is the
+  notice `Panel`, which pads 10 and 12 as Figma does, so the card, the
+  chevron and the guard are within the tolerance.
 - **Discussion column.** Figma sets the entries in a 560 px column at
   the start of the page; no size token is 560, so the messages and
   proposals take the page's 708 px (`w +148` on each). The first entry

@@ -90,9 +90,13 @@ function DesktopHeader({ detail, onViewTask }: { detail: InboxRunning; onViewTas
   )
 }
 
+// T5 346:6366 and M8 346:10836: the nav is 38 high, 4 under the status bar, with its 30 px button 4 in from its top.
+// The page pads 4 at the top (`compactChatPadding`), and the nav pads 4 around the 28 px Back row: 36 high.
+const compactNav = css({ py: '4' })
+
 function CompactNav({ onBack }: { onBack: (() => void) | undefined }) {
   return (
-    <div data-figma="nav">
+    <div data-figma="nav" className={compactNav}>
       <BackRow label="Inbox" onBack={onBack}>
         <OpenInWorkspaces size="sm" textSize="xs" label="Workspaces" figma="button · Open in Workspaces" />
       </BackRow>
@@ -104,13 +108,13 @@ function CompactHeader({ detail, phone }: { detail: InboxRunning; phone: boolean
   return (
     <>
       <div data-figma="started task">
-        <Panel>
+        {/* T5 346:6378 and M8 346:10848 pad their content 10 at the top and 12 or 13 at the sides inside the border:
+            the notice Panel (10 and 12), as the discussion page's task card. */}
+        <Panel variant="notice">
           <Stack gap="4">
-            {/* Figma sets the title, the state and the chevron 8 apart in a row 340 wide (M8 346:10849); the header's
-                `Panel` pads 16 against Figma's 13, so the row is 332 here and the pill 2 px wider. On the phone the
-                gaps take 6, which gives the title back the 4 px it needs to show whole, as Figma draws it; a longer
-                title still ends with an ellipsis. */}
-            <Inline gap={phone ? '6' : '8'} align="center">
+            {/* Figma sets the title, the state and the chevron 8 apart in a row 340 wide (M8 346:10849); the notice
+                `Panel` pads 12 against Figma's 13, so the row is 342 here. A longer title ends with an ellipsis. */}
+            <Inline gap="8" align="center">
               <h1 className={phone ? phoneTitle : compactTitle}>
                 <TruncatedText>{detail.title}</TruncatedText>
               </h1>
@@ -137,7 +141,8 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
   const chat = (
     <ScrollFrame
       className={layout === 'desktop' ? undefined : compactChatPadding[layout]}
-      gap="16"
+      // T5 and M8: the started task 8 under the nav (346:6366 to 346:6378, 346:10836 to 346:10848).
+      gap={layout === 'desktop' ? '16' : '8'}
       bodyClassName={bodyGap}
       header={layout === 'desktop' ? undefined : <CompactNav onBack={onBack} />}
       footer={

@@ -37,27 +37,26 @@ shorter, below Figma's status bar (d-102), and the position check adds
   rounded corners are device chrome too (d-089): the render draws
   neither. Library gap:
   Top and bottom safe areas on the phone.
-- **Chat header.** As in T5: Back with Workspaces is `BackRow` (28 px)
-  against Figma's 38 px row (`nav` h -10), so the header starts 2 px
-  higher (`started task` y -2). The header `Panel` pads 16 against
-  Figma's 13, so the chevron is 4 px left (`chevron · open task` x -4,
-  within the tolerance) and the chat line 4 px right (`running
-  in` x +4, w -8); the box is 6 px taller (`started task` h +6).
+- **Chat header.** As in T5: the nav pads 4 around the 28 px
+  `BackRow`, so it is 36 px high against Figma's 38, and the started
+  task sits 8 under it. The header is the notice `Panel` (10 and 12)
+  against Figma's 10 and 13, so the chevron, the chat line and the box
+  are within the tolerance.
   Workspaces is `textSize="xs"` (Medium 12/16), Figma's Medium 12
   (346:10847, read from Figma; library #109, beta.8). The button is
   `size="sm"`: 28 px high against Figma's 30 and about 5 px narrower,
   because `sm` pads its label less than Figma's 112 px button does
   (`button · Open in Workspaces` x +4.8, w -4.7, h -2; was x -6.8,
-  w +6.8 with the 14 px `label`). Library gap: Chat header on the
-  tablet.
+  w +6.8 with the 14 px `label`). Library gap: Open in Workspaces in
+  the chat nav.
 - **Title.** The title shows whole on one line, as Figma draws it, and
   a longer one ends with an ellipsis, as the note says (`TruncatedText`).
-  The header's `Panel` pads 16 against Figma's 13, so its row is 8 px
-  narrower; the title, the pill and the chevron are 6 apart against
-  Figma's 8, which gives the title the room it needs. Figma's title is
+  The header's notice `Panel` pads 12 against Figma's 13, so its row
+  is 2 px wider, and the title, the pill and the chevron are 8 apart,
+  as in Figma. Figma's title is
   14 px SemiBold; the phone draws it in `label` (Medium 14), since
-  `paneTitle` (15) cuts it. Library gaps: Title of the started task on
-  the phone, Chat header on the tablet.
+  `paneTitle` (15) cuts it. Library gap: Title of the started task on
+  the phone.
 - **Chat.** The entries are 12 apart, as in Figma (346:10863 to
   346:10884). Copy under the reply is `Button size="xs" textSize="xs"`:
   24 px high against Figma's 22 (the 4 px grid value, d-100) and

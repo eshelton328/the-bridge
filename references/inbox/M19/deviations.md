@@ -44,19 +44,18 @@ shorter, below Figma's status bar (d-102), and the position check adds
   only Back ("Task") and the Discussion pill. `BackRow` is 28 px high
   against Figma's 29 (`nav` h -1). The model chip's own padding makes
   the group about 10 px wider and 4 px taller (`model and context` w,
-  h). Library gap: Chat header on the tablet.
+  h).
 - **Task card under the nav.** The card sits 8 under the nav, as
   Figma draws it (was 16), so it is within 1 px of Figma
   (`task · discussing` y -1). Every layer under it moved up 8 too.
 - **Task card.** A `Panel` with the title, cut on one line with an
   ellipsis as Figma cuts it (TruncatedText; the exception says why the
   cut title passes), the Next step pill, a chevron, the place, the model
-  and context and the guard. The `Panel` pads 16 against Figma's 12 and
-  its rows are 4 apart against Figma's 5, so the card is 12 px taller
-  (`task · discussing` h +12), the chevron 4 px left (`chevron · open
-  task` x -4) and the guard 4 px right (`guard` x +4, w -8). Every
-  entry under the card starts lower by what the card adds. Library gap:
-  Chat header on the tablet.
+  and context and the guard. It is the notice `Panel`, which pads 10 and 12 as Figma does. Its
+  rows are 4 apart against Figma's 5 (no spacing token is 5), and the
+  model chip is 4 px taller, so the card is 6 px taller
+  (`task · discussing` h +6). Every entry under the card starts lower
+  by what the card adds.
 - **Reply box.** The reply box sits above the home indicator, as Figma
   draws it (`composer · discussion` within 6 px). The story focuses the
   composer, as Figma draws it with a caret; the focused border is cyan,
