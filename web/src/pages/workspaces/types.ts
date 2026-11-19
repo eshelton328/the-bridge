@@ -708,12 +708,12 @@ export type PaneDrop = z.infer<typeof PaneDrop>
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
-export const WorkspacesData = z.object({
+const WorkspacesDataFields = z.object({
   /** The number of Inbox items that need the owner, on the rail. */
   railBadge: z.number(),
   workspaces: z.array(Workspace),
-  /** The workspace shown. */
-  current: z.string(),
+  /** The workspace shown: one of `workspaces`, or null when there are none (an empty live list, P-3). */
+  current: z.string().nullable(),
   /** The current workspace's panes, clockwise from the top left. */
   panes: z.array(WorkbenchPane),
   status: z.object({ summary: z.string(), hints: z.array(z.string()), alert: z.string() }),
@@ -783,6 +783,11 @@ export const WorkspacesData = z.object({
    */
   lastChats: z.record(z.string(), WorkbenchPane).optional(),
 })
+
+export const WorkspacesData = WorkspacesDataFields.refine(
+  (data) => (data.current === null ? data.workspaces.length === 0 : data.workspaces.some((w) => w.id === data.current)),
+  { message: '`current` must name one of `workspaces`, and be null only when there are none', path: ['current'] },
+)
 export type WorkspacesData = z.infer<typeof WorkspacesData>
 
 /** A handle of a rows-first split (D14): between the rows, or between the columns of the top or bottom row. */

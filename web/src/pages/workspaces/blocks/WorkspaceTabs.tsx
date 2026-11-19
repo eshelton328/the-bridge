@@ -54,7 +54,8 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
   )
   return (
     <Workbench
-      value={shown}
+      // No workspace (an empty live list): no tab is selected.
+      value={shown ?? undefined}
       onValueChange={(next) => {
         if (next !== shown) onUiChange?.(switchTo(data, ui, next))
       }}
@@ -94,7 +95,7 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
         <Button
           size="sm"
           iconOnly
-          aria-label={`New chat in ${current?.label ?? shown}`}
+          aria-label={shown === null ? 'New chat' : `New chat in ${current?.label ?? shown}`}
           data-figma={data.layers?.newChat ?? '150:2'}
         >
           <PlusIcon size="16" />

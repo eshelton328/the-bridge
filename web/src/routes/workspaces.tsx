@@ -5,6 +5,6 @@ import { WorkspacesPage, workspacesSearch, loadWorkspacesState } from '../pages/
 export const Route = createFileRoute('/workspaces')({
   validateSearch: workspacesSearch,
   loaderDeps: ({ search }) => ({ state: search.state, source: search.source }),
-  loader: ({ deps }) => loadWorkspacesState(deps.state, deps.source),
+  loader: ({ deps, abortController }) => loadWorkspacesState(deps.state, deps.source, abortController.signal),
   component: WorkspacesPage,
 })

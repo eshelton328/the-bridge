@@ -106,10 +106,17 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
 }
 
 /**
+ * How long the live read waits for the server, in ms: the owner's decision under d-101, 8 s, as a read over the
+ * tailnet takes under 1 s.
+ */
+export const liveReadTimeoutMs = 8000
+
+/**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the
  * ErrorTray, with the error body's message when there is one.
  * - `unreachable`: the server gave no answer. The request failed (`status` undefined: the server or the tailnet is
  *   down), or the Vite proxy or `tailscale serve` answered 502 or 503 with a body that is not an error body.
+ * - `timeout`: no answer came within `liveReadTimeoutMs`.
  * - `herdr-unavailable`: the server answered that herdr is not available (503).
  * - `refused`: the server refused this viewer (401 or 403).
  * - `status`: any other error status; `errorKind` is the error body's kind when it has one.
@@ -122,6 +129,7 @@ export type LiveMiss =
       readonly requestId: string | undefined
       readonly message: string
     }
+  | { readonly kind: 'timeout'; readonly requestId: undefined; readonly message: string }
   | { readonly kind: 'herdr-unavailable'; readonly requestId: string; readonly message: string }
   | {
       readonly kind: 'refused'
@@ -156,18 +164,30 @@ function missOf(status: number, body: string, headerRequestId: string | undefine
   return { kind: 'status', status, errorKind: error?.kind, requestId, message }
 }
 
+/** `signal` ended the read on its timeout (AbortSignal.timeout), not on a navigation or a cancel. */
+const timedOut = (signal: AbortSignal) =>
+  signal.aborted && signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError'
+
 /**
  * Reads the workspaces through the RPC client and checks them against the contract. The status comes first: an
  * error answer may not be JSON (the Vite proxy or `tailscale serve` with the server down), so its body is read as
  * text and parsed only if it can be. An expected miss is the Result's error; a reply the contract refuses throws.
+ * `signal` ends the read: on its timeout the read is a `timeout` miss; on any other abort, such as the owner
+ * leaving the page, it throws the abort.
  */
-export async function fetchWorkspaces(): Promise<Result<WorkspacesResponse, LiveMiss>> {
+export async function fetchWorkspaces(signal: AbortSignal): Promise<Result<WorkspacesResponse, LiveMiss>> {
+  const timeout = {
+    kind: 'timeout',
+    requestId: undefined,
+    message: `the server did not answer within ${String(liveReadTimeoutMs / 1000)} s`,
+  } as const
   let res: Awaited<ReturnType<typeof api.api.workspaces.$get>>
   try {
-    res = await api.api.workspaces.$get()
+    res = await api.api.workspaces.$get(undefined, { init: { signal } })
   } catch (thrown) {
+    if (timedOut(signal)) return err(timeout)
     // fetch rejects with a TypeError when no answer comes: the server or the tailnet cannot be reached.
-    if (thrown instanceof TypeError)
+    if (thrown instanceof TypeError && !signal.aborted)
       return err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' })
     throw thrown
   }
@@ -176,9 +196,11 @@ export async function fetchWorkspaces(): Promise<Result<WorkspacesResponse, Live
     const body: unknown = await res.json()
     return ok(WorkspacesResponse.parse(body))
   } catch (thrown) {
+    // The body can stall after the headers; the timeout ends that read too.
+    if (timedOut(signal)) return err(timeout)
     // The connection can drop after the headers: the body read then rejects with a TypeError, and the answer never
     // came in full. A body that is not JSON (SyntaxError) or that the contract refuses (ZodError) still throws.
-    if (thrown instanceof TypeError)
+    if (thrown instanceof TypeError && !signal.aborted)
       return err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' })
     throw thrown
   }
@@ -207,6 +229,11 @@ function noticeOf(miss: LiveMiss): { title: string; description: string } {
           miss.status === undefined
             ? 'The-bridge server did not answer. Start it or check the tailnet, then reload.'
             : `The-bridge server did not answer (${String(miss.status)}${request}). Start it or check the tailnet, then reload.`,
+      }
+    case 'timeout':
+      return {
+        title,
+        description: `The-bridge server took more than ${String(liveReadTimeoutMs / 1000)} seconds to answer. Check that it is not stuck, then reload.`,
       }
     case 'herdr-unavailable':
       return {
@@ -421,27 +448,34 @@ export function watchLiveWorkspaces({
 }
 
 export type LiveDeps = {
-  readonly client: QueryClient
-  readonly fetch: () => Promise<Result<WorkspacesResponse, LiveMiss>>
+  readonly client?: QueryClient
+  /** Reads the server; `signal` ends the read. */
+  readonly fetch?: (signal: AbortSignal) => Promise<Result<WorkspacesResponse, LiveMiss>>
+  /** The router's signal for this load: it aborts when the owner leaves the page or the load starts again. */
+  readonly signal?: AbortSignal | undefined
 }
 
 /**
  * `state` with the server's workspaces, or with its own data and a notice when the read missed (`LiveMiss`). The
  * notice shows over every layout (`liveNotice`), in the status bar, which only the workbench layout shows, and in
  * the dev ErrorTray; the live source is development only. Anything else that throws, such as a reply the contract
- * refuses or a bug in the mapper, rejects, so the route shows RouteError and not mock data.
+ * refuses or a bug in the mapper, rejects, so the route shows RouteError and not mock data. The read ends after
+ * `liveReadTimeoutMs` (a `timeout` miss) or when `signal` aborts (it rejects with the abort). With no live
+ * workspaces, `current` is null.
  */
 export async function withLiveWorkspaces(
   state: WorkspacesScreenState,
-  { client, fetch }: LiveDeps = { client: queryClient, fetch: fetchWorkspaces },
+  { client = queryClient, fetch = fetchWorkspaces, signal }: LiveDeps = {},
 ): Promise<WorkspacesScreenState> {
   // While the events keep the cache current, a load reads the cache; an event that cannot be applied to it
   // marks it invalid, and then the load reads the server.
   // An event during the read may be newer than the read's answer, so the cache is then marked invalid again
   // once it holds the answer, and the page loads once more.
-  const read = async () => {
+  // The read ends on the router's abort, the query's cancel or the timeout, whichever comes first.
+  const read = async ({ signal: cancel }: { signal: AbortSignal }) => {
     const before = taken
-    const answer = await fetch()
+    const ends = [cancel, AbortSignal.timeout(liveReadTimeoutMs), ...(signal === undefined ? [] : [signal])]
+    const answer = await fetch(AbortSignal.any(ends))
     if (!answer.ok) throw new LiveMissError(answer.error)
     if (taken !== before)
       setTimeout(() => {
@@ -464,5 +498,6 @@ export async function withLiveWorkspaces(
   const workspaces = toWorkspaces(response)
   const alert = stopped ?? lost
   const status = alert === undefined ? state.data.status : { ...state.data.status, alert }
-  return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? state.data.current } }
+  // The first live workspace is shown; with none (an empty list) no workspace is, never one of the sample's (P-3).
+  return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? null } }
 }
