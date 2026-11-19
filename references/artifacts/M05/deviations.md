@@ -73,8 +73,8 @@ under its meta line, the match marked (`Highlight`).
   title and adds no line (408:92). A project match adds no line.
 - Writer cross-family round: its preview is a chart in M5 (408:330) and a
   doc in D4 (403:8280); `searchPhone` sets the chart.
-- Focus: the story focuses the search, as Figma draws it with the focus
-  border.
+- Focus: the state opens with the focus in the search (`ui.searchFocus`),
+  as Figma draws it with the focus border.
 
 ## Fix rounds
 

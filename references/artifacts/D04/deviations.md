@@ -49,8 +49,8 @@ each with its reason. The library gaps are in
   their sides more than Figma's 11 px, and the search and the space
   before the view switch share the free width equally where Figma gives
   the search 22 px more. Library gap "Sort and Filter button widths".
-- **Search clear button.** The story focuses the search field, so it
-  shows Figma's cyan focus border. The × that clears the search
+- **Search clear button.** The state opens with the focus in the search
+  field (`ui.searchFocus`), so it shows Figma's cyan focus border. The × that clears the search
   (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
   bold and bright white. `SearchField` sets the clear button's colour and
   takes no tone for it. Library gap "Search clear button".

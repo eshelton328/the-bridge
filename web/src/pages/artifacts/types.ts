@@ -357,6 +357,8 @@ export const ArtifactsUi = z.object({
   groupsOpen: z.record(ArtifactGroupId, z.boolean()),
   /** The text in the search field. */
   query: z.string(),
+  /** The search field has the focus as the screen opens (D4, M5). */
+  searchFocus: z.boolean().optional(),
   /** The Filter menu is open (D3). */
   filterOpen: z.boolean().optional(),
   /** The Filter menu's checked boxes; they apply when Erik selects Show. */

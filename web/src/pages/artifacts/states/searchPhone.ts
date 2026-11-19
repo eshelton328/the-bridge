@@ -34,5 +34,6 @@ export const searchPhone = {
       excerpts: { 'readme-cold-reader-run': '…the cold-reader eval of the readme skill…' },
     },
   },
-  ui: { ...libraryPhone.ui, query: 'eval' },
+  // Figma draws the search focused, with its cyan border (408:50).
+  ui: { ...libraryPhone.ui, query: 'eval', searchFocus: true },
 } satisfies ScreenState<ArtifactsData, ArtifactsUi>
