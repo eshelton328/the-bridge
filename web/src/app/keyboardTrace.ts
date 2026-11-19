@@ -119,7 +119,7 @@ export function readKbExperiment(win: Window = window): string | null {
 }
 
 /** Whether the user asks for reduced motion. */
-export function readReducedMotion(win: Window = window): boolean {
+function readReducedMotion(win: Window = window): boolean {
   return typeof win.matchMedia === 'function' && win.matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
