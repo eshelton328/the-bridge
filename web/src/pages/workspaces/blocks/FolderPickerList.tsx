@@ -125,6 +125,7 @@ export function FolderPickerList(props: FolderPickerListProps) {
             <Button
               key={folder}
               variant="text"
+              keepIconSize
               className={cx(row, plain)}
               aria-label={picker.openLabel.replace('{folder}', folder)}
               data-figma={layers.browse[i]}

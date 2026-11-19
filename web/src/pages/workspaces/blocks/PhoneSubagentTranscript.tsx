@@ -106,7 +106,14 @@ export function PhoneSubagentTranscript({
                 {item.meta}
               </p>
               {running ? (
-                <Button size="sm" textSize="sm" variant="secondaryDanger" className={stop} data-figma={layers?.stop}>
+                <Button
+                  size="sm"
+                  textSize="sm"
+                  variant="secondaryDanger"
+                  keepIconSize
+                  className={stop}
+                  data-figma={layers?.stop}
+                >
                   <StopIcon size="12" />
                   {labels.stop}
                 </Button>

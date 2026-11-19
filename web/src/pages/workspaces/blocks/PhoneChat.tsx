@@ -117,6 +117,7 @@ export function PhoneChat(props: PhoneChatProps) {
           variant="text"
           size="xs"
           iconOnly
+          keepIconSize
           className={backButton}
           aria-label={backLabel}
           onClick={onBack}

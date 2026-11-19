@@ -125,6 +125,7 @@ export function PhoneEditGroup(props: PhoneEditGroupProps) {
             variant="text"
             size="xs"
             iconOnly
+            keepIconSize
             className={chevron}
             // A disclosure toggle: it keeps its bare look while the chats show, as Figma draws it (105:2612).
             expandedBorder="default"
