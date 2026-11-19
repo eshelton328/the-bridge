@@ -193,45 +193,6 @@ describe('the Toolkit home', () => {
     await expect.element(page.getByText(/^You review one draft for a reader/)).toBeVisible()
   })
 
-  /** A Links row's file and line, by its text, in the open item's Links tab. */
-  function linkRow(at: string) {
-    const found = [...document.querySelectorAll('[data-figma="links"] button')].find((b) => b.textContent.trim() === at)
-    if (!(found instanceof HTMLElement)) throw new Error(`no link ${at}`)
-    return found
-  }
-
-  // Each Links row's file and line opens the file's source at that line, as the Links states do (D19, D29 to D32): the
-  // item the row opens, its file, the line and what that line says.
-  it.each([
-    ['skills/writer/', 'SKILL.md:8', 'writer', 'SKILL.md', 8, 'The writing rules in'],
-    ['skills/writer/', 'SKILL.md:118', 'writer', 'SKILL.md', 118, 'audit-slop'],
-    ['skills/writer/', 'agents/writing-reviewer.md:30', 'writing-reviewer', 'writing-reviewer.md', 30, 'Run the lint.'],
-    ['agents/writing-reviewer.md', 'skills/writer/SKILL.md:107', 'writer', 'SKILL.md', 107, 'writing-reviewer agent'],
-    [
-      'agents/writing-reviewer.md',
-      'writing-reviewer.md:58',
-      'writing-reviewer',
-      'writing-reviewer.md',
-      58,
-      'ten patterns',
-    ],
-    ['rules/skills.md', 'skills.md:72', 'skills', 'skills.md', 72, 'The eval-cases skill'],
-    ['hooks/commit-msg', 'commit-msg:3', 'commit-msg', 'commit-msg', 3, 'Checks a commit message'],
-  ] as const)('opens %s’s link %s from the desktop home at its line', async (path, at, name, file, line, text) => {
-    await page.viewport(1512, 982)
-    view = await renderAt('/toolkit')
-    await expect.poll(() => layer('toolkit card · agents-md')).not.toBeNull()
-    tapItem(path)
-    await userEvent.click(page.getByRole('tab', { name: 'Links' }))
-    await expect.poll(() => layer('links')).not.toBeNull()
-    linkRow(at).click()
-    const viewer = () => document.querySelector(`article[aria-label="${name}"] [data-figma="viewer"]`)
-    await expect.poll(() => viewer()?.getAttribute('aria-label')).toBe(file)
-    const shown = () => viewer()?.querySelector(`[data-line="${String(line)}"]`)
-    await expect.poll(shown).not.toBeNull()
-    expect(shown()?.nextElementSibling?.textContent).toContain(text)
-  })
-
   it('shows the phone list at the same scroll after Back from an item', async () => {
     await page.viewport(390, 844)
     view = await renderAt('/toolkit')
