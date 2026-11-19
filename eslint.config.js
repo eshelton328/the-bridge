@@ -26,7 +26,7 @@ import {
 
 const tsFiles = ['**/*.{ts,tsx}']
 const webFiles = ['web/src/**/*.{ts,tsx}', 'web/.storybook/**/*.{ts,tsx}']
-const nodeFiles = ['scripts/**/*.ts', '*.ts', 'web/*.ts', 'web/.storybook/main.ts']
+const nodeFiles = ['scripts/**/*.ts', '*.ts', 'web/*.ts', 'web/.storybook/main.ts', 'server/src/**/*.ts', 'e2e/**/*.ts']
 
 // Type syntax that no typescript-eslint rule covers (from the library).
 const typeSyntax = [
@@ -233,7 +233,13 @@ const layerImportConfigs = Object.keys(layerPaths).flatMap((layer) => {
 // are PascalCase and named after their export. TanStack route files keep
 // the router's names (__root.tsx, $id, URL segments).
 const namingConfig = {
-  files: ['web/src/**/*.{ts,tsx}', 'shared/src/**/*.ts', 'scripts/**/*.ts'],
+  files: [
+    'web/src/**/*.{ts,tsx}',
+    'shared/src/**/*.ts',
+    'contract/src/**/*.ts',
+    'server/src/**/*.ts',
+    'scripts/**/*.ts',
+  ],
   ignores: ['web/src/routes/**'],
   plugins: { 'check-file': checkFile },
   rules: {
@@ -242,7 +248,10 @@ const namingConfig = {
       { '**/*.tsx': 'PASCAL_CASE', '**/*.ts': 'CAMEL_CASE' },
       { ignoreMiddleExtensions: true },
     ],
-    'check-file/folder-naming-convention': ['error', { '{web/src,shared/src,scripts}/**/': 'CAMEL_CASE' }],
+    'check-file/folder-naming-convention': [
+      'error',
+      { '{web/src,shared/src,contract/src,server/src,scripts}/**/': 'CAMEL_CASE' },
+    ],
   },
 }
 
@@ -274,7 +283,7 @@ export default tseslint.config(
     rules: { ...typeRules, 'no-restricted-syntax': ['error', ...typeSyntax] },
   },
   { files: nodeFiles, languageOptions: { globals: globals.node } },
-  { files: ['shared/src/**/*.ts'], languageOptions: { globals: {} } },
+  { files: ['shared/src/**/*.ts', 'contract/src/**/*.ts'], languageOptions: { globals: {} } },
   {
     files: webFiles,
     extends: [eslintReact.configs['recommended-type-checked'], reactHooks.configs.flat.recommended],
@@ -321,7 +330,11 @@ export default tseslint.config(
     files: ['web/src/errors/globalHandlers.ts'],
     rules: { 'no-restricted-syntax': ['error', ...typeSyntax, ...storeSyntax] },
   },
-  // Module augmentation needs an interface: the router registers its type on TanStack's Register.
-  { files: ['web/src/app/router.ts'], rules: { '@typescript-eslint/consistent-type-definitions': 'off' } },
+  // Module augmentation needs an interface: the router registers its type on TanStack's Register, and the
+  // E2E setup its provided values on Vitest's ProvidedContext.
+  {
+    files: ['web/src/app/router.ts', 'e2e/herdrSession.ts'],
+    rules: { '@typescript-eslint/consistent-type-definitions': 'off' },
+  },
   namingConfig,
 )

@@ -1,7 +1,8 @@
 // The data source layer: where a page loader gets its state. `fixtures`
-// reads the page's state files and is the default; `mock-api` and `live`
-// are not built yet, so a loader turns their miss into the not-built
-// screen (errors/NotFound.tsx). In development `?source=` and `?state=`
+// reads the page's state files and is the default. A page that has built
+// `live` names it in `built`; for every other page, and for `mock-api`,
+// the source is not built yet, so a loader turns its miss into the
+// not-built screen (errors/NotFound.tsx). In development `?source=` and `?state=`
 // pick the source and the state; with no `?state=`, and always in a
 // production build, a loader reads the page's home.
 import { err, ok, type Result } from '@bridge/shared'
@@ -18,6 +19,9 @@ const dataSourceKinds = ['fixtures', 'mock-api', 'live'] as const
 export const dataSourceParam = z.coerce.string().optional()
 
 type DataSourceKind = (typeof dataSourceKinds)[number]
+
+/** What a page built besides its fixtures, such as `{ built: ['live'] }` for the Workspaces page. */
+export type DataSourceOptions = { readonly built?: readonly Exclude<DataSourceKind, 'fixtures'>[] }
 
 /** Why a source has no state. A loader throws it as `notFound({ data })`. */
 export type DataSourceMiss =
@@ -47,22 +51,27 @@ export type PageHome<S> = string | { readonly key: string; readonly state: S }
  * `?state=` (and always in a production build) it is the page's `home`:
  * a state of its own with every overlay closed, or a state file's key,
  * the first one when not set. An unknown source or state is a miss that
- * shows as "Page not found", as an unknown `?state=` always has.
+ * shows as "Page not found", as an unknown `?state=` always has. A source
+ * the page built (`options.built`) reads the same state with `live: true`:
+ * the loader then puts the source's data on it.
  */
 export function readState<S>(
   states: Readonly<Record<string, S>>,
   request: DataSourceRequest,
   home: PageHome<S> | undefined = Object.keys(states)[0],
-): Result<{ key: string; state: S }, DataSourceMiss> {
+  options: DataSourceOptions = {},
+): Result<{ key: string; state: S; live?: true }, DataSourceMiss> {
   const dev = import.meta.env.DEV
   const source = dev && request.source !== undefined ? request.source : 'fixtures'
   if (!isKind(source)) return err({ reason: 'unknownSource', source })
-  if (source !== 'fixtures') return err({ reason: 'notBuilt', source })
+  const live = source === 'live' && (options.built ?? []).includes('live')
+  if (source !== 'fixtures' && !live) return err({ reason: 'notBuilt', source })
+  const mark = live ? { live: true as const } : {}
   const requested = dev ? request.state : undefined
-  if (requested === undefined && typeof home === 'object') return ok({ key: home.key, state: home.state })
+  if (requested === undefined && typeof home === 'object') return ok({ key: home.key, state: home.state, ...mark })
   const key = requested ?? (typeof home === 'string' ? home : undefined)
   const state = key !== undefined && Object.hasOwn(states, key) ? states[key] : undefined
   return key === undefined || state === undefined
     ? err({ reason: 'unknownState', state: key ?? '' })
-    : ok({ key, state })
+    : ok({ key, state, ...mark })
 }

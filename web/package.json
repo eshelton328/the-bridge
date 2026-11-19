@@ -15,10 +15,13 @@
     "build-storybook": "storybook build"
   },
   "dependencies": {
+    "@bridge/contract": "workspace:*",
+    "@bridge/server": "workspace:*",
     "@bridge/shared": "workspace:*",
     "@eshelton328/component-library-1701": "catalog:",
     "@fontsource-variable/geist": "catalog:",
     "@fontsource-variable/geist-mono": "catalog:",
+    "@tanstack/react-query": "catalog:",
     "@tanstack/react-router": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",

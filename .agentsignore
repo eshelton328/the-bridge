@@ -2,8 +2,10 @@
 # ancestor's. Gitignore syntax. Dot-folders and gitignored paths are always
 # skipped. scripts/checkAgentsMd.ts reads this file.
 
-# Source of the shared package; shared/AGENTS.md covers it
+# Source of the shared, contract and server packages; each package's AGENTS.md covers it
 shared/src/
+contract/src/
+server/src/
 
 # The folders inside a page; the page's AGENTS.md covers them
 web/src/pages/*/screens/
