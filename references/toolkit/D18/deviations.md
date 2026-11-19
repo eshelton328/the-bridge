@@ -11,50 +11,45 @@ The frame has no exceptions.json.
 
 ## Checks
 
-- Text: fail. 4 not visible:
-  `in chat “toolkit designs” · started by writer, step 7` (478:289),
-  `in chat “release notes” · started by pr-description` (478:308),
+From `pnpm fidelity toolkit --checks text,rules` on 2026-11-18, against
+library 1.0.0-beta.58, after the runs' lines wrap (see Runs).
+
+- Text: fail. 2 not visible:
   `Counts, titles and items come from the Claude Code session files on this Mac, Oct 31 to Nov 15; running now is sample data. Chats are sessions from the CLI or the desktop app.`
   (478:482), `Writer rules, skills, and agents` (475:378).
 - Position: 6 of 61 layers pass. The 55 that fail: `toolkit` w -420 h
-  +34; `478:192` w -420; `read-only` x -417.8;
-  `view · List, Map or Activity` x -419.5; `filter · chips` w -14.2;
-  `list tools` w -420; `source · segmented` w -15.6; `counts legend` x
-  -419.4 y -4.5; `activity` y -6 w -420 h +78; `kpis` y -6 w -420 h +6;
-  `kpi · chats` y -6 w -105 h +6; `kpi · toolkit calls` x -105 y -6 w
-  -105 h +6; `kpi · hook blocks` x -210 y -6 w -105 h +6;
-  `kpi · CLI · app` x -315 y -6 w -105 h +6; `row · now and per day` w
-  -420 h +16; `panel · RUNNING NOW` w -210 h +16;
-  `run · writing-reviewer` w -210 h +8; `run · pr-description-checker` y
-  +7 w -210 h +8; `panel · CALLS PER DAY` x -210 w -210 h +16;
-  `chart · Chats` x -210 w -210 h +21; `row · most called and log` y +16
-  w -420 h +57; `panel · CHATS THAT USED THE TOOLKIT` y +16 w -210 h
-  +57; `chat · Linear workflow setup for NCC team` y +15 w -210 h +7;
-  `chat · Brain NC1701 project` y +22 w -210 h +6;
-  `chat · Deep research on evals` y +28 w -210 h +29;
-  `chat · Writer rules, skills, and agents` y +57 w -210 h +27;
-  `panel · MOST CALLED` x -210 y +16 w -210 h +57;
-  `bar · writing-reviewer` x -210 y +14 w -210; `bar · writer` x -210 y
-  +12 w -210; `bar · project-setup` x -210 y +10 w -210;
-  `bar · ambitious` x -210 y +8 w -210; `bar · agents-md` x -210 y +6 w
-  -210; `bar · readme` x -210 w -210; `bar · audit-slop` x -210 w -210;
-  `source note` y +73 w -420; `side panel · chat` x +20 w -20; `475:374`
-  x +20 w -19; `475:386` x +20 y -6 w -19; `fields` x +20 y -8 w -19;
-  `field · Started` x +20 y -8 w -19; `field · Length` x +20 y -9 w -19;
-  `field · Project` x +20 y -11 w -19; `field · From` x +20 y -14 w -19
-  h +15; `field · Model` x +20 w -19; `field · Messages` x +20 w -19;
-  `field · Tokens` x +20 w -19; `field · Hook blocks` x +20 w -19;
-  `toolkit items` x +20 y -10 w +6.8; `478:485` x +20 y -10 w +6.8;
-  `steps` x +20 y -16 w -19; `tool · Bash` x +20 y -16 w -19;
-  `tool · Agent` x +20 y -16 w -19; `tool · SendMessage` x +20 y -16 w
-  -19; `tool · Write` x +20 y -16 w -19; `tool · Edit` x +20 y -16 w
-  -19. Each is explained below.
-- Rules: fail. 4 findings: `hiddenOverflow` at
+  +66; `478:192` w -420; `read-only` x -417.8; `view · List, Map or
+  Activity` x -419.5; `filter · chips` w -14.2; `list tools` w -420;
+  `source · segmented` w -15.6; `counts legend` x -419.4 y -4.5;
+  `activity` y -6 w -420 h +110; `kpis` y -6 w -420 h +6; `kpi · chats`
+  y -6 w -105 h +6; `kpi · toolkit calls` x -105 y -6 w -105 h +6; `kpi
+  · hook blocks` x -210 y -6 w -105 h +6; `kpi · CLI · app` x -315 y -6
+  w -105 h +6; `row · now and per day` w -420 h +48; `panel · RUNNING
+  NOW` w -210 h +48; `run · writing-reviewer` w -210 h +24; `run ·
+  pr-description-checker` y +23 w -210 h +24; `panel · CALLS PER DAY` x
+  -210 w -210 h +48; `chart · Chats` x -210 w -210 h +21; `row · most
+  called and log` y +48 w -420 h +57; `panel · CHATS THAT USED THE
+  TOOLKIT` y +48 w -210 h +57; `chat · Linear workflow setup for NCC
+  team` y +47 w -210 h +7; `chat · Brain NC1701 project` y +54 w -210 h
+  +6; `chat · Deep research on evals` y +60 w -210 h +29; `chat · Writer
+  rules, skills, and agents` y +89 w -210 h +27; `panel · MOST CALLED` x
+  -210 y +48 w -210 h +57; `bar · writing-reviewer` x -210 y +46 w -210;
+  `bar · writer` x -210 y +44 w -210; `bar · project-setup` x -210 y +42
+  w -210; `bar · ambitious` x -210 y +40 w -210; `bar · agents-md` x
+  -210 y +38 w -210; `bar · readme` x -210 y +36 w -210; `bar ·
+  audit-slop` x -210 y +34 w -210; `source note` y +105 w -420; `side
+  panel · chat` x +20 w -20; `475:374` x +20 w -19; `475:386` x +20 y -6
+  w -19; `fields` x +20 y -8 w -19; `field · Started` x +20 y -8 w -19;
+  `field · Length` x +20 y -9 w -19; `field · Project` x +20 y -11 w
+  -19; `field · From` x +20 y -14 w -19 h +15; `field · Model` x +20 w
+  -19; `field · Messages` x +20 w -19; `field · Tokens` x +20 w -19;
+  `field · Hook blocks` x +20 w -19; `toolkit items` x +20 y -10 w +6.8;
+  `478:485` x +20 y -10 w +6.8; `steps` x +20 y -16 w -19; `tool · Bash`
+  x +20 y -16 w -19; `tool · Agent` x +20 y -16 w -19; `tool ·
+  SendMessage` x +20 y -16 w -19; `tool · Write` x +20 y -16 w -19;
+  `tool · Edit` x +20 y -16 w -19. Each is explained below.
+- Rules: fail. 2 findings: `hiddenOverflow` at
   `div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail`;
-  `hiddenOverflow` at
-  `[data-figma="run · writing-reviewer"] > div.list-row__root > div.list-row__body > div.list-row__lines > span`;
-  `hiddenOverflow` at
-  `[data-figma="run · pr-description-checker"] > div.list-row__root > div.list-row__body > div.list-row__lines > span`;
   `hiddenOverflow` at `[data-figma="475:374"] > h2`. Each is explained
   below; this frame takes no exceptions.
 
@@ -65,13 +60,11 @@ The frame has no exceptions.json.
   -420; `478:192` w -420; `read-only`, `view · List, Map or Activity`
   and `counts legend` x about -419). Figma lays a 440 px panel over the
   view; AppShell's side slot is 420 and narrows the view beside it (Run
-  side panel). The runs' lines
-  (`in chat “toolkit designs” · started by writer, step 7`,
-  `in chat “release notes” · started by pr-description`) end with an
-  ellipsis, so they are not visible in full (rules `hiddenOverflow` at
-  each `run · …` line), and the view is taller: the source line
+  side panel). The runs' lines wrap to two lines (see Runs), and the
+  view is taller: the source line
   (`Counts, titles and items come from the Claude Code session files on this Mac, Oct 31 to Nov 15; running now is sample data. Chats are sessions from the CLI or the desktop app.`)
-  lies under the window's foot (`source note` y +73; `activity` h +78;
+  lies under the window's foot (`source note` y +105; `activity` h +110;
+  `toolkit` h +66;
   rules `hiddenOverflow` at `main.app-shell__detail`).
 - **Chat title** (`Writer rules, skills, and agents` not visible; rules
   `hiddenOverflow` at `[data-figma="475:374"] > h2`). Figma ends the
@@ -82,13 +75,20 @@ The frame has no exceptions.json.
   label under the value in one colour, where Figma puts the label on the
   value's line and draws the 8 hook blocks red (Activity KPI tile). The
   tiles start higher because the rows over them are shorter.
-- **Runs** (each `run · …` h +8 and the second y +7 on the desktop; y -5
-  on a tablet). Each run is a `ListRow` card 86 high on the desktop,
-  where Figma's is 78; the live dot comes after the name and the kind
-  icon sits at the row's top (Activity run row). The runs' panel and the
-  calls per day beside it are as tall as the taller, 16 px taller than
-  Figma's (`row · now and per day`, `panel · RUNNING NOW`,
-  `panel · CALLS PER DAY` h +16).
+- **Runs** (`run · writing-reviewer` h +24 and
+  `run · pr-description-checker` y +23 h +24 on the desktop; y -5 on a
+  tablet). Each run is a `ListRow` card 86 high on D15, where Figma's is
+  78; the live dot comes after the name and the kind icon sits at the
+  row's top (Activity run row). In the view narrowed by the side slot
+  the line under each run's name wraps to two lines, so every word
+  shows, where Figma's wider view has one line; until 2026-11-18 the
+  page cut it with an ellipsis. Each run is 16 px taller again. The
+  runs' panel and the calls per day beside it are as tall as the
+  taller, 48 px taller than Figma's (`row · now and per day`,
+  `panel · RUNNING NOW`, `panel · CALLS PER DAY` h +48), and every part
+  under them starts 48 lower (`row · most called and log`,
+  `panel · CHATS THAT USED THE TOOLKIT` and `panel · MOST CALLED` y +48;
+  each `chat · …` y +47 to +89; each `bar · …` y +46 to +34).
 - **Calls per day** (`chart · …` h +21 on the desktop;
   `panel · calls per day` h +19 on a tablet, h +31 on the phone).
   `DailyBarChart` draws its own axis and is 78 high on every layout,
@@ -123,7 +123,7 @@ The frame has no exceptions.json.
 - **Fields** (`field · From` h +15). In the narrower panel Claude Code
   CLI 2.1.319 wraps to a second line.
 - **Chat rows** (`chat · Deep research on evals` h +29,
-  `chat · Writer rules, skills, and agents` y +57 h +27). In the
+  `chat · Writer rules, skills, and agents` y +89 h +27). In the
   narrower view Brain NC1701 project and Deep research on evals wrap
   their chips to a second line, and the selected row, Writer rules,
   skills, and agents, puts its writing-reviewer ×9 chip on a third line
