@@ -31,10 +31,9 @@ const madeIn = () => query('[data-figma="section · MADE IN"]')
 
 async function press(el: Element | null) {
   if (!(el instanceof HTMLElement)) throw new Error('nothing to press')
-  // Press it from the keyboard: the pointer stays where an earlier test left it, which can be over a card's cut
-  // description, whose tooltip then opens over the card's title button and takes a click.
-  el.focus()
-  await userEvent.keyboard('{Enter}')
+  // A pointer click, also where an earlier test left the pointer over a card's cut description: the tooltip of cut
+  // text takes no pointer events (library 1.0.0-beta.60), so the click reaches the card's title button under it.
+  await userEvent.click(el)
 }
 
 /** The Card's title button, which a click on the card also presses. */
@@ -54,6 +53,12 @@ describe('opening an artifact from the Artifacts home', () => {
     await page.viewport(1512, 982)
     view = await renderAt('/artifacts')
     await expect.poll(() => card('Hono server spike')).not.toBeNull()
+    // The pointer rests on the card (its title button covers it), so the cut description's tooltip opens; the click
+    // still opens the card.
+    const hono = cardButton('Hono server spike')
+    if (!(hono instanceof HTMLElement)) throw new Error('no card button')
+    await userEvent.hover(page.elementLocator(hono))
+    await expect.element(page.getByRole('tooltip').filter({ hasText: 'Routes, the RPC client' })).toBeVisible()
     await press(cardButton('Hono server spike'))
     await expect.poll(() => query('[data-figma="library list"]')).not.toBeNull()
     expect(rowButton('Hono server spike')?.getAttribute('aria-current')).toBe('true')
