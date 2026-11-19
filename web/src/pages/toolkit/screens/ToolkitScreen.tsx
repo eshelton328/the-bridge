@@ -12,7 +12,8 @@
 // card, a row or the map card's Open button opens the item (`ui.open`, D3):
 // on the desktop the list moves into the list pane (`ToolkitListPane`) and
 // the item (`ToolkitItem`) fills the rest; on a tablet or phone (T3) the item
-// replaces the list, in the shared DetailFrame under its back row. An item
+// replaces the list, in the shared DetailFrame under its back row, and Back
+// shows the list at the scroll it had when the item opened (R11). An item
 // opened from another item's links records it (`ui.from`, T7), and the back
 // row shows the breadcrumb back to it. A workflow opened with Open full page
 // (D13, `ui.flowFullPage`) fills the page without the list on every layout,
@@ -26,7 +27,7 @@
 // the chat (`ui.chat`, D18) as a run opens, and an item, an eval's chip or
 // an eval's row opens on its page (`activitySources`).
 import { AppShell, Backdrop, Container, FilterChips } from '@eshelton328/component-library-1701'
-import { useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
@@ -95,6 +96,10 @@ export type ToolkitScreenProps = {
 type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & {
   layout: Viewport
   onUiChange: (change: Partial<ToolkitUi>) => void
+  /** Where the tablet or phone list was scrolled when Erik last opened an item from it; the list scrolls back there. */
+  listScroll: number | undefined
+  /** Reports the list's scroll as Erik opens an item from it, so Back returns to the same place. */
+  onListScroll: (top: number) => void
 }
 
 function ToolkitLayout({
@@ -105,6 +110,8 @@ function ToolkitLayout({
   onUiChange: report,
   onCopyPath,
   onCopyText,
+  listScroll,
+  onListScroll,
 }: ToolkitLayoutProps) {
   // Opening another item, or none, closes the discussion (D5, T5, M7).
   const onUiChange = (change: Partial<ToolkitUi>) => {
@@ -135,6 +142,15 @@ function ToolkitLayout({
   }
   const openPath = (path: string) => {
     onUiChange(openFrom(path))
+  }
+  // On a tablet or phone the list fills the shell's scrolling detail (`main`), and an open item takes its place: the
+  // list notes that scroll as an item opens from it, and scrolls back there when Back shows it again, as the Inbox's
+  // list does (R11).
+  const listRef = useRef<HTMLElement>(null)
+  const openFromList = (path: string) => {
+    const scroller = listRef.current?.closest('main')
+    if (!desktop && scroller != null) onListScroll(scroller.scrollTop)
+    openPath(path)
   }
   const from = openedFrom(data, ui)
   const full = isFullPage(open, ui)
@@ -246,6 +262,7 @@ function ToolkitLayout({
     )
   const listSection = (
     <section
+      ref={listRef}
       aria-label="Toolkit"
       className={ui.view === 'map' ? cx(page[layout], fullHeight) : page[layout]}
       data-figma={desktop ? undefined : 'toolkit'}
@@ -291,7 +308,7 @@ function ToolkitLayout({
           onOpenChange={(next) => {
             setGroupOpen(group.kind, next)
           }}
-          onOpen={openPath}
+          onOpen={openFromList}
         />
       ))}
     </section>
@@ -408,6 +425,12 @@ function ToolkitLayout({
         }}
       />
     )
+  const listShown =
+    thread === undefined && item === null && runPage === null && chatPage === null && activityPage === null
+  useLayoutEffect(() => {
+    const scroller = listRef.current?.closest('main')
+    if (listShown && !desktop && scroller != null && listScroll !== undefined) scroller.scrollTop = listScroll
+  }, [listShown, desktop, listScroll])
   return (
     <Backdrop size={layout}>
       <AppShell
@@ -506,9 +529,20 @@ export function ToolkitScreen({ viewport, ui, onUiChange, ...props }: ToolkitScr
     ((change: Partial<ToolkitUi>) => {
       setChanged({ of: ui, ui: { ...own, ...change } })
     })
+  // Where the tablet or phone list was scrolled when Erik opened an item from it, so Back shows the list there.
+  const [listScroll, setListScroll] = useState<number | undefined>(undefined)
   return (
     <ViewportFrame initial={viewport}>
-      {(layout) => <ToolkitLayout layout={layout} ui={{ ...ui, ...own }} onUiChange={report} {...props} />}
+      {(layout) => (
+        <ToolkitLayout
+          layout={layout}
+          ui={{ ...ui, ...own }}
+          onUiChange={report}
+          listScroll={listScroll}
+          {...props}
+          onListScroll={setListScroll}
+        />
+      )}
     </ViewportFrame>
   )
 }

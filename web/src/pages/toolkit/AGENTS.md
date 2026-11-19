@@ -19,7 +19,9 @@ what each file of a page folder is for.
   its foot (AppShell `tabBarOverlay`: the page runs under the bar, as
   Figma's M2, M20 and M22 do, and its end scrolls clear of it; Toolkit opens
   from More; on the phone More opens the shared `MoreDrawer`, kept
-  open by `ui.moreOpen`, M4). Without `onUiChange` it keeps the changes itself, so a story
+  open by `ui.moreOpen`, M4). On a tablet or phone the list notes the
+  shell's scroll as an item opens from it, and Back shows the list at that
+  scroll again, as the Inbox's list does (R11). Without `onUiChange` it keeps the changes itself, so a story
   or canvas board can use the chips, the search and the groups.
   `screens/listView.ts` (pure, tested in `listView.test.ts` beside this
   file) narrows the groups by the kind chip and the search.
