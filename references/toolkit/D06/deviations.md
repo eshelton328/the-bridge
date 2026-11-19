@@ -7,7 +7,9 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/skillFiles.ts`: D3's data (the list has T1's
 data), with writer open on its Files tab. D03, D07, D14, D13 and T07 give
 the same results as before D06 (each report's text, position and rule
-results are unchanged). The frame has no `exceptions.json`.
+results are unchanged). The frame's `exceptions.json` excepts the strings
+and the `hiddenOverflow` findings below, each with the entry that records
+it; with them the text and rules checks now pass.
 
 ## Checks
 
@@ -36,8 +38,8 @@ results are unchanged). The frame has no `exceptions.json`.
   (`[data-figma="filter · chips"] > div.filter-chips__root`), and the
   script's code scrolls sideways
   (`[data-figma="code"] > div.scroll-frame__root > div.scroll-frame__body`,
-  see Code). D03 has the first two in its `exceptions.json`; this frame
-  takes no exceptions.
+  see Code). D03 has the first two in its `exceptions.json`; this frame's
+  `exceptions.json` excepts all three.
 
 ## Deviations
 

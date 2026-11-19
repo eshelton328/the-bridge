@@ -8,8 +8,9 @@ The state is `web/src/pages/toolkit/states/workflowFiles.ts`: D8's data
 (D9's list: the Rules, Workflows and Hooks groups), with the workflow
 skill-eval-round open on its Files tab. D33, D34, D06, D10, D03, D04, D07,
 D08 and D09 give the same results as before D35 (each report's text,
-position and rule results are unchanged). The frame has no
-`exceptions.json`.
+position and rule results are unchanged). The frame's `exceptions.json`
+excepts the strings and the `hiddenOverflow` findings below, each with the
+entry that records it; with them the text and rules checks now pass.
 
 ## Checks
 
@@ -33,8 +34,8 @@ position and rule results are unchanged). The frame has no
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D03 has both
-  in its `exceptions.json`; this frame takes no exceptions. The doc's
-  lines fit the viewer.
+  in its `exceptions.json`; this frame's `exceptions.json` excepts them
+  too. The doc's lines fit the viewer.
 
 ## Deviations
 

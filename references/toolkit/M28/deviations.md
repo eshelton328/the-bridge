@@ -8,8 +8,9 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `ui.from`, as on M20: the agent keeps M20's header under Back to
 Toolkit. Every other Toolkit frame (M01, M02, M04 to M06, M08, M09, M11,
 M12, M17, M19 to M22 and M31 to M41 and the list frames) gives the same
-text, position and rule results as before the Evals tab. The frame has
-no `exceptions.json`.
+text, position and rule results as before the Evals tab. The frame's
+`exceptions.json` excepts the `hiddenOverflow` findings below, each with
+the entry that records it; with them the text and rules checks now pass.
 
 ## Checks
 
@@ -21,7 +22,7 @@ no `exceptions.json`.
 - Rules: fail. 2 `hiddenOverflow` findings:
   `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`;
   `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
-  Each is explained below; this frame takes no exceptions.
+  Each is explained below; the frame's `exceptions.json` excepts them.
 
 ## Deviations
 

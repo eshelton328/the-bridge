@@ -7,7 +7,9 @@ two fix rounds), each with its reason. The library gaps are in
 `web/src/pages/toolkit/states/hookActivityTablet.ts`: D24's data, under
 the hook's header. Every other Toolkit frame (the 86 frames built before
 the Activity tab) gives the same text, position and rule results as
-before it, layer by layer. The frame has no `exceptions.json`.
+before it, layer by layer. The frame's `exceptions.json` excepts the
+string and the `hiddenOverflow` finding below, each with the entry that
+records it; with them the text and rules checks now pass.
 
 ## Checks
 
@@ -24,8 +26,8 @@ before it, layer by layer. The frame has no `exceptions.json`.
   y -5 w -4 h +11. Each is explained below.
 - Rules: fail. 1 `hiddenOverflow` finding: `[data-figma="panel · kpi
   rejected"] > dl.kpi-tile__root > dd.kpi-tile__caption:nth-of-type(2) >
-  span.truncated-text`. Each is explained below; this frame takes no
-  exceptions.
+  span.truncated-text`. Each is explained below; the frame's
+  `exceptions.json` excepts it.
 
 ## Deviations
 

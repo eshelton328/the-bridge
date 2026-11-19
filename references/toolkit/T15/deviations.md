@@ -10,7 +10,9 @@ replaces the list in the shared `DetailFrame` (d-107), as T10's does: the
 back row names the item (Toolkit › writer), and the kind badge and path
 rows are left out. The graph is narrower and the two panels stand one
 under the other. D19, D29 to D32, T03, T04, T07, T10, T17 and T19 give the
-same results as before T15. The frame has no `exceptions.json`.
+same results as before T15. The frame's `exceptions.json` excepts the
+`hiddenOverflow` finding below, with the entry that records it; with it
+the text and rules checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

@@ -11,7 +11,9 @@ under T07's breadcrumb (Toolkit › writer › writing-reviewer) and keeps
 the agent's header: the kind badge, the name and the path row. The graph
 is narrower and the two panels stand one under the other. D19, D29 to
 D32, T03, T04, T07, T10, T15, T17, T19 and T28 give the same results as
-before T29. The frame has no `exceptions.json`.
+before T29. The frame's `exceptions.json` excepts the `hiddenOverflow`
+finding below, with the entry that records it; with it the text and rules
+checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

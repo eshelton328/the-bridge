@@ -8,8 +8,10 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 with the workflow skill-eval-round open on its Evals tab and D35's
 browser for "from the file". Every other Toolkit frame (D03, D04, D06 to
 D10, D13, D14, D19 and D29 to D39 and the list frames) gives the same
-text, position and rule results as before the Evals tab. The frame has
-no `exceptions.json`.
+text, position and rule results as before the Evals tab. The frame's
+`exceptions.json` excepts the strings and the `hiddenOverflow` findings
+below, each with the entry that records it; with them the text and rules
+checks now pass.
 
 ## Checks
 
@@ -30,7 +32,7 @@ no `exceptions.json`.
 - Rules: fail. 2 `hiddenOverflow` findings:
   `[data-figma="toolkit list"]`;
   `[data-figma="filter · chips"] > div.filter-chips__root`. Each is
-  explained below; this frame takes no exceptions.
+  explained below; the frame's `exceptions.json` excepts them.
 
 ## Deviations
 

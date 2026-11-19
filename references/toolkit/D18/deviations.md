@@ -7,7 +7,9 @@ web/src/pages/toolkit/states/toolkitActivityChat.ts: D15 with Writer
 rules, skills, and agents open in the side slot. The library gaps are
 in web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame
 gives the same text, position and rule results as before these frames.
-The frame has no exceptions.json.
+The frame's exceptions.json excepts the strings and the `hiddenOverflow`
+findings below, each with the entry that records it; with them the text
+and rules checks now pass.
 
 ## Checks
 
@@ -51,7 +53,7 @@ library 1.0.0-beta.58, after the runs' lines wrap (see Runs).
 - Rules: fail. 2 findings: `hiddenOverflow` at
   `div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail`;
   `hiddenOverflow` at `[data-figma="475:374"] > h2`. Each is explained
-  below; this frame takes no exceptions.
+  below; the frame's exceptions.json excepts them.
 
 ## Differences
 

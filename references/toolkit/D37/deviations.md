@@ -8,9 +8,10 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 Rules, Workflows and Hooks groups (as D9), and the rule skills open on its
 How it works tab. D03, D04, D07, D08, D09 and D14 give the same results as
 before D37 (each report's text, position and rule results are unchanged).
-The frame has no `exceptions.json`. The Checks below are from a rerun
-with library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
-(2026-11-17).
+The frame's `exceptions.json` excepts the strings and the `hiddenOverflow`
+findings below, each with the entry that records it; with them the text and
+rules checks now pass. The Checks below are from a rerun with library
+1.0.0-beta.25 and the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
@@ -33,7 +34,7 @@ with library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D14 and D09
-  have the same two; this frame takes no exceptions.
+  have the same two; this frame's `exceptions.json` excepts them.
 
 ## Deviations
 

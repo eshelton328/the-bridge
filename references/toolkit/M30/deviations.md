@@ -8,9 +8,11 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 keeps M22's header. Every other Toolkit frame (M01, M02, M04 to M06,
 M08, M09, M11, M12, M17, M19 to M22 and M31 to M41 and the list frames)
 gives the same text, position and rule results as before the Evals tab.
-The frame has no `exceptions.json`. A later run (after the review's
-fixes and the icons in the test line) gives the same results, but for
-the text check, which the icons fail.
+The frame's `exceptions.json` excepts the string and the
+`hiddenOverflow` finding below, each with the entry that records it;
+with them the text and rules checks now pass. A later run (after the
+review's fixes and the icons in the test line) gives the same results,
+but for the text check, which the icons fail.
 
 ## Checks
 
@@ -23,7 +25,7 @@ the text check, which the icons fail.
   below.
 - Rules: fail. 1 `hiddenOverflow` finding:
   `[data-figma="toolkit"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)`.
-  Each is explained below; this frame takes no exceptions.
+  Each is explained below; the frame's `exceptions.json` excepts it.
 
 ## Deviations
 

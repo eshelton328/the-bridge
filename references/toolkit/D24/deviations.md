@@ -7,8 +7,9 @@ two fix rounds), each with its reason. The library gaps are in
 `web/src/pages/toolkit/states/hookActivity.ts`: D9's data, with
 commit-msg open on its Activity tab. Every other Toolkit frame (the 86
 frames built before the Activity tab) gives the same text, position and
-rule results as before it, layer by layer. The frame has no
-`exceptions.json`.
+rule results as before it, layer by layer. The frame's `exceptions.json`
+excepts the strings and the `hiddenOverflow` findings below, each with
+the entry that records it; with them the text and rules checks now pass.
 
 ## Checks
 
@@ -32,7 +33,7 @@ rule results as before it, layer by layer. The frame has no
   Each is explained below.
 - Rules: fail. 2 `hiddenOverflow` findings: `[data-figma="toolkit
   list"]`; `[data-figma="filter · chips"] > div.filter-chips__root`.
-  Each is explained below; this frame takes no exceptions.
+  Each is explained below; the frame's `exceptions.json` excepts them.
 
 ## Deviations
 

@@ -7,7 +7,9 @@ What still differs from Figma after round 1 of the fidelity loop
 `web/src/pages/toolkit/states/workflowFullPagePhone.ts`: T08's data
 (`workflowFullPageTablet`) on the phone. D13, T08, D14, T07, M19 and M22
 give the same results as before M09 (each report's text, position and rule
-results are unchanged). The frame has no `exceptions.json`.
+results are unchanged). The frame's `exceptions.json` excepts the
+`hiddenOverflow` findings below, each with the entry that records it; with
+them the text and rules checks now pass.
 
 ## Checks
 

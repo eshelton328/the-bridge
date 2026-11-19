@@ -8,9 +8,11 @@ library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 only the Rules, Workflows and Hooks groups), with the hook commit-msg open
 on its How it works tab. D03, D04, D07, D08, D09, D14, D37 and D38 give the
 same results as before D39 (each report's text, position and rule results
-are unchanged). The frame has no `exceptions.json`. The Checks below are
-from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
-`density` props (2026-11-17).
+are unchanged). The frame's `exceptions.json` excepts the strings and the
+`hiddenOverflow` findings below, each with the entry that records it; with
+them the text and rules checks now pass. The Checks below are from a rerun
+with library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
+(2026-11-17).
 
 ## Checks
 
@@ -36,7 +38,7 @@ from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
   scrolls, because of the taller rows (see Row height), as in D09; and the
   kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`), as in D37
-  and D38. This frame takes no exceptions.
+  and D38. This frame's `exceptions.json` excepts both.
 
 ## Deviations
 

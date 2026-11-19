@@ -9,7 +9,9 @@ only the Skills and Agents groups and Skills closed), with the agent
 writing-reviewer open on its Evals tab. Every other Toolkit frame (D03,
 D04, D06 to D10, D13, D14, D19 and D29 to D39 and the list frames) gives
 the same text, position and rule results as before the Evals tab. The
-frame has no `exceptions.json`.
+frame's `exceptions.json` excepts the strings and the `hiddenOverflow`
+finding below, each with the entry that records it; with them the text
+and rules checks now pass.
 
 ## Checks
 
@@ -25,7 +27,7 @@ frame has no `exceptions.json`.
   `toolkit row · writing-reviewer` y +60 h +7. Each is explained below.
 - Rules: fail. 1 `hiddenOverflow` finding:
   `[data-figma="filter · chips"] > div.filter-chips__root`. Each is
-  explained below; this frame takes no exceptions.
+  explained below; the frame's `exceptions.json` excepts it.
 
 ## Deviations
 

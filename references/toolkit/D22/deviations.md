@@ -8,7 +8,9 @@ two fix rounds), each with its reason. The library gaps are in
 closed, the Agents group), with writing-reviewer open on its Activity
 tab. Every other Toolkit frame (the 86 frames built before the Activity
 tab) gives the same text, position and rule results as before it, layer
-by layer. The frame has no `exceptions.json`.
+by layer. The frame's `exceptions.json` excepts the strings and the
+`hiddenOverflow` finding below, each with the entry that records it;
+with them the text and rules checks now pass.
 
 ## Checks
 
@@ -25,8 +27,8 @@ by layer. The frame has no `exceptions.json`.
   skills, and agents` y -4 h +11; `row · Deep research on evals` y -1 h
   +11. Each is explained below.
 - Rules: fail. 1 `hiddenOverflow` finding: `[data-figma="filter ·
-  chips"] > div.filter-chips__root`. Each is explained below; this frame
-  takes no exceptions.
+  chips"] > div.filter-chips__root`. Each is explained below; the
+  frame's `exceptions.json` excepts it.
 
 ## Deviations
 

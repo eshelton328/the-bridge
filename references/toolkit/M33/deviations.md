@@ -13,8 +13,10 @@ on M17), two items on each side, and the two panels stand one under the
 other. Round 1 narrowed the gap in each link's top row from 8 to 4, so
 `skills/eval-cases/SKILL.md:97` (493:6672) ends inside its row; it was
 cut by 3 px on the first run. D19, D29 to D32, T15, T28 to T31, M12, M22,
-M05, M35, M17, M31 and M32 give the same results as before M33. The frame
-has no `exceptions.json`.
+M05, M35, M17, M31 and M32 give the same results as before M33. The
+frame's `exceptions.json` excepts the `hiddenOverflow` findings below,
+each with the entry that records it; with them the text and rules checks
+now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

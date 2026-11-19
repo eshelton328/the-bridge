@@ -9,8 +9,10 @@ phone's status header (V1 done criteria, x1, Codex grader); the back row
 names the item and the title sits over the tabs, as on M12 and M17.
 Every other Toolkit frame (M01, M02, M04 to M06, M08, M09, M11, M12,
 M17, M19 to M22 and M31 to M41 and the list frames) gives the same text,
-position and rule results as before the Evals tab. The frame has no
-`exceptions.json`.
+position and rule results as before the Evals tab. The frame's
+`exceptions.json` excepts the string and the `hiddenOverflow` findings
+below, each with the entry that records it; with them the text and rules
+checks now pass.
 
 ## Checks
 
@@ -26,7 +28,7 @@ position and rule results as before the Evals tab. The frame has no
   `div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)`;
   `[data-figma="toolkit"] > div.item-tabs__root > div.item-tabs__list:nth-of-type(1)`;
   `[data-figma="chart"] > div.grouped-bar-chart__root`. Each is
-  explained below; this frame takes no exceptions.
+  explained below; the frame's `exceptions.json` excepts them.
 
 ## Deviations
 

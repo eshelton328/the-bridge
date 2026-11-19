@@ -10,7 +10,9 @@ names the ledger and the stop, one line of notes for each step), the path
 without `toolkit/`, five fields for step 4, and no stop box, loop label,
 hint, gates or rounds. D13, D14, T07, T10, T19 and M19 give the same
 results as before T08 (each report's text, position and rule results are
-unchanged). The frame has no `exceptions.json`.
+unchanged). The frame's `exceptions.json` excepts the `hiddenOverflow`
+finding below, with the entry that records it; with it the text and rules
+checks now pass.
 
 ## Checks
 

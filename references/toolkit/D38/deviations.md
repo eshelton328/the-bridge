@@ -8,9 +8,11 @@ library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 only the Skills and Agents groups, Skills closed), with the agent
 writing-reviewer open on its How it works tab. D03, D04, D07, D08, D09, D14
 and D37 give the same results as before D38 (each report's text, position
-and rule results are unchanged). The frame has no `exceptions.json`. The
-Checks below are from a rerun with library 1.0.0-beta.25 and the item
-tabs' `tone` and `density` props (2026-11-17).
+and rule results are unchanged). The frame's `exceptions.json` excepts the
+strings and the `hiddenOverflow` finding below, each with the entry that
+records it; with them the text and rules checks now pass. The Checks below
+are from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 ## Checks
 
@@ -30,7 +32,7 @@ tabs' `tone` and `density` props (2026-11-17).
   `rail · Toolkit` and `rail · More`.
 - Rules: fail. One `hiddenOverflow` finding: the kind chips scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`), as
-  in D37. This frame takes no exceptions.
+  in D37. This frame's `exceptions.json` excepts it.
 
 ## Deviations
 
