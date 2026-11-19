@@ -25,7 +25,7 @@
 // Chats and Headless runs (D15, D16) add their own list: a chat's row opens
 // the chat (`ui.chat`, D18) as a run opens, and an item, an eval's chip or
 // an eval's row opens on its page (`activitySources`).
-import { AppShell, Backdrop, FilterChips } from '@eshelton328/component-library-1701'
+import { AppShell, Backdrop, Container, FilterChips } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -64,9 +64,11 @@ import {
   withDiscussReset,
 } from './discussView.ts'
 
-// D1 425:9: the list starts 32 in from the rail and 24 down, and its rows are 12 apart.
+// D1 425:9: on the desktop the page is the library's `Container size="page"`: the list starts 32 in from the rail and
+// 24 down, 1448 wide with 1384 of content in the 1512 px frame, and from `shell.detailWideFrom` at most 1448 wide in the
+// middle of the detail. Its rows are 12 apart.
 const page = {
-  desktop: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '32', pt: '24', pb: '32' }),
+  desktop: css({ display: 'flex', flexDirection: 'column', gap: '12' }),
   tablet: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '24', pt: '12', pb: '20' }),
   // M1 429:50: 12 in from the sides, 4 under the status bar, and its rows 10 apart.
   phone: css({ display: 'flex', flexDirection: 'column', gap: '10', px: '12', pt: '4', pb: '12' }),
@@ -242,11 +244,11 @@ function ToolkitLayout({
         }}
       />
     )
-  const list = (
+  const listSection = (
     <section
       aria-label="Toolkit"
       className={ui.view === 'map' ? cx(page[layout], fullHeight) : page[layout]}
-      data-figma="toolkit"
+      data-figma={desktop ? undefined : 'toolkit'}
     >
       <ToolkitHeader
         count={data.count}
@@ -293,6 +295,14 @@ function ToolkitLayout({
         />
       ))}
     </section>
+  )
+  // On the desktop the Container is the page Figma names `toolkit`, padding included.
+  const list = desktop ? (
+    <Container size="page" className={ui.view === 'map' ? fullHeight : undefined} data-figma="toolkit">
+      {listSection}
+    </Container>
+  ) : (
+    listSection
   )
   const item =
     open === null ? null : (
