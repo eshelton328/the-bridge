@@ -76,7 +76,8 @@ what each file of a page folder is for.
   and the selected item's card under the window: the compact
   `MapSelectionCard` with no close button, whose Show links opens the item
   on its Links tab (`openLinks` in `screens/itemView.ts`; M11's note names
-  M3, a proposal with no frame), tested in
+  M3, a proposal with no frame); an item with no Links tab has no Show
+  links (`hasLinksTab`), so the map state carries D19's details, tested in
   `src/app/ToolkitMapParts.test.tsx`. The desktop
   and tablet maps do not zoom. An open item (D3, `skillOpen`) sets `ui.open` to the
   item's path (and `ui.itemTab` for a tab other than the first) and adds

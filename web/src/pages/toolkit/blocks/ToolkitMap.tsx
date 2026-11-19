@@ -158,9 +158,10 @@ export function ToolkitMap({
             onOpen?.(node.path)
           }}
           density={phone ? 'compact' : 'default'}
-          linksLabel={phone ? 'Show links' : undefined}
+          // Show links only when the screen passes onLinks: an item with no Links tab has none (M11).
+          linksLabel={phone && onLinks !== undefined ? 'Show links' : undefined}
           onLinks={
-            phone
+            phone && onLinks !== undefined
               ? () => {
                   onLinks?.(node.path)
                 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { openItem } from './screens/itemView.ts'
 import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
 import { backTo, openedFrom, openFrom } from './screens/itemView.ts'
-import { openLinks } from './screens/itemView.ts'
+import { hasLinksTab, openLinks } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { ruleOpen, skillOpen, toolkitList } = toolkitStates
@@ -132,5 +132,15 @@ describe('openLinks', () => {
     })
     const { skillLinks } = toolkitStates
     expect(openItem(skillLinks.data, { ...skillLinks.ui, ...openLinks('skills/writer/') })?.tab).toBe('links')
+  })
+})
+
+describe('hasLinksTab', () => {
+  // M11: Show links opens the item on its Links tab, so the card shows it only for an item that has the tab.
+  const { toolkitMapTablet } = toolkitStates
+  it('is true for writer, whose details have Links, and false for a map item with no Links tab', () => {
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/writer/')).toBe(true)
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/audit-slop/')).toBe(false)
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/nothing/')).toBe(false)
   })
 })

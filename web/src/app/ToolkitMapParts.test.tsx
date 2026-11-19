@@ -139,6 +139,20 @@ describe('the Toolkit map’s phone card (M11)', () => {
     expect([...section.querySelectorAll('button')].some((b) => b.textContent.includes('Show links'))).toBe(false)
   })
 
+  it('shows no Show links for an item with no Links tab (audit-slop), only Open', async () => {
+    const { root } = await renderMap(390, 844)
+    const map = root.querySelector('[role="group"][aria-label="Toolkit map"]')
+    const node = [...(map?.querySelectorAll('button[aria-pressed]') ?? [])].find(
+      (b) => b.textContent.trim() === 'audit-slop',
+    )
+    if (!(node instanceof HTMLElement)) throw new Error('no audit-slop node')
+    await userEvent.click(node)
+    const section = () => root.querySelector('[data-figma="selection · audit-slop"] section')
+    await expect.poll(section).toBeTruthy()
+    const buttons = [...(section()?.querySelectorAll('button') ?? [])].map((b) => b.textContent.trim())
+    expect(buttons).toEqual(['Open audit-slop'])
+  })
+
   it('opens the selected item on its Links tab from Show links', async () => {
     // The home (`/toolkit`) has every item's details, so writer has its Links tab there; the map state does not.
     await setViewport(390, 844)

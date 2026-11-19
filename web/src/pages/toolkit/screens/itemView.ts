@@ -150,3 +150,11 @@ export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTa
   const tab = detail.tabs.some((t) => t.value === ui.itemTab) ? (ui.itemTab ?? first) : first
   return { item, detail, tab }
 }
+
+/**
+ * Whether an item opens with a Links tab (D19): the phone map card's Show links (M11) opens the item on it, so the
+ * card shows Show links only for an item that has the tab; another item would open on its Overview.
+ */
+export function hasLinksTab(data: ToolkitData, path: string): boolean {
+  return openItem(data, { open: path, itemTab: 'links' })?.tab === 'links'
+}
