@@ -34,6 +34,7 @@
 import {
   AgentIcon,
   CodeIcon,
+  Container,
   FileIcon,
   HookIcon,
   ItemTabs,
@@ -62,22 +63,23 @@ import { ToolkitItemPath } from './ToolkitItemPath.tsx'
 import { ToolkitLinks } from './ToolkitLinks.tsx'
 import { linkFile, linkLine } from './linksView.ts'
 
-// D3 427:250: the content starts 40 in from the pane's edges and 28 down (no space token has 28: 24); the meta row, the name, the path row and
-// the tabs are 16 apart (427:251 ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178).
-// The pane fills the frame's height; 24 under the content keeps D8's item (its content ends 42 over the frame's foot,
-// 940, and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
-const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16', px: '40', pt: '24', pb: '24' })
+// D3 427:250: the item pane is the library's `Container size="item"`: 40 in from the pane's edges and 24 down (Figma's
+// 28 has no space token: 24), 1028 wide with 948 of content in the 1512 px frames, and from `shell.detailWideFrom` at
+// most 1028 wide in the middle of the detail. The meta row, the name, the path row and the tabs are 16 apart (427:251
+// ends at 64, writer 427:270 starts at 80, path row 457:45 at 137, tabs 464:408 at 178). The pane fills the frame's
+// height; 24 under the content, not the Container's 32, keeps D8's item (its content ends 42 over the frame's foot, 940,
+// and the rendered file is 17 px taller than Figma's) inside the frame, with no scroll.
+const paneBox = css({ flexGrow: '1', pb: '24' })
+const pane = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', gap: '16' })
 // D6 432:2141: on the Files tab the file browser runs past the frame's foot (it ends at 988 of 982), so the pane keeps
 // no space under it, and the tabs and their open panel grow, so the browser runs to the pane's foot; with the pane's 24
 // the tree's 17 rows would push the pane 4 px past the frame.
+const paneFilesBox = css({ flexGrow: '1', pb: '0' })
 const paneFiles = css({
   display: 'flex',
   flexDirection: 'column',
   flexGrow: '1',
   gap: '16',
-  px: '40',
-  pt: '24',
-  pb: '0',
   '& > :last-child': { flexGrow: '1' },
   '& > :last-child > [role=tabpanel][data-state=open]': { display: 'flex', flexDirection: 'column', flexGrow: '1' },
 })
@@ -101,18 +103,18 @@ const filesPage = css({ display: 'flex', flexDirection: 'column', gap: '16', pt:
 const phoneHowPage = css({ display: 'flex', flexDirection: 'column', gap: '10', pt: '10' })
 // M2 429:284: on the phone the meta row (429:297) starts 12 under the back row (429:285), and the rows are 12 apart.
 const phonePage = css({ display: 'flex', flexDirection: 'column', gap: '12', pt: '12' })
-// D13 446:153: the page starts 32 in from the rail and the window's edge and 24 down; its rows are 14 apart (no space
-// token has 14: the gap's 12 and 2 more above each row after the first), so the path row is at Figma's 168 and the tabs
-// at 208. The breadcrumb row is 38 high in Figma (Show on map, 446:494), the render's 36: 2 under it and the 14 put the
-// meta row at Figma's 76. Figma's page ends 24 under the details row; the tabs' panel adds 4 under it, so 20.
+// D13 446:153: the page is the library's `Container size="page"`: 32 in from the rail and the window's edge and 24
+// down, 1448 wide with 1384 of content in the 1512 px frame, and from `shell.detailWideFrom` at most 1448 wide in the
+// middle of the detail. Its rows are 14 apart (no space token has 14: the gap's 12 and 2 more above each row after the
+// first), so the path row is at Figma's 168 and the tabs at 208. The breadcrumb row is 38 high in Figma (Show on map,
+// 446:494), the render's 36: 2 under it and the 14 put the meta row at Figma's 76. Figma's page ends 24 under the
+// details row; the tabs' panel adds 4 under it, so 20, not the Container's 32.
+const fullBox = css({ flexGrow: '1', pb: '20' })
 const fullPane = css({
   display: 'flex',
   flexDirection: 'column',
   flexGrow: '1',
   gap: '12',
-  px: '32',
-  pt: '24',
-  pb: '20',
   '& > * + *': { mt: '2' },
 })
 const fullBack = css({ pb: '2' })
@@ -572,7 +574,7 @@ export function ToolkitItem({
                   ? filesPage
                   : page
       }
-      data-figma={desktop && full ? 'toolkit' : itemLayer[layout]}
+      data-figma={desktop ? undefined : itemLayer[layout]}
     >
       {desktop && full ? (
         <div className={fullBack}>
@@ -722,7 +724,18 @@ export function ToolkitItem({
       />
     </article>
   )
-  if (desktop) return article
+  // On the desktop the Container is the pane Figma names, padding included; the article inside it holds the rows.
+  if (desktop) {
+    return (
+      <Container
+        size={full ? 'page' : 'item'}
+        className={full ? fullBox : tab === 'files' ? paneFilesBox : paneBox}
+        data-figma={full ? 'toolkit' : itemLayer.desktop}
+      >
+        {article}
+      </Container>
+    )
+  }
   return (
     <DetailFrame
       layout={layout}
