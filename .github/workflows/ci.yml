@@ -113,6 +113,8 @@ jobs:
         with:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm codegen
+      # panda cssgen with no warning allowed; web/panda.config.ts sets validation: 'error' (audit G-3).
+      - run: pnpm check:css
       # Type-aware ESLint over the whole workspace ran out of Node's default heap (about 2 GB) on 2026-11-17
       # and of a 4 GB heap on 2026-11-19 (#157, run 44458177294). In a Linux container with 2 CPUs and
       # 7 GB, its peak resident memory was 4.33 GB on main and 4.43 GB with #157. A 6 GB heap leaves

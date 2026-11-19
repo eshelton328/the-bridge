@@ -20,6 +20,10 @@ and exits 1 on a problem.
 | `keyboardCheck.ts`       | `pnpm keyboard:served`: the keyboard check of screen review R20 to R22 on the served app (below); `keyboardCheckLib.ts` holds its pure parts                 |
 | `keyboardTracePlugin.ts` | The dev server's `/__keyboard-trace` endpoint and its `/__keyboard-trace/enabled` switch (below)                                                             |
 
+`configGates.test.ts` proves that the config gates of the type-safety audit
+(G-1 to G-3) catch a planted case: ESLint's switch rule without a dead
+`default`, no rule that asks for `x!`, and Panda's `validation: 'error'`.
+
 [fidelity/AGENTS.md](fidelity/AGENTS.md): `pnpm fidelity`, the text, position
 and rule checks of the fidelity loop, and `pnpm fidelity:refs`.
 
