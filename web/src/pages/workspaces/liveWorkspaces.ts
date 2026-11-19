@@ -94,35 +94,52 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
 
+const errorBase = { message: z.string(), requestId: z.string() }
+
 /**
- * The body of an error answer from the server: a message, or a kind and a request ID (d-115). A local schema
- * until the contract exports one for every non-2xx answer (S-4, backend-coord's); keys it does not name, such as
+ * The kinds of error the server answers with (d-115), each with a message and a request ID: forbidden (403),
+ * not-found (404), invalid-input (400), herdr-bad-reply (502), herdr-unavailable (503) and internal (500). A local
+ * copy of backend-coord's contract shape (S-4) until `@bridge/contract` exports it; keys it does not name, such as
  * `reason`, are dropped, so a socket path never reaches the page.
  */
-const ErrorBody = z.object({
-  error: z.union([z.string(), z.object({ kind: z.string(), requestId: z.string() })]),
-})
+const ErrorKind = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('forbidden'), ...errorBase }),
+  z.object({ kind: z.literal('not-found'), path: z.string(), ...errorBase }),
+  z.object({ kind: z.literal('invalid-input'), issues: z.array(z.string()), ...errorBase }),
+  z.object({ kind: z.literal('herdr-bad-reply'), ...errorBase }),
+  z.object({ kind: z.literal('herdr-unavailable'), ...errorBase }),
+  z.object({ kind: z.literal('internal'), ...errorBase }),
+])
+type ErrorKind = z.infer<typeof ErrorKind>
 
-/** A read the server answered with a status that is not 2xx; `kind` and `requestId` come from its body when it has them. */
+/** The body of an error answer from the server. */
+const ErrorBody = z.object({ error: ErrorKind })
+
+/**
+ * A read the server answered with a status that is not 2xx. `kind` comes from an error body; a body that is not
+ * one, such as the HTML or empty page of the Vite proxy or `tailscale serve`, gives the status alone. `requestId`
+ * is the body's, else the answer's `X-Request-Id` header.
+ */
 class LiveReadError extends Error {
   readonly status: number
-  readonly kind: string | undefined
+  readonly kind: ErrorKind['kind'] | undefined
   readonly requestId: string | undefined
 
-  constructor(status: number, body: string) {
+  constructor(status: number, body: string, headerRequestId: string | undefined) {
     const parsed = ErrorBody.safeParse(readJson(body))
     const error = parsed.success ? parsed.data.error : undefined
+    const requestId = error?.requestId ?? headerRequestId
     const detail =
       error === undefined
-        ? ''
-        : typeof error === 'string'
-          ? `: ${error}`
-          : ` (${error.kind}, request ${error.requestId})`
+        ? requestId === undefined
+          ? ''
+          : ` (request ${requestId})`
+        : `: ${error.message} (${error.kind}, request ${error.requestId})`
     super(`the server answered ${String(status)}${detail}`)
     this.name = 'LiveReadError'
     this.status = status
-    this.kind = typeof error === 'object' ? error.kind : undefined
-    this.requestId = typeof error === 'object' ? error.requestId : undefined
+    this.kind = error?.kind
+    this.requestId = requestId
   }
 }
 
@@ -133,7 +150,7 @@ class LiveReadError extends Error {
  */
 export async function fetchWorkspaces(): Promise<WorkspacesResponse> {
   const res = await api.api.workspaces.$get()
-  if (!res.ok) throw new LiveReadError(res.status, await res.text())
+  if (!res.ok) throw new LiveReadError(res.status, await res.text(), res.headers.get('X-Request-Id') ?? undefined)
   const body: unknown = await res.json()
   return WorkspacesResponse.parse(body)
 }

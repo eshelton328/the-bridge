@@ -359,10 +359,11 @@ describe('watchLiveWorkspaces', () => {
 
 describe('fetchWorkspaces with an error answer (W-1)', () => {
   const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  const answer = (body: string, status: number) => {
+  const answer = (body: string, status: number, requestId?: string) => {
+    const headers: Record<string, string> = requestId === undefined ? {} : { 'X-Request-Id': requestId }
     vi.stubGlobal(
       'fetch',
-      vi.fn(() => Promise.resolve(new Response(body, { status }))),
+      vi.fn(() => Promise.resolve(new Response(body, { status, headers }))),
     )
   }
 
@@ -376,7 +377,7 @@ describe('fetchWorkspaces with an error answer (W-1)', () => {
     expect(state.data.status.alert).not.toMatch(/JSON/)
   })
 
-  it('names the status of an HTML error page', async () => {
+  it('names the status of an HTML error page, with the X-Request-Id header when it has one', async () => {
     answer('<html><body>Bad Gateway</body></html>', 502)
     await expect(fetchWorkspaces()).rejects.toMatchObject({
       message: 'the server answered 502',
@@ -384,25 +385,59 @@ describe('fetchWorkspaces with an error answer (W-1)', () => {
       kind: undefined,
       requestId: undefined,
     })
+    answer('<html><body>Bad Gateway</body></html>', 503, 'r-7')
+    await expect(fetchWorkspaces()).rejects.toMatchObject({
+      message: 'the server answered 503 (request r-7)',
+      status: 503,
+      kind: undefined,
+      requestId: 'r-7',
+    })
   })
 
-  it("gives an error body's kind and request ID, not [object Object]", async () => {
-    answer(JSON.stringify({ error: { kind: 'unreachable', requestId: 'r-42' } }), 502)
+  it("gives an error body's message, kind and request ID, not [object Object]", async () => {
+    const error = { kind: 'herdr-unavailable', message: 'herdr is not running', requestId: 'r-42' }
+    answer(JSON.stringify({ error }), 503, 'r-header')
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: fetchWorkspaces })
     expect(state.data.status.alert).toBe(
-      'Live data is not available (the server answered 502 (unreachable, request r-42)); the page shows mock data.',
+      'Live data is not available (the server answered 503: herdr is not running (herdr-unavailable, request r-42)); the page shows mock data.',
     )
     expect(state.data.status.alert).not.toMatch(/object Object/)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({ status: 502, kind: 'unreachable', requestId: 'r-42' })
+    await expect(fetchWorkspaces()).rejects.toMatchObject({ status: 503, kind: 'herdr-unavailable', requestId: 'r-42' })
   })
 
-  it("gives an error body's message and drops its reason", async () => {
-    answer(JSON.stringify({ error: 'herdr is not running', reason: 'connect ENOENT herdr.sock' }), 502)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 502: herdr is not running' })
+  it('reads each kind of the contract, with its own fields', async () => {
+    const bodies = [
+      { status: 403, error: { kind: 'forbidden' } },
+      { status: 404, error: { kind: 'not-found', path: '/api/workspaces' } },
+      { status: 400, error: { kind: 'invalid-input', issues: ['id: Required'] } },
+      { status: 502, error: { kind: 'herdr-bad-reply' } },
+      { status: 500, error: { kind: 'internal' } },
+    ]
+    for (const { status, error } of bodies) {
+      answer(JSON.stringify({ error: { ...error, message: 'no', requestId: 'r-1' } }), status)
+      await expect(fetchWorkspaces()).rejects.toMatchObject({ status, kind: error.kind, requestId: 'r-1' })
+    }
   })
 
-  it('names only the status of a JSON body that is not an error body', async () => {
-    answer(JSON.stringify({ error: 7 }), 500)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 500', status: 500 })
+  it("drops an error body's reason", async () => {
+    const error = { kind: 'herdr-unavailable', message: 'herdr is not running', requestId: 'r-3' }
+    answer(JSON.stringify({ error: { ...error, reason: 'connect ENOENT herdr.sock' } }), 503)
+    const thrown: unknown = await fetchWorkspaces().catch((e: unknown) => e)
+    expect(thrown).toMatchObject({
+      message: 'the server answered 503: herdr is not running (herdr-unavailable, request r-3)',
+    })
+    expect(String(thrown)).not.toMatch(/herdr\.sock/)
+  })
+
+  it('names only the status and request ID of a JSON body that is not an error body', async () => {
+    answer(JSON.stringify({ error: 'herdr is not running' }), 500, 'r-9')
+    await expect(fetchWorkspaces()).rejects.toMatchObject({
+      message: 'the server answered 500 (request r-9)',
+      status: 500,
+      kind: undefined,
+      requestId: 'r-9',
+    })
+    answer(JSON.stringify({ error: { kind: 'unknown-kind', message: 'x', requestId: 'r-10' } }), 500)
+    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 500', kind: undefined })
   })
 })
