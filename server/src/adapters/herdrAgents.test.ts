@@ -89,6 +89,7 @@ describeAgentPort('herdr (recorded socket)', () =>
       socket.push(statusLine('w17:p1', status))
       return Promise.resolve()
     },
+    unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, claudeProjects: projects }),
   }),
 )
 
@@ -124,8 +125,47 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
       resumed.push(statusLine('w17:p2', status))
       return Promise.resolve()
     },
+    unreachable: createHerdrAgents({ socket: `${resumed.path}.none`, machine, claudeProjects: projects }),
   }),
 )
+
+describe('herdr agents: a reply the adapter does not read', () => {
+  let broken: FakeHerdrSocket
+  beforeAll(async () => {
+    broken = await startFakeHerdrSocket(results)
+  })
+  afterAll(() => broken.close())
+  const brokenPort = () => createHerdrAgents({ socket: broken.path, machine, claudeProjects: projects })
+
+  it('gives badReply, not unreachable, for a line that is not JSON or the reply to another request', async () => {
+    for (const mode of ['garbage', 'wrongId'] as const) {
+      broken.answerWith(mode)
+      const read = await brokenPort().listWorkspaces()
+      expect(read.ok ? undefined : read.error.reason).toBe('badReply')
+    }
+  })
+
+  it('gives unreachable when herdr closes the socket before it answers', async () => {
+    broken.answerWith('closeEarly')
+    const read = await brokenPort().listWorkspaces()
+    expect(read.ok ? undefined : read.error.reason).toBe('unreachable')
+  })
+
+  it('ends a subscription with badReply when the stream sends a line that is not JSON', async () => {
+    broken.answerWith('normal')
+    const ends: string[] = []
+    const subscription = brokenPort().subscribe(
+      () => undefined,
+      (error) => ends.push(error.reason),
+    )
+    await subscription.ready
+    broken.push('not json')
+    broken.answerWith('garbage')
+    for (let i = 0; i < 50 && ends.length === 0; i += 1) await new Promise((r) => setTimeout(r, 20))
+    subscription.close()
+    expect(ends).toEqual(['badReply'])
+  })
+})
 
 describe('herdr agents', () => {
   it("maps herdr's agents to chats in the app's terms", async () => {

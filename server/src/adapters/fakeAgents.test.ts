@@ -14,6 +14,7 @@ describeAgentPort('fake', () => {
       port.setStatus(ChatId.parse('test-mac/drift-check'), status)
       return Promise.resolve()
     },
+    unreachable: createFakeAgents(machine, { error: { reason: 'unreachable', message: 'herdr socket: ENOENT' } }),
   })
 })
 

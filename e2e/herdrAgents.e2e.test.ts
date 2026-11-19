@@ -15,6 +15,11 @@ describeAgentPort('herdr (real session)', () =>
     port: port(),
     expected: { workspace: inject('fakeChat').workspace, chat: inject('statusChat').title },
     setStatus: reportAgent,
+    unreachable: createHerdrAgents({
+      socket: `${inject('herdrSocket')}.none`,
+      machine,
+      claudeProjects: inject('claudeProjects'),
+    }),
   }),
 )
 
