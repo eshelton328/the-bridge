@@ -1,7 +1,7 @@
 // Tests for testShards.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { assignShard, parseFileTimes } from './testShards.ts'
+import { assignShard, parseFileTimes, shardTimesFromRuns } from './testShards.ts'
 
 const paths = ['a.test.ts', 'b.test.ts', 'c.test.ts', 'd.test.ts', 'e.test.ts', 'new.test.ts']
 const times = { 'a.test.ts': 90, 'b.test.ts': 30, 'c.test.ts': 30, 'd.test.ts': 20, 'e.test.ts': 10 }
@@ -44,4 +44,30 @@ void test('parseFileTimes reads the file lines of a CI log, in ms or s', () => {
     ' Test Files  61 passed (61)',
   ].join('\n')
   assert.deepEqual(parseFileTimes(log), { 'shared/src/result.test.ts': 11, 'web/src/app/InboxRoute.test.tsx': 94500 })
+})
+
+const line = (file: string, ms: number) => ` ✓ web ${file} (2 tests) ${String(ms)}ms`
+
+void test('shardTimesFromRuns takes the mean of each file over the runs', () => {
+  const runs = {
+    '1': [
+      {
+        name: 'test-unit (1/2)',
+        conclusion: 'success',
+        log: [line('a.test.ts', 100), line('b.test.ts', 10)].join('\n'),
+      },
+    ],
+    '2': [{ name: 'test-unit (2/2)', conclusion: 'success', log: line('a.test.ts', 200) }],
+  }
+  assert.deepEqual(shardTimesFromRuns(runs), { 'web/a.test.ts': 150, 'web/b.test.ts': 10 })
+})
+
+void test('shardTimesFromRuns throws on a failed job, a log with no file times or a run with no job', () => {
+  const ok = { name: 'test-unit (1/2)', conclusion: 'success', log: line('a.test.ts', 100) }
+  assert.throws(
+    () => shardTimesFromRuns({ '1': [ok, { ...ok, name: 'test-unit (2/2)', conclusion: 'failure' }] }),
+    /did not pass/,
+  )
+  assert.throws(() => shardTimesFromRuns({ '1': [ok, { ...ok, log: 'Error: setup failed' }] }), /has no file times/)
+  assert.throws(() => shardTimesFromRuns({ '1': [ok], '2': [] }), /has no test-unit shard job/)
 })

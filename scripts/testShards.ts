@@ -34,6 +34,36 @@ export function assignShard(
   return picked
 }
 
+/** A test-unit shard job of a CI run: its name, conclusion and log. */
+export type ShardJobLog = { name: string; conclusion: string | null; log: string }
+
+/**
+ * Each file's mean time over the shard jobs of one or more CI runs. Throws
+ * when a run has no shard job, or when a job did not pass or its log has no
+ * file times, so a broken run never replaces the saved times.
+ */
+export function shardTimesFromRuns(runs: Readonly<Record<string, readonly ShardJobLog[]>>): Record<string, number> {
+  const sums: Record<string, { ms: number; n: number }> = {}
+  for (const [runId, jobs] of Object.entries(runs)) {
+    if (jobs.length === 0) throw new Error(`run ${runId} has no test-unit shard job`)
+    for (const job of jobs) {
+      if (job.conclusion !== 'success')
+        throw new Error(`run ${runId}, ${job.name}: the job did not pass (${String(job.conclusion)})`)
+      const times = parseFileTimes(job.log)
+      if (Object.keys(times).length === 0) throw new Error(`run ${runId}, ${job.name}: the log has no file times`)
+      for (const [file, ms] of Object.entries(times)) {
+        const s = sums[file] ?? { ms: 0, n: 0 }
+        sums[file] = { ms: s.ms + ms, n: s.n + 1 }
+      }
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(sums)
+      .sort(([a], [b]) => (a < b ? -1 : 1))
+      .map(([file, s]) => [file, Math.round(s.ms / s.n)]),
+  )
+}
+
 const esc = String.fromCharCode(27)
 const ansi = new RegExp(`${esc}\\[[0-9;]*m`, 'g')
 const fileLine =
