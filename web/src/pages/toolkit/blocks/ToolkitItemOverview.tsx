@@ -181,6 +181,7 @@ export function ToolkitItemOverview({
           blocks={detail.preview.blocks}
           code={detail.preview.code}
           wrapRefs={phone}
+          cutBarEnd={phone}
           wrapCode={phone}
         />
         {desktop ? sideColumn : null}

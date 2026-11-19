@@ -81,7 +81,7 @@ below are from a rerun with library 1.0.0-beta.25 and the item tabs'
   (gap: Tablet item spacing).
 - **Copy button and preview bar.** As on D07: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
-  box and bar are drawn with the Panel's tokens (gap: File preview).
+  box and bar are drawn by the library's `FileFrame` (gap: File preview).
 
 ## Second review
 

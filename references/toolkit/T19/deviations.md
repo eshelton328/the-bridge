@@ -87,7 +87,7 @@ and `density` props (2026-11-17).
   frames.
 - **Copy button and preview bar.** As on D9 and T17: the copy icon is a
   plain button with `CopyIcon` (gap: Path badge copy button), and the
-  preview box and bar are drawn with the Panel's tokens, with a 16 px code
+  preview box and bar are drawn by the library's `FileFrame`, with a 16 px code
   icon against 14 (gap: File preview).
 
 ## Second review

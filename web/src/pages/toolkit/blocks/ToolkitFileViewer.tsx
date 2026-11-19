@@ -11,15 +11,12 @@
 // the Rendered and Source switch under its text (`ToolkitFileBody`). On a tablet
 // or phone (T4) the viewer is a bordered box of its own under the tree, and its
 // bar has no copy button. A file the state has no view of shows its bar only.
-// Props only.
+// The library's FileFrame draws the box, the bar and the line under it
+// (`variant="flush"` beside the tree, `box` on a tablet or phone). Props only.
 import {
   AgentIcon,
-  CodeIcon,
-  BareIconButton,
-  CopyIcon,
-  FileIcon,
+  FileFrame,
   HookIcon,
-  LockIcon,
   RuleIcon,
   SkillIcon,
   ViewSwitch,
@@ -30,47 +27,11 @@ import type { ToolkitFileView } from '../types.ts'
 import { type FileMode, fileModes } from './filesView.ts'
 import { ToolkitFileBody } from './ToolkitFileBody.tsx'
 
-// D6 432:2290: the viewer fills the browser's column beside the tree, as high as the tree.
-const viewer = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', minW: '[0]', bg: 'surface.pane' })
-// T4 434:485: on a tablet or phone the viewer is a bordered box under the tree, as the browser's box is on the desktop
-// (LIBRARY_GAPS.md, File browser).
-const boxed = css({
-  display: 'flex',
-  flexDirection: 'column',
-  minW: '[0]',
-  bg: 'surface.pane',
-  borderWidth: 'default',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'xl',
-  overflow: 'hidden',
-})
-// D6 432:2291: 37 high, the code icon 14 in, the path in mono 8 after it, its meta 8 after that, and the copy icon,
-// the lock and Read-only at the end, as the Overview's preview bar (D3 427:274) draws them.
-const bar = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8',
-  px: '12',
-  py: '10',
-  borderBottomWidth: 'default',
-  borderBottomStyle: 'solid',
-  borderBottomColor: 'border.default',
-  color: 'fg.muted',
-})
-const name = css({ textStyle: 'mono', color: 'fg.default', whiteSpace: 'nowrap', flexShrink: '0' })
-const fileMeta = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'nowrap', minW: '[0]' })
 // D10 440:1418: the switch sits 8 before the copy icon; its box is the switch's own.
 const switchBox = css({ display: 'inline-flex' })
-const end = css({ display: 'inline-flex', alignItems: 'center', gap: '8', ms: 'auto', flexShrink: '0' })
-const readOnly = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '8',
-  textStyle: 'small',
-  whiteSpace: 'nowrap',
-})
-// D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code.
+// D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code. Figma puts it right
+// under the file; FileFrame's `foot` sits at the foot of a column that fills the browser's height, so the line is drawn
+// in the body under the file (LIBRARY_GAPS.md, File browser).
 const usedBy = css({
   display: 'flex',
   alignItems: 'center',
@@ -121,36 +82,39 @@ export function ToolkitFileViewer({
   // A script's Explain and Code switch sits in the bar (D10); a Markdown file's under its text (T4).
   const modes = fileModes(view)
   const explain = modes.some((m) => m.value === 'explain')
+  // D6 432:2290 to 432:2347: the bar with the copy icon (none on a tablet or phone, T4) and Read-only, the file, and
+  // the line on what uses it with its kind's 12 px icon (Figma 13; icon.12, d-100).
   return (
-    <section aria-label={path} className={inBox ? boxed : viewer} data-figma="viewer">
-      <div className={bar} data-figma="viewer bar">
-        {type === 'code' ? <CodeIcon size="16" /> : <FileIcon size="16" />}
-        <span className={name}>{path}</span>
-        {view?.meta === undefined ? null : <span className={fileMeta}>{view.meta}</span>}
-        <span className={end}>
-          {!explain ? null : (
-            <span className={switchBox} data-figma="toggle · Explain | Code">
-              <ViewSwitch
-                label="View"
-                tone="accent"
-                items={modes}
-                value={mode}
-                onValueChange={(value) => {
-                  onModeChange?.(value === 'explain' ? 'explain' : 'code')
-                }}
-              />
-            </span>
-          )}
-          {inBox ? null : (
-            // D6 432:2297: the bare 12 px copy icon, as the path badge's (D3 457:50).
-            <BareIconButton label={`Copy ${path}`} icon={<CopyIcon size="12" />} onClick={onCopy} />
-          )}
-          <span className={readOnly}>
-            <LockIcon size="12" />
-            Read-only
+    <FileFrame
+      variant={inBox ? 'box' : 'flush'}
+      name={path}
+      icon={type}
+      meta={view?.meta}
+      actions={
+        explain ? (
+          <span className={switchBox} data-figma="toggle · Explain | Code">
+            <ViewSwitch
+              label="View"
+              tone="accent"
+              items={modes}
+              value={mode}
+              onValueChange={(value) => {
+                onModeChange?.(value === 'explain' ? 'explain' : 'code')
+              }}
+            />
           </span>
-        </span>
-      </div>
+        ) : undefined
+      }
+      onCopy={
+        inBox
+          ? undefined
+          : () => {
+              onCopy?.()
+            }
+      }
+      readOnly
+      figma={{ root: 'viewer', bar: 'viewer bar' }}
+    >
       {view === undefined ? null : <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} line={line} />}
       {view?.usedBy === undefined ? null : (
         <p className={usedBy} data-figma="used by">
@@ -158,6 +122,6 @@ export function ToolkitFileViewer({
           {view.usedBy.text}
         </p>
       )}
-    </section>
+    </FileFrame>
   )
 }

@@ -75,7 +75,7 @@ props (2026-11-17).
   later frames.
 - **Copy button and preview bar.** As on D3: the copy icon is a plain
   button with `CopyIcon` (gap: Path badge copy button), and the preview
-  box and bar are drawn with the Panel's tokens (gap: File preview).
+  box and bar are drawn by the library's `FileFrame` (gap: File preview).
 
 ## Second review
 

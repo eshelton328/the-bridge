@@ -120,7 +120,7 @@ M22. The Checks below are from a rerun with library 1.0.0-beta.28
   files (`side` h +63).
 - **Copy button and preview bar.** As on M19 and T19: the copy icon is a
   plain button with `CopyIcon` (gap: Path badge copy button), and the
-  preview box and bar are drawn with the Panel's tokens, with a 16 px code
+  preview box and bar are drawn by the library's `FileFrame`, with a 16 px code
   icon against 14 (gap: File preview).
 - **Tab bar.** The shared `AppTabBar` passes the position check, and its
   five items line up with Figma's.

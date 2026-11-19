@@ -53,9 +53,7 @@ M05.
   scrolls sideways, which the rule check reports as `hiddenOverflow`, as
   on M12 and M22. The selected tab's outline is `border.selected` at half
   alpha where Figma's is solid cyan (no solid selected token, d-050).
-- **Tree box.** The tree box is drawn with the Panel's tokens (border,
-  radius, `surface.pane`), as on T04; the library has no file browser
-  frame. Gap: File browser.
+- **Tree box.** The tree box is the library's `FileBrowser` (`layout="stacked"`, library #261), as on T04. Gap: File browser.
 
 ## Second review
 
