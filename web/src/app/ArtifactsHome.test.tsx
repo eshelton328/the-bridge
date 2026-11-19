@@ -104,7 +104,10 @@ describe('the Artifacts home', () => {
     await page.viewport(756, 1024)
     view = await renderAt('/artifacts')
     await expect.poll(tabBar).not.toBeNull()
-    await userEvent.click(page.getByRole('button', { name: /^Inbox/ }))
+    // The tab, not the "Inbox task lifecycle" card, which is a button too now that a card opens its artifact.
+    const tab = document.querySelector('[data-figma="tab · Inbox"]')
+    if (!(tab instanceof HTMLElement)) throw new Error('no Inbox tab')
+    await userEvent.click(tab)
     await expect.poll(() => router?.state.location.pathname).toBe('/inbox')
   })
 
