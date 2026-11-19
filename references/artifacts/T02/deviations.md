@@ -34,10 +34,10 @@ D2's (`../D02/deviations.md`).
   `Thumbnail shape="wide"` is 708 × 398 against 714 × 402. The chart's
   bars are the library's `Thumbnail kind="chart"` drawing: a brighter
   cyan and violet, and other heights and order than Figma's
-  (405:457 to 405:465). The window bar's dots are about 10 px and 18
-  apart against Figma's 5 and 9 (405:453 to 405:455), and the axis is
-  narrower than Figma's 598 (405:466). Library gaps "Thumbnail colour"
-  and "Artifact preview frame".
+  (405:457 to 405:465). Since library 1.0.0-beta.74 the window bar's dots
+  are 5 px and 9 apart, as Figma's (405:453 to 405:455), and the axis is
+  84 % of the thumbnail's width (Figma's 598, 405:466). Library gaps
+  "Thumbnail colour" and "Artifact preview frame".
 - **Open in workspace.** `button · Open in workspace` x -7.5. The page is
   4 px narrower (24 px sides), and `MadeIn`'s box pads 16 at the sides
   (D2's value on the 4 px grid) against Figma's 13 here, so the button

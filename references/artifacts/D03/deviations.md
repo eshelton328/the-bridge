@@ -37,7 +37,9 @@ change.
   `Popover` opens at the button's start (`placement="bottom-start"`), and
   Filter sits 11 px left of Figma's (see "Search, Sort and Filter"), so
   the menu sits 109.5 px further right and covers the third card more
-  than the second. Library gap "Filter menu placement".
+  than the second. The menu stays under its own button: this is decided
+  with no library change (LIBRARY_GAPS.md, "Decided with no library
+  change").
 - **Filter menu rows.** `menu · Filter` h +38, and every row:
   `check · Claude artifacts`, `check · Codex sites`, `check · ncc-1701`,
   `check · omni`, `check · skill-evals`, `check · omni-brain`,
