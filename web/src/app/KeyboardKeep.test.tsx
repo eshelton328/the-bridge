@@ -10,7 +10,7 @@ import { routeTree } from './routeTree.gen.ts'
 
 // Library beta.68 (#213, screen review R19): while the on-screen keyboard is up, a touch tap in the shell that is not on
 // a field and not inside `[data-keyboard-keep]` only closes the keyboard, and its click is swallowed. The page controls
-// a user taps while typing carry the mark: the Workspaces composer (its model chip, folders and attachments), and the
+// a user taps while typing carry the mark: the Workspaces composer (its model chip, folders and attachments), the Inbox prompt editor’s Done and Reset, and the
 // Inbox and Artifacts search rows (Sort and Filter). Through the real routes, with the keyboard raised as iOS Safari
 // raises it, each tap does its own action. The app's styles and fonts load as in main.ts.
 document.documentElement.classList.add('dark')
@@ -53,9 +53,15 @@ function tap(el: Element) {
 
 /**
  * Renders `url` at `size`, focuses the field `field` and raises a keyboard that leaves `keyboardTop` px of the window.
- * Returns the field once the shell has docked on the keyboard.
+ * With `label`, the field is the one that label names. Returns the field once the shell has docked on the keyboard.
  */
-async function typing(url: string, size: readonly [number, number], field: string, keyboardTop: number) {
+async function typing(
+  url: string,
+  size: readonly [number, number],
+  field: string,
+  keyboardTop: number,
+  label?: string,
+) {
   await page.viewport(size[0], size[1])
   const viewport = new FakeViewport()
   replaceVisualViewport(viewport)
@@ -68,9 +74,14 @@ async function typing(url: string, size: readonly [number, number], field: strin
   if (!(root instanceof HTMLElement)) throw new Error('no root')
   root.style.height = '100%'
   const shell = root.querySelector<HTMLElement>('.app-shell__root')
-  await expect.poll(() => shell?.querySelector(field)).not.toBeNull()
+  // With `label`, the field is the one of those that the label names.
+  const find = () =>
+    [...(shell?.querySelectorAll<HTMLElement>(field) ?? [])].find(
+      (el) => label === undefined || (el as HTMLTextAreaElement).labels?.[0]?.textContent === label,
+    )
+  await expect.poll(find).toBeDefined()
   await document.fonts.ready
-  const input = shell?.querySelector<HTMLElement>(field)
+  const input = find()
   if (!shell || !input) throw new Error('no shell or field')
   await userEvent.click(input)
   viewport.move({ height: keyboardTop })
@@ -140,5 +151,20 @@ describe('a tap on a page control while the keyboard is up (R19)', () => {
     await typing('/artifacts', [390, 844], 'input', 544)
     tap(page.getByRole('button', { name: 'Filter', exact: true }).element())
     await expect.element(page.getByRole('dialog', { name: 'Filter' })).toBeVisible()
+  })
+  it('ends the Inbox prompt edit with Done on the tablet (T12)', async () => {
+    await typing('/inbox?state=promptEditingPage', [756, 1158], 'textarea', 800, 'Suggested prompt')
+    tap(page.getByRole('button', { name: 'Done', exact: true }).element())
+    await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Edit', exact: true })).toBeVisible()
+  })
+
+  it('brings back the suggested prompt with Reset on the tablet (T12)', async () => {
+    const field = await typing('/inbox?state=promptEditingPage', [756, 1158], 'textarea', 800, 'Suggested prompt')
+    const reset = page.getByRole('button', { name: 'Reset', exact: true })
+    await expect.element(reset).toBeEnabled()
+    tap(reset.element())
+    await expect.element(reset).toBeDisabled()
+    expect(document.activeElement).toBe(field)
   })
 })
