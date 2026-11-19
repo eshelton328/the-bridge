@@ -96,3 +96,15 @@ else `{ "enabled": false }` (also when there is no traces folder), with
 input and only checks whether that one file exists. The plugin adds it
 before the trace endpoint, as connect matches `/__keyboard-trace` as a
 prefix of it.
+
+`GET /__keyboard-trace/experiment` is the same kind of switch for the
+keyboard experiments (`web/src/app/README.md`). It answers
+`{ "experiment": "proxy" }` or `"prevent"` when the file `EXPERIMENT` in
+the traces folder holds that name, else `{ "experiment": null }`, with
+`Cache-Control: no-store`. It reads at most the file's first 32 bytes and
+never sends the file's text.
+
+`pnpm keyboard:slide <trace.json>...` checks traces for a moved page: a
+sample with `scrollY`, `scrollTop`, `rootTop` or `vvOffsetTop` off 0 by
+more than 1 px, or an `innerHeight` under the one at the trace's start. It
+prints one JSON line and exits 1 when a trace has such a sample.

@@ -38,6 +38,9 @@ if (import.meta.env.DEV) {
         }),
     },
   })
+  // The keyboard experiments of screen review R27, dev only: `?kb-experiment=proxy|prevent`, or the dev server's
+  // switch, picks how a tap gives the composer the focus (keyboardExperiment.ts). A build drops it.
+  void import('./keyboardExperiment.ts').then(({ startKeyboardExperiment }) => startKeyboardExperiment())
 }
 createRoot(container, rootErrorOptions).render(
   createElement(
