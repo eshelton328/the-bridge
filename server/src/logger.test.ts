@@ -47,6 +47,16 @@ describe('logger', () => {
     expect(text).not.toContain('owner@example.com')
   })
 
+  it("leaves out a field or child binding named as one of pino's own keys, so no key is written twice", () => {
+    const { log, text } = memoryLogger()
+    log.child({ msg: 'child text' }).info('request', { msg: 'field text', level: 99, time: 'then', status: 200 })
+    expect(text().match(/"msg":/g)).toHaveLength(1)
+    expect(text().match(/"level":/g)).toHaveLength(1)
+    expect(text().match(/"time":/g)).toHaveLength(1)
+    expect(text()).not.toContain('field text')
+    expect(text()).not.toContain('child text')
+  })
+
   it('replaces a message that is not listed, so a token planted in a message is not written', () => {
     const { pino, lines } = memoryLogger()
     pino.info({ requestId: 'r2' }, `token ${token}`)

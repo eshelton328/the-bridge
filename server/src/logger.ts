@@ -64,7 +64,12 @@ function redact(value: unknown, depth = 0): unknown {
   )
 }
 
-const redactFields = (fields: unknown): Record<string, unknown> => Entry.catch({}).parse(redact(fields))
+/** The keys that pino writes itself; a field of the same name would write the key twice. */
+const reservedKeys: ReadonlySet<string> = new Set(['msg', 'level', 'time'])
+
+/** The fields of an entry or a child: secrets replaced, and pino's own keys left out. */
+const redactFields = (fields: unknown): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(Entry.catch({}).parse(redact(fields))).filter(([key]) => !reservedKeys.has(key)))
 
 function wrap(base: pino.Logger): Logger {
   const at =
@@ -152,8 +157,15 @@ export function memoryLogger(level: LogLevel = 'trace'): {
   readonly log: Logger
   readonly pino: pino.Logger
   readonly lines: () => Record<string, unknown>[]
+  /** The lines as written. */
+  readonly text: () => string
 } {
   const kept: string[] = []
   const base = createPino({ write: (line) => kept.push(line) }, level)
-  return { log: wrap(base), pino: base, lines: () => kept.map((line) => Entry.parse(JSON.parse(line))) }
+  return {
+    log: wrap(base),
+    pino: base,
+    text: () => kept.join(''),
+    lines: () => kept.map((line) => Entry.parse(JSON.parse(line))),
+  }
 }
