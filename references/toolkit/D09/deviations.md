@@ -20,52 +20,41 @@ apart as Figma's), which fits D9 better than beta.16's `TerminalLines`
 
 ## Checks
 
-- Text: fail. Three strings are not visible: `hooks/commit-msg`,
-  `→1 ←1` and `commit-msg` (433:1446, 433:1448, and the fifth
-  `commit-msg` the frame needs, the hook's list row 433:1445; the check
-  names 433:1636). All three are the open hook's list row, which the
-  render draws below the frame's bottom edge (see Row height). No text
-  is covered by another element. In `exceptions.json`: the Workflows
-  chip's label and count (433:1315, 433:1316), which Figma cuts at the
-  list pane's edge too, and line 4 of the script (433:1595), which
-  Figma cuts at the preview's edge too.
-- Position: 27 of 49 layers pass (`toolkit list`, `header`, `read-only`,
-  `filter · chips`, `search`, `group · RULES`, `toolkit item`,
-  `meta row`, `kind badge`, `button · Discuss`, `button · Show on map`,
-  `433:1536`, `path row`, `path badge`, `kind section · hook`, `facts`,
-  `fact · Event`, `fact · State`, `badge · Enabled · icon`,
-  `fact · Enforces`, `fact · Test`).
-  The shared navigation's items pass too: `rail · Inbox`,
-  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
-  `rail · Toolkit` and `rail · More`.
-- Rules: fail. One `hiddenOverflow` finding: the list pane
-  (`[data-figma="toolkit list"]`) is 1066 px high in a 982 px frame and
-  scrolls, because of the taller rows (see Row height). In
-  `exceptions.json`: the kind chips scroll sideways, cut at the pane's
-  edge (`[data-figma="filter · chips"] > div.filter-chips__root`), and
-  the code scrolls sideways in the library's `ScrollFrame`
-  (`[data-figma="code"] > div.scroll-frame__root > div.scroll-frame__body`).
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 3 Figma strings (`Workflows`,
+  `2`, `# exits 1 with one line per problem. Git runs it from the top of
+  the work`); each is explained below.
+- Position: 39 of 49 layers pass. The 10 that fail: `group · WORKFLOWS`
+  y -5; `433:1537` w +8; `columns` y -5, h -6; `file preview` y -5, w
+  -5.6, h -6; `preview bar` y -5, w -5.6; `code` y -5, w -5.6, h -6;
+  `side` x -5.6, y -5, w +5.6; `files` x -5.6, y -5; `file · commit-msg`
+  x -5.6; `file · test-commit-msg` x -5.6. Each is explained below.
+- Rules: pass. 2 findings are excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`; `hiddenOverflow` on `[data-figma="code"] >
+  div.scroll-frame__root > div.scroll-frame__body`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (the
-  open row is 62 against 55), and its counts sit level with the name,
-  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). The first row starts 3 px lower and each row
-  after it 9 px lower again:
-  `toolkit row · commits-and-prs` y +3 h +9;
-  `toolkit row · diagrams` y +12 h +9; `toolkit row · linear` y +21
-  h +9; `toolkit row · readmes` y +30 h +9; `toolkit row · releases`
-  y +39 h +9; `toolkit row · skills` y +48 h +9;
-  `toolkit row · ste100` y +57 h +9; `toolkit row · writing` y +66 h +9;
-  `group · WORKFLOWS` y +75; `toolkit row · skill-eval-cases` y +78 h +9;
-  `toolkit row · skill-eval-round` y +87 h +9; `group · HOOKS` y +96;
-  `toolkit row · commit-msg` y +99 h +7. The open hook's row starts at
-  988, below the frame's bottom edge (982), so its name, path and counts
-  (`commit-msg`, `hooks/commit-msg`, `→1 ←1`) are not visible and the
-  list pane scrolls (`hiddenOverflow` on `[data-figma="toolkit list"]`).
-  The screen does not scroll the pane to the open row: no page builds
-  its own scroll layout (d-107).
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `group · WORKFLOWS` y -5. With the shorter rows the last
+  rows' text (`hooks/commit-msg`, `→1 ←1`, `commit-msg`) lies above the
+  frame's foot and is visible, so its exceptions are gone. The list no
+  longer runs past the frame's foot, so the pane does not scroll on its
+  own and its `hiddenOverflow` exception on `[data-figma="toolkit
+  list"]` is gone.
 - **Fact cards.** The four When it runs cards are drawn with `Panel` in
   a four-column `Grid`, 10 apart (gap: Agent fact card). `Panel` is as
   tall as its content, so the Event and Test cards end about 14 px above

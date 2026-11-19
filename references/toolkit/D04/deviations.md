@@ -13,24 +13,49 @@ and the item tabs' `tone` and `density` props (2026-11-17).
 
 ## Checks
 
-- Text: pass. In `exceptions.json`: the Workflows chip's label and count
-  (427:471, 427:472), which Figma cuts at the list pane's edge too; the
-  Rules, Workflows and Hooks list text that lies below the frame's bottom
-  edge in the render (see List scroll); and the Skills and Agents list
-  text that the render shows where Figma has scrolled it away.
-- Position: 21 of 55 layers pass (`toolkit list`, `header`, `read-only`,
-  `filter · chips`, `search`, `toolkit item`, `meta row`, `kind badge`,
-  `button · Discuss`, `button · Show on map`, `427:626`, `path row`,
-  `path badge`, `when it loads`, `columns`). The Skills and Agents groups
-  and their rows (16 layers) are in `exceptions.json`: the frame has no
-  layer for them.
-  The shared navigation's items pass too: `rail · Inbox`,
-  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
-  `rail · Toolkit` and `rail · More`.
-- Rules: pass. Two `hiddenOverflow` findings are in `exceptions.json`, as
-  in D03: the list pane scrolls on its own (`[data-figma="toolkit list"]`),
-  and the kind chips scroll sideways, cut at the pane's edge
-  (`[data-figma="filter · chips"] > div.filter-chips__root`).
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 34 Figma strings (`Workflows`,
+  `2`, `RULES`, `8`, `commits-and-prs`, `rules/commits-and-prs.md`, `→1
+  ←5`, `rules/diagrams.md`, `linear`, `rules/linear.md`, `readmes`,
+  `rules/readmes.md`, `→1 ←4`, `releases`, `rules/releases.md`, `→0 ←0`,
+  `ste100`, `rules/ste100.md`, `writing`, `rules/writing.md`, `→6 ←3`,
+  `WORKFLOWS`, `2`, `skill-eval-cases`, `workflows/skill-eval-cases.md`,
+  `→3 ←1`, `skill-eval-round`, `workflows/skill-eval-round.md`, `HOOKS`,
+  `1`, `commit-msg`, `hooks/commit-msg`, `→1 ←1`, `rules/skills.md`) and
+  29 render strings (`SKILLS`, `agents-md`, `skills/agents-md/`, `→0
+  ←1`, `ambitious`, `skills/ambitious/`, `audit-slop`,
+  `skills/audit-slop/`, `→1 ←2`, `skills/eval-cases/`, `→3 ←3`,
+  `mermaid-diagrams`, `skills/mermaid-diagrams/`, `pr-description`,
+  `skills/pr-description/`, `project-setup`, `skills/project-setup/`,
+  `skills/readme/`, `skills/writer/`, `→7 ←4`, `AGENTS`,
+  `diagram-reviewer`, `agents/diagram-reviewer.md`, `eval-case-writer`,
+  `writer`, `agents/eval-case-writer.md`, `eval-grader`,
+  `agents/eval-grader.md`, `→0 ←2`); each is explained below.
+- Position: 21 of 55 layers pass. 16 are excepted in `exceptions.json`
+  (`group · SKILLS`, `toolkit row · agents-md`, `toolkit row ·
+  ambitious`, `toolkit row · audit-slop`, `toolkit row · eval-cases`,
+  `toolkit row · mermaid-diagrams`, `toolkit row · pr-description`,
+  `toolkit row · project-setup`, `toolkit row · readme`, `group ·
+  AGENTS`, `toolkit row · diagram-reviewer`, `toolkit row ·
+  eval-case-writer`, `toolkit row · eval-grader`, `toolkit row ·
+  pr-description-checker`, `toolkit row · readme-cold-reader`, `toolkit
+  row · writing-reviewer`). The 18 that fail: `group · RULES` y +1072;
+  `toolkit row · commits-and-prs` y +1075; `toolkit row · diagrams` y
+  +1074; `toolkit row · linear` y +1073; `toolkit row · readmes` y
+  +1072; `toolkit row · releases` y +1071; `toolkit row · skills` y
+  +1070; `toolkit row · ste100` y +1067; `toolkit row · writing` y
+  +1066; `group · WORKFLOWS` y +1065; `toolkit row · skill-eval-cases` y
+  +1068; `toolkit row · skill-eval-round` y +1067; `group · HOOKS` y
+  +1066; `toolkit row · commit-msg` y +1069; `427:627` w +8; `file
+  preview` w -5.6; `preview bar` w -5.6; `rendered markdown` w -5.6.
+  Each is explained below.
+- Rules: pass. 2 findings are excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="toolkit list"]`; `hiddenOverflow` on
+  `[data-figma="filter · chips"] > div.filter-chips__root`.
 
 ## Deviations
 
@@ -39,23 +64,32 @@ and the item tabs' `tone` and `density` props (2026-11-17).
   its header with the Skills group first, as in D3: no page builds its
   own sticky layout until the library's `ScrollFrame` arrives with the
   move to 1.0.0-beta.15 in bridge-inbox's PR (d-107). So the Rules,
-  Workflows and Hooks groups sit about 1232 px lower than Figma's and
+  Workflows and Hooks groups sit about 1070 px lower than Figma's and
   below the frame's bottom edge, and the Skills and Agents rows fill the
-  pane in their place. With the taller rows (see Row height) each key is
-  off by more: `group · RULES` y +1232;
-  `toolkit row · commits-and-prs` y +1235 h +9;
-  `toolkit row · diagrams` y +1244 h +9; `toolkit row · linear` y +1253
-  h +9; `toolkit row · readmes` y +1262 h +9; `toolkit row · releases`
-  y +1271 h +9; `toolkit row · skills` y +1280 h +7;
-  `toolkit row · ste100` y +1287 h +9; `toolkit row · writing` y +1296
-  h +9; `group · WORKFLOWS` y +1305; `toolkit row · skill-eval-cases`
-  y +1308 h +9; `toolkit row · skill-eval-round` y +1317 h +9;
-  `group · HOOKS` y +1326; `toolkit row · commit-msg` y +1329 h +9.
-- **Row height.** Each list row is 62 px high against Figma's 53 (the
-  open row is 62 against 55), and its counts sit level with the name,
-  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). Each row after the first adds 9 px to the offsets
-  above.
+  pane in their place. With the 52 px rows (see Row height) the
+  eval-case-writer and eval-grader rows now come above the frame's foot
+  too, so their text (`agents/eval-case-writer.md`, `eval-grader`,
+  `agents/eval-grader.md`, `→0 ←2`) joins the excepted Skills and Agents
+  strings. Each key is off by: `group · RULES` y +1072; `toolkit row ·
+  commits-and-prs` y +1075; `toolkit row · diagrams` y +1074; `toolkit
+  row · linear` y +1073; `toolkit row · readmes` y +1072; `toolkit row ·
+  releases` y +1071; `toolkit row · skills` y +1070; `toolkit row ·
+  ste100` y +1067; `toolkit row · writing` y +1066; `group · WORKFLOWS`
+  y +1065; `toolkit row · skill-eval-cases` y +1068; `toolkit row ·
+  skill-eval-round` y +1067; `group · HOOKS` y +1066; `toolkit row ·
+  commit-msg` y +1069.
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The rows' keys are off
+  by the List scroll, and listed there. The list still runs past the
+  frame's foot, so the pane scrolls on its own (`hiddenOverflow` on
+  `[data-figma="toolkit list"]`, in `exceptions.json`).
 - **File preview width.** The preview is 554.4 px wide against Figma's
   560: no size token has 560 or 364, and the columns share the row 3 to 2
   even with the side column empty (gap: Item overview columns):

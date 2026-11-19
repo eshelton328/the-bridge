@@ -9,21 +9,6 @@
       "text": "2",
       "layers": ["433:811"],
       "reason": "The Workflows chip's count (433:811, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
-    },
-    {
-      "text": "commit-msg",
-      "layers": ["433:940"],
-      "reason": "`commit-msg` is in the commit-msg row (Figma y 899). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
-    },
-    {
-      "text": "hooks/commit-msg",
-      "layers": ["433:941"],
-      "reason": "`hooks/commit-msg` is in the commit-msg row (Figma y 919). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
-    },
-    {
-      "text": "→1  ←1",
-      "layers": ["433:943"],
-      "reason": "`→1 ←1` is in the commit-msg row (Figma y 909). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
     }
   ],
   "rules": [
@@ -31,11 +16,6 @@
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
       "reason": "The kind chips scroll sideways: Figma's chip row (433:792) runs past the list pane's right edge, cut after the Workflows chip's dot (433:808, x 433 to 552). FilterChips scrolls the row the same way, with no scroll bar and a fade at the cut edge."
-    },
-    {
-      "rule": "hiddenOverflow",
-      "selector": "[data-figma=\"toolkit list\"]",
-      "reason": "The list pane scrolls on its own (1066 px of rows in the 982 px pane): its rows are 62 px high against Figma's 53, so the last rows lie past the frame's foot (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\"). D03 takes the same exception."
     }
   ]
 }

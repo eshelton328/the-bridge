@@ -14,53 +14,50 @@ with them the text and rules checks now pass.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. 5 strings are not
-  visible: `Workflows` (491:4414), `2` (491:4415), `commit-msg`
-  (491:4544), `hooks/commit-msg` (491:4545), `→1 ←1` (491:4547); see
-  List pane.
-- Position: 25 of 47 layers pass. The 22 that fail: `toolkit row ·
-  commits-and-prs` y +3 h +9; `toolkit row · diagrams` y +12 h +9;
-  `toolkit row · linear` y +21 h +9; `toolkit row · readmes` y +30 h +9;
-  `toolkit row · releases` y +39 h +9; `toolkit row · skills` y +48 h
-  +7; `toolkit row · ste100` y +55 h +9; `toolkit row · writing` y +64 h
-  +9; `group · WORKFLOWS` y +73 w -0.6 h +3; `toolkit row ·
-  skill-eval-cases` y +76 h +9; `toolkit row · skill-eval-round` y +85 h
-  +9; `group · HOOKS` y +94 w +0.3 h +3; `toolkit row · commit-msg` y
-  +97 h +9; `activity` h +9; `row · day and where` y -3 h -6; `panel ·
-  by day` y -3 h -6; `panel · where` y -3 h -5; `panel · chats` y -9 h
-  +19; `row · ASD-STE100 writer skill setup` y -10 h +11; `row · README
-  effectiveness research and rule` y -7 h +11; `row · Deep research on
-  evals` y -4 h +11; `row · Writer rules, skills, and agents` y -1 h
-  +11. Each is explained below.
-- Rules: fail. 2 `hiddenOverflow` findings: `[data-figma="toolkit
-  list"]`; `[data-figma="filter · chips"] > div.filter-chips__root`.
-  Each is explained below; the frame's `exceptions.json` excepts them.
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 33 of 47 layers pass. The 14 that fail: `toolkit row ·
+  ste100` y -5; `toolkit row · writing` y -6; `group · WORKFLOWS` y -7;
+  `toolkit row · skill-eval-round` y -5; `group · HOOKS` y -6;
+  `activity` h +9; `row · day and where` h -6; `panel · by day` h -6;
+  `panel · where` h -5; `panel · chats` y -9, h +19; `row · ASD-STE100
+  writer skill setup` y -10, h +11; `row · README effectiveness research
+  and rule` y -7, h +11; `row · Deep research on evals` h +11; `row ·
+  Writer rules, skills, and agents` h +11. Each is explained below.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (h +9),
-  as on D3, D4 and D20: `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). Each row after the first starts 9 px lower again,
-  and the group headers 3 px taller: `toolkit row · commits-and-prs` y
-  +3 h +9; `toolkit row · diagrams` y +12 h +9; `toolkit row · linear` y
-  +21 h +9; `toolkit row · readmes` y +30 h +9; `toolkit row · releases`
-  y +39 h +9; `toolkit row · skills` y +48 h +7; `toolkit row · ste100`
-  y +55 h +9; `toolkit row · writing` y +64 h +9; `group · WORKFLOWS` y
-  +73 w -0.6 h +3; `toolkit row · skill-eval-cases` y +76 h +9; `toolkit
-  row · skill-eval-round` y +85 h +9; `group · HOOKS` y +94 w +0.3 h +3;
-  `toolkit row · commit-msg` y +97 h +9. The last rows lie past the
-  frame's foot, so their text is not visible (the List pane strings).
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `toolkit row · ste100` y -5; `toolkit row · writing` y -6;
+  `group · WORKFLOWS` y -7; `toolkit row · skill-eval-round` y -5;
+  `group · HOOKS` y -6. With the shorter rows the last rows' text
+  (`commit-msg`, `hooks/commit-msg`, `→1 ←1`) lies above the frame's
+  foot and is visible, so its exceptions are gone. The list no longer
+  runs past the frame's foot, so the pane does not scroll on its own and
+  its `hiddenOverflow` exception on `[data-figma="toolkit list"]` is
+  gone.
 - **List pane.** The kind chips are wider than the list pane and scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`);
   Figma cuts the Workflows chip at the same edge, so `Workflows` and `2`
-  are not visible in either. The list pane scrolls on its own
-  (`[data-figma="toolkit list"]`) because its rows are taller (Row
-  height). Not visible: `Workflows` `2` `commit-msg` `hooks/commit-msg`
-  `→1 ←1`. D3, D20 and D25 to D28 have the same findings.
-  Figma draws the cut Workflows chip at full strength up to the pane's
-  edge; the library's `FilterChips` fades an end that overflows over 24
-  px (its `data-overflow-end` mask), so the cut chip fades out (gap:
-  Toolkit row (pane)).
+  are not visible in either. `FilterChips fade="none"` (library
+  1.0.0-beta.65) draws the cut chip at full strength up to the pane's
+  edge, as Figma does; before, it faded out over 24 px.
 - **Key figures.** The four figures are the library's `KpiTile`, which
   pads 10 and 12 inside a 1 px border with 16 px lines (d-072), where
   Figma pads 11 and 13 with 17 px lines, so each tile is 3 px shorter

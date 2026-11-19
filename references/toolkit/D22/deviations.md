@@ -14,42 +14,43 @@ with them the text and rules checks now pass.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. 2 strings are not
-  visible: `Workflows` (491:4965), `2` (491:4966); see List pane.
-- Position: 27 of 41 layers pass. The 14 that fail: `toolkit row ·
-  diagram-reviewer` y +6 h +9; `toolkit row · eval-case-writer` y +15 h
-  +9; `toolkit row · eval-grader` y +24 h +9; `toolkit row ·
-  pr-description-checker` y +33 h +9; `toolkit row · readme-cold-reader`
-  y +42 h +9; `toolkit row · writing-reviewer` y +60 h +7; `activity` h
-  +9; `row · day and where` y -3 h -6; `panel · by day` y -3 h -6;
-  `panel · chats` y -9 h +19; `row · NCC-1701 Figma toolkit page` y -10
-  h +11; `row · Brain NC1701 project` y -7 h +11; `row · Writer rules,
-  skills, and agents` y -4 h +11; `row · Deep research on evals` y -1 h
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 31 of 41 layers pass. The 10 that fail: `toolkit row ·
+  diagram-reviewer` y +6; `toolkit row · eval-case-writer` y +5;
+  `activity` h +9; `row · day and where` h -6; `panel · by day` h -6;
+  `panel · chats` y -9, h +19; `row · NCC-1701 Figma toolkit page` y
+  -10, h +11; `row · Brain NC1701 project` y -7, h +11; `row · Writer
+  rules, skills, and agents` h +11; `row · Deep research on evals` h
   +11. Each is explained below.
-- Rules: fail. 1 `hiddenOverflow` finding: `[data-figma="filter ·
-  chips"] > div.filter-chips__root`. Each is explained below; the
-  frame's `exceptions.json` excepts it.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (h +9),
-  as on D3, D4 and D20: `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). Each row after the first starts 9 px lower again,
-  and the group headers 3 px taller: `toolkit row · diagram-reviewer` y
-  +6 h +9; `toolkit row · eval-case-writer` y +15 h +9; `toolkit row ·
-  eval-grader` y +24 h +9; `toolkit row · pr-description-checker` y +33
-  h +9; `toolkit row · readme-cold-reader` y +42 h +9; `toolkit row ·
-  writing-reviewer` y +60 h +7. The last rows lie past the frame's foot,
-  so their text is not visible (the List pane strings).
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `toolkit row · diagram-reviewer` y +6; `toolkit row ·
+  eval-case-writer` y +5.
 - **List pane.** The kind chips are wider than the list pane and scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`);
   Figma cuts the Workflows chip at the same edge, so `Workflows` and `2`
-  are not visible in either. Not visible: `Workflows` `2`. D3, D20 and
-  D25 to D28 have the same findings.
-  Figma draws the cut Workflows chip at full strength up to the pane's
-  edge; the library's `FilterChips` fades an end that overflows over 24
-  px (its `data-overflow-end` mask), so the cut chip fades out (gap:
-  Toolkit row (pane)).
+  are not visible in either. `FilterChips fade="none"` (library
+  1.0.0-beta.65) draws the cut chip at full strength up to the pane's
+  edge, as Figma does; before, it faded out over 24 px.
 - **Key figures.** The four figures are the library's `KpiTile`, which
   pads 10 and 12 inside a 1 px border with 16 px lines (d-072), where
   Figma pads 11 and 13 with 17 px lines, so each tile is 3 px shorter

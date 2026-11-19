@@ -2,8 +2,8 @@
 // M1 429:96) the kind tile, the name over its path, and at the end the two
 // link counts (→ the files it links to, ← the files that link to it) and a
 // chevron, with no surface or border. In the list beside an open item (D3
-// 427:94) the row has the small tile and no chevron, and the open item's row
-// is selected (427:166). With `onSelect` a click opens the item. Props only.
+// 427:94) the row is 52 high, with the small tile and no chevron, and the
+// open item's row is selected (427:166) at the same height. With `onSelect` a click opens the item. Props only.
 import { ChevronRightIcon, KindTile, ListRow } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemView } from '../types.ts'
@@ -36,8 +36,9 @@ export function ToolkitRow({ item, figma, size = 'phone', selected, onSelect }: 
         selected={selected}
         onSelect={onSelect}
         // M1 429:96: 4 in at the sides and 8 above and below, the body 12 after the tile, and the counts and chevron
-        // centred down the row. The pane's row (D3) keeps the default inset, gap and placement.
-        padding={phone ? 'phone' : undefined}
+        // centred down the row. D3 427:94: the pane's row is 52 high (Figma 53, off the 4 px grid, d-100), 6 above
+        // and below, with the tile, the name over the path and the counts centred down it; `pane` centres them.
+        padding={phone ? 'phone' : 'pane'}
         trailingAlign={phone ? 'center' : undefined}
         leadingGap={phone ? '12' : undefined}
         trailing={

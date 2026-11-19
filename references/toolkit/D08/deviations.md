@@ -20,46 +20,40 @@ The workspace stays on library 1.0.0-beta.15: no part of beta.16
 
 ## Checks
 
-- Text: fail. Three strings are not visible: `commit-msg`,
-  `hooks/commit-msg` and `→1 ←1` (433:940, 433:941, 433:943), the hook's
-  list row, which the render draws below the frame's bottom edge (see
-  Row height). No text is covered by another element. In
-  `exceptions.json`: the Workflows chip's label and count (433:810,
-  433:811), which Figma cuts at the list pane's edge too.
-- Position: 35 of 58 layers pass (`toolkit list`, `header`, `read-only`,
-  `filter · chips`, `search`, `group · RULES`, `toolkit item`,
-  `meta row`, `kind badge`, `button · Discuss`, `button · Show on map`,
-  `433:1032`, `path row`, `path badge`, `kind section · workflow`,
-  `steps header`, `flow · by phase`, all ten step cards, `runs`,
-  `link · eval-grader`).
-  The shared navigation's items pass too: `rail · Inbox`,
-  `rail · Workspaces`, `rail · Projects`, `rail · Artifacts`,
-  `rail · Toolkit` and `rail · More`.
-- Rules: fail. One `hiddenOverflow` finding: the list pane
-  (`[data-figma="toolkit list"]`) is 1066 px high in a 982 px frame and
-  scrolls, because of the taller rows (see Row height), as in D9. In
-  `exceptions.json`: the kind chips scroll sideways, cut at the pane's
-  edge (`[data-figma="filter · chips"] > div.filter-chips__root`).
+From `pnpm fidelity toolkit` on 2026-11-18, after the list rows moved to
+`ListRow padding="pane"` and the pane's kind chips to `FilterChips
+fade="none"` (library 1.0.0-beta.65), with the frame's
+`exceptions.json`.
+
+- Text: pass. `exceptions.json` excepts 2 Figma strings (`Workflows`,
+  `2`); each is explained below.
+- Position: 46 of 58 layers pass. The 12 that fail: `group · WORKFLOWS`
+  y -5; `group · HOOKS` y -6; `433:1033` w +8; `button · Open full page`
+  x -5.5, w +5.5; `label · new failure` w -6.8; `columns` h +17; `file
+  preview` w -5.6, h +17; `preview bar` w -5.6; `rendered markdown` w
+  -5.6, h +17; `side` x -5.6, w +5.6; `files` x -5.6; `file ·
+  skill-eval-round.md` x -5.6. Each is explained below.
+- Rules: pass. 1 finding is excepted in `exceptions.json`:
+  `hiddenOverflow` on `[data-figma="filter · chips"] >
+  div.filter-chips__root`.
 
 ## Deviations
 
-- **Row height.** Each list row is 62 px high against Figma's 53 (the
-  open row is 62 against 55), and its counts sit level with the name,
-  where Figma centres them. `ListRow` pads 10 inside a 1 px border (gap:
-  Toolkit row (pane)). The first row starts 3 px lower and each row
-  after it 9 px lower again:
-  `toolkit row · commits-and-prs` y +3 h +9;
-  `toolkit row · diagrams` y +12 h +9; `toolkit row · linear` y +21
-  h +9; `toolkit row · readmes` y +30 h +9; `toolkit row · releases`
-  y +39 h +9; `toolkit row · skills` y +48 h +9;
-  `toolkit row · ste100` y +57 h +9; `toolkit row · writing` y +66 h +9;
-  `group · WORKFLOWS` y +75; `toolkit row · skill-eval-cases` y +78 h +9;
-  `toolkit row · skill-eval-round` y +87 h +7; `group · HOOKS` y +94;
-  `toolkit row · commit-msg` y +97 h +9. The hook's row starts at 988,
-  below the frame's bottom edge (982), so its name, path and counts
-  (`commit-msg`, `hooks/commit-msg`, `→1 ←1`) are not visible and the
-  list pane scrolls (`hiddenOverflow` on `[data-figma="toolkit list"]`).
-  No page builds its own scroll layout (d-107).
+- **Row height.** Each list row is 52 px high against Figma's 53, and
+  the open item's row 52 against its 55 (`ListRow padding="pane"`,
+  library 1.0.0-beta.65); 53 and 55 are off the 4 px grid (d-100), so 52
+  is the decision. The kind tile, the name over the path and the counts
+  sit centred down the row, as in Figma; the tile is 11 px in against
+  Figma's 10, since 10 needs a 9 px padding that no space token has
+  (gap: Toolkit row (pane)). Each row starts higher than Figma's by 1 px
+  for each row above it and 3 px after the open item's row, and the
+  group headers are 3 px taller than Figma's 27. The keys past the
+  tolerance: `group · WORKFLOWS` y -5; `group · HOOKS` y -6. With the
+  shorter rows the last rows' text (`commit-msg`, `hooks/commit-msg`,
+  `→1 ←1`) lies above the frame's foot and is visible, so its exceptions
+  are gone. The list no longer runs past the frame's foot, so the pane
+  does not scroll on its own and its `hiddenOverflow` exception on
+  `[data-figma="toolkit list"]` is gone.
 - **Connector lines.** The straight arrows are the library's `FlowLine`
   (library #133 and #137): down between the steps of Run and Decide,
   across into Run (under `yes`, which sits over the line as Figma's), into
