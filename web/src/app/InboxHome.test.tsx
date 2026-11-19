@@ -4,6 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -38,12 +39,12 @@ afterEach(async () => {
   await view?.unmount()
   view = undefined
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 describe('the Inbox home', () => {
   it('draws the phone list at 390 with nothing open', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/inbox')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -53,7 +54,7 @@ describe('the Inbox home', () => {
   })
 
   it('draws the desktop list and task at 1512 with nothing open', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/inbox')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
@@ -63,20 +64,20 @@ describe('the Inbox home', () => {
   })
 
   it('changes from the desktop to the phone list and back as the window narrows and widens', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/inbox')
     await expect.element(task()).toBeVisible()
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()
     await expect.element(task()).not.toBeInTheDocument()
     await expect.element(searchbox()).toBeVisible()
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     await expect.poll(rail).not.toBeNull()
     await expect.element(task()).toBeVisible()
   })
 
   it('draws the tablet list at 756 with nothing open', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     view = await renderAt('/inbox')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -91,7 +92,7 @@ describe('the Inbox home', () => {
     [756, 1158],
   ] as const)
     it(`opens the task from the list, keeps a typed note after Back, at ${String(w)}`, async () => {
-      await page.viewport(w, h)
+      await setViewport(w, h)
       view = await renderAt('/inbox')
       await page.getByText('Write the tickets for increment one').click()
       await expect.element(task()).toBeVisible()
@@ -104,7 +105,7 @@ describe('the Inbox home', () => {
     })
 
   it('goes to Workspaces from the tablet tab bar', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     view = await renderAt('/inbox')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }))
@@ -112,7 +113,7 @@ describe('the Inbox home', () => {
   })
 
   it('reaches Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     view = await renderAt('/inbox')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
@@ -122,7 +123,7 @@ describe('the Inbox home', () => {
   })
 
   it('keeps a ?state= on its frame: taskPage opens the task at 390', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/inbox?state=taskPage')
     await expect.element(task()).toBeVisible()
   })
