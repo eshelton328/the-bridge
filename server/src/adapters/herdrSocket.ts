@@ -64,6 +64,7 @@ export function herdrRequest(
   method: string,
   params: Readonly<Record<string, unknown>>,
   timeoutMs = 5000,
+  maxChars = maxLineChars,
 ): Promise<Result<unknown, SocketFailure>> {
   next += 1
   const id = `bridge:${String(next)}`
@@ -92,16 +93,17 @@ export function herdrRequest(
     conn.on('data', (chunk: string) => {
       buffer += chunk
       const end = buffer.indexOf('\n')
-      if (end === -1) {
-        if (buffer.length > maxLineChars)
-          finish(
-            err({
-              kind: 'tooLong',
-              message: `herdr sent a line longer than ${String(maxLineChars)} characters for ${method}`,
-            }),
-          )
+      // A finished line is checked too, as the chunk that passes the limit can also hold its end.
+      if ((end === -1 ? buffer.length : end) > maxChars) {
+        finish(
+          err({
+            kind: 'tooLong',
+            message: `herdr sent a line longer than ${String(maxChars)} characters for ${method}`,
+          }),
+        )
         return
       }
+      if (end === -1) return
       let line: unknown
       try {
         line = JSON.parse(buffer.slice(0, end))
@@ -134,6 +136,7 @@ export function herdrSubscribe(
   subscriptions: readonly Readonly<Record<string, unknown>>[],
   { onStart, onEvent, onEnd }: HerdrStreamHandlers,
   timeoutMs = 5000,
+  maxChars = maxLineChars,
 ): HerdrStream {
   next += 1
   const id = `bridge:${String(next)}`
@@ -163,14 +166,17 @@ export function herdrSubscribe(
   })
   conn.on('data', (chunk: string) => {
     buffer += chunk
-    if (!buffer.includes('\n') && buffer.length > maxLineChars) {
+    const tooLong = () => {
       end({
         kind: 'tooLong',
-        message: `herdr sent a line longer than ${String(maxLineChars)} characters on events.subscribe`,
+        message: `herdr sent a line longer than ${String(maxChars)} characters on events.subscribe`,
       })
-      return
     }
     for (let at = buffer.indexOf('\n'); at !== -1 && !over; at = buffer.indexOf('\n')) {
+      if (at > maxChars) {
+        tooLong()
+        return
+      }
       const text = buffer.slice(0, at)
       buffer = buffer.slice(at + 1)
       let line: unknown
@@ -192,6 +198,7 @@ export function herdrSubscribe(
         onStart()
       }
     }
+    if (!over && buffer.length > maxChars) tooLong()
   })
   return {
     close: () => {

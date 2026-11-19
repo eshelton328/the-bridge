@@ -44,6 +44,11 @@ describe('herdr socket: one request', () => {
     expect(await kindOf('noNewline')).toBe('tooLong')
   })
 
+  it('stops at a long line also when its end comes in the same chunk', async () => {
+    const reply = await herdrRequest(socket.path, 'ping', {}, 1000, 10)
+    expect(reply.ok ? undefined : reply.error.kind).toBe('tooLong')
+  })
+
   it("gives the system's error code when the socket is not there", async () => {
     const reply = await herdrRequest(`${socket.path}.none`, 'ping', {})
     expect(reply.ok ? undefined : reply.error).toMatchObject({ kind: 'connect', code: 'ENOENT' })
@@ -68,6 +73,14 @@ describe('herdr socket: a subscription', () => {
     expect((await endOf('garbage')).kind).toBe('notJson')
     expect((await endOf('wrongId')).kind).toBe('badShape')
     expect((await endOf('noNewline')).kind).toBe('tooLong')
+  })
+
+  it('stops at a long start line also when its end comes in the same chunk', async () => {
+    socket.answerWith('normal')
+    const failure = await new Promise<SocketFailure>((resolve) => {
+      herdrSubscribe(socket.path, [], { onStart: () => undefined, onEvent: () => undefined, onEnd: resolve }, 1000, 10)
+    })
+    expect(failure.kind).toBe('tooLong')
   })
 
   it('starts when the start reply comes in many writes', async () => {
