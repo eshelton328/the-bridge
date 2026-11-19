@@ -2,6 +2,9 @@
 // window listeners call report(); boundaries never do. A report goes to a
 // ring buffer of the last 50, which the dev ErrorTray shows, and to each
 // sink: the console in development today, a server or Sentry later.
+// Control flow is not an error: the router's redirect and notFound and an
+// aborted fetch are never reported.
+import { isNotFound, isRedirect } from '@tanstack/react-router'
 import { toError } from './appError.ts'
 
 export type ErrorSource =
@@ -15,6 +18,8 @@ export type ErrorSource =
   | 'live'
 
 export type ErrorReport = {
+  /** The report's place in the order reports came in; unique, so the ErrorTray keys its rows on it. */
+  readonly seq: number
   readonly error: Error
   readonly source: ErrorSource
   readonly componentStack: string | undefined
@@ -25,6 +30,8 @@ export type ErrorReport = {
 type Sink = (report: ErrorReport) => void
 
 const limit = 50
+/** How long an equal report (source, name, message, first stack frame) is dropped after the first, in ms. */
+export const repeatWindowMs = 2000
 
 const consoleSink: Sink = (r) => {
   if (import.meta.env.DEV) console.error(`[${r.source}]`, r.error, r.componentStack ?? '')
@@ -32,21 +39,53 @@ const consoleSink: Sink = (r) => {
 
 const sinks: readonly Sink[] = [consoleSink]
 let seen = new WeakSet<object>()
+/** When each report's signature was last kept, for the repeat window. */
+let recent = new Map<string, number>()
+let seq = 0
 let reports: readonly ErrorReport[] = []
 const listeners = new Set<() => void>()
 
+/** A redirect, a notFound or an aborted request: control flow, which the router or the caller handles. */
+function isControlFlow(thrown: unknown): boolean {
+  if (isRedirect(thrown) || isNotFound(thrown)) return true
+  return typeof thrown === 'object' && thrown !== null && 'name' in thrown && thrown.name === 'AbortError'
+}
+
+/** The first frame of a stack: the line after the "Name: message" header in Chromium, the first line elsewhere. */
+function firstFrame(error: Error): string {
+  const lines = (error.stack ?? '').split('\n').map((line) => line.trim())
+  return lines.find((line) => line.startsWith('at ') || line.includes('@')) ?? ''
+}
+
+/** What makes two reports the same error, such as one thrown again on each tick. */
+function signature(error: Error, source: ErrorSource): string {
+  return JSON.stringify([source, error.name, error.message, firstFrame(error)])
+}
+
 /**
- * Reports a thrown value once: the same object reported twice (a boundary
- * and a root hook, say) is kept the first time only. A sink that throws is
- * skipped, so reporting never throws.
+ * Reports a thrown value once. The same object reported twice (a boundary
+ * and a root hook, say) is kept the first time only, and so is an equal
+ * error (same source, name, message and first stack frame) within
+ * `repeatWindowMs`, so an error thrown fresh on each tick does not fill the
+ * buffer. A redirect, a notFound and an AbortError are not reported. A sink
+ * that throws is skipped, so reporting never throws.
  */
 export function report(thrown: unknown, source: ErrorSource, componentStack?: string): void {
+  if (isControlFlow(thrown)) return
   if (typeof thrown === 'object' && thrown !== null) {
     if (seen.has(thrown)) return
     seen.add(thrown)
   }
+  const error = toError(thrown)
+  const now = Date.now()
+  for (const [key, at] of recent) if (now - at >= repeatWindowMs) recent.delete(key)
+  const key = signature(error, source)
+  if (recent.has(key)) return
+  recent.set(key, now)
+  seq += 1
   const entry: ErrorReport = {
-    error: toError(thrown),
+    seq,
+    error,
     source,
     componentStack,
     route: window.location.pathname,
@@ -80,5 +119,6 @@ export function subscribeReports(listener: () => void): () => void {
 export function clearReports(): void {
   reports = []
   seen = new WeakSet<object>()
+  recent = new Map<string, number>()
   for (const listener of listeners) listener()
 }

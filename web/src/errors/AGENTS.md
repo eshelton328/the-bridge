@@ -24,3 +24,7 @@ Every error path of the app (d-084).
 - Only this folder imports react-error-boundary, listens for `error` or
   `unhandledrejection`, or logs; the lint enforces it.
 - Each boundary has a Vitest test and a crash story.
+- `report()` keeps an error once: it drops the same object, and an
+  equal one (source, name, message, first stack frame) within 2 s, and
+  skips `redirect`, `notFound` and `AbortError` (`reporter.test.ts`,
+  audit W-5).

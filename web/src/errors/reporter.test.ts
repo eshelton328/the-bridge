@@ -1,11 +1,16 @@
+import { notFound, redirect } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FixtureError } from './appError.ts'
-import { clearReports, getReports, report, subscribeReports } from './reporter.ts'
+import { clearReports, getReports, repeatWindowMs, report, subscribeReports } from './reporter.ts'
 
 afterEach(() => {
   clearReports()
+  vi.useRealTimers()
   vi.restoreAllMocks()
 })
+
+/** A new Error object each call, thrown from the same place, as a timer that fails on each tick throws one. */
+const tick = (message: string) => new Error(message)
 
 describe('report', () => {
   it('keeps a report with its source, stack and route', () => {
@@ -51,5 +56,44 @@ describe('report', () => {
     report(new Error('after'), 'handler')
     expect(listener).toHaveBeenCalledTimes(1)
     expect(log).toHaveBeenCalled()
+  })
+
+  it('keeps an equal error thrown fresh on each tick once within the repeat window (audit W-5)', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    vi.useFakeTimers()
+    report(new Error('first'), 'handler')
+    for (let i = 0; i < 60; i += 1) report(tick('every tick'), 'handler')
+    expect(getReports().map((r) => r.error.message)).toEqual(['first', 'every tick'])
+    vi.advanceTimersByTime(repeatWindowMs)
+    report(tick('every tick'), 'handler')
+    expect(getReports().map((r) => r.error.message)).toEqual(['first', 'every tick', 'every tick'])
+  })
+
+  it('keeps errors that differ in source, name, message or first stack frame', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    report(tick('same'), 'handler')
+    report(tick('same'), 'window')
+    report(tick('other'), 'handler')
+    report(new TypeError('same'), 'handler')
+    report(new Error('same'), 'handler')
+    expect(getReports()).toHaveLength(5)
+  })
+
+  it('gives each report its own sequence number, also two equal messages in one millisecond', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    vi.useFakeTimers()
+    report(new Error('same'), 'handler')
+    report(new Error('same'), 'window')
+    const seqs = getReports().map((r) => r.seq)
+    expect(new Set(seqs).size).toBe(2)
+    expect(getReports().map((r) => r.at)).toEqual([getReports()[0]?.at, getReports()[0]?.at])
+  })
+
+  it('skips a redirect, a notFound and an AbortError', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    report(redirect({ to: '/inbox' }), 'rejection')
+    report(notFound(), 'root-caught')
+    report(new DOMException('The user aborted a request.', 'AbortError'), 'rejection')
+    expect(getReports()).toEqual([])
   })
 })
