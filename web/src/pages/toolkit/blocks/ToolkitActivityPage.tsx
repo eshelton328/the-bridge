@@ -7,7 +7,7 @@
 // the title, the switch and the counts in one column 12 apart. On the phone
 // the list's header (the views as icon buttons), the switch and the counts,
 // 10 apart, running under the tab bar. Props only.
-import { BackRow, PageHeader } from '@eshelton328/component-library-1701'
+import { BackRow, Container, PageHeader } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
@@ -17,9 +17,11 @@ import { activityCounts, activitySource } from './activityPage.ts'
 import { ToolkitActivityBody } from './ToolkitActivityBody.tsx'
 import { ToolkitActivitySources } from './ToolkitActivitySources.tsx'
 
-// D11 444:153: as the list, 32 in from the rail and 24 down, its rows 12 apart (header 24 to 62, chips at 74).
+// D11 444:153: as the list, the library's `Container size="page"` on the desktop: 32 in from the rail and 24 down, 1448
+// wide with 1384 of content in the 1512 px frame, and from `shell.detailWideFrom` at most 1448 wide in the middle of the
+// detail. Its rows are 12 apart (header 24 to 62, chips at 74).
 const page = {
-  desktop: css({ display: 'flex', flexDirection: 'column', gap: '12', px: '32', pt: '24', pb: '32' }),
+  desktop: css({ display: 'flex', flexDirection: 'column', gap: '12' }),
   tablet: css({ display: 'flex', flexDirection: 'column', gap: '12' }),
   // M10 449:395: 12 in from the sides, 4 under the status bar, its rows 10 apart.
   phone: css({ display: 'flex', flexDirection: 'column', gap: '10' }),
@@ -110,12 +112,15 @@ export function ToolkitActivityPage({
       </div>
     )
   }
+  // The Container is the page Figma names `toolkit`, padding included.
   return (
-    <section aria-label="Toolkit" className={page.desktop} data-figma="toolkit">
-      {header}
-      {chips}
-      {sources}
-      {body}
-    </section>
+    <Container size="page" data-figma="toolkit">
+      <section aria-label="Toolkit" className={page.desktop}>
+        {header}
+        {chips}
+        {sources}
+        {body}
+      </section>
+    </Container>
   )
 }
