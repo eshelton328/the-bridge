@@ -14,6 +14,8 @@ and renders `AppBoundary` > `RouterProvider` and the dev `ErrorTray`.
   below.
 - `pageZoom.ts`: on iOS, `main.ts` calls `blockPageZoom()` before the
   first render. See "No page bounce, no page zoom" below.
+- `keyboardTrace.ts`: `?keyboard-trace`, a dev-only debug mode for the
+  phone keyboard. See "Keyboard trace" below.
 
 Only this folder and page entries read stores.
 
@@ -47,3 +49,32 @@ Figma sizes), and a pinch on the Toolkit map zoomed the whole app.
 
 `user-scalable=no` turns off browser zoom, which WCAG 1.4.4 (Resize Text)
 asks apps to allow. That is Erik's decision for his own app.
+
+## Keyboard trace
+
+Open the dev or served app with `?keyboard-trace` (for example
+`/workspaces?state=phoneChatFull&keyboard-trace`) to record what the
+viewport and the shell do while the keyboard opens and closes. `main.ts`
+imports `keyboardTrace.ts` only when `import.meta.env.DEV` is true and the
+URL has the param, so a build has none of it; without the param nothing
+listens.
+
+- It records one sample on each animation frame (`raf`) and on `focusin`,
+  `focusout`, `pointerdown`, `pointerup`, `resize` and `scroll` of the
+  window (capture, so a scroll area's scroll counts) and `vv-resize` and
+  `vv-scroll` of `window.visualViewport`. Each sample has `t`
+  (`performance.now()`), `type`, `innerHeight`, `vvHeight`,
+  `vvOffsetTop`, `vvPageTop`, `scrollY` and `keyboard`, the computed
+  `--app-shell-keyboard` of `.app-shell__root` (empty when AppShell has
+  not set it). A focus sample adds the target's `targetTag` and
+  `targetRole`, never its text, value, name or id.
+- The last 20000 samples stay in a ring buffer.
+- A fixed overlay in the top right corner shows the live values. It is
+  `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,
+  no focus and no room. Its raw styles are a debug readout, not a design.
+- Every 2 s (skipping a tick while a POST is out), and at once when the
+  page is hidden, it POSTs
+  `{ startedAt, userAgent, samples }` to the dev server's
+  `/__keyboard-trace` (`scripts/keyboardTracePlugin.ts`), which replaces
+  the session's file `<startedAt>.json` in the brain's
+  `engine/_local/phone-review/traces/`.

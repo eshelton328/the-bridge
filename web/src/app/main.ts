@@ -21,6 +21,11 @@ if (container === null) throw new Error('index.html has no #root element')
 installGlobalHandlers()
 markApp()
 blockPageZoom()
+// `?keyboard-trace`, dev only: samples the viewport and the shell's keyboard
+// inset and sends them to the dev server (keyboardTrace.ts). A build drops it.
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('keyboard-trace')) {
+  void import('./keyboardTrace.ts').then(({ startKeyboardTrace }) => startKeyboardTrace())
+}
 createRoot(container, rootErrorOptions).render(
   createElement(
     StrictMode,
