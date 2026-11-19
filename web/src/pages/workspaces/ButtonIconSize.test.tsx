@@ -9,7 +9,7 @@ import { workspacesStates } from './states/index.ts'
 
 // The library's `Button` draws every icon at 16 unless it has `keepIconSize`. The page's buttons pass it, so each
 // icon draws at its Figma size: the phone chat's back chevron at 20 (M3 105:2750), Copy under a reply at 12 (M3,
-// D2 `icon/copy`) and the chat header's ⋯ at 12 (D2 400:7).
+// D2 `icon/copy`), the chat header's ⋯ at 12 (D2 400:7) and Move to…'s mark at 12 (T1 105:1595).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -50,6 +50,15 @@ describe('the icons in the page buttons', () => {
     const actions = page.getByRole('button', { name: 'bridge themes actions' })
     await expect.element(actions).toBeVisible()
     expect(svgBox(actions.element())).toEqual({ width: 12, height: 12 })
+  })
+
+  it('draws the move mark of Move to… at 12 (T1 105:1595)', async () => {
+    await page.viewport(756, 1129)
+    const { data, ui } = workspacesStates.tabletEdit
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="tablet" />)
+    const move = page.getByRole('button', { name: 'Move to…' })
+    await expect.element(move).toBeVisible()
+    expect(svgBox(move.element())).toEqual({ width: 12, height: 12 })
   })
 
   // D06's position exception (158:1026) accepts the split icon at 24 against Figma's 28, as the set has no larger

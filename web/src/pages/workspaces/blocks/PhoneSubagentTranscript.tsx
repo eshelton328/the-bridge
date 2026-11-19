@@ -42,7 +42,9 @@ const title = css({ minW: '[0]' })
 const status = css({ display: 'flex', ms: 'auto' })
 // Figma draws the meta line in Geist Mono 11 (147:354), as the phone's subagent cards.
 const meta = css({ alignSelf: 'flex-start', textStyle: 'monoSm', color: 'fg.muted', m: '0' })
-const stop = css({ alignSelf: 'flex-start' })
+// M12 147:356: Stop is 67 × 30, its 12 px icon 11 in from the start (147:357) and the label 6 after it (147:359), so
+// it pads 10 inside its 1 px border; `Button size="sm"` pads 8 and puts its parts 4 apart.
+const stop = css({ alignSelf: 'flex-start', px: '10', gap: '6' })
 // M12 147:367: the transcript is 16 in from the sides, 12 under the rule, its parts 12 apart.
 const body = css({ px: '16', pt: '12', pb: '12', gap: '12' })
 // M12 147:370: the task is Geist Regular 13 on a 19 px line; `bodySm` is 13/20, its line on the 4 px grid (d-100).

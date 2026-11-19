@@ -19,11 +19,12 @@ export type MoveButtonProps = {
 
 export function MoveButton({ label, onMove, figma }: MoveButtonProps) {
   return (
-    // T1 105:1594: 85 × 22, the 12 px mark and the 12 px label. `Button size="xs" textSize="xs"` is 24 high
-    // (control.xs) and draws every icon at 16 (LIBRARY_GAPS.md: Move to button).
+    // T1 105:1594: 85 × 22, the 12 px mark (105:1595) and the 12 px label. `Button size="xs" textSize="xs"` is 24
+    // high (control.xs); `keepIconSize` keeps the mark at 12, as the library draws every other icon at 16.
     <Button
       size="xs"
       textSize="xs"
+      keepIconSize
       className={overTitle}
       data-figma={figma}
       onClick={
