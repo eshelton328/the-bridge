@@ -35,10 +35,16 @@ M1 is D1's library on the phone as a list of rows
   Library gap "Compact chip spacing".
 - **Row previews.** Each row's preview is `Thumbnail size="md"`, 76 × 48
   as Figma's (406:122, library 1.0.0-beta.36), so the title and meta
-  start at x 103 against Figma's 104. Figma draws the phone's previews
-  for their size, with no window dots and larger cells; `size="md"`
-  scales D2's 64 × 40 row drawing, with its dots and smaller cells.
-  Library gap "Phone row preview drawing".
+  start at x 103 against Figma's 104. Since library 1.0.0-beta.71
+  (library PR 221) `size="md"` draws Figma's phone row drawings (406:122
+  to 406:278): a 76-wide top bar with no window dots and larger shapes at
+  Figma's places. Small differences remain: the fills take the nearest
+  colour slot (title bars at full tone, not 0.9; bars full, not 0.75;
+  lines `muted`; fills `well`), a radius over half a shape's height is
+  drawn at half its height, node and cell edges are centred 1 px strokes
+  where Figma draws them inside, and the second diagram (406:278) has
+  cyan nodes in Figma but all violet in the library, which has no tone
+  on the diagram.
 - **Preview colours.** The chart's bars are brighter cyan than Figma's
   muted bars, and each kind draws the library's own sample. Since
   library 1.0.0-beta.68 the rows pass the card's `tone`, so the Agent

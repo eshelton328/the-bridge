@@ -8,7 +8,9 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDetail } from '../types.ts'
 
-// 403:465 is about 26 px type in a 34 px box; `heading` (28/40) is the nearest style (LIBRARY_GAPS.md).
+// The desktop title (D2 403:465, D7, D8, D9) is SemiBold 26 in a 34 px box: `headingSm` (26/36, library beta.71).
+// The tablet's (T2 405:433) is Figma's heading, 28/41: `heading` (28/40); the phone keeps `heading` too.
+const desktopTitle = css({ textStyle: 'headingSm', color: 'fg.default', m: '0', textWrap: 'wrap' })
 const title = css({ textStyle: 'heading', color: 'fg.default', m: '0', textWrap: 'wrap' })
 // 403:467: the chips take their own width.
 const chips = css({ alignSelf: 'flex-start' })
@@ -18,17 +20,18 @@ export type ArtifactTitleBlockProps = {
   artifact: Pick<ArtifactDetail, 'title' | 'description' | 'source' | 'sourceLabel' | 'project' | 'updated'>
   /** The status line over the title, as the tablet draws it (T2 405:427); the desktop has it in the artifact bar. */
   status?: ReactNode
-  /** `phone` (M2): rows 8 apart and no updated chip; `wide` (the default) as D2 and T2. */
-  layout?: 'wide' | 'phone' | undefined
+  /** `desktop` (the default, D2): the `headingSm` title; `tablet` (T2): the `heading` title; `phone` (M2): the `heading` title, rows 8 apart and no updated chip. */
+  layout?: 'desktop' | 'tablet' | 'phone' | undefined
 }
 
-export function ArtifactTitleBlock({ artifact, status, layout = 'wide' }: ArtifactTitleBlockProps) {
+export function ArtifactTitleBlock({ artifact, status, layout = 'desktop' }: ArtifactTitleBlockProps) {
   const phone = layout === 'phone'
   return (
-    // T2 puts its rows 10 apart (405:426); D2 6; M2 8 (406:370).
-    <Stack gap={phone ? '8' : status === undefined ? '6' : '10'} data-figma="title block">
+    // D2 (403:464: the title at 76, 34 high, the description at 120 and the chips at 150) and T2 (405:426) put their
+    // rows 10 apart; M2 8 (406:370).
+    <Stack gap={phone ? '8' : '10'} data-figma="title block">
       {status}
-      <h2 className={title}>{artifact.title}</h2>
+      <h2 className={layout === 'desktop' ? desktopTitle : title}>{artifact.title}</h2>
       <p className={description}>{artifact.description}</p>
       <Inline gap="6" align="center" wrap className={chips} data-figma="chips">
         {/* D2 and T2 "chip · Claude artifact", M2 "chip · Claude". */}

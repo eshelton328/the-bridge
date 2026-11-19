@@ -55,9 +55,12 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
 - **New dot.** None left: since library 1.0.0-beta.39 (#147) the dot of
   a new artifact is `ListRow dot="working" dotPosition="end"`, 6 px at
   the end of the title line, 12 before the age, as Figma's (403:213).
-- **Artifact title.** "Skill eval pass rates" is 28 px type (`heading`)
-  against Figma's about 26 px, so it is a little larger and its box is
-  40 high against 34. Library gap "Artifact title size".
+- **Artifact title.** Since library 1.0.0-beta.71 (library PR 222) the
+  title is `headingSm` (SemiBold 26/36), Figma's size, and the title
+  block's rows are 10 apart, as Figma's (403:464: the title at 76, the
+  description at 120, the chips at 150). What remains: Figma's title is
+  a 34 px auto line and the render's 36 (on the 4 px grid), so the chips
+  sit 2 px below Figma's and fail only on width (Project chip, above).
 - **Detail column.** The artifact column is 40 in from the list
   (`Container size="detail"`) against Figma's 36. Library gap "Detail
   column inset".
@@ -87,7 +90,7 @@ Each value with no token is recorded for the library in `LIBRARY_GAPS.md`
 and drawn with the nearest token until it lands: the row thumbnail 64
 (Figma's; `Thumbnail size="sm"` since beta.36), the row padding 8
 (Figma's; `ListRow padding="sm"` since beta.39), the title 26/36 (Figma's size on the 4
-px grid; drawn `heading` 28/40), the detail inset 36 (Figma's; drawn 40),
+px grid; `headingSm` since beta.71), the detail inset 36 (Figma's; drawn 40),
 and the made-in box's side padding 16 (Figma 15, on the 4 px grid). The
 New pill takes `Badge tone="working" size="sm"` (20 px, Figma 22), as D1's
 cards do; Remove takes `variant="secondaryDanger"` and Open artifact

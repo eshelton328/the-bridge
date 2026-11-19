@@ -34,8 +34,8 @@ under its meta line, the match marked (`Highlight`).
   tab bar layer; M5 has one, so the render keeps it, and the tab bar's
   text and items pass the checks.
 - **Row previews.** As M1: each preview is `Thumbnail size="md"`,
-  76 × 48 as Figma's, drawn as D2's row drawing scaled up (library gap
-  "Phone row preview drawing"). The three previews are charts, as
+  76 × 48 as Figma's, drawn as Figma's phone row drawing since library
+  1.0.0-beta.71 (library PR 221), with M1's small remaining differences. The three previews are charts, as
   Figma's (408:77, 408:298, 408:330), with brighter bars (library gap
   "Thumbnail colour").
 - **Row height and New.** As M1: the rows are 66, 78 and 78 high and

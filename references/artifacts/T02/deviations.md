@@ -42,9 +42,11 @@ D2's (`../D02/deviations.md`).
   4 px narrower (24 px sides), and `MadeIn`'s box pads 16 at the sides
   (D2's value on the 4 px grid) against Figma's 13 here, so the button
   sits further left.
-- **Artifact title.** "Skill eval pass rates" is 28 px type (`heading`,
-  28/40) against Figma's about 30 px in a 41 px box (405:433). Library
-  gap "Artifact title size".
+- **Artifact title.** None left: "Skill eval pass rates" is the
+  library's `heading` (28/40) and Figma's is heading 28/41 (405:433),
+  the line on the 4 px grid, so T2 had no gap. The desktop title takes
+  `headingSm` (library 1.0.0-beta.71, library PR 222); the tablet keeps
+  `heading`.
 - **Link mark.** The chain-link mark before the address is the
   library's `LinkMarkIcon size="12"` (`LinkMark`, no margins), which
   fills its box as Figma's does (405:472): 12 px against Figma's 13, as
