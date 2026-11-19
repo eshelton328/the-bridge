@@ -15,7 +15,7 @@
 // button that selects the step: the selected card has the selected fill and
 // border. In a tablet's column (T8 `step · Runs` 448:226, `variant="column"`)
 // the card spans the column and is as high as its lines. Props only.
-import { Badge } from '@eshelton328/component-library-1701'
+import { Badge, focusRing } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { ToolkitItemDetailView } from '../types.ts'
 
@@ -82,7 +82,7 @@ const select = css({
   cursor: 'pointer',
   outline: 'none',
   _after: { content: '""', position: 'absolute', inset: '0', borderRadius: 'lg' },
-  _focusVisible: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
+  [focusRing]: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
 })
 const note = {
   md: css({ textStyle: 'small', color: 'fg.muted', whiteSpace: 'nowrap' }),

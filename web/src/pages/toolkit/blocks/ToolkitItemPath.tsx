@@ -4,7 +4,7 @@
 // meta row (`ToolkitItemChanged`). A file on its own page on the phone (M6
 // 435:493) names the file in the badge with its icon and no copy button,
 // since the back row holds the copy button. Props only.
-import { CopyIcon, FileIcon, FolderIcon, PathBadge } from '@eshelton328/component-library-1701'
+import { CopyIcon, FileIcon, FolderIcon, PathBadge, focusRing } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { ToolkitItemChanged } from './ToolkitItemChanged.tsx'
@@ -20,7 +20,8 @@ const copy = css({
   border: 'none',
   cursor: 'pointer',
   _hover: { color: 'fg.default' },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 
 export type ToolkitItemPathProps = {

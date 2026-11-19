@@ -4,7 +4,15 @@
 // what the chat may do, after a lock. On the phone the model and context sit
 // under the meta line (M7 464:160). A press anywhere on the card returns to
 // the item, as the Artifacts discussion's card does. Props only.
-import { ChevronRightIcon, Inline, LockIcon, Panel, Stack, StatusPill } from '@eshelton328/component-library-1701'
+import {
+  ChevronRightIcon,
+  Inline,
+  LockIcon,
+  Panel,
+  Stack,
+  StatusPill,
+  focusRing,
+} from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 
@@ -28,7 +36,7 @@ const open = css({
   cursor: 'pointer',
   outline: 'none',
   _after: { content: '""', position: 'absolute', inset: '0', borderRadius: 'xl' },
-  _focusVisible: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
+  [focusRing]: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
 })
 
 export type ToolkitDiscussCardProps = {

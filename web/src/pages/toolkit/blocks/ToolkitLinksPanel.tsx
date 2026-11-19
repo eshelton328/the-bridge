@@ -7,7 +7,7 @@
 // The library has no link row and no text link in mono
 // (LIBRARY_GAPS.md, Links panel rows): the file and line is a plain button
 // styled with tokens. A side with no links says why. Props only.
-import { MapNode, Panel } from '@eshelton328/component-library-1701'
+import { MapNode, Panel, focusRing } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ToolkitLinks } from '../types.ts'
 import { sideLabel } from './linksView.ts'
@@ -39,7 +39,8 @@ const at = css({
   color: 'fg.accent',
   whiteSpace: 'nowrap',
   cursor: 'pointer',
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
 })
 const line = css({ textStyle: 'small', color: 'fg.muted' })
 

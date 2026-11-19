@@ -7,6 +7,7 @@
 // library has no text link at the small size (LIBRARY_GAPS.md, Evals panels):
 // a link is a plain button styled with tokens, as the Links panels' file and
 // line is. Props only.
+import { focusRing } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 
 // D20 482:1896: the label at the start, the note at the end, on one row 17 high (the text styles' 16).
@@ -24,7 +25,8 @@ const link = css({
   cursor: 'pointer',
   _hover: { textDecoration: 'underline' },
   _disabled: { cursor: 'not-allowed', opacity: 'disabled', _hover: { textDecoration: 'none' } },
-  _focusVisible: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
+  outline: 'none',
+  [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus', outlineOffset: '2' },
 })
 
 /** What the header shows at its end: a note, a count in the accent colour, or a link that opens a tab or waits. */
