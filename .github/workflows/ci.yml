@@ -92,10 +92,11 @@ jobs:
           VITEST_SHARD: ${{ matrix.shard }}/3
 
   # The required check: it passes only when every test:unit shard passed.
+  # It reads one result, so ubuntu-slim (1 vCPU container) is enough.
   test-unit:
     needs: test-unit-shard
     if: ${{ !cancelled() }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     steps:
       - name: Require every test:unit shard to pass
         env:
