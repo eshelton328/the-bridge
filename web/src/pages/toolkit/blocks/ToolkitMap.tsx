@@ -163,7 +163,7 @@ export function ToolkitMap({
           onLinks={
             phone && onLinks !== undefined
               ? () => {
-                  onLinks?.(node.path)
+                  onLinks(node.path)
                 }
               : undefined
           }
