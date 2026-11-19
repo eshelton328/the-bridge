@@ -28,6 +28,7 @@ const pane = css({
   borderColor: 'border.default',
 })
 // D3 427:64: the chip row runs past the pane's right edge, cut after Workflows' dot; the row scrolls sideways.
+// Figma draws the cut chip at full strength up to the edge (D3, D17 491:4396), so the row has no fade.
 const chips = css({ maxW: '[100%]' })
 
 export type ToolkitListPaneProps = {
@@ -50,6 +51,7 @@ export function ToolkitListPane({ data, ui, groups, sharedNames, onUiChange }: T
       <div className={chips} data-figma="filter · chips">
         <FilterChips
           padding="none"
+          fade="none"
           label="Filter by kind"
           multiple={false}
           items={data.chips.map((c) => ({
