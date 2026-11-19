@@ -3,10 +3,10 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // An open toolkit item on a tablet through the real route (d-107), as InboxStickyBars.test.tsx tests the Inbox: the
 // item sits in the shared DetailFrame, so its back row (Back to Toolkit, Discuss and Show on map) stays at the top
@@ -25,7 +25,7 @@ function renderToolkit(state: string) {
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 /** The box of an element. */
@@ -33,7 +33,7 @@ const box = (el: Element) => el.getBoundingClientRect()
 
 describe('the open item on a tablet (d-107)', () => {
   it('keeps Back in view while the item scrolls: the skill writer (T3)', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('skillOpenTablet')
     onTestFinished(view.unmount)
     // The app's root fills the window, as `#root` does in index.css. Earlier tests leave their renders in the page, so
@@ -72,7 +72,7 @@ describe('the open item on a tablet (d-107)', () => {
   })
 
   it('opens the rule skills under Back, its load box across the item (T17)', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('ruleOpenTablet')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -91,7 +91,7 @@ describe('the open item on a tablet (d-107)', () => {
   })
 
   it('opens the hook commit-msg under Back, its four cards in one row and its files above the tab bar (T19)', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('hookOpenTablet')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -126,7 +126,7 @@ describe('the open item on a tablet (d-107)', () => {
 
 describe('the open item on the phone (d-107)', () => {
   it('keeps Back and its icon buttons in view while the item scrolls: the skill writer (M2)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const view = await renderToolkit('skillOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -171,7 +171,7 @@ describe('the open item on the phone (d-107)', () => {
   })
 
   it('draws the item tabs cyan and compact: the skill writer (M2)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const view = await renderToolkit('skillOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -207,7 +207,7 @@ describe('the open item on the phone (d-107)', () => {
   })
 
   it('opens the rule skills under Back, its load box across the item and its file above the tab bar (M19)', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('ruleOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -239,7 +239,7 @@ describe('the open item on the phone (d-107)', () => {
   })
 
   it('keeps Back in view while the agent scrolls, its facts in two columns: writing-reviewer (M20)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const view = await renderToolkit('agentOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -289,7 +289,7 @@ describe('the open item on the phone (d-107)', () => {
   })
 
   it('opens the hook commit-msg under Back, its cards two by two, and scrolls its script under Back (M22)', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('hookOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -338,7 +338,7 @@ describe('the open item on the phone (d-107)', () => {
   })
 
   it('cuts the workflow’s one-line rows at the item’s edge, with no flow: skill-eval-round (M21)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const view = await renderToolkit('workflowOpenPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()

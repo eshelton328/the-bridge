@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Chats and Headless runs sources of the Toolkit's Activity view through the real route (D15, D16, D18, T11,
 // T12, T14, M13, M14, M16): the layout on each width, the source switch, and each tap: a chat's row opens the chat
@@ -21,7 +22,7 @@ const sizes = { desktop: [1512, 982], tablet: [756, 1158], phone: [390, 844] } a
 
 async function renderToolkit(state: string, size: keyof typeof sizes = 'desktop', ready = '[data-figma="kpis"]') {
   const [width, height] = sizes[size]
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),

@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Activity view of the Toolkit through the real route (D11 `activity` 444:498, D12, T9, M10): the layout on each
 // width and each tap: a run's row or its Open session opens its panel beside the view on the desktop (D12) and its own
@@ -20,7 +21,7 @@ const sizes = { desktop: [1512, 982], tablet: [756, 1158], phone: [390, 844] } a
 
 async function renderToolkit(state: string, size: keyof typeof sizes = 'desktop') {
   const [width, height] = sizes[size]
-  await page.viewport(width, height)
+  await setViewport(width, height)
   const router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),

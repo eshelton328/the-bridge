@@ -2,10 +2,10 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
 import { afterEach, describe, expect, it } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { ToolkitWorkflowFlow } from './blocks/ToolkitWorkflowFlow.tsx'
 import { toolkitStates } from './states/index.ts'
+import { setViewport } from '../../lib/rendering.ts'
 
 const flow = toolkitStates.workflowOpen.data.details.find((d) => d.path === 'workflows/skill-eval-round.md')?.flow
 
@@ -49,7 +49,7 @@ describe('the flow by phase’s elbows and loop (D8, T18)', () => {
     it(`draws FlowElbow into steps 4, 5 and 6 and FlowLoop up into Stop, each tip before its card (${size})`, async () => {
       expect(flow).toBeDefined()
       if (flow === undefined) return
-      await page.viewport(width, 900)
+      await setViewport(width, 900)
       ;({ unmount } = await testRender(<ToolkitWorkflowFlow flow={flow} size={size} />))
       await document.fonts.ready
       const card = (title: string) => {

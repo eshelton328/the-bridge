@@ -3,10 +3,11 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Files tab of an open item through the real route (D6, `file browser` 432:2141), as ToolkitCodeWrap.test.tsx
 // tests the phone's code: on the desktop the tree and the viewer sit side by side, the browser runs to the item
@@ -29,7 +30,7 @@ afterEach(() => {
 
 describe('the Files tab of an open item (D6)', () => {
   it('lays the tree and the viewer side by side, down to the pane’s foot, and opens the file clicked', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const view = await renderToolkit('skillFiles')
     onTestFinished(view.unmount)
     // Earlier tests leave their renders in the page, so each query looks only in this one.
@@ -70,7 +71,7 @@ describe('the Files tab of an open item (D6)', () => {
 
 describe('a script explained on the Files tab (D10)', () => {
   it('opens on Explain under the bar’s switch, goes to Code and back, and opens another script on Explain', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const view = await renderToolkit('scriptExplained')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -148,7 +149,7 @@ otherKinds.push({ state: 'hookFiles', item: 'commit-msg', file: 'test-commit-msg
 
 describe('the Files tab of a rule, an agent, a workflow and a hook (D33 to D36)', () => {
   it.each(otherKinds)('draws $state’s $rows tree rows beside $file, down to the pane’s foot', async (kind) => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const view = await renderToolkit(kind.state)
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -183,7 +184,7 @@ describe('the Files tab of a rule, an agent, a workflow and a hook (D33 to D36)'
 // switch under its text and no copy button in the bar.
 describe('the Files tab on a tablet (T4)', () => {
   it('puts the viewer under the tree, renders doc.md, shows its source and opens another file', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('skillFilesTablet')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -244,7 +245,7 @@ describe('the Files tab on a tablet (T4)', () => {
 // selected under it; selected again from another file, the script opens its page again.
 describe('a script explained on a tablet (T6)', () => {
   it('opens the script on its own page, switches to Code and back, and goes back to the tree', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('scriptExplainedTablet')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -320,7 +321,7 @@ describe('a script explained on a tablet (T6)', () => {
 // and the script opens its page again.
 describe('the selected script tapped again after Back to Files (T6)', () => {
   it('opens the script’s page again from its selected row', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit('scriptExplainedTablet')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -366,7 +367,7 @@ tabletKinds.push({ state: 'hookFilesTablet', item: 'commit-msg', file: 'test-com
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (T32 to T35)', () => {
   it.each(tabletKinds)('keeps $state’s header and puts $file under its $rows tree rows', async (kind) => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const view = await renderToolkit(kind.state)
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -403,7 +404,7 @@ describe('the Files tab of a rule, an agent, a workflow and a hook on a tablet (
 // becomes the marked one, and a file with a view opens on a page of its own, under Back to Files.
 describe('the Files tab on the phone (M5)', () => {
   it('shows the tree with no viewer, and opens a file with a view on its own page', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('skillFilesPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -457,7 +458,7 @@ describe('the Files tab on the phone (M5)', () => {
 // Files goes back to the tree.
 describe('a script on its own page on the phone (M6)', () => {
   it('shows the source wrapped, switches to Explain and goes back to the tree', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('scriptCodePhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -510,7 +511,7 @@ describe('a script on its own page on the phone (M6)', () => {
 // on Code.
 describe('a script explained on its own page on the phone (M8)', () => {
   it('draws the explanation at the item’s edge with the line links under the steps', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('scriptExplainedPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -549,7 +550,7 @@ describe('a script explained on its own page on the phone (M8)', () => {
 // the keys' start.
 describe('the explanation’s narrow layout on the phone (M8)', () => {
   it('draws the library’s narrow layout with no page restyle, and the fact values at one x', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('scriptExplainedPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('[data-figma="explain"] .script-explanation__root')).not.toBeNull()
@@ -606,7 +607,7 @@ phoneKinds.push({
 
 describe('the Files tab of a rule, an agent, a workflow and a hook on the phone (M35 to M38)', () => {
   it.each(phoneKinds)('keeps $state’s header over $folder and its $rows tree rows', async (kind) => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit(kind.state)
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -657,7 +658,7 @@ describe('copy on the Files tab of a rule (D33, M35)', () => {
     onTestFinished(() => {
       clipboard.writeText = writeText
     })
-    await page.viewport(width, height)
+    await setViewport(width, height)
     const view = await renderToolkit(state)
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
@@ -700,7 +701,7 @@ describe('copy on the Files tab of a rule (D33, M35)', () => {
 // and nothing on the page names the rule's file twice (a rule's item path is the file itself).
 describe('a rule’s file on its own page on the phone (M35)', () => {
   it('names skills.md in the path row and never the doubled path', async () => {
-    await page.viewport(390, 806)
+    await setViewport(390, 806)
     const view = await renderToolkit('ruleFilesPhone')
     onTestFinished(view.unmount)
     await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()

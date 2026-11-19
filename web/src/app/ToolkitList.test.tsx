@@ -3,10 +3,10 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { setViewport } from '../lib/rendering.ts'
 
 // The Toolkit list through the real route (D1, T1, M1), as ToolkitCodeWrap.test.tsx tests the phone's code: the
 // card, row, group header and Sort options of library #166 that bring the list to Figma's boxes. The app's styles
@@ -17,7 +17,7 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 afterEach(async () => {
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 /** Renders a Toolkit state and returns its root, once the layer `figma` is in it and the fonts have loaded. */
@@ -57,7 +57,7 @@ const middle = (rect: DOMRect) => rect.top + rect.height / 2
 
 describe('the Toolkit list on the desktop (D1)', () => {
   it('draws each card 148 high with its counts after the spacer, Figma 150 (Card metaSpacer, 425:86)', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const root = await renderToolkit('toolkitList', 'toolkit card · agents-md')
     const card = layer(root, 'toolkit card · agents-md').getBoundingClientRect()
     expect(card.height).toBe(148)
@@ -70,14 +70,14 @@ describe('the Toolkit list on the desktop (D1)', () => {
   })
 
   it('draws the kind headers 32 high, Figma 31 (GroupHeader variant toolkit, 425:71)', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const root = await renderToolkit('toolkitList', 'group · SKILLS')
     expect(layer(root, 'group · SKILLS').getBoundingClientRect().height).toBe(32)
     expect(layer(root, 'group · AGENTS').getBoundingClientRect().height).toBe(32)
   })
 
   it('pads Sort 12 at the sides, Figma 13 (Button padding compact, 425:62)', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const root = await renderToolkit('toolkitList', 'button · Sort')
     const sort = root.querySelector<HTMLElement>('[data-figma="button · Sort"]')
     if (sort === null) throw new Error('no Sort')
@@ -88,7 +88,7 @@ describe('the Toolkit list on the desktop (D1)', () => {
 
 describe('the Toolkit list on a tablet (T1)', () => {
   it('draws each item as a 60 px row with its counts centred at its end (Card padding compact and trailing, 428:59)', async () => {
-    await page.viewport(744, 1133)
+    await setViewport(744, 1133)
     const root = await renderToolkit('toolkitListTablet', 'toolkit row · agents-md')
     const card = layer(root, 'toolkit row · agents-md')
     const row = card.getBoundingClientRect()
@@ -102,7 +102,7 @@ describe('the Toolkit list on a tablet (T1)', () => {
   })
 
   it('draws the kind headers 28 high, Figma 27 (GroupHeader variant toolkitCompact, 428:53)', async () => {
-    await page.viewport(744, 1133)
+    await setViewport(744, 1133)
     const root = await renderToolkit('toolkitListTablet', 'group · SKILLS')
     expect(layer(root, 'group · SKILLS').getBoundingClientRect().height).toBe(28)
   })
@@ -110,7 +110,7 @@ describe('the Toolkit list on a tablet (T1)', () => {
 
 describe('the Toolkit list on the phone (M1)', () => {
   it('puts the tile 4 in, the name 12 after it and the counts centred (ListRow padding phone, 429:96)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const root = await renderToolkit('toolkitListTablet', 'toolkit row · agents-md')
     const listRow = layer(root, 'toolkit row · agents-md')
     const row = listRow.getBoundingClientRect()

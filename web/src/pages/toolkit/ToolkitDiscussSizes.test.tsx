@@ -2,10 +2,10 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../../index.css'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { page } from 'vitest/browser'
 import { testRender } from '../../lib/testRender.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import { toolkitStates } from './states/index.ts'
+import { setViewport } from '../../lib/rendering.ts'
 
 // Sizes of the discussion's parts that the blind review measured against Figma (D5, T5, M7). The app's styles and
 // fonts load as in main.ts, but each machine draws them a little differently (CI's widths differ from a Mac's), so
@@ -19,7 +19,7 @@ let view: { unmount: () => Promise<void> } | undefined
 afterEach(async () => {
   await view?.unmount()
   view = undefined
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 type DiscussState = 'skillDiscuss'
@@ -61,7 +61,7 @@ function expectMono12(el: HTMLElement) {
 describe('the discussion panel’s context row (D5)', () => {
   // 438:19: "toolkit/skills/writer/ attached" is Geist Mono 12, 224 × 17.
   it('draws the attached path in mono 12, as wide as Figma’s', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const context = await renderDiscuss('skillDiscuss', 'desktop', '[data-figma="context"]')
     const path = [...context.querySelectorAll('span')].find((s) => s.textContent === 'toolkit/skills/writer/ attached')
     expect(path).toBeDefined()
@@ -100,7 +100,7 @@ describe('the item’s card on the discussion page (T5, M7)', () => {
   // T5 464:334 is 96 high: the meta line's middle 43 under its top (464:343, 14 high at 107) and the guard's first
   // line's middle 62.5 under it (464:348, two 15 px lines at 126).
   it('keeps Figma’s height and text places on a tablet (T5)', async () => {
-    await page.viewport(756, 1158)
+    await setViewport(756, 1158)
     const card = await renderPage('skillDiscussTablet', 'tablet')
     const top = box(card).top
     expect(Math.abs(box(card).height - cardHeight(card, 96, 2))).toBeLessThanOrEqual(1)
@@ -113,7 +113,7 @@ describe('the item’s card on the discussion page (T5, M7)', () => {
 
   // M7 464:150 is 138 high, its guard three 15 px lines (464:183), and the discussion area (464:184) starts 8 under it.
   it('keeps Figma’s height on the phone, with the area 8 under it (M7)', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     const card = await renderPage('skillDiscussPhone', 'phone')
     expect(Math.abs(box(card).height - cardHeight(card, 138, 3))).toBeLessThanOrEqual(2)
     const area = [...document.querySelectorAll('[data-figma="discussion"]')].at(-1)
@@ -125,7 +125,7 @@ describe('the item’s card on the discussion page (T5, M7)', () => {
 describe('the discussion panel’s header (D5)', () => {
   // 438:7: the item's name "writer" is violet Geist Mono 12, 44 × 17.
   it('draws the item’s name in mono 12, as wide as Figma’s', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     const header = await renderDiscuss('skillDiscuss', 'desktop', '[data-figma="header"]')
     const name = [...header.querySelectorAll('span')].find((s) => s.textContent === 'writer')
     expect(name).toBeDefined()
