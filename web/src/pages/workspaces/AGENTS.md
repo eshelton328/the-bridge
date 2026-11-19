@@ -7,7 +7,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A part the library cannot draw goes in `LIBRARY_GAPS.md` with the part
   used now; never hand-build it in a block.
 - `liveWorkspaces.ts` maps the server's workspaces for `?source=live`
-  (development only); on an error the page keeps the home's mock data.
+  (development only). On an expected miss the page keeps the home's mock
+  data and shows `blocks/LiveNotice.tsx` in every layout; any other error
+  goes to RouteError (`app/WorkspacesLiveUnavailable.test.tsx`).
 
 ## Rules
 

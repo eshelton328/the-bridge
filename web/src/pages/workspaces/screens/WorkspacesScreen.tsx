@@ -21,14 +21,17 @@
 // The screen lays out by its width (ViewportFrame): a state with the phone's
 // labels draws the phone layout at a phone's width (M1, WorkspacesPhone),
 // and at a tablet's width too when it has `tabletList` (T1); every other
-// width, and a state without them, draws the desktop layout.
+// width, and a state without them, draws the desktop layout. With
+// `liveNotice` (the live source could not be read) each layout draws the
+// notice at the top of its content until the owner dismisses it (LiveNotice).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
-import { useLayoutEffect, useRef, useState } from 'react'
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
+import { LiveNotice } from '../blocks/LiveNotice.tsx'
 import { MainChat } from '../blocks/MainChat.tsx'
 import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
@@ -86,6 +89,19 @@ export function WorkspacesScreen({
   const draft = (chat: string, text: string) => {
     change({ drafts: { ...latestRef.current.drafts, [chat]: text } })
   }
+  // The notice the owner dismissed; a new load gives a new notice, which shows again.
+  const [dismissed, setDismissed] = useState<WorkspacesData['liveNotice']>()
+  const shownNotice = data.liveNotice === dismissed ? undefined : data.liveNotice
+  const notice =
+    shownNotice === undefined ? undefined : (
+      <LiveNotice
+        title={shownNotice.title}
+        description={shownNotice.description}
+        onDismiss={() => {
+          setDismissed(shownNotice)
+        }}
+      />
+    )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
@@ -99,6 +115,7 @@ export function WorkspacesScreen({
           onSend={onSend}
           change={change}
           draft={draft}
+          notice={notice}
         />
       )}
     </ViewportFrame>
@@ -110,9 +127,21 @@ type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange'> & {
   change: (next: Partial<WorkspacesUi>) => void
   /** Sets one chat's draft, merged into the latest drafts. */
   draft: (chat: string, text: string) => void
+  /** The live-unavailable notice that the layout draws at the top of its content, or none. */
+  notice: ReactNode
 }
 
-function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, change, draft }: WorkspacesLayoutProps) {
+function WorkspacesLayout({
+  layout,
+  data,
+  ui,
+  viewport,
+  onNavigate,
+  onSend,
+  change,
+  draft,
+  notice,
+}: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
@@ -149,6 +178,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, chan
         onUiChange={change}
         onDraftChange={draft}
         onSend={onSend}
+        notice={notice}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
@@ -282,6 +312,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, chan
               ui={ui}
               onUiChange={change}
               layers={data.layers}
+              notice={notice}
             />
           }
           detail={
@@ -378,7 +409,17 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, chan
         onDiagnostic={reportShellDiagnostic}
         size="desktop"
         rail={rail}
-        detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} onDraftChange={draft} toggle onSend={onSend} />}
+        detail={
+          <WorkspaceTabs
+            data={named}
+            ui={ui}
+            onUiChange={change}
+            onDraftChange={draft}
+            toggle
+            onSend={onSend}
+            notice={notice}
+          />
+        }
       />
     </Backdrop>
   )

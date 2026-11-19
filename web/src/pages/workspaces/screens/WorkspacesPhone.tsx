@@ -47,7 +47,7 @@
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
-import { useRef, useState } from 'react'
+import { type ReactNode, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -84,6 +84,8 @@ export type WorkspacesPhoneProps = {
   onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /** The live-unavailable notice (LiveNotice), drawn at the top of the list and of a chat; none when not set. */
+  notice?: ReactNode
 }
 
 export function WorkspacesPhone({
@@ -95,6 +97,7 @@ export function WorkspacesPhone({
   onUiChange,
   onDraftChange,
   onSend,
+  notice,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
@@ -272,6 +275,7 @@ export function WorkspacesPhone({
               workspace={data.workspaces.find((w) => w.id === data.current)?.label ?? data.current}
               contextLabel={data.sidebar?.contextLabel ?? ''}
               backLabel={text.back ?? text.title}
+              notice={notice}
               onBack={() => {
                 onUiChange({ phoneView: 'list', skillsFor: null, menuFor: null, moveOpen: false, sideChatOpen: false })
               }}
@@ -508,6 +512,7 @@ export function WorkspacesPhone({
             onAdd={add}
             layers={data.layers}
             heldRow={heldRowRef}
+            notice={notice}
           />
         }
       />
