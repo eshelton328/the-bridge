@@ -11,6 +11,7 @@ import {
   fieldText,
   fieldTextLines,
   fullyVisible,
+  iconHitPaints,
   isPortalRoot,
   paints,
   samplePoints,
@@ -392,4 +393,16 @@ void test('in Chromium a child that paints over the text of its parent covers it
 <p style="margin:20px">Plain <b>bold</b> text</p></div></body>`)
   const covered = Object.fromEntries(measured.visibleTexts.map((v) => [v.text, v.covered]))
   assert.deepEqual(covered, { 'Parent text': true, Badge: false, Plain: false, bold: false, text: false })
+})
+
+void test('over an icon, a shape or a fill draws; an svg box with no fill does not', () => {
+  const box = { backgroundColor: 'rgba(0, 0, 0, 0)', backgroundImage: 'none', backdropFilter: 'none' }
+  assert.equal(iconHitPaints({ ...box, tagName: 'path', isSvgShape: true }, paints), true)
+  assert.equal(iconHitPaints({ ...box, tagName: 'svg', isSvgShape: false }, paints), false)
+  assert.equal(
+    iconHitPaints({ ...box, tagName: 'svg', isSvgShape: false, backgroundColor: 'rgb(0, 0, 0)' }, paints),
+    true,
+  )
+  assert.equal(iconHitPaints({ ...box, tagName: 'DIV', isSvgShape: false, backdropFilter: 'blur(8px)' }, paints), true)
+  assert.equal(iconHitPaints({ ...box, tagName: 'IMG', isSvgShape: false }, paints), true)
 })

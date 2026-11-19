@@ -193,6 +193,26 @@ export function coveredAt(stacks: readonly (readonly Hit[])[]): boolean {
   })
 }
 
+/**
+ * Whether an element in the stack over an icon draws there: a shape of
+ * another svg (elementsFromPoint returns a shape only where it paints), or
+ * an element with a fill of its own. An svg element counts only by its
+ * own background, as it is hit over its whole box, transparent parts too.
+ */
+export function iconHitPaints(
+  el: {
+    tagName: string
+    isSvgShape: boolean
+    backgroundColor: string
+    backgroundImage: string
+    backdropFilter: string
+  },
+  fills: typeof paints,
+): boolean {
+  if (el.isSvgShape) return true
+  return fills({ ...el, tagName: el.tagName.toLowerCase() === 'svg' ? 'g' : el.tagName })
+}
+
 /** What scrollBars reads from one element: its computed overflow and its sizes. */
 export type ScrollBox = {
   overflowX: string
@@ -232,11 +252,12 @@ type Helpers = {
   fieldTextLines: typeof fieldTextLines
   paints: typeof paints
   coveredAt: typeof coveredAt
+  iconHitPaints: typeof iconHitPaints
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()}, iconHitPaints: ${iconHitPaints.toString()} })`
 }
 
 export type PageMeasure = {
@@ -376,6 +397,33 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     }
     return hits
   }
+  // The stack over an icon's centre. The icon's own shapes are its own; an
+  // svg element itself is hit over its whole box, so only a shape another
+  // svg paints there (a path, a circle) covers the icon, as does any
+  // element with a fill (helpers.paints).
+  const iconStackAt = (x: number, y: number, own: Element) => {
+    const hits: { related: boolean; shown: boolean; paints: boolean }[] = []
+    for (const t of document.elementsFromPoint(x, y)) {
+      const related = t.contains(own) || own.contains(t)
+      const ts = getComputedStyle(t)
+      hits.push({
+        related,
+        shown: shown(t),
+        paints: helpers.iconHitPaints(
+          {
+            tagName: t.tagName,
+            isSvgShape: t instanceof SVGGeometryElement,
+            backgroundColor: ts.backgroundColor,
+            backgroundImage: ts.backgroundImage,
+            backdropFilter: ts.backdropFilter,
+          },
+          helpers.paints,
+        ),
+      })
+      if (t.contains(own)) break
+    }
+    return hits
+  }
   const coveredRun = (rects: readonly Edges[], own: Element) =>
     helpers.coveredAt(helpers.samplePoints(rects).map((p) => stackAt(p.x, p.y, own)))
   const allTexts: string[] = []
@@ -448,7 +496,7 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
         y: r.top + window.scrollY,
         w: r.width,
         h: r.height,
-        covered: helpers.coveredAt([stackAt(r.left + r.width / 2, r.top + r.height / 2, el)]),
+        covered: helpers.coveredAt([iconStackAt(r.left + r.width / 2, r.top + r.height / 2, el)]),
       }
     })
     .filter((b) => b.w > 0 && b.h > 0)

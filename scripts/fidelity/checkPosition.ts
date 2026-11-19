@@ -5,7 +5,7 @@
 // does not (d-089), so fidelity.ts renders the page that much shorter and
 // this check adds the bar's height to each render y (d-101).
 import { statusBarReason, type FrameRef, type Layer } from './figmaMetadata.ts'
-import { iconSizeDiffs, iconSlack, type IconSizeDiff } from './checkIcons.ts'
+import { iconSizeDiffs, type IconSizeDiff } from './checkIcons.ts'
 import type { FigmaBox, IconBox } from './inPage.ts'
 import type { Exceptions } from './references.ts'
 
@@ -165,21 +165,15 @@ export function checkPosition(
       })
     } else passed.push(box.key)
   }
-  const iconSizes = iconSizeDiffs({ ...ref, tolerance, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar)
+  const sizes = new Map(
+    exceptions.position.flatMap((p) => (p.iconSize === undefined ? [] : [[p.layer, p.iconSize] as const])),
+  )
+  const iconSizes = iconSizeDiffs({ ...ref, tolerance, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar, sizes)
+  excepted.push(...iconSizes.excepted)
   for (const diff of iconSizes.diffs) {
-    const entry = exceptions.position.find((p) => p.layer === diff.key)
-    if (entry === undefined) diffs.push(diff)
-    else if (entry.iconSize === undefined) excepted.push(diff.key)
-    else if (
-      Math.abs(diff.render.w - entry.iconSize) <= iconSlack &&
-      Math.abs(diff.render.h - entry.iconSize) <= iconSlack
-    )
-      excepted.push(diff.key)
-    else
-      diffs.push({
-        ...diff,
-        detail: `${diff.detail}; its position exception allows ${String(entry.iconSize)} px`,
-      })
+    // An entry with no iconSize passes the icon at any size.
+    if (allowed.has(diff.key) && !sizes.has(diff.key)) excepted.push(diff.key)
+    else diffs.push(diff)
   }
   return {
     ok: diffs.length === 0,

@@ -15,7 +15,7 @@ import type { IconBox } from './inPage.ts'
  * odd sizes (13, 15, 22) that the library draws at its icon sizes (12, 14,
  * 16, 24); a change of size class, such as 16 to 12, is more.
  */
-export const iconSlack = 2
+const iconSlack = 2
 
 export type IconSizeDiff = {
   /** The Figma icon's node id; a position exception names it as its layer. */
@@ -57,11 +57,14 @@ export function iconSizeDiffs(
   ref: Pick<FrameRef, 'h' | 'tolerance' | 'layers'>,
   icons: readonly IconBox[],
   statusBar: number,
-): { checked: number; diffs: IconSizeDiff[] } {
+  /** Node id → the size a position exception says the render draws in place of Figma's. */
+  expected: ReadonlyMap<string, number> = new Map(),
+): { checked: number; diffs: IconSizeDiff[]; excepted: string[] } {
   // An icon that another element draws over is not the one the viewer
   // sees there (an svg under a side panel), so it is not matched.
   const placed = icons.filter((i) => !i.covered).map((i) => ({ ...i, y: i.y + statusBar }))
   const diffs: IconSizeDiff[] = []
+  const excepted: string[] = []
   let checked = 0
   for (const layer of ref.layers) {
     if (!isIcon(layer.name)) continue
@@ -87,7 +90,15 @@ export function iconSizeDiffs(
     checked += 1
     const dw = round(best.w - layer.w)
     const dh = round(best.h - layer.h)
-    if (Math.abs(dw) <= iconSlack && Math.abs(dh) <= iconSlack) continue
+    // An exception's size replaces Figma's: only that size passes, even
+    // when the render is within the slack of Figma's.
+    const allowed = expected.get(layer.id)
+    const offW = allowed === undefined ? dw : best.w - allowed
+    const offH = allowed === undefined ? dh : best.h - allowed
+    if (Math.abs(offW) <= iconSlack && Math.abs(offH) <= iconSlack) {
+      if (allowed !== undefined) excepted.push(layer.id)
+      continue
+    }
     const render = { x: round(best.x), y: round(best.y), w: round(best.w), h: round(best.h) }
     diffs.push({
       key: layer.id,
@@ -97,8 +108,8 @@ export function iconSizeDiffs(
       figma: { x: layer.x, y: layer.y, w: layer.w, h: layer.h },
       render,
       delta: { x: round(best.x - layer.x), y: round(best.y - layer.y), w: dw, h: dh },
-      detail: `${layer.name} is ${String(layer.w)} × ${String(layer.h)} px in Figma and ${String(render.w)} × ${String(render.h)} px in the render (slack ${String(iconSlack)})`,
+      detail: `${layer.name} is ${String(layer.w)} × ${String(layer.h)} px in Figma and ${String(render.w)} × ${String(render.h)} px in the render (slack ${String(iconSlack)})${allowed === undefined ? '' : `; its position exception allows ${String(allowed)} px`}`,
     })
   }
-  return { checked, diffs }
+  return { checked, diffs, excepted }
 }
