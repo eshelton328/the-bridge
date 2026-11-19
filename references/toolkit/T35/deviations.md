@@ -16,8 +16,8 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T35.
 
 ## Checks
 
-- Text: fail before the exception (29 strings checked): the tests'
-  paragraph (494:4340) is not visible to the check (see Cross glyph).
+- Text: pass (29 strings checked). The tests' paragraph (494:4340)
+  passes since the text check change of 2026-11-19 (see Cross glyph).
   Nothing lies under the tab bar.
 - Position: 13 of 20 layers pass (`back row`, `button · Show on map`,
   `meta row`, `kind badge`, `path row`, `path badge`, `tab bar` and the six
@@ -46,11 +46,10 @@ D10, D33 to D36, T04, T06, T07 and T19 give the same results as before T35.
   library 1.0.0-beta.67 (2026-11-19) they are the library's `Glyph`,
   which keeps each character in the text and draws Figma's slanted cross
   and thin check in its place, where the font drew an upright "×". The
-  glyph keeps the character at font size 0 and transparent, and the text
-  check takes a text run with no 1 px box as not shown, so it reports
-  the string (494:4340) as not visible, though the screen shows Figma's
-  text. The frame's `exceptions.json` excepts that layer with this
-  reason (gap: Symbol glyphs).
+  glyph keeps the character at font size 0 and transparent; since the
+  text check change of 2026-11-19 the check measures a Glyph's character
+  by its icon (shown, at least 1 px, in view and not covered), so the
+  string (494:4340) passes with no exception.
 - **Boxes.** The tree and the viewer start 2 px further in and are 4 px
   narrower: the Container pads 24 at the sides against Figma's 22. The
   viewer is 12 under the tree against 14, and the summary is 16 in
