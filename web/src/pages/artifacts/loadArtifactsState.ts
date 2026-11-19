@@ -13,7 +13,11 @@ export function loadArtifactsState(
   requested: string | undefined,
   source: string | undefined,
 ): ScreenState<ArtifactsData, ArtifactsUi> {
-  const read = readState(artifactsStates, { state: requested, source }, { key: 'home', state: artifactsHome })
+  const read = readState<ScreenState<ArtifactsData, ArtifactsUi>>(
+    artifactsStates,
+    { state: requested, source },
+    { key: 'home', state: artifactsHome },
+  )
   if (!read.ok) throw notFound({ data: read.error })
   return parseState(ArtifactsState, read.value.state, `artifacts/${read.value.key}`)
 }

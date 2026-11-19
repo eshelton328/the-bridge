@@ -13,7 +13,11 @@ export function loadWorkspacesState(
   requested: string | undefined,
   source: string | undefined,
 ): ScreenState<WorkspacesData, WorkspacesUi> {
-  const read = readState(workspacesStates, { state: requested, source }, { key: 'home', state: workspacesHome })
+  const read = readState<ScreenState<WorkspacesData, WorkspacesUi>>(
+    workspacesStates,
+    { state: requested, source },
+    { key: 'home', state: workspacesHome },
+  )
   if (!read.ok) throw notFound({ data: read.error })
   return parseState(WorkspacesState, read.value.state, `workspaces/${read.value.key}`)
 }

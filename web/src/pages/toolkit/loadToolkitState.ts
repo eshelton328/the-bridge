@@ -13,7 +13,11 @@ export function loadToolkitState(
   requested: string | undefined,
   source: string | undefined,
 ): ScreenState<ToolkitData, ToolkitUi> {
-  const read = readState(toolkitStates, { state: requested, source }, { key: 'home', state: toolkitHome })
+  const read = readState<ScreenState<ToolkitData, ToolkitUi>>(
+    toolkitStates,
+    { state: requested, source },
+    { key: 'home', state: toolkitHome },
+  )
   if (!read.ok) throw notFound({ data: read.error })
   return parseState(ToolkitState, read.value.state, `toolkit/${read.value.key}`)
 }

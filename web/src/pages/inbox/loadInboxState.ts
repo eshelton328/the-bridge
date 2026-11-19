@@ -15,7 +15,11 @@ export function loadInboxState(
   requested: string | undefined,
   source: string | undefined,
 ): ScreenState<InboxData, InboxUi> {
-  const read = readState(inboxStates, { state: requested, source }, { key: 'home', state: inboxHome })
+  const read = readState<ScreenState<InboxData, InboxUi>>(
+    inboxStates,
+    { state: requested, source },
+    { key: 'home', state: inboxHome },
+  )
   if (!read.ok) throw notFound({ data: read.error })
   return parseState(InboxState, read.value.state, `inbox/${read.value.key}`)
 }
