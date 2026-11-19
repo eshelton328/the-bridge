@@ -23,6 +23,7 @@ import {
 import { type ReactNode, useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
+import { useWideDetail } from '../../../lib/wideDetail.ts'
 import { draftProps, type InboxDrafts, type InboxNextStep } from '../types.ts'
 import { DetailSection } from './DetailSection.tsx'
 import { PromptDialog } from './PromptDialog.tsx'
@@ -90,6 +91,8 @@ export function PromptSection({
   // The suggestion keeps its own length after Reset; any other text is as long as the state's prompt.
   const long = current === suggested.text ? suggested.long : prompt.long
   // Edit puts the focus in the editor it opens; a state that starts with the editor open leaves the focus alone.
+  const clampRef = useRef<HTMLDivElement>(null)
+  const wide = useWideDetail(clampRef)
   const editorRef = useRef<HTMLDivElement>(null)
   const focusEditorRef = useRef(false)
   useEffect(() => {
@@ -183,10 +186,12 @@ export function PromptSection({
           <Panel>
             {/* `Clamp` takes its parent's text style and cuts at five of its lines. The style sits on a block: on an
                 inline span the 13 px text in the panel's 14 px line makes 21 px lines, and the cut hides the fifth. */}
-            <div className={text}>
+            <div className={text} ref={clampRef}>
               {/* After an applied update, Figma keeps the prompt box at its five lines' height (128, D16 403:1854;
-                  T19) for the shorter prompt; a short prompt with no change line hugs its text (D4). */}
-              <Clamp lines={5} fade reserve={changeLine !== null}>
+                  T19) for the shorter prompt; a short prompt with no change line hugs its text (D4). In a detail at
+                  least 1600 px wide the column widens to 1024 and shows eight lines (Erik, R2); Read the whole prompt
+                  stays. */}
+              <Clamp lines={wide ? 8 : 5} fade reserve={changeLine !== null}>
                 {breakAfterSlashes(current)}
               </Clamp>
             </div>

@@ -34,7 +34,11 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   each of them through the route. `InboxDetail` picks
   the detail by kind: `NextStepDetail`, `QuestionDetail` or
   `RunningDetail`; on a tablet a started next step's `RunCard` stays at
-  the bottom, and the whole prompt opens in a sheet. On the phone Snooze
+  the bottom, and the whole prompt opens in a sheet. In a detail at least
+  1600 px wide the task column widens to 1024, the prompt shows eight
+  lines in place of five (`useWideDetail`), and the discussion is a side
+  pane in `DetailSplit` with its chat in `ChatColumn` (screen review R1
+  to R3, `app/InboxWide.test.tsx`). On the phone Snooze
   and Dismiss are icons in the nav, Start and the answer are pinned above
   the tab bar (`PinnedAction`), Sort and Filter are icons, the Filter menu
   and the Run in picker are sheets, a long-press on a row opens its
