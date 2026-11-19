@@ -9,7 +9,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { spawnSync } from 'node:child_process'
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -239,4 +239,16 @@ void test('the job secrets fails a PR that adds or changes a file under a top-le
   assert.match(run.stdout, /b\/references\/x\.md/)
   const clean = spawnSync(process.execPath, [script, 'HEAD~1', 'HEAD~1'], { cwd: repo, encoding: 'utf8' })
   assert.equal(clean.status, 0, clean.stdout + clean.stderr)
+})
+
+void test('each repository file the comments of .gitleaks.toml name exists', () => {
+  const comments = repoConfig.split('\n').filter((line) => line.trimStart().startsWith('#'))
+  const named = comments.flatMap((line) =>
+    [...line.matchAll(/\b(?:scripts|web|\.github)\/[\w./-]*\w\.(?:ts|tsx|yml|json)\b/g)].map((m) => m[0]),
+  )
+  assert.ok(named.includes('scripts/secrets/secretScan.test.ts'), named.join(', '))
+  assert.deepEqual(
+    named.filter((path) => !existsSync(join(root, path))),
+    [],
+  )
 })

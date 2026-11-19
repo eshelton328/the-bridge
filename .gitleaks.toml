@@ -5,7 +5,7 @@
 # PRIVACY_TERMS, and both add them as the rule "personal-term".
 # An exception is one fixed path and one rule, never a broad regex. Both
 # CI scans pass --ignore-gitleaks-allow, so a "gitleaks:allow" comment on
-# a line is not an exception. scripts/secret-scan.test.ts checks the rules.
+# a line is not an exception. scripts/secrets/secretScan.test.ts checks the rules.
 
 title = "secrets and privacy"
 
