@@ -30,8 +30,11 @@ export function WorkspacesPage() {
         setUi(search.state, change)
       }}
       onNavigate={(page) => {
+        // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
+        // (d-105), as the tablet has no rail.
+        if (page === 'more') void navigate({ to: '/toolkit' })
         // Only the pages that have a route go somewhere; the others wait for theirs.
-        if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
+        else if (page === 'inbox' || page === 'workspaces' || page === 'artifacts' || page === 'toolkit')
           void navigate({ to: `/${page}` })
       }}
     />

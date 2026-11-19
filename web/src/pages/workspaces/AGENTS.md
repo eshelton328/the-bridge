@@ -7,6 +7,12 @@ first: it says what each file of a page folder is for.
 - `WorkspacesPage.tsx` is the connected entry; it merges the loader's
   state with what Erik changed in it (`workspacesStore.ts`), passes it to
   the screen and goes to the page Erik picks.
+- `home.ts`: `workspacesHome`, what `/workspaces` shows with no
+  `?state=`: M1's data with the phone's labels and `tabletList`, so the
+  screen lays out for the window (desktop, tablet or phone) and changes
+  on resize, with every menu, list and dialog closed. It is not a Figma
+  state, so it sits outside `states/` with no frame, story, board or
+  fidelity check (`app/WorkspacesHome.test.tsx`).
 - `workspacesStore.ts`: the page's view store (`createAppStore`, as
   Inbox's). It holds the changes to the shown state's `ui`, so a visit to
   another page keeps them (`app/WorkspacesRoute.test.tsx`), and drops

@@ -263,6 +263,10 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
               }}
               meta={meta}
               focusMessage={ui.messageFocus}
+              draft={ui.drafts?.[chat.id]}
+              onTextChange={(draft) => {
+                onUiChange({ drafts: { ...ui.drafts, [chat.id]: draft } })
+              }}
               rename={
                 ui.renaming === true ? (
                   <ChatNameField
