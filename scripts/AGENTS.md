@@ -16,6 +16,7 @@ and exits 1 on a problem.
 | `checkAgentsMd.ts`  | Every folder has an AGENTS.md, a CLAUDE.md shim, and a link from its parent (ported)                                                                         |
 | `testShards.ts`     | Splits test files into CI shards by measured time (longest first, to the shard with the least time); `testSequencer.ts` is the Vitest sequencer that uses it |
 | `shardTimes.ts`     | `pnpm shard:times <run-id>`: writes `testShardTimes.json`, each file's time in the test-unit shard jobs of a CI run                                          |
+| `keyboardCheck.ts`  | `pnpm keyboard:served`: the keyboard check of screen review R20 to R22 on the served app (below); `keyboardCheckLib.ts` holds its pure parts                 |
 
 [fidelity/AGENTS.md](fidelity/AGENTS.md): `pnpm fidelity`, the text, position
 and rule checks of the fidelity loop, and `pnpm fidelity:refs`.
@@ -30,6 +31,42 @@ pnpm new state filterOpen --page inbox --frame D4    # a state file, its index e
 ```
 
 It leaves `TODO` markers; the tests fail until each is filled in.
+
+## The served keyboard check
+
+`pnpm keyboard:served` checks the keyboard on the served app (the
+served-app facts: `https://amonhen.tail21f8a4.ts.net:5180`), before
+bridge-coord tells Erik that a chat screen is ready. It opens the
+Workspaces chat (`?state=phoneChatFull`, R20) and the Inbox chat
+(`?state=chat`, R21) in Playwright's WebKit with the iPhone 15 profile at
+393 × 852, the installed app's screen. For each chat it:
+
+1. puts a fake `window.visualViewport` in the page before the app loads,
+   as `WorkspacesChatDock.test.tsx` does;
+2. blurs a focused field and waits 600 ms (a state can open with the
+   composer focused), then taps the composer, scrolls the window by the keyboard's height as iOS
+   does for a focused field, and shrinks the fake viewport by 336 px on
+   the library's keyboard curve (250 ms, `cubic-bezier(0.38, 0.7, 0.125,
+   1)`), one step each frame;
+3. blurs the field and grows the viewport back on the same curve;
+4. samples every animation frame and checks Erik's acceptance rules
+   (R22): the header's top is the same in every frame, `window.scrollY`
+   is 0, the lowest text of the message list stays above the composer,
+   the shell, the chat and its header, list and composer keep an
+   opacity of 1, and with the keyboard all the way open the composer
+   ends above it.
+
+It writes `<chat>-frames.json` and `<chat>-sheet.png` (24 frames of a
+recording, the keyboard drawn grey) to `reports/keyboard/<time>/`, which
+git ignores, prints one JSON line and exits 1 when a check fails. Flags:
+`--url`, `--keyboard <px>`, `--only workspaces|inbox`, `--out <dir>` and
+`--no-focus-scroll`. It needs WebKit (`pnpm exec playwright install
+webkit`) and `ffmpeg` on the PATH. Desktop WebKit is not iOS: the fake
+keyboard stands in for iOS's, and desktop WebKit scrolls the window
+only when the document is taller than the screen, where iOS also pans
+a page that fits. So `window.scrollY` catches a document that grew past
+the screen, not iOS's pan, and a pass here comes before Erik's phone
+recording, not in its place.
 
 ## Rules
 
