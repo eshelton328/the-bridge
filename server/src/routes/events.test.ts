@@ -4,9 +4,11 @@ import { ChatId, LiveEvent, MachineId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
+import { memoryLogger } from '../logger.ts'
 
 const machine = MachineId.parse('test-mac')
 const owner = 'owner@example.com'
+const { log } = memoryLogger()
 const local = { Host: '127.0.0.1:5181' }
 const drift = ChatId.parse('test-mac/drift-check')
 
@@ -44,7 +46,7 @@ const tick = () => new Promise((r) => setTimeout(r, 20))
 describe('GET /api/events', () => {
   it('streams the open frame with the retry time, then each event with its type, sequence number and envelope', async () => {
     const agents = createFakeAgents(machine)
-    const res = await createApp({ agents, owner }).request('/api/events', { headers: local })
+    const res = await createApp({ agents, owner, log }).request('/api/events', { headers: local })
     expect(res.status).toBe(200)
     expect(res.headers.get('content-type')).toContain('text/event-stream')
     if (!res.body) throw new Error('no body')
@@ -67,7 +69,7 @@ describe('GET /api/events', () => {
 
   it('closes the subscription when the client goes, so the server then reads nothing', async () => {
     const agents = createFakeAgents(machine)
-    const res = await createApp({ agents, owner }).request('/api/events', { headers: local })
+    const res = await createApp({ agents, owner, log }).request('/api/events', { headers: local })
     if (!res.body) throw new Error('no body')
     await frames(res.body, 1)
     await tick()
@@ -80,7 +82,7 @@ describe('GET /api/events', () => {
 
   it('leaves no subscription and no timer when the client goes before it reads the first frame', async () => {
     const agents = createFakeAgents(machine)
-    const res = await createApp({ agents, owner }).request('/api/events', { headers: local })
+    const res = await createApp({ agents, owner, log }).request('/api/events', { headers: local })
     if (!res.body) throw new Error('no body')
     await res.body.cancel()
     await tick()
@@ -90,7 +92,7 @@ describe('GET /api/events', () => {
 
   it('ends the stream when the agents stop answering', async () => {
     const agents = createFakeAgents(machine)
-    const res = await createApp({ agents, owner }).request('/api/events', { headers: local })
+    const res = await createApp({ agents, owner, log }).request('/api/events', { headers: local })
     if (!res.body) throw new Error('no body')
     await frames(res.body, 1)
     await tick()
@@ -103,7 +105,7 @@ describe('GET /api/events', () => {
 
   it('refuses a proxied request with no login and another login before it subscribes', async () => {
     const agents = createFakeAgents(machine)
-    const app = createApp({ agents, owner })
+    const app = createApp({ agents, owner, log })
     const tailnet = { Host: 'mac.tailnet.example', 'X-Forwarded-For': '203.0.113.2' }
     for (const headers of [tailnet, { ...tailnet, 'Tailscale-User-Login': 'someone@example.com' }]) {
       const res = await app.request('/api/events', { headers })

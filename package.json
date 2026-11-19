@@ -23,6 +23,7 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "knip": "knip",
+    "logs": "pnpm --filter @bridge/server --silent logs",
     "check:agents-md": "node scripts/checkAgentsMd.ts",
     "check:cycles": "node scripts/checkCycles.ts",
     "check:structure": "node scripts/checkStructure.ts",

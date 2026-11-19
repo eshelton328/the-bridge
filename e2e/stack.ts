@@ -70,8 +70,9 @@ export async function startStack(allowedHost?: string): Promise<{ readonly webPo
       BRIDGE_BRAIN_DIR: dir,
       BRIDGE_DB_FILE: join(dir, 'bridge.db'),
       BRIDGE_CLAUDE_PROJECTS: inject('claudeProjects'),
+      BRIDGE_LOG_DIR: join(dir, 'logs'),
     },
-    /the-bridge server on/,
+    /"msg":"server started"/,
   )
   await start(
     'pnpm',

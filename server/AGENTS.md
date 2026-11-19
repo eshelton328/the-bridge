@@ -11,8 +11,12 @@ its clients; it polls nothing (d-112). Its routes are the areas under
 BRIDGE_PORT=5181 BRIDGE_MACHINE_ID=mac-mini BRIDGE_OWNER_LOGIN=<login> \
 BRIDGE_HERDR_SOCKET=$HOME/.config/herdr/herdr.sock BRIDGE_BRAIN_DIR=$HOME/ncc-1701/engine \
 BRIDGE_DB_FILE=$HOME/.local/share/the-bridge/bridge.db BRIDGE_CLAUDE_PROJECTS=$HOME/.claude/projects \
-pnpm --filter @bridge/server start
+BRIDGE_LOG_DIR=$HOME/.local/share/the-bridge/logs pnpm --filter @bridge/server start
 ```
+
+`BRIDGE_LOG_LEVEL` sets the lowest level logged (`info` when not set).
+`pnpm logs --request <id> --level warn --since 2h` prints the matching
+log lines (d-115).
 
 Then `pnpm dev` in `web/` and open `/workspaces?source=live`; Vite sends
 `/api` to `BRIDGE_SERVER_URL` (`http://127.0.0.1:5181` when not set).

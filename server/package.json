@@ -13,13 +13,15 @@
     "prepare": "tsc -p tsconfig.client.json",
     "codegen": "tsc -p tsconfig.client.json",
     "typecheck": "tsc -p tsconfig.json",
-    "start": "node src/main.ts"
+    "start": "node src/main.ts",
+    "logs": "node src/logsCli.ts"
   },
   "dependencies": {
     "@bridge/contract": "workspace:*",
     "@bridge/shared": "workspace:*",
     "@hono/node-server": "catalog:",
     "hono": "catalog:",
+    "pino": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
