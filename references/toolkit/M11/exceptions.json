@@ -34,6 +34,7 @@
   "position": [
     {
       "layer": "500:7968",
+      "iconSize": 85,
       "reason": "Figma's icon/agent of readme-cold-reader inside the minimap's scaled copy of the drawing (minimap bg 461:1255, 0.12 scale), 1.56 px square. The position check's icon pass pairs it with the nearest outermost render svg, which is the whole minimap picture (MapGraph `minimap`, 85 × 60, aria-hidden), not an icon. The minimap draws its nodes as boxes inside that one svg, so no render icon stands for this layer."
     }
   ],
