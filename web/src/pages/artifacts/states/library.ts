@@ -89,6 +89,8 @@ const earlierCards = [
     title: 'Agent factory and session tracking',
     description: 'Research report: run manifests and session history',
     preview: 'doc',
+    // Its title bar is green (402:15650).
+    tone: 'green',
     ...claude,
     project: 'omni',
     age: '4d',
@@ -109,6 +111,8 @@ const earlierCards = [
     title: 'Type safety in agentic systems',
     description: 'Research report',
     preview: 'doc',
+    // Its title bar is violet (402:15716).
+    tone: 'violet',
     ...claude,
     project: 'omni',
     age: '1w',
@@ -129,6 +133,8 @@ const earlierCards = [
     title: 'readme cold-reader run',
     description: 'Pass rates per round, with and without each skill',
     preview: 'chart',
+    // Its chart is amber (402:15771; D2 403:422, D4 403:8248, D5 403:7509).
+    tone: 'amber',
     ...codex,
     project: 'skill-evals',
     age: '1w',

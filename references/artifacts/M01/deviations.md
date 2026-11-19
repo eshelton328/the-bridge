@@ -2,8 +2,8 @@
 
 What still differs from Figma after fix round 2 of the fidelity loop
 (`pnpm fidelity artifacts M01`, 2026-11-18, against the installed library
-1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
-reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36 and
+2026-11-19 with 1.0.0-beta.69), each with its reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 M1 is D1's library on the phone as a list of rows
 (`screens/LibraryPhone.tsx`, `RowGroup` and `ArtifactRow` with
 `layout="phone"`).
@@ -40,7 +40,9 @@ M1 is D1's library on the phone as a list of rows
   scales D2's 64 × 40 row drawing, with its dots and smaller cells.
   Library gap "Phone row preview drawing".
 - **Preview colours.** The chart's bars are brighter cyan than Figma's
-  muted bars, and the drawings take one colour set per kind. Library gap
+  muted bars, and each kind draws the library's own sample. Since
+  library 1.0.0-beta.68 the rows pass the card's `tone`, so the Agent
+  factory doc's title bar is green, as its D1 card. Library gap
   "Thumbnail colour".
 - **Row height and New.** The rows are 66 high and 2 apart, Figma's
   68 px pitch (406:121 to 406:148): `ListRow padding="phone"` (library

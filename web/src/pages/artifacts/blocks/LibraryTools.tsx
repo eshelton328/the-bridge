@@ -110,6 +110,8 @@ export function LibraryTools({
   onViewChange,
 }: LibraryToolsProps) {
   const large = size === 'lg'
+  // The desktop's 32 px Sort and Filter pad 10 at the sides (D1 402:15404, 402:15413); T1's 36 px ones keep 16.
+  const sidePadding = large ? 'default' : 'compact'
   // `SearchField` takes no ref or `autoFocus`, so the row focuses its input, as `ChatNameField` does.
   const searchRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -145,7 +147,7 @@ export function LibraryTools({
               </span>
             </Button>
           ) : (
-            <Button size={size} textSize="sm" onClick={onSortClick}>
+            <Button size={size} textSize="sm" padding={sidePadding} keepIconSize onClick={onSortClick}>
               <SortDescIcon />
               {sortLabel}
               <ChevronDownIcon size="12" />
@@ -180,7 +182,7 @@ export function LibraryTools({
               </span>
             </Button>
           ) : (
-            <Button size={size} textSize="sm" onClick={onFilterClick}>
+            <Button size={size} textSize="sm" padding={sidePadding} onClick={onFilterClick}>
               <FilterIcon />
               Filter
             </Button>

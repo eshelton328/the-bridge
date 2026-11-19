@@ -84,7 +84,11 @@ export function ArtifactRow({
         highlight={titleMatch ? query : undefined}
         leading={
           <span className={thumb}>
-            <Thumbnail kind={card.preview} size={layout === 'phone' ? 'md' : 'sm'} />
+            <Thumbnail
+              kind={card.preview}
+              size={layout === 'phone' ? 'md' : 'sm'}
+              {...(card.tone === undefined ? {} : { tone: card.tone })}
+            />
           </span>
         }
         meta={<MetaLine leading={<KindMark kind={card.source} size="12" />} items={[card.project]} />}

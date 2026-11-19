@@ -5,6 +5,9 @@ import { z } from 'zod'
 const ArtifactPreview = z.enum(['chart', 'diagram', 'doc', 'grid', 'ui'])
 type ArtifactPreview = z.infer<typeof ArtifactPreview>
 
+/** The colour of a card's preview (the library's `Thumbnail tone`): Figma colours each artifact's preview. */
+const ArtifactTone = z.enum(['accent', 'violet', 'amber', 'green'])
+
 /** Where an artifact comes from: a Claude artifact or a Codex site. */
 const ArtifactSource = z.enum(['claude', 'codex'])
 type ArtifactSource = z.infer<typeof ArtifactSource>
@@ -15,6 +18,8 @@ export const ArtifactCard = z.object({
   title: z.string(),
   description: z.string(),
   preview: ArtifactPreview,
+  /** The preview's colour; without it the library's `accent` (cyan). */
+  tone: ArtifactTone.optional(),
   source: ArtifactSource,
   /** The source as the meta line names it, such as "Claude" or "Codex site". */
   sourceLabel: z.string(),

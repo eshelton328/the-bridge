@@ -7,6 +7,9 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`,
+compact Sort and Filter): the text, position and rules results did not
+change.
 
 ## Checks
 
@@ -24,11 +27,11 @@ artifacts`): the text, position and rules results did not change.
 
 ## Deviations
 
-- **Filter menu place.** `menu · Filter` x +111.5. Figma opens the menu
+- **Filter menu place.** `menu · Filter` x +109.5. Figma opens the menu
   where the search ends, 120 px before the Filter button's start; the
   `Popover` opens at the button's start (`placement="bottom-start"`), and
-  Filter sits 9 px left of Figma's (see "Search, Sort and Filter"), so
-  the menu sits 111.5 px further right and covers the third card more
+  Filter sits 11 px left of Figma's (see "Search, Sort and Filter"), so
+  the menu sits 109.5 px further right and covers the third card more
   than the second. Library gap "Filter menu placement".
 - **Filter menu rows.** `menu · Filter` h +38, and every row:
   `check · Claude artifacts`, `check · Codex sites`, `check · ncc-1701`,
@@ -46,11 +49,12 @@ artifacts`): the text, position and rules results did not change.
 - **Source marks.** The Claude artifacts and Codex sites rows have no
   Claude or Codex mark between the box and the label: `Checkbox` takes
   only a text label. Library gap "Checkbox leading icon".
-- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
-  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
-  their sides more than Figma's 11 px, and the search and the space
-  before the view switch share the free width equally where Figma gives
-  the search 22 px more. Library gap "Sort and Filter button widths".
+- **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
+  `button · Filter` x -11, as D01: Sort (108.4, Figma 108) and Filter
+  with its dot (87.4, Figma 87) take `padding="compact"`, and the search
+  and the space before the view switch share the free width equally
+  where Figma gives the search 22 px more, so the search is 548.1 wide
+  against 559.5. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -72,11 +76,11 @@ artifacts`): the text, position and rules results did not change.
   description and meta lines (4 px grid, d-100) against 17, and a
   186.75 px thumbnail against 188. Library gap "Card body and line
   heights".
-- **Thumbnails and card marks.** As D01: the Agent factory doc and the readme
-  cold-reader chart are cyan and violet, not green and amber, the Type
-  safety doc's title bar is cyan, not violet, and the chart bars are a
-  brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
-  prop). Library gap "Thumbnail colour".
+- **Thumbnails and card marks.** As D01: the Agent factory doc is green,
+  the Type safety doc violet and the readme cold-reader chart amber, as
+  Figma's (`Thumbnail tone`, library 1.0.0-beta.68), but the chart bars
+  are a brighter cyan than Figma's muted teal-cyan. Library gap
+  "Thumbnail colour".
 - **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties

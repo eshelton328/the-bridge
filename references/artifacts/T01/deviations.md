@@ -9,6 +9,8 @@ iPad mini; most differences are D1's (`../D01/deviations.md`).
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
+12 px chevron): the text, position and rules results did not change.
 
 ## Checks
 
@@ -31,13 +33,14 @@ artifacts`): the text, position and rules results did not change.
 
 ## Deviations
 
-- **Search, Sort, Filter and Add a link.** `search` w -20.8,
-  `button · Sort` x -22.8, w +16.4, `button · Filter` x -6.4, w +12.4,
+- **Search, Sort, Filter and Add a link.** `search` w -16.8,
+  `button · Sort` x -18.8, w +12.4, `button · Filter` x -6.4, w +12.4,
   `button · Add a link` x -7.2, w +9.2. The tablet's controls are the
-  library's 36 px `size="lg"`, which pads 16 at the sides against
-  Figma's 11, so each button is wider and the search, which takes the
-  free width as in Figma, is narrower. Library gap "Sort and Filter
-  button widths".
+  library's 36 px `size="lg"`, which pads 16 at the sides (Figma's T1
+  row says 16, but its buttons are narrower), so Sort is 120.4 wide
+  against 108 (its chevron is 12 px, `keepIconSize`), Filter 87.4
+  against 75, and the search, which takes the free width as in Figma, is
+  416.2 against 433. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +4.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -68,8 +71,10 @@ artifacts`): the text, position and rules results did not change.
   rows where Figma has a plain dark panel and plain rows; the diagram's
   boxes have violet lines in them; the doc previews draw two buttons
   under the lines; and the grid preview's tiles have coloured bars.
-  `Thumbnail` draws its own content per kind and takes no colour. Library
-  gap "Thumbnail colour".
+  `Thumbnail` draws its own content per kind; its `tone` (library
+  1.0.0-beta.68) colours only the Agent factory doc green, the Type
+  safety doc violet and the readme cold-reader chart amber, as D1.
+  Library gap "Thumbnail colour".
 - **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties

@@ -10,6 +10,8 @@ and the sheet's rows have D3's (`../D03/deviations.md`).
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
+12 px chevron): the text, position and rules results did not change.
 
 ## Checks
 
@@ -52,11 +54,11 @@ artifacts`): the text, position and rules results did not change.
   Claude or Codex mark between the box and the label (407:1508,
   407:1518): `Checkbox` takes only a text label. Library gap "Checkbox
   leading icon".
-- **Search, Sort, Filter and Add a link.** `search` w -20.8,
-  `button · Sort` x -22.8, w +16.4, `button · Filter` x -6.4, w +12.4,
+- **Search, Sort, Filter and Add a link.** `search` w -16.8,
+  `button · Sort` x -18.8, w +12.4, `button · Filter` x -6.4, w +12.4,
   `button · Add a link` x -7.2, w +9.2, as T1: the library's 36 px
-  `size="lg"` buttons pad 16 at the sides against Figma's 11, so each is
-  wider and the search narrower. Filter shows no dot while the sheet is
+  `size="lg"` buttons pad 16 at the sides, so Sort is 120.4 wide against
+  108, Filter 87.4 against 75, and the search 416.2 against 433. Filter shows no dot while the sheet is
   open, as Figma draws it (407:1303); it shows the dot once the sheet
   closes on checked boxes. Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +4.2, as T1. `FilterChips
