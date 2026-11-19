@@ -33,11 +33,18 @@ export type DataSourceOptions = {
   readonly default?: Exclude<DataSourceKind, 'fixtures'>
 }
 
-/** Why a source has no state. A loader throws it as `notFound({ data })`. */
-export type DataSourceMiss =
-  | { readonly reason: 'notBuilt'; readonly source: DataSourceKind }
-  | { readonly reason: 'unknownSource'; readonly source: string }
-  | { readonly reason: 'unknownState'; readonly state: string }
+const NotBuiltMiss = z.object({ reason: z.literal('notBuilt'), source: z.enum(dataSourceKinds) }).readonly()
+
+/**
+ * Why a source has no state. A loader throws it as `notFound({ data })`, and the not-found screen parses it back
+ * (`isNotBuilt`), so the schema is the one source of the type.
+ */
+const DataSourceMiss = z.discriminatedUnion('reason', [
+  NotBuiltMiss,
+  z.object({ reason: z.literal('unknownSource'), source: z.string() }).readonly(),
+  z.object({ reason: z.literal('unknownState'), state: z.string() }).readonly(),
+])
+export type DataSourceMiss = z.infer<typeof DataSourceMiss>
 
 export type DataSourceRequest = {
   /** `?state=`: a state file's key; the page's home when not set. */
@@ -48,9 +55,13 @@ export type DataSourceRequest = {
 
 const isKind = (value: string): value is DataSourceKind => dataSourceKinds.some((kind) => kind === value)
 
-/** A miss that the not-found screen shows as "not built yet". */
-export function isNotBuilt(data: unknown): data is Extract<DataSourceMiss, { reason: 'notBuilt' }> {
-  return typeof data === 'object' && data !== null && 'reason' in data && data.reason === 'notBuilt'
+/**
+ * A miss that the not-found screen shows as "not built yet": `notFound()`'s data, parsed, so a `notBuilt` reason
+ * with no source or an unknown one is not one (audit W-8).
+ */
+export function isNotBuilt(data: unknown): data is z.infer<typeof NotBuiltMiss> {
+  const miss = DataSourceMiss.safeParse(data)
+  return miss.success && miss.data.reason === 'notBuilt'
 }
 
 /** A page's home: what it shows with no `?state=`, as a state file's key or a state of its own. */
