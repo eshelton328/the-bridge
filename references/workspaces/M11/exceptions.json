@@ -1,0 +1,20 @@
+{
+  "extra": [
+    {
+      "text": "MODEL",
+      "reason": "Covered by the iOS keyboard in Figma; the render has no keyboard and keeps its full height (Phone keyboard)."
+    },
+    {
+      "text": "Sonnet 5.5 · high effort",
+      "reason": "Covered by the iOS keyboard in Figma; the render has no keyboard and keeps its full height (Phone keyboard)."
+    },
+    {
+      "text": "FIRST MESSAGE",
+      "reason": "Covered by the iOS keyboard in Figma; the render has no keyboard and keeps its full height (Phone keyboard)."
+    },
+    {
+      "text": "What should it do? Type / for a skill.",
+      "reason": "Covered by the iOS keyboard in Figma; the render has no keyboard and keeps its full height (Phone keyboard)."
+    }
+  ]
+}

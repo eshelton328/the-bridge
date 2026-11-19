@@ -7,20 +7,21 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
 
 ## Checks
 
-- Text: fails on one percentage and two rail labels.
-  - `23%` (105:972): the dragged row's meta is cut in the render (see
-    `hiddenOverflow` below). The other percentages (`78%`, `42%`, `23%`,
-    `18%`, `26%`) pass: `ContextMeter` draws each as one text node.
+- Text: passes with the three entries in `exceptions.json` (Erik
+  approved them on 2026-11-19).
+  - `23%` (105:972, missing): the dragged row's meta is cut in the render
+    (see `hiddenOverflow` below). The other percentages (`78%`, `42%`,
+    `23%`, `18%`, `26%`) pass: `ContextMeter` draws each as one text node.
   - `Artifacts` and `Toolkit` (extra): the shared `AppRail` adds them before
-    More (d-105), as on D01, where they are excepted. D02 has no
-    `exceptions.json`.
+    More (d-105), as on D01.
 - Position: 25 of 33 layers pass; `105:960`, `105:874`, `105:889`,
   `105:933` and `105:935` fail. The drop hint (105:976) is not measured:
   `DragPreview` takes no `data-figma` (Drag preview).
   The shared navigation's items pass too: `rail · Inbox`,
   `rail · Workspaces` and `rail · Projects`.
-- Rules: `hiddenOverflow` on one row meta line (the dragged row
-  105:960).
+- Rules: pass. The one `hiddenOverflow` finding, on the dragged row's
+  meta line (105:960), is excepted in `exceptions.json` for the same
+  reason as `23%`.
 
 ## Deviations
 

@@ -10,11 +10,10 @@ the focus in it and × at its end (`renameChat`).
 
 ## Checks
 
-- Text: fails only on `Artifacts` and `Toolkit` (text.extra, the rail,
-  d-105). D01 to D20 except these two in their `exceptions.json`; this
-  build could not write D21's, because the permission to add an
-  exception was denied, so the caller or Erik adds it. Every Figma string
-  shows, the field's `bridge themes` included.
+- Text: passes. `Artifacts` and `Toolkit` (text.extra, the rail, d-105)
+  are excepted in `exceptions.json`, as on D01 to D20 (Erik approved
+  them on 2026-11-19). Every Figma string shows, the field's
+  `bridge themes` included.
 - Position: 23 of 28 layers pass; `417:2399` and `417:2412` fail. The
   rename field (`rename field · chat`), the chat header (`417:2366`), the
   ⋯ (`417:2377`), Erik's message (`417:2394`), every sidebar row and group
