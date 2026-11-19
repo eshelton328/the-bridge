@@ -13,18 +13,18 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
 
 ## Checks
 
-- Text: fail. Every Figma string shows; four render strings are extra,
+- Text: passes. Every Figma string shows; four render strings are extra,
   because the screen keeps its full height under the keyboard. Each is
-  covered by the system keyboard in Figma:
+  covered by the system keyboard in Figma and excepted in
+  `exceptions.json` (Erik approved them on 2026-11-19):
   - `MODEL`: covered by the system keyboard in Figma.
   - `Sonnet 5.5 · high effort`: covered by the system keyboard in Figma.
   - `FIRST MESSAGE`: covered by the system keyboard in Figma.
   - `What should it do? Type / for a skill.`: covered by the system
     keyboard in Figma.
 
-  They stay known text failures until the screen sizes itself to the
-  visible area (Phone keyboard); no exception covers them, as the render
-  has no keyboard over them.
+  The exceptions stay until the screen sizes itself to the visible area
+  (Phone keyboard), as the render has no keyboard over them.
 - Position: fail, 10 of 14 layers pass: the header (`147:199`), Cancel
   (`147:200`), the title (`147:202`), the name field and its box
   (`147:206`, `147:211`), Runs in and its two rows (`147:214`, `147:216`,
@@ -86,4 +86,5 @@ hint is gone; Runs in has Claude Code and Codex; the folders are one box,
 - **Actions still to build.** The app does not measure the keyboard yet:
   `ui.keyboardOpen` comes from the state. Start chat and the folders box
   draw only; Cancel closes the form.
-- **No exceptions.**
+- **Exceptions.** `exceptions.json` excepts the four extra strings
+  above (Phone keyboard).
