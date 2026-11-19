@@ -2,7 +2,8 @@
 
 What still differs from Figma after fix round 3 of the fidelity loop
 (`pnpm fidelity artifacts M05`, 2026-11-17, against the installed library
-1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36 and 2026-11-19
+with 1.0.0-beta.80, where all three checks still pass), each with its
 reason. A run on 2026-11-18, after the phone rows' side padding and the
 tool icons changed, still passes all three checks. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. M5 is M1's library on the phone
@@ -55,9 +56,11 @@ under its meta line, the match marked (`Highlight`).
 - **Source chips.** As M1: 6 apart against Figma's 5 (d-072), with
   Figma's 9 px sides; within the tolerance here. Library gap "Compact
   chip spacing".
-- **Clear button.** The search's clear button (408:288) is `SearchField`'s
-  thin grey `CloseIcon`; Figma draws it bold and bright white in the
-  focused field. Library gap "Search clear button".
+- **Clear button.** The search's clear button (408:288) is bold and in
+  `fg.default` in the focused field, as Figma's (`SearchField
+  clearFocus="strong"`, library 1.0.0-beta.80), drawn at 16 px
+  (`clearSize="16"`) against Figma's 14, on the 4 px grid. With no focus
+  it is the thin `CloseIcon`.
 - **Device chrome.** The status bar (9:41), the home indicator (408:286)
   and the screen corners are not drawn (d-089); the checks measure the
   render 38 px shorter, under Figma's status bar (d-102).

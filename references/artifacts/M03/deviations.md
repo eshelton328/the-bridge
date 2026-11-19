@@ -2,7 +2,8 @@
 
 What still differs from Figma after fix round 2 of the fidelity loop
 (`pnpm fidelity artifacts M03`, 2026-11-18, against the installed library
-1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36), each with its
+1.0.0-beta.27; checked again 2026-11-18 with 1.0.0-beta.36 and 2026-11-19
+with 1.0.0-beta.80), each with its
 reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 M3 is M1's library on the phone with T3's Filter sheet open over the tab
 bar (`FilterSheet iconOnly`); the library under the scrim has M1's
@@ -13,38 +14,27 @@ differences (`../M01/deviations.md`), and the sheet has T3's
 
 - Text: passes. The Brain map prototype row (407:231) lies under the tab
   bar and the sheet in Figma and in the render.
-- Position: 29 of 44 layers pass (`header`, `button · plus`,
+- Position: 42 of 44 layers pass (`header`, `button · plus`,
   `list tools`, `search`, `button · Sort`, `button · Filter`,
   `found status`, both groups, the nine artifact rows, `tab bar`, the
-  tab bar's five items, `group · UPDATED`, `check · Today`,
-  `check · This week`, the footer `407:501` and
-  `button · Show 7 artifacts`).
+  tab bar's five items, `sheet body`, the four section labels, every
+  row but `check · Artifact hook`, the footer `407:501` and
+  `button · Show 7 artifacts`); 29 passed before library 1.0.0-beta.80.
 - Rules: pass. The scrolling pane is a `hiddenOverflow` exception
   (`exceptions.json`), as in M1: Figma's library runs to y 875, under the
   pinned tab bar, and the render scrolls the same way (d-107).
 
 ## Deviations
 
-- **Filter sheet rows.** `sheet body` y -24, h +26, and the rows above
-  Updated: `group · SOURCE` y -24, `check · Claude artifacts` y -22,
-  `check · Codex sites` y -21, `group · PROJECT` y -20,
-  `check · ncc-1701` y -18, `check · omni` y -16,
-  `check · skill-evals` y -14, `check · omni-brain` y -12,
-  `check · Not in a project` y -10, `group · FOUND BY` y -9,
-  `check · Artifact hook` y -7, `check · Codex session log` y -6 and
-  `check · Added by hand` y -5. As T3: the `Checkbox` rows are 32 high
-  and 32 apart against Figma's 29 (28 for a mono label) and 31 or 30, and
-  each section label is a 30 px `GroupHeader variant="sidebar"` row
-  against Figma's 26, so the sheet's body is 512 high against 486. The
-  sheet keeps its bottom where Figma has it (Show and the rows of Updated
-  pass), so its top, the grabber, the title row and the first rows sit up
-  to 24 px higher, and the sheet partly covers the found status line that
-  Figma leaves in view above it. Library gap "Filter menu rows and
-  inset".
-- **Source marks.** The Claude artifacts and Codex sites rows have no
-  Claude or Codex mark between the box and the label (407:290, 407:300):
-  `Checkbox` takes only a text label. Library gap "Checkbox leading
-  icon".
+- **Filter sheet rows.** As T3: since library 1.0.0-beta.80 the rows are
+  28 high and 30 apart, as Figma's, and the sheet's body passes. Still
+  open: each section label is a 30 px `GroupHeader variant="sidebar"` row
+  against Figma's 26, so `check · Artifact hook` sits 5 low (y +5).
+  Library gap "Filter sheet section labels".
+- **Source marks.** The Claude artifacts and Codex sites rows draw the
+  Claude and Codex marks between the box and the label (407:290, 407:300)
+  with `Checkbox leading` and `KindMark size="12"` (library
+  1.0.0-beta.80), 12 px against Figma's 13.
 - **Source chips.** `filter · chips` w +4.2, as M1: the chips are 6 apart
   against Figma's 5 (d-072), with Figma's 9 px sides. Library gap
   "Compact chip spacing".

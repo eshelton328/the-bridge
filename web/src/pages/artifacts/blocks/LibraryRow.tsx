@@ -1,7 +1,8 @@
 // One artifact in the library's list view (Figma "artifact row · …", D4
 // 403:8216): its preview, the title, the description and the meta line
 // (source, project and, for a match in it, the link), the New dot 8 after
-// the title, and at the end where a search matched it, the age and Open,
+// the title, and at the end where a search matched it (a round mono pill,
+// 403:8241), the age and Open,
 // centred down the row. The text starts 16 after the preview and is
 // centred down the row too. A search marks the match in the field it names.
 // Props only.
@@ -58,7 +59,7 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
         }
         trailing={
           <Inline gap="16" align="center">
-            {placeLabel === undefined ? null : <Badge variant="tag" label={placeLabel} />}
+            {placeLabel === undefined ? null : <Badge variant="monoPill" label={placeLabel} />}
             {card.age}
             <Button
               iconOnly

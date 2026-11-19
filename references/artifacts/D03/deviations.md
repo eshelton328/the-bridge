@@ -10,6 +10,10 @@ artifacts`): the text, position and rules results did not change.
 Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`,
 compact Sort and Filter): the text, position and rules results did not
 change.
+Checked again 2026-11-19 with library 1.0.0-beta.80 (`Checkbox
+density="compact"` and `leading`, `Popover inset="wide"`): the menu is
+Figma's height and its rows Figma's height and width; the position
+count did not change, as the rows still differ by the menu's place.
 
 ## Checks
 
@@ -40,22 +44,22 @@ change.
   than the second. The menu stays under its own button: this is decided
   with no library change (LIBRARY_GAPS.md, "Decided with no library
   change").
-- **Filter menu rows.** `menu · Filter` h +38, and every row:
-  `check · Claude artifacts`, `check · Codex sites`, `check · ncc-1701`,
-  `check · omni`, `check · skill-evals`, `check · omni-brain`,
-  `check · Not in a project`, `check · Artifact hook`,
-  `check · Codex session log`, `check · Added by hand`, `check · Today`
-  and `check · This week`, each x +107.5 (the menu's place, above) and
-  w +8, and from `check · omni` on y +6 growing to +33. The
-  `Checkbox` rows are 32 high and 34 apart against Figma's 29 (28 for a
-  mono label) and 31 or 30, so each row sits a little lower than the one
-  before it and the menu is 582 high against 544. `Popover` pads 8
-  against Figma's 12, so the rows are 302 wide against 294 and start 4 px
-  nearer the menu's edge. `button · Show 7` x +109.8, y +34: the footer
-  follows the rows down. Library gap "Filter menu rows and inset".
-- **Source marks.** The Claude artifacts and Codex sites rows have no
-  Claude or Codex mark between the box and the label: `Checkbox` takes
-  only a text label. Library gap "Checkbox leading icon".
+- **Filter menu rows.** Since library 1.0.0-beta.80 the rows are
+  `Checkbox density="compact"`, 28 high and 30 apart in their
+  `PopoverSection`, and the menu is `Popover inset="wide"`, padded 12, so
+  the menu is Figma's 544 high and the rows 294 wide, as Figma's. Every
+  row (`check · Claude artifacts` to `check · This week`) is x +109.5,
+  the menu's place (above), and nothing else from `check · Claude
+  artifacts` to `check · Codex session log`. `check · Added by hand`
+  y -5, `check · Today` y -6, `check · This week` y -7 and
+  `button · Show 7` x +103.8, y -10: Figma puts some rows 31 apart and
+  its footer a little lower, where the render keeps 30 (28 on the 4 px
+  grid, d-100). Before, the 32 px rows put the last row 33 low and the
+  menu was 38 px taller. Closed by 1.0.0-beta.80 (LIBRARY_GAPS.md).
+- **Source marks.** The Claude artifacts and Codex sites rows draw the
+  Claude and Codex marks between the box and the label (`Checkbox
+  leading`, `KindMark size="12"`, library 1.0.0-beta.80): 12 px against
+  Figma's 13 (403:6855, 403:6865), the label 24 after the box against 23.
 - **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
   `button · Filter` x -11, as D01: Sort (108.4, Figma 108) and Filter
   with its dot (87.4, Figma 87) take `padding="compact"`, and the search
@@ -102,12 +106,11 @@ change.
 
 ## Values picked (d-100)
 
-Each value with no token is recorded for the library in
-`LIBRARY_GAPS.md` and drawn with the library's part until it lands: the
-Filter menu row 28 high (`control.sm`, Figma's 28 on the 4 px grid; drawn
-32 by `Checkbox`), the popover padding 12 (Figma's, spacing `12`; drawn
-8 by `Popover`), and the Source rows' marks `KindMark size="12"` (the
-library's size for Figma's 13 px mark; not drawn). The menu takes
+The Filter menu row is 28 high (`Checkbox density="compact"`,
+`control.sm`, Figma's 28 on the 4 px grid), the popover padding 12
+(`Popover inset="wide"`, Figma's) and the Source rows' marks
+`KindMark size="12"` (the library's size for Figma's 13 px mark), all
+since library 1.0.0-beta.80. The menu takes
 `Popover width="md"` (320, Figma's), its rows `Checkbox size="compact"`
 (Figma's 13 px labels, `monoSm` counts) padded 8 as the Inbox's Filter
 menu, the project names `labelStyle="mono"`, Filter `pressed` and

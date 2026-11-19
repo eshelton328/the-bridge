@@ -133,6 +133,10 @@ export function LibraryTools({
           placeholder={placeholder}
           icon={<SearchIcon />}
           clearIcon={<CloseIcon />}
+          // D4 403:8202, M5 408:288: in the focused field Figma's × is bold and bright, 14 px (16 on the 4 px grid);
+          // `strong` draws the library's `CloseBoldIcon` in `fg.default` while the field has the focus.
+          clearSize="16"
+          clearFocus="strong"
           clearLabel="Clear the search"
           value={query}
           onValueChange={onQueryChange}

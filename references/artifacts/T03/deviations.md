@@ -12,6 +12,8 @@ Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
 Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
 12 px chevron): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.80 (`Checkbox
+density="compact"` and `leading`): 36 of 43 layers pass, against 23.
 
 ## Checks
 
@@ -22,10 +24,10 @@ Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
   strings (407:1433, 407:1434, 407:1457) pass. The fourth (407:1458) and
   the Tailscale description (414:711), under the sheet, are `missing`
   exceptions (`exceptions.json`), as in T1.
-- Position: 23 of 43 layers pass (`header`, `found status`, `list tools`,
-  both groups, the six cards, `tab bar`,
-  `group · UPDATED`, `check · Today`, `check · This week`, the footer
-  `407:1719` and `button · Show 7 artifacts`).
+- Position: 36 of 43 layers pass (`header`, `found status`, `list tools`,
+  both groups, the six cards, `tab bar`, `sheet body`, the four section
+  labels, every row but `check · Artifact hook`, the footer `407:1719`
+  and `button · Show 7 artifacts`).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
   `tab · More`.
@@ -35,25 +37,19 @@ Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
 
 ## Deviations
 
-- **Filter sheet rows.** `sheet body` y -24, h +26, and the rows above
-  Updated: `group · SOURCE` y -24, `check · Claude artifacts` y -22,
-  `check · Codex sites` y -21, `group · PROJECT` y -20,
-  `check · ncc-1701` y -18, `check · omni` y -16,
-  `check · skill-evals` y -14, `check · omni-brain` y -12,
-  `check · Not in a project` y -10, `group · FOUND BY` y -9,
-  `check · Artifact hook` y -7, `check · Codex session log` y -6 and
-  `check · Added by hand` y -5. The `Checkbox` rows are 32 high and 32
-  apart against Figma's 29 (28 for a mono label) and 31 or 30, and each
-  section label is a 30 px `GroupHeader variant="sidebar"` row against
-  Figma's 26, so the sheet's body is 512 high against 486. The sheet
-  keeps its bottom where Figma has it (Show and the rows of Updated pass),
-  so its top, the grabber, the title row and the first rows sit up to
-  24 px higher, and the sheet covers 24 px more of the two cards above
-  it. Library gap "Filter menu rows and inset".
-- **Source marks.** The Claude artifacts and Codex sites rows have no
-  Claude or Codex mark between the box and the label (407:1508,
-  407:1518): `Checkbox` takes only a text label. Library gap "Checkbox
-  leading icon".
+- **Filter sheet rows.** Since library 1.0.0-beta.80 the rows are
+  `Checkbox density="compact"`, 28 high, and the sheet puts them 2 apart,
+  as `PopoverSection` does, so they are 30 apart as Figma's (29 high, 31
+  or 30 apart), and the sheet's body passes (Figma's 486). Still open:
+  each section label is a 30 px `GroupHeader variant="sidebar"` row
+  against Figma's 26, so `check · Artifact hook` sits 5 low (y +5); the
+  other labels and rows are within the tolerance. Before, the 32 px rows
+  made the body 512 high and the first rows up to 24 px high. Library
+  gap "Filter sheet section labels".
+- **Source marks.** The Claude artifacts and Codex sites rows draw the
+  Claude and Codex marks between the box and the label (407:1508,
+  407:1518) with `Checkbox leading` and `KindMark size="12"` (library
+  1.0.0-beta.80), 12 px against Figma's 13.
 - **Search, Sort, Filter and Add a link.** `search` w -16.8,
   `button · Sort` x -18.8, w +12.4, `button · Filter` x -6.4, w +12.4,
   `button · Add a link` x -7.2, w +9.2, as T1: the library's 36 px
@@ -90,6 +86,8 @@ Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`, Sort's
 - Section label rows: `GroupHeader variant="sidebar"` (8 above the text,
   as Figma's 407:1507), padded 4 more at the start so the labels start
   8 in from the sheet's inset, as Figma's x 21.
+- Rows: `Checkbox density="compact"` (28, `control.sm`) 2 apart
+  (`spacing.2`, as `PopoverSection`), Figma's 30 px pitch.
 - Under the boxes: 8 (`spacing.8`), Figma's value (the sheet body ends 8
   after its last row, 407:1624); Show 8 under it and 4 in at the sides
   (`spacing.8`, `spacing.4`), Figma's values (407:1719).
