@@ -121,15 +121,14 @@ jobs:
   # side-by-side PNGs are uploaded for a reviewer only. Every frame passed
   # on main f83cc7db (run 44487438612), so the job runs on each PR too, and
   # its page jobs are required checks of the protect-main ruleset. Inbox
-  # runs only on a push to main and by hand until its T12 passes each time
-  # on Linux: its prompt textarea overflowed (hiddenOverflow) on main
-  # 23e1fea5 (run 44488952964) and passed on db384871 (run 44490270508).
+  # joined the PR runs after PR 197 made the fidelity script wait for a
+  # stable layout, which fixed its T12 textarea flake on Linux.
   fidelity:
     name: fidelity (${{ matrix.page }})
     strategy:
       fail-fast: false
       matrix:
-        page: ${{ github.event_name == 'pull_request' && fromJSON('["workspaces", "artifacts", "toolkit"]') || fromJSON('["inbox", "workspaces", "artifacts", "toolkit"]') }}
+        page: [inbox, workspaces, artifacts, toolkit]
     runs-on: ubuntu-24.04
     env:
       # The pages whose icon sizes the job gates too (--checks icons: no
