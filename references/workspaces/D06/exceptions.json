@@ -12,6 +12,7 @@
   "position": [
     {
       "layer": "158:1026",
+      "iconSize": 24,
       "reason": "The icon set's largest size is 24; Figma's split icon (icon/split, 158:1026) is 28. D06 deviations.md, Drop zone box: \"The split icon is 24 px (the largest icon size) against Figma's 28.\" LIBRARY_GAPS.md, Drop zone: \"the largest icon is 24\", used now \"`SplitIcon size=\"24\"` in `fg.accent`\" (d-100 picks). A 28 px icon size in the library would remove this exception."
     }
   ]

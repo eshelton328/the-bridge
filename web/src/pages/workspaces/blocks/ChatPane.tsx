@@ -18,7 +18,7 @@
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Props only.
-import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
+import { Composer, Inline, ModelChip, PlusIcon, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
@@ -118,6 +118,8 @@ type ChatPaneBase = {
   folders?: ReactNode
   /** `false`: the composer has no attach button, as the side chat in a pane draws it (D5 158:545). */
   attach?: boolean | undefined
+  /** The size of Send's arrow: `12` in the side chat in a pane (D5 158:549); the library's 16 when not set. */
+  sendIconSize?: '12' | '16' | undefined
   /** The composer's layout: `inline` is one row, as the side chat in a pane draws it (D5 158:545); `stacked` when not set. */
   layout?: 'stacked' | 'inline' | undefined
   /** Drawn at the top of the transcript and scrolled with it, such as the side chat's note in a pane (D5 158:530). */
@@ -162,6 +164,7 @@ export function ChatPane(props: ChatPaneProps) {
     size = 'pane',
     folders,
     attach = true,
+    sendIconSize,
     layout,
     lead,
     above,
@@ -264,6 +267,11 @@ export function ChatPane(props: ChatPaneProps) {
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
       onAttach={attach ? () => undefined : undefined}
+      // With the folders control (D4 137:2) the attach button is Figma's add button (137:5), a + that offers Add folder
+      // and attachments. Figma's plus (137:6) is 13 px and no icon size is 13, so it is 12 (d-050, d-100). Every other
+      // composer of the page draws the paperclip.
+      {...(folders === undefined ? {} : { attachIcon: <PlusIcon size="12" />, attachLabel: 'Add' })}
+      sendIconSize={sendIconSize}
       layout={layout}
       model={
         folders === undefined ? (

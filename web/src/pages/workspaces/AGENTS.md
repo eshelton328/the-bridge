@@ -73,8 +73,8 @@ first: it says what each file of a page folder is for.
   with `ui.subagentsOpen` (D3) the subagents panel takes the side slot,
   420 wide, and `ui.newChatOpen` opens the New chat form over the screen.
   With `data.folders` (D4) the composer has the folders control, whose
-  list `ui.foldersOpen` opens, and `ui.folderPickerOpen` puts the folder
-  picker in the side slot. With the split panes, `ui.sideChatOpen` opens
+  list `ui.foldersOpen` opens, and its attach button is Figma's + (Add);
+  `ui.folderPickerOpen` puts the folder picker in the side slot. With the split panes, `ui.sideChatOpen` opens
   `data.sideChat` inside the pane its `pane` names, over the chat's right
   side (D5). With `ui.paneDrag` (D6) the dragged chat's row fades in the
   sidebar and `data.paneDrop` shows as a drop zone over the chat alone.
@@ -204,7 +204,7 @@ first: it says what each file of a page folder is for.
   `/btw` and a grey × at 20 px, the 17 px title, and `sideHeader`, its layer)
   and `size="sheet"` to `ChatPane`; Side chat in the chat actions sheet
   opens it, and × or the scrim closes it. M6 adds `PhoneSubagents` (the
-  chat's subagents on the phone: `BackRow` to the chat, the title in
+  chat's subagents on the phone: `BackRow size="sm"` to the chat, the title in
   `PageHeader size="phone"` and the count line, "3 · 2 running", in a
   `ScrollFrame` header over the cards), and `size="phone"` (the meta in
   `monoSm`) and `openLabel` (a grey chevron after the status, which opens

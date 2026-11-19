@@ -142,6 +142,8 @@ export function SideChatPanel({ chat, placement = 'side', onClose, device = 'pho
         entries={chat.entries}
         composer={chat.composer}
         attach={placement !== 'pane'}
+        // D5 158:549: the one-row composer's Send draws a 12 px arrow; the other side chats' arrows are 14 (16 here).
+        sendIconSize={placement === 'pane' ? '12' : undefined}
         layout={placement === 'pane' ? 'inline' : undefined}
         lead={placement === 'pane' ? noteText : undefined}
         above={openAsPane}
