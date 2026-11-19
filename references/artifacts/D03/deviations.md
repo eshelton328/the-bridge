@@ -27,6 +27,11 @@ change.
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (414:942); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 414:942 (2026-11-19, the same decision on every page's rail).
 - **Filter menu place.** `menu · Filter` x +109.5. Figma opens the menu
   where the search ends, 120 px before the Filter button's start; the
   `Popover` opens at the button's start (`placement="bottom-start"`), and

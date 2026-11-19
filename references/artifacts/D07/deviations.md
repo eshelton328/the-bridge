@@ -23,6 +23,11 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (452:1993); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 452:1993 (2026-11-19, the same decision on every page's rail).
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
   `discussion panel` x +8, w -8. The artifact keeps D2's `Container
   size="detail"` (748 + 2 × 40 = 828) against Figma's 820 pane, so the

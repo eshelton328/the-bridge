@@ -18,6 +18,11 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (414:934); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 414:934 (2026-11-19, the same decision on every page's rail).
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the

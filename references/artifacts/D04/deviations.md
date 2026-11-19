@@ -24,6 +24,11 @@ each with its reason. The library gaps are in
 
 ## Deviations
 
+- **Rail Artifacts icon.** Figma draws it in a 20 px frame (414:950); its
+  other rail icons are 22 px. The shared `AppRail` draws every item's
+  icon at 24 (`NavRail`, d-100), so the 22 px ones pass the iconSize
+  check (2 px slack) and this one does not. A position exception
+  names 414:950 (2026-11-19, the same decision on every page's rail).
 - **Row previews and row heights.** The previews are `Thumbnail
   size="lg" shape="wide"`, 128 × 72 as Figma's (403:8217, library
   1.0.0-beta.36). Since library 1.0.0-beta.39 (#147) each row is
