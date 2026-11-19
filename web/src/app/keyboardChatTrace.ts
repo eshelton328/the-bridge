@@ -75,7 +75,7 @@ export function startChatKeyboardTrace({ win = window, route, closeDelayMs = 200
   const doc = win.document
   let session: { end: () => void; reopen: () => void } | undefined
 
-  const startSession = (target: EventTarget, device: TraceChat['device']) => {
+  const startSession = (target: EventTarget, device: TraceChat['device'], startType = 'focusin') => {
     const where = traceRoute(route.current())
     const baseline = win.visualViewport?.height ?? null
     let closeTimer: number | undefined
@@ -98,8 +98,9 @@ export function startChatKeyboardTrace({ win = window, route, closeDelayMs = 200
       extra: { route: where, chat: { state: where.state, device } },
       onSample,
     })
-    // The focusin that starts the session has passed the window, where the recording listens.
-    recording.record('focusin', target)
+    // The focusin that starts the session has passed the window, where the recording listens; `focused` when the
+    // composer already had the focus as the listener was added.
+    recording.record(startType, target)
     const end = () => {
       if (ended) return
       ended = true
@@ -127,7 +128,14 @@ export function startChatKeyboardTrace({ win = window, route, closeDelayMs = 200
   let listening = false
   const sync = () => {
     const onChat = isChatPath(route.current().pathname)
-    if (onChat && !listening) doc.addEventListener('focusin', onFocusIn, true)
+    if (onChat && !listening) {
+      doc.addEventListener('focusin', onFocusIn, true)
+      // The composer can take the focus before the switch has answered or the route has resolved.
+      const focused = doc.activeElement
+      const device = chatComposerDevice(focused)
+      if (device !== undefined && focused !== null && session === undefined)
+        session = startSession(focused, device, 'focused')
+    }
     if (!onChat && listening) {
       doc.removeEventListener('focusin', onFocusIn, true)
       session?.end()

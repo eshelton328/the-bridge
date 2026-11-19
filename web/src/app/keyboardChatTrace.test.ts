@@ -197,6 +197,26 @@ describe('keyboard trace chat sessions', () => {
     expect(posts[0]).not.toMatch(/secret|live|source/)
   })
 
+  it('starts a session for a composer that already has the focus when the trace starts', async () => {
+    const composer = mountComposer()
+    composer.focus()
+    const route = fakeRoute({ pathname: '/workspaces', search: '' })
+    const { posts } = watch(route.source)
+    composer.blur()
+    await expect.poll(() => posts.length).toBe(1)
+    expect(posts[0]).toContain('"type":"focused"')
+  })
+
+  it('starts a session for a composer that has the focus when the route turns to /workspaces', async () => {
+    const route = fakeRoute({ pathname: '/inbox', search: '' })
+    const { posts } = watch(route.source)
+    const composer = mountComposer()
+    composer.focus()
+    route.go({ pathname: '/workspaces', search: '' })
+    composer.blur()
+    await expect.poll(() => posts.length).toBe(1)
+  })
+
   it('records a state that is not a state key as null', () => {
     expect(traceRoute({ pathname: '/workspaces', search: '?state=my%20chat%20title' })).toEqual({
       pathname: '/workspaces',
