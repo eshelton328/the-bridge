@@ -33,7 +33,7 @@ import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
-import { openArtifact } from './openView.ts'
+import { filedProject, openArtifact } from './openView.ts'
 
 export type ArtifactsScreenProps = {
   data: ArtifactsData
@@ -198,13 +198,13 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
               <FileSheet
                 menu={data.fileMenu}
                 artifactTitle={view.artifact.title}
-                project={ui.fileProject ?? view.artifact.project}
+                project={filedProject(ui, data.open?.id, view.artifact)}
                 open={ui.fileOpen === true}
                 onOpenChange={(fileOpen) => {
                   onUiChange?.({ fileOpen })
                 }}
                 onProjectChange={(fileProject) => {
-                  onUiChange?.({ fileProject })
+                  onUiChange?.({ fileProject, fileFor: view.artifact.id })
                 }}
               />
             )}

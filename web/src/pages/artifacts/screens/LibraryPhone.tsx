@@ -46,6 +46,8 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
   const shown = groups.reduce((n, group) => n + group.cards.length, 0)
   const query = ui.query.trim()
   const matches = searchMatches(data, ui)
+  // M6: the sheet's own shorter words where the state has them (the home), or else the state's form.
+  const addLinkForm = data.addLinkSheet ?? data.addLinkForm
   return (
     // Figma's rows are 2 apart (406:70 to 406:114), each in a frame with its own padding.
     <Stack gap="2" className={page}>
@@ -58,7 +60,7 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             addLink={data.addLink}
             layout="phone"
             onAddLink={
-              data.addLinkForm === undefined
+              addLinkForm === undefined
                 ? onAddLink
                 : () => {
                     onUiChange?.({ addLinkOpen: true })
@@ -66,9 +68,9 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
             }
           />
           {/* M6: the plus button opens D5's form as a sheet over the tab bar, as Filter and Sort do (M3, M4). */}
-          {data.addLinkForm === undefined ? null : (
+          {addLinkForm === undefined ? null : (
             <AddLinkSheet
-              form={data.addLinkForm}
+              form={addLinkForm}
               open={ui.addLinkOpen ?? false}
               source={ui.addLinkSource ?? 'claude'}
               onOpenChange={(addLinkOpen) => {

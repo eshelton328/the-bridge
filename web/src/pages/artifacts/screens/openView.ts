@@ -49,3 +49,12 @@ export function openArtifact(data: ArtifactsData, ui: ArtifactsUi, layout: Viewp
   const card = data.groups.flatMap((group) => group.cards).find((c) => c.id === id)
   return card === undefined ? undefined : { artifact: cardDetail(card, layout), discussion: undefined }
 }
+
+/**
+ * The project File in a project shows checked (M7): Erik's pick when he made it for this artifact (`ui.fileFor`, or
+ * `data.open`'s artifact when not set, as M7's state sets only `fileProject`), or else the artifact's own project.
+ */
+export function filedProject(ui: ArtifactsUi, openId: string | undefined, artifact: ArtifactDetail): string {
+  const pickedFor = ui.fileFor ?? openId
+  return ui.fileProject !== undefined && pickedFor === artifact.id ? ui.fileProject : artifact.project
+}
