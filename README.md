@@ -16,8 +16,11 @@ machine.
 ## Prerequisites
 
 - Node 24 or later: `node --version`.
-- pnpm 11, through Corepack: `corepack enable`.
-- Git, and read access to `eshelton328/the-bridge`.
+- pnpm 11, through Corepack: `corepack enable`. Corepack reads
+  `packageManager` in `package.json` and downloads that pnpm on the first
+  run. Ignore pnpm's notice of a newer major version.
+- Git, and read access to `eshelton328/the-bridge`; ask the repository
+  owner for it.
 - The GitHub CLI, logged in (`gh auth login`), with read access to the
   `@eshelton328/component-library-1701` package on GitHub Packages. Give
   pnpm a token for that registry once:
@@ -37,15 +40,15 @@ cd web
 pnpm dev
 ```
 
-`pnpm dev` serves the app on http://localhost:5173 and opens `/` on
-the Inbox.
+`pnpm dev` serves the app on http://localhost:5173 until you stop it
+with Ctrl-C. Open that address in a browser; `/` goes to the Inbox.
 
 ## First use
 
 - Open `/inbox`, `/workspaces`, `/artifacts` or `/toolkit`. With no
   `?state=`, a page shows its home. In development, `?state=<key>` shows
-  one Figma state, where `<key>` is a key of the page's
-  `web/src/pages/<page>/states/index.ts`.
+  one Figma state, such as `/inbox?state=chat`; the keys are in each
+  page's `web/src/pages/<page>/states/index.ts`.
 - `pnpm storybook`, in `web/`, opens Storybook on http://localhost:6007.
   Each page has its screens under `Pages/<Page>/Screens` and one story per
   state under `Pages/<Page>/States`.
@@ -56,7 +59,12 @@ the Inbox.
 
 ## Help
 
-From the repository root, run the checks, the tests and the builds:
+If `pnpm install` fails with a 401 or 403 from `npm.pkg.github.com`,
+pnpm has no token with `read:packages`: run the two login lines under
+Prerequisites again.
+
+From the repository root, run the checks, the tests and the builds (this
+takes several minutes):
 
 ```sh
 pnpm exec playwright install chromium
