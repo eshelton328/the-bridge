@@ -1,8 +1,9 @@
 # app
 
-The app's start: `main.ts` installs the global error handlers, creates
-the React root with the root error hooks (`errors/rootErrorOptions.ts`)
-and renders `AppBoundary` > `RouterProvider` and the dev `ErrorTray`.
+The app's start: `main.ts` calls `mountApp()` (`mountApp.ts`), which
+installs the global error handlers, creates the React root with the root
+error hooks (`errors/rootErrorOptions.ts`) and renders `AppBoundary` >
+`RouterProvider` and the dev `ErrorTray` (`mountApp.test.ts`, audit W-9).
 `router.ts` sets `RouteError` and `NotFound` as the default error and
 not-found components, so no route needs a boundary of its own (d-084).
 
