@@ -81,7 +81,10 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   opens the finished chat.
 - Every detail keeps its Back bar at the top and its reply box or pinned bar
   at the bottom while only the content between them scrolls (d-107): the
-  library `ScrollFrame` in `RunningDetail` and `DiscussionThread`, and
+  library `ScrollFrame` in `RunningDetail` and `DiscussionThread` (on a
+  tablet or phone the frame is the shell detail's own child, with the
+  page's padding, so AppShell docks the reply box on the keyboard, R21;
+  `app/InboxKeyboardDock.test.tsx`), and
   the shared block `DetailFrame` (in `web/src/blocks/`; a pinned bar
   sticky at the end of the scrolling item) in `NextStepDetail` and
   `QuestionDetail`. `InboxStickyBars.test.tsx`

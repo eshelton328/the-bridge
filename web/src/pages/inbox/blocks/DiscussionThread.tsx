@@ -24,6 +24,8 @@ export type DiscussionThreadProps = {
   control?: ProposalControl | undefined
   /** A class for the entries' column, such as its top padding. */
   className?: string | undefined
+  /** A class for the frame's root, such as the page's padding. */
+  frameClassName?: string | undefined
   /** The empty state sits in the middle of the column (the desktop panel, D14) rather than at its top (T17). */
   centred?: boolean | undefined
   /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
@@ -44,6 +46,7 @@ export function DiscussionThread({
   discussion,
   control,
   className,
+  frameClassName,
   centred = true,
   drafts,
   stacked = false,
@@ -55,6 +58,7 @@ export function DiscussionThread({
   const empty = discussion.entries.length === 0 ? discussion.empty : undefined
   return (
     <ScrollFrame
+      className={frameClassName}
       gap={gap}
       bodyClassName={bodyGap[gap]}
       header={header}
