@@ -74,7 +74,7 @@ Library #122 closed the status pill height: `StatusPill` marks its edge with a t
 
 Library #237 (beta.78) closed the list row padding on the phone: `ListRow padding="phoneSides"` pads a phone row 4 at the sides (M1 346:9052), so `InboxRow` no longer pulls the row 6 px out of the list's padding.
 
-Library #238 (beta.79) closed the filter chip padding on the phone: `FilterChips size="phone"` pads the label 12 inside the border (M1 346:9014), 1 px more than Figma's 12 from the edge, as 11 is no spacing token (d-100). Library #233 and #247 closed the Composer Stop icon size: `stopIconSize="12"` (D5 346:2285).
+Library #238 (beta.79) closed the filter chip padding on the phone: `FilterChips size="phone"` pads the label 12 inside the border (M1 346:9014), 1 px more than Figma's 12 from the edge, as 11 is no spacing token (d-100). #216 closed the Composer Stop icon size: `stopIconSize="12"` (library #233, D5 346:2285).
 
 ## Gaps
 
