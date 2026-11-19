@@ -55,7 +55,12 @@ The Figma references the checks read are in
      with the same text need the text twice on screen. A string that
      another element covers in the render (an open menu over a pane) is
      not visible either, marked `covered`, unless Figma draws a later
-     layer over the same text layer too.
+     layer over the same text layer too. A library `Glyph` keeps its ✗ or
+     ✓ in the text at font size 0 and transparent and draws the mark as
+     an SVG icon: its character (`glyph__char` in a `glyph__root`) is
+     measured by that icon, which must be shown, at least 1 px, in view
+     and not covered, as text must (`isGlyphChar` in `inPage.ts`). A
+     zero-size character anywhere else is not shown.
    - `text.extra`: visible render text that Figma does not have.
    - `position.diffs`: boxes off by more than the tolerance, with the
      delta per edge; also unknown, ambiguous or duplicate keys; and

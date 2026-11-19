@@ -12,6 +12,7 @@ import {
   fieldTextLines,
   fullyVisible,
   iconHitPaints,
+  isGlyphChar,
   isPortalRoot,
   paints,
   samplePoints,
@@ -84,6 +85,7 @@ void test('the page script calls collectPage with its helpers', () => {
   assert.match(script, /paints: function paints\(/)
   assert.match(script, /fieldTextLines: function fieldTextLines\(/)
   assert.match(script, /coveredAt: function coveredAt\(/)
+  assert.match(script, /isGlyphChar: function isGlyphChar\(/)
 })
 
 void test('a checkbox, radio, hidden or password value is not field text; a text value is', () => {
@@ -405,4 +407,73 @@ void test('over an icon, a shape or a fill draws; an svg box with no fill does n
   )
   assert.equal(iconHitPaints({ ...box, tagName: 'DIV', isSvgShape: false, backdropFilter: 'blur(8px)' }, paints), true)
   assert.equal(iconHitPaints({ ...box, tagName: 'IMG', isSvgShape: false }, paints), true)
+})
+
+// Symbol glyphs. The library's Glyph keeps ✗ or ✓ in the text at font size
+// 0 and transparent and draws the mark as an SVG icon beside it, so the
+// character's own run has no 1 px box (D28 492:2185, D09 433:1570). The
+// character counts as shown only when the icon passes the text rules.
+void test("only the character span of a Glyph's root is a glyph character", () => {
+  assert.equal(isGlyphChar({ classes: ['glyph__char'], parentClasses: ['glyph__root'] }), true)
+  assert.equal(isGlyphChar({ classes: ['glyph__char'], parentClasses: ['card'] }), false)
+  assert.equal(isGlyphChar({ classes: [], parentClasses: ['glyph__root'] }), false)
+})
+
+/** A Glyph as the library renders it: the icon, then the hidden character. */
+const glyph = (char: string, iconStyle = '') =>
+  `<span class="glyph__root" style="display:inline;white-space:nowrap"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" style="${iconStyle}"><path d="M8 5C10 9 12 14.5 14.5 19"></path><path d="M18.5 4C14.5 8.5 10.5 13.5 6 20"></path></svg><span class="glyph__char" style="display:inline;font-size:0;line-height:0;color:transparent">${char}</span></span>`
+
+async function glyphCheck(line: string, text: string) {
+  const measured = await measureHtml(`<body style="margin:0;font:16px/20px sans-serif">
+<div id="storybook-root"><div style="position:relative;height:100vh">${line}</div></div></body>`)
+  return checkText(
+    { w: 600, h: 400, layers: [{ ...textLayer('4:1', text, 20), x: 20, w: 300 }], exclude: [] },
+    { missing: [], extra: [] },
+    measured,
+  )
+}
+
+void test('in Chromium a Glyph whose icon shows counts its character as shown', async () => {
+  const result = await glyphCheck(
+    `<p style="position:absolute;top:20px;left:20px;margin:0">blocks ${glyph('✗')} rm -rf and passes ${glyph('✓')} ls</p>`,
+    'blocks ✗ rm -rf and passes ✓ ls',
+  )
+  assert.deepEqual(result.notVisible, [])
+  assert.deepEqual(result.extra, [])
+  assert.equal(result.ok, true)
+})
+
+void test('in Chromium a Glyph whose icon is hidden, clipped or covered is not shown', async () => {
+  const text = 'blocks ✗ rm -rf'
+  const at = (inner: string) => `<p style="position:absolute;top:20px;left:20px;margin:0">${inner}</p>`
+  const hidden = await glyphCheck(at(`blocks ${glyph('✗', 'visibility:hidden')} rm -rf`), text)
+  assert.deepEqual(hidden.notVisible, [{ id: '4:1', text }])
+  const none = await glyphCheck(at(`blocks ${glyph('✗', 'display:none')} rm -rf`), text)
+  assert.deepEqual(none.notVisible, [{ id: '4:1', text }])
+  const empty = await glyphCheck(at(`blocks ${glyph('✗', 'width:0;height:0')} rm -rf`), text)
+  assert.deepEqual(empty.notVisible, [{ id: '4:1', text }])
+  // A box that cuts the line through the icon: the words fit, the icon does not.
+  const clipped = await glyphCheck(
+    `<div style="position:absolute;top:20px;left:20px;width:300px;height:20px;overflow:hidden">
+<p style="margin:0">blocks <span style="display:inline-block;position:relative;top:14px">${glyph('✗')}</span> rm -rf</p></div>`,
+    text,
+  )
+  assert.deepEqual(clipped.notVisible, [{ id: '4:1', text }])
+  const covered = await glyphCheck(
+    `${at(`blocks ${glyph('✗')} rm -rf`)}
+<div style="position:absolute;top:16px;left:60px;width:16px;height:28px;background:rgb(30,30,40)"></div>`,
+    text,
+  )
+  assert.deepEqual(covered.notVisible, [{ id: '4:1', text, covered: true }])
+})
+
+void test('in Chromium a zero-size character outside a Glyph is still not shown', async () => {
+  const text = 'blocks ✗ rm -rf'
+  const zero = '<span style="font-size:0;line-height:0;color:transparent">✗</span>'
+  // Beside an icon, as a Glyph draws it, but not in a Glyph's root.
+  const result = await glyphCheck(
+    `<p style="position:absolute;top:20px;left:20px;margin:0">blocks <span><svg viewBox="0 0 24 24" width="12" height="12"></svg>${zero}</span> rm -rf</p>`,
+    text,
+  )
+  assert.deepEqual(result.notVisible, [{ id: '4:1', text }])
 })

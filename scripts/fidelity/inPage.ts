@@ -213,6 +213,18 @@ export function iconHitPaints(
   return fills({ ...el, tagName: el.tagName.toLowerCase() === 'svg' ? 'g' : el.tagName })
 }
 
+/**
+ * True when a text node's element is the character of a library Glyph (a
+ * `glyph__char` span in a `glyph__root`): the ✗ or ✓ that the Glyph keeps
+ * in the text at font size 0 and transparent, while its icon, an SVG beside
+ * the character in the root, draws the mark. Such a character counts as
+ * shown only when that icon passes the same rules as text (fullyVisible
+ * and not covered); a zero-size run anywhere else is still not shown.
+ */
+export function isGlyphChar(el: { classes: readonly string[]; parentClasses: readonly string[] }): boolean {
+  return el.classes.includes('glyph__char') && el.parentClasses.includes('glyph__root')
+}
+
 /** What scrollBars reads from one element: its computed overflow and its sizes. */
 export type ScrollBox = {
   overflowX: string
@@ -253,11 +265,12 @@ type Helpers = {
   paints: typeof paints
   coveredAt: typeof coveredAt
   iconHitPaints: typeof iconHitPaints
+  isGlyphChar: typeof isGlyphChar
 }
 
 /** The source that page.evaluate runs: collectPage called with the helpers it needs. */
 export function collectPageScript(rootSelector: string): string {
-  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()}, iconHitPaints: ${iconHitPaints.toString()} })`
+  return `(${collectPage.toString()})(${JSON.stringify(rootSelector)}, { fullyVisible: ${fullyVisible.toString()}, isPortalRoot: ${isPortalRoot.toString()}, fieldText: ${fieldText.toString()}, scrollBars: ${scrollBars.toString()}, samplePoints: ${samplePoints.toString()}, fieldTextLines: ${fieldTextLines.toString()}, paints: ${paints.toString()}, coveredAt: ${coveredAt.toString()}, iconHitPaints: ${iconHitPaints.toString()}, isGlyphChar: ${isGlyphChar.toString()} })`
 }
 
 export type PageMeasure = {
@@ -439,14 +452,26 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     if (parent === null || raw === '' || ['SCRIPT', 'STYLE', 'TEXTAREA'].includes(parent.tagName)) continue
     const text = transform(raw, parent)
     allTexts.push(text)
-    if (!shown(parent)) continue
-    const range = document.createRange()
-    range.selectNodeContents(n)
-    const rects = [...range.getClientRects()]
+    // A Glyph's character draws nothing; its icon, beside it in the Glyph's
+    // root, shows it. So the icon is measured in its place, by the same
+    // rules: shown, in view, at least 1 px and not covered. No icon, no run.
+    const glyphRoot = parent.parentElement
+    const glyph =
+      glyphRoot !== null &&
+      helpers.isGlyphChar({ classes: [...parent.classList], parentClasses: [...glyphRoot.classList] })
+    const own = glyph ? glyphRoot.querySelector(':scope > svg') : parent
+    if (own === null || !shown(own)) continue
+    let rects: DOMRect[]
+    if (glyph) rects = [own.getBoundingClientRect()]
+    else {
+      const range = document.createRange()
+      range.selectNodeContents(n)
+      rects = [...range.getClientRects()]
+    }
     // Every line of the string must be in view: a sentence that a scroll box
     // or an ellipsis cuts is not visible, though part of it shows.
-    if (!helpers.fullyVisible(rects, clipsOf(parent), viewport)) continue
-    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent), covered: coveredRun(rects, parent) })
+    if (!helpers.fullyVisible(rects, clipsOf(glyph ? glyphRoot : parent), viewport)) continue
+    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent), covered: coveredRun(rects, own) })
   }
   const fieldTexts: string[] = []
   for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {
