@@ -4,6 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -75,11 +76,12 @@ describe('the Artifacts home', () => {
     await page.viewport(1512, 982)
     view = await renderAt('/artifacts')
     await expect.poll(rail).not.toBeNull()
-    await page.viewport(390, 844)
+    // setViewport waits for the rendering steps that bring ViewportFrame's ResizeObserver the new width.
+    await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.poll(() => rows().length).toBeGreaterThan(0)
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
   })
