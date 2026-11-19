@@ -4,6 +4,356 @@
       "text": "4",
       "layers": ["424:6912"],
       "reason": "The Inbox tab's needs-you badge (424:6911) lies under the drawer in Figma as in the render: the drawer (424:6940, y 450 to 844) covers the tab bar (424:6898, y 767). The render draws the badge on the Inbox tab, and the drawer covers it the same way, so no viewer sees it in either."
+    },
+    {
+      "text": "17",
+      "layers": ["424:6667"],
+      "reason": "`17` is in the Artifacts list that Figma draws under the More drawer's scrim (library, chip · Claude); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "New",
+      "layers": ["424:6672"],
+      "reason": "`New` is in the Artifacts list that Figma draws under the More drawer's scrim (library, chip · New); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Search artifacts",
+      "layers": ["424:6680"],
+      "reason": "`Search artifacts` is in the Artifacts list that Figma draws under the More drawer's scrim (library, search); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Checked Claude and Codex 2m ago",
+      "layers": ["424:6693"],
+      "reason": "`Checked Claude and Codex 2m ago` is in the Artifacts list that Figma draws under the More drawer's scrim (library, found status); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "FOUND SINCE YOU LAST LOOKED",
+      "layers": ["424:6698"],
+      "reason": "`FOUND SINCE YOU LAST LOOKED` is in the Artifacts list that Figma draws under the More drawer's scrim (library, group · FOUND SINCE YOU LAST LOOKED); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Skill eval pass rates",
+      "layers": ["424:6717"],
+      "reason": "`Skill eval pass rates` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "12m",
+      "layers": ["424:6718"],
+      "reason": "`12m` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skill-evals",
+      "layers": ["424:6722"],
+      "reason": "`skill-evals` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "New",
+      "layers": ["424:6727"],
+      "reason": "`New` is in the Artifacts list that Figma draws under the More drawer's scrim (library, badge · New); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Hono server spike",
+      "layers": ["424:6742"],
+      "reason": "`Hono server spike` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "40m",
+      "layers": ["424:6743"],
+      "reason": "`40m` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ncc-1701",
+      "layers": ["424:6749"],
+      "reason": "`ncc-1701` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "New",
+      "layers": ["424:6754"],
+      "reason": "`New` is in the Artifacts list that Figma draws under the More drawer's scrim (library, badge · New); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Inbox task lifecycle",
+      "layers": ["424:6765"],
+      "reason": "`Inbox task lifecycle` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "1h",
+      "layers": ["424:6766"],
+      "reason": "`1h` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ncc-1701",
+      "layers": ["424:6770"],
+      "reason": "`ncc-1701` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "New",
+      "layers": ["424:6775"],
+      "reason": "`New` is in the Artifacts list that Figma draws under the More drawer's scrim (library, badge · New); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Tailscale access check",
+      "layers": ["424:6789"],
+      "reason": "`Tailscale access check` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "2h",
+      "layers": ["424:6790"],
+      "reason": "`2h` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ncc-1701",
+      "layers": ["424:6796"],
+      "reason": "`ncc-1701` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "New",
+      "layers": ["424:6801"],
+      "reason": "`New` is in the Artifacts list that Figma draws under the More drawer's scrim (library, badge · New); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "EARLIER",
+      "layers": ["424:6806"],
+      "reason": "`EARLIER` is in the Artifacts list that Figma draws under the More drawer's scrim (library, group · EARLIER); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "20",
+      "layers": ["424:6807"],
+      "reason": "`20` is in the Artifacts list that Figma draws under the More drawer's scrim (library, group · EARLIER); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "the-bridge theme ideas",
+      "layers": ["424:6819"],
+      "reason": "`the-bridge theme ideas` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "1d",
+      "layers": ["424:6820"],
+      "reason": "`1d` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ncc-1701",
+      "layers": ["424:6824"],
+      "reason": "`ncc-1701` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Application versioning and releases",
+      "layers": ["424:6838"],
+      "reason": "`Application versioning and releases` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "2d",
+      "layers": ["424:6839"],
+      "reason": "`2d` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "omni",
+      "layers": ["424:6843"],
+      "reason": "`omni` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Panda tokens playground",
+      "layers": ["424:6855"],
+      "reason": "`Panda tokens playground` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "3d",
+      "layers": ["424:6856"],
+      "reason": "`3d` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ncc-1701",
+      "layers": ["424:6862"],
+      "reason": "`ncc-1701` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Agent factory and session tracking",
+      "layers": ["424:6876"],
+      "reason": "`Agent factory and session tracking` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "4d",
+      "layers": ["424:6877"],
+      "reason": "`4d` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "omni",
+      "layers": ["424:6881"],
+      "reason": "`omni` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Brain map prototype",
+      "layers": ["424:6892"],
+      "reason": "`Brain map prototype` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "5d",
+      "layers": ["424:6893"],
+      "reason": "`5d` is in the Artifacts list that Figma draws under the More drawer's scrim (library, title row); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "omni-brain",
+      "layers": ["424:6897"],
+      "reason": "`omni-brain` is in the Artifacts list that Figma draws under the More drawer's scrim (library, meta); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Artifacts",
+      "layers": ["424:6655"],
+      "reason": "`Artifacts` is in the Artifacts list that Figma draws under the More drawer's scrim (library, header); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "24",
+      "layers": ["424:6656"],
+      "reason": "`24` is in the Artifacts list that Figma draws under the More drawer's scrim (library, header); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "24",
+      "layers": ["424:6664"],
+      "reason": "`24` is in the Artifacts list that Figma draws under the More drawer's scrim (library, chip · All); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Claude",
+      "layers": ["424:6666"],
+      "reason": "`Claude` is in the Artifacts list that Figma draws under the More drawer's scrim (library, chip · Claude); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Codex",
+      "layers": ["424:6669"],
+      "reason": "`Codex` is in the Artifacts list that Figma draws under the More drawer's scrim (library, chip · Codex); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "4",
+      "layers": ["424:6699"],
+      "reason": "`4` is in the Artifacts list that Figma draws under the More drawer's scrim (library, group · FOUND SINCE YOU LAST LOOKED); the render shows the Toolkit list (M1) under the drawer, so the Artifacts list's text is not there (deviations.md \"Page under the drawer.\")."
+    }
+  ],
+  "extra": [
+    {
+      "text": "Skills",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "9",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Rules",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "8",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Read-only · from toolkit/ in the brain",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "SKILLS",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "agents-md",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/agents-md/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→0 ←1",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "ambitious",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/ambitious/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→0 ←0",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "audit-slop",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/audit-slop/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→1 ←2",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "eval-cases",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/eval-cases/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→3 ←3",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "mermaid-diagrams",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/mermaid-diagrams/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→2 ←2",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "pr-description",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/pr-description/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "project-setup",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/project-setup/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→1 ←0",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "readme",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/readme/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "writer",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "skills/writer/",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "→7 ←4",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
+    },
+    {
+      "text": "Search the toolkit",
+      "reason": "Text of the Toolkit list (M1) that the render shows under the More drawer's scrim, where Figma draws the Artifacts list (deviations.md \"Page under the drawer.\")."
     }
   ],
   "rules": [

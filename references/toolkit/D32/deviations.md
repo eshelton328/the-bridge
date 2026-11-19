@@ -8,7 +8,9 @@ The state is `web/src/pages/toolkit/states/hookLinks.ts`: D9's data (the
 Rules, Workflows and Hooks groups), with the hook commit-msg open on its
 Links tab. D31, D30, D29, D19, D03, D06, D07, D08, D09, D10, D13, D14 and
 D33 give the same results as before D32 (each report's text, position and
-rule results are unchanged). The frame has no `exceptions.json`.
+rule results are unchanged). The frame's `exceptions.json` excepts the
+strings and the `hiddenOverflow` findings below, each with the entry that
+records it; with them the text and rules checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
@@ -47,7 +49,8 @@ the same.
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D03 has both
-  in its `exceptions.json`; this frame takes no exceptions.
+  in its `exceptions.json`; this frame's `exceptions.json` excepts them
+  too.
 
 ## Deviations
 

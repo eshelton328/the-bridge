@@ -1,0 +1,26 @@
+{
+  "missing": [
+    {
+      "text": "Nov 13 · omni-brain",
+      "layers": ["477:2231"],
+      "reason": "`Nov 13 · omni-brain` (Figma y 710): under the taller chart and rows the Brain NC1701 project chat lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "writing-reviewer ×2",
+      "layers": ["477:2237"],
+      "reason": "`writing-reviewer ×2` (Figma y 738): under the taller chart and rows the Brain NC1701 project chat lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "readme",
+      "layers": ["477:2249"],
+      "reason": "`readme` (Figma y 808): under the taller chart and rows the Brain NC1701 project chat lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (1437 px in the 806 px window): the page runs under the pinned tab bar (AppShell tabBarOverlay) as Figma's does, and scrolls (deviations.md \"Rules and text under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ]
+}

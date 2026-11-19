@@ -7,9 +7,11 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/skillHowItWorks.ts`: D3's data (the list has
 T1's data), with writer open on its How it works tab. D03, D04, D07, D08
 and D09 give the same results as before D14 (each report's text, position
-and rule results are unchanged). The frame has no `exceptions.json`. The
-Checks below are from a rerun with library 1.0.0-beta.25 and the item
-tabs' `tone` and `density` props (2026-11-17).
+and rule results are unchanged). The frame's `exceptions.json` excepts the
+strings and the `hiddenOverflow` findings below, each with the entry that
+records it; with them the text and rules checks now pass. The Checks below
+are from a rerun with library 1.0.0-beta.25 and the item tabs' `tone` and
+`density` props (2026-11-17).
 
 ## Checks
 
@@ -36,7 +38,8 @@ tabs' `tone` and `density` props (2026-11-17).
 - Rules: fail. Two `hiddenOverflow` findings: the list pane scrolls on its
   own (`[data-figma="toolkit list"]`), and the kind chips scroll sideways
   (`[data-figma="filter · chips"] > div.filter-chips__root`). D03 has the
-  same two in its `exceptions.json`; this frame takes no exceptions.
+  same two in its `exceptions.json`; this frame's `exceptions.json`
+  excepts them too.
 
 ## Deviations
 

@@ -11,8 +11,10 @@ row names the item (Toolkit › writer) with M12's icon buttons, the title
 is in the `title` text style, and the kind badge and path rows are left
 out. The graph stands upright (`linksGraph`'s `phone` size) and the two
 panels stand one under the other, as on T15. D19, D29 to D32, T15, T28 to
-T31, M12, M22, M05 and M35 give the same results as before M17. The frame
-has no `exceptions.json`.
+T31, M12, M22, M05 and M35 give the same results as before M17. The
+frame's `exceptions.json` excepts the `hiddenOverflow` findings below,
+each with the entry that records it; with them the text and rules checks
+now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

@@ -19,6 +19,16 @@
       "text": "→6 ←3",
       "layers": ["428:301"],
       "reason": "The writing row's counts (y 1135) are under Figma's tab bar (y 1081), and frame.png does not show them. The render scrolls the row under the tab bar the same way."
+    },
+    {
+      "text": "releases",
+      "layers": ["428:268"],
+      "reason": "`releases` (Figma y 1058): each row and header is 1 px taller than Figma's (60 against 59, off the 4 px grid, d-100), so the releases and skills row starts 14 px lower and its name goes under the tab bar, where Figma's shows above it; the page scrolls it into view (deviations.md \"Row height.\")."
+    },
+    {
+      "text": "skills",
+      "layers": ["428:278"],
+      "reason": "`skills` (Figma y 1058): each row and header is 1 px taller than Figma's (60 against 59, off the 4 px grid, d-100), so the releases and skills row starts 14 px lower and its name goes under the tab bar, where Figma's shows above it; the page scrolls it into view (deviations.md \"Row height.\")."
     }
   ],
   "rules": [

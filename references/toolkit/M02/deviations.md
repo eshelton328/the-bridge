@@ -45,7 +45,8 @@ before M02. The Checks below are from a rerun with library 1.0.0-beta.26
   reports the scrolling body as `hiddenOverflow`. The render is right
   here, as on Inbox M15 and Toolkit M01; the builder's write of
   `exceptions.json` for this rule was refused by the session's
-  permission check, so it stays as a failure for Erik to accept.
+  permission check; the frame's `exceptions.json` now excepts it and the
+  item tabs' `hiddenOverflow` finding, so the rules check passes.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's, so Evals ends inside the

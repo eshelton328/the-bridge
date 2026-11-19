@@ -1,0 +1,16 @@
+{
+  "missing": [
+    {
+      "text": "the message broke the rule",
+      "layers": ["491:8077"],
+      "reason": "The caption is 151 px wide in Figma and runs to 2 px from the tile's edge; KpiTile keeps each line inside its padding (143 px) and ends a long one with an ellipsis, its full text in a tooltip (deviations.md \"Long caption.\"; LIBRARY_GAPS.md \"KPI tile\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"panel · kpi rejected\"] > dl.kpi-tile__root > dd.kpi-tile__caption:nth-of-type(2) > span.truncated-text",
+      "reason": "KpiTile ends the caption the message broke the rule with an ellipsis inside its 143 px padding, where Figma lets the 151 px caption run to 2 px from the tile's edge (deviations.md \"Long caption.\"; LIBRARY_GAPS.md \"KPI tile\")."
+    }
+  ]
+}

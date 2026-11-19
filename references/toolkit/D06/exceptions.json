@@ -1,0 +1,51 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["432:1818"],
+      "reason": "The Workflows chip's label (432:1818, x 457) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    },
+    {
+      "text": "2",
+      "layers": ["432:1819"],
+      "reason": "The Workflows chip's count (432:1819, x 533) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    },
+    {
+      "text": "agents/eval-case-writer.md",
+      "layers": ["432:1933"],
+      "reason": "`agents/eval-case-writer.md` is in the eval-case-writer row (Figma y 882). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "eval-grader",
+      "layers": ["432:1942"],
+      "reason": "`eval-grader` is in the eval-grader row (Figma y 925). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "agents/eval-grader.md",
+      "layers": ["432:1943"],
+      "reason": "`agents/eval-grader.md` is in the eval-grader row (Figma y 945). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "→0  ←2",
+      "layers": ["432:1945"],
+      "reason": "`→0 ←2` is in the eval-grader row (Figma y 935). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own (2002 px of rows in the 982 px pane): its rows are 62 px high against Figma's 53, so the last rows lie past the frame's foot (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\"). D03 takes the same exception."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways (566 px of chips in 386): Figma's chip row runs past the list pane's right edge and cuts the Workflows chip at the same place (deviations.md \"Kind chips.\"). D03 takes the same exception."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"code\"] > div.scroll-frame__root > div.scroll-frame__body",
+      "reason": "Line 13 of the script is longer than the viewer: Figma cuts it at the viewer's edge, and the render scrolls it sideways in the code's ScrollFrame, as D09's Overview code does (deviations.md \"Code.\"). D09 takes the same exception."
+    }
+  ]
+}

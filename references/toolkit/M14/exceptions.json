@@ -1,0 +1,26 @@
+{
+  "missing": [
+    {
+      "text": "ambitious",
+      "layers": ["477:2593"],
+      "reason": "`ambitious` (Figma y 827): under the taller chart the fourth eval (ambitious) lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "evals",
+      "layers": ["477:2594"],
+      "reason": "`evals` (Figma y 827): under the taller chart the fourth eval (ambitious) lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    },
+    {
+      "text": "176 calls",
+      "layers": ["477:2596"],
+      "reason": "`176 calls` (Figma y 827): under the taller chart the fourth eval (ambitious) lies under the tab bar, where Figma shows it over the bar; the page scrolls it into view (deviations.md \"Under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (1259 px in the 806 px window): the page runs under the pinned tab bar (AppShell tabBarOverlay) as Figma's does, and scrolls (deviations.md \"Rules and text under the tab bar\"; LIBRARY_GAPS.md \"Activity daily chart\")."
+    }
+  ]
+}

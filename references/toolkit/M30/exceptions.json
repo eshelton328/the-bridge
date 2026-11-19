@@ -1,0 +1,16 @@
+{
+  "missing": [
+    {
+      "text": "A hook has no eval cases. Its test script runs fixed messages and the rule’s ✗ and ✓ examples through the hook, so the rule and the hook cannot drift apart.",
+      "layers": ["492:4990"],
+      "reason": "The render draws the line's ✗ and ✓ as the library's CloseIcon and CheckIcon (12 px, named fail and pass for assistive technology), so its text has no glyphs and the text check cannot find Figma's string (deviations.md \"Cross mark.\"; LIBRARY_GAPS.md \"Symbol glyphs\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit\"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)",
+      "reason": "The item tabs scroll sideways on the phone (438 px of tabs in 366): Activity runs past the screen's right edge in Figma's tab row too (deviations.md \"Item tabs.\")."
+    }
+  ]
+}

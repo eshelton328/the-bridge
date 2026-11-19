@@ -8,7 +8,9 @@ two fix rounds), each with its reason. The library gaps are in
 Back to Toolkit, with no breadcrumb, as on M20 and M28. Every other
 Toolkit frame (the 86 frames built before the Activity tab) gives the
 same text, position and rule results as before it, layer by layer. The
-frame has no `exceptions.json`.
+frame's `exceptions.json` excepts the `hiddenOverflow` findings below,
+each with the entry that records it; with them the text and rules checks
+now pass.
 
 ## Checks
 
@@ -25,8 +27,8 @@ frame has no `exceptions.json`.
   div.app-shell__root > main.app-shell__detail > div.scroll-frame__root
   > div.scroll-frame__body:nth-of-type(2)`; `[data-figma="toolkit"] >
   div.item-tabs__root:nth-of-type(3) >
-  div.item-tabs__list:nth-of-type(1)`. Each is explained below; this
-  frame takes no exceptions.
+  div.item-tabs__list:nth-of-type(1)`. Each is explained below; the
+  frame's `exceptions.json` excepts them.
 
 ## Deviations
 

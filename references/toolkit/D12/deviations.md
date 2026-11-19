@@ -7,7 +7,9 @@ web/src/pages/toolkit/states/toolkitActivityRun.ts: D11's view with the
 writing-reviewer run open beside it. The library gaps are in
 web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame gives
 the same text, position and rule results as before the Activity view.
-The frame has no exceptions.json.
+The frame's exceptions.json excepts the string and the `hiddenOverflow`
+findings below, each with the entry that records it; with them the text
+and rules checks now pass.
 
 ## Checks
 
@@ -55,7 +57,7 @@ library 1.0.0-beta.58, after the runs' lines wrap (see Runs' lines).
   view is 10 px taller than the window); `hiddenOverflow` at
   `[data-figma="kpi · from headless runs"] > dl.kpi-tile__root >
   dd.kpi-tile__caption:nth-of-type(2) > span.truncated-text`. Each is
-  explained below; this frame takes no exceptions.
+  explained below; the frame's exceptions.json excepts them.
 
 ## Differences
 

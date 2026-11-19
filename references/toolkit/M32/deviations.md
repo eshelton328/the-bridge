@@ -12,8 +12,10 @@ changed, the name and the path badge. The graph stands upright
 (`linksGraph`'s `phone` size, as on M17): the skill writer and the agent
 writer side by side on its first row, each its own node, and the two
 panels stand one under the other. D19, D29 to D32, T15, T28 to T31, M12,
-M22, M05, M35, M17 and M31 give the same results as before M32. The frame
-has no `exceptions.json`.
+M22, M05, M35, M17 and M31 give the same results as before M32. The
+frame's `exceptions.json` excepts the `hiddenOverflow` findings below,
+each with the entry that records it; with them the text and rules checks
+now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

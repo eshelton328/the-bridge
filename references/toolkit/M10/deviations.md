@@ -8,7 +8,9 @@ two runs under the phone's header. A tap on a run opens it on a page of
 its own, as the note says; no frame draws that page. The library gaps
 are in web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame
 gives the same text, position and rule results as before the Activity
-view. The frame has no exceptions.json.
+view. The frame's exceptions.json excepts the strings and the
+`hiddenOverflow` finding below, each with the entry that records it;
+with them the text and rules checks now pass.
 
 ## Checks
 
@@ -24,7 +26,7 @@ view. The frame has no exceptions.json.
   -4 h -1. Each is explained below.
 - Rules: fail. 1 findings: `hiddenOverflow` at `div > div.backdrop >
   div.backdrop > div.app-shell__root > main.app-shell__detail`. Each is
-  explained below; this frame takes no exceptions.
+  explained below; the frame's exceptions.json excepts it.
 
 ## Differences
 

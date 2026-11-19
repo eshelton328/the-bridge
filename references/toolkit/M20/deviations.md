@@ -46,8 +46,9 @@ item tabs' `tone` and `density` props (2026-11-17).
   body runs under the bar as Figma's item does, so the paragraph
   (487:1663) and `Inputs` (487:1664) lie under the bar in both and the
   text check passes them. The rest of the item scrolls, and the rule
-  check reports the scrolling body as `hiddenOverflow`; it stays as a
-  failure for Erik to accept (no `exceptions.json`), as on M02.
+  check reports the scrolling body as `hiddenOverflow`; the frame's
+  `exceptions.json` now excepts it and the two other `hiddenOverflow`
+  findings, so the rules check passes, as on M02.
 - **Item tabs.** `ItemTabs density="compact" tone="accent"` (library
   #126, beta.21) starts the tabs at the list's edge with 10 px sides and
   draws Overview's label cyan, as Figma's, so Evals ends inside the

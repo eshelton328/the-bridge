@@ -1,0 +1,41 @@
+{
+  "missing": [
+    {
+      "text": "Workflows",
+      "layers": ["493:473"],
+      "reason": "The Workflows chip's label (493:473, x 457) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    },
+    {
+      "text": "2",
+      "layers": ["493:474"],
+      "reason": "The Workflows chip's count (493:474, x 533) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"Kind chips.\")."
+    },
+    {
+      "text": "commit-msg",
+      "layers": ["493:603"],
+      "reason": "`commit-msg` is in the commit-msg row (Figma y 899). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "hooks/commit-msg",
+      "layers": ["493:604"],
+      "reason": "`hooks/commit-msg` is in the commit-msg row (Figma y 919). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "→1  ←1",
+      "layers": ["493:606"],
+      "reason": "`→1 ←1` is in the commit-msg row (Figma y 909). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit list\"]",
+      "reason": "The list pane scrolls on its own (1066 px of rows in the 982 px pane): its rows are 62 px high against Figma's 53, so the last rows lie past the frame's foot (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\"). D03 takes the same exception."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
+      "reason": "The kind chips scroll sideways (566 px of chips in 386): Figma's chip row runs past the list pane's right edge and cuts the Workflows chip at the same place (deviations.md \"Kind chips.\"). D03 takes the same exception."
+    }
+  ]
+}

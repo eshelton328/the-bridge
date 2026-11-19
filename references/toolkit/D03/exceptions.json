@@ -9,6 +9,26 @@
       "text": "2",
       "layers": ["427:83"],
       "reason": "The Workflows chip's count (427:83, x 533) lies past the list pane's right edge (484), where Figma cuts the chip row; the render scrolls the row sideways inside the pane the same way (FilterChips)."
+    },
+    {
+      "text": "agents/eval-case-writer.md",
+      "layers": ["427:197"],
+      "reason": "`agents/eval-case-writer.md` is in the eval-case-writer row (Figma y 882). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "eval-grader",
+      "layers": ["427:206"],
+      "reason": "`eval-grader` is in the eval-grader row (Figma y 925). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "agents/eval-grader.md",
+      "layers": ["427:207"],
+      "reason": "`agents/eval-grader.md` is in the eval-grader row (Figma y 945). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
+    },
+    {
+      "text": "→0  ←2",
+      "layers": ["427:209"],
+      "reason": "`→0 ←2` is in the eval-grader row (Figma y 935). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"Row height.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
     }
   ],
   "position": [

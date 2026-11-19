@@ -7,8 +7,10 @@ reason. The library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`.
 The state is `web/src/pages/toolkit/states/skillLinks.ts`: D3's data (the
 list has T1's data), with writer open on its Links tab. D03, D06, D07,
 D08, D09, D10, D13, D14 and D33 give the same results as before D19 (each
-report's text, position and rule results are unchanged). The frame has no
-`exceptions.json`.
+report's text, position and rule results are unchanged). The frame's
+`exceptions.json` excepts the strings and the `hiddenOverflow` findings
+below, each with the entry that records it; with them the text and rules
+checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
@@ -45,7 +47,7 @@ the same.
   pane scrolls
   (`div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail`,
   see Item height). D03 has the first two in its `exceptions.json`; this
-  frame takes no exceptions.
+  frame's `exceptions.json` excepts all three.
 
 ## Deviations
 

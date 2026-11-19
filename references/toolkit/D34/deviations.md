@@ -8,7 +8,9 @@ library gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 closed, the Agents group open), with the agent writing-reviewer open on its
 Files tab. D33, D06, D10, D03, D04, D07, D08 and D09 give the same results
 as before D34 (each report's text, position and rule results are
-unchanged). The frame has no `exceptions.json`.
+unchanged). The frame's `exceptions.json` excepts the strings and the
+`hiddenOverflow` finding below, each with the entry that records it; with
+them the text and rules checks now pass.
 
 ## Checks
 
@@ -25,8 +27,9 @@ unchanged). The frame has no `exceptions.json`.
   `data-figma`: `FileTree` draws it, and it takes no attribute for a row.
 - Rules: fail. One `hiddenOverflow` finding: the kind chips scroll
   sideways (`[data-figma="filter · chips"] > div.filter-chips__root`).
-  D03 has it in its `exceptions.json`; this frame takes no exceptions. The
-  list fits the pane, and the prompt's lines fit the viewer.
+  D03 has it in its `exceptions.json`; this frame's `exceptions.json`
+  excepts it too. The list fits the pane, and the prompt's lines fit the
+  viewer.
 
 ## Deviations
 

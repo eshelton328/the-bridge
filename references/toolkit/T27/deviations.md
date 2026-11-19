@@ -7,10 +7,11 @@ gaps are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/hookEvalsTablet.ts`: D28's data; the hook
 keeps T19's header. Every other Toolkit frame (T03, T04, T06 to T08,
 T10, T15, T17 to T19 and T28 to T38 and the list frames) gives the same
-text, position and rule results as before the Evals tab. The frame has
-no `exceptions.json`. A later run (after the review's fixes and the
-icons in the test line) gives the same results, but for the text
-check, which the icons fail.
+text, position and rule results as before the Evals tab. The frame's
+`exceptions.json` excepts the string below, with the entry that records
+it; with it the text and rules checks now pass. A later run (after the
+review's fixes and the icons in the test line) gives the same results,
+but for the text check, which the icons fail.
 
 ## Checks
 

@@ -1,0 +1,19 @@
+{
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div.backdrop > div.app-shell__root > main.app-shell__detail > div.scroll-frame__root > div.scroll-frame__body:nth-of-type(2)",
+      "reason": "The item's DetailFrame body scrolls (913 px in the 766 px window): Figma's item runs on under the tab bar, and the render's page runs under the pinned tab bar (AppShell tabBarOverlay) the same way (deviations.md \"Under the tab bar.\")."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"toolkit\"] > div.item-tabs__root:nth-of-type(3) > div.item-tabs__list:nth-of-type(1)",
+      "reason": "The item tabs scroll sideways on the phone (438 px of tabs in 366): Activity runs past the screen's right edge in Figma's tab row too (deviations.md \"Item tabs.\")."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"panel · linked from\"] > section.panel__root > div.panel__body",
+      "reason": "The Linked from panel's body scrolls sideways (360 px in 332): a long file and line does not fit beside its node in the 332 px row, and Figma runs it past the panel's and the frame's edge; the render keeps it on one line rather than cut or wrap it (deviations.md \"Long file and line.\")."
+    }
+  ]
+}

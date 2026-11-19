@@ -7,7 +7,9 @@ web/src/pages/toolkit/states/toolkitActivityChatsPhone.ts: M10's view
 with Chats picked. The library gaps are in
 web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame gives
 the same text, position and rule results as before these frames. The
-frame has no exceptions.json.
+frame's exceptions.json excepts the strings and the `hiddenOverflow`
+finding below, each with the entry that records it; with them the text
+and rules checks now pass.
 
 ## Checks
 
@@ -26,7 +28,7 @@ frame has no exceptions.json.
   `bar · audit-slop` y +120. Each is explained below.
 - Rules: fail. 1 findings: `hiddenOverflow` at
   `div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail`.
-  Each is explained below; this frame takes no exceptions.
+  Each is explained below; the frame's exceptions.json excepts it.
 
 ## Differences
 

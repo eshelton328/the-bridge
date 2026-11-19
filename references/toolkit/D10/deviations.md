@@ -7,8 +7,10 @@ are in `web/src/pages/toolkit/LIBRARY_GAPS.md`. The state is
 `web/src/pages/toolkit/states/scriptExplained.ts`: D6's data (the list has
 T1's data), with writer open on its Files tab and its script check on
 Explain. D06, D03, D07, D14 and D13 give the same results as before D10
-(each report's text, position and rule results are unchanged). The frame
-has no `exceptions.json`.
+(each report's text, position and rule results are unchanged). The frame's
+`exceptions.json` excepts the strings and the `hiddenOverflow` findings
+below, each with the entry that records it; with them the text and rules
+checks now pass.
 
 ## Checks
 

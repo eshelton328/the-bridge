@@ -1,0 +1,21 @@
+{
+  "missing": [
+    {
+      "text": "claude -p and the SDK, mostly skill evals",
+      "layers": ["445:227"],
+      "reason": "The caption of kpi · from headless runs ends with an ellipsis: beside the 420 px side panel the view is 420 px narrower and KpiTile cuts a line too long for its tile; Figma's view keeps its width under the panel (deviations.md \"Text cut by the narrower view\"; LIBRARY_GAPS.md \"Run side panel\")."
+    }
+  ],
+  "rules": [
+    {
+      "rule": "hiddenOverflow",
+      "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
+      "reason": "The view scrolls (992 px in the 982 px window): each run's line wraps to two lines beside the 420 px side panel, so the view is 10 px taller than the window (deviations.md \"Runs' lines\"; LIBRARY_GAPS.md \"Run side panel\")."
+    },
+    {
+      "rule": "hiddenOverflow",
+      "selector": "[data-figma=\"kpi · from headless runs\"] > dl.kpi-tile__root > dd.kpi-tile__caption:nth-of-type(2) > span.truncated-text",
+      "reason": "The caption of kpi · from headless runs ends with an ellipsis: beside the 420 px side panel the view is 420 px narrower and KpiTile cuts a line too long for its tile (deviations.md \"Text cut by the narrower view\"; LIBRARY_GAPS.md \"Run side panel\")."
+    }
+  ]
+}

@@ -12,7 +12,9 @@ badge. The graph stands upright (`linksGraph`'s `phone` size, as on M17),
 with the rule commits-and-prs over the hook and under it, and the two
 panels stand one under the other. D19, D29 to D32, T15, T28 to T31, M12,
 M22, M05, M35, M17, M31, M32 and M33 give the same results as before M34.
-The frame has no `exceptions.json`.
+The frame's `exceptions.json` excepts the `hiddenOverflow` findings
+below, each with the entry that records it; with them the text and rules
+checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's

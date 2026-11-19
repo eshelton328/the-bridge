@@ -12,8 +12,9 @@ changed, the name and the path badge. The graph stands upright
 (`linksGraph`'s `phone` size, as on M17) with the reason where the side
 over the rule would have its first row, and the two panels stand one
 under the other. D19, D29 to D32, T15, T28 to T31, M12, M22, M05, M35
-and M17 give the same results as before M31. The frame has no
-`exceptions.json`.
+and M17 give the same results as before M31. The frame's `exceptions.json`
+excepts the `hiddenOverflow` findings below, each with the entry that
+records it; with them the text and rules checks now pass.
 
 The last fidelity run (`pnpm fidelity toolkit`, every Toolkit frame,
 2026-11-18) used the installed library 1.0.0-beta.42, with the graph's
