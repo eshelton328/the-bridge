@@ -143,13 +143,15 @@ jobs:
       - run: pnpm test:scripts
 
   # The 2-vCPU runner gives Vitest one worker, so test:unit runs one file
-  # at a time. It runs in two shards here; VITEST_SHARD adds --shard to
-  # the script, and the sequencer in scripts/testSequencer.ts splits the
-  # files by their CI times. Each shard's setup is about 65 s and a job is
-  # billed in whole minutes: with the times of main e239575b (863 s in
-  # all), two shards give about 431 s each (9 billed minutes a job, 18 in
-  # all), close to the slowest fidelity job, where three shards took 20
-  # billed minutes (PR 204, run 44550388963).
+  # at a time, and Chromium's renderer for that file keeps both vCPUs busy
+  # (in a 2-CPU container it held 167-191 % for a whole shard; the Vitest
+  # node process about 8 %). VITEST_SHARD adds --shard to the script, and
+  # the sequencer in scripts/testSequencer.ts splits the files by their CI
+  # times, here from runs 44625576662, 44624538189 and 44623880932 (801 s
+  # of files). In those runs two shards took 480 to 594 s a job (8 to 10
+  # billed minutes, 18 to 20 in all). Three shards (PR 252, run 44631056239) took
+  # 403 to 426 s a job, 21 billed minutes in all: each file also pays a
+  # start-up cost, so a third shard costs more and gives a file no more CPU.
   test-unit-shard:
     name: test-unit (${{ matrix.shard }}/2)
     needs: plan
