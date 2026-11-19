@@ -16,6 +16,7 @@ and exits 1 on a problem.
 | `checkAgentsMd.ts`       | Every folder has an AGENTS.md, a CLAUDE.md shim, and a link from its parent (ported)                                                                         |
 | `testShards.ts`          | Splits test files into CI shards by measured time (longest first, to the shard with the least time); `testSequencer.ts` is the Vitest sequencer that uses it |
 | `shardTimes.ts`          | `pnpm shard:times <run-id>`: writes `testShardTimes.json`, each file's time in the test-unit shard jobs of a CI run                                          |
+| `ciPlan.ts`              | The plan job of `ci.yml`: whether a PR's changed files can change the fidelity result                                                                        |
 | `keyboardCheck.ts`       | `pnpm keyboard:served`: the keyboard check of screen review R20 to R22 on the served app (below); `keyboardCheckLib.ts` holds its pure parts                 |
 | `keyboardTracePlugin.ts` | The dev server's `/__keyboard-trace` endpoint (below)                                                                                                        |
 
