@@ -2,7 +2,7 @@ import '../index.css'
 import { type ComponentType, createElement } from 'react'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
-import { page } from 'vitest/browser'
+import { page, userEvent } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { resetRetries } from '../errors/retryGuard.ts'
@@ -44,11 +44,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-async function renderState(state: string) {
-  await setViewport(1512, 982)
+async function renderState(state: string | null, size: readonly [number, number] = [1512, 982]) {
+  await setViewport(size[0], size[1])
   const router = createRouter({
     routeTree,
-    history: createMemoryHistory({ initialEntries: [`/toolkit?state=${state}`] }),
+    history: createMemoryHistory({ initialEntries: [state === null ? '/toolkit' : `/toolkit?state=${state}`] }),
   })
   const view = await testRender(<RouterProvider router={router} />)
   onTestFinished(view.unmount)
@@ -67,6 +67,17 @@ const cases = [
 ] as const
 
 describe('Toolkit block boundaries', () => {
+  // The owner's path: the phone's Toolkit home, then a tap on writer in the list. Its Overview preview renders Markdown.
+  it('keeps the item open on the phone when its Markdown fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    crash.part = 'MarkdownView'
+    await renderState(null, [390, 844])
+    await userEvent.click(page.getByRole('button', { name: /^writer\b/ }).first())
+    await expect.element(page.getByRole('button', { name: 'Back to Toolkit' })).toBeVisible()
+    await expect.element(page.getByText('This part failed to render.').first()).toBeVisible()
+    await expect.element(page.getByText('This page failed to load')).not.toBeInTheDocument()
+  })
+
   // Most called and an eval row lay their chart over a row button and let the pointer through to it; the alert must
   // take the pointer back, so Retry retries and does not open an item.
   it.each([
