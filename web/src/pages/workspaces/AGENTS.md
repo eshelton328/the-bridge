@@ -34,6 +34,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 
 ## Rules
 
+- Each transcript and terminal renders in a `BlockBoundary` keyed by its
+  chat or pane id, so one bad entry keeps the chat on screen
+  (`TranscriptBoundary.test.tsx`, audit P-1).
 - `workspacesStore.ts` holds the owner's changes to the shown state's
   `ui`, so a page visit keeps them, and drops them when another
   `?state=` is shown (`app/WorkspacesRoute.test.tsx`).

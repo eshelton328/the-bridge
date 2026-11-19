@@ -6,6 +6,7 @@
 // Props only.
 import { ScrollFrame, TerminalLines } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import type { ShellLine } from '../types.ts'
 import { NotLive } from './NotLive.tsx'
 
@@ -13,6 +14,8 @@ import { NotLive } from './NotLive.tsx'
 const fill = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
 export type ShellPaneProps = {
+  /** The pane's id; a new id resets the terminal's boundary. */
+  paneId: string
   /** Names the terminal for assistive technology, such as the pane's title. */
   label: string
   lines: readonly ShellLine[]
@@ -23,12 +26,14 @@ export type ShellPaneProps = {
   figma?: string | undefined
 }
 
-export function ShellPane({ label, lines, prompt, notLive, figma = '105:337' }: ShellPaneProps) {
+export function ShellPane({ paneId, label, lines, prompt, notLive, figma = '105:337' }: ShellPaneProps) {
   return (
     <div className={fill} data-figma={figma}>
       <ScrollFrame>
         {notLive === undefined ? (
-          <TerminalLines label={label} lines={lines} prompt={prompt} />
+          <BlockBoundary contentKey={paneId}>
+            <TerminalLines label={label} lines={lines} prompt={prompt} />
+          </BlockBoundary>
         ) : (
           <NotLive text={notLive} />
         )}
