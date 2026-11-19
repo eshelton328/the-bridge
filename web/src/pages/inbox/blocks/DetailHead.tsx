@@ -34,7 +34,7 @@ import type { InboxDetailHead, InboxSnoozeMenu } from '../types.ts'
 
 /**
  * The task bar's Snooze menu and Dismiss: the menu's entries, whether it is
- * open, what Erik picks in it (a time to snooze the item until, or `null`
+ * open, what the owner picks in it (a time to snooze the item until, or `null`
  * for Mark done), and Dismiss.
  */
 export type SnoozeControl = {

@@ -51,9 +51,9 @@ export type PhoneEditGroupProps = {
   focus?: string | undefined
   /** Opens a chat's name as a field. */
   onRenameChat?: ((chat: string) => void) | undefined
-  /** Called with a chat's id and its new name, or with no name when Erik undoes the change. */
+  /** Called with a chat's id and its new name, or with no name when the owner undoes the change. */
   onChatRenamed?: ((chat: string, name?: string) => void) | undefined
-  /** Called with the workspace's new name, or with none when Erik undoes the change. */
+  /** Called with the workspace's new name, or with none when the owner undoes the change. */
   onRenamed?: ((name?: string) => void) | undefined
   /** × was pressed: ask before the workspace closes (M13). Without it, × draws only. */
   onClose?: (() => void) | undefined

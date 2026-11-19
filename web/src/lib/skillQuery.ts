@@ -1,4 +1,4 @@
-// The word before the caret in a message box, when it starts with "/": the skill Erik is typing.
+// The word before the caret in a message box, when it starts with "/": the skill the owner is typing.
 
 const space = /\s/
 
@@ -15,7 +15,7 @@ export function skillQuery(text: string, caret: number): string | null {
 }
 
 /**
- * The text once Erik picks the skill `name` from the list, with the caret after it. The whole "/word" at the caret
+ * The text once the owner picks the skill `name` from the list, with the caret after it. The whole "/word" at the caret
  * (with any part of it after the caret, as "ter" in "/wri|ter"), or, when the caret is past it, the "/" word that starts
  * the message, becomes the skill and a space, so typing goes on after it; a space already after the word is kept, and
  * the caret goes after it. Without a "/" word the skill goes in at the caret.

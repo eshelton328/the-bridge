@@ -1,8 +1,8 @@
 # the-bridge
 
-The-bridge is the web interface of NCC-1701, Erik's AI harness: one place
+The-bridge is the web interface of NCC-1701, the owner's AI harness: one place
 to see what needs him (the Inbox), his workspaces, projects, artifacts and
-toolkit. It is a private React app, for Erik and the agents that build it.
+toolkit. It is a private React app, for the owner and the agents that build it.
 
 Status: version 0.0.0, increment 1. The Inbox renders one Figma state
 (D1, a next step) from typed mock data in the app, in Storybook and on

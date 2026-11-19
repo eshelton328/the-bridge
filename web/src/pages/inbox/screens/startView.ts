@@ -1,4 +1,4 @@
-// The Inbox after Erik pressed Start on a next step (InboxUi.started): the
+// The Inbox after the owner pressed Start on a next step (InboxUi.started): the
 // task shows what its launch's `start` holds, as D5 and D6 draw a started
 // task: Running, its prompt sent, and the run card of its chat, whose Reply
 // here opens the chat (M10 to M8). Its row leaves Next steps for the

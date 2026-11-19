@@ -84,7 +84,7 @@ describe('the Inbox screen by width', () => {
     await expect.element(tabBar()).not.toBeInTheDocument()
   })
 
-  it('keeps the note Erik is typing when the width changes the layout', async () => {
+  it('keeps the note the owner is typing when the width changes the layout', async () => {
     await page.viewport(1512, 982)
     const { data, ui } = inboxStates.nextStep
     view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)

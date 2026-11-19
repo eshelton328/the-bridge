@@ -5,7 +5,7 @@ read-only. Figma frames `D*` (desktop), `T*` (tablet) and `M*` (phone)
 on the Toolkit page. Read [../AGENTS.md](../AGENTS.md) first: it says
 what each file of a page folder is for.
 
-- `ToolkitPage.tsx`: reads the loader's state and keeps what Erik changes
+- `ToolkitPage.tsx`: reads the loader's state and keeps what the owner changes
   in its `ui` (the view, the kind chip, the search, the groups he closed)
   until another state loads; it passes them to `ToolkitScreen` with
   `onUiChange` and the rail's navigation.
@@ -437,7 +437,7 @@ what each file of a page folder is for.
   takes the AppShell's 420 px side slot (`sideWidth="wide"`): the header
   (`ToolkitDiscussHeader`: Discuss and the item's name, Open in Workbench,
   close, the note and the folder attached read-only), the messages
-  (`ToolkitDiscussThread`, each a `ToolkitDiscussEntry`: Erik's question,
+  (`ToolkitDiscussThread`, each a `ToolkitDiscussEntry`: the owner's question,
   its line breaks kept, and Claude's answer with its cited files and Copy,
   which calls `onCopyText`; a message sent scrolls into view) and the reply box
   (`ToolkitDiscussComposer`, with the model chip) in a `ScrollFrame`; the

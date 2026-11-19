@@ -8,7 +8,7 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Erik reviewed the Inbox on a 3540 px monitor (screen review R1 to R3): the discussion should be a side pane, not
+// The owner reviewed the Inbox on a 3540 px monitor (screen review R1 to R3): the discussion should be a side pane, not
 // most of the screen; its chat and reply box should keep a reading width; the task should show more of its prompt.
 let view: { unmount: () => Promise<void> } | undefined
 

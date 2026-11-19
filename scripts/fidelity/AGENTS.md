@@ -2,7 +2,7 @@
 
 The scripted checks of the fidelity loop: they compare a rendered page
 state with its Figma frame. The loop itself (reference, build, render,
-check, second review, fix, ship) is in Erik's brain:
+check, second review, fix, ship) is in the owner's brain:
 `~/ncc-1701/engine/projects/ncc-1701/product/features/f-005-the-bridge/fidelity-loop.md`.
 The Figma references the checks read are in
 [../../references/AGENTS.md](../../references/AGENTS.md).
@@ -80,17 +80,17 @@ The Figma references the checks read are in
      `badgeFullWidth`, each with the element's selector.
 5. **Second review.** Give a separate agent only the side-by-side PNG and
    the report JSON. It lists each difference with a severity (P1 to P4).
-   In Erik's brain that agent is `fidelity-reviewer`.
+   In the owner's brain that agent is `fidelity-reviewer`.
 6. **Fix and run again**, at most three rounds. A difference you cannot
    fix goes into `exceptions.json` with its reason, and on the
-   deviations list for Erik.
+   deviations list for the owner.
 
 ## The fidelity-builder agent
 
 `fidelity-builder` runs steps 1 to 4 and 6 for one frame in a worktree,
 at most three fix rounds, and returns a JSON build record; the caller runs
 step 5 with `fidelity-reviewer` on the record's side-by-side PNG and
-deviations, then ships the branch. Both agents live in Erik's brain
+deviations, then ships the branch. Both agents live in the owner's brain
 (`~/ncc-1701/engine/projects/ncc-1701/toolkit/agents/`, d-040), and its
 hooks call `pnpm fidelity:check-build` in the worktree: `--guard` before
 each edit, and the record check before it replies. The record check
@@ -143,7 +143,7 @@ bar and render at their full size.
 
 - Never add an exception, raise the tolerance or change a check to make
   a frame pass when the render is wrong. Fix the screen.
-- Each new error type that a reviewer or Erik finds becomes a check here,
+- Each new error type that a reviewer or the owner finds becomes a check here,
   with a test.
 - Test the pure functions in `*.test.ts` beside them (`pnpm test:scripts`).
   `inPage.ts` runs in the browser: no function in it may use anything from

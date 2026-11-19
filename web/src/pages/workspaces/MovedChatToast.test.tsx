@@ -18,7 +18,7 @@ afterEach(async () => {
 })
 
 describe('the toast after a move (D20)', () => {
-  it('shows over the composer until Erik clicks Undo', async () => {
+  it('shows over the composer until the owner clicks Undo', async () => {
     // The desktop frame's size, so that the backdrop fits the window.
     await page.viewport(1512, 982)
     view = await testRender(<WorkspacesScreen data={movedChat.data} ui={movedChat.ui} viewport="desktop" />)

@@ -1,5 +1,5 @@
 // Figma Artifacts D1 "D1 · Library": every Claude artifact and Codex site in
-// one grid, with what the library found since Erik last looked at the top,
+// one grid, with what the library found since the owner last looked at the top,
 // marked New. Copy taken word for word from references/artifacts/D01/frame.json.
 // It also holds what later states share: the chips, the sorts and the cards.
 import type { ScreenState } from '../../../lib/screenState.ts'

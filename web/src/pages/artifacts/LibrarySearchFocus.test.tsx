@@ -7,7 +7,7 @@ import { testRender } from '../../lib/testRender.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import { artifactsStates } from './states/index.ts'
 
-// Figma draws the search focused while Erik types (D4 403:7799, M5 408:50), so those states open with the focus in
+// Figma draws the search focused while the owner types (D4 403:7799, M5 408:50), so those states open with the focus in
 // the search field; the library without a search leaves the focus where it is.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'

@@ -8,7 +8,7 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Through the real route: the Workspaces page keeps what Erik changed in its view in the page store, so the page
+// Through the real route: the Workspaces page keeps what the owner changed in its view in the page store, so the page
 // shows it again after he visits another page.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'

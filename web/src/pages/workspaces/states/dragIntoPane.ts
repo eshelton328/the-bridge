@@ -1,5 +1,5 @@
 // Figma Workbench D6 (158:552), "D6 · Drag a chat into a pane": the screen of
-// D2b with the chat actions menu closed and no side chat. Erik drags hono
+// D2b with the chat actions menu closed and no side chat. The owner drags hono
 // server from the sidebar onto bridge themes, the chat shown alone: its row
 // in the sidebar fades, and the right half of the chat is the drop zone,
 // which says the chat would open beside bridge themes, with the hint on

@@ -19,7 +19,7 @@ const layerName = (label: string) => `proposal · ${(label.split(' · ')[1] ?? l
 
 export type ArtifactProposalProps = {
   proposal: Proposal
-  /** Erik applied it (D9): the applied form, when the proposal has one. */
+  /** The owner applied it (D9): the applied form, when the proposal has one. */
   applied?: boolean | undefined
   onAct?: ((act: ProposalAct) => void) | undefined
 }

@@ -18,7 +18,7 @@ type AppRailPage = 'inbox' | 'workspaces' | 'projects' | 'artifacts' | 'toolkit'
 
 export type AppRailProps = {
   selected: AppRailPage
-  /** The number of Inbox items that need Erik. */
+  /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
 }

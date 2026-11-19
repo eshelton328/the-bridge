@@ -116,7 +116,7 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByRole('textbox', { name: 'Suggested prompt' })).toHaveFocus()
   })
 
-  // R11 (Erik, on his phone): a tap on an item opens a page with its details, not its actions sheet.
+  // R11 (the owner, on his phone): a tap on an item opens a page with its details, not its actions sheet.
   const rowPage = (text: string) => page.getByRole('heading', { level: 1, name: text })
 
   it('opens the page of each row without a detail with a tap, and Back returns to the list', async () => {
@@ -149,7 +149,7 @@ describe('the Inbox on the phone', () => {
     await expect.element(rowPage('Pick the header logo')).toBeVisible()
   })
 
-  it('opens a row Erik dismissed from Done with its outcome and no actions', async () => {
+  it('opens a row the owner dismissed from Done with its outcome and no actions', async () => {
     await phone('list')
     await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
     row('Pick the header logo').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }))
@@ -431,7 +431,7 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByRole('textbox', { name: 'Reply' })).toBeVisible()
   })
 
-  it('adds the message Erik sends in the discussion page to it', async () => {
+  it('adds the message the owner sends in the discussion page to it', async () => {
     await phone('tasksProposedPage')
     await userEvent.type(page.getByRole('textbox', { name: 'Ask about this task' }), 'Keep the Inbox one.{Enter}')
     await expect.element(page.getByText('Keep the Inbox one.')).toBeVisible()
@@ -455,7 +455,7 @@ describe('the Inbox on the phone', () => {
     await expect.element(page.getByText('Created 3 tasks from a discussion')).not.toBeInTheDocument()
   })
 
-  it('keeps the reply Erik types in the chat', async () => {
+  it('keeps the reply the owner types in the chat', async () => {
     await phone('chat')
     const reply = page.getByRole('textbox', { name: 'Reply' })
     await userEvent.type(reply, 'Wait for the review')

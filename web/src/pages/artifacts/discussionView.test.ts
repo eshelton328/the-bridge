@@ -24,7 +24,7 @@ describe('discussionEntries', () => {
     expect(types({ discussProposal: 'discarded' })).toEqual(['user', 'reply'])
   })
 
-  it('puts the messages Erik sent after the entries', () => {
+  it('puts the messages the owner sent after the entries', () => {
     expect(discussionEntries(proposed, { discussSent: ['And a legend?'] }).at(-1)).toEqual({
       type: 'user',
       text: 'And a legend?',

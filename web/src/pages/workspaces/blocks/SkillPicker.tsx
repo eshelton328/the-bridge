@@ -1,13 +1,13 @@
 // The skills a composer lists after "/" (D1 105:406), above the composer,
 // which is the popover's trigger: rows that show each /name in mono, the
 // highlighted one filled, with no check. The list grows with the composer
-// (R8, Erik's screen review of 2026-11-18): in a pane and on the tablet it
+// (R8, the owner's screen review of 2026-11-18): in a pane and on the tablet it
 // is 40% of the composer's width, from 240 to 400 (`width="composer"`); on
 // the phone (M3 105:2805) it is as wide as the composer (`width="trigger"`).
 // Every list is compact, as Figma draws each one 173 high (D1 105:406, T4
 // 105:2246, M3 105:2805). On the phone and the tablet the focus stays in the
 // message box. A press on a row leaves the focus in the box, so the phone's
-// keyboard stays up while Erik picks a skill (`onPick`). Props only.
+// keyboard stays up while the owner picks a skill (`onPick`). Props only.
 import { OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
 import type { ReactElement } from 'react'
 import type { Skill } from '../types.ts'
@@ -26,7 +26,7 @@ const layouts = {
 
 export type SkillPickerProps = {
   label: string
-  /** What Erik typed from the "/", drawn after the section's label in its own case (M10 147:72: "SKILLS MATCHING
+  /** What the owner typed from the "/", drawn after the section's label in its own case (M10 147:72: "SKILLS MATCHING
    * /wri"); `label` is then the part before it. */
   query?: string | undefined
   skills: readonly Skill[]
@@ -34,7 +34,7 @@ export type SkillPickerProps = {
   value: string | null
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
-  /** Erik picks a skill: a click or tap on its row, or Enter on the row with the focus. */
+  /** The owner picks a skill: a click or tap on its row, or Enter on the row with the focus. */
   onPick?: ((skill: string) => void) | undefined
   /** The arrow keys move the highlight in the list to this skill. */
   onHighlight?: ((skill: string) => void) | undefined

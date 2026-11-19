@@ -41,7 +41,7 @@ afterEach(async () => {
 })
 
 describe('the skill list of a chat', () => {
-  it('stays closed when Erik clicks the empty message box, and his typing goes into the box', async () => {
+  it('stays closed when the owner clicks the empty message box, and his typing goes into the box', async () => {
     view = await testRender(<Chat text="" />)
     await userEvent.click(box())
     await userEvent.keyboard('hello')
@@ -50,7 +50,7 @@ describe('the skill list of a chat', () => {
     await expect.element(writer()).not.toBeInTheDocument()
   })
 
-  it('opens when Erik types "/" and keeps the focus in the box', async () => {
+  it('opens when the owner types "/" and keeps the focus in the box', async () => {
     view = await testRender(<Chat text="" />)
     await userEvent.click(box())
     await userEvent.keyboard('/')
@@ -70,7 +70,7 @@ describe('the skill list of a chat', () => {
     await expect.element(box()).toHaveFocus()
   })
 
-  it('opens on a "/" after a space and keeps the skills that start with the word Erik types (M10)', async () => {
+  it('opens on a "/" after a space and keeps the skills that start with the word the owner types (M10)', async () => {
     view = await testRender(
       <ChatPane
         figma={{ composer: 'composer' }}

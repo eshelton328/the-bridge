@@ -1,4 +1,4 @@
-// One entry of the open artifact's discussion (D8): Erik's message, the
+// One entry of the open artifact's discussion (D8): the owner's message, the
 // discussion's reply or a proposed change (applied in D9), as the Inbox's discussion
 // entries, which the Inbox page does not export. Props only.
 import { BubbleIcon, Message, Stack } from '@eshelton328/component-library-1701'
@@ -19,7 +19,7 @@ const body = css({ textStyle: 'bodySm', color: 'fg.default', m: '0' })
 
 export type DiscussionEntryProps = {
   entry: ArtifactDiscussionEntry
-  /** Erik applied the proposal (D9). */
+  /** The owner applied the proposal (D9). */
   applied?: ArtifactProposalProps['applied']
   onAct?: ArtifactProposalProps['onAct']
 }

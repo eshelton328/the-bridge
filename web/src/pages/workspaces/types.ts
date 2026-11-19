@@ -33,7 +33,7 @@ export const SidebarChat = z.object({
 })
 export type SidebarChat = z.infer<typeof SidebarChat>
 
-/** One workspace tab: its name, its number of chats and whether a chat in it needs Erik. */
+/** One workspace tab: its name, its number of chats and whether a chat in it needs the owner. */
 export const Workspace = z.object({
   id: z.string(),
   label: z.string(),
@@ -232,7 +232,7 @@ export const NewChatForm = z.object({
   }),
   /**
    * The random name a blank name becomes, shown as the placeholder, and the hint that says so; `value` is the name
-   * Erik has typed (M11 147:212), which hides the hint.
+   * the owner has typed (M11 147:212), which hides the hint.
    */
   name: z.object({ placeholder: z.string(), hint: z.string(), value: z.string().optional() }),
   /** The field with the focus when the form opens: the first message unless set, the name in M11 (147:211). */
@@ -329,9 +329,9 @@ export const ForkForm = z.object({
   title: z.string(),
   /** The field labels, as Figma writes them, in capitals. */
   labels: z.object({ name: z.string(), startFrom: z.string() }),
-  /** The name the copy gets, which Erik can change, and the hint inside the field; the phone's has none (M18). */
+  /** The name the copy gets, which the owner can change, and the hint inside the field; the phone's has none (M18). */
   name: z.object({ value: z.string(), hint: z.string().optional() }),
-  /** Where the copy starts: the whole chat, or up to a message Erik picks next. */
+  /** Where the copy starts: the whole chat, or up to a message the owner picks next. */
   startFrom: z.object({ options: z.array(z.object({ value: z.string(), label: z.string() })), value: z.string() }),
   /** The line under the choice that says what the fork copies. */
   note: z.string(),
@@ -565,7 +565,7 @@ export const SidebarLayers = z.object({
   dropZone: z.object({ zone: z.string(), preview: z.string(), hint: z.string().optional() }).optional(),
   /** The toast over the composer of the chat shown alone (D20 toast · moved). */
   toast: z.string().optional(),
-  /** The field that takes the place of the chat's name in its header while Erik renames it (D21 417:2442). */
+  /** The field that takes the place of the chat's name in its header while the owner renames it (D21 417:2442). */
   renameField: z.string().optional(),
   /** The phone's list of workspaces (M1 105:2327) and its header with Edit and + (105:2328, 105:2333, 105:2335). */
   phoneList: z.string().optional(),
@@ -662,7 +662,7 @@ export const FolderPicker = z.object({
   closeLabel: z.string(),
   note: z.string(),
   searchLabel: z.string(),
-  /** What Erik has typed. */
+  /** What the owner has typed. */
   query: z.string(),
   recentLabel: z.string(),
   /** The recent folders; `added` ones are already folders of the chat. */
@@ -709,7 +709,7 @@ export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
 export const WorkspacesData = z.object({
-  /** The number of Inbox items that need Erik, on the rail. */
+  /** The number of Inbox items that need the owner, on the rail. */
   railBadge: z.number(),
   workspaces: z.array(Workspace),
   /** The workspace shown. */
@@ -724,7 +724,7 @@ export const WorkspacesData = z.object({
   /** What typing / in a composer lists. */
   skillsLabel: z.string(),
   /**
-   * The list's label once Erik has typed more than the "/", such as "SKILLS MATCHING {query}" (M10 147:72); {query}
+   * The list's label once the owner has typed more than the "/", such as "SKILLS MATCHING {query}" (M10 147:72); {query}
    * is what he typed from the "/", and the list keeps only the skills that start with it. `skillsLabel` when not set.
    */
   skillsMatching: z.string().optional(),
@@ -758,10 +758,10 @@ export const WorkspacesData = z.object({
    * each row with its own column handle. When not set, the library's `SplitPanes` splits the columns first.
    */
   split: z.enum(['rows']).optional(),
-  /** The readout beside a handle while Erik drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
+  /** The readout beside a handle while the owner drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
   resizeHint: z.string().optional(),
   /**
-   * A toast over the composer of the chat shown alone that confirms what Erik just did, with its button, such as
+   * A toast over the composer of the chat shown alone that confirms what the owner just did, with its button, such as
    * "Moved bridge themes to the-bridge" and Undo (D20). `ui.toastOpen` shows it.
    */
   toast: z.object({ text: z.string(), action: z.string() }).optional(),
@@ -796,7 +796,7 @@ export type SplitSizes = z.infer<typeof SplitSizes>
 
 /**
  * The layout of one workspace (R6): its panes by id, clockwise from the top left, the sizes of its handles and the
- * pane that had the focus when Erik left it.
+ * pane that had the focus when the owner left it.
  */
 export const WorkspaceLayout = z.object({
   panes: z.array(z.string()),
@@ -829,7 +829,7 @@ export const WorkspacesUi = z.object({
   collapsed: z.array(z.string()).optional(),
   /** The workspace under the pointer: its header shows rename and close. */
   hovered: z.string().nullable().optional(),
-  /** A chat Erik drags onto another workspace. */
+  /** A chat the owner drags onto another workspace. */
   drag: z.object({ chat: z.string(), over: z.string() }).nullable().optional(),
   /** The side chat shows beside the main chat, or inside its pane of the split (D5). */
   sideChatOpen: z.boolean().optional(),
@@ -848,7 +848,7 @@ export const WorkspacesUi = z.object({
   /** The folder chosen in the picker, by path. */
   pickedFolder: z.string().nullable().optional(),
   /**
-   * A chat Erik drags from the sidebar onto the chat shown alone, and where it would land (D6): its row in the
+   * A chat the owner drags from the sidebar onto the chat shown alone, and where it would land (D6): its row in the
    * sidebar fades and the drop zone shows over that part of the chat. With the workbench (D8), `pane` is the pane
    * it is over, and the drop zone shows over that part of the pane.
    */
@@ -859,7 +859,7 @@ export const WorkspacesUi = z.object({
    */
   workbench: z.boolean().optional(),
   /**
-   * The handle of a rows-first split that Erik drags and the sizes it gives, in percent (D14): `rows` between the
+   * The handle of a rows-first split that the owner drags and the sizes it gives, in percent (D14): `rows` between the
    * rows, `top` and `bottom` between a row's columns. The readout shows the sizes as a ratio.
    */
   resize: z
@@ -875,13 +875,13 @@ export const WorkspacesUi = z.object({
   /** The workspace whose tab is selected (R6); `data.current` when not set. */
   workspace: z.string().optional(),
   /**
-   * The layout of each workspace, by workspace id (R6): a click on a tab shows that workspace as Erik left it, and a
+   * The layout of each workspace, by workspace id (R6): a click on a tab shows that workspace as the owner left it, and a
    * resize or a closed pane changes only the shown workspace's. A workspace with none shows the state's panes when it
    * is `data.current`, and its last chat (`data.lastChats`) alone in one pane when it is another.
    */
   layouts: z.record(z.string(), WorkspaceLayout).optional(),
   /**
-   * What Erik has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
+   * What the owner has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
    * when its pane mounts again, after a visit to another page or a closed pane, so it starts from its draft here.
    */
   drafts: z.record(z.string(), z.string()).optional(),
@@ -892,7 +892,7 @@ export const WorkspacesUi = z.object({
    * and its × or Escape undoes the change; either closes it.
    */
   renaming: z.boolean().optional(),
-  /** The names Erik gave chats, by chat id, in place of their titles in the data. */
+  /** The names the owner gave chats, by chat id, in place of their titles in the data. */
   names: z.record(z.string(), z.string()).optional(),
   /**
    * The phone's list is in edit mode (M2): each workspace and chat has its handle, each workspace its ×, + is off and
@@ -905,7 +905,7 @@ export const WorkspacesUi = z.object({
    */
   renamingChats: z.record(z.string(), z.string()).optional(),
   renamingWorkspaces: z.record(z.string(), z.string()).optional(),
-  /** The names Erik gave workspaces, by workspace id, in place of their labels in the data. */
+  /** The names the owner gave workspaces, by workspace id, in place of their labels in the data. */
   workspaceNames: z.record(z.string(), z.string()).optional(),
   /**
    * What fills the phone's screen: `list`, the workspaces (M1, the default), `chat`, the focused chat with its
@@ -937,13 +937,13 @@ export const WorkspacesUi = z.object({
   refocusMessage: z.boolean().optional(),
   /** The workspace whose close dialog is open over the phone's list (M13), or null. */
   closing: z.string().nullable().optional(),
-  /** The workspaces Erik closed with that dialog's Close; the list no longer shows them. */
+  /** The workspaces the owner closed with that dialog's Close; the list no longer shows them. */
   closedWorkspaces: z.array(z.string()).optional(),
   /** The workspace whose actions sheet is open over the phone's list (M14), or null. */
   workspaceMenuFor: z.string().nullable().optional(),
   /** The menu that + opens at the top of the phone's list is open (M15). */
   addMenuOpen: z.boolean().optional(),
-  /** The workspaces Erik added with that menu's New workspace, by id, with the name each started with. */
+  /** The workspaces the owner added with that menu's New workspace, by id, with the name each started with. */
   addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
   /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
   newChatWorkspace: z.string().nullable().optional(),

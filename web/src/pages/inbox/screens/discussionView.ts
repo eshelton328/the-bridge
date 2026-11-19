@@ -1,8 +1,8 @@
-// The Inbox after what Erik did to the open task's discussion
+// The Inbox after what the owner did to the open task's discussion
 // (InboxUi.proposals, proposalChecks and sent): the messages he sent follow its entries; an applied update puts its prompt
 // in the task with the change line; created tasks join Next steps with a
 // New pill and a toast that offers Undo; a discarded proposal leaves the
-// discussion; the boxes Erik checked or cleared replace the proposal's.
+// discussion; the boxes the owner checked or cleared replace the proposal's.
 // The effects say what each press in the discussion changes. Pure
 // functions, no React.
 import { InboxItemId } from '@bridge/shared'
@@ -32,7 +32,7 @@ export function proposalOf<K extends ProposalKind>(
   return undefined
 }
 
-/** A proposal with the boxes Erik checked or cleared. */
+/** A proposal with the boxes the owner checked or cleared. */
 function checked(proposal: InboxProposal, checks: InboxUi['proposalChecks']): InboxProposal {
   if (proposal.kind !== 'create') return proposal
   const box = <T extends { checked: boolean }>(item: T, label: string): T => ({
@@ -132,7 +132,7 @@ export function discussionView(data: InboxData, ui: Decisions): InboxData {
     if (ui.proposals[entry.proposal.kind] === 'discarded') return []
     return [{ ...entry, proposal: checked(entry.proposal, ui.proposalChecks) }]
   })
-  // The messages Erik sent follow the entries; nothing answers them in this mock-up.
+  // The messages the owner sent follow the entries; nothing answers them in this mock-up.
   for (const text of ui.sent) entries.push({ type: 'user', text })
   let view: InboxData = { ...data, discussion: { ...discussion, entries } }
   const update = proposalOf(view, 'update')
@@ -202,7 +202,7 @@ function removeTask(data: EffectData, ui: EffectUi): Pick<InboxUi, 'finished' | 
 
 /**
  * What a proposal's button does; `desktop` keeps the discussion open after Apply (D16), a tablet shows the task (T19).
- * `typed` is the prompt Erik has typed in the task, if any: Apply replaces it with the proposed prompt and keeps it
+ * `typed` is the prompt the owner has typed in the task, if any: Apply replaces it with the proposed prompt and keeps it
  * for Undo.
  */
 export function proposalEffect(
@@ -270,7 +270,7 @@ export function restoreEffect(data: EffectData, ui: EffectUi): DiscussionEffect 
   return { ui: { proposals: decide(ui.proposals, 'remove'), finished: ui.finished.filter((f) => f.id !== id) } }
 }
 
-/** Undo on the line under a changed prompt: the update waits again, and the prompt is as Erik left it before Apply. */
+/** Undo on the line under a changed prompt: the update waits again, and the prompt is as the owner left it before Apply. */
 export function undoUpdateEffect(ui: EffectUi): DiscussionEffect {
   return {
     ui: { proposals: decide(ui.proposals, 'update'), promptBeforeApply: null },

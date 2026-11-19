@@ -1,5 +1,5 @@
 // A group of the library (Figma "group · …" and its "card row"): the group
-// header with the count and, for what was found since Erik last looked, the
+// header with the count and, for what was found since the owner last looked, the
 // New dot; under it, while the group is open, its cards in a grid of four
 // columns on the desktop and two on a tablet (T1), where a card names its
 // source by its mark alone. Props only.

@@ -1,5 +1,5 @@
 // Figma Workbench M16 (402:10497), "M16 · Tap a chat to open it": M1's list
-// at the moment Erik taps bridge themes. The tap opens the chat full screen
+// at the moment the owner taps bridge themes. The tap opens the chat full screen
 // (M3); the phone has no drag and no split panes. Figma marks the finger with
 // a ring over the row (`tap`, 402:10747), a note for the reader that the app
 // does not draw. At a desktop width the state draws M1's sidebar with bridge

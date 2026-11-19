@@ -3,7 +3,7 @@
 // of artifacts it matches. As the Inbox's Filter menu, with the same
 // library parts. In the tablet's sheet (T3 407:1624) a section's label is a
 // `GroupHeader` above its rows, as the Inbox's phone sheet draws it
-// (`PopoverSection` needs its popover). Props only: a box Erik checks or
+// (`PopoverSection` needs its popover). Props only: a box the owner checks or
 // clears is reported, and the library applies the checks on Show.
 import { Checkbox, GroupHeader, PopoverSection } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'

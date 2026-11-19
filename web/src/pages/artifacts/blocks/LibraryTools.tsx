@@ -39,7 +39,7 @@ export type LibraryToolsProps = {
   placeholder: string
   query: string
   onQueryChange?: ((query: string) => void) | undefined
-  /** The search has the focus when the row opens, as Figma draws it while Erik types (D4 403:7799, M5 408:50). */
+  /** The search has the focus when the row opens, as Figma draws it while the owner types (D4 403:7799, M5 408:50). */
   searchFocus?: boolean | undefined
   /** The sort's short label, such as "Newest". */
   sortLabel: string

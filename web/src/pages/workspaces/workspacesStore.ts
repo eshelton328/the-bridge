@@ -1,4 +1,4 @@
-// The Workspaces page's view store: what Erik changed in the shown state's
+// The Workspaces page's view store: what the owner changed in the shown state's
 // `ui`, any of its fields, such as the focused pane, an open menu or the
 // sizes of the split's handles (`splitSizes`). Only WorkspacesPage reads
 // it; the screen gets the values as props. A state's own `ui` is the start,
@@ -45,7 +45,7 @@ const useWorkspacesStore = createAppStore<WorkspacesViewState>('workspaces', (se
   },
 }))
 
-/** What Erik changed in `state`'s `ui`; empty keeps the state's own. */
+/** What the owner changed in `state`'s `ui`; empty keeps the state's own. */
 export const useWorkspacesUi = (state: WorkspacesStateKey): Partial<WorkspacesUi> =>
   useWorkspacesStore((s) => (s.uiEdits.state === state ? s.uiEdits.ui : noUi))
 

@@ -1,5 +1,5 @@
 // Figma Inbox T4 and M10 "Running, on the task page": D6's started next step as its
-// own page, with its sent prompt read-only, Erik's note without the add
+// own page, with its sent prompt read-only, the owner's note without the add
 // field, and the run card above the tab bar. Copy word for word from
 // references/inbox/T04/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'

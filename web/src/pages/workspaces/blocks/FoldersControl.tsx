@@ -20,7 +20,7 @@ export type FoldersControlProps = {
   folders: ChatFolders
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
-  /** Called when Erik presses Add folder. */
+  /** Called when the owner presses Add folder. */
   onAdd?: (() => void) | undefined
 }
 

@@ -34,7 +34,7 @@ const task = css({
 /** A proposal's button: apply (Apply, Create, Remove…), discard (Discard, Keep it), undo or edit (Edit first). */
 export type ProposalAct = 'apply' | 'discard' | 'undo' | 'edit'
 
-/** What Erik did to the discussion's proposals, and where his presses and checks go. */
+/** What the owner did to the discussion's proposals, and where his presses and checks go. */
 export type ProposalControl = {
   decisions: InboxUi['proposals']
   onAct?: ((kind: InboxProposal['kind'], act: ProposalAct) => void) | undefined

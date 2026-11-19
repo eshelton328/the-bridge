@@ -21,7 +21,7 @@ Only this folder and page entries read stores.
 
 ## No page bounce, no page zoom
 
-Erik's decision (2026-11-18): in the installed app, the page never pulls
+The owner's decision (2026-11-18): in the installed app, the page never pulls
 past the screen and bounces, and the page never zooms, on any platform.
 Before it, tapping the Inbox search on iOS zoomed the page (iOS Safari
 zooms to a focused field whose font is under 16 px, and the app keeps the
@@ -48,7 +48,7 @@ Figma sizes), and a pinch on the Toolkit map zoomed the whole app.
   the map's pinch was the page zoom.
 
 `user-scalable=no` turns off browser zoom, which WCAG 1.4.4 (Resize Text)
-asks apps to allow. That is Erik's decision for his own app.
+asks apps to allow. That is the owner's decision for his own app.
 
 ## Keyboard trace
 

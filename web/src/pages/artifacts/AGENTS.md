@@ -1,12 +1,12 @@
 # Artifacts page
 
 The Artifacts library: every Claude artifact and Codex site in one grid,
-with what the library found since Erik last looked at the top, marked
+with what the library found since the owner last looked at the top, marked
 New. Figma frames `D*` (desktop), `T*` (tablet) and `M*` (phone) on the
 Artifacts page. Read [../AGENTS.md](../AGENTS.md) first: it says what
 each file of a page folder is for.
 
-- `ArtifactsPage.tsx`: reads the loader's state and keeps what Erik
+- `ArtifactsPage.tsx`: reads the loader's state and keeps what the owner
   changes in the shown `?state=` (the source chip, the search, the view
   and the open groups) with `useState`; it passes them to
   `ArtifactsScreen` with `onUiChange`. Rail picks go to the pages that
@@ -253,7 +253,7 @@ each file of a page folder is for.
   `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
   fill the reply box). They are built from the same library parts as the
   Inbox's discussion blocks, which the Inbox page does not export.
-  For D8: `DiscussionEntry` (Erik's message, the discussion's reply with
+  For D8: `DiscussionEntry` (the owner's message, the discussion's reply with
   its bubble and name, or a proposal) and `ArtifactProposal`
   (`ProposalBlock tone="update"` with its `ProposalDiff`, Apply, Discard
   and Edit first, as the Inbox's proposed update). `screens/discussionView.ts`
@@ -331,7 +331,7 @@ each file of a page folder is for.
   open Add a link dialog and its picked source, the open Sort menu,
   the card opened from the library (`openId`), whether Back closed the open artifact (T2, M2), whether the phone's ⋯
   opened File in a project (M7) and the project picked in it, whether
-  the phone's More opened the More drawer (M8), and the open discussion, its draft, the sent messages and what Erik did to
+  the phone's More opened the More drawer (M8), and the open discussion, its draft, the sent messages and what the owner did to
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).

@@ -1,5 +1,5 @@
 // Figma Inbox T19 and M20 "The task after Apply": T18 after Apply, back on the
-// task page: the new prompt and a line with Undo; nothing runs until Erik
+// task page: the new prompt and a line with Undo; nothing runs until the owner
 // taps Start. My notes has T2's empty field. Copy word for word from
 // references/inbox/T19/frame.json, in the proposal's `apply`.
 import type { ScreenState } from '../../../lib/screenState.ts'

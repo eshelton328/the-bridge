@@ -41,7 +41,7 @@ export type ArtifactsScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** Reports what Erik changes: the chip, the search, the view and the open groups. */
+  /** Reports what the owner changes: the chip, the search, the view and the open groups. */
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
 }
 
@@ -75,7 +75,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
         const discussion = view?.discussion
         const discussing = discussion !== undefined && ui.discussOpen === true
         const sent = ui.discussSent ?? []
-        // What the desktop panel and the tablet page share: the draft, the entries and where Erik's presses go.
+        // What the desktop panel and the tablet page share: the draft, the entries and where the owner's presses go.
         const thread =
           discussion === undefined || view === undefined
             ? undefined

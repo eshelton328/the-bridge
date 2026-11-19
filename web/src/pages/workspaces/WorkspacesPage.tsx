@@ -1,7 +1,7 @@
 // The Workspaces page's connected entry: the only component of the page that
-// reads the router and stores. It merges the loaded state with what Erik
+// reads the router and stores. It merges the loaded state with what the owner
 // changed in it (the page store), passes everything to the screen as props,
-// and goes to the page Erik picks in the rail, the phone's tab bar or its
+// and goes to the page the owner picks in the rail, the phone's tab bar or its
 // More drawer.
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'

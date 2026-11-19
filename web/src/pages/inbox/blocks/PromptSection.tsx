@@ -66,7 +66,7 @@ export type PromptSectionProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   /** The screen's layout: the whole prompt opens in a dialog on the desktop and in a sheet on a tablet or phone. */
   layout?: Viewport | undefined
-  /** Keeps the prompt Erik is editing; see `InboxDrafts` in types.ts. */
+  /** Keeps the prompt the owner is editing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** Edit opens the editor and Done closes it. */
   onEditingChange?: ((editing: boolean) => void) | undefined
@@ -84,7 +84,7 @@ export function PromptSection({
   onEditingChange,
   onUndoChange,
 }: PromptSectionProps) {
-  // The prompt as Erik left it; it counts as edited while it differs from the suggestion, which Reset brings back.
+  // The prompt as the owner left it; it counts as edited while it differs from the suggestion, which Reset brings back.
   const suggested = prompt.suggested ?? { text: prompt.text, long: prompt.long }
   const current = drafts?.values.prompt ?? prompt.text
   const edited = current !== suggested.text
@@ -138,7 +138,7 @@ export function PromptSection({
       actions={
         prompt.state !== 'suggested' ? undefined : (
           <>
-            {/* Reset brings back the suggested prompt, so it does nothing until Erik edits it (Figma D1 346:359, T2 346:5736). */}
+            {/* Reset brings back the suggested prompt, so it does nothing until the owner edits it (Figma D1 346:359, T2 346:5736). */}
             {/* Done and Reset act while the editor's keyboard is up, so a tap on them keeps it (library #213). */}
             <Button
               data-keyboard-keep=""
@@ -188,7 +188,7 @@ export function PromptSection({
             <div className={text} ref={clampRef}>
               {/* After an applied update, Figma keeps the prompt box at its five lines' height (128, D16 403:1854;
                   T19) for the shorter prompt; a short prompt with no change line hugs its text (D4). In a detail at
-                  least 1600 px wide the column widens to 1024 and shows eight lines (Erik, R2); Read the whole prompt
+                  least 1600 px wide the column widens to 1024 and shows eight lines (the owner, R2); Read the whole prompt
                   stays. */}
               <Clamp lines={wide ? 8 : 5} fade reserve={changeLine !== null}>
                 {breakAfterSlashes(current)}

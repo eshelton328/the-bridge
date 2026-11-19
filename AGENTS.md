@@ -1,12 +1,12 @@
 # the-bridge
 
-The-bridge is NCC-1701's interface: a React app that shows Erik's inbox,
+The-bridge is NCC-1701's interface: a React app that shows the owner's inbox,
 workspaces, projects, artifacts and toolkit. Increment 1 is a mock-up from
 code: every screen renders typed mock data, one state file per Figma
 state, in the app, in Storybook and on the Claude Design canvas
 (`window.Bridge`).
 
-Planning lives in Erik's brain, not here. The decisions (`d-NNN`) are in
+Planning lives in the owner's brain, not here. The decisions (`d-NNN`) are in
 `~/ncc-1701/engine/projects/ncc-1701/decisions/`: the monorepo (d-080),
 the layers (d-081, replaced in part by d-088), state files (d-082),
 Zustand rules (d-083), errors (d-084), generated code and types (d-085),

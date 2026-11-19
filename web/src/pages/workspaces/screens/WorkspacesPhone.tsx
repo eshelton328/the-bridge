@@ -71,7 +71,7 @@ import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 export type WorkspacesPhoneProps = {
   /** The device whose width the screen has: the phone, or a tablet in a state with `tabletList` (T1). */
   device: 'phone' | 'tablet'
-  /** The state's data, with the names Erik gave chats in place of their titles. */
+  /** The state's data, with the names the owner gave chats in place of their titles. */
   data: WorkspacesData
   /** The phone's labels. */
   text: PhoneText

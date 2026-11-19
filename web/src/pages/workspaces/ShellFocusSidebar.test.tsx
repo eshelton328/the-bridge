@@ -18,7 +18,7 @@ afterEach(async () => {
 })
 
 describe('the workbench beside the sidebar', () => {
-  it('keeps the sidebar when Erik focuses a shell pane, and its toggle hides and shows it', async () => {
+  it('keeps the sidebar when the owner focuses a shell pane, and its toggle hides and shows it', async () => {
     // The desktop frame's size, so that the backdrop fits the window.
     await page.viewport(1512, 982)
     view = await testRender(<WorkspacesScreen data={threePanes.data} ui={threePanes.ui} viewport="desktop" />)

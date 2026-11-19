@@ -1,5 +1,5 @@
 // Figma Inbox T2 and M2 "A next step": D1's next step as its own page, in
-// one column under Back, before Erik wrote a note. Copy word for word from
+// one column under Back, before the owner wrote a note. Copy word for word from
 // references/inbox/T02/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'

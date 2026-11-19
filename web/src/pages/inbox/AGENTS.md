@@ -1,12 +1,12 @@
 # Inbox page
 
-The Inbox: items that need Erik, next steps and snoozed items, and the
+The Inbox: items that need the owner, next steps and snoozed items, and the
 detail of the selected item. Figma frames `D*` (desktop), `T*`
 (tablet) and `M*` (phone) on the Main page.
 
 - `InboxPage.tsx`: reads the loader's state, `?filter=`, and from
   `inboxStore.ts` the open groups and, for the shown `?state=`, whether
-  Erik closed the open item with Back (tablet or phone), the prompt or
+  the owner closed the open item with Back (tablet or phone), the prompt or
   remove dialog, the search text he typed and the rest of what he changed
   in its `ui` (`setUi`: menus, the prompt editor, the sort, the filters,
   items snoozed, marked done or dismissed); it passes them to `InboxScreen` with the
@@ -67,7 +67,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   and context in the task card, the suggestions stack under "Try" (a
   suggestion fills the reply box) and the remove confirm is a sheet
   that starts on Keep it. `screens/discussionView.ts` (pure, tested in
-  `discussionView.test.ts` beside this file) applies what Erik did to the
+  `discussionView.test.ts` beside this file) applies what the owner did to the
   proposals (`ui.proposals`, `ui.proposalChecks`): an applied update puts
   its prompt in the task, created tasks join Next steps with a toast, a
   discarded proposal leaves, an applied removal shows the task as
@@ -75,7 +75,7 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   page Open discussion and Restore); its effects say what each press
   changes (Apply, Discard, Edit first, Undo, Create, Remove task,
   Restore, which puts the task back in its group). Send in the
-  discussion's reply box adds Erik's message after its entries
+  discussion's reply box adds the owner's message after its entries
   (`ui.sent`); the box has no attach button until a file flow is designed.
   Undo in the toast also takes out the rows a state draws as created
   (`toast.created`, D18 and T21). The removal flow
@@ -149,12 +149,12 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   picker, the Snooze menu, a row's actions sheet, the discussion, the started task's chat or the remove dialog is open,
   the sort, the Filter menu's boxes and the filters that apply, the
   items snoozed, the items finished (marked done or dismissed from the
-  task bar, or removed in a discussion), and what Erik did to each
+  task bar, or removed in a discussion), and what the owner did to each
   proposal and its boxes),
   each a Zod schema. `InboxData.discussion` is the open task's discussion;
   its entries are a union on `type`, and a proposal a union on `kind`;
   an update's `apply` holds what Apply makes of the task.
-  `InboxDrafts` is the text Erik types in the open item (note, answer,
+  `InboxDrafts` is the text the owner types in the open item (note, answer,
   prompt, reply); `InboxScreen` keeps it above `ViewportFrame`, so a
   width change that swaps the layout keeps it, and `draftProps()` gives a
   field its value props.

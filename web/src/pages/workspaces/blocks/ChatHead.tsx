@@ -1,6 +1,6 @@
 // The header of a chat shown alone (D2 105:785): the kind mark, the title over
 // its workspace (and where the chat came from, D16), the status and the chat actions; under them the model, the
-// context used and its label. While Erik renames the chat, a field takes the
+// context used and its label. While the owner renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
 // first and the rows sit 8 apart under a 4 px top; the folders chip can take
 // the context label's place (M8) or follow it (T5). While the phone's keyboard is up the
@@ -55,7 +55,7 @@ export type ChatHeadProps = {
   contextLabel: string
   /** The chat actions menu, with its trigger; a plain button when not set, and none when `null` (D4). */
   menu?: ReactNode
-  /** Drawn in place of the title while Erik renames the chat, such as the name field (D21). */
+  /** Drawn in place of the title while the owner renames the chat, such as the name field (D21). */
   rename?: ReactNode
   /** The Figma layers of the header and of the chat actions button, for the fidelity checks; D2's when not set. */
   figma?: { head?: string | undefined; actions?: string | undefined } | undefined

@@ -74,7 +74,7 @@ export type ArtifactDiscussionPageProps = {
   discussion: ArtifactDiscussion
   /** The status pill of the artifact's card, such as "New"; none without it. */
   badge?: string | undefined
-  /** What Erik has typed in the reply box. */
+  /** What the owner has typed in the reply box. */
   draft?: string | undefined
   /** What the discussion shows; with none, the empty state. */
   entries?: readonly ArtifactDiscussionEntry[] | undefined

@@ -1,7 +1,7 @@
 // Figma Workbench M3 (105:2723), "M3 · Chat": bridge themes opened on the
 // phone. The header has the back button, the kind mark, the title over
 // omni-brain, Working and the ⋯, then Opus 5.5 and 42% of the context. Under
-// it Erik's message, the Read line and Claude's reply with Copy; Erik has
+// it the owner's message, the Read line and Claude's reply with Copy; the owner has
 // typed "/" after attaching requirements.md, so the skills are listed over
 // the composer with /writer highlighted, and Stop shows while the chat works.
 // The composer has no model chip, and there is no tab bar. At a desktop width

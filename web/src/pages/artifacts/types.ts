@@ -27,7 +27,7 @@ export const ArtifactCard = z.object({
   project: z.string(),
   /** The age, such as "12m" or "1d". */
   age: z.string(),
-  /** Found since Erik last looked: the card shows New. */
+  /** Found since the owner last looked: the card shows New. */
   isNew: z.boolean(),
   /** The artifact's address without the scheme; search reads it, and a match in it shows in the list (D4). */
   link: z.string().optional(),
@@ -118,7 +118,7 @@ export const ArtifactDetail = z.object({
     })
     .optional(),
   /**
-   * How the artifact shows after Erik applies its discussion's proposal (D9): Apply republishes it to the same link,
+   * How the artifact shows after the owner applies its discussion's proposal (D9): Apply republishes it to the same link,
    * so the link and the library entry stay; the bar's pill and line and the updated chip change.
    */
   applied: z
@@ -285,7 +285,7 @@ const ArtifactProposal = z.object({
 })
 export type ArtifactProposal = z.infer<typeof ArtifactProposal>
 
-/** One entry of the artifact's discussion: Erik's message, the discussion's reply or a proposed change (D8). */
+/** One entry of the artifact's discussion: the owner's message, the discussion's reply or a proposed change (D8). */
 const ArtifactDiscussionEntry = z.discriminatedUnion('type', [
   z.object({ type: z.literal('user'), text: z.string() }),
   z.object({ type: z.literal('reply'), name: z.string(), text: z.string() }),
@@ -293,7 +293,7 @@ const ArtifactDiscussionEntry = z.discriminatedUnion('type', [
 ])
 export type ArtifactDiscussionEntry = z.infer<typeof ArtifactDiscussionEntry>
 
-/** What Erik did to the discussion's proposal: applied it or discarded it (D8). */
+/** What the owner did to the discussion's proposal: applied it or discarded it (D8). */
 const ProposalDecision = z.enum(['applied', 'discarded'])
 
 /**
@@ -390,7 +390,7 @@ export const ArtifactsUi = z.object({
   searchFocus: z.boolean().optional(),
   /** The Filter menu is open (D3). */
   filterOpen: z.boolean().optional(),
-  /** The Filter menu's checked boxes; they apply when Erik selects Show. */
+  /** The Filter menu's checked boxes; they apply when the owner selects Show. */
   filterChecks: z.array(z.string()).optional(),
   /** Whether the list view's group of search matches is open (D4); open when not set. */
   matchesOpen: z.boolean().optional(),
@@ -401,7 +401,7 @@ export const ArtifactsUi = z.object({
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
   /**
-   * The card Erik opened from the library (a card on D1 or T1, a row on M1 or D2's list): it opens as `data.open` does
+   * The card the owner opened from the library (a card on D1 or T1, a row on M1 or D2's list): it opens as `data.open` does
    * (D2, T2, M2). `data.open`'s artifact when not set.
    */
   openId: z.string().optional(),
@@ -413,7 +413,7 @@ export const ArtifactsUi = z.object({
   fileProject: z.string().optional(),
   /**
    * The artifact `fileProject` was picked for; `data.open`'s when not set (M7). Another open artifact shows its own
-   * project, so a pick does not follow Erik to the next artifact he opens.
+   * project, so a pick does not follow the owner to the next artifact he opens.
    */
   fileFor: z.string().optional(),
   /** The phone's More opened the More drawer over the tab bar (M8). */
@@ -423,12 +423,12 @@ export const ArtifactsUi = z.object({
    * its own page in the artifact's place, with no tab bar (T4); on a phone the same (M9).
    */
   discussOpen: z.boolean().optional(),
-  /** What Erik has typed in the discussion's reply box; a suggestion puts its question there. */
+  /** What the owner has typed in the discussion's reply box; a suggestion puts its question there. */
   discussDraft: z.string().optional(),
-  /** The messages Erik sent in the discussion, in order; nothing answers them in this mock-up. */
+  /** The messages the owner sent in the discussion, in order; nothing answers them in this mock-up. */
   discussSent: z.array(z.string()).optional(),
   /**
-   * What Erik did to the discussion's proposal (D8): Discard drops it; Apply shows the artifact Updated and the
+   * What the owner did to the discussion's proposal (D8): Discard drops it; Apply shows the artifact Updated and the
    * proposal in its applied form (D9).
    */
   discussProposal: ProposalDecision.optional(),

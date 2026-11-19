@@ -251,7 +251,7 @@ const InboxNextStep = InboxDetailHead.extend({
    * `suggested` has Reset and Edit; `sent` (started) and `notRun` (removed
    * before it ran) are read-only. `change` is the line under a prompt that
    * a discussion changed, with Undo. `suggested` is the prompt as it was
-   * suggested, and whether it is long, when `text` is Erik's edit of it;
+   * suggested, and whether it is long, when `text` is the owner's edit of it;
    * Reset brings it back. `long` is about `text`: it ends with "Read the
    * whole prompt".
    */
@@ -264,7 +264,7 @@ const InboxNextStep = InboxDetailHead.extend({
   }),
   launch: InboxLaunch,
   /**
-   * Erik's notes: his note with who wrote it and when, if he wrote one, and
+   * The owner's notes: his note with who wrote it and when, if he wrote one, and
    * the placeholder of the field that adds one; without `add` (a started
    * task on the tablet) the notes are read-only.
    */
@@ -351,11 +351,11 @@ export type InboxProposal = z.infer<typeof InboxProposal>
 export const ProposalKind = z.enum(['update', 'create', 'remove'])
 export type ProposalKind = z.infer<typeof ProposalKind>
 
-/** What Erik did to a proposal: applied it (Apply, Create, Remove task) or discarded it (Discard, Keep it). */
+/** What the owner did to a proposal: applied it (Apply, Create, Remove task) or discarded it (Discard, Keep it). */
 const InboxDecision = z.enum(['applied', 'discarded'])
 export type InboxDecision = z.infer<typeof InboxDecision>
 
-/** One entry of a discussion: an event line, Erik's message, the discussion's reply or a proposal. */
+/** One entry of a discussion: an event line, the owner's message, the discussion's reply or a proposal. */
 const InboxDiscussionEntry = z.discriminatedUnion('type', [
   z.object({ type: z.literal('event'), text: z.string() }),
   z.object({ type: z.literal('user'), text: z.string() }),
@@ -406,7 +406,7 @@ export const InboxData = z.object({
   snoozeMenu: InboxSnoozeMenu,
   search: InboxSearch.optional(),
   filterMenu: InboxFilterMenu,
-  /** The groups, newest first, before Erik's sort, search and filters (`InboxUi`). */
+  /** The groups, newest first, before the owner's sort, search and filters (`InboxUi`). */
   groups: z.array(InboxGroupView),
   detail: InboxDetailView.nullable(),
   /** The open task's discussion; the task bar then shows Discuss. */
@@ -433,7 +433,7 @@ export const InboxUi = z.object({
   /** The row whose actions sheet is open: a long-press on the phone (M6) opens it; `null` when none is. */
   actionsFor: InboxItemId.nullable(),
   /**
-   * The row Erik tapped on a tablet or phone that the mock data has no detail for: its own page, from the row's view,
+   * The row the owner tapped on a tablet or phone that the mock data has no detail for: its own page, from the row's view,
    * with Back and the row's actions behind ⋯ (screen review R11); `null` when none is open.
    */
   rowOpen: InboxItemId.nullable(),
@@ -451,22 +451,22 @@ export const InboxUi = z.object({
   filterChecks: z.array(z.string()),
   /** The checked boxes that apply to the list. A section narrows it only when some, not all, of its boxes are checked. */
   filters: z.array(z.string()),
-  /** Items Erik snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
+  /** Items the owner snoozed from the Snooze menu, each with the time it returns, such as "11:40". */
   snoozed: z.array(z.object({ id: InboxItemId, until: z.string() })),
   /**
-   * Items Erik finished, in Done now: marked done or dismissed from the task bar, or removed in a discussion,
+   * Items the owner finished, in Done now: marked done or dismissed from the task bar, or removed in a discussion,
    * each with how it ended.
    */
   finished: z.array(z.object({ id: InboxItemId, result: InboxResult })),
-  /** What Erik did to each proposal of the discussion, by its kind; a proposal without one waits. */
+  /** What the owner did to each proposal of the discussion, by its kind; a proposal without one waits. */
   proposals: z.partialRecord(ProposalKind, InboxDecision),
-  /** The boxes of a proposal Erik checked or cleared, by label; the others keep the proposal's own. */
+  /** The boxes of a proposal the owner checked or cleared, by label; the others keep the proposal's own. */
   proposalChecks: z.record(z.string(), z.boolean()),
-  /** The prompt the task showed when Erik applied a proposed update, with his edits; Undo brings it back. */
+  /** The prompt the task showed when the owner applied a proposed update, with his edits; Undo brings it back. */
   promptBeforeApply: z.string().nullable(),
-  /** The messages Erik sent in the open task's discussion, in order; each follows the discussion's entries. */
+  /** The messages the owner sent in the open task's discussion, in order; each follows the discussion's entries. */
   sent: z.array(z.string()),
-  /** The next steps Erik started with Start: each shows the run card its launch's `start` holds. */
+  /** The next steps the owner started with Start: each shows the run card its launch's `start` holds. */
   started: z.array(InboxItemId),
 })
 export type InboxUi = z.infer<typeof InboxUi>
@@ -480,12 +480,12 @@ export type InboxPutAway = (
 /** The schema of one Inbox state, for the state checks. */
 export const InboxState = z.object({ data: InboxData, ui: InboxUi })
 
-// The text Erik types in the open item: his note, his answer's note, the
+// The text the owner types in the open item: his note, his answer's note, the
 // prompt he edits, his reply and his reply in the task's discussion. InboxScreen keeps it above the layout, so
 // a width change that swaps the desktop and tablet layouts, and with them
 // the fields, keeps what he typed.
 
-/** A text field of the open item that keeps what Erik types. */
+/** A text field of the open item that keeps what the owner types. */
 export type InboxDraftField = 'note' | 'answer' | 'prompt' | 'reply' | 'discussion'
 
 export type InboxDrafts = {

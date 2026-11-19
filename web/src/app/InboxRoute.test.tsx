@@ -217,7 +217,7 @@ describe('the Inbox route', () => {
     }
   })
 
-  it('adds the message Erik sends to the desktop discussion and empties the reply box', async () => {
+  it('adds the message the owner sends to the desktop discussion and empties the reply box', async () => {
     await page.viewport(1512, 982)
     const view = await renderInbox('discussOpen').rendered
     const box = page.getByRole('textbox', { name: 'Ask about this task' })

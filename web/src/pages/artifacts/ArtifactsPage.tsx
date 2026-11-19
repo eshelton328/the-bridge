@@ -1,5 +1,5 @@
 // The Artifacts page's connected entry: the only component of the page that
-// reads the router. It keeps what Erik changes in the shown state (the chip,
+// reads the router. It keeps what the owner changes in the shown state (the chip,
 // the search, the view, the open groups) and passes everything to the
 // props-only screen.
 import { getRouteApi } from '@tanstack/react-router'

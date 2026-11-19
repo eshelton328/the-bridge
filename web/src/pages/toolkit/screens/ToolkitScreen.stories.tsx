@@ -1599,7 +1599,7 @@ export const SkillDiscuss: Story = {
       'true',
     )
     await expect(canvas.getByRole('article', { name: 'writer' })).toBeVisible()
-    // Figma draws the reply box focused (438:50, its light-blue border), as Erik sees it after Discuss. The story
+    // Figma draws the reply box focused (438:50, its light-blue border), as the owner sees it after Discuss. The story
     // puts the focus there; the screen's props do not hold focus.
     const reply = within(panel).getByRole('textbox', { name: 'Ask about writer' })
     reply.focus()
@@ -1615,7 +1615,7 @@ export const SkillDiscussTablet: Story = {
   // the tablet's page.
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
-    // Figma draws the reply box focused (464:379, its border and a caret), as Erik sees it after Discuss.
+    // Figma draws the reply box focused (464:379, its border and a caret), as the owner sees it after Discuss.
     const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
     reply.focus()
     await expect(reply).toHaveFocus()
@@ -1639,7 +1639,7 @@ export const SkillDiscussPhone: Story = {
   // src/app/ToolkitDiscuss.test.tsx checks the phone's page.
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
-    // Figma draws the reply box focused (464:214, its border and a caret), as Erik sees it after Discuss.
+    // Figma draws the reply box focused (464:214, its border and a caret), as the owner sees it after Discuss.
     const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
     reply.focus()
     await expect(reply).toHaveFocus()

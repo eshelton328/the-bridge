@@ -1,4 +1,4 @@
-// Figma Artifacts D8 "D8 · A proposed update": the D7 discussion after Erik
+// Figma Artifacts D8 "D8 · A proposed update": the D7 discussion after the owner
 // asked for a change. The discussion answers and proposes it with what
 // changes, as the Inbox's proposed update (Inbox D15): Apply, Discard or Edit
 // first. Nothing changes until Apply. Copy word for word from

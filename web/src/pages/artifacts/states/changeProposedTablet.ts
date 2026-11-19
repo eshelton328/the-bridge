@@ -1,5 +1,5 @@
 // Figma Artifacts T5 "T5 · A proposed update": T4's discussion page on the
-// iPad mini after Erik asked for a change, with D8's question, reply and
+// iPad mini after the owner asked for a change, with D8's question, reply and
 // proposed update to the chart: Apply, Discard or Edit first. Apply returns
 // to the artifact's page (T2), which shows Updated, as D9 does on the
 // desktop; reopened, the discussion shows the applied proposal. It is T4's

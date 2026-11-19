@@ -25,7 +25,7 @@ const box = (selector: string) => {
 
 // The fidelity check allows 4 px.
 describe('the discussion beside a task (desktop)', () => {
-  it("sets Erik's message and the reply in Figma's 13 px text (D15)", async () => {
+  it("sets the owner's message and the reply in Figma's 13 px text (D15)", async () => {
     await page.viewport(1512, 982)
     const { data, ui } = inboxStates.changeProposed
     view = await testRender(<InboxScreen data={data} ui={ui} viewport="desktop" />)

@@ -1,6 +1,6 @@
 // One artifact in the grid (Figma "artifact card · …", 402:15434): its
 // preview, the title with New at the end of its row (402:15454) when the
-// library found it since Erik last looked, one line of description and
+// library found it since the owner last looked, one line of description and
 // the meta line (source mark, source, project and age). With `onOpen` the
 // card is a button. Props only.
 import { Badge, Card, KindMark, MetaLine, SparkIcon, Thumbnail } from '@eshelton328/component-library-1701'

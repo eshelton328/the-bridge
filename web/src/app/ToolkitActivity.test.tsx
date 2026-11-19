@@ -229,7 +229,7 @@ describe('the Activity tab on a tablet and the phone', () => {
     expect(activity.right).toBeLessThanOrEqual(list.right + 0.5)
   })
 
-  it('shows Activity in the tabs when Erik taps it from the phone’s Overview (M2 to M15)', async () => {
+  it('shows Activity in the tabs when the owner taps it from the phone’s Overview (M2 to M15)', async () => {
     const { root } = await renderToolkit('skillOpenPhone', 'phone', 'article[aria-label="writer"]')
     await userEvent.click(tab(root, 'writer', 'Activity'))
     await expect.poll(() => root.querySelector('[data-figma="activity"]')).not.toBeNull()

@@ -6,7 +6,7 @@
 // `rows` the split is rows first (D14), and a dragged handle shows its
 // readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
 // The empty pane's Close pane reports the pane closed (`onClosePane`).
-// A chat's composer starts from Erik's draft (`ui.drafts`) and reports what
+// A chat's composer starts from the owner's draft (`ui.drafts`) and reports what
 // he types, so the draft outlives the pane: a page visit, a closed pane.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
@@ -42,7 +42,7 @@ export type WorkbenchPanesProps = {
   data: WorkspacesData
   ui: WorkspacesUi
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
-  /** Called with a pane's id when Erik closes it with the empty pane's Close pane (D13). */
+  /** Called with a pane's id when the owner closes it with the empty pane's Close pane (D13). */
   onClosePane?: ((pane: string) => void) | undefined
 }
 

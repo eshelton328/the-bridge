@@ -1,6 +1,6 @@
 // The sections of the Filter menu: kinds, projects and tags, each a
 // checkbox with the number of items it matches. Props only.
-// A box Erik checks or clears is reported; the list applies it when the menu closes.
+// A box the owner checks or clears is reported; the list applies it when the menu closes.
 import { Checkbox } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxFilterMenu } from '../types.ts'

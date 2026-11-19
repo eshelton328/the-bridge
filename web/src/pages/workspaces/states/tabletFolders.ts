@@ -2,7 +2,7 @@
 // iPad mini, a sheet that "2 folders" in the chat's header opens. The chat
 // fills the screen as on the phone, with no tab bar: the header with the back
 // button, the title over omni-brain, Working and the ⋯, then Opus 5.5, the
-// context used, "context" and the chip; Erik's message and Claude's reply,
+// context used, "context" and the chip; the owner's message and Claude's reply,
 // with no read line and no Copy. The sheet is titled Folders with the chat's
 // name after it and ×, then D4's folders: ~/omni-brain (the working folder),
 // ~/omni with its remove ×, and Add folder; under a rule the folder picker:
@@ -18,7 +18,7 @@ import { folders } from './folders.ts'
 import { phoneFolders } from './phoneFolders.ts'
 import { tabletChatActions } from './tabletChatActions.ts'
 
-// T5 128:527: Erik's message and Claude's reply, with no read line and no Copy.
+// T5 128:527: the owner's message and Claude's reply, with no read line and no Copy.
 function t5Entries(entries: readonly ChatEntry[]): ChatEntry[] {
   return entries.flatMap((e): ChatEntry[] => {
     if (e.type === 'user') return [e]

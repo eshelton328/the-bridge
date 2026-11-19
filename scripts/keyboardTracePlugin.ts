@@ -1,7 +1,7 @@
 // The dev server end of `?keyboard-trace` (web/src/app/keyboardTrace.ts).
 // The app POSTs its whole trace here every 2 s and this writes it to one
 // file per trace session in the brain's phone-review traces folder, so a
-// trace from Erik's phone reaches disk with no step from him. It is a Vite
+// trace from the owner's phone reaches disk with no step from him. It is a Vite
 // plugin with `apply: 'serve'`, so a build never has the endpoint.
 import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'

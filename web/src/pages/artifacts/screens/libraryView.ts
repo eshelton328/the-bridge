@@ -1,9 +1,9 @@
-// What the library shows for a state and what Erik changed: the groups,
+// What the library shows for a state and what the owner changed: the groups,
 // each with the cards that pass the source chip and the search, and for the
 // list view's search (D4) each match with where it is. A chip's and a
 // group's count stay the state's: the library holds more artifacts than the
 // cards the mock data draws. The sort (D6) orders the cards inside each
-// group; the groups keep their order, so what the library found since Erik
+// group; the groups keep their order, so what the library found since the owner
 // last looked stays at the top. Pure; tested in libraryView.test.ts.
 import type {
   ArtifactCard,

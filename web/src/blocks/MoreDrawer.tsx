@@ -31,7 +31,7 @@ export type MoreDrawerProps = {
   selected?: 'artifacts' | 'toolkit' | undefined
   /** How many artifacts and toolkit items there are; an item without a count shows none. */
   counts?: { artifacts?: number | undefined; toolkit?: number | undefined } | undefined
-  /** Called with `artifacts` or `toolkit` when Erik picks it; the drawer then closes. */
+  /** Called with `artifacts` or `toolkit` when the owner picks it; the drawer then closes. */
   onNavigate?: ((page: string) => void) | undefined
 }
 

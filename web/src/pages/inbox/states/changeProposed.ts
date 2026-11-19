@@ -1,4 +1,4 @@
-// Figma Inbox D15 "A proposed update": Erik asked for a change, and the
+// Figma Inbox D15 "A proposed update": the owner asked for a change, and the
 // discussion proposes it with the before and after: Apply, Discard or Edit
 // first. Copy word for word from references/inbox/D15/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'

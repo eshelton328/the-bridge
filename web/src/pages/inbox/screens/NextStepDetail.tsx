@@ -1,8 +1,8 @@
 // The detail of a next step: why, the prompt, where to run it and the
-// Start button (or, once started, the chat it runs in), Erik's notes and
+// Start button (or, once started, the chat it runs in), the owner's notes and
 // the sources. On a tablet or phone the item sits under Back, and a started
 // next step's run card stays at the bottom of the screen, above the tab bar
-// (T4 346:6281); on the phone Start does too (M2 346:9386). While Erik edits
+// (T4 346:6281); on the phone Start does too (M2 346:9386). While the owner edits
 // the prompt on the phone, the keyboard covers the bottom of the screen: the
 // head and Why give way to the title on one line, so the prompt stays in
 // sight, and Start waits (M3). Props only.
@@ -60,7 +60,7 @@ export type NextStepDetailProps = {
   discuss?: DiscussControl | undefined
   /** Undo on the line under a prompt that a discussion changed. */
   onUndoChange?: (() => void) | undefined
-  /** Keeps what Erik types in the prompt and his note; see `InboxDrafts` in types.ts. */
+  /** Keeps what the owner types in the prompt and his note; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** The Snooze menu of the task bar. */
   snooze?: SnoozeControl | undefined

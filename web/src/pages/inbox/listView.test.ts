@@ -195,7 +195,7 @@ describe('the states', () => {
     expect(ids.filter((id, i) => ids.indexOf(id) !== i)).toEqual([])
   })
 
-  it('adds one row to Today when Erik marks an open item done in D21', () => {
+  it('adds one row to Today when the owner marks an open item done in D21', () => {
     const { removed } = inboxStates
     const drift = InboxItemId.parse('drift-check-git-mv')
     const ui: InboxUi = {

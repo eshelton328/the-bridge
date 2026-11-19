@@ -1,6 +1,6 @@
 // A discussion's entries (or, before the first message, the empty state)
 // and its reply box under them: the part the desktop panel and the tablet
-// page share. A suggestion puts its question in the reply box. The reply box keeps what Erik types in `drafts`, so closing
+// page share. A suggestion puts its question in the reply box. The reply box keeps what the owner types in `drafts`, so closing
 // and opening the discussion keeps it; send gives his message to `onSend`, which adds it to the discussion, and
 // empties the box. The box has no attach button: no file flow is designed, and `Composer` cannot draw its attach
 // button disabled (LIBRARY_GAPS.md, Waiting for a design). The reply box stays at the bottom and the `header` at the
@@ -27,7 +27,7 @@ const bodyGap = {
 
 export type DiscussionThreadProps = {
   discussion: InboxDiscussion
-  /** What Erik did to the proposals, and where his presses go. */
+  /** What the owner did to the proposals, and where his presses go. */
   control?: ProposalControl | undefined
   /** A class for the entries' column, such as its top padding. */
   className?: string | undefined
@@ -35,11 +35,11 @@ export type DiscussionThreadProps = {
   frameClassName?: string | undefined
   /** The empty state sits in the middle of the column (the desktop panel, D14) rather than at its top (T17). */
   centred?: boolean | undefined
-  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** The phone's empty state: the suggestions one under the other, under their label (M18). */
   stacked?: boolean | undefined
-  /** Erik sent a message from the reply box. */
+  /** The owner sent a message from the reply box. */
   onSend?: ((text: string) => void) | undefined
   /** Stays at the top while the entries scroll, such as the page's Back or the panel's title. */
   header?: ReactNode

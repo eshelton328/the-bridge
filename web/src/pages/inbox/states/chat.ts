@@ -1,5 +1,5 @@
 // Figma Inbox T5 and M8 "Started, the chat stays in the inbox": D5's chat
-// as its own page, with no tab bar. Erik's first message is cut shorter than on
+// as its own page, with no tab bar. The owner's first message is cut shorter than on
 // the desktop. Copy word for word from references/inbox/T05/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'

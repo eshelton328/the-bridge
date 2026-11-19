@@ -34,7 +34,7 @@ afterEach(async () => {
 })
 
 describe('the rows-first split', () => {
-  it('keeps the top row at 60 : 40 when Erik resizes the rows', async () => {
+  it('keeps the top row at 60 : 40 when the owner resizes the rows', async () => {
     view = await testRender(<Panes />)
     const top = page.getByRole('separator', { name: 'Resize columns' })
     await expect.element(top).toHaveAttribute('aria-valuenow', '60')

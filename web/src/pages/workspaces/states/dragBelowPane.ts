@@ -1,5 +1,5 @@
 // Figma Workbench D10 (402:3029), "D10 · Drag a third chat below a pane": the
-// two panes of D9, bridge themes and drift check side by side. Erik drags brain
+// two panes of D9, bridge themes and drift check side by side. The owner drags brain
 // git from the sidebar near the bottom edge of drift check: its row fades, and
 // the drop zone is the lower half of drift check alone, the pane under the
 // pointer, so the drop would split only that pane and bridge themes keeps its

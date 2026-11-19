@@ -27,7 +27,7 @@ const workspaces = chatActions.data.workspaces.map((w) => {
   return at === -1 ? w : { ...w, chats: [...chats.slice(0, at + 1), fork, ...chats.slice(at + 1)] }
 })
 
-// The fork copies the original's messages and context; it waits for Erik, so its composer has no Stop.
+// The fork copies the original's messages and context; it waits for the owner, so its composer has no Stop.
 const panes: WorkbenchPane[] = chatActions.data.panes.flatMap((p) =>
   p.type === 'chat' && p.id === 'bridge-themes'
     ? [

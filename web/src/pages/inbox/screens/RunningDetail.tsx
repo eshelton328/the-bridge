@@ -57,7 +57,7 @@ export type RunningDetailProps = {
   layout?: Viewport | undefined
   /** Back on a tablet or phone. */
   onBack?: (() => void) | undefined
-  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** View task on the desktop: closes a chat that Reply here opened and shows its task again. */
   onViewTask?: (() => void) | undefined

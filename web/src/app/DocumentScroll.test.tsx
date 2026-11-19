@@ -9,7 +9,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { APP_MARKER, markApp } from './appMarker.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// Erik's decision (2026-11-18): the installed app's page never pulls past the screen and bounces. The document never
+// The owner's decision (2026-11-18): the installed app's page never pulls past the screen and bounces. The document never
 // scrolls: html and body fill the window and clip (index.css), and only the shell's own scroll areas scroll. A real
 // route renders at a phone and a desktop size, with a tall block after it as content that overflows the window would
 // be, and neither a wheel nor a scroll call moves the document. The app's styles and fonts load as in main.ts, the

@@ -1,5 +1,5 @@
 // Figma Workbench D20 (417:1835), "D20 · Moved": what Move to workspace (D19)
-// does when Erik picks the-bridge. bridge themes and its subtask chat, theme
+// does when the owner picks the-bridge. bridge themes and its subtask chat, theme
 // tokens, now head THE-BRIDGE's list, and OMNI-BRAIN keeps drift check and
 // brain git; the chat stays selected and shown alone, Working, and its header
 // names the-bridge. A toast over the composer confirms the move, with Undo.

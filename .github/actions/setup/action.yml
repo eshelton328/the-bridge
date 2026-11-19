@@ -16,7 +16,7 @@ runs:
         node-version: 24
         cache: pnpm
     # The library is a private package on GitHub Packages
-    # (pnpm-workspace.yaml routes @eshelton328 there).
+    # (pnpm-workspace.yaml routes the library's scope there).
     - run: echo "//npm.pkg.github.com/:_authToken=${PACKAGES_TOKEN}" >> "$HOME/.npmrc"
       shell: bash
       env:

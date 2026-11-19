@@ -7,7 +7,7 @@ import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { workspacesStates } from './states/index.ts'
 
-// R8 (Erik's screen review, 2026-11-18): the skill list grows with the composer. In a pane and on the tablet it is
+// R8 (the owner's screen review, 2026-11-18): the skill list grows with the composer. In a pane and on the tablet it is
 // 40% of the composer's width, clamped to `shell.pickerMin` (240) and `shell.pickerMax` (400) (`Popover
 // width="composer"`); on the phone it is as wide as the composer (`width="trigger"`).
 document.documentElement.classList.add('dark')

@@ -4,7 +4,7 @@
 // full width, with Back on the item and the tab bar under both, except in a
 // chat or a discussion (Figma T1 to T8, T17). The open task's discussion
 // sits beside it on the desktop and on a page of its own on a tablet or
-// phone; what Erik does to its proposals changes the task and the list
+// phone; what the owner does to its proposals changes the task and the list
 // (`discussionView`). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
@@ -43,7 +43,7 @@ export type InboxScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** What Erik typed in the open item, from the page store; without it the screen keeps its own. */
+  /** What the owner typed in the open item, from the page store; without it the screen keeps its own. */
   drafts?: InboxDrafts | undefined
   onFilterChange?: ((filter: string) => void) | undefined
   onGroupOpenChange?: ((group: InboxGroupId, open: boolean) => void) | undefined
@@ -51,12 +51,12 @@ export type InboxScreenProps = {
   /** Back on a tablet or phone: closes the open item and shows the list. */
   onBack?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
-  /** The text Erik typed in the search field; without it the field shows the state's query. */
+  /** The text the owner typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
   onRemoveOpenChange?: ((open: boolean) => void) | undefined
   /**
-   * Reports what Erik changes in the view: a menu, the prompt editor or the
+   * Reports what the owner changes in the view: a menu, the prompt editor or the
    * Run in picker opened or closed, the sort, the filters, an item
    * snoozed, marked done or dismissed, the discussion opened or closed, or
    * what he did to its proposals. The caller merges it into `ui`.
@@ -73,7 +73,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const desktop = layout === 'desktop'
   // On the phone the tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
-  // Where the tablet or phone list was scrolled when Erik opened a row, so Back shows the list at the same place.
+  // Where the tablet or phone list was scrolled when the owner opened a row, so Back shows the list at the same place.
   const [listScroll, setListScroll] = useState<number | undefined>(undefined)
   // Reply here on a started task's run card shows its chat in the task's place (M10 to M8). Back, labelled Inbox,
   // closes the chat and shows the list; the task opens again from its row. On the desktop, View task in the chat's
@@ -94,7 +94,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const inChat = open?.kind === 'running' || discussPage !== undefined
   // On the phone the prompt editor's keyboard covers the bottom of the screen, tab bar and all (M3).
   const keyboard = layout === 'phone' && open?.kind === 'next' && ui.editingPrompt
-  // The desktop always shows the state's item; the tablet and phone only the one Erik opened.
+  // The desktop always shows the state's item; the tablet and phone only the one the owner opened.
   const shown = desktop ? item : open
   const closeChat = () => {
     onUiChange?.({ chatOpen: false })
@@ -108,7 +108,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
           onSelectItem(id)
         }
   // R11: on a tablet or phone a tap on a row the state has no detail for opens the row's own page, from the rows the
-  // list shows (`listView`): a row Erik finished keeps its outcome, and a search's Done matches open too.
+  // list shows (`listView`): a row the owner finished keeps its outcome, and a search's Done matches open too.
   const rowOpened =
     desktop || open !== null || ui.rowOpen === null
       ? undefined
@@ -145,7 +145,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   // Snooze, Mark done or Dismiss takes the shown item out of the list, by the id the detail carries: after Back on a
   // tablet and a resize to the desktop nothing is selected, but the desktop still shows the item. Mark done and
   // Dismiss put it in Done, with how it ended. On a tablet or phone the list shows again. The desktop keeps showing
-  // the item, so Erik can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
+  // the item, so the owner can pick again: the last pick replaces the earlier one, and the item is never in the list twice.
   // A row's actions sheet on the phone (M6) puts a row away the same way, and closes.
   const putAway: InboxPutAway = (id, to) => {
     const snoozed = ui.snoozed.filter((s) => s.id !== id)
@@ -346,7 +346,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
 type Typed = { of: InboxData['detail']; values: InboxDrafts['values'] }
 
 export function InboxScreen({ viewport, drafts: pageDrafts, ...props }: InboxScreenProps) {
-  // What Erik types in the open item lives here, above the layout: a width change swaps the layout and remounts its
+  // What the owner types in the open item lives here, above the layout: a width change swaps the layout and remounts its
   // fields, and this keeps their text. Another item starts empty.
   // The page passes its own drafts, kept in its store, so a visit to another page keeps them too.
   const item = props.data.detail

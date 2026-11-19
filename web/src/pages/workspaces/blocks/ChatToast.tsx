@@ -1,4 +1,4 @@
-// A toast that confirms what Erik just did to the chat shown alone, centred
+// A toast that confirms what the owner just did to the chat shown alone, centred
 // over its composer, with its button, such as "Moved bridge themes to
 // the-bridge" and Undo (D20 417:2135). It is the library's static `Toast`,
 // which the caller places: `MainChat` draws it between the transcript and

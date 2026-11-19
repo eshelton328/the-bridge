@@ -1,4 +1,4 @@
-// The open artifact's discussion after what Erik did in it (D8): a discarded
+// The open artifact's discussion after what the owner did in it (D8): a discarded
 // proposal leaves the discussion, and the messages he sent follow its
 // entries. `proposalEffect` says what each button of the proposal changes
 // in `ui`, and `appliedView` what the artifact and its discussion show
@@ -8,7 +8,7 @@ import type { ArtifactDetail, ArtifactDiscussion, ArtifactDiscussionEntry, Artif
 
 type Decisions = Pick<ArtifactsUi, 'discussProposal' | 'discussSent'>
 
-/** The entries the discussion shows: without a discarded proposal, and with the messages Erik sent after them. */
+/** The entries the discussion shows: without a discarded proposal, and with the messages the owner sent after them. */
 export function discussionEntries(discussion: ArtifactDiscussion, ui: Decisions): ArtifactDiscussionEntry[] {
   const entries = discussion.entries.filter((e) => e.type !== 'proposal' || ui.discussProposal !== 'discarded')
   // Nothing answers the sent messages in this mock-up.
@@ -21,7 +21,7 @@ export function discussionEntries(discussion: ArtifactDiscussion, ui: Decisions)
  * artifact Updated and the proposal applied (D9). On the tablet's or phone's discussion page (`page`, T5, M10) Apply
  * also closes the page, so the artifact's page shows Updated (T2, M2), as the desktop's artifact beside its panel does
  * (D9); reopened, the discussion shows the applied proposal. Edit first puts the lines the proposal adds in the reply box, one a line,
- * for Erik to change and send; the proposal stays until he applies or discards it.
+ * for the owner to change and send; the proposal stays until he applies or discards it.
  */
 export function proposalEffect(
   discussion: ArtifactDiscussion,

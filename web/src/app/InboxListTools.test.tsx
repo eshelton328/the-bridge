@@ -216,7 +216,7 @@ describe('the Inbox list tools and task bar', () => {
   })
 
   // Figma dims Reset after Apply as well (T19 402:11597, D16: the label in fg.muted, as T2's); Undo on the change
-  // line takes the discussion's change back, and Reset only Erik's own edits.
+  // line takes the discussion's change back, and Reset only the owner's own edits.
   it('keeps Reset dim after a discussion changed the prompt, with Undo to take the change back', async () => {
     await tablet('changeAppliedPage')
     await expect.element(page.getByText('changed just now in a discussion')).toBeVisible()

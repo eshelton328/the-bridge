@@ -1,5 +1,5 @@
 // Figma Workbench M11 (147:174), "M11 · New chat, keyboard open": the New
-// chat form on the phone while Erik types its name. "theme tokens" is in the
+// chat form on the phone while the owner types its name. "theme tokens" is in the
 // name field, which has the focus, so the hint is gone; Runs in with Claude
 // Code chosen over Codex; omni-brain as the workspace; the folders as one
 // box, "~/omni-brain  +1". The keyboard is up, so the start bar keeps Start

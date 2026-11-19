@@ -8,7 +8,7 @@
 // (T2) under the chips, with no search row; on the phone (M11) straight under
 // the header, with no chips and no search. A state file's data and ui are its
 // props; the callbacks are optional, so a story or a canvas board needs none:
-// without `onUiChange` the screen keeps Erik's changes itself. A click on a
+// without `onUiChange` the screen keeps the owner's changes itself. A click on a
 // card, a row or the map card's Open button opens the item (`ui.open`, D3):
 // on the desktop the list moves into the list pane (`ToolkitListPane`) and
 // the item (`ToolkitItem`) fills the rest; on a tablet or phone (T3) the item
@@ -85,7 +85,7 @@ export type ToolkitScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
-  /** Reports what Erik changes: the view, the kind chip, the search or a group opened or closed. */
+  /** Reports what the owner changes: the view, the kind chip, the search or a group opened or closed. */
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
   /** Copies an open item's path, from its path badge. */
   onCopyPath?: ((path: string) => void) | undefined
@@ -96,9 +96,9 @@ export type ToolkitScreenProps = {
 type ToolkitLayoutProps = Omit<ToolkitScreenProps, 'viewport' | 'onUiChange'> & {
   layout: Viewport
   onUiChange: (change: Partial<ToolkitUi>) => void
-  /** Where the tablet or phone list was scrolled when Erik last opened an item from it; the list scrolls back there. */
+  /** Where the tablet or phone list was scrolled when the owner last opened an item from it; the list scrolls back there. */
   listScroll: number | undefined
-  /** Reports the list's scroll as Erik opens an item from it, so Back returns to the same place. */
+  /** Reports the list's scroll as the owner opens an item from it, so Back returns to the same place. */
   onListScroll: (top: number) => void
 }
 
@@ -528,7 +528,7 @@ function ToolkitLayout({
 type Changed = { of: ToolkitUi; ui: Partial<ToolkitUi> }
 
 export function ToolkitScreen({ viewport, ui, onUiChange, ...props }: ToolkitScreenProps) {
-  // What Erik changes lives above the layout, so a width change keeps it; another state starts from its own ui.
+  // What the owner changes lives above the layout, so a width change keeps it; another state starts from its own ui.
   const [changed, setChanged] = useState<Changed>({ of: ui, ui: {} })
   const own = onUiChange === undefined && changed.of === ui ? changed.ui : {}
   const report =
@@ -536,7 +536,7 @@ export function ToolkitScreen({ viewport, ui, onUiChange, ...props }: ToolkitScr
     ((change: Partial<ToolkitUi>) => {
       setChanged({ of: ui, ui: { ...own, ...change } })
     })
-  // Where the tablet or phone list was scrolled when Erik opened an item from it, so Back shows the list there.
+  // Where the tablet or phone list was scrolled when the owner opened an item from it, so Back shows the list there.
   const [listScroll, setListScroll] = useState<number | undefined>(undefined)
   return (
     <ViewportFrame initial={viewport}>

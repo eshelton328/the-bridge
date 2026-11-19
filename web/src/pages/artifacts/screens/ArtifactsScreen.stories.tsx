@@ -70,7 +70,7 @@ export const SearchList: Story = {
         'Search reads titles, descriptions, projects and links. Filters and the source chips still apply.',
       ),
     ).toBeVisible()
-    // Figma draws the search focused while Erik types (403:7799), and the state opens with the focus in it.
+    // Figma draws the search focused while the owner types (403:7799), and the state opens with the focus in it.
     await expect(canvas.getByRole('searchbox')).toHaveFocus()
   },
 }
