@@ -17,5 +17,17 @@
       "layers": ["346:10441"],
       "reason": "The Snoozed group's count (346:10441, y 723 to 737) lies under the Filter sheet (346:10484, y 187 to 844), so Figma does not show it; the render's sheet covers it too."
     }
+  ],
+  "position": [
+    {
+      "layer": "346:10376",
+      "iconSize": 12,
+      "reason": "The kind tile's icon/review (346:10376, 16 px) lies under the Filter sheet (346:10484, y 187 to 844), so Figma does not show it. The icon the render shows there is the sheet's 12 px check mark, which Figma draws at 12 too (icon/check 346:10528, 346:10538)."
+    },
+    {
+      "layer": "346:10387",
+      "iconSize": 12,
+      "reason": "The kind tile's icon/action (346:10387, 16 px) lies under the Filter sheet (346:10484, y 187 to 844), so Figma does not show it. The icon the render shows there is the sheet's 12 px check mark, which Figma draws at 12 too (icon/check 346:10528, 346:10538)."
+    }
   ]
 }
