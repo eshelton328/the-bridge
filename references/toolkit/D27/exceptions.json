@@ -9,29 +9,9 @@
       "text": "2",
       "layers": ["492:1242"],
       "reason": "The Workflows chip's count (492:1242, x 533) lies past the list pane's right edge, where Figma cuts the chip row too; the render's FilterChips row scrolls sideways and cuts it at the same edge (deviations.md \"List pane.\")."
-    },
-    {
-      "text": "commit-msg",
-      "layers": ["492:1371"],
-      "reason": "`commit-msg` is in the commit-msg row (Figma y 899). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"List pane.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
-    },
-    {
-      "text": "hooks/commit-msg",
-      "layers": ["492:1372"],
-      "reason": "`hooks/commit-msg` is in the commit-msg row (Figma y 919). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"List pane.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
-    },
-    {
-      "text": "→1  ←1",
-      "layers": ["492:1374"],
-      "reason": "`→1 ←1` is in the commit-msg row (Figma y 909). The list rows are 62 px high against Figma's 53, so this row starts past the frame's 982 px foot in the render and the list pane scrolls it into view (deviations.md \"List pane.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\")."
     }
   ],
   "rules": [
-    {
-      "rule": "hiddenOverflow",
-      "selector": "[data-figma=\"toolkit list\"]",
-      "reason": "The list pane scrolls on its own (1066 px of rows in the 982 px pane): its rows are 62 px high against Figma's 53, so the last rows lie past the frame's foot (deviations.md \"List pane.\"; LIBRARY_GAPS.md \"Toolkit row (pane)\"). D03 takes the same exception."
-    },
     {
       "rule": "hiddenOverflow",
       "selector": "[data-figma=\"filter · chips\"] > div.filter-chips__root",
