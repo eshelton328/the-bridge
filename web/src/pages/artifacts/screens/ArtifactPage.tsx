@@ -70,7 +70,7 @@ export function ArtifactPage({
       <Stack gap={phone ? '16' : '20'}>
         <ArtifactTitleBlock
           artifact={artifact}
-          layout={phone ? 'phone' : 'wide'}
+          layout={phone ? 'phone' : 'tablet'}
           status={<ArtifactStatus badge={badge} found={artifact.found} />}
         />
         <div data-figma="preview">
