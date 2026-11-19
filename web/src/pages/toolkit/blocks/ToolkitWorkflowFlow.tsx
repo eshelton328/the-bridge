@@ -206,8 +206,10 @@ export function ToolkitWorkflowFlow({
             data-figma="button · Open full page"
             disabled={onOpenFullPage === undefined}
             onClick={onOpenFullPage}
+            // D8 457:214, M21 487:1868: a 13 px icon; `keepIconSize` keeps the 12 px icon, where a Button draws 16.
+            keepIconSize
           >
-            <ExternalLinkIcon />
+            <ExternalLinkIcon size="12" />
             Open full page
           </Button>
         </span>

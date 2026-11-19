@@ -65,3 +65,24 @@ describe('the back row chevron', () => {
     expect(size(icon)).toEqual([20, 20])
   })
 })
+
+// The 12 px icon kept in Open session (D11 444:541) and Open full page (D8 457:214, M21 487:1868) with Button
+// `keepIconSize`, where a Button draws every icon at 16; Figma draws both at 13.
+describe('the external link icons', () => {
+  it("draws Open session's icon at 12 px (D11 444:541, 13 px in Figma)", async () => {
+    const icon = await renderToolkit(
+      'toolkitActivity',
+      'desktop',
+      '[data-figma="run · writing-reviewer"] .list-row__trailing button svg',
+    )
+    expect(size(icon)).toEqual([12, 12])
+  })
+
+  it.each([
+    ['workflowOpen', 'desktop'],
+    ['workflowOpenPhone', 'phone'],
+  ] as const)("draws Open full page's icon at 12 px (13 px in Figma): %s", async (state, layout) => {
+    const icon = await renderToolkit(state, layout, '[data-figma="button · Open full page"] svg')
+    expect(size(icon)).toEqual([12, 12])
+  })
+})
