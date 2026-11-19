@@ -2,10 +2,10 @@
 // with the page's state files, so the mocks are the backend's expected output.
 import { WorkspacesResponse } from '@bridge/contract'
 import { QueryClient } from '@tanstack/react-query'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports } from '../../errors/reporter.ts'
 import { workspacesHome } from './home.ts'
-import { modelLabel, toWorkspaces, withLiveWorkspaces } from './liveWorkspaces.ts'
+import { modelLabel, toWorkspaces, watchLiveWorkspaces, withLiveWorkspaces } from './liveWorkspaces.ts'
 import { sideChat } from './states/sideChat.ts'
 import { workbench } from './states/workbench.ts'
 
@@ -178,5 +178,180 @@ describe('withLiveWorkspaces', () => {
     expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
     expect(state.data.status.alert).toMatch(/^Live data is not available/)
     expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
+  })
+})
+
+/** A server's event stream that the test writes: each open gives a new stream, as a reconnect does. */
+function fakeServer() {
+  const encoder = new TextEncoder()
+  const opened: { send: (text: string) => void; end: () => void }[] = []
+  let refuse: number | undefined
+  const open = (signal: AbortSignal) => {
+    if (refuse !== undefined) return Promise.resolve(new Response('{"error":"no"}', { status: refuse }))
+    let control: ReadableStreamDefaultController<Uint8Array> | undefined
+    const body = new ReadableStream<Uint8Array>({
+      start: (c) => {
+        control = c
+      },
+    })
+    signal.addEventListener('abort', () => {
+      control?.error(new Error('aborted'))
+    })
+    opened.push({
+      send: (text) => control?.enqueue(encoder.encode(text)),
+      end: () => control?.close(),
+    })
+    return Promise.resolve(new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } }))
+  }
+  return {
+    open,
+    opened,
+    refuseWith: (status: number) => {
+      refuse = status
+    },
+    /** The SSE text of one event. */
+    frame: (event: string, data: unknown, extra = '') => `${extra}event: ${event}\ndata: ${JSON.stringify(data)}\n\n`,
+  }
+}
+
+describe('watchLiveWorkspaces', () => {
+  const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const status = (chat: string, value: string, seq = 0) => ({
+    source: 'mac-mini/agents',
+    seq,
+    type: 'chat.status',
+    data: { chat, status: value },
+  })
+  const changed = { source: 'mac-mini/agents', seq: 0, type: 'workspaces.changed', data: {} }
+  const settle = (ms = 40) => new Promise((r) => setTimeout(r, ms))
+
+  it("puts a chat's new status in the cache, then loads the page once for a burst", async () => {
+    const queries = client()
+    queries.setQueryData(['workspaces'], response)
+    const server = fakeServer()
+    const onChange = vi.fn()
+    const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    // A ping comment and two events in one chunk, the second split across two chunks.
+    const second = server.frame('chat.status', status('mac-mini/bridge-themes', 'done', 1))
+    server.opened[0]?.send(
+      `: ping\n\n${server.frame('chat.status', status('mac-mini/drift-check', 'idle'))}${second.slice(0, 20)}`,
+    )
+    server.opened[0]?.send(second.slice(20))
+    await settle()
+    expect(onChange).toHaveBeenCalledTimes(1)
+    const chats = queries.getQueryData<WorkspacesResponse>(['workspaces'])?.workspaces[0]?.chats ?? []
+    expect(chats.find((c) => c.id === 'mac-mini/drift-check')?.status).toBe('idle')
+    expect(chats.find((c) => c.id === 'mac-mini/bridge-themes')?.status).toBe('done')
+    expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(false)
+    stop()
+  })
+
+  it('marks the cache invalid when the stream opens, the list changed or the cache does not hold the chat', async () => {
+    const server = fakeServer()
+    for (const text of [
+      'event: open\ndata: {}\nretry: 5000\n\n',
+      server.frame('workspaces.changed', changed),
+      server.frame('chat.status', status('mac-mini/new-chat', 'working')),
+      'event: chat.status\ndata: not json\n\n',
+    ]) {
+      const queries = client()
+      queries.setQueryData(['workspaces'], response)
+      const onChange = vi.fn()
+      const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+      await settle(5)
+      server.opened.at(-1)?.send(text)
+      await settle()
+      expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
+      expect(onChange).toHaveBeenCalledTimes(1)
+      stop()
+    }
+  })
+
+  it('keeps the cache invalid when a status event comes after a list change', async () => {
+    const queries = client()
+    queries.setQueryData(['workspaces'], response)
+    const server = fakeServer()
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    server.opened[0]?.send(server.frame('workspaces.changed', changed))
+    server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle', 1)))
+    await settle()
+    expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
+    stop()
+  })
+
+  it('reads again when an event came while a read ran, so an older answer does not stay', async () => {
+    const queries = client()
+    const server = fakeServer()
+    const onChange = vi.fn()
+    const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    let answer: (value: WorkspacesResponse) => void = () => undefined
+    const slow = () =>
+      new Promise<WorkspacesResponse>((resolve) => {
+        answer = resolve
+      })
+    const loading = withLiveWorkspaces(workspacesHome, { client: queries, fetch: slow })
+    await settle(5)
+    server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
+    await settle(5)
+    // The read answers with what the server had before the event: drift check still needs the owner.
+    answer(response)
+    await loading
+    await settle()
+    expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
+    expect(onChange).toHaveBeenCalled()
+    stop()
+  })
+
+  it('reads the cache while it watches, and the server again once the cache is invalid', async () => {
+    const queries = client()
+    const server = fakeServer()
+    const fetch = vi.fn(() => Promise.resolve(response))
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open: server.open })
+    await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    await settle(5)
+    server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
+    await settle()
+    const state = await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    expect(fetch).toHaveBeenCalledTimes(1)
+    expect(state.data.workspaces[0]?.chats?.find((c) => c.id === 'drift-check')?.status.label).toBe('Idle')
+    server.opened[0]?.send(server.frame('workspaces.changed', changed))
+    await settle()
+    await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    expect(fetch).toHaveBeenCalledTimes(2)
+    stop()
+  })
+
+  it("connects again after the server's retry time when the stream ends, and not at once", async () => {
+    const server = fakeServer()
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: client(), settleMs: 10, open: server.open })
+    await settle(5)
+    server.opened[0]?.send('event: open\ndata: {}\nretry: 100\n\n')
+    server.opened[0]?.end()
+    await settle(40)
+    expect(server.opened).toHaveLength(1)
+    await settle(120)
+    expect(server.opened).toHaveLength(2)
+    stop()
+    await settle(150)
+    expect(server.opened).toHaveLength(2)
+  })
+
+  it('stops with a notice in the status bar and the error tray when the server refuses the stream', async () => {
+    const queries = client()
+    const server = fakeServer()
+    server.refuseWith(403)
+    const onChange = vi.fn()
+    const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+    await settle()
+    const notice =
+      'Live updates stopped (the server answered 403 for the event stream); reload the page to start them again.'
+    expect(getReports().map((r) => r.error.message)).toEqual([notice])
+    expect(onChange).toHaveBeenCalledTimes(1)
+    const state = await withLiveWorkspaces(workspacesHome, { client: queries, fetch: () => Promise.resolve(response) })
+    expect(state.data.status.alert).toBe(notice)
+    stop()
   })
 })

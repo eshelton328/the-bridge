@@ -2,8 +2,10 @@
 // Tests call it in process with app.request() (d-113); main.ts serves it.
 import { Hono } from 'hono'
 import { access } from './auth.ts'
+import { eventsRoutes } from './routes/events.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
+import { createLiveEvents } from './services/liveEvents.ts'
 
 export type AppDeps = {
   readonly agents: AgentPort
@@ -20,6 +22,7 @@ export function createApp({ agents, owner }: AppDeps) {
       return undefined
     })
     .route('/api/workspaces', workspacesRoutes(agents))
+    .route('/api/events', eventsRoutes(createLiveEvents(agents)))
 }
 
 export type AppType = ReturnType<typeof createApp>
