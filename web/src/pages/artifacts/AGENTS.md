@@ -296,8 +296,7 @@ each file of a page folder is for.
   discussion open; `artifactPhone` holds D7's discussion with M9's Back
   label, the card's source, "Try" and node id, so M2's Discuss opens it)
   and M10 `changeProposedPhone` (M9's data with D8's entries, context and
-  what Apply shows; M10's node id of Open in workspace). `library` stays first in `states/index.ts`: the app
-  shows the first state without `?state=`. `library` also holds what later states share: the
+  what Apply shows; M10's node id of Open in workspace). `library` also holds what later states share: the
   found and earlier cards (`foundCards`, `earlierCards`; export them when
   a second state uses them, as knip allows no unused export), the chips
   and the sorts. A state that opens a menu, searches or opens an
@@ -316,8 +315,16 @@ each file of a page folder is for.
   its proposal), each
   a Zod schema. A card may have a `link`, and `search` holds the label of
   each match place and the hint (D4).
+- `home.ts`: the page's home, what `/artifacts` shows with no `?state=`
+  (`loadArtifactsState.ts`, `pages/AGENTS.md`): D1's data with every
+  card, T1's Filter menu, D6's sorts and Sort menu and "Search
+  artifacts", with every menu, sheet and dialog closed, so the screen
+  draws D1's grid, T1's columns or M1's rows by the window's width and
+  Filter and Sort open at each width. It is not a Figma state.
+  `app/ArtifactsHome.test.tsx` checks it at 390, 756 and 1512 and on a
+  resize, and that a `?state=` still draws its frame.
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
 
 `/artifacts?state=library` shows a state in development; an unknown state
-is a not-found page.
+is a not-found page. With no `?state=` the page shows `home.ts`.
