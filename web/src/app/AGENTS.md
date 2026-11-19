@@ -39,6 +39,19 @@ Figma sizes), and a pinch on the Toolkit map zoomed the whole app.
   Screens > The list, 1158 px tall in a 982 px frame) still scrolls the
   document. `DocumentScroll.test.tsx` calls `markApp()` for the locked
   case and checks that the document scrolls without it.
+- `src/index.css`: under `html[data-app]`, `#root` (which holds the
+  Backdrop and the AppShell) is `position: fixed; inset: 0`, so nothing
+  in the document's flow is taller than the window. iOS scrolls the
+  document for a focused field even when html and body clip: in the
+  standalone app's trace of 2026-11-19 it scrolled 403 px at each
+  composer focus and the shell took it back a frame later, so the screen
+  flashed. With the root out of the flow the document has no scroll
+  range, and each page's ScrollFrame body (or the shell pane of a list)
+  is the only thing that scrolls. `RouteScroll.test.tsx` opens a home
+  and a detail of each page, the Workspaces live source and the
+  not-built screen at the phone, tablet and desktop sizes with long
+  content, and checks that the document stays within the window, also
+  with the clip off, and that a scroll area scrolls.
 - `index.html`: the viewport meta sets `maximum-scale=1,
   user-scalable=no` for every platform.
 - `pageZoom.ts`: iOS Safari ignores `user-scalable=no`, so on iOS (and
