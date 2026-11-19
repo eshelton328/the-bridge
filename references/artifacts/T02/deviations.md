@@ -2,7 +2,8 @@
 
 What still differs from Figma after round 3 of the fidelity loop
 (`pnpm fidelity artifacts T02`, 2026-11-17, against the installed
-library 1.0.0-beta.19), each with its reason. The library gaps are in
+library 1.0.0-beta.19; checked again 2026-11-19 with 1.0.0-beta.69,
+where the position result did not change), each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`. T2 is D2's open artifact on
 the iPad mini, on its own page under a Back bar; most differences are
 D2's (`../D02/deviations.md`).
@@ -44,15 +45,12 @@ D2's (`../D02/deviations.md`).
 - **Artifact title.** "Skill eval pass rates" is 28 px type (`heading`,
   28/40) against Figma's about 30 px in a 41 px box (405:433). Library
   gap "Artifact title size".
-- **Link mark.** The chain-link mark before the address is 12 px wide,
-  as Figma's (405:472), and the same `fg.muted` as the address, as
-  Figma's. Figma draws the links across its whole 13 px box, and the
-  library's `LinkIcon` across the middle 15 of its 24, so the page draws
-  the 20 px icon (`LinkMark`) with -4 margins at the sides and -2 above
-  and below, which keep the 13 px box's place in the row. The mark starts
-  about 2 px right of Figma's (x 24 against 22) and its stroke is a
-  little thinner (1.7 px, the icon's 2 at 20 px). D2's mark in the
-  preview's footer is drawn the same way.
+- **Link mark.** The chain-link mark before the address is the
+  library's `LinkMarkIcon size="12"` (`LinkMark`, no margins), which
+  fills its box as Figma's does (405:472): 12 px against Figma's 13, as
+  12 is on the 4 px icon scale, in the same `fg.muted` as the address.
+  The `link` layer passes. D2's mark in the preview's footer is drawn the
+  same way.
 - **Buttons with no screen yet.** Discuss opens the discussion page (T4).
   Copy link, Remove, the project chip, Open artifact and Open in
   workspace have no action, as in D2. Back returns to the library (T1).
@@ -69,5 +67,5 @@ D2's (`../D02/deviations.md`).
   it is the nearest in width, and the 32 px `md` was 8.8 px wider.
 - Copy link and Remove: icon-only 36 px buttons (`size="lg"`), as Figma.
 - Open artifact: the 44 px `Button size="xl"` the full width (Figma 46).
-- Link mark: the 20 px `LinkIcon` (`icon.20`) in a 12 px place, so the
-  mark is 12.6 px wide against Figma's 13.
+- Link mark: `LinkMarkIcon size="12"` (Figma 13, on the 4 px icon
+  scale).

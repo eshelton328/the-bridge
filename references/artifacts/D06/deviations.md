@@ -7,6 +7,9 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`,
+compact Sort and Filter): the text, position and rules results did not
+change.
 
 ## Checks
 
@@ -27,19 +30,20 @@ artifacts`): the text, position and rules results did not change.
 
 ## Deviations
 
-- **Sort menu place.** `menu · Sort` x -17.5. The menu opens at the
-  Sort button's start, as Figma's, and Sort sits 17.4 px left of Figma's
+- **Sort menu place.** `menu · Sort` x -11.5. The menu opens at the
+  Sort button's start, as Figma's, and Sort sits 11.4 px left of Figma's
   (see "Search, Sort and Filter"), so the menu does too. `RadioMenu
   density="compact"` (library #121) draws it 280 × 283 at y 150, 8 under
   Sort, as Figma's (403:8881): its choices are 48 high and 4 apart with
   the descriptions and the note in `smallXs` (Regular 11/16), and the
   note fits one line. The menu ends at y 433, above the cards' meta lines
   (y 454), so it covers none of their text.
-- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
-  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
-  their sides more than Figma's 11 px, and the search and the space
-  before the view switch share the free width equally where Figma gives
-  the search 22 px more. Library gap "Sort and Filter button widths".
+- **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
+  `button · Filter` x -11, as D01: Sort (108.4) and Filter (75.4) take
+  `padding="compact"` and are Figma's widths, but the search and the
+  space before the view switch share the free width equally where Figma
+  gives the search 22 px more, so the search is 554.1 wide against 565.5.
+  Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -61,11 +65,11 @@ artifacts`): the text, position and rules results did not change.
   description and meta lines (4 px grid, d-100) against 17, and a
   186.75 px thumbnail against 188. Library gap "Card body and line
   heights".
-- **Thumbnails and card marks.** As D01: the Agent factory doc and the readme
-  cold-reader chart are cyan and violet, not green and amber, the Type
-  safety doc's title bar is cyan, not violet, and the chart bars are a
-  brighter cyan than Figma's muted teal-cyan (`Thumbnail` takes no colour
-  prop). Library gap "Thumbnail colour".
+- **Thumbnails and card marks.** As D01: the Agent factory doc is green,
+  the Type safety doc violet and the readme cold-reader chart amber, as
+  Figma's (`Thumbnail tone`, library 1.0.0-beta.68), but the chart bars
+  are a brighter cyan than Figma's muted teal-cyan. Library gap
+  "Thumbnail colour".
 - **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties

@@ -48,7 +48,14 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
         dotLabel={card.isNew ? 'New' : undefined}
         highlight={place === 'title' ? query : undefined}
         // Figma's preview is 128 × 72 (403:8217): the card's drawing at 16:9.
-        leading={<Thumbnail kind={card.preview} size="lg" shape="wide" />}
+        leading={
+          <Thumbnail
+            kind={card.preview}
+            size="lg"
+            shape="wide"
+            {...(card.tone === undefined ? {} : { tone: card.tone })}
+          />
+        }
         trailing={
           <Inline gap="16" align="center">
             {placeLabel === undefined ? null : <Badge variant="tag" label={placeLabel} />}

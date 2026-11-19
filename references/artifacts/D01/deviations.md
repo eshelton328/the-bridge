@@ -7,6 +7,9 @@ library 1.0.0-beta.19), each with its reason. The library gaps are in
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`,
+compact Sort and Filter): the text, position and rules results did not
+change.
 
 ## Checks
 
@@ -26,16 +29,15 @@ artifacts`): the text, position and rules results did not change.
 
 ## Deviations
 
-- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
-  w +8.4, `button · Filter` x -9, w +4.4. The search and the space before
-  the view switch share the row's free width, as Figma's layers do
-  (402:15398, 402:15418). Sort and Filter are 12.8 px wider than Figma's
-  because `Button textSize="sm"` pads its sides more than Figma's 11 px,
-  which takes 6.4 px from each share. Figma also gives the search 22 px
-  more than the space (565.5 against 543.5), and no token gives an uneven
-  share, so the equal shares make the search 11 px narrower still. Sort
-  sits 17.4 px and Filter 9 px left of Figma's. Library gap "Sort and
-  Filter button widths".
+- **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
+  `button · Filter` x -11. Sort and Filter take `padding="compact"`
+  (10 px sides, Sort with `keepIconSize`): Sort is 108.4 wide (Figma 108)
+  and Filter 75.4 (Figma 75). The search and the space before the view
+  switch share the row's free width, as Figma's layers do (402:15398,
+  402:15418), but Figma gives the search 22 px more than the space (565.5)
+  and no token gives an uneven share, so the search is 554.1 wide and
+  Sort and Filter start 11 px early. Library gap "Sort and Filter button
+  widths".
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -56,12 +58,11 @@ artifacts`): the text, position and rules results did not change.
   the thumbnail is 186.75 high at the card's inner 332 px against Figma's
   188. The card's sides are 16 px against Figma's 14, so its text starts
   2 px further right. Library gap "Card body and line heights".
-- **Thumbnail colours.** The Agent factory doc's title bar is cyan, not
-  Figma's green; the Type safety in agentic systems doc's title bar is
-  cyan, not violet (402:15716); the readme cold-reader chart is cyan and
-  violet, not amber; and the chart bars are a brighter cyan than Figma's
-  muted teal-cyan. `Thumbnail` draws one colour set per kind and takes no
-  colour or tone prop. Library gap "Thumbnail colour".
+- **Thumbnail colours.** The Agent factory doc's title bar is green, the
+  Type safety in agentic systems doc's violet and the readme cold-reader
+  chart amber, as Figma's (`Thumbnail tone`, library 1.0.0-beta.68). The
+  chart bars are still a brighter cyan than Figma's muted teal-cyan, and
+  every third bar stays violet. Library gap "Thumbnail colour".
 - **Card kind mark (2026-11-18).** Library beta.51 (#168) draws the
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties

@@ -8,6 +8,9 @@ is D01's, so its deviations are D01's.
 
 Checked again 2026-11-18 with library 1.0.0-beta.36 (`pnpm fidelity
 artifacts`): the text, position and rules results did not change.
+Checked again 2026-11-19 with library 1.0.0-beta.69 (card `tone`,
+compact Sort and Filter): the text, position and rules results did not
+change.
 
 ## Checks
 
@@ -76,11 +79,12 @@ artifacts`): the text, position and rules results did not change.
 
 ## Deviations: the library behind it (as D01)
 
-- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
-  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
-  their sides more than Figma's 11 px, and the search and the space
-  before the view switch share the free width equally where Figma gives
-  the search 22 px more. Library gap "Sort and Filter button widths".
+- **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
+  `button · Filter` x -11, as D01: Sort (108.4) and Filter (75.4) take
+  `padding="compact"` and are Figma's widths, but the search and the
+  space before the view switch share the free width equally where Figma
+  gives the search 22 px more, so the search is 554.1 wide against 565.5.
+  Library gap "Sort and Filter button widths".
 - **Source chips.** `filter · chips` w +7.2. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -104,9 +108,11 @@ artifacts`): the text, position and rules results did not change.
   leading mark of `MetaLine icon="md"` at 16 px, so the Claude and Codex
   marks in the meta line are 16 px against Figma's 14 (d-100: 14 ties
   12 and 16 on the 4 px icon scale, and the tie takes 16). They were 12.
-- **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
-  not amber, and the Agent factory doc's bar is not green. Library gap
-  "Thumbnail colour".
+- **Thumbnail colours.** The readme cold-reader chart is amber
+  (403:7509) and the Agent factory doc's title bar green, as Figma's
+  (`Thumbnail tone`, library 1.0.0-beta.68); the chart bars are still a
+  brighter cyan than Figma's muted teal-cyan. Library gap "Thumbnail
+  colour".
 - **Rail.** The shared rail (`AppRail`, not changed here: another chat
   holds the navigation) has a Toolkit item after Artifacts (d-105), which
   this frame does not draw, so More sits one item lower. Its items are

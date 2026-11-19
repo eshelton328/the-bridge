@@ -25,6 +25,7 @@ export function FilterPopover({ menu, checks, open, onOpenChange, onChecksChange
         // the trigger itself, so its data-figma key sits on it.
         <Button
           textSize="sm"
+          padding="compact"
           pressed={open ? true : undefined}
           indicator={checks.length > 0}
           data-figma="button · Filter"

@@ -23,7 +23,13 @@ export function SortMenu({ menu, sort, sortLabel, open, onOpenChange, onSortChan
       trigger={
         // Figma sets Newest in Medium 13 with the cyan border of a pressed button while the menu is open (403:8484).
         // The button is the trigger itself, so its data-figma key sits on it.
-        <Button textSize="sm" pressed={open ? true : undefined} data-figma="button · Sort">
+        <Button
+          textSize="sm"
+          padding="compact"
+          keepIconSize
+          pressed={open ? true : undefined}
+          data-figma="button · Sort"
+        >
           <SortDescIcon />
           {sortLabel}
           <ChevronDownIcon size="12" />

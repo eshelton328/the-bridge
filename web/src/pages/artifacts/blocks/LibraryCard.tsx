@@ -25,7 +25,9 @@ export function LibraryCard({ card, showSource = true, onOpen }: LibraryCardProp
     <div data-figma={`artifact card · ${card.title}`}>
       <Card
         title={card.title}
-        media={<Thumbnail kind={card.preview} framed={false} />}
+        media={
+          <Thumbnail kind={card.preview} framed={false} {...(card.tone === undefined ? {} : { tone: card.tone })} />
+        }
         badge={card.isNew ? <Badge label="New" icon={<SparkIcon size="12" />} tone="working" size="sm" /> : undefined}
         badgePosition="end"
         description={card.description}

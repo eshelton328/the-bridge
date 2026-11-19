@@ -193,7 +193,7 @@ each file of a page folder is for.
   Copy link, Remove), `ArtifactTitleBlock` (title, description and the
   source, project and updated `MetaChip`s), `ArtifactPreview` (a banner
   `Thumbnail` over the link and Open artifact), `LinkMark` (the link's
-  chain mark, 20 px in a 12 px place, also on T2's page) and `MadeIn` (the chat
+  chain mark, the library's 12 px `LinkMarkIcon`, also on T2's page) and `MadeIn` (the chat
   that published it and Open in workspace). For D3: `FilterPopover`
   (Filter, pressed while open and with a dot while boxes are checked, and
   the `Popover` with the footer's note and Show) and `FilterMenu` (a
@@ -319,7 +319,8 @@ each file of a page folder is for.
   artifact starts from it and sets its `ui` or adds its data.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
-  each with its `preview` kind and `source`, and the optional `open`
+  each with its `preview` kind, an optional preview `tone` (the
+  `Thumbnail tone` that the card, row and list row pass) and `source`, and the optional `open`
   `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm` and the phone's `addLinkSheet`, `sortMenu`, the
   open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, whether the search opens with the

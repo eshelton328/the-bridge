@@ -2,15 +2,16 @@
 
 What still differs from Figma after round 1 of the fidelity loop (`pnpm
 fidelity artifacts D02`, 2026-11-17, against the installed library
-1.0.0-beta.15; checked again 2026-11-18 with 1.0.0-beta.36), each with its
-reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
+1.0.0-beta.15; checked again 2026-11-18 with 1.0.0-beta.36 and
+2026-11-19 with 1.0.0-beta.69), each with its reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
 ## Checks
 
 - Text: passes. `Toolkit` is an `extra` exception (`exceptions.json`).
-- Position: 34 of 45 layers pass, among them every artifact row, both
-  group headers, the header, the artifact pane, its bar, title block,
-  preview and "Made in". Nine fail; each is listed below.
+- Position: 37 of 45 layers pass, among them the search, Sort and
+  Filter, every artifact row, both group headers, the header, the
+  artifact pane, its bar, title block, preview and "Made in". Eight fail;
+  each is listed below.
   The shared navigation's items pass too: `rail · Inbox`,
   `rail · Workspaces`, `rail · Projects` and `rail · Artifacts`.
 - Rules: pass.
@@ -22,16 +23,16 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
   tie takes the larger (d-072), so no library change closes it. Library
   gap "Compact chip spacing".
-- **Search, Sort and Filter.** `search` w -11.8, `button · Sort` x -11.8,
-  w +8.4, `button · Filter` w +4.4. `Button textSize="sm"` pads its sides
-  more than Figma's 11 px, so Sort and Filter are wider and the search,
-  which takes the free width, is narrower. Library gap "Sort and Filter
-  button widths".
+- **Search, Sort and Filter.** None left: since 2026-11-19 Sort and
+  Filter take `padding="compact"` (10 px sides, Sort with
+  `keepIconSize`), and `search`, `button · Sort` and `button · Filter`
+  pass.
 - **List tools row.** `list tools` y +6, h -8. Figma's row frame (403:165)
   starts 8 above the search and buttons; the render's row is only the
   controls, which sit 2 px higher than Figma's.
-- **Discuss.** `button · Discuss` x -4.2, w +4.8: the same `Button` side
-  padding. Library gap "Sort and Filter button widths".
+- **Discuss.** `button · Discuss` x -4.2, w +4.8: 95.8 wide against
+  Figma's 91, as `Button textSize="sm"` pads its sides more than Figma's
+  11 px. Library gap "Sort and Filter button widths".
 - **Project chip.** `project · File in a project` x +6, w -16.8,
   `chips` w -12.8, `chip · updated 12m ago` x -10.8. The project chip is
   a read-only `MetaChip` with no chevron and no menu, so it is narrower
@@ -62,8 +63,8 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   about 557 wide, 96 in from each side, against Figma's 628 and 60
   (403:498): `Thumbnail` draws both inside its SVG and scales them with
   the banner. Library gaps "Thumbnail colour" and "Artifact preview
-  frame". The readme cold-reader row's chart is cyan and violet, not
-  amber ("Thumbnail colour").
+  frame". The readme cold-reader row's chart is amber, as Figma's
+  (`Thumbnail tone`, library 1.0.0-beta.68).
 - **Buttons with no screen yet.** Add a link, Discuss, Copy link,
   Remove, Open in workspace, Sort and Filter are buttons with no action;
   the project chip opens no menu. Discuss opens the discussion (D7) in
@@ -87,8 +88,6 @@ New pill takes `Badge tone="working" size="sm"` (20 px, Figma 22), as D1's
 cards do; Remove takes `variant="secondaryDanger"` and Open artifact
 `variant="primary"`. The stack gaps are Figma's: 20 between the bar, title
 block, preview and "Made in", 8 under "MADE IN", 10 in the bar. The link
-mark in the preview's footer (403:500) is the 20 px `LinkIcon` (`icon.20`)
-in a 12 px place (`LinkMark`, -4 margins at the sides and -2 above and
-below): the library draws the links across the middle 15 of its 24, so the
-mark is 12.6 px wide against Figma's 13, and the address starts at x 557
-against 558. As T2's.
+mark in the preview's footer (403:500) is the library's `LinkMarkIcon
+size="12"` (`LinkMark`), which fills its box: 12 px against Figma's 13,
+as 12 is on the 4 px icon scale. As T2's.

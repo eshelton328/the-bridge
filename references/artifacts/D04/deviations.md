@@ -2,7 +2,8 @@
 
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D04`, 2026-11-17, against the installed
-library 1.0.0-beta.19; checked again 2026-11-18 with 1.0.0-beta.36),
+library 1.0.0-beta.19; checked again 2026-11-18 with 1.0.0-beta.36 and
+2026-11-19 with 1.0.0-beta.69),
 each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
@@ -44,11 +45,12 @@ each with its reason. The library gaps are in
   `Badge variant="tag"`: a box with the small radius, 6 px sides and
   20 px high, against Figma's round pill with 8 px sides, 21 high. Library
   gap "Match place chip".
-- **Search, Sort and Filter.** `search` w -17.4, `button · Sort` x -17.4,
-  w +8.4, `button · Filter` x -9, w +4.4, as D01: Sort and Filter pad
-  their sides more than Figma's 11 px, and the search and the space
-  before the view switch share the free width equally where Figma gives
-  the search 22 px more. Library gap "Sort and Filter button widths".
+- **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
+  `button · Filter` x -11, as D01: Sort (108.4) and Filter (75.4) take
+  `padding="compact"` and are Figma's widths, but the search and the
+  space before the view switch share the free width equally where Figma
+  gives the search 22 px more, so the search is 554.1 wide against 565.5.
+  Library gap "Sort and Filter button widths".
 - **Search clear button.** The state opens with the focus in the search
   field (`ui.searchFocus`), so it shows Figma's cyan focus border. The × that clears the search
   (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
@@ -59,9 +61,9 @@ each with its reason. The library gaps are in
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
   tie takes the larger (d-072), so no library change closes it. Library
   gap "Compact chip spacing".
-- **Thumbnail colours.** The readme cold-reader chart is cyan and violet,
-  not amber. `Thumbnail` draws one colour set per kind. Library gap
-  "Thumbnail colour".
+- **Thumbnail colours.** The readme cold-reader chart is amber, as
+  Figma's (403:8248, `Thumbnail tone`, library 1.0.0-beta.68); every
+  third bar stays violet. Library gap "Thumbnail colour".
 - **Nav rail.** Figma's rail has no Toolkit item, so `rail · Toolkit`
   has no layer, and `rail · More` sits 52 px lower (y +52). The design
   predates d-105, which adds the Toolkit (and Artifacts) item; the app
