@@ -1,6 +1,7 @@
 // `?keyboard-trace`, a dev-only debug mode for the phone keyboard. main.ts
 // imports this module only when `import.meta.env.DEV` is true and the URL
-// has the param, so a build leaves it out. It only reads: one sample on
+// has the param or the dev server's switch is on (keyboardTraceSwitch.ts),
+// so a build leaves it out. It only reads: one sample on
 // each animation frame and on the focus, pointer, resize and scroll events,
 // a small overlay with the live values, and a POST of the whole trace every
 // 2 s to the dev server's endpoint (scripts/keyboardTracePlugin.ts), which
@@ -24,8 +25,23 @@ export type KeyboardTraceSample = {
   targetRole?: string | null
 }
 
+/** The safe-area insets, in px, as `env(safe-area-inset-*)` gives them. */
+type SafeArea = { top: number; right: number; bottom: number; left: number }
+
+/** What the trace records once, at its start, beside the samples. */
+export type KeyboardTraceHeader = {
+  startedAt: string
+  userAgent: string
+  /** `standalone` in the installed Home Screen app, else `browser`. */
+  displayMode: 'standalone' | 'browser'
+  screenHeight: number
+  screenWidth: number
+  devicePixelRatio: number
+  safeArea: SafeArea
+}
+
 /** The trace the endpoint takes. */
-export type KeyboardTrace = { startedAt: string; userAgent: string; samples: KeyboardTraceSample[] }
+export type KeyboardTrace = KeyboardTraceHeader & { samples: KeyboardTraceSample[] }
 
 /** A ring buffer: keeps the last `cap` items. */
 export type Ring<T> = { push: (item: T) => void; toArray: () => T[]; readonly size: number }
@@ -67,6 +83,50 @@ export function readSample(type: string, target: EventTarget | null, win: Window
     sample.targetRole = target instanceof Element ? target.getAttribute('role') : null
   }
   return sample
+}
+
+/** `standalone` when the app runs from the Home Screen (the display-mode query, or iOS's `navigator.standalone`). */
+export function readDisplayMode(win: Window = window): KeyboardTraceHeader['displayMode'] {
+  const fromQuery = typeof win.matchMedia === 'function' && win.matchMedia('(display-mode: standalone)').matches
+  return fromQuery || Reflect.get(win.navigator, 'standalone') === true ? 'standalone' : 'browser'
+}
+
+const px = (value: string) => {
+  const n = Number.parseFloat(value)
+  return Number.isFinite(n) ? round(n) : 0
+}
+
+/** Reads `env(safe-area-inset-*)` through a hidden probe, which it removes at once. */
+function readSafeArea(doc: Document = document): SafeArea {
+  const probe = doc.createElement('div')
+  probe.setAttribute('aria-hidden', 'true')
+  // Fixed and hidden, so it takes no room and no tap while it is read.
+  probe.style.cssText =
+    'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
+    'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)'
+  doc.body.append(probe)
+  const style = doc.defaultView?.getComputedStyle(probe)
+  const area = {
+    top: px(style?.paddingTop ?? ''),
+    right: px(style?.paddingRight ?? ''),
+    bottom: px(style?.paddingBottom ?? ''),
+    left: px(style?.paddingLeft ?? ''),
+  }
+  probe.remove()
+  return area
+}
+
+/** The trace's header: its start time, the browser, the display mode, the screen and the safe area. */
+export function readHeader(win: Window = window, startedAt: string = new Date().toISOString()): KeyboardTraceHeader {
+  return {
+    startedAt,
+    userAgent: win.navigator.userAgent,
+    displayMode: readDisplayMode(win),
+    screenHeight: win.screen.height,
+    screenWidth: win.screen.width,
+    devicePixelRatio: win.devicePixelRatio,
+    safeArea: readSafeArea(win.document),
+  }
 }
 
 const WINDOW_EVENTS = ['focusin', 'focusout', 'pointerdown', 'pointerup', 'resize', 'scroll'] as const
@@ -116,8 +176,8 @@ export function startKeyboardTrace({
   overlay = true,
 }: TraceOptions = {}): { stop: () => void; trace: () => KeyboardTrace } {
   const ring = createRing<KeyboardTraceSample>(cap)
-  const startedAt = new Date().toISOString()
-  const trace = (): KeyboardTrace => ({ startedAt, userAgent: win.navigator.userAgent, samples: ring.toArray() })
+  const header = readHeader(win)
+  const trace = (): KeyboardTrace => ({ ...header, samples: ring.toArray() })
   const view = overlay ? makeOverlay(win.document) : undefined
   let sent = 'not sent'
   const record = (type: string, target: EventTarget | null) => {

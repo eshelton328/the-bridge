@@ -1,5 +1,12 @@
-import { describe, expect, it, onTestFinished } from 'vitest'
-import { createRing, type KeyboardTraceSample, readSample, startKeyboardTrace } from './keyboardTrace.ts'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import {
+  createRing,
+  type KeyboardTraceSample,
+  readDisplayMode,
+  readHeader,
+  readSample,
+  startKeyboardTrace,
+} from './keyboardTrace.ts'
 
 // `?keyboard-trace` (dev only): one sample per event and animation frame,
 // kept in a ring buffer and POSTed to the dev server. It reads tag names and
@@ -149,5 +156,59 @@ describe('keyboard trace sampler', () => {
 
   it('reads a sample with an empty keyboard when no shell is on the page', () => {
     expect(readSample('raf', null).keyboard).toBe('')
+  })
+
+  it('records the display mode, the screen, the pixel ratio and the safe area in the header', async () => {
+    const running = trace()
+    await expect.poll(() => running.posts.length).toBeGreaterThan(0)
+    const body: unknown = JSON.parse(running.posts[0] ?? '')
+    expect(body).toMatchObject({
+      displayMode: 'browser',
+      screenHeight: screen.height,
+      screenWidth: screen.width,
+      devicePixelRatio: window.devicePixelRatio,
+      safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+    })
+    // The safe-area probe is gone once it is read.
+    expect(document.body.querySelectorAll('div[aria-hidden="true"]:not([data-keyboard-trace])')).toHaveLength(0)
+  })
+
+  it('reads standalone from the display-mode query or from navigator.standalone, else browser', () => {
+    const real = window.matchMedia.bind(window)
+    // A real list that matches, or one that does not, for the standalone query.
+    const standaloneQuery = (matches: boolean) => {
+      const spy = vi
+        .spyOn(window, 'matchMedia')
+        .mockImplementation((query) =>
+          query === '(display-mode: standalone)'
+            ? real(matches ? '(min-width: 0px)' : '(max-width: -1px)')
+            : real(query),
+        )
+      onTestFinished(() => {
+        spy.mockRestore()
+      })
+    }
+    const iosStandalone = (value: boolean) => {
+      Object.defineProperty(navigator, 'standalone', { configurable: true, value })
+      onTestFinished(() => {
+        Reflect.deleteProperty(navigator, 'standalone')
+      })
+    }
+    standaloneQuery(false)
+    expect(readDisplayMode()).toBe('browser')
+    expect(readHeader().displayMode).toBe('browser')
+    iosStandalone(false)
+    expect(readDisplayMode()).toBe('browser')
+    iosStandalone(true)
+    expect(readDisplayMode()).toBe('standalone')
+    expect(readHeader().displayMode).toBe('standalone')
+    Reflect.deleteProperty(navigator, 'standalone')
+    standaloneQuery(true)
+    expect(readDisplayMode()).toBe('standalone')
+    expect(readHeader(window, '2026-11-19T10:00:00.000Z')).toMatchObject({
+      startedAt: '2026-11-19T10:00:00.000Z',
+      userAgent: navigator.userAgent,
+      displayMode: 'standalone',
+    })
   })
 })

@@ -15,7 +15,8 @@ and renders `AppBoundary` > `RouterProvider` and the dev `ErrorTray`.
 - `pageZoom.ts`: on iOS, `main.ts` calls `blockPageZoom()` before the
   first render. See "No page bounce, no page zoom" below.
 - `keyboardTrace.ts`: `?keyboard-trace`, a dev-only debug mode for the
-  phone keyboard. See "Keyboard trace" below.
+  phone keyboard. `keyboardTraceSwitch.ts` decides on load whether it
+  runs. See "Keyboard trace" below.
 
 Only this folder and page entries read stores.
 
@@ -54,10 +55,24 @@ asks apps to allow. That is the owner's decision for his own app.
 
 Open the dev or served app with `?keyboard-trace` (for example
 `/workspaces?state=phoneChatFull&keyboard-trace`) to record what the
-viewport and the shell do while the keyboard opens and closes. `main.ts`
-imports `keyboardTrace.ts` only when `import.meta.env.DEV` is true and the
-URL has the param, so a build has none of it; without the param nothing
-listens.
+viewport and the shell do while the keyboard opens and closes.
+
+The installed Home Screen app (standalone) has no URL bar, so the dev
+server also has a switch. When the URL has no param, the app asks
+`GET /__keyboard-trace/enabled` once on load, and traces with no overlay
+when it answers `{ "enabled": true }`, that is, while the file `ENABLED`
+is in the traces folder (`scripts/AGENTS.md`). bridge-coord turns tracing
+on with `touch <traces>/ENABLED` and off by deleting the file; the app
+reads the switch on its next load. A failed answer, an answer slower
+than 2 s or any answer but `{ "enabled": true }` means off, with no error
+shown.
+
+`main.ts` calls `startKeyboardTraceIfOn()` (`keyboardTraceSwitch.ts`)
+only when `import.meta.env.DEV` is true, and that function imports
+`keyboardTrace.ts` dynamically only when the param or the switch asks
+for it, so a build has none of either; with the trace off nothing
+listens. The mode only reads: it changes no frame, navigation or
+AppShell behaviour.
 
 - It records one sample on each animation frame (`raf`) and on `focusin`,
   `focusout`, `pointerdown`, `pointerup`, `resize` and `scroll` of the
@@ -69,12 +84,20 @@ listens.
   not set it). A focus sample adds the target's `targetTag` and
   `targetRole`, never its text, value, name or id.
 - The last 20000 samples stay in a ring buffer.
-- A fixed overlay in the top right corner shows the live values. It is
+- The trace's header, read once at its start, has `startedAt`,
+  `userAgent`, `displayMode` (`standalone` when
+  `matchMedia('(display-mode: standalone)')` matches or
+  `navigator.standalone` is true, else `browser`), `screenHeight`,
+  `screenWidth`, `devicePixelRatio` and `safeArea` (`top`, `right`,
+  `bottom`, `left` in px, from `env(safe-area-inset-*)` on a hidden probe
+  element that is removed at once).
+- With the param, a fixed overlay in the top right corner shows the live
+  values; from the switch there is none. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,
   no focus and no room. Its raw styles are a debug readout, not a design.
 - Every 2 s (skipping a tick while a POST is out), and at once when the
   page is hidden, it POSTs
-  `{ startedAt, userAgent, samples }` to the dev server's
+  the header and `samples` to the dev server's
   `/__keyboard-trace` (`scripts/keyboardTracePlugin.ts`), which replaces
   the session's file `<startedAt>.json` in the brain's
   `engine/_local/phone-review/traces/`.
