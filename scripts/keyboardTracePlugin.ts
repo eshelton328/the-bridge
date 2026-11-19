@@ -96,12 +96,42 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 const DISPLAY_MODES = new Set(['standalone', 'browser'])
 const SAFE_AREA_SIDES = ['top', 'right', 'bottom', 'left'] as const
 const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value)
+/** A Workspaces state key, such as `phoneChatFull`: letters and digits only, so no free text gets in. */
+const STATE_KEY = /^[A-Za-z][A-Za-z0-9]{0,63}$/
+/** An app path, such as `/workspaces`: no query, hash or dot segment. */
+const PATHNAME = /^(?:\/[A-Za-z0-9_-]+)*\/?$/
+const CHAT_DEVICES = new Set(['phone', 'tablet'])
+const isStateKey = (value: unknown) => value === null || (typeof value === 'string' && STATE_KEY.test(value))
+/** Whether `value` is a record with exactly `keys`, so a field with other text in it is refused. */
+const hasOnly = (value: unknown, keys: readonly string[]): value is Record<string, unknown> =>
+  isRecord(value) && Object.keys(value).length === keys.length && keys.every((key) => Object.hasOwn(value, key))
+
+/** `route`: `{ pathname, state }`, the path and the `state` search param only (null when there is none). */
+function isTraceRoute(route: unknown): boolean {
+  return (
+    hasOnly(route, ['pathname', 'state']) &&
+    typeof route.pathname === 'string' &&
+    route.pathname.length <= 200 &&
+    PATHNAME.test(route.pathname) &&
+    isStateKey(route.state)
+  )
+}
+
+/** `chat`: `{ state, device }`, the Workspaces state key (null for the default) and `phone` or `tablet`. */
+function isTraceChat(chat: unknown): boolean {
+  return (
+    hasOnly(chat, ['state', 'device']) &&
+    isStateKey(chat.state) &&
+    typeof chat.device === 'string' &&
+    CHAT_DEVICES.has(chat.device)
+  )
+}
 
 /**
  * Whether a trace's header is valid: `userAgent` and `samples[]` always, and
- * `displayMode`, `screenHeight`, `screenWidth`, `devicePixelRatio` and
- * `safeArea` checked when present, so a trace from a client older than
- * those fields is still taken.
+ * `displayMode`, `screenHeight`, `screenWidth`, `devicePixelRatio`,
+ * `safeArea`, `route` and `chat` checked when present, so a trace from a
+ * client older than those fields is still taken.
  */
 export function isTraceHeader(trace: unknown): trace is Record<string, unknown> & { samples: unknown[] } {
   if (!isRecord(trace) || typeof trace.userAgent !== 'string' || !Array.isArray(trace.samples)) return false
@@ -113,6 +143,8 @@ export function isTraceHeader(trace: unknown): trace is Record<string, unknown> 
   for (const key of ['screenHeight', 'screenWidth', 'devicePixelRatio'] as const) {
     if (trace[key] !== undefined && !isNumber(trace[key])) return false
   }
+  if (trace.route !== undefined && !isTraceRoute(trace.route)) return false
+  if (trace.chat !== undefined && !isTraceChat(trace.chat)) return false
   const safeArea = trace.safeArea
   if (safeArea === undefined) return true
   return isRecord(safeArea) && SAFE_AREA_SIDES.every((side) => isNumber(safeArea[side]))
@@ -170,7 +202,7 @@ export function createTraceHandler({
       send(
         res,
         400,
-        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio and safeArea when present',
+        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio, safeArea, route and chat when present',
       )
       return
     }

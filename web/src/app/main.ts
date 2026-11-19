@@ -22,12 +22,22 @@ if (container === null) throw new Error('index.html has no #root element')
 installGlobalHandlers()
 markApp()
 blockPageZoom()
-// The keyboard trace, dev only: with `?keyboard-trace`, or when the dev
-// server's switch is on, it samples the viewport and the shell's keyboard
-// inset and sends them to the dev server (keyboardTraceSwitch.ts,
-// keyboardTrace.ts). A build drops both.
+// The keyboard trace, dev only: with `?keyboard-trace` the whole page, or,
+// when the dev server's switch is on, one session per keyboard open in a
+// Workspaces chat, which follows the router's location. It samples the
+// viewport and the shell's keyboard inset and sends them to the dev server
+// (keyboardTraceSwitch.ts, keyboardTrace.ts, keyboardChatTrace.ts). A build
+// drops all three.
 if (import.meta.env.DEV) {
-  void startKeyboardTraceIfOn()
+  void startKeyboardTraceIfOn({
+    route: {
+      current: () => ({ pathname: router.state.location.pathname, search: router.state.location.searchStr }),
+      subscribe: (onChange) =>
+        router.subscribe('onResolved', () => {
+          onChange()
+        }),
+    },
+  })
 }
 createRoot(container, rootErrorOptions).render(
   createElement(

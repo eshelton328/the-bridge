@@ -1,11 +1,13 @@
-// `?keyboard-trace`, a dev-only debug mode for the phone keyboard. main.ts
+// The keyboard trace, a dev-only debug mode for the phone keyboard. main.ts
 // imports this module only when `import.meta.env.DEV` is true and the URL
-// has the param or the dev server's switch is on (keyboardTraceSwitch.ts),
-// so a build leaves it out. It only reads: one sample on
-// each animation frame and on the focus, pointer, resize and scroll events,
-// a small overlay with the live values, and a POST of the whole trace every
-// 2 s to the dev server's endpoint (scripts/keyboardTracePlugin.ts), which
-// writes it to disk.
+// has `?keyboard-trace` or the dev server's switch is on
+// (keyboardTraceSwitch.ts), so a build leaves it out. It only reads: one
+// sample on each animation frame and on the focus, pointer, resize and scroll
+// events, a small overlay with the live values (the param only), and a POST of
+// the whole trace every 2 s to the dev server's endpoint
+// (scripts/keyboardTracePlugin.ts), which writes it to disk. With the param
+// it traces the whole page; from the switch keyboardChatTrace.ts runs one
+// short trace per keyboard open in a Workspaces chat, with the same recorder.
 
 /** One reading of the viewport and the shell's keyboard inset. */
 export type KeyboardTraceSample = {
@@ -28,6 +30,12 @@ export type KeyboardTraceSample = {
 /** The safe-area insets, in px, as `env(safe-area-inset-*)` gives them. */
 type SafeArea = { top: number; right: number; bottom: number; left: number }
 
+/** Where a chat session ran: the path and the `state` search param only, null when there is none. */
+export type TraceRoute = { pathname: string; state: string | null }
+
+/** The chat a session traced: the Workspaces state key (null for the default) and the layout it drew. */
+export type TraceChat = { state: string | null; device: 'phone' | 'tablet' }
+
 /** What the trace records once, at its start, beside the samples. */
 export type KeyboardTraceHeader = {
   startedAt: string
@@ -38,6 +46,10 @@ export type KeyboardTraceHeader = {
   screenWidth: number
   devicePixelRatio: number
   safeArea: SafeArea
+  /** A chat session only (keyboardChatTrace.ts). */
+  route?: TraceRoute
+  /** A chat session only (keyboardChatTrace.ts). */
+  chat?: TraceChat
 }
 
 /** The trace the endpoint takes. */
@@ -96,28 +108,54 @@ const px = (value: string) => {
   return Number.isFinite(n) ? round(n) : 0
 }
 
-/** Reads `env(safe-area-inset-*)` through a hidden probe, which it removes at once. */
-function readSafeArea(doc: Document = document): SafeArea {
+const nextFrame = (win: Window) =>
+  new Promise<void>((done) => {
+    win.requestAnimationFrame(() => {
+      done()
+    })
+  })
+
+/** How long the probe waits for its two frames, in ms: a hidden page runs no frame, and its last POST waits on the read. */
+const PROBE_FRAMES_MS = 250
+
+/**
+ * Reads `env(safe-area-inset-*)` through a hidden probe: it appends the probe, waits two animation frames so the page
+ * has laid it out (at most 250 ms, as a hidden page runs none), reads the probe's computed padding and removes it. `env()` is 0 on every side unless the viewport
+ * meta has `viewport-fit=cover`.
+ */
+export async function readSafeArea(win: Window = window): Promise<SafeArea> {
+  const doc = win.document
   const probe = doc.createElement('div')
   probe.setAttribute('aria-hidden', 'true')
+  probe.setAttribute('data-keyboard-trace-probe', '')
   // Fixed and hidden, so it takes no room and no tap while it is read.
   probe.style.cssText =
     'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;' +
-    'padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)'
+    'padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'
   doc.body.append(probe)
-  const style = doc.defaultView?.getComputedStyle(probe)
-  const area = {
-    top: px(style?.paddingTop ?? ''),
-    right: px(style?.paddingRight ?? ''),
-    bottom: px(style?.paddingBottom ?? ''),
-    left: px(style?.paddingLeft ?? ''),
+  try {
+    let timer = 0
+    await Promise.race([
+      nextFrame(win).then(() => nextFrame(win)),
+      new Promise<void>((done) => {
+        timer = win.setTimeout(done, PROBE_FRAMES_MS)
+      }),
+    ])
+    win.clearTimeout(timer)
+    const style = win.getComputedStyle(probe)
+    return {
+      top: px(style.paddingTop),
+      right: px(style.paddingRight),
+      bottom: px(style.paddingBottom),
+      left: px(style.paddingLeft),
+    }
+  } finally {
+    probe.remove()
   }
-  probe.remove()
-  return area
 }
 
-/** The trace's header: its start time, the browser, the display mode, the screen and the safe area. */
-export function readHeader(win: Window = window, startedAt: string = new Date().toISOString()): KeyboardTraceHeader {
+/** The header's fields read at once: everything but the safe area, which needs a layout. */
+function readHeaderNow(win: Window, startedAt: string): Omit<KeyboardTraceHeader, 'safeArea'> {
   return {
     startedAt,
     userAgent: win.navigator.userAgent,
@@ -125,8 +163,16 @@ export function readHeader(win: Window = window, startedAt: string = new Date().
     screenHeight: win.screen.height,
     screenWidth: win.screen.width,
     devicePixelRatio: win.devicePixelRatio,
-    safeArea: readSafeArea(win.document),
   }
+}
+
+/** The trace's header: its start time, the browser, the display mode, the screen and the safe area. */
+export async function readHeader(
+  win: Window = window,
+  startedAt: string = new Date().toISOString(),
+): Promise<KeyboardTraceHeader> {
+  const now = readHeaderNow(win, startedAt)
+  return { ...now, safeArea: await readSafeArea(win) }
 }
 
 const WINDOW_EVENTS = ['focusin', 'focusout', 'pointerdown', 'pointerup', 'resize', 'scroll'] as const
@@ -166,23 +212,52 @@ function overlayText(s: KeyboardTraceSample, count: number, sent: string): strin
   ].join('\n')
 }
 
-/** Starts the trace; returns the function that stops it and removes every listener and the overlay. */
-export function startKeyboardTrace({
+/** A running recording: `record` adds a sample by hand, `stop` ends it, with one last POST when `flush` is set. */
+export type Recording = {
+  stop: (end?: { flush?: boolean }) => void
+  trace: () => KeyboardTrace
+  record: (type: string, target: EventTarget | null) => void
+}
+
+/**
+ * Records one trace: reads its header (the safe area after a layout), samples each event and frame, and POSTs the
+ * whole trace every `postEveryMs`, skipping a tick while a POST is out, and at once when the page is hidden. No POST
+ * goes before the header is read. `onSample` sees each sample, for a session that ends itself.
+ */
+export function recordKeyboardTrace({
   win = window,
   cap = 20000,
   postEveryMs = 2000,
   endpoint = '/__keyboard-trace',
   post = postJson,
   overlay = true,
-}: TraceOptions = {}): { stop: () => void; trace: () => KeyboardTrace } {
+  extra = {},
+  onSample,
+}: TraceOptions & {
+  /** Header fields beside the read ones, such as a chat session's `route` and `chat`. */
+  extra?: Pick<KeyboardTraceHeader, 'route' | 'chat'>
+  onSample?: (sample: KeyboardTraceSample) => void
+} = {}): Recording {
   const ring = createRing<KeyboardTraceSample>(cap)
-  const header = readHeader(win)
+  // Read now, at the trace's start; the safe area replaces the zeros once the probe has a layout.
+  let header: KeyboardTraceHeader = {
+    ...readHeaderNow(win, new Date().toISOString()),
+    safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
+    ...extra,
+  }
+  const ready = readSafeArea(win).then(
+    (safeArea) => {
+      header = { ...header, safeArea }
+    },
+    () => undefined,
+  )
   const trace = (): KeyboardTrace => ({ ...header, samples: ring.toArray() })
   const view = overlay ? makeOverlay(win.document) : undefined
   let sent = 'not sent'
   const record = (type: string, target: EventTarget | null) => {
     const sample = readSample(type, target, win)
     ring.push(sample)
+    onSample?.(sample)
     return sample
   }
   const onWindow = (event: Event) => record(event.type, event.target)
@@ -206,7 +281,10 @@ export function startKeyboardTrace({
   const send = (force = false) => {
     if (inFlight && !force) return
     inFlight = true
-    post(endpoint, JSON.stringify(trace()))
+    // The samples as they are now; the header joins them once the safe area is read.
+    const samples = ring.toArray()
+    ready
+      .then(() => post(endpoint, JSON.stringify({ ...header, samples })))
       .then((res) => {
         sent = res instanceof Response && !res.ok ? `post ${String(res.status)}` : `sent ${String(ring.size)}`
       })
@@ -225,13 +303,34 @@ export function startKeyboardTrace({
   }
   win.document.addEventListener('visibilitychange', onHidden)
 
-  const stop = () => {
+  let stopped = false
+  const stop = ({ flush = false }: { flush?: boolean } = {}) => {
+    if (stopped) return
+    stopped = true
     win.cancelAnimationFrame(frame)
     win.clearInterval(timer)
     win.document.removeEventListener('visibilitychange', onHidden)
     for (const type of WINDOW_EVENTS) win.removeEventListener(type, onWindow, options)
     for (const type of VIEWPORT_EVENTS) win.visualViewport?.removeEventListener(type, onViewport, options)
     view?.remove()
+    if (flush) send(true)
   }
-  return { stop, trace }
+  return {
+    stop,
+    trace,
+    record: (type, target) => {
+      record(type, target)
+    },
+  }
+}
+
+/** Starts the whole-page trace of `?keyboard-trace`; returns the function that stops it and removes every listener and the overlay. */
+export function startKeyboardTrace(options: TraceOptions = {}): { stop: () => void; trace: () => KeyboardTrace } {
+  const recording = recordKeyboardTrace(options)
+  return {
+    stop: () => {
+      recording.stop()
+    },
+    trace: recording.trace,
+  }
 }

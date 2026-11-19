@@ -4,6 +4,7 @@ import {
   type KeyboardTraceSample,
   readDisplayMode,
   readHeader,
+  readSafeArea,
   readSample,
   startKeyboardTrace,
 } from './keyboardTrace.ts'
@@ -141,6 +142,31 @@ describe('keyboard trace sampler', () => {
     expect(posts[0]).not.toContain('"type":"resize"')
   })
 
+  it('sends its last snapshot when the page is hidden before the safe-area probe had its frames', async () => {
+    // A hidden page runs no animation frame.
+    const frames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0)
+    onTestFinished(() => {
+      frames.mockRestore()
+    })
+    const posts: string[] = []
+    const running = startKeyboardTrace({
+      postEveryMs: 60_000,
+      overlay: false,
+      post: (_endpoint, body) => {
+        posts.push(body)
+        return Promise.resolve(undefined)
+      },
+    })
+    onTestFinished(running.stop)
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    onTestFinished(() => {
+      Reflect.deleteProperty(document, 'visibilityState')
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    await expect.poll(() => posts.length, { timeout: 2000 }).toBe(1)
+    expect(document.querySelector('[data-keyboard-trace-probe]')).toBeNull()
+  })
+
   it('shows an overlay that takes no tap and no focus, and removes it on stop', () => {
     const running = trace()
     const overlay = document.querySelector<HTMLElement>('[data-keyboard-trace]')
@@ -170,10 +196,49 @@ describe('keyboard trace sampler', () => {
       safeArea: { top: 0, right: 0, bottom: 0, left: 0 },
     })
     // The safe-area probe is gone once it is read.
-    expect(document.body.querySelectorAll('div[aria-hidden="true"]:not([data-keyboard-trace])')).toHaveLength(0)
+    expect(document.querySelector('[data-keyboard-trace-probe]')).toBeNull()
   })
 
-  it('reads standalone from the display-mode query or from navigator.standalone, else browser', () => {
+  it('reads the safe area from the probe after two frames of layout, then removes the probe', async () => {
+    // A layout's insets, as an iPhone 390 × 844 gives them with viewport-fit=cover.
+    const insets = document.createElement('div').style
+    insets.padding = '47px 0px 34px 0px'
+    let frames = 0
+    const raf = window.requestAnimationFrame.bind(window)
+    const frameSpy = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((callback) =>
+      raf((time) => {
+        frames += 1
+        callback(time)
+      }),
+    )
+    const reads: { frames: number; connected: boolean; padding: string }[] = []
+    const real = window.getComputedStyle.bind(window)
+    const styleSpy = vi.spyOn(window, 'getComputedStyle').mockImplementation((el, pseudo) => {
+      if (!(el instanceof HTMLElement) || !el.hasAttribute('data-keyboard-trace-probe')) return real(el, pseudo)
+      reads.push({ frames, connected: el.isConnected, padding: el.style.padding })
+      return insets
+    })
+    onTestFinished(() => {
+      frameSpy.mockRestore()
+      styleSpy.mockRestore()
+    })
+    const pending = readSafeArea()
+    const probe = document.querySelector<HTMLElement>('[data-keyboard-trace-probe]')
+    if (probe === null) throw new Error('no probe')
+    const style = real(probe)
+    expect(style.position).toBe('fixed')
+    expect(style.visibility).toBe('hidden')
+    expect(await pending).toEqual({ top: 47, right: 0, bottom: 34, left: 0 })
+    expect(reads).toHaveLength(1)
+    expect(reads[0]?.frames).toBeGreaterThanOrEqual(2)
+    expect(reads[0]?.connected).toBe(true)
+    expect(reads[0]?.padding).toBe(
+      'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
+    )
+    expect(document.querySelector('[data-keyboard-trace-probe]')).toBeNull()
+  })
+
+  it('reads standalone from the display-mode query or from navigator.standalone, else browser', async () => {
     const real = window.matchMedia.bind(window)
     // A real list that matches, or one that does not, for the standalone query.
     const standaloneQuery = (matches: boolean) => {
@@ -196,16 +261,16 @@ describe('keyboard trace sampler', () => {
     }
     standaloneQuery(false)
     expect(readDisplayMode()).toBe('browser')
-    expect(readHeader().displayMode).toBe('browser')
+    expect((await readHeader()).displayMode).toBe('browser')
     iosStandalone(false)
     expect(readDisplayMode()).toBe('browser')
     iosStandalone(true)
     expect(readDisplayMode()).toBe('standalone')
-    expect(readHeader().displayMode).toBe('standalone')
+    expect((await readHeader()).displayMode).toBe('standalone')
     Reflect.deleteProperty(navigator, 'standalone')
     standaloneQuery(true)
     expect(readDisplayMode()).toBe('standalone')
-    expect(readHeader(window, '2026-11-19T10:00:00.000Z')).toMatchObject({
+    expect(await readHeader(window, '2026-11-19T10:00:00.000Z')).toMatchObject({
       startedAt: '2026-11-19T10:00:00.000Z',
       userAgent: navigator.userAgent,
       displayMode: 'standalone',

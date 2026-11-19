@@ -137,6 +137,29 @@ void test('a trace with the display header is taken, and so is one from an older
   assert.equal((await post(url, trace({ displayMode: 'browser', samples: [{ t: 3 }] }))).status, 204)
 })
 
+void test('a chat session trace with its route and chat is taken, the state key may be null', async () => {
+  const dir = tempDir()
+  const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const chat = {
+    route: { pathname: '/workspaces', state: 'phoneChatFull' },
+    chat: { state: 'phoneChatFull', device: 'phone' },
+  }
+  const full = trace({ ...HEADER, ...chat, samples: [{ t: 1 }] })
+  assert.equal((await post(url, full)).status, 204)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), full)
+  const home = { route: { pathname: '/workspaces', state: null }, chat: { state: null, device: 'tablet' } }
+  assert.equal((await post(url, trace({ ...HEADER, ...home, samples: [{ t: 2 }] }))).status, 204)
+})
+
+void test('two chat sessions with their own startedAt are written to two files', async () => {
+  const dir = tempDir()
+  const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const chat = { route: { pathname: '/workspaces', state: null }, chat: { state: null, device: 'phone' } }
+  assert.equal((await post(url, trace({ ...chat, startedAt: '2026-11-19T09:58:12.345Z' }))).status, 204)
+  assert.equal((await post(url, trace({ ...chat, startedAt: '2026-11-19T09:58:20.001Z' }))).status, 204)
+  assert.deepEqual(readdirSync(dir).sort(), ['2026-11-19T09-58-12-345Z.json', '2026-11-19T09-58-20-001Z.json'])
+})
+
 void test('a trace with a malformed display header is refused', async () => {
   const dir = tempDir()
   const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
@@ -149,6 +172,18 @@ void test('a trace with a malformed display header is refused', async () => {
     { safeArea: { top: 1, right: 0, bottom: 0 } },
     { safeArea: { top: '1', right: 0, bottom: 0, left: 0 } },
     { safeArea: [1, 2, 3, 4] },
+    { route: '/workspaces?state=phoneChatFull' },
+    { route: { pathname: '/workspaces' } },
+    { route: { pathname: '/workspaces?q=hello', state: null } },
+    { route: { pathname: '/workspaces/../secret', state: null } },
+    { route: { pathname: 'workspaces', state: null } },
+    { route: { pathname: '/workspaces', state: 'my chat about money' } },
+    { route: { pathname: '/workspaces', state: 'phoneChatFull', q: 'typed text' } },
+    { chat: { state: 'phoneChatFull', device: 'desktop' } },
+    { chat: { state: 'phoneChatFull' } },
+    { chat: { state: 1, device: 'phone' } },
+    { chat: { state: 'phoneChatFull', device: 'phone', title: 'bridge themes' } },
+    { chat: ['phoneChatFull', 'phone'] },
   ]) {
     assert.equal((await post(url, trace({ ...HEADER, ...bad }))).status, 400, JSON.stringify(bad))
   }
