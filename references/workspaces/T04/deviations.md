@@ -8,7 +8,7 @@ library 1.0.0-beta.42), each with its reason. The library gaps are in
 `PhoneChat` at the tablet's width (`device="tablet"`, with `tabletList`):
 `ChatHead size="full"` over `ChatPane size="tablet"`, with "/" typed
 after requirements.md was attached, so the skill list is open over the
-composer (`SkillPicker layout="phone"`, as in M03) with /writer
+composer (`SkillPicker layout="tablet"`, compact as in M03) with /writer
 highlighted, and Stop shows while the chat works. The chat has no tab
 bar, so the render has no Artifacts tab, and no exception is needed.
 
@@ -22,7 +22,7 @@ bar, so the render has no Artifacts tab, and no exception is needed.
   - `105:2227` (Claude's reply with Copy): h +8.
   - `105:2239` (Claude's second reply): y +4, h +5.
   - `105:2261` (the composer): y +275, h +7.
-  - `105:2246` (the skill list): y +284.
+  - `105:2246` (the skill list): y +284, w -76.8.
 - Rules: pass.
 
 ## Deviations
@@ -50,9 +50,13 @@ bar, so the render has no Artifacts tab, and no exception is needed.
   Stop as `Button size="sm"`, so Stop is wider than Figma's 61; the
   attachment chip is 26 high against Figma's 22, with a thin paperclip
   and × against Figma's heavy ones.
-- **The skill list (Skill picker).** The list is `Popover width="lg"`,
-  360 wide as Figma's, and /writer is white on its filled row where
-  Figma draws it in the accent colour, as in M03.
+- **The skill list (Skill picker).** /writer is white on its filled row
+  where Figma draws it in the accent colour, as in M03.
+- **Skill list width (Skill picker, 2026-11-18), `105:2246` w -76.8.**
+  Known difference (D1). The list is `Popover width="composer"`, 40% of
+  the 708 px composer, 283.2 wide against Figma's 360 (it was
+  `width="lg"`, 360). Reason: Erik's comment of 2026-11-18 in the-bridge-review.md (R8): the skill list grows with the composer; on a 756 px tablet 40% is
+  under the 400 cap. The names and descriptions fit on one line.
 - **No caret.** Figma draws the caret after "/" (105:2271). The message
   box has the focus (its border is cyan), but the screenshots hide the
   caret.

@@ -206,7 +206,7 @@ export function ChatPane(props: ChatPaneProps) {
         skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
         value={skills.value}
         open={skills.open}
-        layout={size === 'phone' || size === 'tablet' ? 'phone' : 'pane'}
+        layout={size === 'phone' || size === 'tablet' ? size : 'pane'}
         figma={figma.skills}
         onOpenChange={(open) => {
           // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.

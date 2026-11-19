@@ -53,8 +53,10 @@ screen is `WorkspacesPhone` with `ui.phoneView: 'chat'`: `PhoneChat`
   kind mark and title start at x 44 and 72, as in Figma.
 - **The highlighted skill's name is white (Skill picker).** Figma draws
   /writer in the accent colour on the filled row; `OptionList
-  selectedFill` fills the row and keeps the name in `fg.default`. The list
-  is `Popover width="lg"`, 360 wide against Figma's 358.
+  selectedFill` fills the row and keeps the name in `fg.default`.
+- **Skill list width (Skill picker, 2026-11-18).** Known difference
+  (D1). The list is `Popover width="trigger"`, as wide as the composer:
+  358, as Figma's (it was `width="lg"`, 360). Reason: Erik's comment of 2026-11-18 in the-bridge-review.md (R8): the skill list grows with the composer.
 - **The attachment chip is 26 high with thin icons (Composer attachment
   remove).** Figma's chip (105:2821) is 22 high: padded 8 and 3, a heavy
   12 px paperclip, the name in Geist Medium 11 and a heavy 11 px ×.

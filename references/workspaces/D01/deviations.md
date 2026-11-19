@@ -6,9 +6,8 @@ What still differs from Figma after moving the Workbench onto the library's
 
 ## Checks
 
-- Text: fails on four strings. `Read f-005-the-bridge/requirements.md`
-  (105:214) is `covered`: the skill list lies over it, and three skill
-  descriptions (105:414, 105:417, 105:420) are cut (see Skill list
+- Text: fails on one string. `Read f-005-the-bridge/requirements.md`
+  (105:214) is `covered`: the skill list lies over it (see Skill list
   below). The pane menu covers only the end of the first message's
   bubble, as in Figma, where the menu lies over the same text layer. The
   context percentages pass without an exception: `ContextMeter` draws
@@ -23,8 +22,8 @@ What still differs from Figma after moving the Workbench onto the library's
   the list's two rows (105:370, 105:384) are.
   The shared navigation's items pass too: `rail · Inbox`,
   `rail · Workspaces` and `rail · Projects`.
-- Rules: fail on three `hiddenOverflow` findings, the three cut skill
-  descriptions (see Skill list below).
+- Rules: pass. The three skill descriptions that the 160 px list cut
+  fit in the wider list (see Skill list below).
 
 ## Deviations
 
@@ -64,22 +63,23 @@ What still differs from Figma after moving the Workbench onto the library's
   move action's `submenu`: 200 wide, to the right of the row at its top,
   with the-bridge highlighted, as in Figma. Its box takes no
   `data-figma`, so the position check does not measure it.
-- **Skill list (Skill picker, 2026-11-18).** `105:406` y -30.5, h +27:
-  the popover is 160 wide, as Figma's (`width="xs"`), and its rows show
+- **Skill list width (Skill picker, 2026-11-18), `105:406` w +113.2.**
+  Known difference (D1). The popover is `width="composer"`: 40% of the
+  pane's 683 px composer, 273.2 wide, where Figma draws 160 (it was
+  `width="xs"`, 160). Reason: Erik's comment of 2026-11-18 in the-bridge-review.md (R8): the skill list grows with the composer. In a pane the list is 40% of
+  the composer, from 240 to 400 (`shell.pickerMin`, `shell.pickerMax`).
+  The text column is about 233 px, so the three descriptions that the
+  118 px column cut (Draft a doc from sources 136, Write or check a
+  README 141, Write a PR description 121) now show whole: the text
+  check finds them and the rules check has no `hiddenOverflow`.
+- **Skill list (Skill picker).** `105:406` y -30.5, h +27: its rows show
   each /name in mono, the highlighted /writer filled with no check
-  (`OptionList labelStyle="mono" check={false}`), as in Figma. The
-  popover pads 10 and each row 10, so the text column is about 118 px
-  against Figma's 130. Library beta.51 (#171) keeps a mono label and its
-  description on one line each, cut with a tooltip, where beta.47
-  wrapped each description (`small`, 12; Figma 11) to two lines. The box
-  is 200 high against 173 (248 on beta.47), so its top is at y 161 and
-  it still covers the Read f-005-the-bridge/requirements.md line (Figma
-  y 151.5 to 167.5, clear of the list): the text check reports it
-  `covered`. Three descriptions are wider than 118 px and are cut: Draft
-  a doc from sources (136), Write or check a README (141) and Write a PR
-  description (121), so the text check reports them not visible and the
-  rules check reports each as `hiddenOverflow`. The SKILLS label has no
-  rule after it.
+  (`OptionList labelStyle="mono" check={false}`), as in Figma, each name
+  and description on one line (library #171). The box is 200 high
+  against 173, so its top is at y 161 and it still covers the Read
+  f-005-the-bridge/requirements.md line (Figma y 151.5 to 167.5, clear of
+  the list): the text check reports it `covered`. The SKILLS label has
+  no rule after it.
 - **Shell pane.** `105:337` h -5: the terminal ends 5 px higher than
   Figma's. `TerminalLines` draws the lines in mono in the git colours
   and the block cursor after the prompt "$", as Figma does; the

@@ -21,7 +21,7 @@ the skill list keeps /writer alone under `data.skillsMatching`.
   button (`147:47`) and the ⋯ (`147:58`). Four fail:
   - `148:84` (Erik's message): y -36, h +2.
   - `147:64` (Claude's reply): y -34, h +7.
-  - `147:70` (the skill list): y +352, w +2, h -1.
+  - `147:70` (the skill list): y +352, h -1.
   - `147:79` (the composer): y +345, h +9.
 - Rules: pass.
 
@@ -48,9 +48,12 @@ the skill list keeps /writer alone under `data.skillsMatching`.
   The render draws "SKILLS MATCHING" as `PopoverSection`'s label and
   "/wri" as its `query` (library #136, 1.0.0-beta.30), which keeps its
   case, in `monoSm` (11/16) against Figma's 10.
-  The list is `Popover width="lg"`, 360 wide against Figma's 358 (`147:70`
-  w +2), and /writer is white on its filled row where Figma draws it in the
-  accent colour, as in M03.
+  /writer is white on its filled row where Figma draws it in the accent
+  colour, as in M03.
+- **Skill list width (Skill picker, 2026-11-18).** Known difference
+  (D1). The list is `Popover width="trigger"`, as wide as the composer:
+  358, as Figma's (it was `width="lg"`, 360, `147:70` w +2). Reason:
+  Erik's comment of 2026-11-18 in the-bridge-review.md (R8): the skill list grows with the composer.
 - **The header is one line, 1 px taller (Chat header text).** The title
   is `subtitle` (17/24) over "Opus 5.5 · 42% · 2 folders" in `monoSm`, 40
   high against Figma's 34, so the row pads 4 above and 2 below (Figma 4
