@@ -305,7 +305,9 @@ first: it says what each file of a page folder is for.
   `ChatHead size="full"`, 12 under the status bar, over `ChatPane
   size="tablet"`, 24 in from the sides and 16 under the rule) and to
   `PhoneSideChat` and `SideChatPanel` (in the tablet's sheet the parts sit
-  23 in from its edges and the note is `bodySm`).
+  23 in from its edges and the note is `bodySm`, and the sheet draws no
+  scrim, `scrim={false}`, as T2 has none; M5's phone sheet keeps its
+  scrim).
   T2b adds `trigger` to `ChatActionsMenu`: at a tablet's width the chat's
   bare ⋯ opens D2b's chat actions menu (`data.chatMenu`, `ui.menuFor`)
   in place of M4's sheet.

@@ -3,37 +3,27 @@
 What still differs from Figma T2 · Chat and side chat (M5's side chat with
 T2's note, in a sheet over bridge themes on the iPad mini,
 `tabletSideChat`), after the last fidelity run (`pnpm fidelity workspaces
-T02`, 2026-11-18, library 1.0.0-beta.36), each with its reason. The
+T02`, 2026-11-18, library 1.0.0-beta.65), each with its reason. The
 library gaps are in `web/src/pages/workspaces/LIBRARY_GAPS.md`. The
 screen is M3's `PhoneChat` at the tablet's width (`device="tablet"`,
-with `tabletList`) and `ui.sideChatOpen` set: `PhoneSideChat` (`BottomSheet
-size="sm"` with no title row) holds `SideChatPanel placement="sheet"
-device="tablet"`, and the focus is in its message box. The chat has no
+with `tabletList`) and `ui.sideChatOpen` set: `PhoneSideChat`
+(`BottomSheet size="sm" scrim={false}` with no title row) holds
+`SideChatPanel placement="sheet" device="tablet"`, and the focus is in
+its message box. The chat has no
 tab bar, so the render has no Artifacts tab. `exceptions.json` accepts
-the main composer's two covered strings, as M05's does.
+the main composer's two covered strings, as M05's does; this run needs
+neither (see Text).
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render, but 11 are not
-  visible and 2 are extra:
-  - Not visible, covered by the sheet's scrim (Tablet side chat sheet):
-    `bridge themes` (105:1819), `omni-brain` (105:1820), `Working`
-    (105:1824), `Opus 5.5` (105:1835), `42%` (105:1841), `context`
-    (105:1842), `Brainstorm layouts for the-bridge that go beyond a
-    sidebar and a chat.` (105:1896), `Read
-    f-005-the-bridge/requirements.md` (105:1899) and `Three directions: a
-    tiled home, a star map of agents, and a split-pane workbench. The
-    workbench suits long sessions on the desktop.` (105:1905). Figma draws
-    no scrim on T2, so its chat stays readable above the sheet; the
-    library's `BottomSheet` always dims the page under it.
-  - Not visible: `Claude` (105:1935) and `Copy` (105:1942), the side
-    answer's name and Copy. Each string shows twice in Figma, once in the
-    main chat and once in the sheet; the main chat's pair is under the
-    scrim, so the check finds one visible occurrence for two layers.
-  - Extra: `Stop` and `Message, or / for a skill`, the main chat's
-    composer. It stays at the bottom of the chat (d-107), under the sheet,
-    which covers it whole; the text check counts a covered run as extra
-    text. `exceptions.json` accepts both, with M05's reason.
+- Text: pass. All 19 Figma strings are in the render and visible, with
+  no extra text. The sheet draws no scrim (`BottomSheet scrim={false}`,
+  library #198, 1.0.0-beta.65), so the chat's header and transcript
+  above it, and the main chat's `Claude` and `Copy`, are no longer
+  covered. The run counts no extra text, so `exceptions.json`'s two
+  entries (the main composer's `Stop` and `Message, or / for a skill`
+  under the sheet) match nothing (`excepted: 0`, as on main before this
+  change); the check does not report an unused exception, so they stay.
 - Position: fail, 4 of 10 layers pass: the header (`105:1810`), the back
   button (`105:1812`), the ⋯ (`105:1827`) and Erik's message
   (`105:1895`). Six fail:
@@ -47,11 +37,6 @@ the main composer's two covered strings, as M05's does.
 
 ## Deviations
 
-- **The chat above the sheet is dimmed (Tablet side chat sheet), the 11
-  not visible strings above.** Figma's tablet sheet (105:1914) has no
-  scrim, so the header and the transcript keep their full colour.
-  `BottomSheet` always draws `overlay.scrim` under the sheet, and a page
-  may not target its classes, so the chat shows dimmed behind it.
 - **The sheet is shorter and starts much lower (Tablet side chat
   sheet), `105:1917` y +193, `105:1928` y +195, `105:1929` y +196,
   `105:1931` y +197.** Figma's sheet is 560 high from y 598 to the
@@ -110,5 +95,5 @@ the main composer's two covered strings, as M05's does.
   13 on a 19 px line; `Message from="user"` draws `body` (14/20), so it
   is about 7% wider (review T06 F1).
 - **What the side chat does not do yet.** The composer does not send; ×,
-  the scrim and Escape close the sheet, and Side chat in the chat actions
+  a press on the chat above the sheet and Escape close the sheet, and Side chat in the chat actions
   sheet opens it again.
