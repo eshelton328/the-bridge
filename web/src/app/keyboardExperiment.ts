@@ -10,8 +10,8 @@
 //   screen, which needs no scroll, and moves the focus to the field once
 //   the keyboard is up (or after `proxyWaitMs`); iOS keeps the keyboard
 //   open when the focus moves between fields.
-// A press on a `data-keyboard-keep` control (Send, Stop, Attach), a mouse
-// or a pen, or a field that already has the focus, is left alone. main.ts
+// A press on a control (Send, Stop, Attach), a mouse or a pen, or a field
+// that already has the focus, is left alone. main.ts
 // imports this module only in development, so a build has none of it.
 
 /** An experiment's name, from `?kb-experiment=` or the dev server's switch. */
@@ -31,9 +31,10 @@ export function experimentFromSearch(search: string): KeyboardExperiment | null 
 }
 
 /** The composer field that a press on `target` would focus: a text area or text input in a ScrollFrame footer. */
+// The composer's field and its Send, Stop and Attach controls sit in one `data-keyboard-keep` wrapper, so only the
+// pressed element itself counts: a press on a field is taken, and a press on a control is never one on a field.
 export function pressedField(target: EventTarget | null): HTMLTextAreaElement | HTMLInputElement | null {
   if (!(target instanceof Element)) return null
-  if (target.closest('[data-keyboard-keep]') !== null) return null
   if (target.closest('.scroll-frame__footer') === null) return null
   const field = target.closest('textarea, input')
   if (field instanceof HTMLTextAreaElement) return field
