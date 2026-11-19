@@ -13,6 +13,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { mergePrefixPaths } from './mergePrefix.ts'
 
 const root = fileURLToPath(new URL('../..', import.meta.url))
 const gitleaks = process.env.GITLEAKS ?? 'gitleaks'
@@ -83,6 +84,14 @@ void test('a single-quoted value is a literal, so a $ in it is found too (Codex 
   assert.deepEqual(scan({ 'deploy.sh': ['PASS' + 'WORD="$' + 'FROM_ENV_VALUE"'] }), [])
 })
 
+void test('a whole single-quoted GitHub expression is not a literal, and every other single-quoted $ value is (library #262, Codex review of #225)', () => {
+  assert.deepEqual(scan({ 'deploy.yml': ['PASS' + "WORD='${{ secrets.DB_PASS" + "WORD }}'"] }), [])
+  assert.deepEqual(scan({ 'deploy.yml': ['PASS' + "WORD='${{secrets.DB_PASS" + "WORD}}'"] }), [])
+  assert.deepEqual(scan({ 'deploy.sh': ['PASS' + "WORD='$x" + literal + "'"] }), ['env-assignment'])
+  assert.deepEqual(scan({ 'deploy.sh': ['PASS' + "WORD='${" + literal + "}'"] }), ['env-assignment'])
+  assert.deepEqual(scan({ 'deploy.sh': ['PASS' + "WORD='${{x}}" + literal + "'"] }), ['env-assignment'])
+})
+
 void test('a prefixed secret-named key is still found, and a value from a variable is not', () => {
   assert.deepEqual(scan({ 'deploy.sh': ['DB_PASS' + 'WORD="' + literal + '"'] }), ['env-assignment'])
   assert.deepEqual(scan({ 'deploy.sh': ['PASS' + 'WORD="$' + 'FROM_ENV_VALUE"'] }), [])
@@ -113,7 +122,11 @@ void test('both CI scans ignore gitleaks:allow comments (library #252)', () => {
 // A repository whose last commit is a merge that resolves a conflict with
 // a planted secret; the rule IDs gitleaks finds in its last commit with
 // these log options.
-function scanMerge(logOpts: (range: string) => string): string[] {
+function scanMerge(
+  logOpts: (range: string) => string,
+  path = 'f.txt',
+  resolved = 'API_TOK' + 'EN="' + literal + '"',
+): string[] {
   const dir = mkdtempSync(join(tmpdir(), 'secret-merge-'))
   const config = join(dir, 'gitleaks.toml')
   const report = join(dir, 'report.json')
@@ -123,11 +136,12 @@ function scanMerge(logOpts: (range: string) => string): string[] {
   const git = (...args: string[]) =>
     spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', ...args], { cwd: repo, encoding: 'utf8' })
   const put = (text: string) => {
-    writeFileSync(join(repo, 'f.txt'), text + '\n')
+    mkdirSync(dirname(join(repo, path)), { recursive: true })
+    writeFileSync(join(repo, path), text + '\n')
   }
   git('init', '-q', '-b', 'main')
   put('a')
-  git('add', 'f.txt')
+  git('add', path)
   git('commit', '-qm', 'base')
   git('checkout', '-qb', 'side')
   put('b')
@@ -136,8 +150,8 @@ function scanMerge(logOpts: (range: string) => string): string[] {
   put('c')
   git('commit', '-qam', 'main')
   git('merge', '-q', 'side')
-  put('API_TOK' + 'EN="' + literal + '"')
-  git('add', 'f.txt')
+  put(resolved)
+  git('add', path)
   git('commit', '-qm', 'merge')
   const range = git('rev-parse', 'HEAD~1').stdout.trim() + '..' + git('rev-parse', 'HEAD').stdout.trim()
   const args = ['git', '--no-banner', '--redact', '--exit-code', '0', '--config', config]
@@ -188,4 +202,41 @@ void test('the Figma fileKey passes only on the fileKey line of a saved frame', 
   assert.deepEqual(scan({ 'references/inbox/D01/frame.json': ['{', key, '}'] }), [])
   assert.deepEqual(scan({ 'references/workspaces/D02b/frame.json': ['{', key, '}'] }), [])
   assert.deepEqual(scan({ 'web/src/figma.json': ['{', key, '}'] }), ['generic-api-key'])
+})
+
+void test('each exception still holds in a merge conflict hunk, whose path gitleaks names b/<path>, and only there (library #262)', () => {
+  const remerge = (range: string) => '--diff-merges=remerge ' + range
+  const key = '"fileKey": "PZoW9BBu' + '43qRgon1KhJcwU",'
+  assert.deepEqual(scanMerge(remerge, 'references/inbox/D01/frame.json', key), [])
+  assert.deepEqual(scanMerge(remerge, 'web/src/figma.json', key), ['generic-api-key'])
+  const figmaText = `  { label: 'Messages', value: '122 from ${term} · 991 replies' },`
+  assert.deepEqual(scanMerge(remerge, 'web/src/pages/toolkit/states/shared/activitySources.ts', figmaText), [])
+  assert.deepEqual(scanMerge(remerge, 'web/src/pages/inbox/rows.ts', figmaText), ['personal-term'])
+  assert.deepEqual(scanMerge(remerge, 'references/toolkit/D18/frame.json', `"text": "${term}"`), [])
+  assert.deepEqual(scanMerge(remerge, 'docs/b/references/x.md', `Ask ${term}.`), ['personal-term'])
+})
+
+void test('the job secrets fails a PR that adds or changes a file under a top-level b/ folder, which would share the exceptions (Codex review of #225)', () => {
+  assert.deepEqual(mergePrefixPaths(['b/references/x.md', 'web/b/x.ts', 'references/b/x.json', 'b.md']), [
+    'b/references/x.md',
+  ])
+  const job = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8').split('\n  secrets:\n')[1] ?? ''
+  assert.match(job, /run: node scripts\/secrets\/mergePrefix\.ts "\$BASE" "\$HEAD"/)
+  const repo = mkdtempSync(join(tmpdir(), 'secret-prefix-'))
+  const git = (...args: string[]) =>
+    spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', ...args], { cwd: repo, encoding: 'utf8' })
+  git('init', '-q', '-b', 'main')
+  writeFileSync(join(repo, 'a.md'), 'a\n')
+  git('add', '.')
+  git('commit', '-qm', 'base')
+  mkdirSync(join(repo, 'b/references'), { recursive: true })
+  writeFileSync(join(repo, 'b/references/x.md'), 'x\n')
+  git('add', '.')
+  git('commit', '-qm', 'b')
+  const script = join(root, 'scripts/secrets/mergePrefix.ts')
+  const run = spawnSync(process.execPath, [script, 'HEAD~1', 'HEAD'], { cwd: repo, encoding: 'utf8' })
+  assert.equal(run.status, 1, run.stdout + run.stderr)
+  assert.match(run.stdout, /b\/references\/x\.md/)
+  const clean = spawnSync(process.execPath, [script, 'HEAD~1', 'HEAD~1'], { cwd: repo, encoding: 'utf8' })
+  assert.equal(clean.status, 0, clean.stdout + clean.stderr)
 })
