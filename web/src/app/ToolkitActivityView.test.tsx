@@ -191,6 +191,17 @@ describe('the Activity view on the desktop (D11)', () => {
     await expect.poll(() => root.querySelector('[data-figma="kpis"]')).toBeNull()
     expect(panel(root)).toBeNull()
   })
+
+  it("wraps each run's line beside the run panel, so no word is cut (D12)", async () => {
+    const { root } = await renderToolkit('toolkitActivityRun')
+    await expect.poll(() => panel(root)).not.toBeNull()
+    for (const name of ['writing-reviewer', 'pr-description-checker', 'skill-eval-round']) {
+      const line = element(root, `[data-figma="run · ${name}"] .list-row__lines > span`)
+      // Figma's lines (445:251, 445:271, 445:290) show in full; the view is 420 narrower here, so they wrap.
+      expect(line.scrollWidth).toBeLessThanOrEqual(line.clientWidth)
+      expect(getComputedStyle(line).textOverflow).not.toBe('ellipsis')
+    }
+  })
 })
 
 describe('the Activity view on a tablet (T9) and the phone (M10)', () => {
