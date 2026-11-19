@@ -8,7 +8,6 @@
 import {
   BackRow,
   ChevronRightIcon,
-  Container,
   Inline,
   Panel,
   Stack,
@@ -16,7 +15,7 @@ import {
   TruncatedText,
 } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { detailContainerSize } from '../../../lib/containerSize.ts'
+import { compactChatPadding } from '../../../lib/compactPadding.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionGuard } from '../blocks/DiscussionGuard.tsx'
 import { DiscussionThread } from '../blocks/DiscussionThread.tsx'
@@ -24,12 +23,6 @@ import { ModelContext } from '../blocks/ModelContext.tsx'
 import type { ProposalControl } from '../blocks/ProposalCard.tsx'
 import type { InboxDiscussion, InboxDrafts, InboxNextStep } from '../types.ts'
 
-// The page fills the detail's height and no more: Back stays at the top, the reply box at the bottom (d-107).
-const fill = css({ flex: '1', minH: '[0]' })
-// A tablet chat has no tab bar, so AppShell keeps the home indicator's 34 (`shell.safeAreaBottom`, library beta.42)
-// under the page. Figma ends the reply box 40 over the frame's end (T5 346:6416, T17 402:11226), so the page pads 6, not
-// the tablet Container's 20.
-const tabletFoot = css({ pb: '6' })
 const spacer = css({ flex: '1' })
 // T17 402:11176: SemiBold 15, as the chat's task card (T5 346:6380).
 const title = css({ textStyle: 'paneTitle', m: '0', flex: '1' })
@@ -69,52 +62,54 @@ export function DiscussionPage({
 }: DiscussionPageProps) {
   const phone = layout === 'phone'
   return (
-    <Container size={detailContainerSize(layout)} className={layout === 'tablet' ? cx(fill, tabletFoot) : fill}>
-      <DiscussionThread
-        discussion={discussion}
-        control={control}
-        centred={false}
-        className={thread}
-        drafts={drafts}
-        stacked={phone}
-        onSend={onSend}
-        gap="8"
-        header={
-          <Inline gap="8" align="center" data-figma="nav">
-            <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
-            <span className={spacer} />
-            {phone ? null : (
-              <>
-                <ModelContext discussion={discussion} centred />
-                <span className={spacer} />
-              </>
-            )}
-            <StatusPill tone="running" label="Discussion" dot />
-          </Inline>
-        }
-        before={
-          <div data-figma="task · discussing">
-            {/* Figma's task card (M18 and T17 task · discussing) pads 10 at the top and bottom and 12 at the sides: the
+    // The thread's frame is the shell detail's own child, with the page's padding, so AppShell docks the reply box on the
+    // on-screen keyboard (R21). It fills the detail's height and no more: Back stays at the top, the reply box at the
+    // bottom (d-107).
+    <DiscussionThread
+      frameClassName={compactChatPadding[layout === 'tablet' ? 'tablet' : 'phone']}
+      discussion={discussion}
+      control={control}
+      centred={false}
+      className={thread}
+      drafts={drafts}
+      stacked={phone}
+      onSend={onSend}
+      gap="8"
+      header={
+        <Inline gap="8" align="center" data-figma="nav">
+          <BackRow label="Task" backLabel="Back to the task" onBack={onClose} />
+          <span className={spacer} />
+          {phone ? null : (
+            <>
+              <ModelContext discussion={discussion} centred />
+              <span className={spacer} />
+            </>
+          )}
+          <StatusPill tone="running" label="Discussion" dot />
+        </Inline>
+      }
+      before={
+        <div data-figma="task · discussing">
+          {/* Figma's task card (M18 and T17 task · discussing) pads 10 at the top and bottom and 12 at the sides: the
                 notice Panel, not the section one (12 and 16). */}
-            <Panel variant="notice">
-              <Stack gap="4">
-                <Inline gap="8" align="center">
-                  <h1 className={phone ? cx(title, oneLine) : title}>
-                    {phone ? <TruncatedText>{task.title}</TruncatedText> : task.title}
-                  </h1>
-                  <StatusPill tone={task.status.tone} label={task.status.label} dot />
-                  <span className={chevron} data-figma="chevron · open task">
-                    <ChevronRightIcon size="16" />
-                  </span>
-                </Inline>
-                <span className={meta}>{place}</span>
-                {phone ? <ModelContext discussion={discussion} /> : null}
-                <DiscussionGuard text={discussion.guard} />
-              </Stack>
-            </Panel>
-          </div>
-        }
-      />
-    </Container>
+          <Panel variant="notice">
+            <Stack gap="4">
+              <Inline gap="8" align="center">
+                <h1 className={phone ? cx(title, oneLine) : title}>
+                  {phone ? <TruncatedText>{task.title}</TruncatedText> : task.title}
+                </h1>
+                <StatusPill tone={task.status.tone} label={task.status.label} dot />
+                <span className={chevron} data-figma="chevron · open task">
+                  <ChevronRightIcon size="16" />
+                </span>
+              </Inline>
+              <span className={meta}>{place}</span>
+              {phone ? <ModelContext discussion={discussion} /> : null}
+              <DiscussionGuard text={discussion.guard} />
+            </Stack>
+          </Panel>
+        </div>
+      }
+    />
   )
 }
