@@ -97,9 +97,14 @@ Both modes record the same way:
   window (capture, so a scroll area's scroll counts) and `vv-resize` and
   `vv-scroll` of `window.visualViewport`. Each sample has `t`
   (`performance.now()`), `type`, `innerHeight`, `vvHeight`,
-  `vvOffsetTop`, `vvPageTop`, `scrollY` and `keyboard`, the computed
+  `vvOffsetTop`, `vvPageTop`, `scrollY`, `scrollTop`
+  (`document.scrollingElement.scrollTop`), `rootTop` (the top of `#root`,
+  which is fixed at 0, so any other value is a moved page), `composerTop`
+  (the top of the composer's `data-keyboard-keep` wrapper in a ScrollFrame
+  footer; null with none) and `keyboard`, the computed
   `--app-shell-keyboard` of `.app-shell__root` (empty when AppShell has
-  not set it). A focus sample adds the target's `targetTag` and
+  not set it). `pnpm keyboard:slide <trace.json>` lists the samples that
+  show a moved page (screen review R27). A focus sample adds the target's `targetTag` and
   `targetRole`, never its text, value, name or id.
 - The last 20000 samples stay in a ring buffer.
 - The trace's header, read at its start (each session's own start), has `startedAt`,
@@ -114,8 +119,9 @@ Both modes record the same way:
   the device's insets; without it every side is 0. The header also has
   `reducedMotion` (whether `prefers-reduced-motion: reduce` matches),
   `kbExperiment` (the `kb-experiment` search param when it is a key of
-  letters, digits, `_` and `-`, at most 32, else null; no other search
-  param is recorded) and `automated` (`navigator.webdriver`).
+  letters, digits, `_` and `-`, at most 32, else the experiment that the
+  dev server's switch put in force, else null; no other search param is
+  recorded) and `automated` (`navigator.webdriver`).
 - With the param, a fixed overlay in the top right corner shows the live
   values; from the switch there is none. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,
@@ -126,3 +132,25 @@ Both modes record the same way:
   `/__keyboard-trace` (`scripts/keyboardTracePlugin.ts`), which replaces
   the session's file `<startedAt>.json` in the brain's
   `engine/_local/phone-review/traces/`.
+
+## Keyboard experiments
+
+`keyboardExperiment.ts` (dev only) tries two ways to give the composer the
+focus with no iOS scroll into view (screen reviews R26 and R27):
+
+- `prevent`: a touch tap on a composer field that has no focus cancels
+  its `touchend` and calls `focus({ preventScroll: true })` in that same
+  handler. A tap in a focused composer keeps its default, so the caret
+  and the selection still work.
+- `proxy`: the same tap focuses a transparent field at the place where
+  the composer docks above the keyboard, then moves the focus and any
+  typed text to the composer when the keyboard is up. An IME composition
+  holds the move until it ends. The proxy is `aria-hidden` with
+  `tabindex="-1"`.
+
+`?kb-experiment=proxy` or `?kb-experiment=prevent` picks one in a
+browser. With no param, the app asks `GET /__keyboard-trace/experiment` at
+the start, every 5 s while it is visible and when it becomes visible.
+bridge-coord writes `proxy` or `prevent` in the file `EXPERIMENT` in the
+traces folder, and deletes the file to stop the experiment. Under
+automation the app does not ask the switch.

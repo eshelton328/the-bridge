@@ -14,7 +14,7 @@ import {
 // kept in a ring buffer and POSTed to the dev server. It reads tag names and
 // roles of focused elements, never their text, value, name or id.
 
-const FIELDS = ['t', 'type', 'innerHeight', 'vvHeight', 'vvOffsetTop', 'vvPageTop', 'scrollY', 'keyboard']
+const FIELDS = ['t', 'type', 'innerHeight', 'vvHeight', 'vvOffsetTop', 'vvPageTop', 'scrollY', 'scrollTop', 'rootTop', 'composerTop', 'keyboard']
 
 function mountShell(): HTMLElement {
   const host = document.createElement('div')
@@ -47,6 +47,33 @@ function trace(cap = 20000) {
 const ofType = (samples: KeyboardTraceSample[], type: string) => samples.filter((s) => s.type === type)
 
 describe('keyboard trace sampler', () => {
+  it('reads the document scroll, the app root top and the composer top, so a page that iOS moves shows (R27)', () => {
+    const own = document.getElementById('root')
+    const root = own ?? document.createElement('div')
+    if (own === null) {
+      root.id = 'root'
+      document.body.append(root)
+    }
+    const style = root.getAttribute('style')
+    root.style.cssText = 'position:fixed;left:0;right:0;height:100px;top:-403px'
+    const footer = document.createElement('div')
+    footer.className = 'scroll-frame__footer'
+    footer.innerHTML = '<div data-keyboard-keep="" style="position:fixed;top:331px;height:40px"><textarea></textarea></div>'
+    document.body.append(footer)
+    onTestFinished(() => {
+      footer.remove()
+      if (own === null) root.remove()
+      else if (style === null) root.removeAttribute('style')
+      else root.setAttribute('style', style)
+    })
+    const moved = readSample('raf', null)
+    expect(moved).toMatchObject({ rootTop: -403, composerTop: 331, scrollTop: 0 })
+    root.style.top = '0px'
+    expect(readSample('raf', null).rootTop).toBe(0)
+    footer.remove()
+    expect(readSample('raf', null).composerTop).toBeNull()
+  })
+
   it('records one sample for each event type, with the viewport fields and the shell keyboard inset', async () => {
     const input = mountShell().querySelector('input')
     if (input === null) throw new Error('no input')
