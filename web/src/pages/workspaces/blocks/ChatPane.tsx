@@ -222,7 +222,7 @@ export function ChatPane(props: ChatPaneProps) {
   )
   const composerBox =
     skills === undefined ? (
-      <div ref={areaRef} data-figma={figma.composer}>
+      <div ref={areaRef} data-figma={figma.composer} data-keyboard-keep="">
         {box}
       </div>
     ) : (
@@ -248,7 +248,7 @@ export function ChatPane(props: ChatPaneProps) {
       >
         {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
             (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
-        <div ref={areaRef} data-figma={figma.composer} role="combobox" aria-label={skills.label}>
+        <div ref={areaRef} data-figma={figma.composer} data-keyboard-keep="" role="combobox" aria-label={skills.label}>
           {box}
         </div>
       </SkillPicker>

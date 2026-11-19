@@ -137,7 +137,9 @@ export function PromptSection({
         prompt.state !== 'suggested' ? undefined : (
           <>
             {/* Reset brings back the suggested prompt, so it does nothing until Erik edits it (Figma D1 346:359, T2 346:5736). */}
+            {/* Done and Reset act while the editor's keyboard is up, so a tap on them keeps it (library #213). */}
             <Button
+              data-keyboard-keep=""
               size="sm"
               textSize="xs"
               disabled={!edited}
@@ -149,6 +151,7 @@ export function PromptSection({
               Reset
             </Button>
             <Button
+              data-keyboard-keep=""
               size="sm"
               textSize="xs"
               onClick={() => {

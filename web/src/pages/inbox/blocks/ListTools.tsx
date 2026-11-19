@@ -181,7 +181,7 @@ export function ListTools({
     </Button>
   )
   return (
-    <Inline gap="6" align="center" className={row} data-figma="list tools">
+    <Inline gap="6" align="center" className={row} data-figma="list tools" data-keyboard-keep="">
       <div className={search}>
         <SearchField
           label="Search the inbox"
