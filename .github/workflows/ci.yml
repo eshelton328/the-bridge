@@ -118,17 +118,18 @@ jobs:
   # (scripts/fidelity/AGENTS.md): each Figma string is in the render and
   # seen, no extra text, no clipped text, no scroll bar, full height.
   # POSITION is left out until frames pass it. No image is compared: the
-  # side-by-side PNGs are uploaded for a reviewer only. Frames on main
-  # still fail these checks, and ship-pr stops on any red check, so until
-  # this job passes on main it runs only on a push to main and by hand.
-  # Then it runs on each PR and becomes a required check.
+  # side-by-side PNGs are uploaded for a reviewer only. Every frame passed
+  # on main f83cc7db (run 44487438612), so the job runs on each PR too, and
+  # its page jobs are required checks of the protect-main ruleset. Inbox
+  # runs only on a push to main and by hand until its T12 passes each time
+  # on Linux: its prompt textarea overflowed (hiddenOverflow) on main
+  # 23e1fea5 (run 44488952964) and passed on db384871 (run 44490270508).
   fidelity:
-    if: github.event_name != 'pull_request'
     name: fidelity (${{ matrix.page }})
     strategy:
       fail-fast: false
       matrix:
-        page: [inbox, workspaces, artifacts, toolkit]
+        page: ${{ github.event_name == 'pull_request' && fromJSON('["workspaces", "artifacts", "toolkit"]') || fromJSON('["inbox", "workspaces", "artifacts", "toolkit"]') }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
