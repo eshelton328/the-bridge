@@ -14,6 +14,7 @@ The Figma references the checks read are in
 | `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px), measured below Figma's status bar on a tablet or phone                  |
 | `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills its viewport's height, no stretched pill                                              |
 | `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs) |
+| `settle.ts`          | Waits until each animation that ends on its own has finished, so the checks measure a state's last frame                                                           |
 | `sideBySide.ts`      | Draws the side-by-side PNG (Figma left, render right) in a new page, so no popover of the story leaks into it                                                      |
 | `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                                                                                          |
 | `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply and an optional characters file                                         |
