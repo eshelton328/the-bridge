@@ -38,6 +38,56 @@
       "layer": "482:142",
       "iconSize": 24,
       "reason": "Figma draws the rail's icon/toolkit at 20 px (482:142) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    },
+    {
+      "layer": "500:9871",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9871) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9877",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9877) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9883",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/agent (500:9883) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9890",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/agent (500:9890) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9897",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9897) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9903",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9903) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9909",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9909) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9915",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/skill (500:9915) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9924",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/rule (500:9924) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
+    },
+    {
+      "layer": "500:9930",
+      "iconSize": 16,
+      "reason": "Figma draws the link row's icon/agent (500:9930) at 13 px in the Links panel; the library's MapNode draws its kind icon at 16, or at 12 only with density=\"compact\", which also changes the node's height and text, so the render's icon is 16 (LIBRARY_GAPS.md, MapNode icon size)."
     }
   ]
 }

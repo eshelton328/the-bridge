@@ -79,9 +79,7 @@ page restyle.
 - **Explain and Code switch.** `ViewSwitch size="md"` is 32 high against
   34, within the position check. Gap: Explain and Code switch.
 - **Path badge icon.** Figma's `icon/code` in the path badge (440:1522) is
-  16 px; `PathBadge` draws its icon at 12 and takes no size, so the
-  render's icon is 12 and `exceptions.json` names 440:1522 (gap: Path
-  badge icon).
+  16 px; `PathBadge iconSize="md"` (library #228) draws it at 16.
 
 ## Second review
 
