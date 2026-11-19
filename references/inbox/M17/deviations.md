@@ -72,8 +72,10 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Discuss in the nav.** On the phone Discuss sits in the nav before
   Snooze and Dismiss, as Figma draws it (402:1945); it is the library
   `Button` at its default size, 32 high. Figma draws it in violet with a
-  violet border; the library's button is the neutral secondary one.
-  Library gap: Discuss toggle. It opens the discussion page (M18), with
+  violet border. The closed toggle stays the neutral secondary
+  `Button`: Figma draws the closed and the open toggle in the same violet,
+  and here only the open (`pressed`) one is violet, so the two states
+  differ (WCAG 1.4.11; d-100). It opens the discussion page (M18), with
   no tab bar; the Inbox route tests check it on the phone.
 - **Start.** Pinned above the tab bar, full width, as in M2 (`sticky
   action` passes); the bar is opaque.
