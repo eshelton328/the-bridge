@@ -80,7 +80,8 @@ export const ToolkitMapTablet: Story = {
   name: 'T2: the map on a tablet, with writer selected in the bar at its foot',
   args: { data: toolkitStates.toolkitMapTablet.data, ui: toolkitStates.toolkitMapTablet.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Rules, hooks')).toBeVisible()
+    // On the phone the minimap (aria-hidden) draws the headings again; the play checks the map's own heading.
+    await expect(canvas.getByText('Rules, hooks', { ignore: 'script, style, [data-minimap] *' })).toBeVisible()
     await expect(canvas.getByRole('button', { name: /writer/, pressed: true })).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Open writer' })).toBeVisible()
   },
