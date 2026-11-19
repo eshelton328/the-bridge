@@ -165,9 +165,14 @@ export function checkPosition(
       })
     } else passed.push(box.key)
   }
-  const iconSizes = iconSizeDiffs({ ...ref, tolerance, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar)
+  const sizes = new Map(
+    exceptions.position.flatMap((p) => (p.iconSize === undefined ? [] : [[p.layer, p.iconSize] as const])),
+  )
+  const iconSizes = iconSizeDiffs({ ...ref, tolerance, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar, sizes)
+  excepted.push(...iconSizes.excepted)
   for (const diff of iconSizes.diffs) {
-    if (allowed.has(diff.key)) excepted.push(diff.key)
+    // An entry with no iconSize passes the icon at any size.
+    if (allowed.has(diff.key) && !sizes.has(diff.key)) excepted.push(diff.key)
     else diffs.push(diff)
   }
   return {

@@ -60,9 +60,11 @@ The Figma references the checks read are in
      `iconSize`: a Figma icon (a layer named `icon/…`, `kind · …`,
      `logo · …` or `chevron · …`) whose render icon,
      the svg whose centre is nearest within the tolerance, is more than
-     2 px bigger or smaller (`checkIcons.ts`). Its key is the icon's node
-     id, which a `position` exception can name. A Figma icon with no
-     render icon at its place is not compared.
+     2 px bigger or smaller (`checkIcons.ts`). An svg that another
+     element draws over at its centre is not matched. Its key is the
+     icon's node id, which a `position` exception can name; give the
+     entry `"iconSize": <px>` so only that render size (± 2 px) passes.
+     A Figma icon with no render icon at its place is not compared.
    - `rules.findings`: `hiddenOverflow`, `scrollBar`, `fullHeight`,
      `badgeFullWidth`, each with the element's selector.
 5. **Second review.** Give a separate agent only the side-by-side PNG and
@@ -102,7 +104,7 @@ entry needs a reason. All keys are optional:
 {
   "missing": [{ "text": "Add a note…", "layers": ["346:1189"], "reason": "…" }],
   "extra": [{ "text": "Beta", "reason": "…" }],
-  "position": [{ "layer": "task pane", "reason": "…" }],
+  "position": [{ "layer": "task pane", "reason": "…" }, { "layer": "402:15340", "iconSize": 24, "reason": "…" }],
   "rules": [{ "rule": "scrollBar", "selector": "section", "reason": "…" }]
 }
 ```
