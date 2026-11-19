@@ -42,7 +42,7 @@ import { ToolkitListTools } from '../blocks/ToolkitListTools.tsx'
 import { ToolkitMap } from '../blocks/ToolkitMap.tsx'
 import { ToolkitKindChip, type ToolkitData, type ToolkitKind, type ToolkitUi } from '../types.ts'
 import { canOpenFullPage, isFullPage, leaveFullPage, openFullPage } from './flowView.ts'
-import { backTo, openedFrom, openFile, openFrom, openItem, showOnMap } from './itemView.ts'
+import { backTo, hasLinksTab, openedFrom, openFile, openFrom, openItem, openLinks, showOnMap } from './itemView.ts'
 import { listView, mapView } from './listView.ts'
 import { openEvals } from '../blocks/evalsView.ts'
 import { selectFile } from '../blocks/filesView.ts'
@@ -296,6 +296,13 @@ function ToolkitLayout({
             onUiChange({ mapSelected: path })
           }}
           onOpen={openPath}
+          onLinks={
+            ui.mapSelected !== undefined && ui.mapSelected !== null && hasLinksTab(data, ui.mapSelected)
+              ? (path) => {
+                  onUiChange(openLinks(path))
+                }
+              : undefined
+          }
         />
       ) : null}
       {(ui.view === 'map' ? [] : view.groups).map((group) => (

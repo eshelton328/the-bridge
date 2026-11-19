@@ -9,6 +9,7 @@
 // headings in a 366 × 500 map window, with writer's card under it.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ToolkitData, ToolkitMapView, ToolkitUi } from '../types.ts'
+import { skillLinks } from './skillLinks.ts'
 import { toolkitMap } from './toolkitMap.ts'
 
 const map: ToolkitMapView = toolkitMap.data.map
@@ -26,6 +27,10 @@ export const toolkitMapTablet = {
       columns: ['Rules, hooks', 'Skills', 'Agents', 'Workflows'],
       nodes: map.nodes.map(({ path, name, kind, column, row }) => ({ path, name, kind, column, row })),
     },
+    // M11's Show links opens writer on its Links tab, so the state carries D19's details and link targets; the map
+    // shows Show links only for an item that has that tab (`hasLinksTab`).
+    details: skillLinks.data.details,
+    linkTargets: skillLinks.data.linkTargets,
   },
   ui: { ...toolkitMap.ui },
 } satisfies ScreenState<ToolkitData, ToolkitUi>

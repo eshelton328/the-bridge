@@ -79,6 +79,23 @@ export function openFrom(path: string, from: string | null = null): Partial<Tool
 }
 
 /**
+ * The ui change of the phone map card's Show links (M11 461:1268): the item opens from the map on its Links tab (M17
+ * on the phone), with no file of an earlier tab. M11's note sends Show links to M3, a proposal with no frame; the
+ * Links tab shows the same links, what names the item and what it names. An item with no Links tab opens on its first
+ * tab (`openItem`).
+ */
+export function openLinks(path: string): Partial<ToolkitUi> {
+  return {
+    ...openFrom(path),
+    itemTab: 'links',
+    file: undefined,
+    fileView: undefined,
+    filePage: undefined,
+    line: undefined,
+  }
+}
+
+/**
  * The ui change that opens a file of an item on its Files tab (D19, a tap on a link's file and line): another item
  * opens from the open item (`openFrom`); the open item stays as it was opened. The file opens in its own default view,
  * on a page of its own when `page` is set (`filePage`, as `selectFile` sets it for a tablet or phone). A `line` (the
@@ -132,4 +149,12 @@ export function openItem(data: ToolkitData, ui: Pick<ToolkitUi, 'open' | 'itemTa
   const first = detail.tabs[0]?.value ?? overview.value
   const tab = detail.tabs.some((t) => t.value === ui.itemTab) ? (ui.itemTab ?? first) : first
   return { item, detail, tab }
+}
+
+/**
+ * Whether an item opens with a Links tab (D19): the phone map card's Show links (M11) opens the item on it, so the
+ * card shows Show links only for an item that has the tab; another item would open on its Overview.
+ */
+export function hasLinksTab(data: ToolkitData, path: string): boolean {
+  return openItem(data, { open: path, itemTab: 'links' })?.tab === 'links'
 }

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { openItem } from './screens/itemView.ts'
 import { openItem as openItemFromMap, showOnMap as showOnMapChange } from './screens/itemView.ts'
 import { backTo, openedFrom, openFrom } from './screens/itemView.ts'
+import { hasLinksTab, openLinks } from './screens/itemView.ts'
 import { toolkitStates } from './states/index.ts'
 
 const { ruleOpen, skillOpen, toolkitList } = toolkitStates
@@ -114,5 +115,32 @@ describe('an item opened from another item (T7)', () => {
   it('goes back to the item it came from, or to the list, and forgets the way back', () => {
     expect(backTo('skills/writer/')).toEqual({ open: 'skills/writer/', from: null })
     expect(backTo(null)).toEqual({ open: null, from: null })
+  })
+})
+
+describe('openLinks', () => {
+  // M11 461:1268: the phone map card's Show links opens the selected item on its Links tab, from the map.
+  it('opens the item from the map on its Links tab, with no file of an earlier tab', () => {
+    expect(openLinks('skills/writer/')).toEqual({
+      open: 'skills/writer/',
+      from: null,
+      itemTab: 'links',
+      file: undefined,
+      fileView: undefined,
+      filePage: undefined,
+      line: undefined,
+    })
+    const { skillLinks } = toolkitStates
+    expect(openItem(skillLinks.data, { ...skillLinks.ui, ...openLinks('skills/writer/') })?.tab).toBe('links')
+  })
+})
+
+describe('hasLinksTab', () => {
+  // M11: Show links opens the item on its Links tab, so the card shows it only for an item that has the tab.
+  const { toolkitMapTablet } = toolkitStates
+  it('is true for writer, whose details have Links, and false for a map item with no Links tab', () => {
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/writer/')).toBe(true)
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/audit-slop/')).toBe(false)
+    expect(hasLinksTab(toolkitMapTablet.data, 'skills/nothing/')).toBe(false)
   })
 })
