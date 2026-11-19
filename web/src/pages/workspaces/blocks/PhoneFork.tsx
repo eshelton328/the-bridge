@@ -1,7 +1,7 @@
 // The Fork form on the phone (M18 422:217): the chat actions' Fork opens a
 // sheet over the chat, titled "Fork {chat}" with ×, with D15's fields (the
 // copy's name, where it starts and the note) and Fork across the sheet at the
-// bottom, within thumb reach. Fork starts nothing; the copy waits for Erik's
+// bottom, within thumb reach. Fork starts nothing; the copy waits for the owner's
 // next message. The sheet has no Cancel: × and the scrim close it. Figma's
 // sheet has no grabber and a larger title (LIBRARY_GAPS.md: Phone fork sheet).
 // Props only.

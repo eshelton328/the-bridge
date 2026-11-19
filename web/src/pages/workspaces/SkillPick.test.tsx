@@ -77,13 +77,13 @@ describe.each(surfaces)('a skill picked in $name', (surface) => {
     await expectPicked('/readme ', 8)
     await userEvent.keyboard('the bridge')
     await expect.element(box()).toHaveValue('/readme the bridge')
-    // The list stays closed as Erik types on, so Enter sends the message, which empties the box.
+    // The list stays closed as the owner types on, so Enter sends the message, which empties the box.
     await expect.element(page.getByRole('group', { name: /^SKILLS/ })).not.toBeInTheDocument()
     await userEvent.keyboard('{Enter}')
     await expect.element(box()).toHaveValue('')
   })
 
-  it('empties the box when Erik sends a message with the list closed', async () => {
+  it('empties the box when the owner sends a message with the list closed', async () => {
     await page.viewport(surface.size[0], surface.size[1])
     view = await testRender(screen(surface, ''))
     await userEvent.click(box())
@@ -104,7 +104,7 @@ describe.each(surfaces)('a skill picked in $name', (surface) => {
     await expectPicked('/writer ', 8)
   })
 
-  it('picks the highlighted skill with Enter, after the word Erik typed from "/" in his message (M10)', async () => {
+  it('picks the highlighted skill with Enter, after the word the owner typed from "/" in his message (M10)', async () => {
     await page.viewport(surface.size[0], surface.size[1])
     view = await testRender(screen(surface, ''))
     await userEvent.click(box())

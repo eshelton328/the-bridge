@@ -1,6 +1,6 @@
 // The open artifact's discussion, beside it on the desktop (Figma
 // "discussion panel", D7 452:2410): `DiscussionHeader`, the empty state
-// or the entries (D8: Erik's question, the reply and the proposed change,
+// or the entries (D8: the owner's question, the reply and the proposed change,
 // applied in D9, then the messages he sent), and the reply box. Built
 // from the same library parts as the Inbox's DiscussionPanel (D14), which
 // the Inbox page does not export. The reply box has no attach button, as
@@ -46,11 +46,11 @@ const bodyGap = css({ gap: '12' })
 
 export type DiscussionPanelProps = {
   discussion: ArtifactDiscussion
-  /** What Erik has typed in the reply box. */
+  /** What the owner has typed in the reply box. */
   draft?: string | undefined
   /** What the discussion shows; with none, the empty state. */
   entries?: readonly ArtifactDiscussionEntry[] | undefined
-  /** Erik applied the proposal (D9): it shows its applied form. */
+  /** The owner applied the proposal (D9): it shows its applied form. */
   applied?: ArtifactProposalProps['applied']
   /** A button of the proposal was pressed. */
   onAct?: ArtifactProposalProps['onAct']

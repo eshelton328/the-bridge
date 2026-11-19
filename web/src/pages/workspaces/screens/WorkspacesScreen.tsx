@@ -1,7 +1,7 @@
 // The Workspaces page (Figma Workbench) as one props-only screen: the rail,
 // then the Workbench: the workspace tabs with the sidebar toggle and New
 // chat, the current workspace's split panes and the status bar (D1). A
-// state file's data and ui are its props. What Erik opens or closes
+// state file's data and ui are its props. What the owner opens or closes
 // (a pane menu, the skill list, the focused pane) the screen keeps until
 // the state changes; `onUiChange` reports it. With the sidebar (D2) the
 // workspaces and their chats are listed beside the focused chat, which shows
@@ -66,7 +66,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  // The ui lives here, above the layout, so a width change that swaps the layout keeps what Erik changed.
+  // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => (
@@ -89,14 +89,14 @@ type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange'> & {
 }
 
 function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: WorkspacesLayoutProps) {
-  // The names Erik gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
+  // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
-  // The names Erik gave workspaces in the phone's edit mode (M2) take the place of their labels.
+  // The names the owner gave workspaces in the phone's edit mode (M2) take the place of their labels.
   const workspaceNames = ui.workspaceNames ?? {}
-  // The workspaces Erik added with the phone's New workspace (M15) follow the others, with no chats yet.
+  // The workspaces the owner added with the phone's New workspace (M15) follow the others, with no chats yet.
   const added = (ui.addedWorkspaces ?? []).map((w) => ({ ...w, count: 0, needsYou: false, chats: [] }))
-  // The workspaces Erik closed with the phone's close dialog (M13) leave both layouts, so a wider window keeps them
+  // The workspaces the owner closed with the phone's close dialog (M13) leave both layouts, so a wider window keeps them
   // closed.
   const closed = ui.closedWorkspaces ?? []
   const workspaces = [...data.workspaces, ...added]
@@ -125,7 +125,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         onUiChange={change}
       />
     )
-  // The shown workspace (R6): a tab Erik picked shows its own panes, so the focused chat, the chats the sidebar can
+  // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
   // open and the chat actions' targets come from its panes, not the state's.
   const shown = shownView(named, ui).data
   const current = workspaces.find((w) => w.id === shown.current)

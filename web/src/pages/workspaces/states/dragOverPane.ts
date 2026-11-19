@@ -1,6 +1,6 @@
 // Figma Workbench D8 (402:559), "D8 · Drag a chat over a pane": the screen of
 // D7, with the sidebar beside the workbench and bridge themes in its one pane.
-// Erik drags drift check from the sidebar over the right half of the pane: its
+// The owner drags drift check from the sidebar over the right half of the pane: its
 // row in the sidebar fades, and that half is the drop zone, a dashed outline
 // that says the chat would open to the right and split bridge themes, with no
 // icon and no hint, and the dragged chat under the pointer. Starts from D7

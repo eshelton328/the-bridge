@@ -66,7 +66,7 @@ describe('a chat on the phone', () => {
     await expect.element(page.getByRole('textbox')).toHaveValue('half a thought')
   })
 
-  it('keeps the caret where Erik put it when "/" at the start of a draft lists the skills', async () => {
+  it('keeps the caret where the owner put it when "/" at the start of a draft lists the skills', async () => {
     await page.viewport(390, 844)
     view = await testRender(draftChat('layouts'))
     const box = page.getByRole('textbox')
@@ -82,7 +82,7 @@ describe('a chat on the phone', () => {
     expect(area.selectionEnd).toBe(8)
   })
 
-  it('lets Erik tab from the composer into the skills after "/" and keeps the focus there', async () => {
+  it('lets the owner tab from the composer into the skills after "/" and keeps the focus there', async () => {
     await page.viewport(390, 844)
     view = await testRender(draftChat(''))
     const box = page.getByRole('textbox')

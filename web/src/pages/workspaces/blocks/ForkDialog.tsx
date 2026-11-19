@@ -1,7 +1,7 @@
-// The Fork form over the screen (D15 417:305): the copy's name, which Erik
+// The Fork form over the screen (D15 417:305): the copy's name, which the owner
 // can change, and where it starts, the whole chat or up to a message he
 // picks next, then a line on what the fork copies, Cancel and Fork. Fork
-// starts nothing; the copy waits for Erik's next message. The library's
+// starts nothing; the copy waits for the owner's next message. The library's
 // `Dialog size="lg"` is the form's box; at a tablet's width it opens over the
 // chat with T8's layers. Props only.
 import { ArrowUpIcon, Button, Dialog, DialogClose } from '@eshelton328/component-library-1701'

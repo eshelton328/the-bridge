@@ -1,7 +1,7 @@
 // Figma Workbench D15 (417:4), "D15 · Fork a chat": D2b's screen without the
 // side chat and the menu, bridge themes alone beside the sidebar, and the
 // Fork form open over it. The copy's name defaults to "bridge themes · fork",
-// and it starts from the whole chat or up to a message Erik picks next;
+// and it starts from the whole chat or up to a message the owner picks next;
 // Whole chat is chosen. Fork starts nothing. Starts from D2b (chatActions).
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'

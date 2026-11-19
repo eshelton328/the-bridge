@@ -1,5 +1,5 @@
 // The open item's discussion (D5, T5, M7): which discussion a layout shows,
-// its messages after what Erik sent, and what closes it. Discuss opens it
+// its messages after what the owner sent, and what closes it. Discuss opens it
 // (`ui.discussOpen`); close (D5) and Back (T5, M7) close it, and so does
 // opening another item, so the next item opens without it. Pure functions, no
 // React.
@@ -21,7 +21,7 @@ export function openDiscussion(
   return ui.discussOpen === true ? discussionOf(open, layout) : undefined
 }
 
-/** The messages the discussion shows: its entries, then the ones Erik sent. Nothing answers them in this mock-up. */
+/** The messages the discussion shows: its entries, then the ones the owner sent. Nothing answers them in this mock-up. */
 export function discussEntries(
   discussion: ToolkitDiscussion,
   ui: Pick<ToolkitUi, 'discussSent'>,

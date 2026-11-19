@@ -1,6 +1,6 @@
 // One chat in the workspace sidebar (D2 105:643): the kind mark, the title,
 // the model and context used, and the status. A subtask's chat is indented
-// under the chat that started it (199:51). The row of a chat Erik drags
+// under the chat that started it (199:51). The row of a chat the owner drags
 // onto the chat shown alone fades (D6 158:750). A fork is indented under its
 // original too, with the branch mark before its kind mark (D16 417:697).
 // On the phone the row ends with its ⋯, after the status (M1 146:2), and in
@@ -45,7 +45,7 @@ export type SidebarChatRowProps = {
   menu?: ReactNode
   /** The drag handle before the kind mark, as the phone's edit mode draws it (M2 105:2557). */
   grip?: boolean | undefined
-  /** Called when Erik holds the row (M9); the phone opens the chat's actions. */
+  /** Called when the owner holds the row (M9); the phone opens the chat's actions. */
   onHold?: (() => void) | undefined
   /**
    * The row is held: its copy lifts over the scrim of the sheet it opened (M9 146:252), with this Figma layer and

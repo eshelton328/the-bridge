@@ -1,5 +1,5 @@
 // The Toolkit page's connected entry: the only component of the page that
-// reads the router. It keeps what Erik changes in the shown state's view
+// reads the router. It keeps what the owner changes in the shown state's view
 // (the view, the kind chip, the search, the groups he closed, the open item)
 // until another state loads, and passes everything to the props-only screen.
 // The open item's copy button writes its path to the clipboard here.

@@ -44,9 +44,9 @@ export type DiscussionPageProps = {
   /** Back: the task page shows again. */
   onClose?: (() => void) | undefined
   control?: ProposalControl | undefined
-  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
-  /** Erik sent a message from the reply box. */
+  /** The owner sent a message from the reply box. */
   onSend?: ((text: string) => void) | undefined
 }
 

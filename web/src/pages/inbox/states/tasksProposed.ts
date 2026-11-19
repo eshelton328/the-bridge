@@ -1,4 +1,4 @@
-// Figma Inbox D17 "Proposed new tasks": Erik asked to split the task; the
+// Figma Inbox D17 "Proposed new tasks": the owner asked to split the task; the
 // discussion proposes three tasks, each with a checkbox, and "Also remove
 // this task". Copy word for word from references/inbox/D17/frame.json.
 import type { ScreenState } from '../../../lib/screenState.ts'

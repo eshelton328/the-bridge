@@ -1,4 +1,4 @@
-// The Inbox page's view store: which groups Erik opened or closed, and
+// The Inbox page's view store: which groups the owner opened or closed, and
 // what he changed in the shown state: the open item closed with Back (on a
 // tablet or phone), the prompt or remove dialog closed, the search text
 // typed, and the rest of its `ui` (menus, sort, filters, snoozed items). Only InboxPage reads it; the screen gets the values
@@ -21,10 +21,10 @@ type InboxEdits = {
   query: string | undefined
 }
 
-/** The rest of what Erik changed in the shown state's `ui`: menus, the sort, the filters, snoozed items. */
+/** The rest of what the owner changed in the shown state's `ui`: menus, the sort, the filters, snoozed items. */
 type InboxUiEdits = { state: InboxStateKey; ui: Partial<InboxUi> }
 
-/** What Erik typed in the open item's fields. It outlives the page, so a visit to another page keeps it. */
+/** What the owner typed in the open item's fields. It outlives the page, so a visit to another page keeps it. */
 type InboxTyped = { item: string | undefined; values: InboxDrafts['values'] }
 
 type InboxViewState = {
@@ -109,32 +109,32 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
   },
 }))
 
-/** The groups Erik opened or closed, over the state's own. */
+/** The groups the owner opened or closed, over the state's own. */
 export const useInboxGroupsOpen = (): InboxViewState['groupsOpen'] => useInboxStore((s) => s.groupsOpen)
 
 /** Whether the state's open item is still open in `state`; false after Back, undefined keeps the state's own. */
 export const useInboxItemOpen = (state: InboxStateKey): boolean | undefined =>
   useInboxStore((s) => (s.edits.state === state ? s.edits.itemOpen : undefined))
 
-/** Whether Erik opened or closed the prompt dialog in `state`; undefined keeps the state's own. */
+/** Whether the owner opened or closed the prompt dialog in `state`; undefined keeps the state's own. */
 export const useInboxPromptOpen = (state: InboxStateKey): boolean | undefined =>
   useInboxStore((s) => (s.edits.state === state ? s.edits.promptOpen : undefined))
 
-/** Whether Erik opened or closed the remove dialog in `state`; undefined keeps the state's own. */
+/** Whether the owner opened or closed the remove dialog in `state`; undefined keeps the state's own. */
 export const useInboxRemoveOpen = (state: InboxStateKey): boolean | undefined =>
   useInboxStore((s) => (s.edits.state === state ? s.edits.removeOpen : undefined))
 
-/** The search text Erik typed in `state`; undefined keeps the state's own query. */
+/** The search text the owner typed in `state`; undefined keeps the state's own query. */
 export const useInboxQuery = (state: InboxStateKey): string | undefined =>
   useInboxStore((s) => (s.edits.state === state ? s.edits.query : undefined))
 
-/** What Erik changed in `state`'s `ui` besides the dialogs and Back; empty keeps the state's own. */
+/** What the owner changed in `state`'s `ui` besides the dialogs and Back; empty keeps the state's own. */
 export const useInboxUi = (state: InboxStateKey): Partial<InboxUi> =>
   useInboxStore((s) => (s.uiEdits.state === state ? s.uiEdits.ui : noUi))
 
 const noDrafts: InboxDrafts['values'] = {}
 
-/** What Erik typed in `item`'s fields; empty for another item. */
+/** What the owner typed in `item`'s fields; empty for another item. */
 export const useInboxDrafts = (item: string | undefined): InboxDrafts['values'] =>
   useInboxStore((s) => (s.typed.item === item ? s.typed.values : noDrafts))
 

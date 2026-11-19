@@ -892,7 +892,7 @@ export const TabletSubagents: Story = {
 }
 
 export const TabletComposing: Story = {
-  name: 'T4: a chat on the tablet while Erik types, with the skills listed after "/"',
+  name: 'T4: a chat on the tablet while the owner types, with the skills listed after "/"',
   args: { data: workspacesStates.tabletComposing.data, ui: workspacesStates.tabletComposing.ui, viewport: 'tablet' },
   play: async ({ canvas }) => {
     // The screen lays out by its width: at the desktop width the state draws M1's sidebar with bridge themes alone and

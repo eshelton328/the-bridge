@@ -12,10 +12,10 @@ Storybook and the canvas bundle. Styles come from the component library
   (`apple-mobile-web-app-*`, `theme-color`), so "Add to Home Screen"
   opens the app standalone.
   Its viewport meta turns page zoom off on every platform
-  (`maximum-scale=1, user-scalable=no`), Erik's decision of 2026-11-18:
+  (`maximum-scale=1, user-scalable=no`), the owner's decision of 2026-11-18:
   iOS zooms the page when a field under 16 px takes the focus, and the
   Figma font sizes stay. WCAG 1.4.4 asks for browser zoom; this is
-  Erik's call for his own app. `src/app/viewport.test.ts` checks it.
+  the owner's call for his own app. `src/app/viewport.test.ts` checks it.
 - `.storybook/`: Storybook 10. Each story is also a Vitest browser test.
 - `vite.config.ts`: the app. `vite.canvas.config.ts`: the canvas bundle,
   `dist-canvas/bridge.js`, an IIFE that sets `window.Bridge` and takes

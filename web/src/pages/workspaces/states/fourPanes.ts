@@ -1,6 +1,6 @@
 // Figma Workbench D12 (402:4310), "D12 · Four panes, the most": the workbench
 // at its limit of four panes, clockwise from the top left: bridge themes,
-// focused, drift check, an empty pane and brain git. Erik drags hono server
+// focused, drift check, an empty pane and brain git. The owner drags hono server
 // from the sidebar over drift check: its row fades, and with four panes open
 // no edge splits, so the drop zone covers the whole pane and says the chat
 // would replace drift check, which keeps running in the sidebar. The dragged

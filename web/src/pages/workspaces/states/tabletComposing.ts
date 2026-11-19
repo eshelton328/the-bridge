@@ -1,10 +1,10 @@
 // Figma Workbench T4 (105:2096), "T4 · Composing": bridge themes on the iPad
-// mini while Erik types, with the keyboard up. The chat fills the screen as
+// mini while the owner types, with the keyboard up. The chat fills the screen as
 // on the phone, with no tab bar: the header with the back button, the title
 // over omni-brain, Working and the ⋯, then Opus 5.5 and the context used;
-// Erik's message, the read line, Claude's reply with Copy and Claude's second
+// the owner's message, the read line, Claude's reply with Copy and Claude's second
 // reply, "Writing the layout notes now; the subtask is drafting the theme
-// tokens." Erik has attached requirements.md, which shows above the message,
+// tokens." the owner has attached requirements.md, which shows above the message,
 // and typed "/", so the skills are listed over the composer with /writer
 // highlighted; Stop shows while the chat works. The keyboard itself is the
 // tablet's (d-089). Starts from T2b (tabletChatActions), without the menu,
@@ -41,7 +41,7 @@ const bridgeThemes: WorkbenchPane[] = tabletChatActions.data.panes.map((p) =>
 )
 
 export const tabletComposing = {
-  title: 'A chat on the tablet while Erik types, with the skills listed after "/"',
+  title: 'A chat on the tablet while the owner types, with the skills listed after "/"',
   frames: [{ id: 'T4', node: '105:2096', viewport: 'tablet' }],
   data: {
     ...tabletChatActions.data,

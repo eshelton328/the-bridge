@@ -1,4 +1,4 @@
-// One entry of a task's discussion: an event line with a check, Erik's
+// One entry of a task's discussion: an event line with a check, the owner's
 // message, the discussion's reply or a proposed change. Props only.
 import { BubbleIcon, CheckIcon, Inline, Message, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
@@ -20,7 +20,7 @@ const check = css({ display: 'inline-flex', color: 'status.done.fg' })
 
 export type DiscussionEntryProps = {
   entry: InboxDiscussionEntry
-  /** What Erik did to the proposals, and where his presses go. */
+  /** What the owner did to the proposals, and where his presses go. */
   control?: ProposalControl | undefined
 }
 

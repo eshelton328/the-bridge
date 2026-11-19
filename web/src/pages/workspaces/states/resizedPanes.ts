@@ -1,6 +1,6 @@
 // Figma Workbench D14 (402:6509), "D14 · Resize panes": the screen of D13
 // after the empty pane closes. Brain git takes the whole bottom row, and
-// bridge themes (focused) and drift check share the top row. Erik drags the
+// bridge themes (focused) and drift check share the top row. The owner drags the
 // handle between them: bridge themes takes 60 % of the row, and the readout
 // beside the pointer shows the split as a ratio and that a double-click
 // shares it equally. Starts from D13 (emptiedPane) with D11's (threePanes)

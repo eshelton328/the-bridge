@@ -1,5 +1,5 @@
 // Figma Artifacts M10 "M10 · A proposed update": M9's discussion page on the
-// phone after Erik asked for a change, with D8's question, reply and proposed
+// phone after the owner asked for a change, with D8's question, reply and proposed
 // update to the chart: Apply, Discard or Edit first. Apply republishes the
 // artifact to the same link and, as on the tablet (T5), returns to the
 // artifact's page (M2), which shows Updated; reopened, the discussion shows

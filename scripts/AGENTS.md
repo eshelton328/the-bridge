@@ -37,7 +37,7 @@ It leaves `TODO` markers; the tests fail until each is filled in.
 ## The served keyboard check
 
 `pnpm keyboard:served` checks the keyboard on the served app, before
-bridge-coord tells Erik that a chat screen is ready. It opens the
+bridge-coord tells the owner that a chat screen is ready. It opens the
 Workspaces chat (`?state=phoneChatFull`, R20), the Inbox chat
 (`?state=chat`, R21) and the Inbox discussion (`?state=discussionPage`
 and `?state=changeProposedPage`, Discuss) in Playwright's WebKit with the iPhone 15 profile at
@@ -51,7 +51,7 @@ and `?state=changeProposedPage`, Discuss) in Playwright's WebKit with the iPhone
    the library's keyboard curve (250 ms, `cubic-bezier(0.38, 0.7, 0.125,
    1)`), one step each frame;
 3. blurs the field and grows the viewport back on the same curve;
-4. samples every animation frame and checks Erik's acceptance rules
+4. samples every animation frame and checks the owner's acceptance rules
    (R22): the header's top is the same in every frame, `window.scrollY`
    is 0, the lowest text of the message list stays above the composer,
    the shell, the chat and its header, list and composer keep an
@@ -70,7 +70,7 @@ webkit`) and `ffmpeg` on the PATH. Desktop WebKit is not iOS: the fake
 keyboard stands in for iOS's, and desktop WebKit scrolls the window
 only when the document is taller than the screen, where iOS also pans
 a page that fits. So `window.scrollY` catches a document that grew past
-the screen, not iOS's pan, and a pass here comes before Erik's phone
+the screen, not iOS's pan, and a pass here comes before the owner's phone
 recording, not in its place.
 
 ## The keyboard trace endpoint

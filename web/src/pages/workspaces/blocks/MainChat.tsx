@@ -2,7 +2,7 @@
 // two-row header, the transcript and the composer. Props only. The chat
 // actions menu (D2b) comes from the caller, and so does a drop zone over
 // the chat while a chat is dragged onto it (D6), and so does a toast over the
-// composer (D20), and so does the name field while Erik renames the chat (D21).
+// composer (D20), and so does the name field while the owner renames the chat (D21).
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
@@ -32,15 +32,15 @@ export type MainChatProps = {
   folders?: ReactNode
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
-  /** Drawn in the header in place of the chat's name while Erik renames it (D21 417:2442). */
+  /** Drawn in the header in place of the chat's name while the owner renames it (D21 417:2442). */
   rename?: ReactNode
   /** Drawn between the transcript and the composer, such as the toast after a move (D20 417:2135). */
   above?: ReactNode
   /** Drawn over the whole chat, header included, such as the drop zone of a dragged chat (D6 158:1025). */
   overlay?: ReactNode
-  /** Erik's draft in the composer, in place of the data's text (`ui.drafts`). */
+  /** The owner's draft in the composer, in place of the data's text (`ui.drafts`). */
   draft?: string | undefined
-  /** Called with the composer's text as Erik types. */
+  /** Called with the composer's text as the owner types. */
   onTextChange?: ((text: string) => void) | undefined
 }
 
@@ -71,7 +71,7 @@ export function MainChat(props: MainChatProps) {
         figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
       />
       <ChatPane
-        // The composer keeps what Erik types in its own state, so each chat gets its own: switching the chat shown
+        // The composer keeps what the owner types in its own state, so each chat gets its own: switching the chat shown
         // alone (a fork and its original) mounts the other chat's composer from its draft.
         key={pane.id}
         size="full"

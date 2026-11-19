@@ -36,7 +36,7 @@ export type InboxDetailProps = {
   onUndoChange?: (() => void) | undefined
   /** Beside the item, such as the open discussion. */
   side?: ReactNode
-  /** Keeps what Erik types in the item; see `InboxDrafts` in types.ts. */
+  /** Keeps what the owner types in the item; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** Reports a menu, the prompt editor or the Run in picker opened or closed. */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined

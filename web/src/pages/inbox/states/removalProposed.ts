@@ -1,4 +1,4 @@
-// Figma Inbox D19 "Proposed removal": after the three tasks exist, Erik
+// Figma Inbox D19 "Proposed removal": after the three tasks exist, the owner
 // asks whether this one is still needed; the discussion proposes its
 // removal in red, with a reason. Remove… asks first (D20). Copy word for
 // word from references/inbox/D19/frame.json.

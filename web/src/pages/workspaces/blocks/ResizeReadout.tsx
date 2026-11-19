@@ -1,4 +1,4 @@
-// The readout beside the pointer while Erik drags a handle of the split (D14
+// The readout beside the pointer while the owner drags a handle of the split (D14
 // 402:7151): the split as a ratio and what a double-click does, in cyan mono
 // near the handle, over the pane before it. The library has no resize readout
 // (LIBRARY_GAPS.md): it is the library's outline `Badge` in the working tone.

@@ -1,4 +1,4 @@
-// Erik's decision (2026-11-18): the running app's page never scrolls,
+// The owner's decision (2026-11-18): the running app's page never scrolls,
 // bounces or zooms. index.css locks the document only under this marker on
 // <html>, which main.ts sets before the first render. Storybook and the
 // fidelity screenshots load index.css too but never set it, so a story

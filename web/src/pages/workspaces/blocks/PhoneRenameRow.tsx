@@ -1,4 +1,4 @@
-// A chat row of the phone's list while Erik renames it in edit mode (M2
+// A chat row of the phone's list while the owner renames it in edit mode (M2
 // 105:2535): the drag handle, the kind mark, and the name as a field with ×
 // over the meta line. The field takes the row's width, so the row shows no
 // status. A tap outside the field saves the name; × undoes the change. No

@@ -2,9 +2,9 @@
 // the iPad mini, a sheet over bridge themes, which keeps working under it. The
 // chat fills the screen as on the phone, with no tab bar: the header with the
 // back button, the title over omni-brain, Working and the ⋯, then Opus 5.5 and
-// the context used; Erik's message, the read line and Claude's reply with Copy.
+// the context used; the owner's message, the read line and Claude's reply with Copy.
 // The sheet has the bubble, Side chat and /btw with ×, the note "Nothing here
-// enters bridge themes. Close the sheet and the main chat carries on.", Erik's
+// enters bridge themes. Close the sheet and the main chat carries on.", the owner's
 // question and Claude's answer with Copy, and the composer. Starts from M5
 // (phoneSideChat) with T2's note, drawn at the tablet's width (`tabletList`);
 // at a desktop width it draws M1's sidebar with bridge themes alone and the

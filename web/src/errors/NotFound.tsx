@@ -3,7 +3,7 @@
 // source is not built yet (?source=mock-api, lib/dataSource.ts) throws
 // notFound() with that miss, and this shows "not built yet" with a way
 // back to the fixtures. Figma has no not-found screen; this copy is
-// Claude's, for Erik's review.
+// Claude's, for the owner's review.
 import { Button, CompassIcon } from '@eshelton328/component-library-1701'
 import { useRouter, useRouterState } from '@tanstack/react-router'
 import { isNotBuilt } from '../lib/dataSource.ts'

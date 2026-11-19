@@ -2,7 +2,7 @@
 // omni-brain, open on the phone, with D4's folders sheet over it. The header
 // has the back button, the kind mark, drift check over omni-brain and Needs
 // you, with no ⋯, then GPT-5.5, 23% of the context and "2 folders", which
-// opens the sheet. Under it Erik's message. The sheet lists the chat's
+// opens the sheet. Under it the owner's message. The sheet lists the chat's
 // folders: ~/omni-brain (the working folder), ~/omni with its remove ×, and
 // Add folder; under them the folder picker: "~/the-" typed in the search,
 // which has the focus, the recent folders with ~/the-bridge chosen, the
@@ -15,7 +15,7 @@ import { folders } from './folders.ts'
 import { phoneChat } from './phoneChat.ts'
 
 const [first] = folders.data.panes
-// D4's drift check with Erik's message alone, as Figma draws it under the sheet (128:700); the phone's composer has
+// D4's drift check with the owner's message alone, as Figma draws it under the sheet (128:700); the phone's composer has
 // no model chip (M3 105:2831).
 const driftCheck: WorkbenchPane[] =
   first?.type === 'chat'

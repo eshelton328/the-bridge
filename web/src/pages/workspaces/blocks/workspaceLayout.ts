@@ -7,7 +7,7 @@
 // change that a tab switch, a resize or a closed pane makes.
 import type { SplitSizes, WorkbenchPane, WorkspaceLayout, WorkspacesData, WorkspacesUi } from '../types.ts'
 
-/** The workspace whose tab is selected: the one Erik picked, else the state's. */
+/** The workspace whose tab is selected: the one the owner picked, else the state's. */
 export const shownWorkspace = (data: WorkspacesData, ui: WorkspacesUi): string => ui.workspace ?? data.current
 
 /** The sizes the shown split has now: its handles' sizes with the dragged handle's (D14) over them. */

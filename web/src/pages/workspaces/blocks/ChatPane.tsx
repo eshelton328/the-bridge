@@ -1,9 +1,9 @@
 // A chat's body: the transcript, then the composer at the bottom, with the
-// skill list over it after "/" (D1 105:209). Only what Erik types opens the
+// skill list over it after "/" (D1 105:209). Only what the owner types opens the
 // list: a message that starts with "/" opens it, and the focus stays in the
 // box; a word that starts with "/" at the caret opens it too, as "/wri" at
 // the end of M10's message does, and the list keeps the skills that start
-// with that word, under `matching`. A skill Erik picks (a click or tap on its
+// with that word, under `matching`. A skill the owner picks (a click or tap on its
 // row, or Enter on the highlighted row, which the arrow keys move) takes the
 // place of that word with a space after it, closes the list and leaves the
 // focus and caret in the box after it. `size="pane"` is a pane of the
@@ -106,7 +106,7 @@ type ChatPaneBase = {
   skills?:
     | {
         label: string
-        /** The label once Erik has typed more than the "/", with {query} for what he typed (M10); `label` when not set. */
+        /** The label once the owner has typed more than the "/", with {query} for what he typed (M10); `label` when not set. */
         matching?: string | undefined
         items: readonly Skill[]
         value: string | null
@@ -128,7 +128,7 @@ type ChatPaneBase = {
   above?: ReactNode
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
-  /** Called with the message box's text as Erik types, so the caller can keep the draft when the pane unmounts. */
+  /** Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts. */
   onTextChange?: ((text: string) => void) | undefined
 }
 
@@ -174,7 +174,7 @@ export function ChatPane(props: ChatPaneProps) {
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
   const areaRef = useRef<HTMLDivElement>(null)
-  // What Erik has typed from the "/": the list keeps the skills that start with it.
+  // What the owner has typed from the "/": the list keeps the skills that start with it.
   const [query, setQuery] = useState(() => skillQuery(composer.text, composer.text.length))
   // The message box's text: a picked skill goes into it.
   const [text, setText] = useState(composer.text)
@@ -194,7 +194,7 @@ export function ChatPane(props: ChatPaneProps) {
   useEffect(() => {
     if (!autoFocus) return
     const area = areaRef.current?.querySelector('textarea')
-    // A "/" Erik types opens the list with the focus already in the box: the caret stays where he typed it.
+    // A "/" the owner types opens the list with the focus already in the box: the caret stays where he typed it.
     if (!area || area.ownerDocument.activeElement === area) return
     // Otherwise the caret goes after the text, where typing goes on.
     area.focus()
@@ -313,7 +313,7 @@ export function ChatPane(props: ChatPaneProps) {
           areaRef.current?.querySelector('textarea')?.focus()
         }}
       >
-        {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
+        {/* The composer is the popover's trigger: the skill list belongs to what the owner types, so the box is a combobox
             (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
         <div
           ref={areaRef}

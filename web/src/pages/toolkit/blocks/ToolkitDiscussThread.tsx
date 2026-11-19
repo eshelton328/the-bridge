@@ -1,6 +1,6 @@
 // The messages of an item's discussion (D5, T5, M7), 12 apart, in the
 // ScrollFrame body of the desktop panel or the tablet's and phone's page.
-// When a message is added, such as one Erik sent, the body scrolls to it, so
+// When a message is added, such as one the owner sent, the body scrolls to it, so
 // it shows above the reply box even when the messages overflow. Props only.
 import { Stack } from '@eshelton328/component-library-1701'
 import { useEffect, useRef } from 'react'

@@ -1,6 +1,6 @@
 // The library (Figma 402:15370): the header with the count, the source
 // chips, the search row, and the groups of artifact cards, newest first,
-// with what the library found since Erik last looked at the top. The cards
+// with what the library found since the owner last looked at the top. The cards
 // come from libraryView (the chip and the search over the state's groups).
 // The List view (D4) shows them as rows (LibraryRows). During a search the
 // count says how many of the library's artifacts show, such as "3 of 24".

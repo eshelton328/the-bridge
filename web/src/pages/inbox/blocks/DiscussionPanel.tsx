@@ -37,13 +37,13 @@ const entries = css({ pt: '6' })
 
 export type DiscussionPanelProps = {
   discussion: InboxDiscussion
-  /** What Erik did to the proposals, and where his presses go. */
+  /** What the owner did to the proposals, and where his presses go. */
   control?: ProposalControl | undefined
   /** Close was pressed. */
   onClose?: (() => void) | undefined
-  /** Keeps the reply Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
-  /** Erik sent a message from the reply box. */
+  /** The owner sent a message from the reply box. */
   onSend?: ((text: string) => void) | undefined
 }
 

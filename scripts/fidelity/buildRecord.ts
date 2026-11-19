@@ -108,7 +108,7 @@ export function changeProblems(changes: readonly Change[]): string[] {
   const problems: string[] = []
   for (const c of changes) {
     const reason = guardedReason(c.path)
-    if (reason !== undefined) problems.push(`${c.path} changed: it is ${reason}, which only Erik changes`)
+    if (reason !== undefined) problems.push(`${c.path} changed: it is ${reason}, which only the owner changes`)
     else if (isTest(c.path) && c.status === 'D') problems.push(`${c.path} deleted: never delete a test`)
     else if (isTest(c.path) && c.status !== 'A' && c.deleted > 0)
       problems.push(`${c.path} lost ${String(c.deleted)} line(s): add to a test, never weaken one`)

@@ -7,7 +7,7 @@
 // Cancel and Start subtask. Start subtask starts nothing. Under it the chat
 // fills the screen as on the phone, with no tab bar: the header with the back
 // button, the title over omni-brain, Working and the ⋯, then Opus 5.5 and the
-// context used; Erik's message, the read line and Claude's reply with Copy,
+// context used; the owner's message, the read line and Claude's reply with Copy,
 // and the empty composer with Opus 5.5 and Stop. Starts from T2b
 // (tabletChatActions), without the menu, with D17's Subtask form
 // (subtaskDialog) open; at a desktop width it draws M1's sidebar with bridge

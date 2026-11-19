@@ -1,4 +1,4 @@
-// "My notes" on a next step: Erik's note with who wrote it and when, and a
+// "My notes" on a next step: the owner's note with who wrote it and when, and a
 // field to add another. With no note yet it is the field alone; without
 // the field (a started task on the tablet) it is the note alone. Props only.
 import { Panel, Stack, TextArea } from '@eshelton328/component-library-1701'
@@ -11,7 +11,7 @@ const by = css({ textStyle: 'monoSm', color: 'fg.muted' })
 
 export type NotesBoxProps = {
   notes: NonNullable<InboxNextStep['notes']>
-  /** Keeps the note Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the note the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
 }
 

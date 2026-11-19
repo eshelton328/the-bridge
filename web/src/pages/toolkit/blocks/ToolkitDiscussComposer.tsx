@@ -12,7 +12,7 @@ export type ToolkitDiscussComposerProps = {
   layer: string
   /** The model chip after the attach button, as the desktop panel draws it (D5 `model` 438:56). */
   model?: boolean | undefined
-  /** What Erik has typed. */
+  /** What the owner has typed. */
   draft: string
   onDraftChange: (text: string) => void
   onSend: (text: string) => void

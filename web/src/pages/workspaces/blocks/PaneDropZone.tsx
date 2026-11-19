@@ -1,4 +1,4 @@
-// The drop zone while Erik drags a chat from the sidebar: over the chat shown
+// The drop zone while the owner drags a chat from the sidebar: over the chat shown
 // alone (D6 158:1025) or over a pane of the workbench (D8 402:1112; D12 402:5000,
 // the whole pane, where the chat would replace it). A dashed
 // cyan box over the part of the chat or pane where the chat would open (an

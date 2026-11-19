@@ -23,7 +23,7 @@ const { values } = parseArgs({
   },
 })
 
-// The pages Erik recorded: the Workspaces phone chat (M17, R20) and the Inbox task chat (M8, R21), and the Inbox
+// The pages the owner recorded: the Workspaces phone chat (M17, R20) and the Inbox task chat (M8, R21), and the Inbox
 // discussion (Discuss), empty (M18) and with messages and a proposal (M19).
 const targets = [
   { name: 'workspaces', path: '/workspaces?state=phoneChatFull' },

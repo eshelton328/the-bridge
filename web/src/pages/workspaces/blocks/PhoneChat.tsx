@@ -8,7 +8,7 @@
 // (M8). While the keyboard is up the header shrinks to one line, `meta`
 // under the title (M10). `focusMessage` puts the focus in the message box with
 // the skills closed (M17). `above` sits over the composer, such as the toast
-// after a move (M22). `rename` takes the title's place while Erik renames the
+// after a move (M22). `rename` takes the title's place while the owner renames the
 // chat, such as the name field (M23). At a tablet's width (T2 105:1810,
 // `device="tablet"`) the header is 12 under the status bar, as the chat alone
 // draws it, and the transcript 16 under the rule and 24 in from the sides.
@@ -66,15 +66,15 @@ export type PhoneChatProps = {
   focusMessage?: boolean | undefined
   /** Drawn between the transcript and the composer, such as the toast after a move (M22 422:819). */
   above?: ReactNode
-  /** Drawn in the header in place of the title while Erik renames the chat, such as the name field (M23 422:925). */
+  /** Drawn in the header in place of the title while the owner renames the chat, such as the name field (M23 422:925). */
   rename?: ReactNode
   /** The device whose width the chat has: the phone (the default), or a tablet (T2). */
   device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
-  /** Erik's draft in the composer, in place of the data's text (`ui.drafts`), so Back and a tap on the chat keep it. */
+  /** The owner's draft in the composer, in place of the data's text (`ui.drafts`), so Back and a tap on the chat keep it. */
   draft?: string | undefined
-  /** Called with the composer's text as Erik types. */
+  /** Called with the composer's text as the owner types. */
   onTextChange?: ((text: string) => void) | undefined
 }
 

@@ -1,6 +1,6 @@
 // Figma Inbox D16 "The task after Apply": D15 after Apply. The task shows
 // the new prompt with Undo, and the proposal turns to Applied. Nothing runs
-// until Erik clicks Start. Copy word for word from
+// until the owner clicks Start. Copy word for word from
 // references/inbox/D16/frame.json, in the proposal's `apply`.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { InboxData, InboxUi } from '../types.ts'

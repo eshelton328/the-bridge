@@ -98,7 +98,7 @@ describe('the discussion effects', () => {
     expect(discussionView(removed.data, kept).detail).toEqual(removed.data.detail)
   })
 
-  it('adds the messages Erik sent after the entries', () => {
+  it('adds the messages the owner sent after the entries', () => {
     const view = discussionView(tasksProposed.data, { ...tasksProposed.ui, sent: ['Keep the Inbox one.'] })
     expect(view.discussion?.entries.at(-1)).toEqual({ type: 'user', text: 'Keep the Inbox one.' })
   })

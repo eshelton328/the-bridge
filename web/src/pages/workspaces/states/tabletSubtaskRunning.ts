@@ -2,7 +2,7 @@
 // (T10) opens on the iPad mini. bridge themes fills the screen as T6's chat
 // does, with no tab bar, still Working with Stop: the header with the back
 // button, the title over omni-brain, Working and the ⋯, then Opus 5.5 and the
-// context used; Erik's message, the read line and Claude's reply with Copy, a
+// context used; the owner's message, the read line and Claude's reply with Copy, a
 // line under it that marks where the subtask layout notes started, and the
 // empty composer with Opus 5.5, Stop and the focus. Subagents in the ⋯ menu
 // counts 3, and Back returns to the list, where layout notes is under bridge

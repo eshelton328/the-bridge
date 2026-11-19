@@ -1,4 +1,4 @@
-// One entry of a running chat in the Inbox: Erik's message, the agent's
+// One entry of a running chat in the Inbox: the owner's message, the agent's
 // reply with Copy, or a tool line. Props only.
 import { Button, CopyIcon, Message, ToolLine } from '@eshelton328/component-library-1701'
 import type { InboxChatEntry } from '../types.ts'

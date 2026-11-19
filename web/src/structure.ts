@@ -1,7 +1,7 @@
 // The layers of web/src in one place. The root eslint.config.js reads this
 // file for the layer import rules and the package bans, and
 // scripts/checkStructure.ts and scripts/new.ts read it too. Decisions in
-// the brain: d-081 (layers; organised by page as Erik changed it on
+// the brain: d-081 (layers; organised by page as the owner changed it on
 // 2026-11-16), d-083 (stores), d-084 (errors).
 
 /**

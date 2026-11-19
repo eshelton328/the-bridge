@@ -32,7 +32,7 @@ export type CheckResult = {
 const tolerance = 0.5
 
 /**
- * Checks Erik's acceptance rules of screen review R20 to R22 on each frame: the header's top never moves, the window
+ * Checks the owner's acceptance rules of screen review R20 to R22 on each frame: the header's top never moves, the window
  * never scrolls, the last message stays above the composer and nothing on the shell fades.
  */
 export function checkFrames(frames: readonly Frame[]): CheckResult[] {

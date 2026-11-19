@@ -1,4 +1,4 @@
-// One message of an item's discussion (D5): Erik's question (`message · Erik`
+// One message of an item's discussion (D5): the owner's question (`message · the owner`
 // 438:25) or Claude's answer (`message · Claude` 438:27), with the files and
 // lines it cites as chips under the text and Copy under them. The library
 // Message draws the bubble, the Claude mark and the name. Props only.
@@ -9,7 +9,7 @@ import type { ToolkitDiscussEntry as Entry } from '../types.ts'
 
 // 438:32: Regular 14/20, four lines in the 378 px panel: `body`.
 const text = css({ textStyle: 'body', color: 'fg.default', m: '0' })
-// Erik's message keeps the line breaks and indents he typed in the reply box.
+// The owner's message keeps the line breaks and indents he typed in the reply box.
 const typed = css({ whiteSpace: 'pre-wrap' })
 // 438:33: the cites stand one under the other, 6 apart, each as wide as its text. Figma's chips are 25 high with the
 // text 17 high; `MetaChip size="sm"` (24 high, `monoSm`) keeps their height, `md` would be 30 (LIBRARY_GAPS.md, Cite chip).

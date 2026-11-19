@@ -2,7 +2,7 @@
 // that hides the sidebar, + for a new workspace, then each workspace and its
 // chats. Only a chat with a pane to show can be selected. Props only; `ui`
 // says which groups are closed, which header the pointer rests on and which
-// chat Erik drags onto which workspace.
+// chat the owner drags onto which workspace.
 import { Button, Panel, PanelIcon, PlusIcon, Stack } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, SidebarText, Workspace, WorkspacesUi } from '../types.ts'

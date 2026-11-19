@@ -1,5 +1,5 @@
 // What a discussion may do, after a lock: it reads the task and its
-// sources, runs nothing and changes the task only when Erik applies.
+// sources, runs nothing and changes the task only when the owner applies.
 // Props only.
 import { LockIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'

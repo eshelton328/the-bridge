@@ -154,7 +154,7 @@ describe('the Workspaces composer on the keyboard (R20)', () => {
       // The footer, the composer or Start chat, ends on the keyboard's top, in view.
       await expect.poll(() => Math.round(box(footer).bottom)).toBe(c.keyboardTop)
       // The header stays at the top, and the chat keeps its size: only the footer moves, so the transcript does not
-      // lay out again under Erik's finger (the jump of R20).
+      // lay out again under the owner's finger (the jump of R20).
       expect(box(header).top).toBe(before.header)
       expect(box(frame).height).toBe(before.frame)
     })

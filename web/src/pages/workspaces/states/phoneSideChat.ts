@@ -1,7 +1,7 @@
 // Figma Workbench M5 (105:3034), "M5 · Side chat": the side chat on the
 // phone, a sheet over bridge themes, which keeps working under the scrim.
 // The sheet has the bubble, Side chat and /btw with ×, the note "Nothing
-// here enters bridge themes. Close it and the main chat carries on.", Erik's
+// here enters bridge themes. Close it and the main chat carries on.", the owner's
 // question and Claude's answer with Copy, and the composer, which has the
 // focus. At a desktop width the state draws M1's sidebar with bridge themes
 // alone and the side chat beside it. Starts from M4 (phoneChatActions),

@@ -2,7 +2,7 @@
 // with, without the sidebar, the button that shows it before the tabs, then
 // the tabs and New chat, the current workspace's panes and the status bar.
 // Beside the sidebar (D7 402:422) the toggle sits in the sidebar, so the tab
-// bar has New chat alone. A click on a tab shows that workspace as Erik left
+// bar has New chat alone. A click on a tab shows that workspace as the owner left
 // it, or its last chat alone in one pane (R6); each workspace keeps its own
 // layout in `ui.layouts` (blocks/workspaceLayout.ts). Props only.
 import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'

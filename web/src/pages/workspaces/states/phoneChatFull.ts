@@ -1,6 +1,6 @@
 // Figma Workbench M17 (402:10748), "M17 · The chat fills the screen": bridge
 // themes open full screen on the phone, as in M3, with no tab bar: the header
-// with the back button, Erik's message, the Read line and Claude's reply with
+// with the back button, the owner's message, the Read line and Claude's reply with
 // Copy, and the composer with requirements.md attached and "/" typed, in focus,
 // with no skill list open. Back returns to the list, where the other chats
 // keep running. At a desktop width the state draws M1's sidebar with bridge

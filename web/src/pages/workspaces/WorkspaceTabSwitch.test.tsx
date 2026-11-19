@@ -7,7 +7,7 @@ import { testRender } from '../../lib/testRender.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { workspacesStates } from './states/index.ts'
 
-// Erik's review R6: a click on a workspace tab shows that workspace with the layout it had when he left it, and a
+// The owner's review R6: a click on a workspace tab shows that workspace with the layout it had when he left it, and a
 // workspace with no layout yet opens its last chat alone in one pane. Each workspace keeps its own layout (D1's open
 // question 4).
 document.documentElement.classList.add('dark')
@@ -43,7 +43,7 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(page.getByText('60 : 40')).not.toBeInTheDocument()
   })
 
-  it('keeps a pane Erik closed closed when he switches to another tab and back', async () => {
+  it('keeps a pane the owner closed closed when he switches to another tab and back', async () => {
     const { data, ui } = workspacesStates.emptiedPane
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
     await userEvent.click(page.getByRole('button', { name: 'Close pane', exact: true }))
@@ -55,7 +55,7 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(page.getByText('Empty pane', { exact: true })).not.toBeInTheDocument()
   })
 
-  it('keeps a draft typed in a pane when Erik switches to another tab and back', async () => {
+  it('keeps a draft typed in a pane when the owner switches to another tab and back', async () => {
     const { data, ui } = workspacesStates.twoPanes
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
     await expect.element(pane('drift check')).toBeVisible()
@@ -67,7 +67,7 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(composer('drift check')).toHaveValue('keep this draft')
   })
 
-  it('shows the sidebar again after Erik hides it in D2 and selects the-bridge', async () => {
+  it('shows the sidebar again after the owner hides it in D2 and selects the-bridge', async () => {
     const { data, ui } = workspacesStates.sideChat
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
     await userEvent.click(hideSidebar())

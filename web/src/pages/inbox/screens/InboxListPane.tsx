@@ -6,7 +6,7 @@
 // many tasks they hide; and a toast that
 // sticks to the bottom of the list. On the tablet and phone (T1, T6, T7)
 // the list fills the screen on the backdrop, with the page's large title.
-// The rows and counts come from listView (Erik's sort, search, filters and
+// The rows and counts come from listView (the owner's sort, search, filters and
 // snoozed items over the state's groups); the menus report through
 // onUiChange. On a tablet or phone a tap on a row opens it: the state's
 // item its detail, any other row its own page (R11); a long-press on a row
@@ -148,14 +148,14 @@ export type InboxListPaneProps = {
   onSelectItem?: ((id: string) => void) | undefined
   /** A tap on a row the state has no detail for, on a tablet or phone: its own page (R11). */
   onOpenRow?: ((id: InboxGroupView['rows'][number]['id']) => void) | undefined
-  /** Where the list was scrolled when Erik last opened a row from it; the list scrolls back there. */
+  /** Where the list was scrolled when the owner last opened a row from it; the list scrolls back there. */
   scrollTop?: number | undefined
-  /** Reports the list's scroll as Erik opens a row, so Back returns to the same place. */
+  /** Reports the list's scroll as the owner opens a row, so Back returns to the same place. */
   onScrollSave?: ((top: number) => void) | undefined
-  /** The text Erik typed in the search field; without it the field shows the state's query. */
+  /** The text the owner typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
-  /** Reports what Erik changes in the list: the sort, the filters and their menus. */
+  /** Reports what the owner changes in the list: the sort, the filters and their menus. */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
   /** The toast's action, such as Undo, was pressed. */
   onToastAction?: (() => void) | undefined
@@ -222,7 +222,7 @@ export function InboxListPane({
   useLayoutEffect(() => {
     chipsRef.current?.querySelector('[data-state="on"]')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
   }, [ui.filter])
-  // After the chip row's own scroll into view, so the list ends where Erik left it.
+  // After the chip row's own scroll into view, so the list ends where the owner left it.
   useLayoutEffect(() => {
     const scroller = sectionRef.current?.closest('main')
     if (!desktop && scroller != null && scrollTop !== undefined) scroller.scrollTop = scrollTop

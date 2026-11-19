@@ -1,4 +1,4 @@
-// Figma Workbench M9 (146:42), "M9 · Long-press a chat": Erik holds drift
+// Figma Workbench M9 (146:42), "M9 · Long-press a chat": the owner holds drift
 // check in the phone's list. The row lifts over the scrim with a cyan border,
 // and a sheet titled drift check opens with the same actions as the row's ⋯,
 // Rename first and highlighted: Rename, Fork, Side chat, Subtask,

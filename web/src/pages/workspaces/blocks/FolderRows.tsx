@@ -23,7 +23,7 @@ const path = css({ textStyle: 'mono', color: 'fg.default', flex: '1', textAlign:
 
 export type FolderRowsProps = {
   folders: ChatFolders
-  /** Called when Erik presses Add folder. */
+  /** Called when the owner presses Add folder. */
   onAdd?: (() => void) | undefined
   /** The Figma layers of the folder rows, in order, and of Add folder; D4's when not set. */
   layers?: { rows: readonly string[]; add: string } | undefined

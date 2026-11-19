@@ -1,11 +1,11 @@
-// The field that takes the place of a chat's name in its header while Erik
+// The field that takes the place of a chat's name in its header while the owner
 // renames it (D21 417:2442): the name, selected for typing, and × at its end.
 // A click outside it or Enter saves the name; × or Escape undoes the change.
 // Either closes it. The library has no rename field (LIBRARY_GAPS.md: Rename
 // field), so it is the library's `SearchField`, whose clear button is the ×,
 // 300 wide. The phone's edit mode (M2 146:37, 105:2614) draws it in a chat
 // row or a workspace header, as wide as the room it has (`fill`), with the
-// text Erik has typed (`draft`). The phone chat's header (M23 422:925) draws
+// text the owner has typed (`draft`). The phone chat's header (M23 422:925) draws
 // it 160 wide (`size="phone"`). Props only.
 import { CloseIcon, SearchField } from '@eshelton328/component-library-1701'
 import type { FocusEvent, KeyboardEvent, MouseEvent } from 'react'
@@ -25,7 +25,7 @@ export type ChatNameFieldProps = {
   name: string
   /** Called with the new name; an empty name keeps the old one. */
   onSave?: ((name: string) => void) | undefined
-  /** Called when Erik undoes the change. */
+  /** Called when the owner undoes the change. */
   onCancel?: (() => void) | undefined
   /** The Figma layer of the field, for the fidelity checks. */
   figma?: string | undefined

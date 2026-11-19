@@ -534,7 +534,7 @@ const ToolkitItemRef = z.object({ path: z.string(), name: z.string(), kind: Tool
  * An open item (D3, a rule in D4, an agent in D7, a hook in D9): what the page shows beside the list for one item. Its kind, name and link counts come from
  * the list's `ToolkitItemView` with the same path.
  */
-/** One message of an item's discussion (D5): Erik's question, or Claude's answer with the files it cites. */
+/** One message of an item's discussion (D5): the owner's question, or Claude's answer with the files it cites. */
 export const ToolkitDiscussEntry = z.discriminatedUnion('type', [
   z.object({ type: z.literal('user'), text: z.string() }),
   z.object({
@@ -904,7 +904,7 @@ export type ToolkitActivityView = z.infer<typeof ToolkitActivityView>
 export const ToolkitData = z.object({
   /** The number of items in toolkit/, after the title. */
   count: z.number().int().nonnegative(),
-  /** The Inbox items that need Erik, on the rail's Inbox. */
+  /** The Inbox items that need the owner, on the rail's Inbox. */
   railBadge: z.number().int().nonnegative(),
   /** The number of artifacts, on Artifacts in the phone's More drawer; without it the item shows no count. */
   artifactsCount: z.number().int().nonnegative().optional(),
@@ -984,9 +984,9 @@ export const ToolkitUi = z.object({
   line: z.number().int().positive().optional(),
   /** Whether the open item's discussion shows (D5, T5, M7): beside the item on the desktop, in its place elsewhere. */
   discussOpen: z.boolean().optional(),
-  /** What Erik has typed in the discussion's reply box; empty when not set. */
+  /** What the owner has typed in the discussion's reply box; empty when not set. */
   discussDraft: z.string().optional(),
-  /** The messages Erik sent in the discussion, after its entries. Nothing answers them in this mock-up. */
+  /** The messages the owner sent in the discussion, after its entries. Nothing answers them in this mock-up. */
   discussSent: z.array(z.string()).optional(),
   /** The source the Activity view counts (D11's All sessions, Chats or Headless runs); All when not set. */
   activitySource: ToolkitActivitySource.optional(),

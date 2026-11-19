@@ -22,7 +22,7 @@ export type AppTabBarProps = {
   selected: AppTabPage
   /** The tablet shows an Artifacts tab; the phone does not. */
   device: 'tablet' | 'phone'
-  /** The number of Inbox items that need Erik. */
+  /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
 }

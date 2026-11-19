@@ -1,4 +1,4 @@
-// One entry of a chat pane's transcript: Erik's message, a tool line, an
+// One entry of a chat pane's transcript: the owner's message, a tool line, an
 // agent's reply with Copy, progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). The caller names the entry's Figma layer. Props only.

@@ -23,7 +23,7 @@ const meta = {
 export default meta
 type Story = StoryObj<typeof meta>
 
-// Figma draws the discussion's composer focused (D14 to D19, T17 to T22: a caret and the lighter border), the state Erik
+// Figma draws the discussion's composer focused (D14 to D19, T17 to T22: a caret and the lighter border), the state the owner
 // sees after opening the discussion. The story puts the focus there; the screen's props do not hold focus.
 async function focusComposer(canvas: { getByRole: (role: 'textbox', options: { name: string }) => HTMLElement }) {
   const composer = canvas.getByRole('textbox', { name: 'Ask about this task' })
@@ -321,7 +321,7 @@ export const Chat: Story = {
     ).toBeVisible()
     await expect(canvas.getByText('Wait for increment two.')).toBeVisible()
     await expect(canvas.getByRole('button', { name: 'Stop' })).toBeVisible()
-    // Figma draws the reply box focused (346:6419, a caret), as Erik sees it after Reply here.
+    // Figma draws the reply box focused (346:6419, a caret), as the owner sees it after Reply here.
     const reply = canvas.getByRole('textbox', { name: 'Reply' })
     reply.focus()
     await expect(reply).toHaveFocus()
@@ -381,7 +381,7 @@ export const SearchList: Story = {
     await expect(canvas.getByRole('searchbox', { name: 'Search the inbox' })).toHaveValue('f-005')
     await expect(canvas.getByText('4 results for “f-005” in titles, IDs, prompts and notes')).toBeVisible()
     await expect(canvas.queryByText('drift check wants to run git mv')).toBeNull()
-    // Figma draws the field focused (its focused border and a caret), as Erik sees it while he types.
+    // Figma draws the field focused (its focused border and a caret), as the owner sees it while he types.
     const search = canvas.getByRole('searchbox', { name: 'Search the inbox' })
     search.focus()
     await expect(search).toHaveFocus()
@@ -409,7 +409,7 @@ export const PromptEditingPage: Story = {
     await expect(canvas.getByPlaceholderText('Add a note for yourself…')).toBeVisible()
     const picker = await within(document.body).findByRole('dialog', { name: 'Run in' })
     await expect(within(picker).getByRole('radio', { name: /New Claude Code chat/ })).toBeChecked()
-    // Figma draws the editor focused (its focused border and a caret), as Erik sees it while he edits; the picker stays open.
+    // Figma draws the editor focused (its focused border and a caret), as the owner sees it while he edits; the picker stays open.
     const editor = canvas.getByRole('textbox', { name: 'Suggested prompt' })
     editor.focus()
     await expect(editor).toHaveFocus()

@@ -1,6 +1,6 @@
 // Which artifact the screen shows open, and what it shows of it. A state's
 // `data.open` (D2, T2, M2 and the states after them) opens as it is, with
-// its discussion. A card Erik opens from the library (`ui.openId`, a card
+// its discussion. A card the owner opens from the library (`ui.openId`, a card
 // on D1 or T1, a row on M1 or D2's list) opens the same way; when it is not
 // the artifact `data.open` describes, its detail is built from its own card
 // fields and the words the detail states already use: "found 12m ago" and
@@ -51,7 +51,7 @@ export function openArtifact(data: ArtifactsData, ui: ArtifactsUi, layout: Viewp
 }
 
 /**
- * The project File in a project shows checked (M7): Erik's pick when he made it for this artifact (`ui.fileFor`, or
+ * The project File in a project shows checked (M7): the owner's pick when he made it for this artifact (`ui.fileFor`, or
  * `data.open`'s artifact when not set, as M7's state sets only `fileProject`), or else the artifact's own project.
  */
 export function filedProject(ui: ArtifactsUi, openId: string | undefined, artifact: ArtifactDetail): string {

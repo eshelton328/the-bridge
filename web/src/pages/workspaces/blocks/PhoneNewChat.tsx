@@ -38,9 +38,9 @@ const start = css({ w: '[100%]' })
 export type PhoneNewChatProps = {
   form: NewChatForm
   workspaces: readonly Workspace[]
-  /** Called when Erik presses Cancel. */
+  /** Called when the owner presses Cancel. */
   onCancel?: (() => void) | undefined
-  /** Called when Erik presses Start chat. */
+  /** Called when the owner presses Start chat. */
   onStart?: (() => void) | undefined
   /** The keyboard is up (M11): the start bar has no summary. */
   keyboardOpen?: boolean | undefined

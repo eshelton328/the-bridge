@@ -1,7 +1,7 @@
 // The dialog that asks before a workspace closes (M13 208:765): × on a
 // workspace in the phone's edit mode opens it. It names the workspace and the
 // chats that end with it, by its current name ("{workspace}" in its text), so
-// a renamed workspace is asked about by the name Erik gave it; Close is red and Cancel is the easy target. The
+// a renamed workspace is asked about by the name the owner gave it; Close is red and Cancel is the easy target. The
 // focus starts on the dialog's box, so Enter closes nothing. The library's
 // confirm dialog (`Dialog role="alertdialog"`) is its box. Props only.
 import { Button, Dialog, DialogClose } from '@eshelton328/component-library-1701'

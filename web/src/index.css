@@ -6,7 +6,7 @@ body,
   height: 100%;
 }
 
-/* Erik's decision (2026-11-18): the running app's page never scrolls,
+/* The owner's decision (2026-11-18): the running app's page never scrolls,
    bounces or zooms. html and body fill the window and clip, so only the
    shell's own scroll areas scroll; a pinch or a double tap does not zoom
    the page. The lock matches only under `data-app`, which main.ts sets

@@ -1,4 +1,4 @@
-// Erik's decision (2026-11-18): the installed app never zooms the page. The
+// The owner's decision (2026-11-18): the installed app never zooms the page. The
 // viewport meta of index.html sets `maximum-scale=1, user-scalable=no` and
 // index.css sets `touch-action: pan-x pan-y`, but iOS Safari ignores
 // `user-scalable=no`, so on iOS a pinch is stopped here: each `gesturestart`

@@ -1,7 +1,7 @@
 import { describe, expect, it, onTestFinished } from 'vitest'
 import { blockPageZoom, isIos, type NavigatorLike, shouldBlockGesture } from './pageZoom.ts'
 
-// Erik's decision (2026-11-18): no page zoom on any platform. index.html's
+// The owner's decision (2026-11-18): no page zoom on any platform. index.html's
 // viewport meta turns it off where browsers honour it; on iOS, which ignores
 // user-scalable=no, blockPageZoom cancels the pinch gestures, except inside
 // an element marked data-allow-pinch.

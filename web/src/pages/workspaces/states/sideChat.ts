@@ -1,6 +1,6 @@
 // Figma Workbench D2 (105:511), "Workspaces and side chat": the sidebar lists
 // every workspace and its chats, with theme tokens indented under bridge
-// themes, the chat that started it. Erik drags drift check onto the-bridge,
+// themes, the chat that started it. The owner drags drift check onto the-bridge,
 // whose header is the drop target, and the pointer rests on omni, whose
 // header shows rename and close. bridge themes fills the middle, and its
 // side chat (/btw) sits beside it. Starts from D1 (workbench).

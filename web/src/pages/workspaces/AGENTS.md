@@ -5,8 +5,8 @@ references are in `references/workspaces/`. Read [../AGENTS.md](../AGENTS.md)
 first: it says what each file of a page folder is for.
 
 - `WorkspacesPage.tsx` is the connected entry; it merges the loader's
-  state with what Erik changed in it (`workspacesStore.ts`), passes it to
-  the screen and goes to the page Erik picks.
+  state with what the owner changed in it (`workspacesStore.ts`), passes it to
+  the screen and goes to the page the owner picks.
 - `home.ts`: `workspacesHome`, what `/workspaces` shows with no
   `?state=`: M1's data with the phone's labels and `tabletList`, so the
   screen lays out for the window (desktop, tablet or phone) and changes
@@ -16,7 +16,7 @@ first: it says what each file of a page folder is for.
 - `workspacesStore.ts`: the page's view store (`createAppStore`, as
   Inbox's). It holds the changes to the shown state's `ui`, so a visit to
   another page keeps them (`app/WorkspacesRoute.test.tsx`), and drops
-  them when another `?state=` is shown. What Erik types in a chat's
+  them when another `?state=` is shown. What the owner types in a chat's
   composer is one of them: `ui.drafts` by chat id, which the composer in a
   pane and in the chat alone starts from (`blocks/chatDraft.ts`), so a
   pane that unmounts keeps its draft. `ChatPane` keeps the box's text in
@@ -60,12 +60,12 @@ first: it says what each file of a page folder is for.
   in the start bar; M12 is a subagent's full transcript (`ui.phoneView:
   'transcript'`, `ui.subagentFor`), with no tab bar. Every other width, and a state without `data.phone` (D1 to D21), draws
   the desktop layout. `WorkspacesScreen` keeps the ui above the layout,
-  so a width change keeps what Erik changed (`WorkspacesLayout.test.tsx`).
+  so a width change keeps what the owner changed (`WorkspacesLayout.test.tsx`).
   Later phone frames add their views to `WorkspacesPhone`.
 - `screens/WorkspacesScreen.tsx`: the rail (`AppRail`) and the library's
   `Workbench`: the 52 px tab bar (`size="compact"`) with the sidebar
   toggle before the tabs and New chat after them, the current
-  workspace's panes and the status bar. It keeps what Erik opens or
+  workspace's panes and the status bar. It keeps what the owner opens or
   closes (a pane menu, Move to workspace, the skill list, the
   focused pane) until the state changes, and reports it with `onUiChange`.
   With `ui.sidebar` (D2) it shows the workspace sidebar in the list slot,
@@ -420,12 +420,12 @@ first: it says what each file of a page folder is for.
   subagents, Layout notes' transcript open, on the phone), M7
   `phoneNewChat` (from `phoneHome`, with D3's New chat form and its summary
   line: the form open on the phone), M8 `phoneFolders` (from `phoneChat`,
-  with D4's drift check pane with Erik's message alone, its folders and
+  with D4's drift check pane with the owner's message alone, its folders and
   its picker without Documents: the folders sheet open on the phone), M9
   `phoneHoldChat` (from `phoneHome`: drift check held, its actions open
   with Rename first and highlighted, Move to workspace closed), M10
   `phoneKeyboard` (from `phoneChat`, with D4's two folders and M8's chip:
-  Erik's message and Claude's reply without Copy, "/wri" typed at the end
+  The owner's message and Claude's reply without Copy, "/wri" typed at the end
   of a message, /writer listed alone, the keyboard up), M11
   `phoneNewChatKeyboard` (from `phoneNewChat`: "theme tokens" typed in the
   name, which has the focus, Runs in without shell, omni-brain, the
@@ -468,9 +468,9 @@ first: it says what each file of a page folder is for.
   and D17's Subtask form: the chat's subagents on the tablet with Start a
   subtask), T4 `tabletComposing` (from `tabletChatActions`, without the
   menu, with M3's "/" typed, requirements.md attached and the skills
-  listed, and Claude's second reply: the chat on the tablet while Erik
+  listed, and Claude's second reply: the chat on the tablet while the owner
   types), T5 `tabletFolders` (from `tabletChatActions`, without the menu,
-  with Erik's message and Claude's reply alone, M8's folders sheet and D4's
+  with the owner's message and Claude's reply alone, M8's folders sheet and D4's
   picker with Documents: the chat's folders on the tablet, the picker open),
   T6 `tabletOneChat` (from `tabletChatActions`, without the menu, with
   T4's composer and M17's focus in the message box: the chat full screen
@@ -576,7 +576,7 @@ first: it says what each file of a page folder is for.
   workspace's layout by id; for D15 `chatDialog`,
   the chat action whose dialog is open, `subtask` in D17; for D20
   `toastOpen`, the toast shown; for D21 `renaming`, the name field open,
-  and `names`, the names Erik gave chats, and `drafts`, the text Erik typed
+  and `names`, the names the owner gave chats, and `drafts`, the text the owner typed
   in each chat's composer; for M2 `editing`, the phone list's
   edit mode, `renamingChats` and `renamingWorkspaces`, the names that are
   fields with their text, and `workspaceNames`; for M3 `phoneView`, what
@@ -589,8 +589,8 @@ first: it says what each file of a page folder is for.
   `newChatWorkspace`; for M17 `messageFocus`, the phone chat's message
   box in focus with the skills closed; for M23 `refocusMessage`, the box
   takes the focus back when the name field closes), each a Zod schema.
-- Workspace tabs (Erik's review R6): a click on a tab shows that
-  workspace (`ui.workspace`) with the layout it had when Erik left it:
+- Workspace tabs (the owner's review R6): a click on a tab shows that
+  workspace (`ui.workspace`) with the layout it had when the owner left it:
   its panes, the sizes of its handles, its focused pane and its side chat
   (`sideChatOpen`, closed for a workspace that has none), in
   `ui.layouts` by workspace id (`blocks/workspaceLayout.ts`). A resize or
@@ -611,7 +611,7 @@ first: it says what each file of a page folder is for.
   `app/WorkspacesRoute.test.tsx` through the route and a page visit.
 - Open questions answered: D1's note (a saved reference) leaves open
   whether each workspace keeps herdr's own layout (open question 4). On
-  2026-11-18 Erik's answer to review R6 settled it: each workspace keeps
+  2026-11-18 the owner's answer to review R6 settled it: each workspace keeps
   its own layout, as above.
 - `LIBRARY_GAPS.md`: what the Workbench frames need that the component
   library cannot draw yet, for the batched library PR.

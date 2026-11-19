@@ -45,7 +45,7 @@ export type QuestionDetailProps = {
   layout?: Viewport | undefined
   /** Back, over the item on a tablet or phone. */
   back?: ReactNode
-  /** Keeps the note Erik is typing; see `InboxDrafts` in types.ts. */
+  /** Keeps the note the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
   /** The Snooze menu of the task bar. */
   snooze?: SnoozeControl | undefined

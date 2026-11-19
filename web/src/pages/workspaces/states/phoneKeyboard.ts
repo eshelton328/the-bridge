@@ -1,8 +1,8 @@
 // Figma Workbench M10 (147:21), "M10 · Chat, keyboard open": bridge themes
-// on the phone while Erik types. The keyboard is up, so the header is one
+// on the phone while the owner types. The keyboard is up, so the header is one
 // line: the back button, the kind mark, the title over "Opus 5.5 · 42% · 2
-// folders", Working and the ⋯. Under it Erik's message and Claude's reply,
-// with no Copy; Erik has typed "Turn the layout notes into a doc with /wri",
+// folders", Working and the ⋯. Under it the owner's message and Claude's reply,
+// with no Copy; the owner has typed "Turn the layout notes into a doc with /wri",
 // so the skills that match "/wri", /writer alone, are listed over the
 // composer, and Stop shows while the chat works. The keyboard itself is the
 // phone's (d-089). At a desktop width the state draws M1's sidebar with
@@ -14,7 +14,7 @@ import { folders } from './folders.ts'
 import { phoneChat } from './phoneChat.ts'
 
 const [first] = phoneChat.data.panes
-// M3's pane with Erik's message and Claude's reply alone (147:63), the reply without Copy, and the message typed with
+// M3's pane with the owner's message and Claude's reply alone (147:63), the reply without Copy, and the message typed with
 // no attachment (147:79).
 const bridgeThemes: WorkbenchPane[] =
   first?.type === 'chat'

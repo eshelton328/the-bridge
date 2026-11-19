@@ -12,7 +12,7 @@ export type RowsSplitProps = {
   panes: readonly SplitterPanel[]
   /** The sizes of each handle's panels, in percent; equal shares when not set. */
   sizes?: Partial<Record<ResizePart, readonly number[]>> | undefined
-  /** Called with the part and its new sizes while Erik drags a handle. */
+  /** Called with the part and its new sizes while the owner drags a handle. */
   onSizeChange?: ((part: ResizePart, size: number[]) => void) | undefined
 }
 

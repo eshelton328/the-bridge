@@ -1,4 +1,4 @@
-// The Inbox list as Erik sees it: a state's groups after what he did to
+// The Inbox list as the owner sees it: a state's groups after what he did to
 // them (InboxUi): the items he snoozed, marked done or dismissed taken out, the
 // filters that apply, the search and the sort. The counts drop by what the
 // filters and the task bar take out; a search changes only the group
@@ -78,7 +78,7 @@ function byProject(rows: readonly InboxRowView[]): { label: string; rows: InboxR
   return labels.map((label) => ({ label, rows: rows.filter((row) => projectOf(row) === label) }))
 }
 
-/** The outcome line of an item Erik finished from the task bar or removed in a discussion; the Done list shows it under the title. */
+/** The outcome line of an item the owner finished from the task bar or removed in a discussion; the Done list shows it under the title. */
 const finishedLine = {
   done: 'Marked done',
   dismissed: 'Dismissed',
@@ -86,7 +86,7 @@ const finishedLine = {
 } as const satisfies Record<InboxUi['finished'][number]['result'], string>
 
 /**
- * The rows Erik finished from the task bar, with how each ended, newest
+ * The rows the owner finished from the task bar, with how each ended, newest
  * first, as the Done list shows them.
  */
 function finishedRows(groups: readonly InboxGroupView[], finished: InboxUi['finished']): InboxRowView[] {
@@ -133,7 +133,7 @@ const doneDays: readonly InboxGroupId[] = ['today', 'yesterday']
 
 /**
  * The groups the selected chip shows. Done shows only the Done list (All
- * means every open task, not Done; D7 and T7 notes), with the items Erik
+ * means every open task, not Done; D7 and T7 notes), with the items the owner
  * finished from the task bar in Today, which it adds when the state has
  * none. A state with no Done days shows its search's Done list (Show it,
  * D10). The other chips show the state's groups.
@@ -184,7 +184,7 @@ export function listView(data: InboxData, ui: InboxUi, query: string): ListView 
   const chipLess = (value: string): number => {
     const id = chipGroups[value]
     if (value === 'all') return removed + hidden
-    // Done gains the items Erik finished from the task bar.
+    // Done gains the items the owner finished from the task bar.
     if (value === 'done') return -finishedRows(data.groups, ui.finished).length
     return id === undefined ? 0 : less(data.groups, groups, keep, [id])
   }

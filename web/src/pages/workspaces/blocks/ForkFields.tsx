@@ -1,5 +1,5 @@
 // The Fork form's fields (D15 417:305, M18 422:217): the copy's name, which
-// Erik can change, the two-way start-from choice, the whole chat or up to a
+// the owner can change, the two-way start-from choice, the whole chat or up to a
 // message he picks next, and the line on what the fork copies. The desktop
 // `ForkDialog` and the phone's `PhoneFork` draw them. Props only.
 import { Button, Grid, TextField } from '@eshelton328/component-library-1701'
