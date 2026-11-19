@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ScreenState, Viewport } from '../../lib/screenState.ts'
 import { artifactsHome } from './home.ts'
-import { cardDetail, openArtifact } from './screens/openView.ts'
+import { cardDetail, filedProject, openArtifact } from './screens/openView.ts'
 import { artifactsStates } from './states/index.ts'
 import type { ArtifactCard, ArtifactsData, ArtifactsUi } from './types.ts'
 
@@ -74,5 +74,24 @@ describe('openArtifact', () => {
 
   it('opens nothing for an id the library does not hold', () => {
     expect(openArtifact(home, { ...homeUi, openId: 'missing' }, 'desktop')).toBeUndefined()
+  })
+})
+
+describe('filedProject', () => {
+  const open = artifactPhone.data.open
+  const other = cardDetail(card('logo-options'), 'phone')
+
+  it("checks M7's pick for the state's open artifact", () => {
+    expect(filedProject({ ...artifactPhone.ui, fileProject: 'skill-evals' }, open.id, open)).toBe('skill-evals')
+  })
+
+  it("shows another artifact's own project, not the pick made for the first one", () => {
+    const ui = { ...artifactPhone.ui, fileProject: 'omni', fileFor: open.id }
+    expect(filedProject(ui, open.id, other)).toBe(other.project)
+  })
+
+  it('checks a pick made for a card opened from the library', () => {
+    const ui = { ...artifactPhone.ui, fileProject: 'omni', fileFor: other.id }
+    expect(filedProject(ui, open.id, other)).toBe('omni')
   })
 })

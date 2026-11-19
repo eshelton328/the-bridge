@@ -380,6 +380,11 @@ export const ArtifactsUi = z.object({
   fileOpen: z.boolean().optional(),
   /** The project picked in File in a project, or `none` (M7); the open artifact's own project when not set. */
   fileProject: z.string().optional(),
+  /**
+   * The artifact `fileProject` was picked for; `data.open`'s when not set (M7). Another open artifact shows its own
+   * project, so a pick does not follow Erik to the next artifact he opens.
+   */
+  fileFor: z.string().optional(),
   /** The phone's More opened the More drawer over the tab bar (M8). */
   moreOpen: z.boolean().optional(),
   /**
