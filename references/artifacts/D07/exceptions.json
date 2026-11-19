@@ -8,6 +8,7 @@
   "position": [
     {
       "layer": "452:1993",
+      "iconSize": 24,
       "reason": "Figma draws the rail's Artifacts icon in a 20 px frame (452:1993) while its other rail icons are 22 px (icon/inbox 452:1969); the shared AppRail draws every item's icon at one size, 24 (library NavRail, d-100), which the 22 px ones pass within the 2 px slack. A smaller Artifacts icon would make the rail uneven, and this page does not change AppRail (bridge-coord, 2026-11-19, the same decision on every page)."
     }
   ]

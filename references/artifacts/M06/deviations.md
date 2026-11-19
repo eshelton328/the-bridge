@@ -37,6 +37,11 @@ the Project field passes and the offsets grow towards the top.
 
 ## Deviations: the sheet
 
+- **Tab bar icons under the sheet.** Figma keeps the tab bar (408:661)
+  under the Add a link sheet, so icon/home (408:664) and icon/more
+  (408:694) are not visible; the iconSize check matched them to the
+  Project field's 16 px icons. Two position exceptions name them
+  (2026-11-19).
 - **Field labels.** "Link", "Source", "Title" and "Project" are `small`
   (12/16) in grey, `TextField`'s label, against Figma's Medium 14 in the
   default text colour, 20 high. Each field is 4 px shorter: `field · Link`

@@ -5,5 +5,15 @@
       "selector": "div > div.backdrop > div.backdrop > div.app-shell__root > main.app-shell__detail",
       "reason": "The library scrolls on the phone, as in M1, M3 and M4: Figma's library (408:442) runs to y 875, under the tab bar (y 767) and past the frame's bottom edge (844), and the tab bar stays pinned. The render scrolls the detail under the pinned tab bar the same way (d-107); the Add a link sheet lies over it."
     }
+  ],
+  "position": [
+    {
+      "layer": "408:664",
+      "reason": "Figma draws the tab bar's icon/home (408:664, y 777) under the Add a link sheet, so it is not visible in frame.png; the app draws no tab bar under the sheet either. The only svg at its centre is the sheet's field · Project folder or chevron (16 px), which is that field's own icon, not this one. The text check skips covered Figma text in the same way; the icon check does not yet."
+    },
+    {
+      "layer": "408:694",
+      "reason": "Figma draws the tab bar's icon/more (408:694, y 777) under the Add a link sheet, so it is not visible in frame.png; the app draws no tab bar under the sheet either. The only svg at its centre is the sheet's field · Project folder or chevron (16 px), which is that field's own icon, not this one. The text check skips covered Figma text in the same way; the icon check does not yet."
+    }
   ]
 }
