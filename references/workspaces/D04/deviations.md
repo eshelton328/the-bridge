@@ -14,8 +14,8 @@ list open over the transcript and the folder picker in the side slot
   header's `23%`) pass without an
   exception: `ContextMeter` draws each as one text node. `Artifacts` and
   `Toolkit` (rail, d-105) are excepted as on D01 to D03.
-- Position: 19 of 41 layers pass. `128:272`, `128:273`, `128:304`,
-  `128:306`, `137:2`, `137:9`, `128:330`, `128:342`, `128:349`,
+- Position: 20 of 41 layers pass. `128:272`, `128:273`, `128:304`,
+  `128:306`, `137:2`, `128:330`, `128:342`, `128:349`,
   `128:355`, `128:361`, `128:367`, `128:374`, `128:381`, `128:388`,
   `128:400`, `128:410`, `128:416` and `128:424` fail.
   The shared navigation's items pass too: `rail · Inbox`,
@@ -50,10 +50,11 @@ list open over the transcript and the folder picker in the side slot
 - **Add ~/the-bridge.** `128:400` x -4.9, w +7.9: the primary
   `Button size="sm"` with `textSize="smStrong"` is 145 wide against
   Figma's 137, so it starts 5 px further left.
-- **Folders control (Folders control).** `137:9` w +8: a `Button size="xs"`
-  spaces the folder icon, the path, "+1" and the chevron 6 apart, so the
-  control is 146 wide against Figma's 138. Its cyan border while the list
-  is open is the button's expanded border.
+- **Folders control (Folders control).** `137:9` passes: the button
+  passes `keepIconSize`, so its folder icon and chevron are 12 (Figma 13
+  and 12), and the control is within the tolerance of Figma's 138 wide.
+  Its cyan border while the list is open is the button's expanded
+  border.
 - **Folder list (Folder list).** `128:410`, `128:416` and `128:424` w
   +8, `128:424` y +5: `Popover` pads 10 against Figma's 13, so the rows
   are 8 px wider; the rows are 36 px (`Button size="lg"`) against 37 and
