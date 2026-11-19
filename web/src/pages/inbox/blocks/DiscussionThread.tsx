@@ -15,8 +15,13 @@ import type { ProposalControl } from './ProposalCard.tsx'
 
 const entries = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1' })
 const middle = css({ justifyContent: 'center' })
-// The space between the header, the content and the reply box, and between the content's parts.
-const bodyGap = { '8': css({ gap: '8' }), '12': css({ gap: '12' }) } as const
+// The space between the header, the content and the reply box, and between the content's parts. The list is the
+// containing block of what a message positions absolutely (its hidden name), so that scrolls with the list and stays
+// above the reply box (R22).
+const bodyGap = {
+  '8': css({ gap: '8', position: 'relative' }),
+  '12': css({ gap: '12', position: 'relative' }),
+} as const
 
 export type DiscussionThreadProps = {
   discussion: InboxDiscussion

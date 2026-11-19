@@ -37,8 +37,9 @@ It leaves `TODO` markers; the tests fail until each is filled in.
 `pnpm keyboard:served` checks the keyboard on the served app (the
 served-app facts: `https://amonhen.tail21f8a4.ts.net:5180`), before
 bridge-coord tells Erik that a chat screen is ready. It opens the
-Workspaces chat (`?state=phoneChatFull`, R20) and the Inbox chat
-(`?state=chat`, R21) in Playwright's WebKit with the iPhone 15 profile at
+Workspaces chat (`?state=phoneChatFull`, R20), the Inbox chat
+(`?state=chat`, R21) and the Inbox discussion (`?state=discussionPage`
+and `?state=changeProposedPage`, Discuss) in Playwright's WebKit with the iPhone 15 profile at
 393 × 852, the installed app's screen. For each chat it:
 
 1. puts a fake `window.visualViewport` in the page before the app loads,
@@ -59,7 +60,7 @@ Workspaces chat (`?state=phoneChatFull`, R20) and the Inbox chat
 It writes `<chat>-frames.json` and `<chat>-sheet.png` (24 frames of a
 recording, the keyboard drawn grey) to `reports/keyboard/<time>/`, which
 git ignores, prints one JSON line and exits 1 when a check fails. Flags:
-`--url`, `--keyboard <px>`, `--only workspaces|inbox`, `--out <dir>` and
+`--url`, `--keyboard <px>`, `--only workspaces|inbox|discuss|discussThread`, `--out <dir>` and
 `--no-focus-scroll`. It needs WebKit (`pnpm exec playwright install
 webkit`) and `ffmpeg` on the PATH. Desktop WebKit is not iOS: the fake
 keyboard stands in for iOS's, and desktop WebKit scrolls the window

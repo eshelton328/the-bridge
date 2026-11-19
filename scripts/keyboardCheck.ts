@@ -23,10 +23,13 @@ const { values } = parseArgs({
   },
 })
 
-// The pages Erik recorded: the Workspaces phone chat (M17, R20) and the Inbox task chat (M8, R21).
+// The pages Erik recorded: the Workspaces phone chat (M17, R20) and the Inbox task chat (M8, R21), and the Inbox
+// discussion (Discuss), empty (M18) and with messages and a proposal (M19).
 const targets = [
   { name: 'workspaces', path: '/workspaces?state=phoneChatFull' },
   { name: 'inbox', path: '/inbox?state=chat' },
+  { name: 'discuss', path: '/inbox?state=discussionPage' },
+  { name: 'discussThread', path: '/inbox?state=changeProposedPage' },
 ].filter((t) => values.only === undefined || t.name === values.only)
 
 const keyboard = Number(values.keyboard)

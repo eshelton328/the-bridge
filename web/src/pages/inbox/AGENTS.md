@@ -84,7 +84,9 @@ detail of the selected item. Figma frames `D*` (desktop), `T*`
   library `ScrollFrame` in `RunningDetail` and `DiscussionThread` (on a
   tablet or phone the frame is the shell detail's own child, with the
   page's padding, so AppShell docks the reply box on the keyboard, R21;
-  `app/InboxKeyboardDock.test.tsx`), and
+  the frame's body is `position: relative`, so a message's hidden name,
+  which the library positions absolutely, scrolls with the list and stays
+  above the reply box, R22; `app/InboxKeyboardDock.test.tsx`), and
   the shared block `DetailFrame` (in `web/src/blocks/`; a pinned bar
   sticky at the end of the scrolling item) in `NextStepDetail` and
   `QuestionDetail`. `InboxStickyBars.test.tsx`
