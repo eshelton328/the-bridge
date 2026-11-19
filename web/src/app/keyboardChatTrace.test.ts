@@ -176,6 +176,33 @@ describe('keyboard trace chat sessions', () => {
     await expect.poll(() => posts.length).toBe(1)
   })
 
+  it('stops after a rotation, when the viewport is back to the layout height of the new orientation', async () => {
+    const vv = window.visualViewport
+    if (vv === null) throw new Error('no visualViewport')
+    const screen = { width: 390, height: 844, inner: 844 }
+    const spies = [
+      vi.spyOn(vv, 'height', 'get').mockImplementation(() => screen.height),
+      vi.spyOn(vv, 'width', 'get').mockImplementation(() => screen.width),
+      vi.spyOn(window, 'innerHeight', 'get').mockImplementation(() => screen.inner),
+    ]
+    onTestFinished(() => {
+      for (const spy of spies) spy.mockRestore()
+    })
+    const route = fakeRoute({ pathname: '/workspaces', search: '' })
+    const { posts } = watch(route.source)
+    const composer = mountComposer()
+    composer.focus()
+    screen.height = 508
+    composer.blur()
+    // Turned to landscape with the keyboard still up: no stop.
+    Object.assign(screen, { width: 844, inner: 390, height: 200 })
+    await wait(CLOSE_MS * 3)
+    expect(posts).toEqual([])
+    // The keyboard closes in landscape: the viewport is the layout's 390, short of the portrait 844.
+    screen.height = 390
+    await expect.poll(() => posts.length).toBe(1)
+  })
+
   it('records the route and the chat in the header, with no other query value and no text', async () => {
     const route = fakeRoute({
       pathname: '/workspaces',

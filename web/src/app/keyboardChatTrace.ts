@@ -15,8 +15,8 @@
 // - Session: starts at that `focusin`, with its own `startedAt` and header.
 //   The keyboard counts as closed once the composer has lost the focus and
 //   `visualViewport.height` is back to its value at the `focusin` (within
-//   1 px), a reading independent of AppShell, which the trace is there to
-//   check. The session stops 2 s after that, with one last POST; a focus
+//   1 px), or, after a rotation changed the width, to `innerHeight`, a
+//   reading independent of AppShell, which the trace is there to check. The session stops 2 s after that, with one last POST; a focus
 //   back in the composer within the 2 s keeps the same session.
 import {
   type Recording,
@@ -78,12 +78,16 @@ export function startChatKeyboardTrace({ win = window, route, closeDelayMs = 200
   const startSession = (target: EventTarget, device: TraceChat['device'], startType = 'focusin') => {
     const where = traceRoute(route.current())
     const baseline = win.visualViewport?.height ?? null
+    const baselineWidth = win.visualViewport?.width ?? null
     let closeTimer: number | undefined
     let ended = false
     const closed = () => {
       if (chatComposerDevice(doc.activeElement) !== undefined) return false
-      const height = win.visualViewport?.height
-      return baseline === null || height === undefined || height >= baseline - 1
+      const vv = win.visualViewport
+      if (baseline === null || baselineWidth === null || vv === null) return true
+      if (vv.height >= baseline - 1) return true
+      // A rotation changes the width, and the closed height is then the layout's, which iOS keeps under the keyboard.
+      return Math.abs(vv.width - baselineWidth) > 1 && vv.height >= win.innerHeight - 1
     }
     const onSample = () => {
       if (closeTimer === undefined && !ended && closed())
