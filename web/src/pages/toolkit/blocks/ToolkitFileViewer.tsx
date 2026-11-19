@@ -29,6 +29,18 @@ import { ToolkitFileBody } from './ToolkitFileBody.tsx'
 
 // D10 440:1418: the switch sits 8 before the copy icon; its box is the switch's own.
 const switchBox = css({ display: 'inline-flex' })
+// D6 432:2347: the skill icon 14 in and the line in small muted text, 8 after it, 10 under the code. Figma puts it right
+// under the file; FileFrame's `foot` sits at the foot of a column that fills the browser's height, so the line is drawn
+// in the body under the file (LIBRARY_GAPS.md, File browser).
+const usedBy = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8',
+  px: '12',
+  py: '10',
+  textStyle: 'small',
+  color: 'fg.muted',
+})
 
 const kindIcons = {
   skill: <SkillIcon size="12" />,
@@ -101,11 +113,15 @@ export function ToolkitFileViewer({
             }
       }
       readOnly
-      foot={view?.usedBy?.text}
-      footIcon={view?.usedBy === undefined ? undefined : kindIcons[view.usedBy.kind]}
-      figma={{ root: 'viewer', bar: 'viewer bar', foot: 'used by' }}
+      figma={{ root: 'viewer', bar: 'viewer bar' }}
     >
       {view === undefined ? null : <ToolkitFileBody view={view} mode={mode} onModeChange={onModeChange} line={line} />}
+      {view?.usedBy === undefined ? null : (
+        <p className={usedBy} data-figma="used by">
+          {kindIcons[view.usedBy.kind]}
+          {view.usedBy.text}
+        </p>
+      )}
     </FileFrame>
   )
 }
