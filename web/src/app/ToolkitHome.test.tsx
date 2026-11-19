@@ -15,9 +15,10 @@ document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 let view: { unmount: () => Promise<void> } | undefined
+let router: ReturnType<typeof createRouter> | undefined
 
 function renderAt(path: string) {
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
+  router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: [path] }) })
   return testRender(<RouterProvider router={router} />)
 }
 
@@ -101,5 +102,50 @@ describe('the Toolkit home', () => {
     view = await renderAt('/toolkit?state=toolkitList')
     await expect.poll(() => layer('toolkit card · agents-md')).not.toBeNull()
     expect(layer('group · RULES')).toBeNull()
+  })
+
+  it('goes to the Inbox from the tablet tab bar', async () => {
+    await page.viewport(756, 1024)
+    view = await renderAt('/toolkit')
+    await expect.poll(tabBar).not.toBeNull()
+    await userEvent.click(page.getByRole('button', { name: /^Inbox/ }))
+    await expect.poll(() => router?.state.location.pathname).toBe('/inbox')
+  })
+
+  it('stays on the Toolkit list from More in the tablet tab bar, as More is the way to it', async () => {
+    await page.viewport(756, 1024)
+    view = await renderAt('/toolkit')
+    await expect.poll(tabBar).not.toBeNull()
+    await userEvent.click(page.getByRole('button', { name: 'More' }))
+    expect(router?.state.location.pathname).toBe('/toolkit')
+    expect(layer('toolkit row · agents-md')).not.toBeNull()
+    expect(overlays()).toHaveLength(0)
+  })
+
+  it('opens the More drawer from the phone tab bar and goes to Artifacts from it', async () => {
+    await page.viewport(390, 844)
+    view = await renderAt('/toolkit')
+    await expect.poll(tabBar).not.toBeNull()
+    await userEvent.click(page.getByRole('button', { name: 'More' }))
+    const drawer = page.getByRole('dialog')
+    await expect.element(drawer).toBeVisible()
+    await userEvent.click(drawer.getByRole('button', { name: /^Artifacts/ }))
+    await expect.poll(() => router?.state.location.pathname).toBe('/artifacts')
+  })
+
+  it.each([
+    ['phone', 390, 844],
+    ['tablet', 756, 1024],
+  ] as const)('goes back to the list from an item opened on the %s', async (_, width, height) => {
+    await page.viewport(width, height)
+    view = await renderAt('/toolkit')
+    await expect.poll(() => layer('toolkit row · agents-md')).not.toBeNull()
+    await userEvent.click(page.getByRole('button', { name: /^agents-md/ }))
+    const back = page.getByRole('button', { name: 'Back to Toolkit' })
+    await expect.element(back).toBeVisible()
+    await userEvent.click(back)
+    await expect.poll(() => layer('toolkit row · ambitious')).not.toBeNull()
+    expect(page.getByRole('button', { name: 'Back to Toolkit' }).query()).toBeNull()
+    expect(tabBar()).not.toBeNull()
   })
 })
