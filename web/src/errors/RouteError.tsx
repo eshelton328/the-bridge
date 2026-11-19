@@ -1,6 +1,7 @@
 // The router's defaultErrorComponent (app/router.ts): every route's render
-// and loader errors land here, inside the shell. Retry reloads the route
-// with router.invalidate(), which also resets the boundary.
+// and loader errors land here, in place of the page and its rail or tab
+// bar. Retry reloads the route with router.invalidate(), which also resets
+// the boundary; Go to Inbox leaves the broken page (audit W-10).
 import { useRouter, useRouterState, type ErrorComponentProps } from '@tanstack/react-router'
 import { ErrorFallback } from './ErrorFallback.tsx'
 
@@ -17,6 +18,16 @@ export function RouteError({ error }: ErrorComponentProps) {
       onRetry={() => {
         void router.invalidate()
       }}
+      secondary={
+        pathname === '/inbox'
+          ? undefined
+          : {
+              label: 'Go to Inbox',
+              onClick: () => {
+                void router.navigate({ to: '/inbox' })
+              },
+            }
+      }
     />
   )
 }

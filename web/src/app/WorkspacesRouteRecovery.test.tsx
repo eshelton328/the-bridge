@@ -68,6 +68,23 @@ afterEach(async () => {
 })
 
 describe('the Workspaces route after a crash (audit W-10)', () => {
+  it('offers Go to Inbox when the page crashes in an open chat, and the tap reaches the Inbox and its tab bar', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    view = await renderAt('/workspaces')
+    await page.getByText('bridge themes', { exact: true }).click()
+    const composer = page.getByRole('textbox')
+    await userEvent.type(composer, 'half a thought')
+    crash.shell = true
+    await userEvent.type(composer, '!')
+    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
+    crash.shell = false
+    await page.getByRole('button', { name: 'Go to Inbox' }).click()
+    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).not.toBeInTheDocument()
+    await expect.element(page.getByRole('button', { name: 'Home' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Workspaces' })).toBeVisible()
+    await expect.element(page.getByRole('heading', { name: 'Inbox', exact: true })).toBeVisible()
+  })
+
   it('keeps Retry in a chat pane after the shell pane used up its retries', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     await page.viewport(1512, 982)
