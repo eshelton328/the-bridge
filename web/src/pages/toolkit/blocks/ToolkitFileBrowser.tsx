@@ -9,55 +9,21 @@
 // as high as its content. On the phone (M5 435:6) the tab shows the item's
 // folder in the toolkit over the tree and no viewer: a file opens on a page of
 // its own (`ToolkitFilePage`, M6 and M8), and the tree marks only the file
-// opened last (`ui.file`). Props only.
-import { FileTree } from '@eshelton328/component-library-1701'
+// opened last (`ui.file`). The library's FileBrowser draws the box and the
+// tree's column (`layout="split"` on the desktop, `stacked` elsewhere). Props
+// only.
+import { FileBrowser, FileTree } from '@eshelton328/component-library-1701'
 import type { KeyboardEvent, MouseEvent } from 'react'
-import { css, cx } from '../../../../styled-system/css/index.js'
+import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import type { ToolkitFileBrowser as Browser } from '../types.ts'
 import { type FileMode, fileMode, type OpenFile, opensPage } from './filesView.ts'
 import { ToolkitFileViewer } from './ToolkitFileViewer.tsx'
 
-// D6 432:2141: a bordered box, as the Overview's file preview (D3 427:273). The library has no file browser frame
-// (LIBRARY_GAPS.md, File browser), so the box is drawn here with the Panel's tokens.
-const box = css({
-  display: 'flex',
-  minW: '[0]',
-  bg: 'surface.pane',
-  borderWidth: 'default',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'xl',
-  overflow: 'hidden',
-})
-// D6 432:2142: the tree column is 330 wide (`shell.sidebar` is 328, the file tree's width) and the viewer takes the
-// rest; the box fills the pane's height under the tabs.
-const columns = css({ flexDirection: 'row', flexGrow: '1' })
-// T4 434:408, 434:485: on a tablet or phone the tree and the viewer are two boxes, the viewer 14 under the tree (no
-// space token has 14: 12; LIBRARY_GAPS.md, Tablet item spacing).
+// M5 435:212, 435:213: on the phone the folder 12 under the tabs and the tree 12 under it.
 const stacked = css({ display: 'flex', flexDirection: 'column', gap: '12', minW: '[0]' })
-// T4 434:408: the tree is a bordered box of the pane's colour, as high as its rows.
-const treeBox = css({
-  minW: '[0]',
-  bg: 'surface.pane',
-  borderWidth: 'default',
-  borderStyle: 'solid',
-  borderColor: 'border.default',
-  borderRadius: 'xl',
-  overflow: 'hidden',
-})
-// The tree's well runs the box's full height beside the viewer.
-const tree = css({
-  display: 'flex',
-  flexDirection: 'column',
-  minW: '[0]',
-  bg: 'surface.well',
-  '& > *': { flexGrow: '1' },
-})
 // M5 435:212: the item's folder in the toolkit, in mono, muted, over the tree.
 const folderLine = css({ alignSelf: 'flex-start', textStyle: 'mono', color: 'fg.muted' })
-const treeColumn = css({ w: 'shell.sidebar', flexShrink: '0' })
-const viewerColumn = css({ display: 'flex', flexDirection: 'column', flexGrow: '1', minW: '[0]' })
 
 export type ToolkitFileBrowserProps = {
   browser: Browser
@@ -125,10 +91,9 @@ export function ToolkitFileBrowser({
     const row = event.target.closest('[role="treeitem"]')
     if (row?.getAttribute('aria-selected') === 'true') onSelect?.(open.path)
   }
-  const treeBoxed = (
+  // On a tablet or phone the tree takes the reopen tap (T4, M5); on the desktop a file opens beside it.
+  const tapTree = (
     <div
-      className={treeBox}
-      data-figma="tree"
       onClickCapture={reopen}
       onKeyDownCapture={(event) => {
         if (event.key === 'Enter') reopen(event)
@@ -137,7 +102,7 @@ export function ToolkitFileBrowser({
       {files}
     </div>
   )
-  // M5 435:212, 435:213: the folder 12 under the tabs and the tree 12 under it, with no viewer.
+  // M5 435:212, 435:213: the folder over the tree in its box, with no viewer.
   if (phone)
     return (
       <div className={stacked}>
@@ -146,22 +111,20 @@ export function ToolkitFileBrowser({
             {folder}
           </span>
         )}
-        {treeBoxed}
+        <FileBrowser layout="stacked" tree={tapTree} figma={{ tree: 'tree' }} />
       </div>
     )
+  // T4 434:408, 434:485: the tree's box and the viewer's 12 under it (Figma 14; no space token has 14, d-050).
   if (!desktop)
     return (
-      <div className={stacked}>
-        {treeBoxed}
+      <FileBrowser layout="stacked" tree={tapTree} figma={{ tree: 'tree' }}>
         {viewer}
-      </div>
+      </FileBrowser>
     )
+  // D6 432:2141, 432:2142: one box, the tree's column `shell.sidebar` (328; Figma 330) on the well beside the viewer.
   return (
-    <div className={cx(box, columns)} data-figma="file browser">
-      <div className={cx(tree, treeColumn)} data-figma="tree">
-        {files}
-      </div>
-      <div className={viewerColumn}>{viewer}</div>
-    </div>
+    <FileBrowser tree={files} figma={{ root: 'file browser', tree: 'tree' }}>
+      {viewer}
+    </FileBrowser>
   )
 }
