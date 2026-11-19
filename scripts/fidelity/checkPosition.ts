@@ -165,7 +165,7 @@ export function checkPosition(
       })
     } else passed.push(box.key)
   }
-  const iconSizes = iconSizeDiffs({ ...ref, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar)
+  const iconSizes = iconSizeDiffs({ ...ref, tolerance, h: ref.h ?? Number.POSITIVE_INFINITY }, icons, statusBar)
   for (const diff of iconSizes.diffs) {
     if (allowed.has(diff.key)) excepted.push(diff.key)
     else diffs.push(diff)

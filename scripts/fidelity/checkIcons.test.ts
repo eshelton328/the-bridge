@@ -104,6 +104,19 @@ void test('the position check reports an icon size difference, and a position ex
   assert.deepEqual(excepted.excepted, ['158:9'])
 })
 
+void test('the position check matches icons within its own tolerance, as given by --tolerance', () => {
+  // The render icon's centre is 6 px from Figma's: outside the frame's 4 px, inside 8 px.
+  const layers = [layer('158:9', 'icon/chat', 20, 100, 16, 16)]
+  const r = checkPosition({ layers, tolerance: 4, exclude: [], h: 982 }, { position: [] }, [], 8, [
+    icon(28, 102, 12, 12),
+  ])
+  assert.equal(r.iconsChecked, 1)
+  assert.deepEqual(
+    r.diffs.map((d) => d.problem),
+    ['iconSize'],
+  )
+})
+
 void test('the page measure lists each outermost svg that is shown, with its box', async () => {
   const browser = await chromium.launch()
   try {
