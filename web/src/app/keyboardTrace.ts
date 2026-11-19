@@ -139,9 +139,12 @@ export function startKeyboardTrace({
   }
   frame = win.requestAnimationFrame(onFrame)
 
+  // The timer skips a tick while a POST is out. A hidden page may never run
+  // again, so it sends its last snapshot at once; the endpoint keeps the
+  // trace with the latest sample when two POSTs land out of order.
   let inFlight = false
-  const send = () => {
-    if (inFlight) return
+  const send = (force = false) => {
+    if (inFlight && !force) return
     inFlight = true
     post(endpoint, JSON.stringify(trace()))
       .then((res) => {
@@ -154,9 +157,11 @@ export function startKeyboardTrace({
         inFlight = false
       })
   }
-  const timer = win.setInterval(send, postEveryMs)
+  const timer = win.setInterval(() => {
+    send()
+  }, postEveryMs)
   const onHidden = () => {
-    if (win.document.visibilityState === 'hidden') send()
+    if (win.document.visibilityState === 'hidden') send(true)
   }
   win.document.addEventListener('visibilitychange', onHidden)
 

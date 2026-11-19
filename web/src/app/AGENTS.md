@@ -72,7 +72,8 @@ listens.
 - A fixed overlay in the top right corner shows the live values. It is
   `inert`, `aria-hidden` and `pointer-events: none`, so it takes no tap,
   no focus and no room. Its raw styles are a debug readout, not a design.
-- Every 2 s, and when the page is hidden, it POSTs
+- Every 2 s (skipping a tick while a POST is out), and at once when the
+  page is hidden, it POSTs
   `{ startedAt, userAgent, samples }` to the dev server's
   `/__keyboard-trace` (`scripts/keyboardTracePlugin.ts`), which replaces
   the session's file `<startedAt>.json` in the brain's

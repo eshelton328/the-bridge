@@ -108,6 +108,32 @@ describe('keyboard trace sampler', () => {
     expect(Number.isNaN(Date.parse(running.trace().startedAt))).toBe(false)
   })
 
+  it('sends its last snapshot when the page is hidden, even while a POST is still out', async () => {
+    const posts: string[] = []
+    const running = startKeyboardTrace({
+      postEveryMs: 60_000,
+      overlay: false,
+      // A POST that never settles, as on a slow network when the page goes away.
+      post: (_endpoint, body) => {
+        posts.push(body)
+        return new Promise(() => undefined)
+      },
+    })
+    onTestFinished(running.stop)
+    const hidden = Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState')
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    onTestFinished(() => {
+      Reflect.deleteProperty(document, 'visibilityState')
+      expect(Object.getOwnPropertyDescriptor(Document.prototype, 'visibilityState')).toEqual(hidden)
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    window.dispatchEvent(new Event('resize'))
+    document.dispatchEvent(new Event('visibilitychange'))
+    await expect.poll(() => posts.length).toBe(2)
+    expect(posts[1]).toContain('"type":"resize"')
+    expect(posts[0]).not.toContain('"type":"resize"')
+  })
+
   it('shows an overlay that takes no tap and no focus, and removes it on stop', () => {
     const running = trace()
     const overlay = document.querySelector<HTMLElement>('[data-keyboard-trace]')

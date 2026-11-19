@@ -5,7 +5,7 @@
 // plugin with `apply: 'serve'`, so a build never has the endpoint.
 import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
-import { mkdir, rename, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
 
@@ -84,6 +84,12 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** The `t` of a trace's last sample, or -Infinity when it has none. */
+function lastSampleTime(samples: unknown[]): number {
+  const last = samples.at(-1)
+  return isRecord(last) && typeof last.t === 'number' ? last.t : Number.NEGATIVE_INFINITY
+}
+
 /** The endpoint: takes a POSTed JSON trace and replaces its session's file in the traces folder. */
 export function createTraceHandler({
   traceDir = () => findTraceDir(),
@@ -94,6 +100,9 @@ export function createTraceHandler({
   maxBytes?: number
   now?: () => number
 } = {}): TraceHandler {
+  // The time of the last sample written to each file. A page that is hidden
+  // sends while a POST is still out, so an older trace can land second.
+  const latest = new Map<string, number>()
   const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
     if (req.method !== 'POST') {
       res.setHeader('allow', 'POST')
@@ -138,11 +147,19 @@ export function createTraceHandler({
       return
     }
     await mkdir(dir, { recursive: true })
-    // Write beside the file and rename, so the file always holds one whole trace.
+    // Write beside the file and rename, so the file always holds one whole trace,
+    // and never replace a trace with one whose last sample is older.
     const file = join(dir, name)
+    const last = lastSampleTime(trace.samples)
+    if (last < (latest.get(file) ?? Number.NEGATIVE_INFINITY)) {
+      send(res, 409, 'keyboard-trace has a newer trace for this session')
+      return
+    }
+    latest.set(file, last)
     const partial = `${file}.${randomUUID()}.partial`
     await writeFile(partial, body)
-    await rename(partial, file)
+    if (latest.get(file) === last) await rename(partial, file)
+    else await rm(partial, { force: true })
     res.statusCode = 204
     res.end()
   }

@@ -80,7 +80,10 @@ not. Its `POST /__keyboard-trace` takes the trace of the app's
 makes the file name from the parsed `startedAt`, which must be within the
 last day; no client text reaches the path. It takes only `POST` with
 `application/json` (405, 415), at most 10 MB (413), and a body of
-`{ startedAt, userAgent, samples[] }` (400). The traces folder is
+`{ startedAt, userAgent, samples[] }` (400). A trace whose last
+sample is older than the one already written gets 409 and does not
+replace it, since a hidden page POSTs while an earlier POST may still be
+out. The traces folder is
 `KEYBOARD_TRACE_DIR` when set, else `engine/_local/phone-review/traces/`
 in the first folder above the repository that has `engine/` (the
 ncc-1701 root); it answers 500 when there is none.

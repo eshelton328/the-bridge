@@ -68,6 +68,16 @@ void test('a POSTed trace is written to one file named from its start time, and 
   assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), second)
 })
 
+void test('a trace whose last sample is older than the written one does not replace it', async () => {
+  const dir = tempDir()
+  const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
+  const newer = trace({ samples: [{ t: 1 }, { t: 5 }] })
+  assert.equal((await post(url, newer)).status, 204)
+  assert.equal((await post(url, trace({ samples: [{ t: 1 }, { t: 3 }] }))).status, 409)
+  assert.equal(readFileSync(join(dir, '2026-11-19T09-58-12-345Z.json'), 'utf8'), newer)
+  assert.deepEqual(readdirSync(dir), ['2026-11-19T09-58-12-345Z.json'])
+})
+
 void test('a request that is not a POST is refused', async () => {
   const dir = tempDir()
   const url = await serve(createTraceHandler({ traceDir: () => dir, now: () => NOW }))
