@@ -48,7 +48,13 @@ const typeRules = {
     'error',
     { assertionStyle: 'as', objectLiteralTypeAssertions: 'never' },
   ],
-  '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: false }],
+  '@typescript-eslint/switch-exhaustiveness-check': [
+    'error',
+    // A default after every member is handled is dead code (audit G-1).
+    { considerDefaultExhaustiveForUnions: false, allowDefaultCaseForExhaustiveSwitch: false },
+  ],
+  // stylisticTypeChecked prefers x! here, which no-non-null-assertion bans (audit G-2).
+  '@typescript-eslint/non-nullable-type-assertion-style': 'off',
   // One way to write an object type, as the library does.
   '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
   // TanStack Router's notFound() and redirect() are thrown by design.

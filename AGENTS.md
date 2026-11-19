@@ -40,7 +40,8 @@ pnpm workspace; every version is pinned once in the catalog of
 
 ## Verify
 
-Run `pnpm verify` before you finish. It runs Panda codegen, the route
+Run `pnpm verify` before you finish. It runs Panda codegen, Panda cssgen
+with no warning allowed (`pnpm check:css`), the route
 tree and canvas registry checks, `tsc`, ESLint, the Biome format check,
 knip, the AGENTS.md, cycle, structure and story-per-state checks, the
 script tests, the Vitest browser tests (unit tests and every story's play

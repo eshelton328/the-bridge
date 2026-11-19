@@ -14,4 +14,6 @@ export default defineConfig({
   jsxStyleProps: 'none',
   strictTokens: true,
   strictPropertyValues: true,
+  // A token or property value the strict rules reject fails codegen and cssgen (audit G-3).
+  validation: 'error',
 })
