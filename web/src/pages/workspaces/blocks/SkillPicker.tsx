@@ -6,7 +6,8 @@
 // the phone (M3 105:2805) it is as wide as the composer (`width="trigger"`).
 // Every list is compact, as Figma draws each one 173 high (D1 105:406, T4
 // 105:2246, M3 105:2805). On the phone and the tablet the focus stays in the
-// message box. Props only.
+// message box. A press on a row leaves the focus in the box, so the phone's
+// keyboard stays up while Erik picks a skill (`onPick`). Props only.
 import { OptionList, Popover, PopoverSection } from '@eshelton328/component-library-1701'
 import type { ReactElement } from 'react'
 import type { Skill } from '../types.ts'
@@ -33,7 +34,10 @@ export type SkillPickerProps = {
   value: string | null
   open: boolean
   onOpenChange?: ((open: boolean) => void) | undefined
+  /** Erik picks a skill: a click or tap on its row, or Enter on the row with the focus. */
   onPick?: ((skill: string) => void) | undefined
+  /** The arrow keys move the highlight in the list to this skill. */
+  onHighlight?: ((skill: string) => void) | undefined
   /** The focus enters the list, as the popover moves it there when it opens; not on the phone, whose popover leaves
    * the focus in the box, so a Tab into the list stays there. */
   onListFocus?: (() => void) | undefined
@@ -54,6 +58,7 @@ export function SkillPicker({
   open,
   onOpenChange,
   onPick,
+  onHighlight,
   onListFocus,
   layout = 'pane',
   figma,
@@ -76,7 +81,13 @@ export function SkillPicker({
       trigger={children}
     >
       <PopoverSection label={label} query={query}>
-        <div onFocus={autoFocus ? onListFocus : undefined}>
+        {/* A press does not move the focus out of the message box: the click still picks the row. */}
+        <div
+          onFocus={autoFocus ? onListFocus : undefined}
+          onMouseDown={(event) => {
+            event.preventDefault()
+          }}
+        >
           <OptionList
             label={query === undefined ? label : `${label} ${query}`}
             size="sm"
@@ -86,6 +97,7 @@ export function SkillPicker({
             density="compact"
             value={value}
             onItemSelect={onPick}
+            onValueChange={onHighlight}
             items={skills.map((s) => ({ value: s.name, label: s.name, description: s.description }))}
           />
         </div>

@@ -19,9 +19,10 @@ first: it says what each file of a page folder is for.
   them when another `?state=` is shown. What Erik types in a chat's
   composer is one of them: `ui.drafts` by chat id, which the composer in a
   pane and in the chat alone starts from (`blocks/chatDraft.ts`), so a
-  pane that unmounts keeps its draft. The composer is uncontrolled, so
-  each `ChatPane` is keyed by its chat's id: a switch to another chat
-  mounts that chat's composer from its own draft.
+  pane that unmounts keeps its draft. `ChatPane` keeps the box's text in
+  its own state, started from the draft, so each `ChatPane` is keyed by its
+  chat's id: a switch to another chat mounts that chat's composer from its
+  own draft.
 - The screen lays out by its width (`ViewportFrame`, as Inbox does): a
   state with `data.phone` (the phone's labels) draws
   `screens/WorkspacesPhone.tsx` at a phone's width, the phone layout of
@@ -89,7 +90,12 @@ first: it says what each file of a page folder is for.
   compact rows, and the highlighted row and workspace from the state),
   `ChatPane` (the transcript in a `ScrollFrame` body and the composer in
   its footer; a message that starts with "/", or a word that starts with
-  "/" before the caret, opens the skill list, and the focus stays in the box), `ChatEntryView` (one entry, by `type`),
+  "/" before the caret, opens the skill list, and the focus stays in the box;
+  a click or tap on a skill, or Enter on the highlighted one (the arrow
+  keys move it), puts the skill and a space in place of that "/" word
+  (`lib/skillQuery.ts` `pickSkill`), closes the list and leaves the focus
+  and caret in the box after it, so the phone's keyboard stays up;
+  `SkillPick.test.tsx`), `ChatEntryView` (one entry, by `type`),
   `SkillPicker` (the skills after "/": `Popover width="composer"`, 40%
   of the composer from 240 to 400 (screen review R8; `SkillListWidth.test.tsx`
   checks the widths), and a mono `OptionList` with no check, both compact, as Figma draws the list 173 high (`SkillListHeight.test.tsx`)), `ShellPane` (the library's `TerminalLines`

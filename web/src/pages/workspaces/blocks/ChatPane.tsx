@@ -3,7 +3,10 @@
 // list: a message that starts with "/" opens it, and the focus stays in the
 // box; a word that starts with "/" at the caret opens it too, as "/wri" at
 // the end of M10's message does, and the list keeps the skills that start
-// with that word, under `matching`. `size="pane"` is a pane of the
+// with that word, under `matching`. A skill Erik picks (a click or tap on its
+// row, or Enter on the highlighted row, which the arrow keys move) takes the
+// place of that word with a space after it, closes the list and leaves the
+// focus and caret in the box after it. `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
@@ -16,9 +19,9 @@
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Props only.
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
-import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { skillQuery } from '../../../lib/skillQuery.ts'
+import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { frameRegion } from './frameRegion.ts'
@@ -170,6 +173,21 @@ export function ChatPane(props: ChatPaneProps) {
   const areaRef = useRef<HTMLDivElement>(null)
   // What Erik has typed from the "/": the list keeps the skills that start with it.
   const [query, setQuery] = useState(() => skillQuery(composer.text, composer.text.length))
+  // The message box's text: a picked skill goes into it.
+  const [text, setText] = useState(composer.text)
+  // The skill the arrow keys moved the highlight to, while the list is open.
+  const [moved, setMoved] = useState<string | null>(null)
+  // Where the caret goes once a picked skill is in the box.
+  const caretRef = useRef<number | null>(null)
+  const textArea = () => areaRef.current?.querySelector('textarea') ?? null
+  useLayoutEffect(() => {
+    const caret = caretRef.current
+    const area = textArea()
+    if (caret === null || !area) return
+    caretRef.current = null
+    area.focus()
+    area.setSelectionRange(caret, caret)
+  })
   useEffect(() => {
     if (!autoFocus) return
     const area = areaRef.current?.querySelector('textarea')
@@ -179,15 +197,50 @@ export function ChatPane(props: ChatPaneProps) {
     area.focus()
     area.setSelectionRange(area.value.length, area.value.length)
   }, [autoFocus])
-  const onValueChange = (text: string) => {
-    onTextChange?.(text)
-    const caret = areaRef.current?.querySelector('textarea')?.selectionStart ?? text.length
-    const next = skillQuery(text, caret)
-    setQuery(next)
-    const open = next !== null || text.startsWith('/')
+  const onValueChange = (next: string) => {
+    setText(next)
+    onTextChange?.(next)
+    const caret = textArea()?.selectionStart ?? next.length
+    const word = skillQuery(next, caret)
+    setQuery(word)
+    // A message that is one "/" word keeps the list open wherever the caret is; once a space follows it, as after a
+    // picked skill, only a "/" word at the caret opens it.
+    const open = word !== null || (next.startsWith('/') && !/\s/.test(next))
     if (skills === undefined || open === skills.open) return
     typedRef.current = open
+    setMoved(null)
     onSkillsOpenChange?.(open)
+  }
+  const shown =
+    skills === undefined ? [] : query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))
+  // The highlighted row: the one the arrow keys moved to, else the state's, else the first one listed.
+  const highlighted =
+    [moved, skills?.value].find((name) => name != null && shown.some((s) => s.name === name)) ?? shown[0]?.name ?? null
+  const pick = (name: string) => {
+    const area = textArea()
+    const next = pickSkill(text, area?.selectionStart ?? text.length, name)
+    // In the tap's own handler, so the phone keeps its keyboard up; the caret moves once the box holds the skill.
+    area?.focus()
+    caretRef.current = next.caret
+    setText(next.text)
+    onTextChange?.(next.text)
+    setQuery(null)
+    setMoved(null)
+    typedRef.current = false
+    onSkillsOpenChange?.(false)
+  }
+  // While the list is open, the arrow keys move its highlight and Enter picks the highlighted skill, before the
+  // composer sends the message.
+  const onKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (skills?.open !== true || highlighted === null || event.shiftKey || event.nativeEvent.isComposing) return
+    if (!(event.target instanceof HTMLTextAreaElement)) return
+    const at = shown.findIndex((s) => s.name === highlighted)
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
+    if (event.key !== 'Enter' && step === 0) return
+    event.preventDefault()
+    event.stopPropagation()
+    if (step === 0) pick(highlighted)
+    else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
   }
   const chip =
     composer.model === undefined ? undefined : (
@@ -201,8 +254,12 @@ export function ChatPane(props: ChatPaneProps) {
     <Composer
       label={composer.placeholder}
       placeholder={composer.placeholder}
-      defaultValue={composer.text}
+      value={text}
       onValueChange={onValueChange}
+      // The box is controlled, so a sent message empties it here, as the composer does with its own text.
+      onSubmit={() => {
+        onValueChange('')
+      }}
       running={composer.running}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
@@ -231,11 +288,13 @@ export function ChatPane(props: ChatPaneProps) {
         {...(query !== null && query.length > 1 && skills.matching !== undefined
           ? { label: skills.matching.replace('{query}', '').trim(), query }
           : { label: skills.label })}
-        skills={query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))}
-        value={skills.value}
+        skills={shown}
+        value={highlighted}
         open={skills.open}
         layout={size === 'phone' || size === 'tablet' ? size : 'pane'}
         figma={figma.skills}
+        onPick={pick}
+        onHighlight={setMoved}
         onOpenChange={(open) => {
           // The box is the popover's trigger: a click on it asks to open the list, which only "/" does.
           if (!open) onSkillsOpenChange?.(false)
@@ -248,7 +307,14 @@ export function ChatPane(props: ChatPaneProps) {
       >
         {/* The composer is the popover's trigger: the skill list belongs to what Erik types, so the box is a combobox
             (a div cannot carry the trigger's aria-expanded). The library's Composer has no skill list (LIBRARY_GAPS.md). */}
-        <div ref={areaRef} data-figma={figma.composer} data-keyboard-keep="" role="combobox" aria-label={skills.label}>
+        <div
+          ref={areaRef}
+          data-figma={figma.composer}
+          data-keyboard-keep=""
+          role="combobox"
+          aria-label={skills.label}
+          onKeyDownCapture={onKeyDownCapture}
+        >
           {box}
         </div>
       </SkillPicker>

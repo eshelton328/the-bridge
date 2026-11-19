@@ -129,6 +129,19 @@ describe('a tap on a page control while the keyboard is up (R19)', () => {
     expect(document.activeElement).toBe(field)
   })
 
+  it('puts a tapped skill into the message box on the phone, closes the list and keeps the keyboard up (M10)', async () => {
+    const field = await typing('/workspaces?state=phoneKeyboard', [390, 844], '.scroll-frame__footer textarea', 544)
+    if (!(field instanceof HTMLTextAreaElement)) throw new Error('the message box is not a textarea')
+    const typed = 'Turn the layout notes into a doc with /wri'
+    field.setSelectionRange(typed.length, typed.length)
+    tap(page.getByText('/writer', { exact: true }).element())
+    const picked = 'Turn the layout notes into a doc with /writer '
+    await expect.element(field).toHaveValue(picked)
+    await expect.element(page.getByRole('radio', { name: /\/writer/ })).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(field)
+    expect(field.selectionStart).toBe(picked.length)
+  })
+
   it('opens the Inbox Sort sheet from the phone’s search row', async () => {
     await typing('/inbox?state=list', [390, 844], 'input[type="search"], input', 544)
     tap(page.getByRole('button', { name: 'Sort', exact: true }).element())
