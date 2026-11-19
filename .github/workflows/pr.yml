@@ -18,8 +18,10 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ubuntu-slim (1 vCPU container) is enough for a job of API calls and a
+  # regex, and costs less than a full runner.
   pr-title:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-slim
     permissions:
       actions: read # list the ci runs of the head commit
       issues: read # read the PR's base-branch changes
