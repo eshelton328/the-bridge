@@ -203,7 +203,9 @@ export function ChatPane(props: ChatPaneProps) {
     const caret = textArea()?.selectionStart ?? next.length
     const word = skillQuery(next, caret)
     setQuery(word)
-    const open = word !== null || next.startsWith('/')
+    // A message that is one "/" word keeps the list open wherever the caret is; once a space follows it, as after a
+    // picked skill, only a "/" word at the caret opens it.
+    const open = word !== null || (next.startsWith('/') && !/\s/.test(next))
     if (skills === undefined || open === skills.open) return
     typedRef.current = open
     setMoved(null)
@@ -254,6 +256,10 @@ export function ChatPane(props: ChatPaneProps) {
       placeholder={composer.placeholder}
       value={text}
       onValueChange={onValueChange}
+      // The box is controlled, so a sent message empties it here, as the composer does with its own text.
+      onSubmit={() => {
+        onValueChange('')
+      }}
       running={composer.running}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}

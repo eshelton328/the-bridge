@@ -77,6 +77,31 @@ describe.each(surfaces)('a skill picked in $name', (surface) => {
     await expectPicked('/readme ', 8)
     await userEvent.keyboard('the bridge')
     await expect.element(box()).toHaveValue('/readme the bridge')
+    // The list stays closed as Erik types on, so Enter sends the message, which empties the box.
+    await expect.element(page.getByRole('group', { name: /^SKILLS/ })).not.toBeInTheDocument()
+    await userEvent.keyboard('{Enter}')
+    await expect.element(box()).toHaveValue('')
+  })
+
+  it('empties the box when Erik sends a message with the list closed', async () => {
+    await page.viewport(surface.size[0], surface.size[1])
+    view = await testRender(screen(surface, ''))
+    await userEvent.click(box())
+    await userEvent.keyboard('half a thought{Enter}')
+    await expect.element(box()).toHaveValue('')
+  })
+
+  it('replaces the whole "/" word when the caret is inside it', async () => {
+    await page.viewport(surface.size[0], surface.size[1])
+    view = await testRender(screen(surface, ''))
+    await userEvent.click(box())
+    await userEvent.keyboard('/wrter')
+    area().setSelectionRange(3, 3)
+    await userEvent.keyboard('i')
+    await expect.element(box()).toHaveValue('/writer')
+    await expect.element(row('/writer')).toBeVisible()
+    await userEvent.click(row('/writer'))
+    await expectPicked('/writer ', 8)
   })
 
   it('picks the highlighted skill with Enter, after the word Erik typed from "/" in his message (M10)', async () => {

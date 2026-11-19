@@ -31,6 +31,11 @@ describe('pickSkill', () => {
     expect(pickSkill('a doc with /wri', 15, '/writer')).toEqual({ text: 'a doc with /writer ', caret: 19 })
   })
 
+  it('replaces the part of the "/" word after the caret too', () => {
+    expect(pickSkill('/wri', 2, '/writer')).toEqual({ text: '/writer ', caret: 8 })
+    expect(pickSkill('a /writer notes', 6, '/readme')).toEqual({ text: 'a /readme notes', caret: 10 })
+  })
+
   it('keeps the space and the text after the word', () => {
     expect(pickSkill('/re layouts', 3, '/readme')).toEqual({ text: '/readme layouts', caret: 8 })
     expect(pickSkill('/re\nlayouts', 3, '/readme')).toEqual({ text: '/readme\nlayouts', caret: 8 })
