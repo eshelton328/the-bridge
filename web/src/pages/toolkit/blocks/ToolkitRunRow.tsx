@@ -23,7 +23,8 @@ const elapsed = css({ textStyle: 'mono', color: 'fg.default', whiteSpace: 'nowra
 // D11 444:539 to 444:540: the time, then Open session 10 after it; T9 449:271: the time, then the chevron.
 const end = css({ display: 'flex', alignItems: 'center', gap: '10', color: 'fg.muted' })
 // D11 444:533: the line under the name is Regular 12, the small style of the row's lines (its meta is mono).
-const line = css({ display: 'block', truncate: true, minW: '[0]', maxW: '[100%]' })
+// It wraps, never cut: beside a side panel (D12, D18) the view is narrower than Figma's, and the line keeps every word.
+const line = css({ display: 'block', minW: '[0]', maxW: '[100%]' })
 
 export type ToolkitRunRowProps = {
   run: ToolkitRun
