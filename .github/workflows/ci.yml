@@ -262,6 +262,8 @@ jobs:
   # the secret PRIVACY_TERMS, so they are never in the repository. The
   # pre-commit hook runs the same scan earlier, but a hook can be skipped;
   # this job is the gate. ubuntu-slim has Node 24, so no setup is needed.
+  # --diff-merges=remerge shows what a merge commit changed beyond git's own
+  # merge, such as a conflict resolution, which git log -p leaves out.
   secrets:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-slim
@@ -295,4 +297,4 @@ jobs:
           cat .gitleaks.toml > "$cfg"
           printf '\n[[rules]]\nid = "personal-term"\ndescription = "A value from the secret PRIVACY_TERMS"\n' >> "$cfg"
           printf "regex = '''(?i)\\\\b(?:%s)\\\\b'''\n" "$alt" >> "$cfg"
-          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose --ignore-gitleaks-allow --config "$cfg" --log-opts="$BASE..$HEAD" .
+          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose --ignore-gitleaks-allow --config "$cfg" --log-opts="--diff-merges=remerge $BASE..$HEAD" .

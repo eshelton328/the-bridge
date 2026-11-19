@@ -78,6 +78,11 @@ void test('a bare secret-named key with a literal value is found (library #252)'
   assert.deepEqual(scan({ 'deploy.sh': ['export TOK' + 'EN=' + literal] }), ['env-assignment'])
 })
 
+void test('a single-quoted value is a literal, so a $ in it is found too (Codex review of #215)', () => {
+  assert.deepEqual(scan({ 'deploy.sh': ['PASS' + "WORD='$" + literal + "'"] }), ['env-assignment'])
+  assert.deepEqual(scan({ 'deploy.sh': ['PASS' + 'WORD="$' + 'FROM_ENV_VALUE"'] }), [])
+})
+
 void test('a prefixed secret-named key is still found, and a value from a variable is not', () => {
   assert.deepEqual(scan({ 'deploy.sh': ['DB_PASS' + 'WORD="' + literal + '"'] }), ['env-assignment'])
   assert.deepEqual(scan({ 'deploy.sh': ['PASS' + 'WORD="$' + 'FROM_ENV_VALUE"'] }), [])
@@ -103,6 +108,63 @@ void test('both CI scans ignore gitleaks:allow comments (library #252)', () => {
   const line = 'API_TOK' + 'EN="' + literal + '" # gitleaks' + ':allow'
   assert.deepEqual(scan({ 'deploy.sh': [line] }), [])
   assert.deepEqual(scan({ 'deploy.sh': [line] }, ['--ignore-gitleaks-allow']), ['env-assignment'])
+})
+
+// A repository whose last commit is a merge that resolves a conflict with
+// a planted secret; the rule IDs gitleaks finds in its last commit with
+// these log options.
+function scanMerge(logOpts: (range: string) => string): string[] {
+  const dir = mkdtempSync(join(tmpdir(), 'secret-merge-'))
+  const config = join(dir, 'gitleaks.toml')
+  const report = join(dir, 'report.json')
+  const repo = join(dir, 'repo')
+  writeFileSync(config, repoConfig + personalRule)
+  mkdirSync(repo)
+  const git = (...args: string[]) =>
+    spawnSync('git', ['-c', 'user.name=t', '-c', 'user.email=t@example.com', ...args], { cwd: repo, encoding: 'utf8' })
+  const put = (text: string) => {
+    writeFileSync(join(repo, 'f.txt'), text + '\n')
+  }
+  git('init', '-q', '-b', 'main')
+  put('a')
+  git('add', 'f.txt')
+  git('commit', '-qm', 'base')
+  git('checkout', '-qb', 'side')
+  put('b')
+  git('commit', '-qam', 'side')
+  git('checkout', '-q', 'main')
+  put('c')
+  git('commit', '-qam', 'main')
+  git('merge', '-q', 'side')
+  put('API_TOK' + 'EN="' + literal + '"')
+  git('add', 'f.txt')
+  git('commit', '-qm', 'merge')
+  const range = git('rev-parse', 'HEAD~1').stdout.trim() + '..' + git('rev-parse', 'HEAD').stdout.trim()
+  const args = ['git', '--no-banner', '--redact', '--exit-code', '0', '--config', config]
+  args.push('--report-format', 'json', '--report-path', report, '--log-opts=' + logOpts(range), '.')
+  const run = spawnSync(gitleaks, args, { encoding: 'utf8', cwd: repo })
+  assert.equal(run.status, 0, run.stderr)
+  const found: unknown = JSON.parse(readFileSync(report, 'utf8'))
+  if (!Array.isArray(found)) throw new Error('the gitleaks report is not a list')
+  return found
+    .filter(isFinding)
+    .map((f) => f.RuleID)
+    .sort()
+}
+
+void test('both CI scans see a secret added in a merge commit, as in a conflict resolution (Codex review of #215)', () => {
+  for (const path of workflows) {
+    const call = readFileSync(join(root, path), 'utf8').split('"$RUNNER_TEMP/gitleaks" git ')[1] ?? ''
+    assert.match(call.slice(0, 400), /--log-opts="[^"]*--diff-merges=remerge/, path + ' passes --diff-merges=remerge')
+  }
+  assert.deepEqual(
+    scanMerge((range) => range),
+    [],
+  )
+  assert.deepEqual(
+    scanMerge((range) => '--diff-merges=remerge ' + range),
+    ['env-assignment'],
+  )
 })
 
 void test('a personal term is found in product code and docs, and not in references/', () => {
