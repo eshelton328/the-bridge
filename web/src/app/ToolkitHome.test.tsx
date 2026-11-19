@@ -31,6 +31,14 @@ const viewSwitch = () => layer('view · List, Map or Activity')
 const phoneMapButton = () => layer('button · map')
 /** The desktop card's description, which the tablet's and phone's rows leave out. */
 const description = 'Writes and audits the AGENTS.md context file in each folder'
+/** Clicks the card or row whose path is `path`, as a DOM click, which opens it without scrolling it into view. */
+function tapItem(path: string) {
+  const text = [...document.querySelectorAll('[data-slot]')].find((el) => el.textContent === path)
+  // The card's or row's button lies over it, beside its text, in the item's root.
+  const target = text?.closest('[data-slot="root"]')?.querySelector('button, [role="button"], a')
+  if (!(target instanceof HTMLElement)) throw new Error(`no item ${path}`)
+  target.click()
+}
 const overlays = () =>
   [...document.querySelectorAll('[role="menu"], [role="dialog"], [role="alertdialog"], [role="listbox"]')].filter(
     (el) => el.checkVisibility(),
@@ -147,5 +155,61 @@ describe('the Toolkit home', () => {
     await expect.poll(() => layer('toolkit row · ambitious')).not.toBeNull()
     expect(page.getByRole('button', { name: 'Back to Toolkit' }).query()).toBeNull()
     expect(tabBar()).not.toBeNull()
+  })
+
+  /** The open item's six tabs, as the state files that open it show them. */
+  const itemTabs = ['Overview', 'How it works', 'Files', 'Links', 'Evals', 'Activity']
+
+  it.each([
+    ['phone', 390, 844],
+    ['desktop', 1512, 982],
+  ] as const)('opens writer complete from the %s home: its tabs and its SKILL.md', async (_, width, height) => {
+    await page.viewport(width, height)
+    view = await renderAt('/toolkit')
+    await expect.poll(() => layer('toolkit card · agents-md') ?? layer('toolkit row · agents-md')).not.toBeNull()
+    // Two items are named writer, the skill and the agent; the skill's path finds its card or row. It lies below the
+    // fold, and a DOM click opens it without scrolling it into view first.
+    tapItem('skills/writer/')
+    for (const tab of itemTabs) await expect.element(page.getByRole('tab', { name: tab })).toBeVisible()
+    await expect.element(page.getByText('SKILL.md', { exact: true }).first()).toBeVisible()
+    await expect.element(page.getByText('1. Name the reader and what they do next.')).toBeVisible()
+    // The Files tab has writer's folders (D6), not only the Overview's count.
+    await userEvent.click(page.getByRole('tab', { name: 'Files' }))
+    await expect.element(page.getByRole('treeitem', { name: /^references\// })).toBeVisible()
+  })
+
+  it.each([
+    ['phone', 390, 844],
+    ['desktop', 1512, 982],
+  ] as const)('opens the agent writing-reviewer complete from the %s home', async (_, width, height) => {
+    await page.viewport(width, height)
+    view = await renderAt('/toolkit')
+    await expect
+      .poll(() => layer('toolkit card · writing-reviewer') ?? layer('toolkit row · writing-reviewer'))
+      .not.toBeNull()
+    tapItem('agents/writing-reviewer.md')
+    for (const tab of itemTabs) await expect.element(page.getByRole('tab', { name: tab })).toBeVisible()
+    await expect.element(page.getByText('How it runs')).toBeVisible()
+    await expect.element(page.getByText(/^You review one draft for a reader/)).toBeVisible()
+  })
+
+  it('shows the phone list at the same scroll after Back from an item', async () => {
+    await page.viewport(390, 844)
+    view = await renderAt('/toolkit')
+    // The app's root fills the window, as `#root` does in index.css, so the shell's detail scrolls the list.
+    await expect.poll(() => document.querySelector('.app-shell__root')).not.toBeNull()
+    const root = [...document.body.children].filter((el) => el.querySelector('.app-shell__root') !== null).at(-1)
+    if (!(root instanceof HTMLElement)) throw new Error('no root')
+    root.style.height = '100%'
+    const scroller = () => root.querySelector('section[aria-label="Toolkit"]')?.closest('main')
+    await expect.poll(() => (scroller()?.scrollHeight ?? 0) - (scroller()?.clientHeight ?? 0)).toBeGreaterThan(285)
+    scroller()?.scrollTo({ top: 285 })
+    await expect.poll(() => scroller()?.scrollTop).toBe(285)
+    tapItem('skills/readme/')
+    const back = page.getByRole('button', { name: 'Back to Toolkit' })
+    await expect.element(back).toBeVisible()
+    await userEvent.click(back)
+    await expect.poll(() => layer('toolkit row · readme')).not.toBeNull()
+    await expect.poll(() => scroller()?.scrollTop).toBe(285)
   })
 })
