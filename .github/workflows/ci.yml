@@ -283,6 +283,13 @@ jobs:
         env:
           GITLEAKS: ${{ runner.temp }}/gitleaks
         run: node --test scripts/secrets/secretScan.test.ts
+      # The path exceptions also match b/<path> (a merge conflict hunk), so no
+      # real file may sit under a top-level b/ folder.
+      - name: No files under b/
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/secrets/mergePrefix.ts "$BASE" "$HEAD"
       - name: Scan the commits of this PR
         env:
           PRIVACY_TERMS: ${{ secrets.PRIVACY_TERMS }}
