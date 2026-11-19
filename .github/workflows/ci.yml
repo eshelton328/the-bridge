@@ -68,17 +68,19 @@ jobs:
       - run: pnpm test:scripts
 
   # The 2-vCPU runner gives Vitest one worker, so test:unit runs one file
-  # at a time (328 s in main run 44421912057). It runs in three shards
-  # here; VITEST_SHARD adds --shard to the script, and the sequencer in
-  # scripts/testSequencer.ts splits the files by their CI times. With two
-  # shards the slower one took 252 s and its job 317 s, longer than
-  # test-stories; each shard's setup is about 65 s.
+  # at a time. It runs in two shards here; VITEST_SHARD adds --shard to
+  # the script, and the sequencer in scripts/testSequencer.ts splits the
+  # files by their CI times. Each shard's setup is about 65 s and a job is
+  # billed in whole minutes: with the times of main e239575b (863 s in
+  # all), two shards give about 431 s each (9 billed minutes a job, 18 in
+  # all), close to the slowest fidelity job, where three shards took 20
+  # billed minutes (PR 204, run 44550388963).
   test-unit-shard:
-    name: test-unit (${{ matrix.shard }}/3)
+    name: test-unit (${{ matrix.shard }}/2)
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -89,7 +91,7 @@ jobs:
       - run: pnpm codegen
       - run: pnpm test:unit
         env:
-          VITEST_SHARD: ${{ matrix.shard }}/3
+          VITEST_SHARD: ${{ matrix.shard }}/2
 
   # The required check: it passes only when every test:unit shard passed.
   # It reads one result, so ubuntu-slim (1 vCPU container) is enough.
