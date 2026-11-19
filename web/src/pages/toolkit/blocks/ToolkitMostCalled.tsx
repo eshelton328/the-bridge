@@ -34,7 +34,14 @@ const column = css({
   pointerEvents: 'none',
 })
 const icon = css({ display: 'flex', alignItems: 'center' })
-const bars = css({ position: 'relative', flex: '1', minW: '[0]', pointerEvents: 'none' })
+// A BlockBoundary alert takes the pointer back, so its Retry does not open the row under it.
+const bars = css({
+  position: 'relative',
+  flex: '1',
+  minW: '[0]',
+  pointerEvents: 'none',
+  '& [role=alert]': { pointerEvents: 'auto' },
+})
 const overlay = css({ position: 'absolute', inset: '0', display: 'grid', gridAutoRows: '[1fr]', rowGap: '8' })
 const button = css({
   p: '0',

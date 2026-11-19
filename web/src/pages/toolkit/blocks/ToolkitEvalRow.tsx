@@ -31,7 +31,15 @@ const button = css({
   [focusRing]: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' },
 })
 // D16 477:1123 to 477:1135: the top row (29 high), the bar 6 under it and the line 6 under the bar.
-const content = css({ position: 'relative', display: 'flex', flexDirection: 'column', gap: '6', pointerEvents: 'none' })
+// A BlockBoundary alert takes the pointer back, so its Retry does not open the row under it.
+const content = css({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6',
+  pointerEvents: 'none',
+  '& [role=alert]': { pointerEvents: 'auto' },
+})
 const top = css({ display: 'flex', alignItems: 'center', gap: '8', minH: 'control.sm', color: 'fg.muted' })
 const node = css({ display: 'inline-grid', h: 'control.sm', pointerEvents: 'auto' })
 const name = css({ textStyle: 'label', color: 'fg.default' })

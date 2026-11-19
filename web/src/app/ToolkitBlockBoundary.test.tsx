@@ -67,6 +67,22 @@ const cases = [
 ] as const
 
 describe('Toolkit block boundaries', () => {
+  // Most called and an eval row lay their chart over a row button and let the pointer through to it; the alert must
+  // take the pointer back, so Retry retries and does not open an item.
+  it.each([
+    { kind: 'Most called', state: 'toolkitActivity' },
+    { kind: 'an eval row', state: 'toolkitActivityHeadless' },
+  ] as const)('lets Retry take the pointer in $kind', async ({ state }) => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    crash.part = 'HorizontalBarChart'
+    await renderState(state)
+    const retry = page.getByRole('button', { name: 'Retry' }).first()
+    await expect.element(retry).toBeVisible()
+    const box = retry.element().getBoundingClientRect()
+    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2)
+    expect(hit?.closest('button')).toBe(retry.element())
+  })
+
   it.each(cases)('keeps the page when $kind fails ($state)', async ({ part, state }) => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     crash.part = part
