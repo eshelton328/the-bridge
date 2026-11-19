@@ -461,8 +461,10 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     }
     return hits
   }
-  const coveredRun = (rects: readonly Edges[], own: Element) =>
-    helpers.coveredAt(helpers.samplePoints(rects).map((p) => stackAt(p.x, p.y, own)))
+  // A Glyph's run is its icon, so its stacks are read as an icon's: a
+  // transparent svg box over it does not cover it (iconStackAt).
+  const coveredRun = (rects: readonly Edges[], own: Element, stack = stackAt) =>
+    helpers.coveredAt(helpers.samplePoints(rects).map((p) => stack(p.x, p.y, own)))
   const allTexts: string[] = []
   const visibleTexts: TextRun[] = []
   const textNodes: Node[] = []
@@ -508,7 +510,12 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
     // Every line of the string must be in view: a sentence that a scroll box
     // or an ellipsis cuts is not visible, though part of it shows.
     if (!helpers.fullyVisible(rects, clipsOf(glyph ? glyphRoot : parent), viewport)) continue
-    visibleTexts.push({ text, ...boxOf(rects), selector: selectorOf(parent), covered: coveredRun(rects, own) })
+    visibleTexts.push({
+      text,
+      ...boxOf(rects),
+      selector: selectorOf(parent),
+      covered: coveredRun(rects, own, glyph ? iconStackAt : stackAt),
+    })
   }
   const fieldTexts: string[] = []
   for (const f of roots.flatMap((r) => [...r.querySelectorAll('input, textarea')])) {

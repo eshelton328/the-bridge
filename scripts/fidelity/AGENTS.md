@@ -61,7 +61,9 @@ The Figma references the checks read are in
      measured by that icon, which must be shown, at least 1 px, in view
      and not covered, as text must (`isGlyphChar` in `inPage.ts`), and
      draw a mark: a shown shape with a box and a stroke or fill that is
-     not none or transparent (`iconHasMark`). A zero-size character
+     not none or transparent (`iconHasMark`). Over the icon, as for the
+     icon size check, an svg covers only by its own background, a shape
+     of another svg does (`iconHitPaints`). A zero-size character
      anywhere else is not shown.
    - `text.extra`: visible render text that Figma does not have.
    - `position.diffs`: boxes off by more than the tolerance, with the

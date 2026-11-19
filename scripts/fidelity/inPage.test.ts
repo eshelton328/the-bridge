@@ -499,6 +499,18 @@ void test('in Chromium a Glyph whose sized icon draws no mark is not shown', asy
   assert.deepEqual(none.notVisible, [{ id: '4:1', text }])
 })
 
+void test('in Chromium a transparent svg box over a Glyph does not cover its icon', async () => {
+  const text = 'blocks ✗ rm -rf'
+  // An empty svg with no fill laid over the icon alone, not the words beside it.
+  const over = '<svg style="position:absolute;top:0;right:0;bottom:0;left:0;width:100%;height:100%"></svg>'
+  const result = await glyphCheck(
+    `<p style="position:absolute;top:20px;left:20px;margin:0">blocks <span style="display:inline-block;position:relative">${glyph('✗')}${over}</span> rm -rf</p>`,
+    text,
+  )
+  assert.deepEqual(result.notVisible, [])
+  assert.equal(result.ok, true)
+})
+
 void test('in Chromium a zero-size character outside a Glyph is still not shown', async () => {
   const text = 'blocks ✗ rm -rf'
   const zero = '<span style="font-size:0;line-height:0;color:transparent">✗</span>'
