@@ -132,6 +132,10 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   where the other rail icons are 22; the shared AppRail draws every item's
   icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
   names 433:771, as for `icon/artifacts`.
+- **Agent link icon.** Figma's `icon/agent` in `link · eval-grader`
+  (500:8345) is 12 px; the Button keeps its 16 px icon, as a 12 px icon
+  (`keepIconSize`) makes the link 110 wide against 116, and
+  `exceptions.json` names 500:8345 (gap: Agent link chip).
 
 ## Second review
 

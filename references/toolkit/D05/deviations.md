@@ -78,3 +78,7 @@ icon sizes (Deviations).
   where the other rail icons are 22; the shared AppRail draws every item's
   icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
   names 432:1230, as for `icon/artifacts`.
+- **Message author mark.** Figma's `icon/claude` (438:29) is 15 px;
+  `Message` draws its author mark at 12 and takes no size, so the render's
+  mark is 12 and `exceptions.json` names 438:29 (gap: Message author
+  mark).

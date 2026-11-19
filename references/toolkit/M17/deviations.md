@@ -104,3 +104,7 @@ the same.
   breadcrumb). The row passes the position check.
 - **Linked from heading.** LINKED FROM 4 sits about 3 px nearer the
   panel's top than Figma's; the rows under it stay within 1 px.
+- **Links graph icons.** Figma's side node icons are 13 px (500:10189);
+  `MapNode` draws them at 16, and `nodeDensity="compact"` (12) would draw
+  the open item's 15 px icon at 12 too, so the graph keeps 16 and
+  `exceptions.json` names 500:10189 (gap: Links graph).

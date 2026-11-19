@@ -57,6 +57,10 @@ T06, and M06 has no such layer; the phone leaves the name out.
   `border.selected` at half alpha (no solid selected token, d-050).
 - **Explain and Code switch.** `ViewSwitch size="md"` is 32 high against
   34, within the position check. Gap: Explain and Code switch.
+- **Path badge icon.** Figma's `icon/code` in the path badge (435:494) is
+  16 px; `PathBadge` draws its icon at 12 and takes no size, so the
+  render's icon is 12 and `exceptions.json` names 435:494 (gap: Path badge
+  icon).
 
 ## Second review
 
