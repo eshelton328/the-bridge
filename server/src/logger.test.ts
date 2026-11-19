@@ -33,6 +33,20 @@ describe('logger', () => {
     expect(text).not.toContain('owner@example.com')
   })
 
+  it('keeps a secret out at any depth: in an error cause, a request header and a child binding', () => {
+    const { log, lines } = memoryLogger()
+    const cause = Object.assign(new Error('inner'), { token, prompt })
+    log.child({ chat: { prompt } }).error('server error', {
+      err: new Error('outer', { cause }),
+      req: { headers: { authorization: `Bearer ${token}`, 'Tailscale-User-Login': 'owner@example.com' } },
+    })
+    const text = JSON.stringify(lines())
+    expect(text).toContain('inner')
+    expect(text).not.toContain(token)
+    expect(text).not.toContain(prompt)
+    expect(text).not.toContain('owner@example.com')
+  })
+
   it('replaces a message that is not listed, so a token planted in a message is not written', () => {
     const { pino, lines } = memoryLogger()
     pino.info({ requestId: 'r2' }, `token ${token}`)

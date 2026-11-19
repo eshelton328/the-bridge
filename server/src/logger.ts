@@ -34,27 +34,43 @@ export type Logger = Readonly<Record<LogLevel, (message: LogMessage, fields?: Lo
 /** Where the lines go; pino calls `write` once for each line, at once. */
 export type LogSink = { readonly write: (line: string) => void }
 
-/** The fields that never reach a log: prompt and transcript text, tokens and Tailscale logins (d-115). */
-const redactPaths = [
+/** The keys whose values never reach a log, at any depth: prompt and transcript text, tokens and Tailscale logins (d-115). */
+const secretKeys: ReadonlySet<string> = new Set([
   'prompt',
-  '*.prompt',
   'transcript',
-  '*.transcript',
   'token',
-  '*.token',
   'authorization',
-  '*.authorization',
+  'cookie',
   'login',
-  '*.login',
-  'headers["tailscale-user-login"]',
-  '*.headers["tailscale-user-login"]',
-]
+  'tailscale-user-login',
+])
+const censor = '[redacted]'
+const maxDepth = 12
+
+/**
+ * A copy of `value` with the value of each secret key replaced, at any depth. An error becomes pino's
+ * serialized error with its causes first, so a secret on a cause is replaced too.
+ */
+function redact(value: unknown, depth = 0): unknown {
+  if (depth > maxDepth) return '[too deep]'
+  if (value instanceof Error) return redact(pino.stdSerializers.errWithCause(value), depth + 1)
+  if (Array.isArray(value)) return value.map((item: unknown) => redact(item, depth + 1))
+  if (typeof value !== 'object' || value === null) return value
+  return Object.fromEntries(
+    Object.entries(value).map(([key, item]) => [
+      key,
+      secretKeys.has(key.toLowerCase()) ? censor : redact(item, depth + 1),
+    ]),
+  )
+}
+
+const redactFields = (fields: unknown): Record<string, unknown> => Entry.catch({}).parse(redact(fields))
 
 function wrap(base: pino.Logger): Logger {
   const at =
     (level: LogLevel) =>
     (message: LogMessage, fields: LogFields = {}) => {
-      base[level](fields, message)
+      base[level](redactFields(fields), message)
     }
   return {
     trace: at('trace'),
@@ -63,7 +79,7 @@ function wrap(base: pino.Logger): Logger {
     warn: at('warn'),
     error: at('error'),
     fatal: at('fatal'),
-    child: (fields) => wrap(base.child(fields)),
+    child: (fields) => wrap(base.child(redactFields(fields))),
   }
 }
 
@@ -74,17 +90,15 @@ function createPino(sink: LogSink, level: LogLevel): pino.Logger {
       level,
       base: null,
       timestamp: pino.stdTimeFunctions.isoTime,
-      redact: { paths: redactPaths, censor: '[redacted]' },
-      serializers: { err: pino.stdSerializers.errWithCause },
+      // redactFields serializes errors already; pino's own error serializer would read them again.
+      serializers: { err: (err: unknown) => err },
       hooks: {
         logMethod(args, method) {
           const message = args.findIndex((a) => typeof a === 'string')
-          if (message === -1 || listed.has(args[message])) {
-            method.apply(this, args)
-            return
-          }
-          const fields: unknown = message === 0 ? {} : args[0]
-          method.call(this, fields, 'log message not listed')
+          const fields = redactFields(message === 0 ? {} : args[0])
+          const text: unknown = message === -1 ? undefined : args[message]
+          if (message === -1) method.call(this, fields)
+          else method.call(this, fields, typeof text === 'string' && listed.has(text) ? text : 'log message not listed')
         },
       },
     },
