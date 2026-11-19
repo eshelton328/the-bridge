@@ -12,6 +12,13 @@ layer, a store or the router.
   not `waitFor(() => expect(…).toHaveFocus())`, for a dialog, sheet or
   popover that traps the focus: `waitFor` counts clock time, and a busy
   CI runner can hold the trap's frame past its 1 s.
+- `rendering.ts`: `afterRendering()`, which waits for two rendering
+  steps, and `setViewport()`, `page.viewport()` and then
+  `afterRendering()`. Use them after a size change (the window or a
+  box) and before a check of what a ResizeObserver sets: Chromium
+  delivers the observer's notes only in a rendering step, and on a busy
+  CI runner the test iframe can get no rendering step for seconds while
+  `expect.poll` counts its 1 s.
 - `viewport.ts`: `viewportForWidth()`, the layout (desktop, tablet or
   phone) for a width. The library has no breakpoint tokens, so the
   widths come from the shell's size tokens: rail + list pane + detail

@@ -4,6 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -38,12 +39,12 @@ afterEach(async () => {
   await view?.unmount()
   view = undefined
   resetAllStores()
-  await page.viewport(1512, 982)
+  await setViewport(1512, 982)
 })
 
 describe('the Workspaces home', () => {
   it('draws the phone layout at 390 with nothing open', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/workspaces')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -54,7 +55,7 @@ describe('the Workspaces home', () => {
   })
 
   it('draws the desktop layout at 1512 with nothing open', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/workspaces')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
@@ -62,7 +63,7 @@ describe('the Workspaces home', () => {
   })
 
   it('draws the tablet list at 756 with nothing open', async () => {
-    await page.viewport(756, 1024)
+    await setViewport(756, 1024)
     view = await renderAt('/workspaces')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
@@ -70,7 +71,7 @@ describe('the Workspaces home', () => {
   })
 
   it('goes to Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
-    await page.viewport(756, 1024)
+    await setViewport(756, 1024)
     view = await renderAt('/workspaces')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
@@ -78,26 +79,26 @@ describe('the Workspaces home', () => {
   })
 
   it('changes from the desktop to the phone layout and back as the window narrows and widens', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/workspaces')
     await expect.poll(rail).not.toBeNull()
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
   })
 
   it('keeps a ?state= on its frame layout: chatActions draws the desktop at 390', async () => {
-    await page.viewport(390, 844)
+    await setViewport(390, 844)
     view = await renderAt('/workspaces?state=chatActions')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
   })
 
   it('keeps a ?state= on its frame at 1512: chatActions opens its chat menu', async () => {
-    await page.viewport(1512, 982)
+    await setViewport(1512, 982)
     view = await renderAt('/workspaces?state=chatActions')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()

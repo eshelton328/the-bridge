@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterRendering } from '../../lib/rendering.ts'
 import { testRender } from '../../lib/testRender.ts'
 import { useTabInView } from './blocks/useTabInView.ts'
 
@@ -36,12 +37,6 @@ function list() {
   return found
 }
 
-// Resolves after two rendering steps: the ResizeObserver delivers its notes in each step after the frame callbacks,
-// so the first step's notes and the scroll they set are in.
-function twoFrames() {
-  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
-}
-
 // The list is laid out and observed at its fixture size before a test changes it: the observer's first note and the
 // first scroll have run, and the page is rendering. Narrowed in the task that rendered it, the list's first scroll
 // waited on the new page's first rendering step, which a busy CI runner can hold past the poll's second (scrollLeft
@@ -53,7 +48,7 @@ async function renderTabs(tab: string) {
   for (const t of el.querySelectorAll('[role="tab"]')) {
     if (t instanceof HTMLElement) t.style.flex = '0 0 100px'
   }
-  await twoFrames()
+  await afterRendering()
   return { rendered, el }
 }
 
@@ -73,6 +68,7 @@ describe('useTabInView', () => {
     expect(el.scrollLeft).toBe(0)
     expect(selectedMiddleInside(el)).toBe(true)
     el.style.width = '150px'
+    await afterRendering()
     await expect.poll(() => el.scrollLeft).toBeGreaterThan(0)
     expect(selectedMiddleInside(el)).toBe(true)
   })
@@ -98,6 +94,7 @@ describe('useTabInView', () => {
     const { rendered, el } = await renderTabs('activity')
     view = rendered
     el.style.width = '150px'
+    await afterRendering()
     await expect.poll(() => el.scrollLeft).toBe(350)
     for (const t of el.querySelectorAll('[role="tab"]')) {
       if (t instanceof HTMLElement) t.style.flex = '0 0 105px'
@@ -120,9 +117,10 @@ describe('useTabInView', () => {
     if (frame === null) throw new Error('no frame around the tab list')
     Object.assign(frame.style, { transform: 'scale(2.5)', transformOrigin: '0 0' })
     el.style.width = '150px'
+    await afterRendering()
     await expect.poll(() => el.scrollLeft).toBe(350)
     el.style.width = '400px'
-    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    await afterRendering()
     await expect.poll(() => el.scrollLeft).toBe(100)
     const selected = el.querySelector('[role="tab"][aria-selected="true"]')
     if (!(selected instanceof HTMLElement)) throw new Error('no selected tab')
