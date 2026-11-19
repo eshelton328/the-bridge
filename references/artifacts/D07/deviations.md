@@ -29,12 +29,16 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   check (2 px slack) and this one does not. A position exception
   names 452:1993 (2026-11-19, the same decision on every page's rail).
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
-  `discussion panel` x +8, w -8. The artifact keeps D2's `Container
-  size="detail"` (748 + 2 × 40 = 828) against Figma's 820 pane, so the
-  panel starts 8 px further right and is 620 wide against 628. No size
-  token is 628 or 820 and `AppShell` has no side column. The panel pads
-  12 at the start, so its content sits at Figma's x 905, as the Inbox's
-  panel. Library gap "Discussion panel width"; the 40 px inset is d-072.
+  `discussion panel` x +8, w -8. The artifact and the panel sit in the
+  library's `DetailSplit`, as the Inbox's task and discussion (Inbox
+  D14): the artifact keeps D2's `Container size="detail"` (748 + 2 × 40
+  = 828) against Figma's 820 pane, and the panel takes the rest of the
+  pane up to `shell.discussionPane` (800), so it starts 8 px further
+  right and is 620 wide against 628. The 8 px is the detail column's
+  40 px inset against Figma's 36 (d-072, "Detail column inset"); no
+  spacing token is 36. The panel pads 12 at the start, so its content
+  sits at Figma's x 905, as the Inbox's panel. `LIBRARY_GAPS.md`
+  "Discussion panel width" is decided with no library change.
 - **Discuss.** `button · Discuss` x -4.2, w +4.8: `Button textSize="sm"`
   pads its sides more than Figma's 11 px, as in D2. It is pressed while the
   discussion is open; since library beta.36 (#138) its border is
@@ -101,8 +105,7 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 ## Values picked (d-100)
 
 Each value with no token is recorded in `LIBRARY_GAPS.md` and drawn with
-the nearest library part until it lands: the side width 628 (Figma's,
-on the 4 px grid; drawn 620), Discuss's pressed fill in violet (no
+the nearest library part until it lands: Discuss's pressed fill in violet (no
 token; drawn `surface.selected`, its border `accent.discuss` since
 beta.36), the empty state 120 px under
 the area's top (Figma's; drawn centred). The panel keeps the Inbox's
