@@ -16,6 +16,8 @@ export type ErrorSource =
   | 'handler'
   | 'shell'
   | 'live'
+  | 'query'
+  | 'mutation'
 
 export type ErrorReport = {
   /** The report's place in the order reports came in; unique, so the ErrorTray keys its rows on it. */
@@ -75,6 +77,8 @@ export function report(thrown: unknown, source: ErrorSource, componentStack?: st
   if (typeof thrown === 'object' && thrown !== null) {
     if (seen.has(thrown)) return
     seen.add(thrown)
+    // A wrapper of an error already reported (a caller that adds context to a failed query) is the same failure.
+    if ('cause' in thrown && typeof thrown.cause === 'object' && thrown.cause !== null && seen.has(thrown.cause)) return
   }
   const error = toError(thrown)
   const now = Date.now()

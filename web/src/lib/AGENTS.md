@@ -33,3 +33,7 @@ state file and a page are in `screenState.ts` (d-082).
   change it.
 - With no `?state=`, and always in a production build, a loader reads
   the page's home; read [../pages/AGENTS.md](../pages/AGENTS.md) for it.
+- A query retries at most twice, only on a network error, a 5xx, a 408
+  or a 429; a query or mutation that fails for good goes to the sink that
+  `errors/globalHandlers.ts` sets, since lib may not import errors
+  (`queryClient.test.ts`, audit W-7).

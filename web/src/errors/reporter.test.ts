@@ -96,4 +96,12 @@ describe('report', () => {
     report(new DOMException('The user aborted a request.', 'AbortError'), 'rejection')
     expect(getReports()).toEqual([])
   })
+
+  it('drops a wrapper whose cause was reported, as a caller that adds context to a failed query throws', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const failed = new Error('the server answered 502')
+    report(failed, 'query')
+    report(new Error('Live data failed; showing mock data', { cause: failed }), 'handler')
+    expect(getReports().map((r) => [r.source, r.error])).toEqual([['query', failed]])
+  })
 })
