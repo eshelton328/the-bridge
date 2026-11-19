@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 import { expect, within } from 'storybook/test'
 import { toolkitStates } from '../states/index.ts'
+import { viewportForWidth } from '../../../lib/viewport.ts'
 import { ToolkitScreen } from './ToolkitScreen.tsx'
 
 // One story per Figma state of the Toolkit, named after its state file
@@ -13,6 +14,14 @@ const meta = {
 
 export default meta
 type Story = StoryObj<typeof meta>
+
+/**
+ * The layout the story takes at its canvas's width: a state with a tablet and a phone frame has one story, and a
+ * play checks what the frame of that layout shows.
+ */
+function layoutOf(canvasElement: HTMLElement) {
+  return viewportForWidth(canvasElement.clientWidth)
+}
 
 export const ToolkitList: Story = {
   name: 'D1: the list of every toolkit item',
@@ -29,9 +38,15 @@ export const ToolkitList: Story = {
 export const ToolkitListTablet: Story = {
   name: 'T1: the list of every toolkit item, in two columns',
   args: { data: toolkitStates.toolkitListTablet.data, ui: toolkitStates.toolkitListTablet.ui, viewport: 'tablet' },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Toolkit' })).toBeVisible()
-    await expect(canvas.getByRole('heading', { name: 'commits-and-prs' })).toBeVisible()
+    if (layoutOf(canvasElement) === 'phone') {
+      // M1: one column of rows, each the item's name over its path; the Rules group lies below the frame.
+      await expect(canvas.getByText('skills/agents-md/')).toBeVisible()
+      await expect(canvas.getByText('commits-and-prs')).toBeVisible()
+    } else {
+      await expect(canvas.getByRole('heading', { name: 'commits-and-prs' })).toBeVisible()
+    }
     await expect(canvas.getByText('rules/writing.md')).toBeVisible()
   },
 }
@@ -1595,17 +1610,23 @@ export const SkillDiscussTablet: Story = {
   name: 'T5: a skill’s discussion on a tablet, in place of the item',
   args: { data: toolkitStates.skillDiscussTablet.data, ui: toolkitStates.skillDiscussTablet.ui, viewport: 'tablet' },
   // Storybook opens at desktop, where the discussion is D5's side panel; pick Tablet in the viewport menu to see T5's
-  // page with its empty state. The play test checks what every width shows; src/app/ToolkitDiscuss.test.tsx checks
+  // page with its empty state. The play test checks the layout of its width; src/app/ToolkitDiscuss.test.tsx checks
   // the tablet's page.
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
     // Figma draws the reply box focused (464:379, its border and a caret), as Erik sees it after Discuss.
-    // It comes first: on a tablet or phone two buttons match the Back check below.
     const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
     reply.focus()
     await expect(reply).toHaveFocus()
     await expect(canvas.getByRole('button', { name: /Open in Workbench/ })).toHaveAttribute('aria-disabled', 'true')
-    await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+    if (layoutOf(canvasElement) === 'desktop') {
+      await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+    } else {
+      // T5's page: the nav's back (writer) and the chevron on writer's card (464:334) both go back to the item.
+      const backs = canvas.getAllByRole('button', { name: 'Back to writer' })
+      await expect(backs).toHaveLength(2)
+      for (const back of backs) await expect(back).toBeVisible()
+    }
   },
 }
 
@@ -1613,17 +1634,23 @@ export const SkillDiscussPhone: Story = {
   name: 'M7: a skill’s discussion on the phone, full screen',
   args: { data: toolkitStates.skillDiscussPhone.data, ui: toolkitStates.skillDiscussPhone.ui, viewport: 'phone' },
   // Storybook opens at desktop, where the discussion is D5's side panel; pick Phone in the viewport menu to see M7's
-  // full-screen page, with the suggestions under Try. The play test checks what every width shows;
+  // full-screen page, with the suggestions under Try. The play test checks the layout of its width;
   // src/app/ToolkitDiscuss.test.tsx checks the phone's page.
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByRole('textbox', { name: 'Ask about writer' })).toBeVisible()
     // Figma draws the reply box focused (464:214, its border and a caret), as Erik sees it after Discuss.
-    // It comes first: on a tablet or phone two buttons match the Back check below.
     const reply = canvas.getByRole('textbox', { name: 'Ask about writer' })
     reply.focus()
     await expect(reply).toHaveFocus()
     await expect(canvas.getByRole('button', { name: /Workbench/ })).toHaveAttribute('aria-disabled', 'true')
-    await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+    if (layoutOf(canvasElement) === 'desktop') {
+      await expect(canvas.getByRole('button', { name: /Back to writer|Close the discussion/ })).toBeVisible()
+    } else {
+      // M7's page: the nav's back (writer) and the chevron on writer's card (464:150) both go back to the item.
+      const backs = canvas.getAllByRole('button', { name: 'Back to writer' })
+      await expect(backs).toHaveLength(2)
+      for (const back of backs) await expect(back).toBeVisible()
+    }
   },
 }
 
