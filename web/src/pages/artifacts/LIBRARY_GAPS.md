@@ -1,7 +1,7 @@
 # Artifacts library gaps
 
 Parts and tokens the Artifacts frames need that the component library
-(`@eshelton328/component-library-1701`, `1.0.0-beta.67` in this worktree)
+(`@eshelton328/component-library-1701`, `1.0.0-beta.68` in this worktree)
 cannot draw. Each gap goes to the library in one batched PR (fidelity
 loop, step 2). Until then the screen uses the part named under "Used
 now", and the frame's `deviations.md` lists the difference.
