@@ -56,5 +56,6 @@ export const searchList = {
       hint: 'Search reads titles, descriptions, projects and links. Filters and the source chips still apply.',
     },
   },
-  ui: { ...library.ui, view: 'list', query: 'eval' },
+  // Figma draws the search focused while Erik types (403:7799).
+  ui: { ...library.ui, view: 'list', query: 'eval', searchFocus: true },
 } satisfies ScreenState<ArtifactsData, ArtifactsUi>

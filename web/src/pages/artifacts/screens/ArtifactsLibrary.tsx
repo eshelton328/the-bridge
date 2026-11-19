@@ -92,6 +92,7 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
       <LibraryTools
         placeholder={data.searchPlaceholder}
         query={ui.query}
+        searchFocus={ui.searchFocus}
         onQueryChange={(query) => {
           onUiChange?.({ query })
         }}

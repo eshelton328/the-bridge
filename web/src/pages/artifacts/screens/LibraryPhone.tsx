@@ -101,6 +101,7 @@ export function LibraryPhone({ data, ui, onUiChange, onOpenArtifact, onAddLink }
         <LibraryTools
           placeholder={data.searchPlaceholder}
           query={ui.query}
+          searchFocus={ui.searchFocus}
           onQueryChange={(query) => {
             onUiChange?.({ query })
           }}

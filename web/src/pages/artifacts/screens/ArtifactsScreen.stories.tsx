@@ -70,10 +70,8 @@ export const SearchList: Story = {
         'Search reads titles, descriptions, projects and links. Filters and the source chips still apply.',
       ),
     ).toBeVisible()
-    // Figma draws the search focused while Erik types (403:7799), so the story puts the focus in it.
-    const search = canvas.getByRole('searchbox')
-    search.focus()
-    await expect(search).toHaveFocus()
+    // Figma draws the search focused while Erik types (403:7799), and the state opens with the focus in it.
+    await expect(canvas.getByRole('searchbox')).toHaveFocus()
   },
 }
 
@@ -267,10 +265,8 @@ export const SearchPhone: Story = {
   play: async ({ canvas }) => {
     // The story renders at the width Storybook gives it; pnpm fidelity checks M5's rows at the phone's width.
     await expect(canvas.getByText('Writer cross-family round x1')).toBeVisible()
-    // Figma draws the search focused (its cyan border), with the keyboard open.
-    const search = canvas.getByRole('searchbox', { name: /Search artifacts/i })
-    search.focus()
-    await expect(search).toHaveFocus()
+    // Figma draws the search focused (its cyan border), with the keyboard open, and the state opens with the focus in it.
+    await expect(canvas.getByRole('searchbox', { name: /Search artifacts/i })).toHaveFocus()
   },
 }
 

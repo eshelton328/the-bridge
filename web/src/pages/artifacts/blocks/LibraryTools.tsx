@@ -21,6 +21,7 @@ import {
   SortDescIcon,
   ViewSwitch,
 } from '@eshelton328/component-library-1701'
+import { useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { type ArtifactFilterMenu, type ArtifactSortMenu, ViewValue } from '../types.ts'
 import { FilterPopover } from './FilterPopover.tsx'
@@ -38,6 +39,8 @@ export type LibraryToolsProps = {
   placeholder: string
   query: string
   onQueryChange?: ((query: string) => void) | undefined
+  /** The search has the focus when the row opens, as Figma draws it while Erik types (D4 403:7799, M5 408:50). */
+  searchFocus?: boolean | undefined
   /** The sort's short label, such as "Newest". */
   sortLabel: string
   onSortClick?: (() => void) | undefined
@@ -101,14 +104,20 @@ export function LibraryTools({
   size = 'md',
   iconOnly = false,
   searchFigma = 'search',
+  searchFocus = false,
   className,
   view,
   onViewChange,
 }: LibraryToolsProps) {
   const large = size === 'lg'
+  // `SearchField` takes no ref or `autoFocus`, so the row focuses its input, as `ChatNameField` does.
+  const searchRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (searchFocus) searchRef.current?.querySelector('input')?.focus()
+  }, [searchFocus])
   return (
     <Inline gap={large && !iconOnly ? '8' : '6'} align="center" className={className} data-figma="list tools">
-      <div className={grow} data-figma={searchFigma}>
+      <div ref={searchRef} className={grow} data-figma={searchFigma}>
         <SearchField
           label={placeholder}
           size={size}

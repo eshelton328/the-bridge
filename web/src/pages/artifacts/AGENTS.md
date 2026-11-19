@@ -321,7 +321,8 @@ each file of a page folder is for.
   each with its `preview` kind and `source`, and the optional `open`
   `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm` and the phone's `addLinkSheet`, `sortMenu`, the
   open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
-  sort, view, open groups, search text, and the optional open Filter
+  sort, view, open groups, search text, whether the search opens with the
+  focus in it (`searchFocus`, D4 and M5), and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu,
   the card opened from the library (`openId`), whether Back closed the open artifact (T2, M2), whether the phone's ⋯
