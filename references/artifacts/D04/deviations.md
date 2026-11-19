@@ -3,7 +3,8 @@
 What still differs from Figma after round 2 of the fidelity loop
 (`pnpm fidelity artifacts D04`, 2026-11-17, against the installed
 library 1.0.0-beta.19; checked again 2026-11-18 with 1.0.0-beta.36 and
-2026-11-19 with 1.0.0-beta.69),
+2026-11-19 with 1.0.0-beta.69 and 1.0.0-beta.80, whose match pill and
+bold clear button change no position result),
 each with its reason. The library gaps are in
 `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 
@@ -47,9 +48,10 @@ each with its reason. The library gaps are in
   dot of the new Skill eval pass rates is `ListRow dot="working"`, 8 px
   after the title, as Figma's (403:8233).
 - **Match place chip.** "in title", "in description" and "in link" are
-  `Badge variant="tag"`: a box with the small radius, 6 px sides and
-  20 px high, against Figma's round pill with 8 px sides, 21 high. Library
-  gap "Match place chip".
+  `Badge variant="monoPill"` (library 1.0.0-beta.80): round, mono in
+  `fg.muted` on `surface.inset`, no border, 8 px sides, 20 high against
+  Figma's 21 (the 4 px grid). The pills have no layer key, so the
+  position check does not measure them.
 - **Search, Sort and Filter.** `search` w -11.4, `button · Sort` x -11.4,
   `button · Filter` x -11, as D01: Sort (108.4) and Filter (75.4) take
   `padding="compact"` and are Figma's widths, but the search and the
@@ -57,10 +59,11 @@ each with its reason. The library gaps are in
   gives the search 22 px more, so the search is 554.1 wide against 565.5.
   Library gap "Sort and Filter button widths".
 - **Search clear button.** The state opens with the focus in the search
-  field (`ui.searchFocus`), so it shows Figma's cyan focus border. The × that clears the search
-  (`CloseIcon`, as Figma's `icon/x` 403:8202) is thin and grey; Figma's is
-  bold and bright white. `SearchField` sets the clear button's colour and
-  takes no tone for it. Library gap "Search clear button".
+  field (`ui.searchFocus`), so it shows Figma's cyan focus border, and
+  the × that clears the search is bold and in `fg.default`, as Figma's
+  `icon/x` (403:8202): `SearchField clearFocus="strong"` (library
+  1.0.0-beta.80) draws `CloseBoldIcon` while the field has the focus, at
+  16 px (`clearSize="16"`) against Figma's 14, on the 4 px grid.
 - **Source chips.** `filter · chips` w +6.8. `FilterChips size="compact"`
   draws Figma's 9 px sides (8 px padding in a 1 px border) and puts the
   chips 6 apart against Figma's 5: 5 ties 4 and 6 on the 4 px grid and the
@@ -82,7 +85,7 @@ Each value with no token is recorded for the library in
 `LIBRARY_GAPS.md` and drawn with the library's part until it lands: the
 row preview 128 (Figma's, `Thumbnail size="lg"` since beta.36) and
 the match pill with 8 px sides, round, 20 high (Figma's sides; 21 on the
-4 px grid is 20; drawn `Badge variant="tag"`). The rows are 8 apart (Figma
+4 px grid is 20; `Badge variant="monoPill"` since beta.80). The rows are 8 apart (Figma
 6, around 2 px shorter rows, so the pitch stays Figma's 104) and
 the groups, rows and hint 12 apart (Figma's, spacing `6` and `12`); the
 match place, age and Open are 16 apart (Figma's, spacing `16`). The marks

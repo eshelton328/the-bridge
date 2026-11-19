@@ -198,10 +198,13 @@ each file of a page folder is for.
   chain mark, the library's 12 px `LinkMarkIcon`, also on T2's page) and `MadeIn` (the chat
   that published it and Open in workspace). For D3: `FilterPopover`
   (Filter, pressed while open and with a dot while boxes are checked, and
-  the `Popover` with the footer's note and Show) and `FilterMenu` (a
-  `PopoverSection` per section, a `Checkbox size="compact"` with its count
-  per box, as the Inbox's Filter menu; with `sheet`, each section's label
-  is a `GroupHeader` above its rows). For T3: `FilterSheet` (Filter, 36 px
+  the `Popover width="md" inset="wide"`, padded 12, with the footer's
+  note and Show) and `FilterMenu` (a `PopoverSection` per section, a `Checkbox
+  size="compact" density="compact"` (28 px rows) with its count per box,
+  as the Inbox's Filter menu, and the item's `mark` as the box's
+  `leading` `KindMark` on a Source row; with `sheet`, each section's
+  label is a `GroupHeader` above its rows, 2 apart as in a
+  `PopoverSection`). For T3: `FilterSheet` (Filter, 36 px
   and pressed while open, with a dot once the sheet closes on checked
   boxes, and a `BottomSheet` titled Filter with Clear, which clears the
   boxes, the `FilterMenu` and Show the full width; Show applies the boxes
@@ -213,7 +216,7 @@ each file of a page folder is for.
   after it and centred down the row, the title
   with the New dot 8 after it (`dot="working"`) and the description with the match
   marked by `Highlight`, the meta line with the link when the match is in
-  it, and at the end, centred down the row, the place as `Badge variant="tag"`, the
+  it, and at the end, centred down the row, the place as `Badge variant="monoPill"`, the
   age and an icon-only Open). For D5: `AddLinkFields` (the form's fields: the link
   and title `TextField`s, the source as a `ViewSwitch` of the two kinds
   and `ProjectPicker`, each line under a field only when the form has

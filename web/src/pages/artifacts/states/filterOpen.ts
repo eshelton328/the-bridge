@@ -18,8 +18,8 @@ export const filterOpen = {
         {
           label: 'Source',
           items: [
-            { value: 'source:claude', label: 'Claude artifacts', count: 17, mono: false },
-            { value: 'source:codex', label: 'Codex sites', count: 7, mono: false },
+            { value: 'source:claude', label: 'Claude artifacts', count: 17, mono: false, mark: 'claude' },
+            { value: 'source:codex', label: 'Codex sites', count: 7, mono: false, mark: 'codex' },
           ],
         },
         {

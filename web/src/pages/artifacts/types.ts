@@ -150,6 +150,8 @@ const ArtifactFilterItem = z.object({
   count: z.number().int().nonnegative(),
   /** The label is a name in mono, such as a project (D3 403:6884); "Not in a project" is not. */
   mono: z.boolean(),
+  /** The source's mark between the box and the label, on a Source row (D3 403:6855, 403:6865). */
+  mark: ArtifactSource.optional(),
 })
 
 /**

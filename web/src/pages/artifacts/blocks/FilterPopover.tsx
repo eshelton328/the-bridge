@@ -36,6 +36,8 @@ export function FilterPopover({ menu, checks, open, onOpenChange, onChecksChange
       }
       label={menu.label}
       width="md"
+      // D3 403:6852: the menu pads 12, so its rows are 294 wide in the 320 px box.
+      inset="wide"
       placement="bottom-start"
       data-figma={open ? 'menu · Filter' : undefined}
       open={open}
