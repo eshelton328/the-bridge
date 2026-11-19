@@ -28,8 +28,9 @@ jobs:
           now=$(date +%s)
           stale=1
           if [ -n "$SEEN" ] && [ $(( now - SEEN )) -le 180 ]; then stale=0; fi
-          for run in $(gh api "repos/$REPO/actions/runs?status=queued" -q '.workflow_runs[].id') \
-                     $(gh api "repos/$REPO/actions/runs?status=in_progress" -q '.workflow_runs[].id'); do
+          # --paginate: a run past the first page of 30 is checked too.
+          for run in $(gh api --paginate "repos/$REPO/actions/runs?status=queued&per_page=100" -q '.workflow_runs[].id') \
+                     $(gh api --paginate "repos/$REPO/actions/runs?status=in_progress&per_page=100" -q '.workflow_runs[].id'); do
             waited=$(gh api "repos/$REPO/actions/runs/$run/jobs" -q '[.jobs[]
               | select(.status == "queued" and (.labels | index("self-hosted")))
               | (now - (.created_at | fromdate))] | max // 0' | cut -d. -f1)
