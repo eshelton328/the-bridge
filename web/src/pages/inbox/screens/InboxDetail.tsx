@@ -30,6 +30,8 @@ export type InboxDetailProps = {
   /** View task in a started task's chat on the desktop; see `RunningDetail`. */
   onViewTask?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
+  /** Copy in the whole prompt's dialog or sheet, with the prompt's text; the page entry copies it. */
+  onCopyPrompt?: ((text: string) => void) | undefined
   /** The task has a discussion: Discuss shows in its task bar; see `DetailHead`. */
   discuss?: DiscussControl | undefined
   /** Undo on the line under a prompt that a discussion changed. */
@@ -58,6 +60,7 @@ export function InboxDetail({
   onBack,
   onViewTask,
   onPromptOpenChange,
+  onCopyPrompt,
   discuss,
   onUndoChange,
   side,
@@ -95,6 +98,7 @@ export function InboxDetail({
           layout={layout}
           back={back}
           onPromptOpenChange={onPromptOpenChange}
+          onCopyPrompt={onCopyPrompt}
           discuss={discuss}
           onUndoChange={onUndoChange}
           drafts={drafts}

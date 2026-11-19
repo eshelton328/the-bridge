@@ -72,6 +72,8 @@ export type PromptSectionProps = {
   onEditingChange?: ((editing: boolean) => void) | undefined
   /** Undo on the line under a prompt that a discussion changed. */
   onUndoChange?: (() => void) | undefined
+  /** Copy in the whole prompt's dialog or sheet, with the prompt's text. */
+  onCopyPrompt?: ((text: string) => void) | undefined
 }
 
 export function PromptSection({
@@ -83,6 +85,7 @@ export function PromptSection({
   drafts,
   onEditingChange,
   onUndoChange,
+  onCopyPrompt,
 }: PromptSectionProps) {
   // The prompt as the owner left it; it counts as edited while it differs from the suggestion, which Reset brings back.
   const suggested = prompt.suggested ?? { text: prompt.text, long: prompt.long }
@@ -215,6 +218,7 @@ export function PromptSection({
             open={open}
             onOpenChange={onOpenChange}
             layout={layout}
+            onCopy={onCopyPrompt}
             onEdit={
               prompt.state === 'suggested'
                 ? () => {

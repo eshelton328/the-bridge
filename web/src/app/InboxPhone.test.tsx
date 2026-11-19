@@ -274,6 +274,42 @@ describe('the Inbox on the phone', () => {
     }
   })
 
+  // Audit P-5: on plain HTTP the page has no Clipboard API, and a page may refuse the write. Copy then copies nothing,
+  // with no uncaught error and no unhandled rejection (Vitest fails the run on either). Each opens the prompt as the owner
+  // does: the task from the list, then Read the whole prompt.
+  it('copies nothing, and throws nothing, on a page with no clipboard', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+    try {
+      await phone('list')
+      await page.getByText('Write the tickets for increment one').click()
+      await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      await expect.element(dialog()).toBeVisible()
+    } finally {
+      Reflect.deleteProperty(navigator, 'clipboard')
+    }
+  })
+
+  it('copies nothing, and leaves no unhandled rejection, when the page refuses the write', async () => {
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    let asked = 0
+    clipboard.writeText = () => {
+      asked += 1
+      return Promise.reject(new DOMException('Write permission denied.', 'NotAllowedError'))
+    }
+    try {
+      await phone('list')
+      await page.getByText('Write the tickets for increment one').click()
+      await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      expect(asked).toBe(1)
+      await expect.element(dialog()).toBeVisible()
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
   it('offers no Edit prompt for a sent prompt', async () => {
     await phone('runningTaskPage')
     await page.getByRole('link', { name: 'Read the whole prompt' }).click()

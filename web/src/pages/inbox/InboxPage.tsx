@@ -4,6 +4,7 @@
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import { report } from '../../errors/reporter.ts'
+import { copyText } from '../../lib/copyText.ts'
 import {
   useInboxActions,
   useInboxDrafts,
@@ -83,6 +84,10 @@ export function InboxPage() {
       }}
       onPromptOpenChange={(open) => {
         setPromptOpen(search.state, open)
+      }}
+      onCopyPrompt={(text) => {
+        // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write.
+        copyText(text)
       }}
       onRemoveOpenChange={(open) => {
         setRemoveOpen(search.state, open)

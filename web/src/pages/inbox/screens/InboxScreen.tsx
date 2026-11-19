@@ -52,6 +52,8 @@ export type InboxScreenProps = {
   /** Back on a tablet or phone: closes the open item and shows the list. */
   onBack?: (() => void) | undefined
   onPromptOpenChange?: ((open: boolean) => void) | undefined
+  /** Copy in the whole prompt's dialog or sheet, with the prompt's text; the page entry copies it. */
+  onCopyPrompt?: ((text: string) => void) | undefined
   /** The text the owner typed in the search field; without it the field shows the state's query. */
   query?: string | undefined
   onQueryChange?: ((query: string) => void) | undefined
@@ -74,7 +76,17 @@ export type InboxScreenProps = {
 type InboxLayoutProps = Omit<InboxScreenProps, 'viewport' | 'drafts'> & { layout: Viewport; drafts: InboxDrafts }
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
-  const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange, onSend } = props
+  const {
+    ui,
+    onNavigate,
+    onSelectItem,
+    onBack,
+    onPromptOpenChange,
+    onCopyPrompt,
+    onRemoveOpenChange,
+    onUiChange,
+    onSend,
+  } = props
   const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
@@ -256,6 +268,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         }
         drafts={drafts}
         onPromptOpenChange={onPromptOpenChange}
+        onCopyPrompt={onCopyPrompt}
         onUiChange={onUiChange}
         onSnooze={(until) => {
           putAway(shown.id, until === null ? { result: 'done' } : { until })
