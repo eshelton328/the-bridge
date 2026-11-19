@@ -11,7 +11,8 @@ import { routeTree } from './routeTree.gen.ts'
 // On /artifacts with no ?state= (pages/artifacts/home.ts) a card or row opens
 // its artifact (pages/artifacts/screens/openView.ts): beside the list with its
 // row selected on a desktop (D2), on its own page under Back on a tablet (T2)
-// and a phone (M2), and Back returns to the library.
+// and a phone (M2), and Back returns to the library. Add a link opens its
+// dialog (D5) or the phone's sheet (M6) with no link and no title.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -110,5 +111,36 @@ describe('opening an artifact from the Artifacts home', () => {
     await userEvent.keyboard('{Escape}')
     await userEvent.click(list.getByRole('button', { name: /^Filter/ }))
     await expect.element(page.getByRole('dialog', { name: /Filter/ })).toBeVisible()
+  })
+})
+
+describe('Add a link on the Artifacts home', () => {
+  const fieldValues = (dialog: Element) =>
+    [...dialog.querySelectorAll('input')].filter((input) => input.type === 'text').map((input) => input.value)
+
+  it('opens the dialog at 1512 with no link and no title', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/artifacts')
+    await press(page.getByRole('button', { name: 'Add a link' }).element())
+    const dialog = page.getByRole('dialog', { name: 'Add a link' })
+    await expect.element(dialog).toBeVisible()
+    await expect
+      .element(dialog.getByText('Any HTTPS link. A claude.ai/artifact link is saved as a Claude artifact.'))
+      .toBeVisible()
+    await expect.element(dialog.getByRole('button', { name: 'Add artifact' })).toBeVisible()
+    expect(fieldValues(dialog.element())).toEqual(['', ''])
+  })
+
+  it('opens the sheet at 390 with no link and no title, in M6\u2019s words', async () => {
+    await page.viewport(390, 844)
+    view = await renderAt('/artifacts')
+    await press(page.getByRole('button', { name: 'Add a link' }).element())
+    const sheet = page.getByRole('dialog', { name: 'Add a link' })
+    await expect.element(sheet).toBeVisible()
+    await expect.element(sheet.getByRole('textbox', { name: 'Link' })).toHaveValue('')
+    await expect.element(sheet.getByRole('textbox', { name: 'Title' })).toHaveValue('')
+    // M6's words: the one-line description and Add in the title row.
+    await expect.element(sheet.getByText('For an artifact the library did not find.', { exact: true })).toBeVisible()
+    await expect.element(sheet.getByRole('button', { name: 'Add', exact: true })).toBeVisible()
   })
 })

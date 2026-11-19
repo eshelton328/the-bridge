@@ -336,6 +336,11 @@ export const ArtifactsData = z.object({
   search: ArtifactSearch.optional(),
   /** The Add a link dialog (D5); without it Add a link opens nothing yet (D1 to D4). */
   addLinkForm: AddLinkForm.optional(),
+  /**
+   * The phone's sheet's words for the form (M6: the one-line description, no line under Source or Project, Add), where
+   * a state draws more than one width (the home); without it the sheet shows `addLinkForm`, as M6 does.
+   */
+  addLinkSheet: AddLinkForm.optional(),
   /** The open artifact's discussion (D7), which Discuss opens; without it Discuss opens nothing. */
   discussion: ArtifactDiscussion.optional(),
   /** File in a project (M7), which the phone's ⋯ button opens; without it the button opens nothing. */

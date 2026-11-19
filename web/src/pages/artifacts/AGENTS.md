@@ -156,7 +156,8 @@ each file of a page folder is for.
   named "search" too. The keyboard is the phone's own (d-089): the
   render draws none and keeps the tab bar, which Figma keeps under it.
   With `data.addLinkForm` the plus button opens D5's form as a sheet over
-  the tab bar (M6, `AddLinkSheet`).
+  the tab bar (M6, `AddLinkSheet`), in `data.addLinkSheet`'s words when
+  the state has them (the home).
   `screens/LibraryList.tsx`: the library beside an open artifact (D2):
   the header with an icon-only Add a link, the chips, `LibraryTools`
   without the view switch and a `RowGroup` per group.
@@ -318,7 +319,7 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu`, the
+  `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm` and the phone's `addLinkSheet`, `sortMenu`, the
   open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
@@ -332,15 +333,18 @@ each file of a page folder is for.
 - `home.ts`: the page's home, what `/artifacts` shows with no `?state=`
   (`loadArtifactsState.ts`, `pages/AGENTS.md`): D1's data with every
   card, T1's Filter menu, D6's sorts and Sort menu and "Search
-  artifacts", with every menu, sheet and dialog closed, so the screen
-  draws D1's grid, T1's columns or M1's rows by the window's width,
-  Filter and Sort open at each width, and a card or row opens its artifact
+  artifacts", and D5's Add a link form with no link and no title (and
+  `addLinkSheet`, M6's words for the phone's sheet, empty too), with
+  every menu, sheet and dialog closed, so the screen draws D1's grid,
+  T1's columns or M1's rows by the window's width, Filter, Sort and Add a
+  link open at each width, and a card or row opens its artifact
   (`ui.openId`): beside the list on a desktop, on its own page under Back
   on a tablet or phone, where Back returns to the library. It has no
   `data.open`, so every card's detail is built from its card. It is not
   a Figma state. `app/ArtifactsHome.test.tsx` checks it at 390, 756 and
   1512 and on a resize, and that a `?state=` still draws its frame;
-  `app/ArtifactsHomeOpen.test.tsx` opens a card at each width and Back.
+  `app/ArtifactsHomeOpen.test.tsx` opens a card at each width, Back, and
+  Add a link's dialog and sheet.
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
 
