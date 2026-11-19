@@ -223,6 +223,11 @@ export function watchLiveWorkspaces({
       return
     }
     if (frame.event !== 'chat.status') return
+    // An invalid cache stays invalid: the next load reads the server, which has this status too.
+    if (client.getQueryState(queryKey)?.isInvalidated === true) {
+      changed()
+      return
+    }
     const parsed = LiveEvent.safeParse(readJson(frame.data))
     const next =
       parsed.success && parsed.data.type === 'chat.status'

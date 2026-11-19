@@ -268,6 +268,19 @@ describe('watchLiveWorkspaces', () => {
     }
   })
 
+  it('keeps the cache invalid when a status event comes after a list change', async () => {
+    const queries = client()
+    queries.setQueryData(['workspaces'], response)
+    const server = fakeServer()
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    server.opened[0]?.send(server.frame('workspaces.changed', changed))
+    server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle', 1)))
+    await settle()
+    expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
+    stop()
+  })
+
   it('reads the cache while it watches, and the server again once the cache is invalid', async () => {
     const queries = client()
     const server = fakeServer()
