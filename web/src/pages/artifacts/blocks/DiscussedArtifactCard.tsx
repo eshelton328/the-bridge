@@ -4,7 +4,7 @@
 // press anywhere on the card returns to the artifact (T2), as the Inbox's
 // task card does (Inbox T17). On the phone's page (M9 452:4017) the model
 // and context sit under the meta line, as the Inbox's (M18). Props only.
-import { ChevronRightIcon, Inline, Panel, Stack, StatusPill } from '@eshelton328/component-library-1701'
+import { ChevronRightIcon, focusRing, Inline, Panel, Stack, StatusPill } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ArtifactDetail } from '../types.ts'
@@ -28,7 +28,9 @@ const open = css({
   cursor: 'pointer',
   outline: 'none',
   _after: { content: '""', position: 'absolute', inset: '0', borderRadius: 'xl' },
-  _focusVisible: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
+  // The library's ring condition (R16): the ring shows on a keyboard focus, not after a pointer press, such as the
+  // focus the chevron gets back when a sheet over it closes by a tap.
+  [focusRing]: { _after: { outlineWidth: 'strong', outlineStyle: 'solid', outlineColor: 'border.focus' } },
 })
 
 export type DiscussedArtifactCardProps = {
