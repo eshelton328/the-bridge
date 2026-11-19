@@ -23,6 +23,9 @@ and exits 1 on a problem.
 [fidelity/AGENTS.md](fidelity/AGENTS.md): `pnpm fidelity`, the text, position
 and rule checks of the fidelity loop, and `pnpm fidelity:refs`.
 
+[secrets/AGENTS.md](secrets/AGENTS.md): the tests of the secret and privacy
+scan (`.gitleaks.toml`), which only the CI job `secrets` runs.
+
 `pnpm new`:
 
 ```sh

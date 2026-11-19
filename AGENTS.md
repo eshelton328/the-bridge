@@ -41,6 +41,19 @@ script tests, the Vitest browser tests (unit tests and every story's play
 test), and both builds. CI runs the same steps as separate jobs in
 `.github/workflows/ci.yml`; a new step in `verify` needs a line there.
 
+## Secret scan
+
+The `secrets` job in `.github/workflows/ci.yml` runs gitleaks 8.30.1 on
+the commits of each PR, with the rules in `.gitleaks.toml` and the
+personal terms from the repository secret `PRIVACY_TERMS`; it fails when
+the secret is missing. `.github/workflows/secret-history.yml` scans the
+full history each Monday and keeps the issue "Secret scan of the full
+history" up to date, with no values shown. Never put a personal value in
+`.gitleaks.toml`, and add an exception only for fixed paths and one rule.
+The Figma references keep the names Figma draws, so `references/` and the
+code lines that must match them are exceptions for the personal-term rule
+only.
+
 ## Rules
 
 - No `any`, `as` casts, non-null `!`, `@ts-ignore`, `@ts-expect-error` or
