@@ -2,7 +2,8 @@
 // workspace.list and agent.list, finds each Claude chat's session file from
 // its agent_session, and reads the model from it. It reads only when
 // listWorkspaces is called. herdr's pane IDs stay here: a chat's ID is its
-// agent session ID, or herdr's terminal ID when it has none.
+// agent session ID, or herdr's terminal ID when it has none or when another
+// pane has resumed the same session, so each chat ID is on one chat only.
 import { join } from 'node:path'
 import { ChatId, type ChatStatus, type ChatSummary, type MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -67,9 +68,16 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
     return undefined
   }
 
-  const chatOf = async (agent: HerdrAgent, kind: 'claude' | 'codex'): Promise<ChatSummary> => {
-    const session = agent.agent_session?.kind === 'id' ? agent.agent_session.value : undefined
-    const id = ChatId.safeParse(`${machine}/${session ?? ''}`)
+  const sessionOf = (agent: HerdrAgent): string | undefined =>
+    agent.agent_session?.kind === 'id' ? agent.agent_session.value : undefined
+
+  const chatOf = async (
+    agent: HerdrAgent,
+    kind: 'claude' | 'codex',
+    shared: ReadonlySet<string>,
+  ): Promise<ChatSummary> => {
+    const session = sessionOf(agent)
+    const id = ChatId.safeParse(`${machine}/${session === undefined || shared.has(session) ? '' : session}`)
     const path = kind === 'claude' ? sessionPath(agent) : undefined
     return {
       id: id.success ? id.data : ChatId.parse(`${machine}/${agent.terminal_id}`),
@@ -91,6 +99,8 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
       ])
       if (!workspaces.ok) return workspaces
       if (!agents.ok) return agents
+      const sessions = agents.value.agents.flatMap((a) => sessionOf(a) ?? [])
+      const shared = new Set(sessions.filter((s, i) => sessions.indexOf(s) !== i))
       const summaries = await Promise.all(
         workspaces.value.workspaces.map(async (w) => ({
           id: WorkspaceId.parse(`${machine}/${w.workspace_id}`),
@@ -98,7 +108,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
           chats: await Promise.all(
             agents.value.agents.flatMap((a) =>
               a.workspace_id === w.workspace_id && (a.agent === 'claude' || a.agent === 'codex')
-                ? [chatOf(a, a.agent)]
+                ? [chatOf(a, a.agent, shared)]
                 : [],
             ),
           ),

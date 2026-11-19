@@ -79,6 +79,37 @@ describeAgentPort('herdr (recorded socket)', () =>
   Promise.resolve({ port: port(), expected: { workspace: 'the-bridge loops', chat: 'bridge-coord' } }),
 )
 
+// Two panes that resumed the same Claude session, as `claude --resume` in a second pane gives.
+const resumedTwice = {
+  'workspace.list': results['workspace.list'],
+  'agent.list': {
+    type: 'agent_list',
+    agents: ['term_1', 'term_4'].map((terminal_id, i) => ({
+      agent: 'claude',
+      agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-a' },
+      agent_status: 'idle',
+      cwd,
+      name: `bridge-coord ${String(i + 1)}`,
+      pane_id: `w17:p${String(i + 1)}`,
+      terminal_id,
+      terminal_title_stripped: '',
+      workspace_id: 'w17',
+    })),
+  },
+}
+let resumed: FakeHerdrSocket
+beforeAll(async () => {
+  resumed = await startFakeHerdrSocket(resumedTwice)
+})
+afterAll(() => resumed.close())
+
+describeAgentPort('herdr (one session resumed in two panes)', () =>
+  Promise.resolve({
+    port: createHerdrAgents({ socket: resumed.path, machine, claudeProjects: projects }),
+    expected: { workspace: 'the-bridge loops', chat: 'bridge-coord 2' },
+  }),
+)
+
 describe('herdr agents', () => {
   it("maps herdr's agents to chats in the app's terms", async () => {
     const read = await port().listWorkspaces()
@@ -112,6 +143,15 @@ describe('herdr agents', () => {
         { id: 'test-mac/w18', label: 'phone · shell', chats: [] },
       ],
     })
+  })
+
+  it("gives each pane of a resumed session its terminal ID, and keeps the session's model", async () => {
+    const read = await createHerdrAgents({ socket: resumed.path, machine, claudeProjects: projects }).listWorkspaces()
+    const chats = read.ok ? read.value[0]?.chats : undefined
+    expect(chats?.map((c) => [c.id, c.model])).toEqual([
+      ['test-mac/term_1', 'claude-opus-5-5'],
+      ['test-mac/term_4', 'claude-opus-5-5'],
+    ])
   })
 
   it('connects to herdr only when it is asked', async () => {
