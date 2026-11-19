@@ -103,19 +103,37 @@ describe('keyboard experiment', () => {
     expect(proxyOf()).toBeNull()
   })
 
-  it('proxy: text typed into the proxy before the move ends up in the field, after the text it had', async () => {
+  it('proxy: starts as a copy of the draft, and its edits (typing, Backspace) end up in the field', async () => {
     const { field } = mountComposer()
-    field.value = 'draft '
-    const typed: string[] = []
-    field.addEventListener('input', () => typed.push(field.value))
+    field.value = 'draft'
+    const changes: string[] = []
+    field.addEventListener('input', () => changes.push(field.value))
     run('proxy')
     tap(field)
     const proxy = proxyOf()
     if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
-    proxy.value = 'hi'
+    expect(proxy.value).toBe('draft')
+    expect(proxy.selectionStart).toBe(5)
+    // Backspace twice, then typing.
+    proxy.value = 'dra'
+    proxy.value = 'drafts hi'
+    proxy.setSelectionRange(9, 9)
     await expect.poll(() => document.activeElement).toBe(field)
-    expect(field.value).toBe('draft hi')
-    expect(typed).toEqual(['draft hi'])
+    expect(field.value).toBe('drafts hi')
+    expect(field.selectionStart).toBe(9)
+    expect(changes).toEqual(['drafts hi'])
+  })
+
+  it('proxy: a Backspace into an existing draft before the move shortens the draft', async () => {
+    const { field } = mountComposer()
+    field.value = 'draft'
+    run('proxy')
+    tap(field)
+    const proxy = proxyOf()
+    if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
+    proxy.value = 'draf'
+    await expect.poll(() => document.activeElement).toBe(field)
+    expect(field.value).toBe('draf')
   })
 
   it('proxy: an IME composition holds the move until it ends, and its text moves whole', async () => {
@@ -136,10 +154,13 @@ describe('keyboard experiment', () => {
     expect(proxyOf()).toBeNull()
   })
 
-  it('proxy: a proxy that loses the focus to something else goes, and the field stays unfocused', () => {
+  it('proxy: a proxy that loses the focus to something else goes, the field stays unfocused and keeps the text', () => {
     const { field } = mountComposer()
     run('proxy', 5000)
     tap(field)
+    const proxy = proxyOf()
+    if (!(proxy instanceof HTMLTextAreaElement)) throw new Error('no proxy')
+    proxy.value = 'typed then dismissed'
     const other = document.createElement('input')
     document.body.append(other)
     onTestFinished(() => {
@@ -148,6 +169,7 @@ describe('keyboard experiment', () => {
     other.focus()
     expect(proxyOf()).toBeNull()
     expect(document.activeElement).toBe(other)
+    expect(field.value).toBe('typed then dismissed')
   })
 
   it('places the proxy where the shell docks the field: up by how far the keyboard covers the detail', () => {
