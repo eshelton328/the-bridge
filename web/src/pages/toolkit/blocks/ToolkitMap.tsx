@@ -11,7 +11,12 @@
 // under the window. The phone's window pinch zooms and drags its drawing
 // (MapGraph `zoom`, which marks the window `data-allow-pinch`, so the app's
 // page zoom block lets the gesture through); the desktop's and tablet's
-// maps do not zoom, as Figma's D2 and T2 notes say nothing of it. Props only.
+// maps do not zoom, as Figma's D2 and T2 notes say nothing of it. The tablet's and the phone's nodes are the
+// library's compact nodes (MapGraph `nodeDensity="compact"`: a 12 px icon and the name 27 px in, so a 140 px node
+// shows `pr-description` whole), and their links end at the node's edge with no dot (`edgeEnd="none"`), as Figma's
+// T2 and M11 links do. The phone's window adds the minimap in its top right corner (MapGraph `minimap`, M11
+// 461:1255), and its card is the compact one (M11 461:1259): the counts as arrows at the title row's end, Show links
+// and Open side by side, and no close button. Props only.
 import { Badge, MapGraph, MapLegend, MapSelectionCard } from '@eshelton328/component-library-1701'
 import { type RefObject, useEffect, useRef, useState } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -41,6 +46,7 @@ const GEOMETRY = {
     nodes: { x: 39, y: 69, column: 360, row: 52 },
     heading: { x: 43, y: 33 },
     nodeSize: undefined,
+    compact: false,
     legend: true,
     description: true,
     inside: undefined,
@@ -50,6 +56,7 @@ const GEOMETRY = {
     nodes: { x: 13, y: 59, column: 178, row: 58 },
     heading: { x: 15, y: 27 },
     nodeSize: { width: 140, height: 30 },
+    compact: true,
     legend: false,
     description: false,
     inside: undefined,
@@ -59,6 +66,7 @@ const GEOMETRY = {
     nodes: { x: 7, y: 51, column: 178, row: 58 },
     heading: { x: 9, y: 19 },
     nodeSize: { width: 140, height: 30 },
+    compact: true,
     legend: false,
     description: false,
     inside: { width: 364, height: 498 },
@@ -109,6 +117,8 @@ export type ToolkitMapProps = {
   onSelect?: ((path: string | null) => void) | undefined
   /** Called by the card's open button with the item's path. */
   onOpen?: ((path: string) => void) | undefined
+  /** Called by the phone card's Show links button with the item's path (M11 461:1268). */
+  onLinks?: ((path: string) => void) | undefined
   /**
    * The tablet's map is narrower, with no legend and no description on the selected item; the phone's is a window
    * onto it, with the card under the window. The desktop's when not set.
@@ -116,8 +126,16 @@ export type ToolkitMapProps = {
   layout?: Viewport | undefined
 }
 
-export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layout = 'desktop' }: ToolkitMapProps) {
-  const { canvas, nodes, heading, nodeSize, legend, description } = GEOMETRY[layout]
+export function ToolkitMap({
+  map,
+  selected,
+  selectedItem,
+  onSelect,
+  onOpen,
+  onLinks,
+  layout = 'desktop',
+}: ToolkitMapProps) {
+  const { canvas, nodes, heading, nodeSize, compact, legend, description } = GEOMETRY[layout]
   const wrapperRef = useRef<HTMLDivElement>(null)
   const inside = useInside(wrapperRef, GEOMETRY[layout].inside)
   const phone = layout === 'phone'
@@ -139,9 +157,23 @@ export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layo
           onAction={() => {
             onOpen?.(node.path)
           }}
-          onClose={() => {
-            onSelect?.(null)
-          }}
+          density={phone ? 'compact' : 'default'}
+          linksLabel={phone ? 'Show links' : undefined}
+          onLinks={
+            phone
+              ? () => {
+                  onLinks?.(node.path)
+                }
+              : undefined
+          }
+          // M11 461:1259: the phone's card has no close button; Escape or a tap on another node changes the selection.
+          onClose={
+            phone
+              ? undefined
+              : () => {
+                  onSelect?.(null)
+                }
+          }
         />
       </div>
     )
@@ -167,12 +199,15 @@ export function ToolkitMap({ map, selected, selectedItem, onSelect, onOpen, layo
           y: nodes.y + nodes.row * n.row,
         }))}
         nodeSize={nodeSize}
+        nodeDensity={compact ? 'compact' : 'default'}
+        edgeEnd={compact ? 'none' : 'dot'}
         edges={map.links}
         selectedId={selected}
         onSelect={onSelect}
         legend={legendSlot}
         card={phone ? null : card}
         zoom={zoom}
+        minimap={phone}
       />
       {phone ? (
         // M11 461:1257: the hint is a pill 10 px in from the window's left and bottom edges; the MapGraph legend
