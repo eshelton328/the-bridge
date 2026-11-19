@@ -7,7 +7,18 @@
 import { Glyph, type GlyphSymbol } from '@eshelton328/component-library-1701'
 import { Fragment } from 'react'
 
-const symbols: Readonly<Record<string, GlyphSymbol>> = { '✗': 'cross', '✓': 'check' }
+// Only ✗ and ✓ are glyphs. A plain switch, not an object lookup, so a run
+// such as `constructor` or `toString` never finds an inherited property.
+function symbolOf(run: string): GlyphSymbol | undefined {
+  switch (run) {
+    case '✗':
+      return 'cross'
+    case '✓':
+      return 'check'
+    default:
+      return undefined
+  }
+}
 
 export type ToolkitGlyphTextProps = { text: string }
 
@@ -17,7 +28,7 @@ export function ToolkitGlyphText({ text }: ToolkitGlyphTextProps) {
   return text.split(/([✗✓])/u).map((run) => {
     const start = at
     at += run.length
-    const symbol = symbols[run]
+    const symbol = symbolOf(run)
     if (symbol !== undefined) return <Glyph key={start} symbol={symbol} />
     return run === '' ? null : <Fragment key={start}>{run}</Fragment>
   })
