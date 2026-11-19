@@ -18,7 +18,7 @@ import {
   SnoozeIcon,
   TrashIcon,
 } from '@eshelton328/component-library-1701'
-import { type KeyboardEvent, type MouseEvent, useRef } from 'react'
+import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { InboxRowView } from '../types.ts'
 import { InboxStatus } from './InboxStatus.tsx'
@@ -62,6 +62,13 @@ function useLongPress(onActions: (() => void) | undefined) {
     if (timerRef.current !== undefined) window.clearTimeout(timerRef.current)
     timerRef.current = undefined
   }
+  // A row that unmounts during the hold takes its timer with it, so it never opens the actions (audit P-7).
+  useEffect(
+    () => () => {
+      if (timerRef.current !== undefined) window.clearTimeout(timerRef.current)
+    },
+    [],
+  )
   if (onActions === undefined) return {}
   return {
     onContextMenu: (event: MouseEvent) => {
