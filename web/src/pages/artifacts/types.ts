@@ -29,8 +29,12 @@ export const ArtifactCard = z.object({
   age: z.string(),
   /** Found since the owner last looked: the card shows New. */
   isNew: z.boolean(),
-  /** The artifact's address without the scheme; search reads it, and a match in it shows in the list (D4). */
-  link: z.string().optional(),
+  /**
+   * The artifact's address without the scheme, such as "claude.ai/artifact/…" or a Codex site's own domain: the library
+   * is a list of links, so every card has one. Search reads it, a match in it shows in the list (D4), and Copy link
+   * copies it on the artifact the card opens.
+   */
+  link: z.string(),
 })
 export type ArtifactCard = z.infer<typeof ArtifactCard>
 
@@ -98,11 +102,8 @@ export const ArtifactDetail = z.object({
   /** Such as "updated 12m ago". */
   updated: z.string(),
   preview: ArtifactPreview,
-  /**
-   * The artifact's address without the scheme, as the preview's footer shows it; a card opened from the library
-   * (`ArtifactsUi.openId`) has one only when its card has.
-   */
-  link: z.string().optional(),
+  /** The artifact's address without the scheme, as the preview's footer shows it and Copy link copies it. */
+  link: z.string(),
   /** The chat that published it; a card opened from the library has none, and shows no Made in section. */
   madeIn: ArtifactMadeIn.optional(),
   /**

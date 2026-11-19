@@ -56,6 +56,7 @@ describe('libraryView', () => {
       project: 'skill-evals',
       age: '1d',
       isNew: false,
+      link: 'claude.ai/artifact/a-notes',
     } satisfies ArtifactCard
     expect(matchPlace(card, 'evals')).toBe('project')
     expect(matchPlace(card, 'EVAL')).toBe('title')

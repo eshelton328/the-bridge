@@ -2,6 +2,9 @@
 // one grid, with what the library found since the owner last looked at the top,
 // marked New. Copy taken word for word from references/artifacts/D01/frame.json.
 // It also holds what later states share: the chips, the sorts and the cards.
+// Each card has its artifact's link, as the library is a list of links; D1
+// draws none, so the links are not Figma's: a Claude artifact's has the form
+// of D2's (claude.ai/artifact/…), a Codex site's its own domain, as D5's.
 import type { ScreenState } from '../../../lib/screenState.ts'
 import type { ArtifactCard, ArtifactsData, ArtifactsUi } from '../types.ts'
 
@@ -19,6 +22,7 @@ const foundCards = [
     project: 'skill-evals',
     age: '12m',
     isNew: true,
+    link: 'claude.ai/artifact/8f3c2a91-skill-evals',
   },
   {
     id: 'hono-server-spike',
@@ -29,6 +33,7 @@ const foundCards = [
     project: 'ncc-1701',
     age: '40m',
     isNew: true,
+    link: 'hono-spike.example.com/rpc',
   },
   {
     id: 'inbox-task-lifecycle',
@@ -39,6 +44,7 @@ const foundCards = [
     project: 'ncc-1701',
     age: '1h',
     isNew: true,
+    link: 'claude.ai/artifact/2b7e4d10-inbox-task-lifecycle',
   },
   {
     id: 'tailscale-access-check',
@@ -49,6 +55,7 @@ const foundCards = [
     project: 'ncc-1701',
     age: '2h',
     isNew: true,
+    link: 'tailscale-check.example.com/devices',
   },
 ] satisfies ArtifactCard[]
 
@@ -63,6 +70,7 @@ const earlierCards = [
     project: 'ncc-1701',
     age: '1d',
     isNew: false,
+    link: 'claude.ai/artifact/5d19a7c3-theme-ideas',
   },
   {
     id: 'application-versioning',
@@ -73,6 +81,7 @@ const earlierCards = [
     project: 'omni',
     age: '2d',
     isNew: false,
+    link: 'claude.ai/artifact/a04f6e28-versioning-report',
   },
   {
     id: 'panda-tokens-playground',
@@ -83,6 +92,7 @@ const earlierCards = [
     project: 'ncc-1701',
     age: '3d',
     isNew: false,
+    link: 'panda-tokens.example.com/playground',
   },
   {
     id: 'agent-factory',
@@ -95,6 +105,7 @@ const earlierCards = [
     project: 'omni',
     age: '4d',
     isNew: false,
+    link: 'claude.ai/artifact/e93b1c57-agent-factory',
   },
   {
     id: 'brain-map-prototype',
@@ -105,6 +116,7 @@ const earlierCards = [
     project: 'omni-brain',
     age: '5d',
     isNew: false,
+    link: 'claude.ai/artifact/71c8d2fa-brain-map',
   },
   {
     id: 'type-safety-agentic',
@@ -117,6 +129,7 @@ const earlierCards = [
     project: 'omni',
     age: '1w',
     isNew: false,
+    link: 'claude.ai/artifact/3fa60b9e-type-safety',
   },
   {
     id: 'logo-options',
@@ -127,6 +140,7 @@ const earlierCards = [
     project: 'ncc-1701',
     age: '1w',
     isNew: false,
+    link: 'claude.ai/artifact/c2e57a14-logo-options',
   },
   {
     id: 'readme-cold-reader-run',
@@ -139,6 +153,7 @@ const earlierCards = [
     project: 'skill-evals',
     age: '1w',
     isNew: false,
+    link: 'readme-cold-reader.example.com/run',
   },
 ] satisfies ArtifactCard[]
 

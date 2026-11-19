@@ -36,7 +36,7 @@ describe('openArtifact', () => {
     }
   })
 
-  it('builds a card\u2019s detail from its own fields, with no Made in, link or discussion', () => {
+  it('builds a card\u2019s detail from its own fields and link, with no Made in or discussion', () => {
     const open = openArtifact(home, { ...homeUi, openId: 'hono-server-spike' }, 'desktop')
     expect(open).toEqual({
       artifact: {
@@ -50,6 +50,7 @@ describe('openArtifact', () => {
         project: 'ncc-1701',
         updated: 'updated 40m ago',
         preview: 'ui',
+        link: 'hono-spike.example.com/rpc',
       },
       discussion: undefined,
     })

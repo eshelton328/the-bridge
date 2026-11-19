@@ -80,11 +80,7 @@ export function LibraryRow({ card, query, place, placeLabel, onOpen }: LibraryRo
         <span>{mark('description', card.description)}</span>
         <MetaLine
           leading={<KindMark kind={card.source} size="12" />}
-          items={[
-            card.sourceLabel,
-            mark('project', card.project),
-            place === 'link' && card.link !== undefined ? mark('link', card.link) : null,
-          ]}
+          items={[card.sourceLabel, mark('project', card.project), place === 'link' ? mark('link', card.link) : null]}
         />
       </ListRow>
     </div>
