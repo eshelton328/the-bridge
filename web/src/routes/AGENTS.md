@@ -18,4 +18,4 @@ export const Route = createFileRoute('/inbox')({
 
 After you add or rename a route, run `pnpm gen:routes` (`pnpm new page`
 does). Errors and unknown paths fall to the router's defaults in
-`app/router.ts`.
+`../app/router.ts`.

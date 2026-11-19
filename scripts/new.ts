@@ -101,6 +101,10 @@ function newPage(page: string): void {
   const files: [string, string][] = [
     ['AGENTS.md', 'page/AGENTS.md.tpl'],
     ['CLAUDE.md', 'page/CLAUDE.md.tpl'],
+    ...['screens', 'blocks', 'states'].flatMap((folder): [string, string][] => [
+      [join(folder, 'AGENTS.md'), `page/${folder}.AGENTS.md.tpl`],
+      [join(folder, 'CLAUDE.md'), 'page/CLAUDE.md.tpl'],
+    ]),
     ['index.ts', 'page/index.ts.tpl'],
     ['types.ts', 'page/types.ts.tpl'],
     ['search.ts', 'page/search.ts.tpl'],

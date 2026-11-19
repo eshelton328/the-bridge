@@ -1,0 +1,31 @@
+# server/src
+
+The server's source in three layers: `routes/` call `services/`, and
+`services/` reach the outside world only through ports that
+`adapters/` fill (d-110). The files at this level wire them together.
+
+- `app.ts` builds the app: the auth check first, then one sub-app for
+  each area, and exports `AppType`. A new route is mounted here.
+- `main.ts` is the only file that reads `process.env` (through
+  `config.ts`) and the only one that picks the real adapters.
+- `config.ts`: every path and port comes from an environment variable,
+  and the server does not start when one is missing.
+- `auth.ts`: a request through Tailscale Serve must carry the owner's
+  `Tailscale-User-Login`; a request with no identity is let in only on
+  localhost with no proxy header.
+- `client.ts` is the typed Hono RPC client that web imports as
+  `@bridge/server/client`. Run `pnpm codegen` after a route change, so
+  `dist/client.d.ts` has the new type.
+- A module with logic has a `*.test.ts` beside it; a thin route is
+  tested through the API tests. An API test calls
+  `app.request()` with the fake adapter (d-113); a test that needs a real
+  herdr goes in [../../e2e/](../../e2e/AGENTS.md), never here.
+
+## Folders
+
+- [routes/AGENTS.md](routes/AGENTS.md): read before you add or change an
+  HTTP route or the SSE stream.
+- [services/AGENTS.md](services/AGENTS.md): read before you change what
+  the server does or a port's interface.
+- [adapters/AGENTS.md](adapters/AGENTS.md): read before you change how
+  the server talks to herdr or the files on disk, or a fake.

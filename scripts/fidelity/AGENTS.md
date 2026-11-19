@@ -1,151 +1,31 @@
 # fidelity
 
-The scripted checks of the fidelity loop: they compare a rendered page
-state with its Figma frame. The loop itself (reference, build, render,
-check, second review, fix, ship) is in the owner's brain:
-`~/ncc-1701/engine/projects/ncc-1701/product/features/f-005-the-bridge/fidelity-loop.md`.
-The Figma references the checks read are in
-[../../references/AGENTS.md](../../references/AGENTS.md).
+The scripted checks of the fidelity loop (`pnpm fidelity`, `pnpm
+fidelity:refs`, `pnpm fidelity:check-build`). They compare a rendered
+page state with its Figma frame in
+[../../references/AGENTS.md](../../references/AGENTS.md). The loop is in
+the owner's brain:
+`engine/projects/ncc-1701/product/features/f-005-the-bridge/fidelity-loop.md`.
 
-| File                 | What it does                                                                                                                                                            |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks                                                                                 |
-| `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have; a `missing` exception skips only the layers it names                            |
-| `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px), measured below Figma's status bar on a tablet or phone                       |
-| `checkIcons.ts`      | For the position check: each Figma icon (`icon/…`, `kind · …`, `logo · …`, `chevron · …`) matched by place to a render svg draws at its Figma size, ± 2 px              |
-| `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills its viewport's height, no stretched pill                                                   |
-| `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs)      |
-| `settle.ts`          | Waits until each animation that ends on its own has finished, then in frames until the layout is the same 5 frames in a row, so the checks measure a state's last frame |
-| `sideBySide.ts`      | Draws the side-by-side PNG (Figma left, render right) in a new page, so no popover of the story leaks into it                                                           |
-| `storyServer.ts`     | Serves `web/storybook-static`; finds the state file and story for a frame                                                                                               |
-| `buildReferences.ts` | `pnpm fidelity:refs`: writes `frame.json` and `note.txt` from a saved `get_metadata` reply and an optional characters file                                              |
-| `figmaMetadata.ts`   | Parses `get_metadata` XML into a frame record; marks design-only chrome text as excluded                                                                                |
-| `references.ts`      | Reads `frame.json` and `exceptions.json` with Zod                                                                                                                       |
-| `buildRecord.ts`     | The fidelity-builder agent's build record and the checks of it: matches the last report, deviations.md names each failure, gaps, no guarded file changed                |
-| `checkBuild.ts`      | `pnpm fidelity:check-build <record.json \| ->`: runs those checks against this checkout; `--guard <path>` says whether the agent may change a file                      |
-
-## Run the loop for one frame
-
-1. **Reference.** Check that `references/<page>/<frameId>/` has
-   `frame.png`, `frame.json` and `note.txt`. The note is documentation
-   for you; its text never goes into the UI.
-2. **Build.** Write or change the state file
-   (`pnpm new state <name> --page <page> --frame <code>`) and the screen.
-   Put `data-figma="<layer name>"` on the elements that stand for a
-   Figma layer (pane, header, row); use the node id (`346:146`) when the
-   name is not unique in the frame. Find names and boxes in `frame.json`.
-3. **Check.** Run `pnpm fidelity <page> <frameId>`, for example
-   `pnpm fidelity inbox D01`. It builds Storybook first; add
-   `--skip-build` when nothing in `web/` changed since the last build.
-   It exits 1 when a check fails. `--checks text,rules` makes only
-   those checks decide the exit code (the report's `gate`); the report
-   still holds all three, and its `ok` stays the result of all three.
-   `fidelity:check-build` rejects a report made with `--checks` that
-   left out a check. `--checks` also takes `icons`: no `iconSize` diff
-   (below), whatever the other position diffs. CI's `fidelity` job runs
-   every frame of each page with `--checks text,rules`, and adds `icons`
-   for each page in the job's `ICON_GATED_PAGES`.
-4. **Read the report** in `reports/fidelity/<page>/` (gitignored):
-   `<frameId>.json` has the result of each check, and
-   `<frameId>.sideBySide.png` shows Figma left and the render right.
-   - `text.missing`: Figma strings the DOM does not have.
-   - `text.notVisible`: strings the DOM has but a viewer cannot see in
-     full (clipped in part, scrolled away), where Figma shows them in the
-     frame. Each Figma layer needs its own visible occurrence: two layers
-     with the same text need the text twice on screen. A string that
-     another element covers in the render (an open menu over a pane) is
-     not visible either, marked `covered`, unless Figma draws a later
-     layer over the same text layer too. A library `Glyph` keeps its ✗ or
-     ✓ in the text at font size 0 and transparent and draws the mark as
-     an SVG icon: its character (`glyph__char` in a `glyph__root`) is
-     measured by that icon, which must be shown, at least 1 px, in view
-     and not covered, as text must (`isGlyphChar` in `inPage.ts`), and
-     draw a mark: a shown shape with a box and a stroke or fill that is
-     not none or transparent (`iconHasMark`). Over the icon, as for the
-     icon size check, an svg covers only by its own background, a shape
-     of another svg does (`iconHitPaints`). A zero-size character
-     anywhere else is not shown.
-   - `text.extra`: visible render text that Figma does not have.
-   - `position.diffs`: boxes off by more than the tolerance, with the
-     delta per edge; also unknown, ambiguous or duplicate keys; and
-     `iconSize`: a Figma icon (a layer named `icon/…`, `kind · …`,
-     `logo · …` or `chevron · …`) whose render icon,
-     the svg whose centre is nearest within the tolerance, is more than
-     2 px bigger or smaller (`checkIcons.ts`). An svg that another
-     element draws over at its centre is not matched. Its key is the
-     icon's node id, which a `position` exception can name; give the
-     entry `"iconSize": <px>` so only that render size (± 2 px) passes.
-     A Figma icon with no render icon at its place is not compared.
-   - `rules.findings`: `hiddenOverflow`, `scrollBar`, `fullHeight`,
-     `badgeFullWidth`, each with the element's selector.
-5. **Second review.** Give a separate agent only the side-by-side PNG and
-   the report JSON. It lists each difference with a severity (P1 to P4).
-   In the owner's brain that agent is `fidelity-reviewer`.
-6. **Fix and run again**, at most three rounds. A difference you cannot
-   fix goes into `exceptions.json` with its reason, and on the
-   deviations list for the owner.
-
-## The fidelity-builder agent
-
-`fidelity-builder` runs steps 1 to 4 and 6 for one frame in a worktree,
-at most three fix rounds, and returns a JSON build record; the caller runs
-step 5 with `fidelity-reviewer` on the record's side-by-side PNG and
-deviations, then ships the branch. Both agents live in the owner's brain
-(`~/ncc-1701/engine/projects/ncc-1701/toolkit/agents/`, d-040), and its
-hooks call `pnpm fidelity:check-build` in the worktree: `--guard` before
-each edit, and the record check before it replies. The record check
-fails when:
-
-- the record's fidelity result is not the last report's, or a file in
-  `web/` or the frame's references changed after that report;
-- the report fails and `deviations.md` does not name each failing
-  position key, rule and text;
-- a listed gap is not a `LIBRARY_GAPS.md` row whose Frames cell includes
-  the frame, or the state file does not list the frame;
-- the branch changes `scripts/`, CI, a saved reference, a baseline, check
-  config or `package.json`, deletes a test or removes lines from one, or a
-  story sets `globals.viewport`.
-
-## Exceptions
-
-`references/<page>/<frameId>/exceptions.json` is written by hand; every
-entry needs a reason. All keys are optional:
-
-```json
-{
-  "missing": [{ "text": "Add a note…", "layers": ["346:1189"], "reason": "…" }],
-  "extra": [{ "text": "Beta", "reason": "…" }],
-  "position": [{ "layer": "task pane", "reason": "…" }, { "layer": "402:15340", "iconSize": 24, "reason": "…" }],
-  "rules": [{ "rule": "scrollBar", "selector": "section", "reason": "…" }]
-}
-```
-
-A `missing` entry names the Figma text layers it covers by id
-(`layers`, one or more); the text check skips only those layers, so the
-same text in another layer is still checked (d-101). Each id must be a
-text layer with that text, or the check stops with an error.
-
-Design-only chrome text (the iOS status bar and keyboard, d-089) is in
-the `exclude` list of `frame.json`, which `buildReferences.ts` writes.
-
-The app draws no status bar (d-089). On a frame with one (tablet 29 px,
-phone 38 px; the top-level layer at y 0 that holds the excluded
-status-bar text), `pnpm fidelity` renders the page once, in a viewport
-the bar's height shorter (`renderViewport` in `checkPosition.ts`), and
-all three checks measure that render (d-102): text below its bottom edge
-is not shown, the full-height rule wants that height, and the position
-check adds the bar's height to each render y (d-101). That render is
-`<frameId>.render.png`, and the side-by-side draws it that much lower,
-under a blank band where Figma has the bar. Desktop frames have no status
-bar and render at their full size.
+Read [README.md](README.md) when you run the loop for one frame, read a
+report, write an `exceptions.json` or need what `fidelity:check-build`
+rejects.
 
 ## Rules
 
 - Never add an exception, raise the tolerance or change a check to make
   a frame pass when the render is wrong. Fix the screen.
-- Each new error type that a reviewer or the owner finds becomes a check here,
-  with a test.
+- Every exception needs a reason. A `missing` exception names the Figma
+  text layers it covers by id (d-101).
+- Each new error type that a reviewer or the owner finds becomes a check
+  here, with a test.
 - Test the pure functions in `*.test.ts` beside them (`pnpm test:scripts`).
-  `inPage.ts` runs in the browser: no function in it may use anything from
-  its module scope. Put a decision in a pure helper, pass it to
-  `collectPage` through `collectPageScript`, and test it in `inPage.test.ts`.
+- `inPage.ts` runs in the browser: no function in it may use anything
+  from its module scope. Put a decision in a pure helper, pass it to
+  `collectPage` through `collectPageScript`, and test it in
+  `inPage.test.ts`.
+- A frame with a status bar renders one viewport the bar's height shorter,
+  and all three checks measure that render (d-089, d-102).
+- The `fidelity-builder` agent's hooks call `pnpm fidelity:check-build`
+  (`buildRecord.ts`); change its checks only with that agent in the
+  owner's brain (`engine/projects/ncc-1701/toolkit/agents/`, d-040).

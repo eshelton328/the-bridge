@@ -1,7 +1,7 @@
 # state
 
-App-wide Zustand 5 stores, such as `shellStore.ts`, and the helpers every
-store uses. A page's own view store sits in its page folder (d-088).
+App-wide Zustand 5 stores, named `<feature>Store.ts`, and the helpers
+every store uses. A page's own view store sits in its page folder (d-088).
 
 - `createAppStore.ts`: the only way to make a store. It adds `devtools`
   and registers the store with `resetStores.ts`, so tests and stories

@@ -1,366 +1,47 @@
 # Artifacts page
 
-The Artifacts library: every Claude artifact and Codex site in one grid,
-with what the library found since the owner last looked at the top, marked
-New. Figma frames `D*` (desktop), `T*` (tablet) and `M*` (phone) on the
-Artifacts page. Read [../AGENTS.md](../AGENTS.md) first: it says what
-each file of a page folder is for.
+The Artifacts library: every Claude artifact and Codex site in one grid.
+Its Figma frames are `D*` (desktop), `T*` (tablet) and `M*` (phone) on
+the Artifacts page; their saved copies are in `references/artifacts/`.
 
-- `ArtifactsPage.tsx`: reads the loader's state and keeps what the owner
-  changes in the shown `?state=` (the source chip, the search, the view
-  and the open groups) with `useState`; it passes them to
-  `ArtifactsScreen` with `onUiChange`. Rail picks go to the pages that
-  have a route. Copy link on an open artifact (D2's bar, T2's Back bar,
-  M2's button under Open artifact) calls the screen's `onCopyLink` with
-  the address the artifact's link opens (`https://` and `link`), and
-  the entry passes it to `copyText`; an artifact with no link copies
-  nothing. `app/ArtifactsCopyLink.test.tsx` checks it at each width. A later frame that needs the changes to outlive a visit
-  moves them to an `artifactsStore.ts` (`createAppStore`).
-- `screens/ArtifactsScreen.tsx`: the app shell, laid out by its width
-  (`ViewportFrame`): on the desktop the rail (`AppRail`, Artifacts
-  selected) and the library in the shell's `detail`, which scrolls; on a
-  tablet or phone the library with the tab bar (`AppTabBar`) laid over
-  its foot (AppShell `tabBarOverlay`), so the library runs under the bar
-  and its end scrolls clear of it (the phone
-  selects More, which opens Artifacts, d-105; there More opens the shared
-  `MoreDrawer` over the tab bar, Artifacts selected with its count,
-  `ui.moreOpen`, M8). Do not change `AppRail`, `AppTabBar`,
-  `MoreDrawer` or another shared block from this page; a difference goes in `deviations.md`.
-  A card (D1, T1), a phone row (M1) or a row of D2's list opens its
-  artifact: it sets `ui.openId` (and clears `ui.artifactClosed`), and
-  `openArtifact` in `screens/openView.ts` (pure, tested in
-  `openView.test.ts`) says what shows. The artifact `data.open` describes
-  opens as it is, with its discussion, so D2, T2, M2 and the states after
-  them do not change; any other card's detail is built from its own card
-  fields (`cardDetail`): "found 40m ago" and "updated 40m ago" from its
-  age, the chip's "Claude artifact" or "Codex site" (the phone keeps the
-  card's "Claude"), its link only when the card has one, and no Made in
-  and no discussion, as a card names no chat.
-  With an artifact open (`data.open` or `ui.openId`, D2) the desktop puts the library
-  as a list in the shell's `list` (`LibraryList`) and the artifact in
-  `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
-  `screens/ArtifactPage.tsx`, which runs under the tab bar as the library
-  does, its end scrolled clear of the bar (`ArtifactsStickyBars.test.tsx`):
-  the shared `DetailFrame`
-  with `ArtifactTopBar` (Back, Discuss, and Copy link and Remove as icons)
-  in its header, so the Back bar stays at the top and only the page under
-  it scrolls (d-107), then `ArtifactTitleBlock` with `ArtifactStatus`
-  (New and who found it) over the title, a framed `Thumbnail
-  shape="wide"`, Open artifact the full width, the link and `MadeIn`
-  (each only when the artifact has it), 20 apart. Back sets
-  `ui.artifactClosed` and the library shows (T1); the desktop has no Back.
-  Discuss sets `ui.discussOpen`, and on a tablet the discussion opens as
-  its own page, `screens/ArtifactDiscussionPage.tsx`, with no tab bar
-  (T4), as the Inbox's (Inbox T17): the shared `DetailFrame` with the nav
-  (Back, `ModelContext` in the middle and Open in workspace) and
-  `DiscussedArtifactCard` in its header, the empty state or the entries
-  under them, and the reply box as its sticky footer, whose long draft
-  the Composer caps at 30% of the page, so the nav and the card
-  stay at the top and the reply box at the bottom while only the messages
-  scroll (d-107). Back and the card return to the artifact (T2). With
-  entries (T5) the page shows D8's question, reply and proposal; there
-  Apply also closes the page (`proposalEffect(…, 'page')`), so the
-  artifact's page shows Updated, as D9 does on the desktop, and Discuss
-  reopens the discussion with the applied proposal. On a phone (M2) the
-  artifact opens on the same page (`ArtifactPage layout="phone"`), under
-  the tab bar with More selected: `ArtifactTopBar layout="phone"` has
-  only the ⋯ button, which sets `ui.fileOpen` and opens File in a
-  project as a sheet over the tab bar (M7, `FileSheet` with
-  `data.fileMenu`, which `ArtifactsScreen` draws over an open artifact
-  at any width when `ui.fileOpen` is set; on the phone the project chip
-  opens it too, and on a desktop or tablet the project chip opens the same
-  choices as a `RadioMenu`, `ArtifactProjectMenu.test.tsx`);
-  `ArtifactTitleBlock layout="phone"` puts its rows 8 apart with the
-  source and project chips only; Copy link and Discuss sit side by side
-  under Open artifact in place of the link, 44 px `Button size="xl"`s
-  8 apart (Figma 40, which ties 36 and 44, d-072); and `MadeIn` draws the chat
-  with no box and Open in workspace as a link (`madeIn.action`); the
-  sections are 16 apart. Back sets `ui.artifactClosed` and M1 shows.
-  Discuss sets `ui.discussOpen`, and the discussion opens as its own page
-  with no tab bar, as on a tablet (M9, `ArtifactDiscussionPage
-  layout="phone"`, as the Inbox's M18): 12 in, the nav with only Back and
-  Open in workspace, `ModelContext` in the card under its meta line
-  (`DiscussedArtifactCard model`), the card's source in full
-  (`discussion.sourceLabel`), and `DiscussionEmpty place="phone"`, whose
-  text is 320 wide and whose suggestions stack under "Try"
-  (`empty.tryLabel`); the reply box pads 4 above the AppShell's home
-  indicator area. Back and the card return to M2. With entries (M10) the
-  phone's page shows D8's question, reply and proposal as T5 does, and
-  Apply closes the page the same way (`proposalEffect(…, 'page')`), so
-  M2 shows Updated and Discuss reopens the applied proposal.
-  With its discussion open (`ui.discussOpen`, D7) the list closes and
-  the library `DetailSplit` keeps the artifact's 828 px column and gives
-  `DiscussionPanel` the rest, up to `shell.discussionPane` (620 in the
-  1512 px frames), as the Inbox's task and discussion (D14); Discuss
-  toggles it. `ArtifactDetailSplit.test.tsx` checks it. The
-  artifact's column (the shared block `DetailFrame`) and the discussion
-  (the library `ScrollFrame`) each scroll on their own: the discussion's
-  header stays at the top and its reply box, whose long draft the Composer
-  caps at 30% of the panel, at the bottom, while only the messages between them scroll (d-107).
-  `app/ArtifactsStickyBars.test.tsx` scrolls D7 to D9 and checks both
-  bars stay in view, and that a long draft keeps Send in reach; it also
-  scrolls T2's page and checks the Back bar and the tab bar stay put,
-  and that Back shows the library, and scrolls T4's page and checks the
-  nav, the card and the reply box stay put, that a long draft keeps Send
-  in reach, and that T2's Discuss opens T4 and its card returns to T2;
-  it scrolls T5's page the same way and checks that Apply returns to T2,
-  Updated, and that Discuss then shows the applied proposal; and it
-  scrolls M2's page and checks the Back bar and the tab bar stay put, and
-  that Back shows M1's library, and that its ⋯ opens File in a project
-  (M7); and it scrolls M9's page and checks the
-  nav, the card and the reply box stay put, that a long draft keeps Send
-  in reach, that M2's Discuss opens M9 and its Back returns to M2, and
-  that the card's model picker opens its menu and keeps M9;
-  it scrolls M10's page as T5's and checks that Apply returns to M2,
-  Updated, and that Discuss then shows the applied proposal.
-- `screens/ArtifactsLibrary.tsx`: the library: `LibraryHeader`, the
-  source chips (`FilterChips size="compact"`, one choice), `LibraryTools`
-  and a `CardGroup` per group, 12 apart, 32 in from the rail (D1). On a
-  tablet (T1) the rows are 10 apart, 20 in: `LibraryHeader` puts the found
-  status on its own row under a 44 px header with the phone title size and
-  a 36 px Add a link, `LibraryTools size="lg"` gives 36 px controls 8 apart
-  with no space before the view switch, and `CardGroup` draws two columns
-  of cards, 12 apart, whose meta line has the source mark without its name
-  (the name stays as screen-reader text). There
-  Filter opens the Filter menu as a sheet from the bottom over the tab
-  bar (T3, `LibraryTools filterAs="sheet"`). In
-  the List view (D4) `screens/LibraryRows.tsx` draws the rows instead:
-  with a search, one `ListGroup` of the matches ("3 matches for “eval”"),
-  each `LibraryRow` with where it matched, and the search's hint under it;
-  without one, a `ListGroup` per group. During a search the header's count
-  says how many show, such as "3 of 24". With `data.addLinkForm` (D5)
-  Add a link opens `AddLinkDialog`.
-  `screens/LibraryPhone.tsx`: the library on a phone (M1): `LibraryHeader
-  layout="phone"` (a 36 px plus button for Add a link), the chips (with
-  FilterChips' 2 px focus room below them taken back, `mb: '-2'`, as
-  `LibraryList` does on every side),
-  `LibraryTools iconOnly` (icon-only 36 px Sort and Filter with their
-  icons in `fg.muted`, also while pressed, and no view switch),
-  `FoundStatus` under the search row, and a `RowGroup layout="phone"` per
-  group, each after the first right under the last row (its 36 px
-  header, Figma's 34, then puts the label where Figma's is), whose
-  `ArtifactRow`s draw a `Thumbnail size="md"` (76 × 48) and put the age on
-  the title line and New under it as `Badge size="xs"` with
-  `SparkFilledIcon`; the rows are `ListRow padding="phone"`, 66 high
-  and 2 apart, Figma's 68 px pitch, and pad 4
-  at the sides, so the preview starts 4 in from the row's border, as
-  Figma's. The sheets over the phone's library and
-  artifact page (M3, M4, M6, M7) are `BottomSheet`s over the tab bar;
-  a `text` Button in a sheet's title row (Clear, Cancel, Add, Done)
-  reaches 8 past the row's edge, so its label lines up with the sheet's
-  content edge. With `data.filterMenu` the
-  icon-only Filter opens T3's sheet over the tab bar (M3, `FilterSheet
-  iconOnly`), and with `data.sortMenu` the icon-only Sort opens D6's
-  menu as a sheet over the tab bar (M4, `LibraryTools sortAs="sheet"`).
-  With a search (M5) the found status and the groups give way to one
-  `RowGroup` of the matches (`search`, no count), whose `ArtifactRow`s
-  mark a title match, or show the line that matched under the meta line
-  with the match marked: for a description, the state's excerpt
-  (`data.search.excerpts`) when it holds the query, or else the whole
-  description, so the mark finds the query; or the link
-  (`matchLine` in `screens/libraryView.ts`). `data.search.fieldLayer` names
-  the search field's Figma layer by node id, as M5's keyboard key is
-  named "search" too. The keyboard is the phone's own (d-089): the
-  render draws none and keeps the tab bar, which Figma keeps under it.
-  With `data.addLinkForm` the plus button opens D5's form as a sheet over
-  the tab bar (M6, `AddLinkSheet`), in `data.addLinkSheet`'s words when
-  the state has them (the home).
-  `screens/LibraryList.tsx`: the library beside an open artifact (D2):
-  the header with an icon-only Add a link, the chips, `LibraryTools`
-  without the view switch and a `RowGroup` per group.
-  `screens/ArtifactDetail.tsx`: the open artifact in a `Container
-  size="detail"`: `ArtifactBar`, `ArtifactTitleBlock`, `ArtifactPreview`
-  and `MadeIn` (only with `madeIn`), 20 apart, and an optional `side`
-  beside it in `DetailSplit` (D7). `ArtifactPreview` keeps Open artifact at the end of its
-  footer when the artifact has no link.
-  `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
-  this file) keeps each group's cards that pass the chip and the search
-  (title, description, link and project) and leaves out a group with none;
-  `sortCards` orders each group's cards by the sort (D6: newest keeps
-  the state's order, oldest turns it round, title A to Z, project grouped
-  by project); the groups keep their order, so Found stays first.
-  `searchMatches` lists the matches with the first place each matches, in
-  that order, and `matchLine` the line a phone row shows for its match; the chip and group counts stay the
-  state's, because the library holds more artifacts than the cards drawn.
-- `blocks/`: `LibraryHeader` (`PageHeader` with the count, `FoundStatus`
-  and Add a link), `FoundStatus` (the refresh mark and when the library
-  last checked its sources), `LibraryTools` (search, Sort, Filter and the
-  Grid or List `ViewSwitch`; with `data.filterMenu` Filter opens the
-  Filter menu, D3; with `data.sortMenu` Sort opens the Sort menu, D6), `CardGroup` (a `GroupHeader` with the New dot and a `Grid` of four
-  columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
-  New as `Badge tone="working"` at the end of the title row
-  (`badgePosition="end"`), and a `MetaLine` with the `KindMark`,
-  source, project and age; `onOpen` makes it a button, which
-  `ArtifactsScreen` passes on every width). For D2:
-  `RowGroup` (rows 2 apart) and `ArtifactRow` (`ListRow padding="sm"
-  trailingAlign="center"` with a `Thumbnail size="sm"`, the kind mark and
-  project, the New dot at the end of the title line (`dot="working"
-  dotPosition="end"`) and the age centred down the row; the open
-  artifact's row is selected), `ArtifactBar` (New, who found it, Discuss,
-  Copy link, Remove), `ArtifactTitleBlock` (title, description and the
-  source, project and updated chips; with `projectMenu` the project chip
-  is a `MetaChipButton` that opens the project menu, `data.fileMenu`), `ArtifactPreview` (a banner
-  `Thumbnail` over the link and Open artifact), `LinkMark` (the link's
-  chain mark, the library's 12 px `LinkMarkIcon`, also on T2's page) and `MadeIn` (the chat
-  that published it and Open in workspace). For D3: `FilterPopover`
-  (Filter, pressed while open and with a dot while boxes are checked, and
-  the `Popover width="md" inset="wide"`, padded 12, with the footer's
-  note and Show) and `FilterMenu` (a `PopoverSection` per section, a `Checkbox
-  size="compact" density="compact"` (28 px rows) with its count per box,
-  as the Inbox's Filter menu, and the item's `mark` as the box's
-  `leading` `KindMark` on a Source row; with `sheet`, each section's
-  label is a `GroupHeader` above its rows, 2 apart as in a
-  `PopoverSection`). For T3: `FilterSheet` (Filter, 36 px
-  and pressed while open, with a dot once the sheet closes on checked
-  boxes, and a `BottomSheet` titled Filter with Clear, which clears the
-  boxes, the `FilterMenu` and Show the full width; Show applies the boxes
-  and closes it, and the scrim and Escape close it and keep them, so both
-  return to T1 with the filter; `app/ArtifactsRoute.test.tsx` checks it). For D4: `ListGroup` (a
-  `GroupHeader` over rows 6 apart, Figma's 104 px pitch) and `LibraryRow`
-  (`ListRow surface="card" padding="lg" leadingGap="16" bodyAlign="center"
-  trailingAlign="center"`: a `Thumbnail size="lg" shape="wide"`, the text 16
-  after it and centred down the row, the title
-  with the New dot 8 after it (`dot="working"`) and the description with the match
-  marked by `Highlight`, the meta line with the link when the match is in
-  it, and at the end, centred down the row, the place as `Badge variant="monoPill"`, the
-  age and an icon-only Open). For D5: `AddLinkFields` (the form's fields: the link
-  and title `TextField`s, the source as a `ViewSwitch` of the two kinds
-  and `ProjectPicker`, each line under a field only when the form has
-  one; the link field has the focus, the caret after the link),
-  `AddLinkDialog` (`Dialog size="lg"` with `AddLinkFields` and Cancel and
-  Add artifact) and `ProjectPicker` (a
-  `RadioMenu` on a `Button`, as the library has no select field). Show closes the menu; the cards
-  carry no finder or update data yet, so the grid does not narrow. For
-  D6: `SortMenu` (Sort, pressed while open, on a `RadioMenu
-  width="sort"` with the heading, a description per sort and the note,
-  as the Inbox's Sort menu; picking a sort closes it). For M4:
-  `SortSheet` (the phone's icon-only Sort and a `BottomSheet` titled
-  Sort by with an `OptionList size="sm"` of the sorts and the note under
-  it, as the Inbox's phone Sort sheet; an arrow key moves the sort
-  (`onValueChange`) and keeps the sheet open, picking a sort closes it
-  (`onItemSelect`), and the scrim and Escape close it and keep the sort;
-  `app/ArtifactsRoute.test.tsx` checks the arrow keys). For M6: `AddLinkSheet`
-  (a `BottomSheet` titled Add a link with Cancel at the start of its
-  title row and Add at the end, then the description and
-  `AddLinkFields`, 16 apart; Cancel, the scrim and Escape close it). For
-  M7: `FileSheet` (a `BottomSheet` titled File in a project with Done,
-  the artifact's title, an `OptionList selectedFill` of Not in a project
-  and the projects, each with its count and a folder, cyan on the checked
-  one, then under a rule Remove from the library as a `dangerText`
-  button and its note, 2 apart; picking a project, also with an arrow
-  key (`onValueChange`, which `app/ArtifactsRoute.test.tsx` checks), sets
-  `ui.fileProject` and checks it; Done, the scrim and Escape close it; Remove does
-  nothing yet, as the desktop's Remove (D2)). For D7:
-  `DiscussionPanel` (a `ScrollFrame` of `DiscussionHeader`, the empty
-  state or the sent messages, and `Composer`, whose draft is
-  `ui.discussDraft`), `DiscussionHeader` (the title with Open in
-  workspace and Close, `ModelContext` and `DiscussionGuard`),
-  `ModelContext` (`ModelChip`, `ContextMeter` and "context" in
-  `smallXs`, Figma's 11 px sans; on the phone it hugs its width in the
-  card),
-  `DiscussionGuard` (the lock and what the discussion may do) and
-  `DiscussionEmpty` (the icon tile, "It can" and the suggestions, which
-  fill the reply box). They are built from the same library parts as the
-  Inbox's discussion blocks, which the Inbox page does not export.
-  For D8: `DiscussionEntry` (the owner's message, the discussion's reply with
-  its bubble and name, or a proposal) and `ArtifactProposal`
-  (`ProposalBlock tone="update"` with its `ProposalDiff`, Apply, Discard
-  and Edit first, as the Inbox's proposed update). `screens/discussionView.ts`
-  (pure, tested in `discussionView.test.ts`) drops a discarded proposal,
-  puts the sent messages after the entries, and says what each button
-  does: Discard sets `ui.discussProposal` to `discarded`, Apply to
-  `applied`, and Edit first puts the lines the proposal adds in the reply
-  box. For D9: with `applied`, `appliedView` (same file) shows the
-  artifact's `applied` pill, bar line and updated chip, the chart's
-  `reference` line (`Thumbnail reference`, "median 71%", checked by
-  `AppliedReference.test.tsx`) and the proposal's `apply` context; `ArtifactProposal` draws its `apply` eyebrow, the lines
-  it put in and its note, with no buttons, as the Inbox's applied update
-  (Inbox D16). The link stays: Apply republishes to it. For T4:
-  `DiscussedArtifactCard` (a `Panel variant="notice"` with the title, New
-  as `StatusPill tone="working"`, a chevron whose button covers the card
-  and returns to the artifact, the source, project and age, and
-  `DiscussionGuard`; on the phone the `model` sits above that cover, so a
-  press on the model picker opens its menu and stays on the discussion).
-- `states/`: D1 `library`, D2 `artifactOpen` (D1's data with the
-  open artifact and the project menu, `fileMenu`, in M7's words), D3 `filterOpen` (D1's data with the Filter menu,
-  two boxes checked), D4 `searchList` (D1's data in the List view with
-  "eval" searched: the chips count the matches, and Earlier gains the
-  Writer cross-family round, whose link holds its match) and D5 `addLink`
-  (D1's data with the Add a link dialog open, Codex site picked) and D6
-  `sortOpen` (D1's data with the four sorts and the Sort menu open) and
-  D7 `discussOpen` (D2's data with its discussion open; `artifactOpen`
-  holds the discussion, so D2's Discuss opens it) and D8 `changeProposed`
-  (D7's data with a question, the reply and a proposed update to the
-  chart; the discussion's `layers` hold each frame's node ids of its two
-  Open in workspace buttons; it also holds what Apply shows, so its Apply
-  shows D9) and D9 `changeApplied` (D8's data after Apply) and T1
-  `libraryTablet` (D1's data on the tablet: "Search artifacts", two
-  shorter Earlier descriptions, and only Earlier's two cards in the frame) and T2
-  `artifactTablet` (T1's data with D2's open artifact, no discussion yet)
-  and T3 `filterTablet` (T1's data with the Filter sheet open and D3's two
-  boxes checked; `libraryTablet` holds the sheet's menu, D3's with Clear
-  and "Show 7 artifacts", so T1's Filter opens it) and T4 `discussTablet`
-  (T2's data with its discussion open; `artifactTablet` holds D7's
-  discussion with T4's Back label and node id, so T2's Discuss opens it)
-  and T5 `changeProposedTablet` (T4's data with D8's discussion and open
-  artifact, so its Apply shows T2 Updated; T5's node id of Open in
-  workspace) and M1 `libraryPhone` (D1's data on the phone: "Search
-  artifacts", and only Earlier's five rows in the frame) and M2
-  `artifactPhone` (M1's data with D2's open artifact in the phone's
-  shorter words, D2's File in a project menu, so its ⋯ opens the sheet,
-  and D7's discussion) and M3 `filterPhone` (M1's data with
-  T3's sheet open and its two boxes checked; the menu's `footLayer` is
-  M3's node id of the footer around Show; `libraryPhone` does not hold the
-  menu, so M1's Filter opens nothing yet) and M4 `sortPhone` (M1's data
-  with D6's sorts and Sort menu and the Sort sheet open, Newest first
-  picked) and M5 `searchPhone` (M1's data with D4's search, "eval",
-  the excerpt of the readme cold-reader run's description and the
-  Writer round's preview as a chart) and M6 `addLinkPhone` (M1's data
-  with D5's form in the phone's shorter words, the sheet open, Codex site
-  picked) and M7 `filePhone` (M2's data with the File in a project
-  sheet open, skill-evals checked; `artifactPhone` holds its menu) and M8 `morePhone` (M1's data
-  with the More drawer open) and M9 `discussPhone` (M2's data with its
-  discussion open; `artifactPhone` holds D7's discussion with M9's Back
-  label, the card's source, "Try" and node id, so M2's Discuss opens it)
-  and M10 `changeProposedPhone` (M9's data with D8's entries, context and
-  what Apply shows; M10's node id of Open in workspace). `library` also holds what later states share: the
-  found and earlier cards (`foundCards`, `earlierCards`; export them when
-  a second state uses them, as knip allows no unused export), the chips
-  and the sorts. A state that opens a menu, searches or opens an
-  artifact starts from it and sets its `ui` or adds its data.
-- `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
-  the search placeholder, the sorts and the groups of `ArtifactCard`s,
-  each with its `preview` kind, an optional preview `tone` (the
-  `Thumbnail tone` that the card, row and list row pass) and `source`, and the optional `open`
-  `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm` and the phone's `addLinkSheet`, `sortMenu`, the
-  open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
-  sort, view, open groups, search text, whether the search opens with the
-  focus in it (`searchFocus`, D4 and M5), and the optional open Filter
-  menu and its checked boxes, whether the matches group is open, and the
-  open Add a link dialog and its picked source, the open Sort menu,
-  the card opened from the library (`openId`), whether Back closed the open artifact (T2, M2), whether the phone's ⋯
-  opened File in a project (M7) and the project picked in it, whether
-  the phone's More opened the More drawer (M8), and the open discussion, its draft, the sent messages and what the owner did to
-  its proposal), each
-  a Zod schema. A card may have a `link`, and `search` holds the label of
-  each match place and the hint (D4).
-- `home.ts`: the page's home, what `/artifacts` shows with no `?state=`
-  (`loadArtifactsState.ts`, `pages/AGENTS.md`): D1's data with every
-  card, T1's Filter menu, D6's sorts and Sort menu and "Search
-  artifacts", and D5's Add a link form with no link and no title (and
-  `addLinkSheet`, M6's words for the phone's sheet, empty too), with
-  every menu, sheet and dialog closed, so the screen draws D1's grid,
-  T1's columns or M1's rows by the window's width, Filter, Sort and Add a
-  link open at each width, and a card or row opens its artifact
-  (`ui.openId`): beside the list on a desktop, on its own page under Back
-  on a tablet or phone, where Back returns to the library. It has no
-  `data.open`, so every card's detail is built from its card. It is not
-  a Figma state. `app/ArtifactsHome.test.tsx` checks it at 390, 756 and
-  1512 and on a resize, and that a `?state=` still draws its frame;
-  `app/ArtifactsHomeOpen.test.tsx` opens a card at each width, Back, and
-  Add a link's dialog and sheet.
-- `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
-  library cannot draw yet, for the batched library PR.
+## Rules
 
-`/artifacts?state=library` shows a state in development; an unknown state
-is a not-found page. With no `?state=` the page shows `home.ts`.
+- `ArtifactsPage.tsx` keeps what the owner changes in `useState`, for
+  the shown `?state=` only. When a change must outlive a visit, move it
+  to an `artifactsStore.ts` made with `createAppStore` (d-083).
+- Never change `AppRail`, `AppTabBar`, `MoreDrawer` or another shared
+  block from this page. Write the difference in the frame's
+  `references/artifacts/<frame>/deviations.md`.
+- A part the library cannot draw is a row in `LIBRARY_GAPS.md` for the
+  batched library PR. Until it ships, use the part the row names under
+  "Used now" and list the difference in the frame's `deviations.md`.
+- Pure view logic goes in `screens/<name>View.ts`, with its test
+  `<name>View.test.ts` in this folder.
+- An opened card shows `data.open` when the state has one; any other
+  card's detail is built from its own card fields (`cardDetail` in
+  `screens/openView.ts`, `openView.test.ts`). The home has no
+  `data.open`.
+- The Back bar and the discussion header stay at the top and the reply
+  box at the bottom; only the content between them scrolls (d-107,
+  `app/ArtifactsStickyBars.test.tsx`).
+- Copy link goes out through the screen's `onCopyLink`, and the entry
+  writes the clipboard; an artifact with no link copies nothing
+  (`app/ArtifactsCopyLink.test.tsx`).
+- On the phone, More opens Artifacts and stays selected (d-105).
+- The phone's keyboard is the device's own: a state draws none and keeps
+  the tab bar, as Figma does (d-089).
+- The discussion blocks use the same library parts as the Inbox's
+  discussion blocks; copy the pattern, never import the Inbox page.
+- The route tests are in `app/`: `ArtifactsRoute.test.tsx`,
+  `ArtifactsHome.test.tsx` (the home at 390, 756 and 1512 and on a
+  resize) and `ArtifactsHomeOpen.test.tsx`. Run them after a change to
+  `home.ts`, the loader or a screen.
+
+## Folders
+
+- [screens/AGENTS.md](screens/AGENTS.md): read before you add or change
+  a screen, a story or a view helper.
+- [blocks/AGENTS.md](blocks/AGENTS.md): read before you add or change a
+  block of this page.
+- [states/AGENTS.md](states/AGENTS.md): read before you add or change a
+  state or the screen map.

@@ -1,31 +1,8 @@
 # blocks
 
 Blocks that two or more pages use (d-088, d-089): composites of library
-parts, such as `AppRail`. A block starts in its page's `blocks/` and moves
-here when a second page needs it.
-
-- `AppRail`: the desktop nav rail; `AppTabBar`: the tablet and phone tab
-  bar (Home and the four pages).
-- `MoreDrawer`: the phone's More drawer (Toolkit M4) on the library's
-  `MoreDrawer`: Artifacts and Toolkit, then Brain and Workflows under
-  Later. A screen opens it from the phone tab bar's More and passes
-  `onNavigate` for Artifacts and Toolkit.
-- `DetailFrame`: a detail pane (d-107) in the library's `ScrollFrame`:
-  Back in its header on a tablet or phone, the content in the layout's
-  `Container`, and a footer that stays sticky at the end, at
-  `bottom: var(--scroll-frame-inset, 0px)`. On a tablet or phone it is
-  the AppShell detail's own child, so with `tabBarOverlay` it reaches
-  under the tab bar and lifts the footer and the item's end above it. The Inbox
-  details use it first; Toolkit and Artifacts use it for an open item.
-- `ScreenVariants`: Storybook only. One screen of a page with its
-  Desktop, Tablet and Phone states side by side (screen review R10):
-  each device's state story in an iframe of the Figma frame size
-  (`frameSizes`), all at one scale that fits the row. A page's
-  `screens/<Page>Screens.stories.tsx` renders one per screen of its
-  `states/screens.ts`.
-- `ViewportFrame`: fills its parent, measures its width and renders a
-  page screen for that width's layout (`lib/viewport.ts`). A screen lays
-  out by its width, never by a story's prop or `globals.viewport`.
+parts. A block starts in its page's `blocks/` and moves here when a
+second page needs it.
 
 ## Rules
 
@@ -34,3 +11,11 @@ here when a second page needs it.
 - A block never imports a page.
 - Wrap rich content that can fail to render (markdown, code, charts) in
   `BlockBoundary` from `errors/`.
+- A detail pane uses `DetailFrame` (d-107). On a tablet or phone it must
+  be the AppShell detail's own child, so its sticky footer lifts above
+  the tab bar.
+- A screen lays out by its width through `ViewportFrame`, never by a
+  story's prop or `globals.viewport` (`pnpm fidelity:check-build`
+  rejects a story that sets it).
+- `ScreenVariants` is for Storybook only: it shows one screen's Desktop,
+  Tablet and Phone states side by side (screen review R10).

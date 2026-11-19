@@ -8,8 +8,8 @@ The canvas bundle (d-089): `vite.canvas.config.ts` builds
 window.Bridge.mount(element, 'inbox/nextStep', 'D1')
 ```
 
-- `registry.gen.ts`: every board, one per state file, written by
-  `pnpm gen:registry`. Never edit it.
-- `states.test.ts`: every board's state passes its Zod schema.
+- `registry.gen.ts` holds one board per state file; run
+  `pnpm gen:registry` after you add or remove a state.
+- `states.test.ts` checks every board's state against its Zod schema.
 - Chrome only the canvas needs (phone frame, keyboard, status bar) goes
-  here; the app never imports this folder.
+  here; the app never imports this folder (`web/src/structure.ts`).
