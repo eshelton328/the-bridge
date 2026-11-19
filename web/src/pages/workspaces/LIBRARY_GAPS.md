@@ -108,8 +108,8 @@ stays open above.
   takes `keepIconSize` (library #217, 1.0.0-beta.68; #219 in
   1.0.0-beta.69 keeps the forced 16 px icon in the recipe base), so an
   icon given a `size` keeps it, and `size="xs"` is already 24 high
-  (`control.xs`). `MoveButton` does not pass `keepIconSize` yet, so its
-  mark still draws at 16 (T01 deviations.md: Move to… is 6 px wider).
+  (`control.xs`). `MoveButton` passes `keepIconSize`, so its mark draws
+  at 12, as Figma's (105:1595).
 
 ## Closed by 1.0.0-beta.65
 

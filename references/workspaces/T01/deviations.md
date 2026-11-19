@@ -27,7 +27,7 @@ Render minus Figma, in px. All three checks render the page 29 px
 shorter, below Figma's status bar (d-102), and the position check adds
 29 to each render y (d-101).
 
-- `105:1594` (Move to…): x -8.7, w +5.7.
+- `105:1594` (Move to…): x -4.7.
 - `105:1622` (the-bridge's header): y +5.
 - `105:1681` (omni's header): y +6.
 - `105:1720` (skill-evals' header): y +5.
@@ -57,11 +57,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   4 px; in T1 bridge themes is a plain row, so the-bridge's header
   (`105:1622`) is 5 px low, omni's (`105:1681`) 6 and skill-evals'
   (`105:1720`) 5. The rows under them pass.
-- **Move to… is 6 px wider (Move to button).** Figma's button is 85 ×
-  22 with a 12 px mark and 12 px label; `Button size="xs" textSize="xs"`
-  is 24 high and draws its icon at 16, so it is 91 wide. It ends at the
-  row's trailing edge, 3 px before Figma's, as the tablet Container pads
-  24 against Figma's 22 (`105:1594` x -8.7, w +5.7).
+- **Move to… starts 5 px early (Move to button).** Figma's button is 85
+  × 22 with a 12 px mark (105:1595) and 12 px label; `Button size="xs"
+  textSize="xs" keepIconSize` draws the mark at 12 and is 24 high and 87
+  wide. It ends at the row's trailing edge, 3 px before Figma's, as the
+  tablet Container pads 24 against Figma's 22 (`105:1594` x -4.7).
 - **Side inset (Phone chat row).** `Container size="tablet"` pads 24
   against Figma's 22, so every full-width layer is x +2, w -4 (within
   the tolerance). The header pads 2 at its end and the-bridge's header
