@@ -7,7 +7,8 @@
 // readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
 // The empty pane's Close pane reports the pane closed (`onClosePane`).
 // A chat's composer starts from the owner's draft (`ui.drafts`) and reports what
-// he types, so the draft outlives the pane: a page visit, a closed pane.
+// he types, so the draft outlives the pane: a page visit, a closed pane. Its
+// Send goes to `onSend` with the chat's id.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
@@ -44,9 +45,11 @@ export type WorkbenchPanesProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Called with a pane's id when the owner closes it with the empty pane's Close pane (D13). */
   onClosePane?: ((pane: string) => void) | undefined
+  /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
+  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
 }
 
-export function WorkbenchPanes({ data, ui, onUiChange, onClosePane }: WorkbenchPanesProps) {
+export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onSend }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
   const chatsLayers = data.layers?.paneChats ?? chatLayers
@@ -120,6 +123,7 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane }: WorkbenchP
             entries={pane.entries}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
             onTextChange={(text) => onUiChange?.({ drafts: { ...ui.drafts, [pane.id]: text } })}
+            onSend={onSend && ((text) => onSend(pane.id, text))}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,

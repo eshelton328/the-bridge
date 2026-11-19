@@ -55,9 +55,18 @@ export type WorkspacesScreenProps = {
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
+  /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
+  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
 }
 
-export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUiChange }: WorkspacesScreenProps) {
+export function WorkspacesScreen({
+  data,
+  ui: stateUi,
+  viewport,
+  onNavigate,
+  onUiChange,
+  onSend,
+}: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
   // Merge each change into the latest ui, not this render's: one event can report two changes, such as Rename
@@ -76,6 +85,7 @@ export function WorkspacesScreen({ data, ui: stateUi, viewport, onNavigate, onUi
           ui={ui}
           viewport={viewport}
           onNavigate={onNavigate}
+          onSend={onSend}
           change={change}
         />
       )}
@@ -88,7 +98,7 @@ type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange'> & {
   change: (next: Partial<WorkspacesUi>) => void
 }
 
-function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: WorkspacesLayoutProps) {
+function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, change }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
   const names = ui.names ?? {}
@@ -123,6 +133,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
         ui={ui}
         onNavigate={onNavigate}
         onUiChange={change}
+        onSend={onSend}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
@@ -259,7 +270,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
           }
           detail={
             ui.workbench === true || chat === undefined ? (
-              <WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle={false} />
+              <WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle={false} onSend={onSend} />
             ) : (
               <MainChat
                 pane={chat}
@@ -295,6 +306,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
                 onTextChange={(text) => {
                   change({ drafts: { ...ui.drafts, [chat.id]: text } })
                 }}
+                onSend={onSend && ((text) => onSend(chat.id, text))}
                 rename={rename}
                 above={toast}
                 overlay={dropZone}
@@ -339,7 +351,11 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, change }: Wo
   }
   return (
     <Backdrop size={viewport}>
-      <AppShell size="desktop" rail={rail} detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle />} />
+      <AppShell
+        size="desktop"
+        rail={rail}
+        detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} toggle onSend={onSend} />}
+      />
     </Backdrop>
   )
 }

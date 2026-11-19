@@ -31,4 +31,14 @@ describe('workspacesStore', () => {
     expect(workspacesStore.getState().uiEdits).toEqual({ state: 'resizedPanes', ui: {} })
     expect(workspacesStore.getState().actions).toBe(actions)
   })
+
+  it('sends a message and changes no ui', async () => {
+    const { send, setUi } = workspacesStore.getState().actions
+    setUi('twoPanes', { drafts: { 'drift-check': 'ship it' } })
+    await expect(send('drift-check', 'ship it')).resolves.toBeUndefined()
+    expect(workspacesStore.getState().uiEdits).toEqual({
+      state: 'twoPanes',
+      ui: { drafts: { 'drift-check': 'ship it' } },
+    })
+  })
 })

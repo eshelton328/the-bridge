@@ -4,7 +4,9 @@
 // it; the screen gets the values as props. A state's own `ui` is the start,
 // and this store holds the changes, so a visit to another page keeps them.
 // The changes belong to the shown state (`?state=`) and are dropped when
-// another state is shown, as each state names its own panes.
+// another state is shown, as each state names its own panes. `send` is the
+// page's send of a chat's message: the composer keeps its draft until it
+// resolves, and a rejected send keeps it.
 import { createAppStore } from '../../state/createAppStore.ts'
 import type { WorkspacesUi } from './types.ts'
 
@@ -20,6 +22,11 @@ type WorkspacesViewState = {
     setUi: (state: WorkspacesStateKey, change: Partial<WorkspacesUi>) => void
     /** Drops the edits of the last state when another state is shown. */
     showState: (state: WorkspacesStateKey) => void
+    /**
+     * Sends `text` to the chat `chat`. It resolves once the message is sent and rejects when the send fails. The page
+     * has no chat server yet, so the message goes nowhere and the send resolves.
+     */
+    send: (chat: string, text: string) => Promise<void>
   }
 }
 
@@ -42,6 +49,7 @@ const useWorkspacesStore = createAppStore<WorkspacesViewState>('workspaces', (se
         'workspaces/showState',
       )
     },
+    send: () => Promise.resolve(),
   },
 }))
 
