@@ -4,8 +4,10 @@
 // and opening the discussion keeps it; send gives his message to `onSend`, which adds it to the discussion, and
 // empties the box. The box has no attach button: no file flow is designed, and `Composer` cannot draw its attach
 // button disabled (LIBRARY_GAPS.md, Waiting for a design). The reply box stays at the bottom and the `header` at the
-// top of the panel or page, and only the entries (and `before`) between them scroll (d-107). Props only.
-import { Composer, ScrollFrame, Stack } from '@eshelton328/component-library-1701'
+// top of the panel or page, and only the entries (and `before`) between them scroll (d-107). The entries and the reply
+// box each sit in a library `ChatColumn`, so on a wide screen they keep one readable column in the middle and line
+// up (R1); the panel and the pages of the Figma frames are narrower than it, so there they fill. Props only.
+import { ChatColumn, Composer, ScrollFrame, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { draftProps, type InboxDiscussion, type InboxDrafts } from '../types.ts'
@@ -13,7 +15,7 @@ import { DiscussionEmpty } from './DiscussionEmpty.tsx'
 import { DiscussionEntry } from './DiscussionEntry.tsx'
 import type { ProposalControl } from './ProposalCard.tsx'
 
-const entries = css({ display: 'flex', flexDirection: 'column', gap: '12', flex: '1' })
+const entries = css({ display: 'flex', flexDirection: 'column', flex: '1' })
 const middle = css({ justifyContent: 'center' })
 // The space between the header, the content and the reply box, and between the content's parts. The list is the
 // containing block of what a message positions absolutely (its hidden name), so that scrolls with the list and stays
@@ -71,7 +73,7 @@ export function DiscussionThread({
         // A long draft grows the reply box; the library Composer stops it at 30% of the nearest size container
         // (the desktop panel; on the tablet and phone page, the window) and scrolls inside, so Send stays in reach
         // and the entries keep room (d-107).
-        <div data-figma="composer · discussion">
+        <ChatColumn data-figma="composer · discussion">
           <Composer
             label={discussion.placeholder}
             placeholder={discussion.placeholder}
@@ -81,7 +83,7 @@ export function DiscussionThread({
               drafts?.onChange('discussion', '')
             }}
           />
-        </div>
+        </ChatColumn>
       }
     >
       {before}
@@ -89,20 +91,22 @@ export function DiscussionThread({
         className={cx(entries, centred && empty !== undefined ? middle : undefined, className)}
         data-figma="discussion"
       >
-        {empty === undefined ? null : (
-          <DiscussionEmpty
-            empty={empty}
-            stacked={stacked}
-            onPick={(text) => {
-              drafts?.onChange('discussion', text)
-            }}
-          />
-        )}
-        <Stack gap="12">
-          {discussion.entries.map((entry, i) => (
-            <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} control={control} />
-          ))}
-        </Stack>
+        <ChatColumn gap="12">
+          {empty === undefined ? null : (
+            <DiscussionEmpty
+              empty={empty}
+              stacked={stacked}
+              onPick={(text) => {
+                drafts?.onChange('discussion', text)
+              }}
+            />
+          )}
+          <Stack gap="12">
+            {discussion.entries.map((entry, i) => (
+              <DiscussionEntry key={`${String(i)}:${entry.type}`} entry={entry} control={control} />
+            ))}
+          </Stack>
+        </ChatColumn>
       </div>
     </ScrollFrame>
   )

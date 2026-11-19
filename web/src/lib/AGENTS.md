@@ -48,6 +48,10 @@ layer, a store or the router.
   set or removed and the rest kept, for `navigate({ href })`.
 - `containerSize.ts`: the library `Container` size of a detail column
   for each layout.
+- `wideDetail.ts`: `useWideDetail()`, whether the shell detail around an
+  element is at least `shell.detailWideFrom` (1600 px) wide, where the
+  library `Container size="detail"` widens. For what CSS cannot change
+  at that width, such as a `Clamp`'s line count (R2).
 - `compactPadding.ts`: the tablet and phone `Container` padding as a
   class, for a chat's `ScrollFrame` that must be the shell detail's own
   child, so AppShell docks its reply box on the keyboard (R21).

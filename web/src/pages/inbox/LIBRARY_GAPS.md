@@ -121,3 +121,10 @@ nothing on a press.
 | ------------------------------------ | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Open in Workspaces                   | D05, D06, D07, D09, D10, D11, D13, T04, T05, M08, M10               | The notes say it opens the same chat on the Workspaces page (D5, D6, T4, M10), which is not built, and no Inbox frame draws it. `OpenInWorkspaces` renders the button with `aria-disabled` and the title "Workspaces is not built yet", so it keeps the focus and says why; `Button`'s disabled style fades it, where Figma draws it enabled.        |
 | Attach in the discussion's reply box | D14–D17, D19, D20, T17, T18, T20, T22, T23, M18, M19, M21, M23, M24 | Figma draws a clip button at the start of the discussion's reply box (M21 402:7319); no frame draws a file flow. `Composer` draws its attach button only with `onAttach` and cannot disable it alone (`disabled` disables the whole box), so the box leaves it out until a file flow is designed. Send works: it adds the message to the discussion. |
+
+## Clamp lines by container width (R2)
+
+`Clamp` takes one `lines` number. The Inbox prompt shows five lines, and eight in a detail at least
+`shell.detailWideFrom` wide, so `PromptSection` reads the detail's width with `lib/wideDetail.ts` and passes the
+number. A `Clamp` prop for the wide count (such as `wideLines`, set by the same container query as
+`Container size="detail"`) would do it in CSS, with no observer and no first frame at five lines.

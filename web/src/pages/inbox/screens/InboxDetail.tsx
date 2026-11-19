@@ -1,9 +1,10 @@
 // The open Inbox item, by its kind: a next step, a question from a chat or
 // a started item with its chat. On the desktop it fills the detail pane,
 // which is the "task pane" layer of the position check; with a side, such
-// as the discussion, the item keeps its column and the side takes the rest
-// of the pane. On a tablet or phone it fills the screen, under Back.
-// Props only.
+// as the discussion, the library `DetailSplit` keeps the item's column and
+// gives the side the rest, up to `shell.discussionPane` (R1). On a tablet
+// or phone it fills the screen, under Back. Props only.
+import { DetailSplit } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -16,8 +17,6 @@ import { RunningDetail } from './RunningDetail.tsx'
 
 // The item fills the detail's height and no more, so its ScrollFrame scrolls the content between its bars (d-107).
 const pane = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
-const withSide = css({ display: 'flex', flexDirection: 'row', flex: '1', minH: '[0]' })
-const column = css({ display: 'flex', flexDirection: 'column', flexShrink: '0', minH: '[0]' })
 
 export type InboxDetailProps = {
   detail: InboxDetailView
@@ -124,9 +123,8 @@ export function InboxDetail({
       item
     )
   return (
-    <article className={withSide} data-figma="task pane">
-      <div className={column}>{item}</div>
-      {side}
+    <article className={pane} data-figma="task pane">
+      <DetailSplit side={side}>{item}</DetailSplit>
     </article>
   )
 }
