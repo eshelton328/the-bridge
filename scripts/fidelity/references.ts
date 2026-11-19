@@ -73,6 +73,25 @@ export function parseTolerance(value: string, source: string): number {
   return n
 }
 
+/** The three checks of a frame; `--checks` picks which of them decide its result. */
+export const fidelityChecks = ['text', 'position', 'rules'] as const
+export type FidelityCheck = (typeof fidelityChecks)[number]
+
+/** Parses `--checks text,rules`: one or more check names, comma-separated, each once. */
+export function parseChecks(value: string, source: string): FidelityCheck[] {
+  const names = value.split(',').map((s) => s.trim())
+  const picked: FidelityCheck[] = []
+  for (const name of names) {
+    const check = fidelityChecks.find((c) => c === name)
+    if (check === undefined || picked.includes(check))
+      throw new Error(
+        `${source}: name each check once, from ${fidelityChecks.join(', ')}, such as text,rules; got "${value}"`,
+      )
+    picked.push(check)
+  }
+  return picked
+}
+
 /** Checks a parsed frame.json; `file` names it in the error. */
 export function parseFrameRef(data: unknown, file: string): FrameRef {
   const parsed = frameRef.safeParse(data)
