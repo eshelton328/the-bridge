@@ -35,10 +35,10 @@ function fills(title: string): string {
   return [...new Set(all)].join(' ')
 }
 
-function width(figma: string): number {
-  const el = document.querySelector(`[data-figma="${figma}"] button, button[data-figma="${figma}"]`)
+function button(figma: string): HTMLElement {
+  const el = document.querySelector<HTMLElement>(`[data-figma="${figma}"] button, button[data-figma="${figma}"]`)
   if (el === null) throw new Error(`no ${figma}`)
-  return el.getBoundingClientRect().width
+  return el
 }
 
 describe('the Artifacts library on library 1.0.0-beta.69', () => {
@@ -52,11 +52,19 @@ describe('the Artifacts library on library 1.0.0-beta.69', () => {
     expect(fills('readme cold-reader run')).not.toBe(fills('Skill eval pass rates'))
   })
 
-  it('draws Sort and Filter at Figma’s widths on the desktop', async () => {
+  it('draws Sort and Filter with 10 px sides and a 12 px chevron on the desktop', async () => {
     await showDesktop('library')
     await expect.poll(() => document.querySelector('[data-figma="button · Sort"]')).not.toBeNull()
-    expect(width('button · Sort')).toBeCloseTo(108, 0)
-    expect(width('button · Filter')).toBeCloseTo(75, 0)
+    const sort = button('button · Sort')
+    const filter = button('button · Filter')
+    const sides = (el: HTMLElement) => [getComputedStyle(el).paddingLeft, getComputedStyle(el).paddingRight]
+    expect(sides(sort)).toEqual(['10px', '10px'])
+    expect(sides(filter)).toEqual(['10px', '10px'])
+    const chevron = sort.querySelectorAll('svg')[1]?.getBoundingClientRect()
+    expect([chevron?.width, chevron?.height]).toEqual([12, 12])
+    // The label's width depends on the font's rendering (108.4 here, 109 on CI's Linux runner); Figma's are 108 and 75.
+    expect(Math.abs(sort.getBoundingClientRect().width - 108)).toBeLessThanOrEqual(2)
+    expect(Math.abs(filter.getBoundingClientRect().width - 75)).toBeLessThanOrEqual(2)
   })
 
   it('draws the link mark 12 px wide', async () => {
