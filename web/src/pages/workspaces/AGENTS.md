@@ -31,6 +31,10 @@ first: it says what each file of a page folder is for.
   and its last workspace scrolls clear of it (`app/PhoneTabBar.test.tsx`).
   The views with no tab bar keep their footers (the composer, New chat's
   start bar) in `ScrollFrame` footers, which the library lifts above a bar.
+  The chat (`ChatPane`'s `header`) and New chat are each one `ScrollFrame`
+  straight in the AppShell detail, as the library docks only that frame's
+  footer on the keyboard (R20, `app/WorkspacesChatDock.test.tsx`);
+  `blocks/frameRegion.ts` names it a region, as their section did.
   A tablet draws the desktop layout, with the rail and no tab bar, except
   for a state with `data.tabletList` (T1): it draws the phone's views at
   the tablet's width (`WorkspacesPhone device="tablet"`), with the

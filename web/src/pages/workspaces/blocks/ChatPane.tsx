@@ -11,13 +11,17 @@
 // above it scrolls (d-107, `ScrollFrame`). `size="phone"` is the chat on the
 // phone (M3 105:2784), with the skill list as wide as the composer,
 // `size="tablet"` the same chat at a tablet's width (T2 105:1894) and
-// `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106). Props only.
+// `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106).
+// With `header` the ScrollFrame is the root, so the phone's chat puts it
+// straight in the AppShell detail, which docks the composer on the keyboard
+// (library beta.61, screen review R20). Props only.
 import { Composer, Inline, ModelChip, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
+import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 
 const body = css({
@@ -77,8 +81,14 @@ const footerShrinks = {
   inset: false,
 } satisfies Record<keyof typeof sizes, boolean>
 const footer = css({ display: 'flex', flexDirection: 'column' })
+// With `header` the frame is the root: the body's padding of `sizes` moves onto the transcript and the composer, so the
+// header runs edge to edge and the parts sit where they did (M3 105:2784, T2 105:1894).
+const framed = {
+  phone: { body: css({ px: '16', pt: '12' }), footer: css({ px: '16' }) },
+  tablet: { body: css({ px: '24', pt: '16' }), footer: css({ px: '24' }) },
+}
 
-export type ChatPaneProps = {
+type ChatPaneBase = {
   /** The Figma layers of the composer and of each entry, for the fidelity checks. */
   figma: {
     /** The composer; none when the frame does not draw it, such as under M4's sheet. */
@@ -101,7 +111,6 @@ export type ChatPaneProps = {
       }
     | undefined
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
-  size?: keyof typeof sizes | undefined
   /** The folders control, before the model in the composer's bottom row (D4 137:9). */
   folders?: ReactNode
   /** `false`: the composer has no attach button, as the side chat in a pane draws it (D5 158:545). */
@@ -112,13 +121,33 @@ export type ChatPaneProps = {
   lead?: ReactNode
   /** Drawn between the transcript and the composer, such as "Open as its own pane" (D5 158:540). */
   above?: ReactNode
-  /** Drawn over the body, such as the side chat in a pane (D5 158:518); it places itself. */
-  overlay?: ReactNode
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
   /** Called with the message box's text as Erik types, so the caller can keep the draft when the pane unmounts. */
   onTextChange?: ((text: string) => void) | undefined
 }
+
+export type ChatPaneProps = ChatPaneBase &
+  (
+    | {
+        size?: keyof typeof sizes | undefined
+        header?: undefined
+        label?: undefined
+        /** Drawn over the body, such as the side chat in a pane (D5 158:518); it places itself. */
+        overlay?: ReactNode
+      }
+    | {
+        size: keyof typeof framed
+        /**
+         * The chat's header, such as the phone's `ChatHead` (M3): the `ScrollFrame` is the root and this its header, so
+         * the frame can be the AppShell detail's own child and dock the composer on the keyboard.
+         */
+        header: ReactNode
+        /** The chat's accessible name: the frame is a region with it, as a `<section aria-label>` was. */
+        label: string
+        overlay?: undefined
+      }
+  )
 
 export function ChatPane(props: ChatPaneProps) {
   const {
@@ -133,7 +162,6 @@ export function ChatPane(props: ChatPaneProps) {
     layout,
     lead,
     above,
-    overlay,
     autoFocus = false,
     onTextChange,
   } = props
@@ -225,6 +253,28 @@ export function ChatPane(props: ChatPaneProps) {
         </div>
       </SkillPicker>
     )
+  const entryViews = entries.map((entry, i) => (
+    <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
+  ))
+  if (props.label !== undefined) {
+    const parts = framed[props.size]
+    return (
+      <ScrollFrame
+        footerShrink={footerShrinks[size]}
+        bodyClassName={cx(gaps[size].body, parts.body)}
+        header={props.header}
+        footer={
+          <div ref={frameRegion(props.label)} className={cx(footer, gaps[size].footer, parts.footer)}>
+            {above}
+            {composerBox}
+          </div>
+        }
+      >
+        {lead}
+        {entryViews}
+      </ScrollFrame>
+    )
+  }
   return (
     <div className={cx(body, sizes[size])}>
       <ScrollFrame
@@ -238,11 +288,9 @@ export function ChatPane(props: ChatPaneProps) {
         }
       >
         {lead}
-        {entries.map((entry, i) => (
-          <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
-        ))}
+        {entryViews}
       </ScrollFrame>
-      {overlay}
+      {props.overlay}
     </div>
   )
 }
