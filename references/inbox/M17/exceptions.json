@@ -9,6 +9,11 @@
       "text": "f-005 the-bridge",
       "layers": ["402:1890"],
       "reason": "The source's detail (402:1890, y 646 to 660) is in the SOURCES section (402:1880, y 623), which Figma does not draw: frame.png shows the Run in card and My notes (402:1876, y 664) where it sits. The render keeps Sources below My notes, where the page scrolls under the pinned Start. The same text in the title block's chip is still checked."
+    },
+    {
+      "text": "SOURCES",
+      "layers": ["402:1882"],
+      "reason": "Layer 402:1882 is the heading of the SOURCES section (402:1880), which Figma keeps at y 623 and does not draw: frame.png shows the Run in card and My notes (402:1876, y 664) there. The render keeps Sources below My notes, where the page scrolls under the pinned Start, so the pinned bar covers the heading. Erik approved this exception (2026-11-19)."
     }
   ],
   "rules": [
