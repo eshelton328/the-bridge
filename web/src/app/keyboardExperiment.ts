@@ -30,11 +30,11 @@ import { token } from '../../styled-system/tokens/index.js'
 export type KeyboardExperiment = 'proxy' | 'prevent'
 
 /** The URL param that picks an experiment in a browser. */
-export const KEYBOARD_EXPERIMENT_PARAM = 'kb-experiment'
+const KEYBOARD_EXPERIMENT_PARAM = 'kb-experiment'
 /** The switch the app asks when the URL has no param. */
 export const KEYBOARD_EXPERIMENT_SWITCH_URL = '/__keyboard-trace/experiment'
 /** The attribute of the proxy field, which the chat trace takes as the composer (keyboardChatTrace.ts). */
-export const KEYBOARD_PROXY_ATTRIBUTE = 'data-keyboard-experiment-proxy'
+const KEYBOARD_PROXY_ATTRIBUTE = 'data-keyboard-experiment-proxy'
 
 /** 'value' as an experiment, or null for anything else. */
 export function parseExperiment(value: unknown): KeyboardExperiment | null {
