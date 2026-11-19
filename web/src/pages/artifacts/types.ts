@@ -101,6 +101,18 @@ export const ArtifactDetail = z.object({
   /** The chat that published it; a card opened from the library has none, and shows no Made in section. */
   madeIn: ArtifactMadeIn.optional(),
   /**
+   * A dashed line across the preview's chart with its label (the library's `Thumbnail reference`); only an applied
+   * proposal sets it (D9 452:3705, 452:3706).
+   */
+  reference: z
+    .object({
+      /** Where the line sits on the chart's 0 to 100 scale, such as the median pass rate 71. */
+      value: z.number().min(0).max(100),
+      /** The line's label in mono, such as "median 71%". */
+      label: z.string(),
+    })
+    .optional(),
+  /**
    * How the artifact shows after Erik applies its discussion's proposal (D9): Apply republishes it to the same link,
    * so the link and the library entry stay; the bar's pill and line and the updated chip change.
    */
@@ -112,6 +124,15 @@ export const ArtifactDetail = z.object({
       found: z.string(),
       /** The updated chip, such as "updated just now". */
       updated: z.string(),
+      /** The chart's reference line after Apply, such as D9's dashed median line "median 71%" (452:3705, 452:3706). */
+      reference: z
+        .object({
+          /** Where the line sits on the chart's 0 to 100 scale, such as the median pass rate 71. */
+          value: z.number().min(0).max(100),
+          /** The line's label in mono, such as "median 71%". */
+          label: z.string(),
+        })
+        .optional(),
     })
     .optional(),
 })

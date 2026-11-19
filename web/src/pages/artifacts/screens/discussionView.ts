@@ -60,9 +60,9 @@ export function appliedView(
   const before: AppliedView = { artifact, badge: artifact.isNew ? 'New' : undefined, discussion, applied: false }
   const apply = discussion?.entries.find((e) => e.type === 'proposal')?.proposal.apply
   if (ui.discussProposal !== 'applied' || apply === undefined || artifact.applied === undefined) return before
-  const { badge, found, updated } = artifact.applied
+  const { badge, found, updated, reference } = artifact.applied
   return {
-    artifact: { ...artifact, found, updated },
+    artifact: { ...artifact, found, updated, ...(reference === undefined ? {} : { reference }) },
     badge,
     discussion: discussion === undefined ? undefined : { ...discussion, context: apply.context },
     applied: true,

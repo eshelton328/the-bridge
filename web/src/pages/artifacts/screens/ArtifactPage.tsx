@@ -74,7 +74,12 @@ export function ArtifactPage({
           status={<ArtifactStatus badge={badge} found={artifact.found} />}
         />
         <div data-figma="preview">
-          <Thumbnail kind={artifact.preview} shape="wide" label={`${artifact.title} preview`} />
+          <Thumbnail
+            kind={artifact.preview}
+            shape="wide"
+            label={`${artifact.title} preview`}
+            {...(artifact.reference === undefined ? {} : { reference: artifact.reference })}
+          />
         </div>
         <span data-figma="button · Open artifact">
           <Button variant="primary" size="xl" className={wide} onClick={onOpenArtifact}>

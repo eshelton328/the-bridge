@@ -43,7 +43,13 @@ const discussion = (base: ArtifactDiscussion): ArtifactDiscussion => ({
 /** The open artifact, and how it shows after Apply (D9): Updated, from the discussion, just now. */
 const open = (base: ArtifactDetail): ArtifactDetail => ({
   ...base,
-  applied: { badge: 'Updated', found: 'updated just now from the discussion', updated: 'updated just now' },
+  applied: {
+    badge: 'Updated',
+    found: 'updated just now from the discussion',
+    updated: 'updated just now',
+    // D9's chart after Apply: a dashed line at the median pass rate (452:3705) and its label (452:3706).
+    reference: { value: 71, label: 'median 71%' },
+  },
 })
 
 export const changeProposed = {
