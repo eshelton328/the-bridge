@@ -31,6 +31,12 @@
       "reason": "The name in Figma's minimap (minimap bg 461:1255), which draws the whole 712 × 900 drawing. The render's minimap (MapGraph `minimap`) draws MapGraph's drawing, which is 498 high, the window's inside: the row of ambitious (node 461:998) lies below it, so the minimap has no ambitious (deviations.md \"Window\"; LIBRARY_GAPS.md \"Map window\")."
     }
   ],
+  "position": [
+    {
+      "layer": "500:7968",
+      "reason": "Figma's icon/agent of readme-cold-reader inside the minimap's scaled copy of the drawing (minimap bg 461:1255, 0.12 scale), 1.56 px square. The position check's icon pass pairs it with the nearest outermost render svg, which is the whole minimap picture (MapGraph `minimap`, 85 × 60, aria-hidden), not an icon. The minimap draws its nodes as boxes inside that one svg, so no render icon stands for this layer."
+    }
+  ],
   "rules": [
     {
       "rule": "hiddenOverflow",

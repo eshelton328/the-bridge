@@ -37,7 +37,11 @@ library's SVG, so they carry no `data-figma`.
   `map viewport`, `hint`, `selection · writer`, `tab bar`); `toolkit`
   fails (see Toolkit box).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
-  `tab · Workspaces`, `tab · Projects` and `tab · More`.
+  `tab · Workspaces`, `tab · Projects` and `tab · More`. The icon sizes
+  of 11 icons match Figma's. `exceptions.json` covers one icon match,
+  `500:7968`: Figma's 1.56 px `icon/agent` inside the minimap's scaled
+  drawing, which the check pairs with the render's whole minimap picture
+  (85 × 60); the library's minimap draws nodes as boxes with no icons.
 - Rules: pass. The window's sideways scroll (`hiddenOverflow` on the
   `MapGraph` scroller) is in `exceptions.json`: Figma's window cuts the
   drawing at the same edge.
