@@ -57,10 +57,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   as in Figma. The large title
   sits 4 in from the header's edge (x 16), as in Figma.
 - **Chip size.** Figma's phone chips pad their label 12 at the sides
-  (`chip · All` 346:9014, 51 wide); `FilterChips size="compact"` pads
-  8 with a 1 px border, as the tablet's chips (T1), so each chip is 6 px
-  narrower and the row starts 2 px in. The gaps between the chips are 6,
-  as in Figma. Library gap: Filter chip padding on the phone.
+  (`chip · All` 346:9014, 51 wide); `FilterChips size="phone"`
+  (library beta.79) pads 12 inside its 1 px border, so the label is 13 in
+  against Figma's 12 and each chip is 2 px wider (11 is no spacing token,
+  d-100). The row starts 2 px in (its focus-ring padding). The gaps
+  between the chips are 6, as in Figma.
 - **Chip row.** Figma's chip row runs past the list and scrolls
   sideways, the Done chip cut at the list's edge; the render does the
   same (the `hiddenOverflow` exception says why) and fades the

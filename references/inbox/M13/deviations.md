@@ -49,9 +49,9 @@ shorter, below Figma's status bar (d-102), and the position check adds
   because it fails WCAG AA (d-055).
 - **Rows and chips on the phone.** As in M01: the rows pad 4 at the sides
   (`ListRow padding="phoneSides"`), so the kind tiles line up under
-  the group chevrons, and each chip
-  pads its label 8 against Figma's 12 (Library gap: Filter chip padding
-  on the phone).
+  the group chevrons, and each chip pads its label 12
+  inside its 1 px border, 13 from its edge against Figma's 12
+  (`FilterChips size="phone"`, so each chip is 2 px wider).
 - **Chip row.** The chips scroll sideways and the row clips them, as
   Figma does, and fades the cut edge over 24 px
   against Figma's 36 (the `hiddenOverflow`

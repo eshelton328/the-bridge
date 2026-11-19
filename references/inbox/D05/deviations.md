@@ -36,8 +36,11 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   textSize="xs"`: 24 px high against Figma's 22, the 4 px grid value
   (d-100). Its label is Medium 12 against Figma's 11 (346:2265); no
   label style is 11 (LIBRARY_GAPS.md, Button label size). The reply
-  box's Stop and send are as before: `Composer` draws 28 px controls
-  with 14 px labels, larger than Figma's (same row).
+  box's Stop draws Figma's 12 px icon and Medium 12 label (`stopIconSize="12"`
+  and `stopTextSize="xs"`, library beta.80), so it is about 59 × 28
+  against Figma's 61 × 26; Stop and send are `Composer`'s 28 px controls
+  (`control.sm`) against Figma's 26, within 2 px on the 4 px grid
+  (d-100).
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `group · NEXT STEPS` within tolerance (was
   x +0, y +18, w +1, h +4); `group · SNOOZED` x +0, y +6, w +1, h +2

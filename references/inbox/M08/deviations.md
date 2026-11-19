@@ -60,8 +60,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   346:10884). Copy under the reply is `Button size="xs" textSize="xs"`:
   24 px high against Figma's 22 (the 4 px grid value, d-100) and
   Medium 12 against Figma's 11 px label, since no label style is 11.
-  Stop and send are larger than Figma's because of `Composer`'s 14 px
-  label and sizes. Library gap: Button label size.
+  Library gap: Button label size. Stop draws Figma's 12 px icon and Medium 12 label (`stopIconSize="12"`
+  and `stopTextSize="xs"`, library beta.80), so it is about 59 × 28
+  against Figma's 61 × 26; Stop and send are `Composer`'s 28 px controls
+  (`control.sm`) against Figma's 26, within 2 px on the 4 px grid
+  (d-100).
 - **Reply box.** `AppShell` keeps the home-indicator area under the
   reply box on the phone, so the box sits 6 px higher than Figma's and
   3 px taller (`346:10886` y -6, h +3). It is not focused: Figma draws a
