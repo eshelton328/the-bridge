@@ -65,3 +65,11 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   `CheckIcon` against Figma's 11 px icon. Its stroke is 1 px, where
   Figma's is about 2 px wide, so the render's check is thinner; no icon
   takes a weight (gap: Evals criterion badge).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (492:661)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 492:661 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (492:666)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 492:666, as for `icon/artifacts`.

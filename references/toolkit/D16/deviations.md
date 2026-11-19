@@ -7,7 +7,7 @@ web/src/pages/toolkit/states/toolkitActivityHeadless.ts: D11's view
 with Headless runs picked. The library gaps are in
 web/src/pages/toolkit/LIBRARY_GAPS.md. Every other Toolkit frame gives
 the same text, position and rule results as before these frames. The
-frame has no exceptions.json.
+frame's `exceptions.json` holds only icon sizes (Differences).
 
 ## Checks
 
@@ -77,3 +77,11 @@ frame has no exceptions.json.
   source line follows them.
 - **readme-cold-reader's icon** is the agent icon in `kind.agent`, as
   Figma's.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (477:731)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 477:731 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (477:736)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 477:736, as for `icon/artifacts`.

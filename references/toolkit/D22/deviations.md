@@ -96,3 +96,12 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   yet, so a chat row is not a button: it takes no tap and no focus, and
   its chevron is decorative (`rowTap`). The row gets its tap when D18 is
   built.
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px
+  (491:4921) where the other rail icons are 22; the shared AppRail draws
+  every item's icon at 24 (d-100), so the render's icon is 24 and
+  `exceptions.json` names 491:4921 (bridge-coord's shared decision,
+  2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (491:4926)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 491:4926, as for `icon/artifacts`.

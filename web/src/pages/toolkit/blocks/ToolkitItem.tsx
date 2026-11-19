@@ -488,6 +488,9 @@ export function ToolkitItem({
       (tab === 'links' && detail.links?.named === true) ||
       (tab === 'evals' && detail.results?.named === true) ||
       (tab === 'activity' && detail.activity?.named === true))
+  // T10 461:245, D13 446:482: a back row that names the open item, with no crumb of an item it came from, draws a 16 px
+  // chevron and its crumbs in `body`; T7's trail from another item (441:67) keeps Figma's 18 px chevron and `labelLg`.
+  const backSize = full || (narrowHow && (crumb === null || crumb === undefined)) ? 'sm' : 'md'
   // D13 446:490: on a workflow's own page Discuss and Show on map are 8 apart, as in the tablet's back row.
   const actions = (
     <ToolkitItemActions
@@ -585,6 +588,7 @@ export function ToolkitItem({
             actions={actions}
             layers={{ row: 'breadcrumb row', trail: null }}
             tall
+            size={backSize}
           />
         </div>
       ) : null}
@@ -751,6 +755,7 @@ export function ToolkitItem({
           // T8 448:193: a workflow's own page names the row `breadcrumb row`, 36 high, as D13 does.
           layers={full ? { row: 'breadcrumb row', trail: null } : undefined}
           tall={full}
+          size={backSize}
         />
       }
     >

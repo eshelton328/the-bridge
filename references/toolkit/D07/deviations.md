@@ -91,6 +91,14 @@ fade="none"` (library 1.0.0-beta.65), with the frame's
   selected token, d-050).
 - **Other tabs.** How it works, Files, Links, Evals and Activity show
   empty panels: they are later frames (D8, D9).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (433:141)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 433:141 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (433:146)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 433:146, as for `icon/artifacts`.
 
 ## Second review
 

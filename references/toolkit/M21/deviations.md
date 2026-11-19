@@ -86,6 +86,10 @@ library 1.0.0-beta.25 and the item tabs' `tone` and `density` props
   with `CopyIcon`. Gap: Path badge copy button.
 - **Tab bar.** The shared `AppTabBar` passes the position check. No
   string lies under it in Figma or in the render.
+- **Agent link icon.** Figma's `icon/agent` in `link · eval-grader`
+  (500:8505) is 12 px; the Button keeps its 16 px icon, as a 12 px icon
+  (`keepIconSize`) makes the link 110 wide against 116, and
+  `exceptions.json` names 500:8505 (gap: Agent link chip).
 
 ## Second review
 

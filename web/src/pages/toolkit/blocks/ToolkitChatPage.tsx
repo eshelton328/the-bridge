@@ -40,7 +40,7 @@ export function ToolkitChatPage({
   return (
     <DetailFrame
       layout={layout}
-      back={<ToolkitItemBack name={source} named label={backLabel} onBack={onBack} actions={null} />}
+      back={<ToolkitItemBack name={source} named label={backLabel} onBack={onBack} actions={null} size="sm" />}
     >
       <article aria-label={chat.title} className={article} data-figma="side panel · chat">
         <Stack gap="12">

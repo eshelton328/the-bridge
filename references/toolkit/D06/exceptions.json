@@ -27,5 +27,17 @@
       "selector": "[data-figma=\"code\"] > div.scroll-frame__root > div.scroll-frame__body",
       "reason": "Line 13 of the script is longer than the viewer: Figma cuts it at the viewer's edge, and the render scrolls it sideways in the code's ScrollFrame, as D09's Overview code does (deviations.md \"Code.\"). D09 takes the same exception."
     }
+  ],
+  "position": [
+    {
+      "layer": "432:1774",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/artifacts at 20 px (432:1774, the component 414:926) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon (bridge-coord's shared decision, 2026-11-19)."
+    },
+    {
+      "layer": "432:1779",
+      "iconSize": 24,
+      "reason": "Figma draws the rail's icon/toolkit at 20 px (432:1779) where the other rail icons are 22; the shared AppRail draws every item's icon at 24 (d-100), so the rail is not changed for one icon, the same as bridge-coord's icon/artifacts decision (2026-11-19)."
+    }
   ]
 }

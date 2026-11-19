@@ -74,6 +74,14 @@ last two.
 - **Rules, Workflows and Hooks.** The frame shows only the Skills and
   Agents cards, so the state has no items for the other three kinds;
   their chips show Figma's counts (8, 2 and 1).
+- **Rail Artifacts icon.** Figma draws `icon/artifacts` at 20 px (424:141)
+  where the other rail icons are 22; the shared AppRail draws every item's
+  icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
+  names 424:141 (bridge-coord's shared decision, 2026-11-19).
+- **Rail Toolkit icon.** Figma draws `icon/toolkit` at 20 px (425:7) where
+  the other rail icons are 22; the shared AppRail draws every item's icon
+  at 24 (d-100), so the render's icon is 24 and `exceptions.json` names
+  425:7, as for `icon/artifacts`.
 
 ## Second review
 

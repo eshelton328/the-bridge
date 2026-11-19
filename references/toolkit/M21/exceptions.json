@@ -15,5 +15,12 @@
       "selector": "[data-figma=\"runs\"]",
       "reason": "The agents' row is one line and runs past the item's right edge (378), where Figma's toolkit frame cuts it too (the note after \"G6 r\"); the render cuts it at the same edge and scrolls the row sideways (deviations.md \"One-line rows.\")."
     }
+  ],
+  "position": [
+    {
+      "layer": "500:8505",
+      "iconSize": 16,
+      "reason": "Figma's agent link draws icon/agent (500:8505) at 12 px; a Button draws its icon at 16, and with keepIconSize and a 12 px icon the link is 110 wide against Figma's 116 (out of the position tolerance), so the link keeps the 16 px icon (LIBRARY_GAPS.md, Agent link chip)."
+    }
   ]
 }

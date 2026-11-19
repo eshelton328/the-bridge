@@ -61,10 +61,12 @@ export function ToolkitRunRow({ run, layout, status, open, selected = false, onO
             {desktop && open !== undefined ? (
               // On the title's line with the time: the row's actions slot puts its buttons on a line of their own.
               // D11 444:540: 29 high (`sm`, 28) with a Medium 11 label (444:543); `labelXs` (12) is the nearest.
+              // Its icon is 13 px (444:541): `keepIconSize` keeps the 12 px icon, where a Button draws 16.
               <Button
                 variant="secondary"
                 size="sm"
                 textSize="xs"
+                keepIconSize
                 onClick={(event) => {
                   event.stopPropagation()
                   select()
