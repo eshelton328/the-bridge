@@ -101,6 +101,8 @@ const STATE_KEY = /^[A-Za-z][A-Za-z0-9]{0,63}$/
 /** An app path, such as `/workspaces`: no query, hash or dot segment. */
 const PATHNAME = /^(?:\/[A-Za-z0-9_-]+)*\/?$/
 const CHAT_DEVICES = new Set(['phone', 'tablet'])
+/** A `kb-experiment` key, as the app reads it: letters, digits, `_` and `-`, at most 32. */
+const KB_EXPERIMENT = /^[A-Za-z0-9_-]{1,32}$/
 const isStateKey = (value: unknown) => value === null || (typeof value === 'string' && STATE_KEY.test(value))
 /** Whether `value` is a record with exactly `keys`, so a field with other text in it is refused. */
 const hasOnly = (value: unknown, keys: readonly string[]): value is Record<string, unknown> =>
@@ -130,7 +132,8 @@ function isTraceChat(chat: unknown): boolean {
 /**
  * Whether a trace's header is valid: `userAgent` and `samples[]` always, and
  * `displayMode`, `screenHeight`, `screenWidth`, `devicePixelRatio`,
- * `safeArea`, `route` and `chat` checked when present, so a trace from a
+ * `safeArea`, `reducedMotion`, `automated`, `kbExperiment`, `route` and
+ * `chat` checked when present, so a trace from a
  * client older than those fields is still taken.
  */
 export function isTraceHeader(trace: unknown): trace is Record<string, unknown> & { samples: unknown[] } {
@@ -143,6 +146,16 @@ export function isTraceHeader(trace: unknown): trace is Record<string, unknown> 
   for (const key of ['screenHeight', 'screenWidth', 'devicePixelRatio'] as const) {
     if (trace[key] !== undefined && !isNumber(trace[key])) return false
   }
+  for (const key of ['reducedMotion', 'automated'] as const) {
+    if (trace[key] !== undefined && typeof trace[key] !== 'boolean') return false
+  }
+  const kbExperiment = trace.kbExperiment
+  if (
+    kbExperiment !== undefined &&
+    kbExperiment !== null &&
+    !(typeof kbExperiment === 'string' && KB_EXPERIMENT.test(kbExperiment))
+  )
+    return false
   if (trace.route !== undefined && !isTraceRoute(trace.route)) return false
   if (trace.chat !== undefined && !isTraceChat(trace.chat)) return false
   const safeArea = trace.safeArea
@@ -202,7 +215,7 @@ export function createTraceHandler({
       send(
         res,
         400,
-        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio, safeArea, route and chat when present',
+        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio, safeArea, reducedMotion, automated, kbExperiment, route and chat when present',
       )
       return
     }

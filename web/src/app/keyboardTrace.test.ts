@@ -4,6 +4,7 @@ import {
   type KeyboardTraceSample,
   readDisplayMode,
   readHeader,
+  readKbExperiment,
   readSafeArea,
   readSample,
   startKeyboardTrace,
@@ -275,5 +276,74 @@ describe('keyboard trace sampler', () => {
       userAgent: navigator.userAgent,
       displayMode: 'standalone',
     })
+  })
+
+  it('records reduced motion, the kb-experiment key and automation in the header, and no other search param', async () => {
+    const before = window.location.href
+    onTestFinished(() => {
+      window.history.replaceState(null, '', before)
+    })
+    const real = window.matchMedia.bind(window)
+    const reduce = (matches: boolean) => {
+      const spy = vi
+        .spyOn(window, 'matchMedia')
+        .mockImplementation((query) =>
+          query === '(prefers-reduced-motion: reduce)'
+            ? real(matches ? '(min-width: 0px)' : '(max-width: -1px)')
+            : real(query),
+        )
+      onTestFinished(() => {
+        spy.mockRestore()
+      })
+    }
+    const webdriver = (value: boolean) => {
+      Object.defineProperty(navigator, 'webdriver', { configurable: true, value })
+      onTestFinished(() => {
+        Reflect.deleteProperty(navigator, 'webdriver')
+      })
+    }
+    window.history.replaceState(null, '', `${window.location.pathname}?kb-experiment=dock_v2-a&q=typed%20text&state=x`)
+    reduce(true)
+    webdriver(true)
+    const header = await readHeader(window, '2026-11-19T10:00:00.000Z')
+    expect(header).toMatchObject({ reducedMotion: true, kbExperiment: 'dock_v2-a', automated: true })
+    expect(Object.keys(header).sort()).toEqual(
+      [
+        'automated',
+        'devicePixelRatio',
+        'displayMode',
+        'kbExperiment',
+        'reducedMotion',
+        'safeArea',
+        'screenHeight',
+        'screenWidth',
+        'startedAt',
+        'userAgent',
+      ].sort(),
+    )
+    expect(JSON.stringify(header)).not.toContain('typed text')
+    reduce(false)
+    webdriver(false)
+    window.history.replaceState(null, '', `${window.location.pathname}?q=1`)
+    expect(await readHeader()).toMatchObject({ reducedMotion: false, kbExperiment: null, automated: false })
+  })
+
+  it('reads kb-experiment only as a short key of letters, digits, _ and -, else null', () => {
+    const before = window.location.href
+    onTestFinished(() => {
+      window.history.replaceState(null, '', before)
+    })
+    const at = (search: string) => {
+      window.history.replaceState(null, '', `${window.location.pathname}${search}`)
+      return readKbExperiment()
+    }
+    expect(at('?kb-experiment=a')).toBe('a')
+    expect(at(`?kb-experiment=${'x'.repeat(32)}`)).toBe('x'.repeat(32))
+    expect(at('')).toBeNull()
+    expect(at('?kb-experiment=')).toBeNull()
+    expect(at(`?kb-experiment=${'x'.repeat(33)}`)).toBeNull()
+    expect(at('?kb-experiment=my%20chat')).toBeNull()
+    expect(at('?kb-experiment=a.b')).toBeNull()
+    expect(at('?kb-experiment=%3Cscript%3E')).toBeNull()
   })
 })
