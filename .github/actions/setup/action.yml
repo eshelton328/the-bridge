@@ -23,6 +23,44 @@ runs:
         PACKAGES_TOKEN: ${{ inputs.packages-token }}
     - run: pnpm install --frozen-lockfile
       shell: bash
+    # Chromium and the system packages it needs. The apt mirror is
+    # sometimes slow (32 MB in 5 min 36 s in library run 44423292766), so
+    # the browser and the .deb files apt fetched are cached per OS, runner
+    # architecture and Playwright version. On a hit the .deb files go back
+    # into apt's archive folder before the usual install: apt uses a saved
+    # file only when its version and hash match the index, and downloads
+    # the rest, so a newer runner image still gets its own packages.
     - if: inputs.browser == 'true'
-      run: pnpm exec playwright install --with-deps chromium
+      id: playwright
       shell: bash
+      run: echo "key=playwright-${ImageOS}-${RUNNER_ARCH}-$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+    - if: inputs.browser == 'true'
+      id: playwright-cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.cache/ms-playwright
+          ~/.cache/playwright-debs
+        key: ${{ steps.playwright.outputs.key }}
+    - if: inputs.browser == 'true' && steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: sudo cp ~/.cache/playwright-debs/*.deb /var/cache/apt/archives/
+    - if: inputs.browser == 'true'
+      id: playwright-install
+      shell: bash
+      env:
+        HIT: ${{ steps.playwright-cache.outputs.cache-hit }}
+      run: |
+        pnpm exec playwright install --with-deps chromium
+        if [ "$HIT" != true ]; then
+          mkdir -p ~/.cache/playwright-debs
+          cp /var/cache/apt/archives/*.deb ~/.cache/playwright-debs/ 2>/dev/null || true
+          if compgen -G "$HOME/.cache/playwright-debs/*.deb" > /dev/null; then echo "save=true" >> "$GITHUB_OUTPUT"; fi
+        fi
+    - if: steps.playwright-install.outputs.save == 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: |
+          ~/.cache/ms-playwright
+          ~/.cache/playwright-debs
+        key: ${{ steps.playwright.outputs.key }}
