@@ -32,23 +32,6 @@ afterEach(async () => {
 })
 
 describe('switching workspaces from their tabs', () => {
-  it('keeps the pane sizes of a workspace when Erik switches to another tab and back', async () => {
-    const { data, ui } = workspacesStates.twoPanes
-    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
-    await expect.element(columns()).toHaveAttribute('aria-valuenow', '50')
-    await userEvent.click(columns())
-    await userEvent.keyboard('{ArrowRight}{ArrowRight}')
-    const resized = columns().element().getAttribute('aria-valuenow')
-    expect(resized).not.toBe('50')
-    await userEvent.click(tab('the-bridge'))
-    await expect.element(pane('hono server')).toBeVisible()
-    await expect.element(pane('bridge themes')).not.toBeInTheDocument()
-    await userEvent.click(tab('omni-brain'))
-    await expect.element(pane('bridge themes')).toBeVisible()
-    await expect.element(pane('drift check')).toBeVisible()
-    await expect.element(columns()).toHaveAttribute('aria-valuenow', resized)
-  })
-
   it('keeps the top row of a rows-first split at 60 : 40 after a switch, without the drag readout', async () => {
     const { data, ui } = workspacesStates.resizedPanes
     view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
@@ -70,17 +53,6 @@ describe('switching workspaces from their tabs', () => {
     await expect.element(pane('bridge themes')).toBeVisible()
     await expect.element(pane('brain git')).toBeVisible()
     await expect.element(page.getByText('Empty pane', { exact: true })).not.toBeInTheDocument()
-  })
-
-  it('opens a workspace with no layout on its last chat, alone in one pane', async () => {
-    const { data, ui } = workspacesStates.twoPanes
-    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="desktop" />)
-    await userEvent.click(tab('omni'))
-    await expect.element(tab('omni')).toHaveAttribute('aria-selected', 'true')
-    await expect.element(pane('release notes')).toBeVisible()
-    await expect.element(page.getByRole('button', { name: /^Maximise / })).toHaveLength(1)
-    await expect.element(columns()).not.toBeInTheDocument()
-    await expect.element(page.getByText('omni · 1 pane', { exact: true })).toBeVisible()
   })
 
   it('keeps a draft typed in a pane when Erik switches to another tab and back', async () => {

@@ -79,6 +79,7 @@ describe('the Workspaces route', () => {
     expect(resized).not.toBe('50')
     await userEvent.click(tab('the-bridge'))
     await expect.element(pane('hono server')).toBeVisible()
+    await expect.element(pane('bridge themes')).not.toBeInTheDocument()
     await view.unmount()
     view = await renderAt('/workspaces?state=twoPanes')
     await expect.element(tab('the-bridge')).toHaveAttribute('aria-selected', 'true')
@@ -91,8 +92,10 @@ describe('the Workspaces route', () => {
   it('opens a workspace with no layout on its last chat, alone in one pane', async () => {
     view = await renderAt('/workspaces?state=twoPanes')
     await userEvent.click(tab('omni'))
+    await expect.element(tab('omni')).toHaveAttribute('aria-selected', 'true')
     await expect.element(pane('release notes')).toBeVisible()
     await expect.element(page.getByRole('button', { name: /^Maximise / })).toHaveLength(1)
     await expect.element(columns()).not.toBeInTheDocument()
+    await expect.element(page.getByText('omni · 1 pane', { exact: true })).toBeVisible()
   })
 })
