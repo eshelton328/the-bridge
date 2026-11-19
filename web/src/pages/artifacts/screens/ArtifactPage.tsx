@@ -45,7 +45,7 @@ export type ArtifactPageProps = {
   onOpenArtifact?: (() => void) | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
-  /** The menu the tablet's project chip opens; the phone's chip is text, as its ⋯ opens File in a project. */
+  /** The menu the tablet's project chip opens; on the phone the chip opens File in a project, as the ⋯ button. */
   projectMenu?: ProjectMenu | undefined
 }
 
@@ -75,6 +75,7 @@ export function ArtifactPage({
           artifact={artifact}
           layout={phone ? 'phone' : 'tablet'}
           projectMenu={projectMenu}
+          onProjectPress={phone ? onMore : undefined}
           status={<ArtifactStatus badge={badge} found={artifact.found} />}
         />
         <div data-figma="preview">

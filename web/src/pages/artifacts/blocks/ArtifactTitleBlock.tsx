@@ -4,8 +4,8 @@
 // is a button with a chevron (D2 403:472) that opens the project menu, a
 // `RadioMenu` of Not in a project and the projects. On a phone (M2
 // 406:370) the rows are 8 apart and the chips are the source and the
-// project only; the project chip is text there, as the ⋯ button opens File
-// in a project (M7). Props only.
+// project only; with `onProjectPress` the project chip is the same button
+// (406:381), which opens File in a project as a sheet (M7). Props only.
 import {
   FolderIcon,
   Inline,
@@ -36,6 +36,8 @@ export type ArtifactTitleBlockProps = {
   layout?: 'desktop' | 'tablet' | 'phone' | undefined
   /** The project menu the project chip opens on a desktop or tablet; without it the chip is text. */
   projectMenu?: ProjectMenu | undefined
+  /** The phone's project chip was pressed: File in a project opens (M7); without it the phone's chip is text. */
+  onProjectPress?: (() => void) | undefined
 }
 
 export type ProjectMenu = {
@@ -46,10 +48,27 @@ export type ProjectMenu = {
   onValueChange?: ((project: string) => void) | undefined
 }
 
-function ProjectChip({ project, projectMenu }: { project: string; projectMenu: ProjectMenu | undefined }) {
+type ProjectChipProps = {
+  project: string
+  projectMenu: ProjectMenu | undefined
+  /** The phone: the chip is a button that opens the sheet, not the menu. */
+  onPress: (() => void) | undefined
+}
+
+function ProjectChip({ project, projectMenu, onPress }: ProjectChipProps) {
   if (projectMenu === undefined) return <MetaChip label={project} icon={<FolderIcon />} />
   const { menu, value, onValueChange } = projectMenu
   const label = value === noProject ? menu.none.label : value
+  if (onPress !== undefined)
+    return (
+      <MetaChipButton
+        label={label}
+        icon={<FolderIcon />}
+        aria-label={`${menu.title}: ${label}`}
+        aria-haspopup="dialog"
+        onClick={onPress}
+      />
+    )
   return (
     <RadioMenu
       label={menu.title}
@@ -65,7 +84,13 @@ function ProjectChip({ project, projectMenu }: { project: string; projectMenu: P
   )
 }
 
-export function ArtifactTitleBlock({ artifact, status, layout = 'desktop', projectMenu }: ArtifactTitleBlockProps) {
+export function ArtifactTitleBlock({
+  artifact,
+  status,
+  layout = 'desktop',
+  projectMenu,
+  onProjectPress,
+}: ArtifactTitleBlockProps) {
   const phone = layout === 'phone'
   return (
     // D2 (403:464: the title at 76, 34 high, the description at 120 and the chips at 150) and T2 (405:426) put their
@@ -80,7 +105,11 @@ export function ArtifactTitleBlock({ artifact, status, layout = 'desktop', proje
           <MetaChip label={artifact.sourceLabel} icon={<KindMark kind={artifact.source} size="12" />} />
         </span>
         <span data-figma="project · File in a project">
-          <ProjectChip project={artifact.project} projectMenu={phone ? undefined : projectMenu} />
+          <ProjectChip
+            project={artifact.project}
+            projectMenu={phone && onProjectPress === undefined ? undefined : projectMenu}
+            onPress={phone ? onProjectPress : undefined}
+          />
         </span>
         {phone ? null : (
           <span data-figma="chip · updated 12m ago">

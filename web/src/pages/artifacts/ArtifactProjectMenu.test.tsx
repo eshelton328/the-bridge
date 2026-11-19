@@ -10,8 +10,8 @@ import { artifactsStates } from './states/index.ts'
 import type { ArtifactsData, ArtifactsUi } from './types.ts'
 
 // The open artifact's project chip (D2 403:472, T2 405:440): a button with the folder, the project and a chevron
-// (403:476) that opens the project menu; picking a project files the artifact in it. The phone's chip (M2) stays text,
-// as its ⋯ opens File in a project (M7).
+// (403:476) that opens the project menu; picking a project files the artifact in it. The phone's chip (M2 406:381) is
+// the same button, and it opens File in a project as a sheet (M7), as the ⋯ button does.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -76,10 +76,12 @@ describe('the project chip', () => {
     await expect.element(page.getByRole('menuitemradio', { name: 'skill-evals' })).toBeVisible()
   })
 
-  it('stays text on the phone (M2)', async () => {
+  it('opens File in a project on the phone (M2)', async () => {
     await page.viewport(390, 844)
     const { data, ui } = artifactsStates.artifactPhone
     view = await testRender(<Harness data={data} start={ui} viewport="phone" />)
-    expect(chip().tagName).not.toBe('BUTTON')
+    expect(chip().tagName).toBe('BUTTON')
+    await userEvent.click(chip())
+    await expect.element(page.getByRole('dialog', { name: 'File in a project' })).toBeVisible()
   })
 })
