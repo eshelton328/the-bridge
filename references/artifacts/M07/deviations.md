@@ -15,7 +15,8 @@ the phone with File in a project open as a sheet over the tab bar
 - Text: passes. "Open in workspace ›" is an `extra` exception
   (`exceptions.json`): the link is on M2's page under Made in, and the
   sheet covers it.
-- Position: 20 of 28 layers pass (`top bar`, `button · more`,
+- Position: 22 of 28 layers pass (`chips`, `project · File in a
+  project`, `top bar`, `button · more`,
   `title block`, `status`, `pill · New`, `chip · Claude`, `preview`,
   `button · Open artifact`, `secondary actions`, `button · Copy link`,
   `button · Discuss`, `tab bar` and its five items, `divider`,
@@ -31,8 +32,6 @@ so the shorter choices move everything above them in the sheet down.
 
 - `sheet body`: y +43, h -43.
 - `artifact name`: y +43 (h -1).
-- `chips`: w -15.6.
-- `project · File in a project`: w -16.8.
 - `section · MADE IN`: y +6.9, h +20.
 - `made in`: y +5.9, h +21.
 - `text`: y +5.9, h +21 (x -2).
@@ -68,9 +67,6 @@ so the shorter choices move everything above them in the sheet down.
   452:4229). Figma's M7 copy of the page has no link there. The sheet
   covers Made in in both, so a viewer sees no difference. The page stays
   M2's, so the ⋯ button opens the sheet over the same page.
-- **Project chip.** `project · File in a project` w -16.8 and `chips`
-  w -15.6: the project chip is a read-only `MetaChip` with no chevron
-  (407:973), as in M2. Library gap "Project chip menu".
 - **Page parts.** As M2: the description's first line ends one word
   later than Figma's ("with and" against "with"), the Open artifact
   label is smaller, Copy link and Discuss are 44 high against Figma's 40
@@ -95,8 +91,9 @@ so the shorter choices move everything above them in the sheet down.
   choice shows a focus ring, as Figma draws none.
 - Width: `ArtifactsScreen` draws the sheet over an open artifact at any
   width when a state sets `ui.fileOpen`, so the story shows it at the
-  width Storybook gives it. Only the phone's ⋯ button opens it; the
-  desktop's project chip menu is a library gap ("Project chip menu").
+  width Storybook gives it. On the phone the ⋯ button and the project
+  chip open it; on a desktop or tablet the project chip opens the
+  project menu.
 - Picking a project sets `ui.fileProject` and checks it; Done, the scrim
   and Escape close the sheet. Remove has no action yet, as the desktop's
   Remove (D2) has none; the note says what it will do.
