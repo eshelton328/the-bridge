@@ -1,12 +1,15 @@
 // Whether to run the keyboard trace, asked once on load in dev only. With
-// `?keyboard-trace` it traces with the overlay. Without the param it asks the
-// dev server's switch (`GET /__keyboard-trace/enabled`,
-// scripts/keyboardTracePlugin.ts) and, when the switch is on, traces with no
-// overlay, so bridge-coord can trace the installed Home Screen app, where no
-// one can type a URL. A failed, slow or odd answer means off, with no error
-// shown. main.ts calls this only under `import.meta.env.DEV`, and the trace
-// itself (keyboardTrace.ts) is a dynamic import, so a build has neither.
-import type { startKeyboardTrace, TraceOptions } from './keyboardTrace.ts'
+// `?keyboard-trace` it traces the whole page with the overlay
+// (keyboardTrace.ts). Without the param it asks the dev server's switch
+// (`GET /__keyboard-trace/enabled`, scripts/keyboardTracePlugin.ts) and, when
+// the switch is on, runs the chat sessions with no overlay
+// (keyboardChatTrace.ts): one short trace per keyboard open in a Workspaces
+// chat, so bridge-coord can trace the installed Home Screen app, where no one
+// can type a URL. A failed, slow or odd answer means off, with no error
+// shown. main.ts calls this only under `import.meta.env.DEV`, and both trace
+// modules are dynamic imports, so a build has none of them.
+import type { ChatTraceOptions, RouteSource } from './keyboardChatTrace.ts'
+import type { TraceOptions } from './keyboardTrace.ts'
 
 /** How the trace runs: `overlay` from the URL param, `quiet` from the switch, or `off`. */
 export type KeyboardTraceMode = 'overlay' | 'quiet' | 'off'
@@ -16,14 +19,14 @@ export const KEYBOARD_TRACE_SWITCH_URL = '/__keyboard-trace/enabled'
 /** How long the switch may take before the answer counts as off, in ms. */
 const SWITCH_TIMEOUT_MS = 2000
 
-type Running = ReturnType<typeof startKeyboardTrace>
-
 export type SwitchOptions = {
   win?: Window
   fetchSwitch?: (url: string, init: RequestInit) => Promise<Response>
   timeoutMs?: number
+  /** The router's location and its changes, for the chat sessions; the page's URL with no changes when not set. */
+  route?: RouteSource
   /** Passed to the trace, beside the overlay choice; for tests. */
-  trace?: Omit<TraceOptions, 'overlay'>
+  trace?: Omit<TraceOptions, 'overlay' | 'win'> & Pick<ChatTraceOptions, 'closeDelayMs'>
 }
 
 /** Asks the switch; true only for a 200 with `{ "enabled": true }` within the timeout. */
@@ -54,14 +57,30 @@ export async function keyboardTraceMode({
   return (await switchIsOn(fetchSwitch, timeoutMs)) ? 'quiet' : 'off'
 }
 
-/** Starts the trace when the param or the switch asks for it; undefined when it is off. */
-export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promise<Running | undefined> {
+/** The page's own URL, which changes only on a load; main.ts passes the router's instead. */
+const windowRoute = (win: Window): RouteSource => ({
+  current: () => ({ pathname: win.location.pathname, search: win.location.search }),
+  subscribe: () => () => undefined,
+})
+
+/**
+ * Starts the whole-page trace for the param, or the chat sessions for the switch; undefined when it is off. Returns
+ * the function that stops it.
+ */
+export async function startKeyboardTraceIfOn(options: SwitchOptions = {}): Promise<{ stop: () => void } | undefined> {
   const mode = await keyboardTraceMode(options)
+  const win = options.win ?? window
+  const { closeDelayMs, ...trace } = options.trace ?? {}
+  if (mode === 'overlay') {
+    const { startKeyboardTrace } = await import('./keyboardTrace.ts')
+    return startKeyboardTrace({ ...trace, win, overlay: true })
+  }
   if (mode === 'off') return undefined
-  const { startKeyboardTrace } = await import('./keyboardTrace.ts')
-  return startKeyboardTrace({
-    ...options.trace,
-    win: options.trace?.win ?? options.win ?? window,
-    overlay: mode === 'overlay',
+  const { startChatKeyboardTrace } = await import('./keyboardChatTrace.ts')
+  return startChatKeyboardTrace({
+    ...trace,
+    ...(closeDelayMs === undefined ? {} : { closeDelayMs }),
+    win,
+    route: options.route ?? windowRoute(win),
   })
 }

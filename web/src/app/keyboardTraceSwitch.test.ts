@@ -1,4 +1,5 @@
 import { describe, expect, it, onTestFinished, vi } from 'vitest'
+import type { RouteSource } from './keyboardChatTrace.ts'
 import { KEYBOARD_TRACE_SWITCH_URL, keyboardTraceMode, startKeyboardTraceIfOn } from './keyboardTraceSwitch.ts'
 
 // The trace runs with the overlay from `?keyboard-trace`, with no overlay
@@ -22,13 +23,19 @@ const answer =
     Promise.resolve(new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } }))
 
 /** Starts the trace through the switch with `fetchSwitch`, posting into `posts`; stops it after the test. */
-async function start(fetchSwitch: (url: string, init: RequestInit) => Promise<Response>, timeoutMs = 500) {
+async function start(
+  fetchSwitch: (url: string, init: RequestInit) => Promise<Response>,
+  timeoutMs = 500,
+  route?: RouteSource,
+) {
   const posts: string[] = []
   const running = await startKeyboardTraceIfOn({
     fetchSwitch,
     timeoutMs,
+    ...(route === undefined ? {} : { route }),
     trace: {
       postEveryMs: 50,
+      closeDelayMs: 20,
       post: (_endpoint, body) => {
         posts.push(body)
         return Promise.resolve(undefined)
@@ -41,6 +48,22 @@ async function start(fetchSwitch: (url: string, init: RequestInit) => Promise<Re
 
 const overlay = () => document.querySelector('[data-keyboard-trace]')
 
+/** The composer of a phone chat, as WorkspacesPhone draws it: the AppShell detail's ScrollFrame footer. */
+function mountPhoneComposer(): HTMLTextAreaElement {
+  const host = document.createElement('div')
+  host.className = 'app-shell__root app-shell__root--size_phone'
+  host.innerHTML =
+    '<div class="app-shell__detail"><div class="scroll-frame__root"><div class="scroll-frame__footer">' +
+    '<div data-keyboard-keep=""><textarea></textarea></div></div></div></div>'
+  document.body.append(host)
+  onTestFinished(() => {
+    host.remove()
+  })
+  const area = host.querySelector('textarea')
+  if (area === null) throw new Error('no textarea')
+  return area
+}
+
 describe('keyboard trace switch', () => {
   it('traces with the overlay when the URL has ?keyboard-trace, without asking the switch', async () => {
     withSearch('?keyboard-trace')
@@ -52,18 +75,37 @@ describe('keyboard trace switch', () => {
     await expect.poll(() => posts.length).toBeGreaterThan(0)
   })
 
-  it('traces with no overlay when the switch is on, asking it once with no cache', async () => {
+  it('runs the chat sessions with no overlay when the switch is on, asking it once with no cache', async () => {
     withSearch('')
     const fetchSwitch = vi.fn<FetchSwitch>(answer({ enabled: true }))
-    const { running, posts } = await start(fetchSwitch)
+    const route = { pathname: '/inbox', search: '' }
+    let changed: () => void = () => undefined
+    const { running, posts } = await start(fetchSwitch, 500, {
+      current: () => route,
+      subscribe: (onChange) => {
+        changed = onChange
+        return () => undefined
+      },
+    })
     expect(fetchSwitch).toHaveBeenCalledTimes(1)
     expect(fetchSwitch.mock.calls[0]?.[0]).toBe(KEYBOARD_TRACE_SWITCH_URL)
     expect(fetchSwitch.mock.calls[0]?.[1]).toMatchObject({ cache: 'no-store' })
     expect(running).toBeDefined()
     expect(overlay()).toBeNull()
-    window.dispatchEvent(new Event('resize'))
+    // Off a chat route a composer's focus starts nothing.
+    const composer = mountPhoneComposer()
+    composer.focus()
+    composer.blur()
+    await new Promise((done) => setTimeout(done, 150))
+    expect(posts).toEqual([])
+    // On /workspaces it starts a session, which posts once it stops.
+    route.pathname = '/workspaces'
+    changed()
+    composer.focus()
+    composer.blur()
     await expect.poll(() => posts.length).toBeGreaterThan(0)
-    expect(running?.trace().samples.some((s) => s.type === 'resize')).toBe(true)
+    expect(JSON.parse(posts.at(-1) ?? '')).toMatchObject({ chat: { device: 'phone', state: null } })
+    expect(overlay()).toBeNull()
   })
 
   it('does not trace when the switch is off', async () => {

@@ -88,9 +88,13 @@ last day; no client text reaches the path. It takes only `POST` with
 `application/json` (405, 415), at most 10 MB (413), and a body of
 `{ startedAt, userAgent, samples[] }` (400). A body may also have
 `displayMode` (`standalone` or `browser`), `screenHeight`, `screenWidth`,
-`devicePixelRatio` (numbers) and `safeArea` (`{ top, right, bottom, left }`,
-numbers); each is checked when present (400) and may be missing, so a
-trace from an older client is still taken. A trace whose last
+`devicePixelRatio` (numbers), `safeArea` (`{ top, right, bottom, left }`,
+numbers), `route` (`{ pathname, state }`: a path of `/`-separated
+letters, digits, `_` and `-`, and a state key of letters and digits or
+null) and `chat` (`{ state, device }`: a state key or null, and `phone`
+or `tablet`); `route` and `chat` take no other keys. Each is checked when
+present (400) and may be missing, so a trace from an older client is
+still taken. Each chat session has its own `startedAt`, so its own file. A trace whose last
 sample is older than the one already written gets 409 and does not
 replace it, since a hidden page POSTs while an earlier POST may still be
 out. The traces folder is
