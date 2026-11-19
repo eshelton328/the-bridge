@@ -12,7 +12,7 @@ import { ChatId, type ChatStatus, type ChatSummary, type MachineId, WorkspaceId 
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
+import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
@@ -65,6 +65,21 @@ const listEvents = [
   'pane.agent_detected',
 ] as const
 
+/** herdr did not answer (`unreachable`), or answered with something this adapter does not read (`badReply`). */
+function portErrorOf(failure: SocketFailure): AgentPortError {
+  switch (failure.kind) {
+    case 'connect':
+    case 'timeout':
+    case 'closed':
+      return { reason: 'unreachable', message: failure.message }
+    case 'notJson':
+    case 'tooLong':
+    case 'badShape':
+    case 'herdrError':
+      return { reason: 'badReply', message: failure.message }
+  }
+}
+
 /** How long the adapter waits for more list events before it opens the stream again. */
 const settleMs = 100
 
@@ -81,7 +96,7 @@ export type HerdrAgentsOptions = {
 export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgentsOptions): AgentPort {
   const call = async <T>(method: string, schema: z.ZodType<T>): Promise<Result<T, AgentPortError>> => {
     const reply = await herdrRequest(socket, method, {})
-    if (!reply.ok) return err({ reason: 'unreachable', message: reply.error })
+    if (!reply.ok) return err(portErrorOf(reply.error))
     const parsed = schema.safeParse(reply.value)
     return parsed.success
       ? ok(parsed.data)
@@ -198,8 +213,8 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
               tell({ type: 'chatStatus', chat, status: statusOf[status.data.data.agent_status] })
             else reopen()
           },
-          onEnd: (message) => {
-            end({ reason: 'unreachable', message })
+          onEnd: (failure) => {
+            end(portErrorOf(failure))
           },
         })
       }

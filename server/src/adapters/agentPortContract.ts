@@ -10,6 +10,8 @@ export type ContractSetup = {
   readonly expected: { readonly workspace: string; readonly chat: string }
   /** Gives the expected chat `status` (`working` or `idle`), as its agent would. */
   readonly setStatus: (status: 'working' | 'idle') => Promise<void>
+  /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
+  readonly unreachable: AgentPort
 }
 
 /** Waits up to `ms` for `check` to pass. */
@@ -42,6 +44,20 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       if (!read.ok) throw new Error(read.error.message)
       const workspace = read.value.find((w) => w.label === expected.workspace)
       expect(workspace?.chats.map((c) => c.title)).toContain(expected.chat)
+    })
+
+    it('says the agents are unreachable when they do not answer, to a read and to a subscriber', async () => {
+      const { unreachable } = await setup()
+      const read = await unreachable.listWorkspaces()
+      expect(read.ok ? undefined : read.error.reason).toBe('unreachable')
+      const ends: string[] = []
+      const subscription = unreachable.subscribe(
+        () => undefined,
+        (error) => ends.push(error.reason),
+      )
+      await until('the end of the subscription', () => ends.length > 0)
+      subscription.close()
+      expect(ends).toEqual(['unreachable'])
     })
 
     it('gives the same IDs on a second read', async () => {
