@@ -4,16 +4,16 @@
 // the list closes, the artifact keeps its column and the discussion takes
 // the rest of the pane, as the Inbox's task and discussion (D14); the
 // column and the discussion each scroll on their own (d-107). Copy
-// link, Remove, the project menu, Open artifact and Open in workspace
-// render as Figma draws them; their screens come with later frames. Props
-// only.
+// link, Remove, Open artifact and Open in workspace render as Figma draws
+// them; their screens come with later frames. The project chip opens the
+// project menu (`projectMenu`). Props only.
 import { Container, Stack } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { ArtifactBar } from '../blocks/ArtifactBar.tsx'
 import { ArtifactPreview } from '../blocks/ArtifactPreview.tsx'
-import { ArtifactTitleBlock } from '../blocks/ArtifactTitleBlock.tsx'
+import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
 import type { ArtifactDetail as Artifact } from '../types.ts'
 
@@ -40,9 +40,11 @@ export type ArtifactDetailProps = {
    * name (D7 452:2406, D8 452:3016).
    */
   madeInLayer?: string | undefined
+  /** The menu the project chip opens; without it the chip is text. */
+  projectMenu?: ProjectMenu | undefined
 }
 
-export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }: ArtifactDetailProps) {
+export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer, projectMenu }: ArtifactDetailProps) {
   const parts = (
     <>
       <ArtifactBar
@@ -51,7 +53,7 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }
         discussOpen={side === undefined ? undefined : true}
         onDiscuss={onDiscuss}
       />
-      <ArtifactTitleBlock artifact={artifact} />
+      <ArtifactTitleBlock artifact={artifact} projectMenu={projectMenu} />
       <ArtifactPreview artifact={artifact} />
       {/* A card opened from the library names no chat, so it has no Made in. */}
       {artifact.madeIn === undefined ? null : (

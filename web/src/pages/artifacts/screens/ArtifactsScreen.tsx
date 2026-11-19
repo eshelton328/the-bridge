@@ -55,6 +55,17 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
         const open = openArtifact(data, ui, layout)
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
         const view = open === undefined ? undefined : appliedView(open.artifact, open.discussion, ui)
+        // D2, T2: the project chip opens the project menu; picking a project files the artifact in it, as M7's sheet.
+        const projectMenu =
+          view === undefined || data.fileMenu === undefined
+            ? undefined
+            : {
+                menu: data.fileMenu,
+                value: filedProject(ui, data.open?.id, view.artifact),
+                onValueChange: (fileProject: string) => {
+                  onUiChange?.({ fileProject, fileFor: view.artifact.id })
+                },
+              }
         // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
         const openCard = (openId: string) => {
           onUiChange?.({ openId, artifactClosed: false })
@@ -154,6 +165,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                     layout={layout}
                     badge={view.badge}
                     backLabel={data.title}
+                    projectMenu={projectMenu}
                     onBack={() => {
                       onUiChange?.({ artifactClosed: true })
                     }}
@@ -181,6 +193,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
                           }
                     }
                     madeInLayer={discussion?.layers.madeIn}
+                    projectMenu={projectMenu}
                     side={
                       discussing && thread !== undefined ? (
                         <DiscussionPanel {...thread} onClose={closeDiscussion} />
@@ -192,7 +205,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
             />
             {/* M7: File in a project, a sheet the phone's ⋯ button opens over the artifact. Picking a project checks
                 it; Done, the scrim and Escape close it. Remove does nothing yet, as the desktop's Remove (D2). A wider
-                screen has nothing that opens it yet (LIBRARY_GAPS.md, Project chip menu), but shows it when a state
+                screen opens the project menu from the project chip instead, but shows this sheet when a state
                 sets `fileOpen`, as a story at the width Storybook gives it does. */}
             {view === undefined || data.fileMenu === undefined ? undefined : (
               <FileSheet

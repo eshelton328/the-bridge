@@ -15,6 +15,7 @@
 import type { ScreenState } from '../../lib/screenState.ts'
 import { addLink } from './states/addLink.ts'
 import { addLinkPhone } from './states/addLinkPhone.ts'
+import { artifactOpen } from './states/artifactOpen.ts'
 import { library } from './states/library.ts'
 import { libraryTablet } from './states/libraryTablet.ts'
 import { sortOpen } from './states/sortOpen.ts'
@@ -29,6 +30,8 @@ export const artifactsHome = {
     filterMenu: libraryTablet.data.filterMenu,
     sorts: sortOpen.data.sorts,
     sortMenu: sortOpen.data.sortMenu,
+    // D2's project menu, so an open artifact's project chip (or the phone's ⋯) opens it.
+    fileMenu: artifactOpen.data.fileMenu,
     // D5's form with its fields empty, so Add a link opens the dialog (D5) or the phone's sheet (M6) for a new link.
     addLinkForm: {
       ...addLink.data.addLinkForm,

@@ -17,7 +17,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { ArtifactFileMenu } from '../types.ts'
+import { type ArtifactFileMenu, noProject } from '../types.ts'
 
 // M7 407:1060, 407:1092: the artifact's title and the note sit at the sheet's inset, in the description's grey.
 const muted = css({ textStyle: 'small', color: 'fg.muted' })
@@ -36,9 +36,6 @@ const body = css({ pb: '8' })
 // content edge (17 from the screen's side). A `text` Button pads its label 8 inside a 1 px border, so the button
 // reaches 8 past the header's edge on that side and its label sits 1 px inside Figma's.
 const headerEnd = css({ me: '-8' })
-
-/** The value of the Not in a project choice. */
-const noProject = 'none'
 
 export type FileSheetProps = {
   menu: ArtifactFileMenu
