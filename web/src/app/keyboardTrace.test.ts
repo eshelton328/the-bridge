@@ -142,6 +142,31 @@ describe('keyboard trace sampler', () => {
     expect(posts[0]).not.toContain('"type":"resize"')
   })
 
+  it('sends its last snapshot when the page is hidden before the safe-area probe had its frames', async () => {
+    // A hidden page runs no animation frame.
+    const frames = vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0)
+    onTestFinished(() => {
+      frames.mockRestore()
+    })
+    const posts: string[] = []
+    const running = startKeyboardTrace({
+      postEveryMs: 60_000,
+      overlay: false,
+      post: (_endpoint, body) => {
+        posts.push(body)
+        return Promise.resolve(undefined)
+      },
+    })
+    onTestFinished(running.stop)
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    onTestFinished(() => {
+      Reflect.deleteProperty(document, 'visibilityState')
+    })
+    document.dispatchEvent(new Event('visibilitychange'))
+    await expect.poll(() => posts.length, { timeout: 2000 }).toBe(1)
+    expect(document.querySelector('[data-keyboard-trace-probe]')).toBeNull()
+  })
+
   it('shows an overlay that takes no tap and no focus, and removes it on stop', () => {
     const running = trace()
     const overlay = document.querySelector<HTMLElement>('[data-keyboard-trace]')

@@ -115,9 +115,12 @@ const nextFrame = (win: Window) =>
     })
   })
 
+/** How long the probe waits for its two frames, in ms: a hidden page runs no frame, and its last POST waits on the read. */
+const PROBE_FRAMES_MS = 250
+
 /**
  * Reads `env(safe-area-inset-*)` through a hidden probe: it appends the probe, waits two animation frames so the page
- * has laid it out, reads the probe's computed padding and removes it. `env()` is 0 on every side unless the viewport
+ * has laid it out (at most 250 ms, as a hidden page runs none), reads the probe's computed padding and removes it. `env()` is 0 on every side unless the viewport
  * meta has `viewport-fit=cover`.
  */
 export async function readSafeArea(win: Window = window): Promise<SafeArea> {
@@ -131,8 +134,14 @@ export async function readSafeArea(win: Window = window): Promise<SafeArea> {
     'padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)'
   doc.body.append(probe)
   try {
-    await nextFrame(win)
-    await nextFrame(win)
+    let timer = 0
+    await Promise.race([
+      nextFrame(win).then(() => nextFrame(win)),
+      new Promise<void>((done) => {
+        timer = win.setTimeout(done, PROBE_FRAMES_MS)
+      }),
+    ])
+    win.clearTimeout(timer)
     const style = win.getComputedStyle(probe)
     return {
       top: px(style.paddingTop),
