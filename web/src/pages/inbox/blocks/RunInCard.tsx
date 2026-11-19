@@ -63,17 +63,19 @@ export function RunInCard({ runIn, pickerOpen, onPickerOpenChange, layout = 'des
     <Button
       size="sm"
       iconOnly
+      keepIconSize
       aria-label="Change"
       pressed={pickerOpen ? true : undefined}
       data-figma="button · Change"
       onClick={() => onPickerOpenChange?.(!pickerOpen)}
     >
-      <ChevronDownIcon />
+      {/* Figma draws the chevron at 12 (M2 346:9319, D3 346:1205). */}
+      <ChevronDownIcon size="12" />
     </Button>
   ) : (
-    <Button size="sm" textSize="xs" pressed={pickerOpen ? true : undefined}>
+    <Button size="sm" textSize="xs" keepIconSize pressed={pickerOpen ? true : undefined}>
       Change
-      <ChevronDownIcon />
+      <ChevronDownIcon size="12" />
     </Button>
   )
   const where = phone || runIn.folders === undefined ? runIn.detail : `${runIn.detail} · ${runIn.folders}`
