@@ -103,7 +103,11 @@ async function fetchWorkspaces(): Promise<WorkspacesResponse> {
 
 export type LiveDeps = { readonly client: QueryClient; readonly fetch: () => Promise<WorkspacesResponse> }
 
-/** `state` with the server's workspaces, or with its own data and a notice in the status bar when they cannot be read. */
+/**
+ * `state` with the server's workspaces, or with its own data and a notice when they cannot be read. The
+ * notice goes to the status bar, which only the workbench layout shows, and to the dev ErrorTray, which
+ * main.ts renders beside the router in every layout; the live source is development only.
+ */
 export async function withLiveWorkspaces(
   state: WorkspacesScreenState,
   { client, fetch }: LiveDeps = { client: queryClient, fetch: fetchWorkspaces },
@@ -113,9 +117,9 @@ export async function withLiveWorkspaces(
     const workspaces = toWorkspaces(response)
     return { ...state, data: { ...state.data, workspaces, current: workspaces[0]?.id ?? state.data.current } }
   } catch (thrown) {
-    report(thrown, 'handler')
     const why = thrown instanceof Error ? thrown.message : String(thrown)
     const alert = `Live data is not available (${why}); the page shows mock data.`
+    report(new Error(alert, { cause: thrown }), 'handler')
     return { ...state, data: { ...state.data, status: { ...state.data.status, alert } } }
   }
 }

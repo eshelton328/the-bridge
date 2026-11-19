@@ -162,14 +162,14 @@ describe('withLiveWorkspaces', () => {
     expect(state.ui).toBe(workspacesHome.ui)
   })
 
-  it('keeps the mock data and says why in the status bar and the error tray when the server is down', async () => {
+  it('keeps the mock data and gives the notice in the status bar and the error tray when the server is down', async () => {
     const down = () => Promise.reject(new Error('the server answered 502: herdr socket: ENOENT'))
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: down })
     expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
     expect(state.data.status.alert).toBe(
       'Live data is not available (the server answered 502: herdr socket: ENOENT); the page shows mock data.',
     )
-    expect(getReports().map((r) => r.error.message)).toEqual(['the server answered 502: herdr socket: ENOENT'])
+    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
   })
 
   it('keeps the mock data when the server sends a reply the contract refuses', async () => {
@@ -177,5 +177,6 @@ describe('withLiveWorkspaces', () => {
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: odd })
     expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
     expect(state.data.status.alert).toMatch(/^Live data is not available/)
+    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
   })
 })
