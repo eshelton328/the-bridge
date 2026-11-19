@@ -11,8 +11,12 @@ that library #115 added: `ViewSwitch tone="accent"` and
 `FilterChips padding="none"`. A rerun of `pnpm fidelity toolkit` on
 2026-11-18, against library 1.0.0-beta.47 with the list options of
 library #166, gives the same Checks: the map view uses none of them.
+A rerun on 2026-11-19, against library 1.0.0-beta.69 with library
+#211's compact nodes (`MapGraph nodeDensity="compact"`) and links with
+no end dot (`edgeEnd="none"`), gives the Checks below.
 
-The map is the library's `MapGraph` with 140 × 30 nodes and no legend,
+The map is the library's `MapGraph` with 140 × 30 compact nodes, links
+that end at the node's edge and no legend,
 and the selected item is `MapSelectionCard` with no description. The
 nodes and the column headings are inside the library's SVG, so they carry
 no `data-figma`, and the position check measures only the page, the
@@ -20,14 +24,16 @@ header, the chips, the canvas, the selection and the tab bar.
 
 ## Checks
 
-- Text: fail. Every Figma string is in the render. `pr-description`
-  (428:458) is not visible: the skill's node cuts it with an ellipsis,
-  where Figma shows it in full (see Node labels). Nine names that Figma
-  also cuts with an ellipsis (428:421, 428:466, 428:487, 428:497,
-  428:502, 428:507, 428:512, 428:523, 428:529) are in `exceptions.json`.
-- Position: 12 of 14 layers pass (`header`, `read-only`,
-  `view · List, Map or Activity`, `filter · chips`, `map canvas`,
-  `tab bar`).
+- Text: pass. Every Figma string is in the render, and `pr-description`
+  (428:458) shows whole in its compact node, as in Figma. Nine names
+  that Figma also cuts with an ellipsis (428:421, 428:466, 428:487,
+  428:497, 428:502, 428:507, 428:512, 428:523, 428:529) are in
+  `exceptions.json`.
+- Position: 12 of 14 layers pass; `toolkit` and `selection · writer`
+  fail (see Toolkit box and Selection bar). The passing layers are
+  `header`, `read-only`,
+  `view · List, Map or Activity`, `filter · chips`, `map canvas` and
+  `tab bar`.
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects`, `tab · Artifacts` and
   `tab · More`.
@@ -42,11 +48,11 @@ header, the chips, the canvas, the selection and the tab bar.
   the counts under them, and a full-width Open writer button with a
   chevron (`selection · writer` x +351, y -77, w -364, h +68; gap: Map
   selection bar).
-- **Node labels.** The node's name has 96 px against Figma's 104, with a
-  16 px kind icon against 13: `MapNode` pads 10 px and puts the name
-  34 px in, where Figma puts it 28 px in. So `pr-description` (the skill)
-  ends in an ellipsis, and each name that Figma cuts shows one or two
-  letters fewer (gap: Map node 140 px).
+- **Node labels (closed 2026-11-19).** The compact node
+  (`nodeDensity="compact"`, library #211) has a 12 px kind icon and puts
+  the name 27 px in, against Figma's 13 px icon and 28 px, so
+  `pr-description` shows whole and the names Figma cuts end where
+  Figma's do. The 12 px icon is the nearest icon token to 13.
 - **Toolkit box.** Figma's `toolkit` layer (428:302) is the page's
   content box, 712 wide from x 22, ending at the tab bar (h 1040). The
   render's `toolkit` is the page with its 24 px sides, 756 wide from x 0
@@ -65,13 +71,13 @@ header, the chips, the canvas, the selection and the tab bar.
   next to each other (project-setup to agents-md) and 65.7 for six rows,
   so the short curves stand further out and the long ones hug the column
   (gap: Map link bow).
-- **Open writer.** The bar's button has no action yet: the item page
-  (D3) is a later frame.
+- **Open writer.** The card's button opens writer's item page, as the
+  list's rows do.
 
 ## Second review
 
-- **Link ends.** MapGraph draws a small dot where a link meets a node;
-  Figma has no end marker (gap: Map link ends).
+- **Link ends (closed 2026-11-19).** The links end at the node's edge
+  with no dot (`edgeEnd="none"`, library #211), as Figma's do.
 - **Dimmed nodes.** The items writer does not touch are brighter than
   Figma's faint ones (gap: Map dimmed node).
 - **Status bar and corners (not real).** Figma's 9:41 status bar and the

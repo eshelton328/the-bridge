@@ -9,41 +9,33 @@ same items, rows, links and headings, with writer selected. D01, T01,
 M01, M04, D02 and T02 give the same results as before M11. The numbers
 below are from the run with library 1.0.0-beta.15 and the prop that
 library #115 added for the view buttons, `Button pressedTone="accent"`.
+The Checks below are from a rerun on 2026-11-19, against library
+1.0.0-beta.69 with library #211's parts: compact nodes, links with no end
+dot, the minimap and the compact selection card.
 
-The map is the library's `MapGraph` with T2's 140 × 30 nodes, in a
-366 × 500 window (`map viewport`) that scrolls sideways. The hint is a
-`Badge`, and the selected item is `MapSelectionCard` with no description,
-under the window. The nodes and the column headings are inside the
+The map is the library's `MapGraph` with T2's 140 × 30 compact nodes
+(`nodeDensity="compact"`), links that end at the node's edge
+(`edgeEnd="none"`) and the minimap (`minimap`), in a 366 × 500 window
+(`map viewport`) that scrolls sideways. The hint is a `Badge`, and the
+selected item is `MapSelectionCard density="compact"` with Show links
+(`linksLabel`, `onLinks`) and no description or close button, under the
+window. Show links opens the item on its Links tab (`openLinks` in
+`screens/itemView.ts`): the note sends it to M3, a proposal with no
+frame, and the Links tab (M17 on the phone) shows the same links. The nodes and the column headings are inside the
 library's SVG, so they carry no `data-figma`.
 
 ## Checks
 
-- Text: fail.
-  - missing: `→7 ←4` (461:1266) and `Show links` (461:1274): the card
-    has no Show links button and writes the counts in words (see
-    Selection card).
-  - extra: `→ links to 7 ← linked from 4`, the card's counts line.
-  - notVisible: the minimap's strings (461:1062 to 461:1242): `RULES,
-    HOOKS`, `SKILLS`, `AGENTS`, `WORKFLOWS`, `writing`, `ste100`,
-    `readmes`, `commits-and-prs`, `diagrams`, `skills`, `linear`,
-    `releases`, `commit-msg`, `audit-slop`, `pr-description`, `readme`,
-    `mermaid-diagrams`, `eval-cases`, `project-setup`, `agents-md`,
-    `ambitious`, `writing-reviewer`, `writer`, `pr-description-checker`,
-    `readme-cold-reader`, `diagram-reviewer`, `eval-case-writer`,
-    `eval-grader`, `skill-eval-cases` and `skill-eval-round`. The render
-    has no minimap (see Minimap). Each Figma layer needs its own visible
-    occurrence, so the card's `writer` (461:1263) also counts as not
-    visible: the minimap's two `writer` layers and the card's take more
-    visible `writer` runs than the render has without a minimap.
-  - notVisible: `pr-description` (461:977): the skill's node cuts it
-    with an ellipsis, where Figma shows it in full (see Node labels).
-  - `exceptions.json` covers `commits-and-prs` (461:940) and
-    `mermaid-diagrams` (461:985), which Figma also cuts with an ellipsis,
-    and `commit-msg` (461:965) and `ambitious` (461:1001), whose nodes
-    lie below the window's bottom edge, where Figma's window clips them.
-- Position: 12 of 14 layers pass (`header`, the three view buttons,
-  `map viewport`, `hint`, `tab bar`); `toolkit` and `selection · writer`
-  fail.
+- Text: pass. `exceptions.json` covers six layers:
+  `commits-and-prs` (461:940) and `mermaid-diagrams` (461:985), which
+  Figma also cuts with an ellipsis; `commit-msg` (461:965) and
+  `ambitious` (461:1001), whose nodes lie below the window's bottom edge,
+  where Figma's window clips them; and the minimap's `commit-msg`
+  (461:1159) and `ambitious` (461:1195), which the render's minimap does
+  not draw (see Window).
+- Position: 13 of 14 layers pass (`header`, the three view buttons,
+  `map viewport`, `hint`, `selection · writer`, `tab bar`); `toolkit`
+  fails (see Toolkit box).
   The shared navigation's items pass too: `tab · Home`, `tab · Inbox`,
   `tab · Workspaces`, `tab · Projects` and `tab · More`.
 - Rules: pass. The window's sideways scroll (`hiddenOverflow` on the
@@ -52,19 +44,14 @@ library's SVG, so they carry no `data-figma`.
 
 ## Deviations
 
-- **Minimap.** Figma shows a small map of the whole drawing in the
-  window's top right corner, 93 × 116, with a box for the part in view.
-  The render has none, so the writer node, its lines and the top of
-  audit-slop show there in full (gap: Map minimap).
-- **Selection card.** Figma's card under the window is 366 × 90: one
-  row with the icon, writer, Skill and the counts `→7  ←4` at the right
-  end, then a cyan Show links button with a links icon and a dark Open
-  writer button side by side, and no close button. The render's card is
-  130 high: the title row ends in a bordered close button, the counts
-  read `→ links to 7   ← linked from 4` on their own line, and one
-  full-width cyan Open writer button with a chevron takes the last row;
-  there is no Show links (`selection · writer` h +40; gap: Map selection
-  card (phone)).
+- **Minimap (closed 2026-11-19).** The window shows the library's
+  minimap in its top right corner (`minimap`, library #211), with a box
+  for the part in view. It is shorter than Figma's (see Window).
+- **Selection card (closed 2026-11-19).** The card under the window is
+  the library's compact card (`density="compact"`, library #211),
+  366 × 90 as Figma's: the icon, writer, Skill and `→7  ←4` on one row,
+  then Show links with the links icon and Open writer side by side, and
+  no close button. Its box passes the position check.
 - **Window (2026-11-18).** Figma's window drags both ways and pinch
   zooms (note). The render's window pinch zooms from the whole drawing
   fitted to it up to 3 times and drags (MapGraph `zoom`, library #173),
@@ -72,14 +59,15 @@ library's SVG, so they carry no `data-figma`.
   window size, so the render draws the map 498 px high, the window's
   inside: the rows under the window (ambitious, commit-msg) are not in
   the drawing and cannot be reached (gap: Map window). The window's box
-  matches Figma.
+  matches Figma. The minimap draws that same drawing, so it is about
+  85 × 60 against Figma's 93 × 116 and has no row for ambitious or
+  commit-msg (461:1195, 461:1159).
 - **Hint.** The hint pill is the library's quiet badge: 30 px high
   against 27, with a border where Figma draws a dark fill (gap: Map hint
   pill). Its box passes the position check.
-- **Node labels.** The node's name has 96 px against Figma's 104, with a
-  16 px kind icon against 13, so `pr-description` (the skill) ends in an
-  ellipsis and each name that Figma cuts shows one or two letters fewer
-  (gap: Map node 140 px).
+- **Node labels (closed 2026-11-19).** The compact node has a 12 px
+  kind icon against Figma's 13 and puts the name 27 px in, so
+  `pr-description` shows whole, as in Figma.
 - **Links in one column.** A link between two items of one column bows
   out 40 px for every length; Figma bows 22.2 px for rows next to each
   other (project-setup to agents-md) and 65.7 for six rows (gap: Map link
@@ -92,13 +80,13 @@ library's SVG, so they carry no `data-figma`.
   content box, 366 wide from x 12. The render's `toolkit` is the page
   with its 12 px sides, 390 wide from x 0 (`toolkit` x -12, w +24), as
   on T2 and M1. Everything inside it is at Figma's place.
-- **Open writer.** The card's button has no action yet: the item page
-  (D3) is a later frame.
+- **Open writer.** The button opens writer's item page, as the list's
+  rows do.
 
 ## Second review
 
-- **Link ends.** MapGraph draws a small dot where a link meets a node;
-  Figma has no end marker (gap: Map link ends).
+- **Link ends (closed 2026-11-19).** The links end at the node's edge
+  with no dot (`edgeEnd="none"`), as Figma's do.
 - **Stars.** The library `Backdrop` draws one fixed star set for the
   phone, taken from one Figma frame, so the faint stars sit in other
   places than M11's; most of them fall under the map window and the

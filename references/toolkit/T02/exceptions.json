@@ -44,11 +44,6 @@
       "text": "skill-eval-round",
       "layers": ["428:529"],
       "reason": "The name is longer than its 140 px node (node · skill-eval-round, 428:524), and frame.png cuts it with an ellipsis (skill-eval-ro…); frame.json keeps the layer's full characters. MapNode cuts the same name with an ellipsis and shows it in full in a tooltip on hover and focus, so the text check counts it as not visible."
-    },
-    {
-      "text": "pr-description",
-      "layers": ["428:458"],
-      "reason": "The skill node's name ends with an ellipsis: MapNode gives the name 96 px against Figma's 104, with a 16 px kind icon against 13, where Figma shows pr-description in full (deviations.md \"Node labels.\"; LIBRARY_GAPS.md \"Map node 140 px\")."
     }
   ]
 }
