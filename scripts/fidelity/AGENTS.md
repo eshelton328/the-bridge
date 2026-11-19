@@ -12,6 +12,7 @@ The Figma references the checks read are in
 | `fidelity.ts`        | `pnpm fidelity <page> [frameId…]`: renders each frame's story and runs the three checks                                                                            |
 | `checkText.ts`       | Every Figma string is in the render and seen; no visible text that Figma does not have; a `missing` exception skips only the layers it names                       |
 | `checkPosition.ts`   | Each `data-figma` element's box matches its Figma layer's box within the tolerance (4 px), measured below Figma's status bar on a tablet or phone                  |
+| `checkIcons.ts`      | For the position check: each Figma icon (`icon/…`, `kind · …`, `logo · …`, `chevron · …`) matched by place to a render svg draws at its Figma size, ± 2 px         |
 | `checkRules.ts`      | No text hidden or scrolled away by overflow, no scroll bar, the render fills its viewport's height, no stretched pill                                              |
 | `inPage.ts`          | The measuring function that runs in the browser (text runs, boxes, rule findings), over the story root and any portal content in `body` (popovers, menus, dialogs) |
 | `settle.ts`          | Waits until each animation that ends on its own has finished, so the checks measure a state's last frame                                                           |
@@ -55,7 +56,13 @@ The Figma references the checks read are in
      layer over the same text layer too.
    - `text.extra`: visible render text that Figma does not have.
    - `position.diffs`: boxes off by more than the tolerance, with the
-     delta per edge; also unknown, ambiguous or duplicate keys.
+     delta per edge; also unknown, ambiguous or duplicate keys; and
+     `iconSize`: a Figma icon (a layer named `icon/…`, `kind · …`,
+     `logo · …` or `chevron · …`) whose render icon,
+     the svg whose centre is nearest within the tolerance, is more than
+     2 px bigger or smaller (`checkIcons.ts`). Its key is the icon's node
+     id, which a `position` exception can name. A Figma icon with no
+     render icon at its place is not compared.
    - `rules.findings`: `hiddenOverflow`, `scrollBar`, `fullHeight`,
      `badgeFullWidth`, each with the element's selector.
 5. **Second review.** Give a separate agent only the side-by-side PNG and

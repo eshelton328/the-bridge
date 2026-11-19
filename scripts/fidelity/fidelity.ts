@@ -145,7 +145,7 @@ async function runFrame(b: Browser, origin: string, frameId: string) {
   await shown.context.close()
 
   const text = checkText(ref, exceptions, measured)
-  const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance)
+  const position = checkPosition(ref, exceptions, measured.figmaBoxes, tolerance ?? ref.tolerance, measured.iconBoxes)
   const rules = checkRules(ref, exceptions, measured)
   const results = { text: text.ok, position: position.ok, rules: rules.ok }
   // The report's ok stays the result of all three checks, which
