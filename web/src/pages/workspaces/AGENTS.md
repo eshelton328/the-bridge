@@ -601,7 +601,8 @@ first: it says what each file of a page folder is for.
   left, and their drafts stay in `ui.drafts`. The page store keeps the
   layouts across page visits. The phone and the tablet's list views have no workspace tabs,
   so this does not apply there; a tablet that draws the desktop layout
-  gets it with the tabs. `WorkspaceTabSwitch.test.tsx` tests it.
+  gets it with the tabs. `WorkspaceTabSwitch.test.tsx` tests it, and
+  `app/WorkspacesRoute.test.tsx` through the route and a page visit.
 - Open questions answered: D1's note (a saved reference) leaves open
   whether each workspace keeps herdr's own layout (open question 4). On
   2026-11-18 Erik's answer to review R6 settled it: each workspace keeps
