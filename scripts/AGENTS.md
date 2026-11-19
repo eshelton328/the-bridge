@@ -18,7 +18,7 @@ and exits 1 on a problem.
 | `shardTimes.ts`          | `pnpm shard:times <run-id>`: writes `testShardTimes.json`, each file's time in the test-unit shard jobs of a CI run                                          |
 | `ciPlan.ts`              | The plan job of `ci.yml`: whether a PR's changed files can change the fidelity result                                                                        |
 | `keyboardCheck.ts`       | `pnpm keyboard:served`: the keyboard check of screen review R20 to R22 on the served app (below); `keyboardCheckLib.ts` holds its pure parts                 |
-| `keyboardTracePlugin.ts` | The dev server's `/__keyboard-trace` endpoint (below)                                                                                                        |
+| `keyboardTracePlugin.ts` | The dev server's `/__keyboard-trace` endpoint and its `/__keyboard-trace/enabled` switch (below)                                                             |
 
 [fidelity/AGENTS.md](fidelity/AGENTS.md): `pnpm fidelity`, the text, position
 and rule checks of the fidelity loop, and `pnpm fidelity:refs`.
@@ -86,13 +86,26 @@ not. Its `POST /__keyboard-trace` takes the trace of the app's
 makes the file name from the parsed `startedAt`, which must be within the
 last day; no client text reaches the path. It takes only `POST` with
 `application/json` (405, 415), at most 10 MB (413), and a body of
-`{ startedAt, userAgent, samples[] }` (400). A trace whose last
+`{ startedAt, userAgent, samples[] }` (400). A body may also have
+`displayMode` (`standalone` or `browser`), `screenHeight`, `screenWidth`,
+`devicePixelRatio` (numbers) and `safeArea` (`{ top, right, bottom, left }`,
+numbers); each is checked when present (400) and may be missing, so a
+trace from an older client is still taken. A trace whose last
 sample is older than the one already written gets 409 and does not
 replace it, since a hidden page POSTs while an earlier POST may still be
 out. The traces folder is
 `KEYBOARD_TRACE_DIR` when set, else `engine/_local/phone-review/traces/`
 in the first folder above the repository that has `engine/` (the
 ncc-1701 root); it answers 500 when there is none.
+
+`GET /__keyboard-trace/enabled` is the switch for the installed Home
+Screen app, where no one can add the URL param. It answers
+`{ "enabled": true }` while the file `ENABLED` is in the traces folder,
+else `{ "enabled": false }` (also when there is no traces folder), with
+`Cache-Control: no-store`. It takes only `GET` and `HEAD` (405), reads no
+input and only checks whether that one file exists. The plugin adds it
+before the trace endpoint, as connect matches `/__keyboard-trace` as a
+prefix of it.
 
 ## Rules
 

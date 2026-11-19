@@ -3,14 +3,23 @@
 // file per trace session in the brain's phone-review traces folder, so a
 // trace from the owner's phone reaches disk with no step from him. It is a Vite
 // plugin with `apply: 'serve'`, so a build never has the endpoint.
+//
+// `GET /__keyboard-trace/enabled` is the switch: the app asks it once on
+// load and traces without the URL param when the file `ENABLED` is in the
+// traces folder, so bridge-coord can turn tracing on and off in the
+// installed Home Screen app, where no one can type a URL.
 import { randomUUID } from 'node:crypto'
 import { existsSync, statSync } from 'node:fs'
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, stat, writeFile } from 'node:fs/promises'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { dirname, join, resolve } from 'node:path'
 
 /** The endpoint the app POSTs its trace to. */
 export const KEYBOARD_TRACE_PATH = '/__keyboard-trace'
+/** The switch the app asks on load: `{ enabled }`, true when the traces folder has `ENABLED`. */
+export const KEYBOARD_TRACE_ENABLED_PATH = '/__keyboard-trace/enabled'
+/** The file in the traces folder that turns tracing on without the URL param. */
+export const KEYBOARD_TRACE_SWITCH_FILE = 'ENABLED'
 /** The largest body the endpoint takes, in bytes. */
 export const KEYBOARD_TRACE_MAX_BYTES = 10 * 1024 * 1024
 /** How far a trace's `startedAt` may be from the server's clock: older or later is refused. */
@@ -84,6 +93,31 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+const DISPLAY_MODES = new Set(['standalone', 'browser'])
+const SAFE_AREA_SIDES = ['top', 'right', 'bottom', 'left'] as const
+const isNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value)
+
+/**
+ * Whether a trace's header is valid: `userAgent` and `samples[]` always, and
+ * `displayMode`, `screenHeight`, `screenWidth`, `devicePixelRatio` and
+ * `safeArea` checked when present, so a trace from a client older than
+ * those fields is still taken.
+ */
+export function isTraceHeader(trace: unknown): trace is Record<string, unknown> & { samples: unknown[] } {
+  if (!isRecord(trace) || typeof trace.userAgent !== 'string' || !Array.isArray(trace.samples)) return false
+  if (
+    trace.displayMode !== undefined &&
+    !(typeof trace.displayMode === 'string' && DISPLAY_MODES.has(trace.displayMode))
+  )
+    return false
+  for (const key of ['screenHeight', 'screenWidth', 'devicePixelRatio'] as const) {
+    if (trace[key] !== undefined && !isNumber(trace[key])) return false
+  }
+  const safeArea = trace.safeArea
+  if (safeArea === undefined) return true
+  return isRecord(safeArea) && SAFE_AREA_SIDES.every((side) => isNumber(safeArea[side]))
+}
+
 /** The `t` of a trace's last sample, or -Infinity when it has none. */
 function lastSampleTime(samples: unknown[]): number {
   const last = samples.at(-1)
@@ -132,8 +166,12 @@ export function createTraceHandler({
       send(res, 400, 'keyboard-trace body is not JSON')
       return
     }
-    if (!isRecord(trace) || typeof trace.userAgent !== 'string' || !Array.isArray(trace.samples)) {
-      send(res, 400, 'keyboard-trace body needs { startedAt, userAgent, samples[] }')
+    if (!isTraceHeader(trace)) {
+      send(
+        res,
+        400,
+        'keyboard-trace body needs { startedAt, userAgent, samples[] }, and a valid displayMode, screenHeight, screenWidth, devicePixelRatio and safeArea when present',
+      )
       return
     }
     const name = traceFileName(trace.startedAt, now())
@@ -168,15 +206,58 @@ export function createTraceHandler({
   }
 }
 
+/**
+ * The switch: `GET` answers `{ "enabled": true }` when the traces folder has
+ * the file `ENABLED`, else `{ "enabled": false }`, never cached. It takes no
+ * input and reads only whether that one file exists.
+ */
+export function createEnabledHandler({
+  traceDir = () => findTraceDir(),
+}: {
+  traceDir?: () => string | undefined
+} = {}): TraceHandler {
+  const isEnabled = async (): Promise<boolean> => {
+    const dir = traceDir()
+    if (dir === undefined) return false
+    try {
+      return (await stat(join(dir, KEYBOARD_TRACE_SWITCH_FILE))).isFile()
+    } catch {
+      return false
+    }
+  }
+  const handle = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
+    res.setHeader('cache-control', 'no-store')
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.setHeader('allow', 'GET, HEAD')
+      send(res, 405, 'keyboard-trace/enabled takes only GET')
+      return
+    }
+    const body = JSON.stringify({ enabled: await isEnabled() })
+    res.statusCode = 200
+    res.setHeader('content-type', 'application/json; charset=utf-8')
+    res.setHeader('x-content-type-options', 'nosniff')
+    res.end(req.method === 'HEAD' ? undefined : body)
+  }
+  return (req, res, next) => {
+    handle(req, res).catch(next)
+  }
+}
+
 /** The structural part of Vite's dev server this plugin uses. */
 type DevServer = { middlewares: { use: (path: string, handler: TraceHandler) => unknown } }
 
-/** The Vite plugin: the trace endpoint on the dev server only (`apply: 'serve'`). */
+/** The Vite plugin: the trace endpoint and its switch on the dev server only (`apply: 'serve'`). */
 export function keyboardTracePlugin(options: Parameters<typeof createTraceHandler>[0] = {}) {
   return {
     name: 'bridge-keyboard-trace',
     apply: 'serve' as const,
     configureServer(server: DevServer) {
+      // The switch first: connect matches by prefix, so the trace endpoint
+      // would also take `/__keyboard-trace/enabled`.
+      server.middlewares.use(
+        KEYBOARD_TRACE_ENABLED_PATH,
+        createEnabledHandler(options.traceDir ? { traceDir: options.traceDir } : {}),
+      )
       server.middlewares.use(KEYBOARD_TRACE_PATH, createTraceHandler(options))
     },
   }
