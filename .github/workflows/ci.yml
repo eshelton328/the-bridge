@@ -256,3 +256,43 @@ jobs:
       - run: pnpm build
       - run: pnpm build:canvas
       - run: pnpm build-storybook
+
+  # Secrets and private values in the commits of this PR (gitleaks 8.30.1,
+  # rules in .gitleaks.toml), as in the library. Personal values come from
+  # the secret PRIVACY_TERMS, so they are never in the repository. The
+  # pre-commit hook runs the same scan earlier, but a hook can be skipped;
+  # this job is the gate. ubuntu-slim has Node 24, so no setup is needed.
+  secrets:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Install gitleaks 8.30.1
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+            https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  $RUNNER_TEMP/gitleaks.tgz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP" gitleaks
+      # The rule tests run gitleaks on planted lines; they need no packages.
+      - name: Test the scan rules
+        env:
+          GITLEAKS: ${{ runner.temp }}/gitleaks
+        run: node --test scripts/secrets/secretScan.test.ts
+      - name: Scan the commits of this PR
+        env:
+          PRIVACY_TERMS: ${{ secrets.PRIVACY_TERMS }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # A missing secret would turn the personal check off, so it fails.
+          if [ -z "$PRIVACY_TERMS" ]; then echo "::error::the secret PRIVACY_TERMS is missing"; exit 1; fi
+          alt="$(printf '%s\n' "$PRIVACY_TERMS" | grep -v '^[[:space:]]*#' | sed 's/^[[:space:]]*//; s/[[:space:]]*$//' \
+            | grep -v '^$' | sed 's/[][\\.*^$+?(){}|/]/\\&/g' | paste -sd '|' -)"
+          cfg="$RUNNER_TEMP/gitleaks.toml"
+          cat .gitleaks.toml > "$cfg"
+          printf '\n[[rules]]\nid = "personal-term"\ndescription = "A value from the secret PRIVACY_TERMS"\n' >> "$cfg"
+          printf "regex = '''(?i)\\\\b(?:%s)\\\\b'''\n" "$alt" >> "$cfg"
+          "$RUNNER_TEMP/gitleaks" git --redact --no-banner --verbose --ignore-gitleaks-allow --config "$cfg" --log-opts="$BASE..$HEAD" .

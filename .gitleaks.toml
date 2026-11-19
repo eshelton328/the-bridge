@@ -1,0 +1,100 @@
+# Secret and privacy scan for gitleaks 8.30.1, used by the pre-commit hook
+# (the brain's toolkit/hooks/secret-scan) and by the CI job "secrets".
+# Personal values (names, machine and tailnet names) are never in this
+# file: the hook reads them from a local file and CI from the secret
+# PRIVACY_TERMS, and both add them as the rule "personal-term".
+# An exception is one fixed path and one rule, never a broad regex. Both
+# CI scans pass --ignore-gitleaks-allow, so a "gitleaks:allow" comment on
+# a line is not an exception. scripts/secret-scan.test.ts checks the rules.
+
+title = "secrets and privacy"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "home-path"
+description = "A home folder path names a person; use ~ or a relative path"
+regex = '''/(?:Users|home)/([A-Za-z0-9._-]+)/'''
+secretGroup = 1
+keywords = ["/users/", "/home/"]
+[[rules.allowlists]]
+regexTarget = "match"
+regexes = ['''^/home/(?:dev|runner)/$''']
+
+[[rules]]
+id = "tailnet-host"
+description = "A Tailscale host name (*.ts.net) names a machine and a tailnet"
+regex = '''[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.ts\.net\b'''
+keywords = [".ts.net"]
+
+[[rules]]
+id = "email"
+description = "An email address; use a users.noreply.github.com or bot address"
+regex = '''(?i)\b[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)+(?:com|net|org|io|dev|app|ai|co|me|edu|gov|mil|us|uk|de|fr|es|it|nl|se|no|dk|fi|ch|at|be|ca|au|nz|jp|in|br|info|biz|xyz|tech|email|mail|cloud|so|sh|gg|tv|ly|site|online)\b'''
+keywords = ["@"]
+[[rules.allowlists]]
+regexTarget = "match"
+regexes = [
+  '''(?i)@users\.noreply\.github\.com$''',
+  '''(?i)^(?:noreply|no-reply)@''',
+  '''(?i)\[bot\]@''',
+  '''(?i)@example\.(?:com|org|net)$''',
+]
+
+[[rules]]
+id = "private-ip"
+description = "A private or Tailscale IPv4 address (10/8, 192.168/16, 100.64/10)"
+regex = '''\b(?:10\.\d{1,3}|192\.168|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7]))\.\d{1,3}\.\d{1,3}\b'''
+
+[[rules]]
+id = "phone-number"
+description = "A phone number"
+regex = '''(?:\+\d{1,3}[ .-]?)?\(?\b\d{3}\)?[ .-]\d{3}[.-]\d{4}\b|\+\d{1,3}[ -]\d{2,4}[ -]\d{3,4}[ -]\d{3,4}\b'''
+
+[[rules]]
+id = "env-assignment"
+description = "A KEY=value line of a .env file, or a secret-named key with a literal value"
+regex = '''(?m)^\s*(?:export\s+)?(?:[A-Z][A-Z0-9_]*)?(?:TOKEN|SECRET|PASSWORD|PASSWD|API_KEY|APIKEY|PRIVATE_KEY|CREDENTIALS?)\s*=\s*["']?[^\s"'$<{][^\s"']{7,}'''
+keywords = ["token", "secret", "passw", "api_key", "apikey", "private_key", "credential"]
+
+[[rules]]
+id = "env-file-line"
+description = "Any KEY=value line in a .env file"
+regex = '''(?m)^\s*(?:export\s+)?[A-Z][A-Z0-9_]*=\S+'''
+path = '''(?:^|/)\.env(?:\.[A-Za-z0-9_-]+)?$'''
+
+# The Figma file key in each saved frame (not a secret; it opens only
+# with a Figma login). Fixed path pattern, one rule, the "fileKey" line only.
+[[allowlists]]
+description = "Figma fileKey in references/<page>/<frame>/frame.json"
+targetRules = ["generic-api-key"]
+condition = "AND"
+paths = ['''^references/[a-z]+/[A-Z][0-9]+[a-z]?/frame\.json$''']
+regexTarget = "line"
+regexes = ['''^\s*"fileKey"\s*:''']
+
+# The saved Figma frames keep the text and layer names Figma draws, the
+# owner's first name among them, so the fidelity checks can compare them
+# (references/AGENTS.md). Fixed folder, one rule.
+[[allowlists]]
+description = "Figma references keep Figma's text and layer names"
+targetRules = ["personal-term"]
+paths = ['''^references/''']
+
+# Code that must match those Figma strings: the Toolkit Activity text
+# "122 from … · 991 replies" (D18, M16, T14) and the layer name
+# "message · …" (D05) that the position check matches by data-figma.
+# Fixed paths, one rule, only the lines with those strings.
+[[allowlists]]
+description = "Figma-bound strings and their selectors"
+targetRules = ["personal-term"]
+condition = "AND"
+paths = [
+  '''^web/src/pages/toolkit/states/shared/activitySources\.ts$''',
+  '''^web/src/pages/toolkit/screens/ToolkitScreen\.stories\.tsx$''',
+  '''^web/src/pages/toolkit/blocks/ToolkitDiscussEntry\.tsx$''',
+  '''^web/src/app/ToolkitDiscuss\.test\.tsx$''',
+]
+regexTarget = "line"
+regexes = ['''122 from \w+ · 991 replies''', '''data-figma="message · \w+"''']

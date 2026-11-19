@@ -3,7 +3,7 @@
   "ignoreBinaries": ["ffmpeg"],
   "workspaces": {
     ".": {
-      "entry": ["scripts/*.ts", "scripts/fidelity/*.test.ts"],
+      "entry": ["scripts/*.ts", "scripts/fidelity/*.test.ts", "scripts/secrets/*.test.ts"],
       "project": ["scripts/**/*.ts", "*.{ts,js}"]
     },
     "web": {
