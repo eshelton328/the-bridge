@@ -15,7 +15,15 @@ type TextRun = Box & {
 export type FigmaBox = Box & { key: string; selector: string }
 export type RuleFinding = { rule: string; selector: string; detail: string }
 /** A drawn icon (an outermost svg the viewer sees), in page coordinates. */
-export type IconBox = { selector: string; x: number; y: number; w: number; h: number }
+export type IconBox = {
+  selector: string
+  x: number
+  y: number
+  w: number
+  h: number
+  /** Another element draws over the icon's centre (see coveredAt). */
+  covered: boolean
+}
 /** A rectangle by its edges, in viewport coordinates; an edge may be infinite. */
 export type Edges = { left: number; top: number; right: number; bottom: number }
 
@@ -426,6 +434,24 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
       visibleTexts.push({ text, ...boxOf([rect]), selector: selectorOf(f), covered })
     }
   }
+  // Each outermost svg that is shown, and whether another element draws
+  // over its centre (an svg under a scrim or a side panel is not an icon
+  // the viewer sees; the stack is read with pointer events on, above).
+  const iconBoxes: IconBox[] = roots
+    .flatMap((r) => [...r.querySelectorAll('svg')])
+    .filter((el) => el.parentElement?.closest('svg') == null && shown(el))
+    .map((el) => {
+      const r = el.getBoundingClientRect()
+      return {
+        selector: selectorOf(el),
+        x: r.left + window.scrollX,
+        y: r.top + window.scrollY,
+        w: r.width,
+        h: r.height,
+        covered: helpers.coveredAt([stackAt(r.left + r.width / 2, r.top + r.height / 2, el)]),
+      }
+    })
+    .filter((b) => b.w > 0 && b.h > 0)
   hitStyle.remove()
 
   // ---- data-figma boxes ----
@@ -442,21 +468,6 @@ function collectPage(rootSelector: string, helpers: Helpers): PageMeasure {
         h: r.height,
       }
     })
-
-  const iconBoxes: IconBox[] = roots
-    .flatMap((r) => [...r.querySelectorAll('svg')])
-    .filter((el) => el.parentElement?.closest('svg') == null && shown(el))
-    .map((el) => {
-      const r = el.getBoundingClientRect()
-      return {
-        selector: selectorOf(el),
-        x: r.left + window.scrollX,
-        y: r.top + window.scrollY,
-        w: r.width,
-        h: r.height,
-      }
-    })
-    .filter((b) => b.w > 0 && b.h > 0)
 
   // ---- rules ----
   const rules: RuleFinding[] = []

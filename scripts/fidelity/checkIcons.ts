@@ -2,7 +2,8 @@
 // named "icon/…", "kind · …", "logo · …" or "chevron · …") draws at its Figma size, give or take iconSlack px.
 // Library #217 drew the Workspaces sidebar rows' 16 px icons at 12 px in
 // 28 frames, and no check saw it. An icon is matched by place: the
-// render's icon (an outermost svg, inPage.ts) whose centre is nearest the
+// render's icon (an outermost svg, inPage.ts, that no other element
+// covers) whose centre is nearest the
 // Figma icon's centre, within the frame's tolerance. A Figma icon with no
 // render icon there is left to the text and position checks, as a moved
 // or missing part is theirs.
@@ -14,7 +15,7 @@ import type { IconBox } from './inPage.ts'
  * odd sizes (13, 15, 22) that the library draws at its icon sizes (12, 14,
  * 16, 24); a change of size class, such as 16 to 12, is more.
  */
-const iconSlack = 2
+export const iconSlack = 2
 
 export type IconSizeDiff = {
   /** The Figma icon's node id; a position exception names it as its layer. */
@@ -57,7 +58,9 @@ export function iconSizeDiffs(
   icons: readonly IconBox[],
   statusBar: number,
 ): { checked: number; diffs: IconSizeDiff[] } {
-  const placed = icons.map((i) => ({ ...i, y: i.y + statusBar }))
+  // An icon that another element draws over is not the one the viewer
+  // sees there (an svg under a side panel), so it is not matched.
+  const placed = icons.filter((i) => !i.covered).map((i) => ({ ...i, y: i.y + statusBar }))
   const diffs: IconSizeDiff[] = []
   let checked = 0
   for (const layer of ref.layers) {

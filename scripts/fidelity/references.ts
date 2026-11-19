@@ -50,7 +50,20 @@ const exceptions = z.object({
   /** Render strings Figma does not have that are allowed. */
   extra: z.array(z.object({ text: z.string(), reason })).default([]),
   /** data-figma keys whose box may differ. */
-  position: z.array(z.object({ layer: z.string(), reason })).default([]),
+  position: z
+    .array(
+      z.object({
+        layer: z.string(),
+        /**
+         * For an iconSize diff: the size in px the render draws the icon at
+         * in place of Figma's. Only that size (± the icon slack) passes; with
+         * no iconSize the entry passes the icon at any size.
+         */
+        iconSize: z.number().positive().optional(),
+        reason,
+      }),
+    )
+    .default([]),
   /** Rule findings to accept, by rule and CSS selector of the element. */
   rules: z.array(z.object({ rule: z.string(), selector: z.string(), reason })).default([]),
 })

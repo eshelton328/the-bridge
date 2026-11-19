@@ -17,7 +17,14 @@ const layer = (id: string, name: string, x: number, y: number, w: number, h: num
   h,
   path,
 })
-const icon = (x: number, y: number, w: number, h: number, selector = 'svg') => ({ selector, x, y, w, h })
+const icon = (x: number, y: number, w: number, h: number, selector = 'svg', covered = false) => ({
+  selector,
+  x,
+  y,
+  w,
+  h,
+  covered,
+})
 const ref = (layers: Layer[]) => ({ layers, h: 982, tolerance: 4 })
 
 void test('an icon drawn at 12 px where Figma has 16 px is a difference (library #217)', () => {
@@ -115,6 +122,62 @@ void test('the position check matches icons within its own tolerance, as given b
     r.diffs.map((d) => d.problem),
     ['iconSize'],
   )
+})
+
+void test('an icon another element covers is not matched (Workspaces D05: the composer Send under the side chat)', () => {
+  const layers = [layer('158:549', 'icon/send', 100, 100, 16, 16)]
+  // The covered svg is nearer (1 px) than the one the viewer sees (3 px).
+  const r = iconSizeDiffs(ref(layers), [icon(101, 100, 12, 12, 'under', true), icon(103, 100, 16, 16, 'top')], 0)
+  assert.deepEqual(r, { checked: 1, diffs: [] })
+  assert.deepEqual(iconSizeDiffs(ref(layers), [icon(101, 100, 12, 12, 'under', true)], 0), { checked: 0, diffs: [] })
+})
+
+void test('a position exception with iconSize passes only that size, give or take 2 px', () => {
+  const layers = [layer('402:1', 'icon/artifacts', 20, 100, 20, 20)]
+  const at = (size: number) =>
+    checkPosition(
+      { layers, tolerance: 4, exclude: [], h: 982 },
+      { position: [{ layer: '402:1', iconSize: 24, reason: 'the rail draws 24 px icons (d-100)' }] },
+      [],
+      4,
+      [icon(30 - size / 2, 110 - size / 2, size, size)],
+    )
+  assert.equal(at(24).ok, true)
+  assert.deepEqual(at(24).excepted, ['402:1'])
+  for (const size of [12, 48]) {
+    const r = at(size)
+    assert.equal(r.ok, false)
+    assert.match(r.diffs[0]?.detail ?? '', /its position exception allows 24 px/)
+  }
+  // With no iconSize the entry still passes any size.
+  const any = checkPosition(
+    { layers, tolerance: 4, exclude: [], h: 982 },
+    { position: [{ layer: '402:1', reason: 'r' }] },
+    [],
+    4,
+    [icon(24, 104, 12, 12)],
+  )
+  assert.equal(any.ok, true)
+})
+
+void test('the page measure marks an svg that another element draws over as covered', async () => {
+  const browser = await chromium.launch()
+  try {
+    const tab = await browser.newPage({ viewport: { width: 800, height: 600 } })
+    await tab.setContent(
+      '<body style="margin:0"><div id="storybook-root"><svg width="16" height="16" style="position:absolute;left:10px;top:10px;pointer-events:none"></svg><svg width="16" height="16" style="position:absolute;left:100px;top:10px"></svg><div style="position:absolute;left:0;top:0;width:50px;height:50px;background:#000"></div></div></body>',
+    )
+    const measured = await tab.evaluate<PageMeasure>(collectPageScript('#storybook-root'))
+    assert.deepEqual(
+      measured.iconBoxes.map((b) => [b.x, b.covered]),
+      [
+        [10, true],
+        [100, false],
+      ],
+    )
+  } finally {
+    await browser.close()
+  }
 })
 
 void test('the page measure lists each outermost svg that is shown, with its box', async () => {
