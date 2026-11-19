@@ -2,8 +2,10 @@
 // reads the router and stores. It merges the loaded state with what the owner
 // changed in it (the page store), passes everything to the screen as props,
 // and goes to the page the owner picks in the rail, the phone's tab bar or its
-// More drawer.
-import { getRouteApi } from '@tanstack/react-router'
+// More drawer. With `?source=live` in development it watches the server's
+// events while it shows (liveWorkspaces.ts) and loads its state again when
+// they change it; a build has no live code.
+import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
@@ -16,9 +18,23 @@ export function WorkspacesPage() {
   const navigate = route.useNavigate()
   const changed = useWorkspacesUi(search.state)
   const { setUi, showState } = useWorkspacesActions()
+  const router = useRouter()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
+  useEffect(() => {
+    let stop: (() => void) | undefined
+    let gone = false
+    if (import.meta.env.DEV && search.source === 'live') {
+      void import('./liveWorkspaces.ts').then((live) => {
+        if (!gone) stop = live.watchLiveWorkspaces({ onChange: () => void router.invalidate() })
+      })
+    }
+    return () => {
+      gone = true
+      stop?.()
+    }
+  }, [router, search.source])
   // One object per change, so the screen starts again from the merged ui only when the store changes.
   const ui = useMemo(() => ({ ...state.ui, ...changed }), [state.ui, changed])
   return (
