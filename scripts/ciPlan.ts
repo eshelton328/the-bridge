@@ -11,27 +11,48 @@ import { fileURLToPath } from 'node:url'
 const root = fileURLToPath(new URL('..', import.meta.url))
 const relativeImport = /(?:\bfrom|\bimport)\s*\(?\s*['"](\.{1,2}\/[^'"]+)['"]/g
 
-/** The files outside scripts/fidelity/ that its scripts import, at any depth. */
-export function fidelityImports(read: (path: string) => string | undefined, starts: readonly string[]): Set<string> {
+const codeFile = /\.(?:ts|tsx|js|mjs|cjs|jsx)$/
+
+/** The paths an import of `target` from `from` can name: as written, and with an extension or index file when it has none. */
+function importPaths(from: string, target: string): string[] {
+  const path = normalize(join(dirname(from), target))
+  if (codeFile.test(path)) return [path]
+  return [path, ...['.ts', '.tsx', '.js', '/index.ts', '/index.tsx'].map((end) => path + end)]
+}
+
+/**
+ * The files under scripts/ that the given files import, at any depth: the
+ * fidelity scripts and the web build (Storybook loads web/vite.config.ts,
+ * which imports scripts/keyboardTracePlugin.ts). An import whose file
+ * cannot be read stays in the set, so a PR that deletes or breaks it still
+ * counts as a fidelity input.
+ */
+export function scriptInputs(read: (path: string) => string | undefined, starts: readonly string[]): Set<string> {
   const seen = new Set<string>()
   const queue = [...starts]
   for (let path = queue.pop(); path !== undefined; path = queue.pop()) {
     if (seen.has(path)) continue
+    seen.add(path)
     const text = read(path)
     if (text === undefined) continue
-    seen.add(path)
     for (const match of text.matchAll(relativeImport)) {
       const target = match[1]
-      if (target !== undefined) queue.push(normalize(join(dirname(path), target)))
+      if (target !== undefined) queue.push(...importPaths(path, target))
     }
   }
-  return new Set([...seen].filter((path) => !path.startsWith('scripts/fidelity/')))
+  return new Set([...seen].filter((path) => path.startsWith('scripts/') && !path.startsWith('scripts/fidelity/')))
+}
+
+/** The fidelity scripts and the hand-written code files of web/, the starts of scriptInputs. */
+export function fidelityStarts(list: (dir: string) => readonly string[]): string[] {
+  const skip = /(?:^|\/)(?:node_modules|styled-system|dist|storybook-static)\//
+  return [...list('scripts/fidelity'), ...list('web')].filter((path) => codeFile.test(path) && !skip.test(path))
 }
 
 /**
  * A changed file can change the fidelity result unless it is Markdown
- * outside web/ and references/, or a file under scripts/ that is neither
- * in scripts/fidelity/ nor imported by it. Every other path counts,
+ * outside web/, references/ and scripts/fidelity/, or a file under
+ * scripts/ that is neither in scripts/fidelity/ nor in scriptInputs. Every other path counts,
  * a new top-level folder too.
  */
 export function isFidelityInput(path: string, imports: ReadonlySet<string>): boolean {
@@ -50,10 +71,9 @@ if (isMain) {
       return undefined
     }
   }
-  const starts = readdirSync(join(root, 'scripts/fidelity'))
-    .filter((name) => name.endsWith('.ts'))
-    .map((name) => `scripts/fidelity/${name}`)
-  const imports = fidelityImports(read, starts)
+  const list = (dir: string): string[] =>
+    readdirSync(join(root, dir), { recursive: true, encoding: 'utf8' }).map((name) => `${dir}/${name}`)
+  const imports = scriptInputs(read, fidelityStarts(list))
   const changed = readFileSync(0, 'utf8')
     .split('\n')
     .map((line) => line.trim())

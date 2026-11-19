@@ -27,8 +27,9 @@ jobs:
   #   squash merge of an up-to-date PR (protect-main) adds no code that
   #   the PR's checks did not run on.
   # - On a PR, fidelity is false when scripts/ciPlan.ts finds no changed
-  #   file that can change the fidelity result (only Markdown outside web/
-  #   and references/, or scripts the fidelity scripts do not import). The
+  #   file that can change the fidelity result (only Markdown outside web/,
+  #   references/ and scripts/fidelity/, or scripts that neither the
+  #   fidelity scripts nor the web build import). The
   #   fidelity jobs then pass without their steps, so the required checks
   #   still report; main passed them, and none of their inputs changed.
   #   A push to main and a run by hand always run fidelity.
@@ -65,7 +66,9 @@ jobs:
       - if: github.event_name == 'pull_request'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          sparse-checkout: scripts
+          sparse-checkout: |
+            scripts
+            web
       - id: files
         if: github.event_name == 'pull_request'
         env:
