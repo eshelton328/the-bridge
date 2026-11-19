@@ -281,6 +281,30 @@ describe('watchLiveWorkspaces', () => {
     stop()
   })
 
+  it('reads again when an event came while a read ran, so an older answer does not stay', async () => {
+    const queries = client()
+    const server = fakeServer()
+    const onChange = vi.fn()
+    const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    let answer: (value: WorkspacesResponse) => void = () => undefined
+    const slow = () =>
+      new Promise<WorkspacesResponse>((resolve) => {
+        answer = resolve
+      })
+    const loading = withLiveWorkspaces(workspacesHome, { client: queries, fetch: slow })
+    await settle(5)
+    server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
+    await settle(5)
+    // The read answers with what the server had before the event: drift check still needs the owner.
+    answer(response)
+    await loading
+    await settle()
+    expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
+    expect(onChange).toHaveBeenCalled()
+    stop()
+  })
+
   it('reads the cache while it watches, and the server again once the cache is invalid', async () => {
     const queries = client()
     const server = fakeServer()

@@ -110,6 +110,10 @@ const queryKey = ['workspaces']
 let watching = 0
 /** Why the live updates stopped, shown in the status bar until a new watcher starts. */
 let stopped: string | undefined
+/** How many events the watchers took; a read that saw it change while it ran may hold older data. */
+let taken = 0
+/** The open watcher's way to mark the cache invalid and load again. */
+let reload: (() => void) | undefined
 
 /** Opens the event stream; `signal` aborts it. */
 type OpenStream = (signal: AbortSignal) => Promise<Response>
@@ -216,8 +220,10 @@ export function watchLiveWorkspaces({
     void client.invalidateQueries({ queryKey, refetchType: 'none' })
     changed()
   }
+  reload = invalidate
   const take = (frame: Frame) => {
     if (frame.retry !== undefined) retryMs = frame.retry
+    if (frame.event === 'open' || frame.event === 'workspaces.changed' || frame.event === 'chat.status') taken += 1
     if (frame.event === 'open' || frame.event === 'workspaces.changed') {
       invalidate()
       return
@@ -267,6 +273,7 @@ export function watchLiveWorkspaces({
   }
   void run()
   return () => {
+    if (reload === invalidate) reload = undefined
     watching -= 1
     clearTimeout(timer)
     abort.abort()
@@ -287,7 +294,18 @@ export async function withLiveWorkspaces(
   try {
     // While the events keep the cache current, a load reads the cache; an event that cannot be applied to it
     // marks it invalid, and then the load reads the server.
-    const response = await client.query({ queryKey, queryFn: fetch, staleTime: watching > 0 ? Infinity : 0 })
+    // An event during the read may be newer than the read's answer, so the cache is then marked invalid again
+    // once it holds the answer, and the page loads once more.
+    const read = async () => {
+      const before = taken
+      const answer = await fetch()
+      if (taken !== before)
+        setTimeout(() => {
+          reload?.()
+        }, 0)
+      return answer
+    }
+    const response = await client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 })
     const workspaces = toWorkspaces(response)
     const status = stopped === undefined ? state.data.status : { ...state.data.status, alert: stopped }
     return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? state.data.current } }
