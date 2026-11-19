@@ -68,13 +68,12 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, on
                   onUiChange?.({ fileProject, fileFor: view.artifact.id })
                 },
               }
-        // D2, T2, M2: Copy link copies the address the artifact's link opens; an artifact with no link copies nothing.
-        const link = view?.artifact.link
+        // D2, T2, M2: Copy link copies the address the artifact's link opens; every artifact in the library has one.
         const copyLink =
-          link === undefined || onCopyLink === undefined
+          view === undefined || onCopyLink === undefined
             ? undefined
             : () => {
-                onCopyLink(`https://${link}`)
+                onCopyLink(`https://${view.artifact.link}`)
               }
         // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
         const openCard = (openId: string) => {

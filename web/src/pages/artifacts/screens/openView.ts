@@ -6,8 +6,9 @@
 // fields and the words the detail states already use: "found 12m ago" and
 // "updated 12m ago" from the card's age (M2 and D2), and the source chip's
 // "Claude artifact" or "Codex site" (D2, T2; the phone's chip keeps the
-// card's "Claude", M2). Such a card has no chat that made it, so no Made in,
-// no discussion, and a link only when its card has one. On a tablet or
+// card's "Claude", M2), and its card's link, as every artifact in the library
+// is a link. Such a card has no chat that made it, so no Made in and no
+// discussion. On a tablet or
 // phone Back (`ui.artifactClosed`) closes it; the desktop has no Back.
 // Pure; tested in openView.test.ts.
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -29,7 +30,7 @@ export function cardDetail(card: ArtifactCard, layout: Viewport): ArtifactDetail
     project: card.project,
     updated: `updated ${card.age} ago`,
     preview: card.preview,
-    ...(card.link === undefined ? {} : { link: card.link }),
+    link: card.link,
   }
 }
 

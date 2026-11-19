@@ -22,7 +22,7 @@ const passes = (card: ArtifactCard, filter: ArtifactFilter) =>
 const places = (card: ArtifactCard): [MatchPlace, string][] => [
   ['title', card.title],
   ['description', card.description],
-  ['link', card.link ?? ''],
+  ['link', card.link],
   ['project', card.project],
 ]
 

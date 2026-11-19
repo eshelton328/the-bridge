@@ -24,9 +24,9 @@ the Artifacts page; their saved copies are in `references/artifacts/`.
 - The Back bar and the discussion header stay at the top and the reply
   box at the bottom; only the content between them scrolls (d-107,
   `app/ArtifactsStickyBars.test.tsx`).
-- Copy link goes out through the screen's `onCopyLink`, and the entry
-  writes the clipboard; an artifact with no link copies nothing
-  (`app/ArtifactsCopyLink.test.tsx`).
+- Every card and open artifact has a `link` (`types.ts`). Copy link
+  goes out through the screen's `onCopyLink`, and the entry writes the
+  clipboard (`app/ArtifactsCopyLink.test.tsx`, which opens from the list).
 - On the phone, More opens Artifacts and stays selected (d-105).
 - The phone's keyboard is the device's own: a state draws none and keeps
   the tab bar, as Figma does (d-089).

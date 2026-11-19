@@ -119,7 +119,7 @@ export function ArtifactPage({
               </Button>
             </span>
           </Grid>
-        ) : artifact.link === undefined ? null : (
+        ) : (
           <Inline gap="6" align="center" className={linkRow} data-figma="link">
             <LinkMark />
             <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
