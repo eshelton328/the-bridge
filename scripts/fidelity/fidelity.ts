@@ -192,5 +192,24 @@ async function openStory(
   await tab.waitForSelector('#storybook-root > *')
   await tab.evaluate(() => document.fonts.ready.then(() => undefined))
   await tab.waitForLoadState('networkidle')
+  if (process.env.FIDELITY_DEBUG) {
+    const info = await tab.evaluate(() => {
+      const out: unknown[] = [document.getAnimations().map((a) => [a.playState, a.currentTime])]
+      const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const t = n.textContent ?? ''
+        if (!/^(Suggested prompt|Filter|Add folder|Done|Copy)$/.test(t.trim())) continue
+        const chain: unknown[] = []
+        for (let el = n.parentElement; el; el = el.parentElement) {
+          const s = getComputedStyle(el)
+          chain.push([el.tagName, el.className.toString().slice(0, 40), s.opacity, s.visibility, s.display, s.contentVisibility, el.getAttribute('data-state'), el.hidden, el.checkVisibility({ opacityProperty: true, visibilityProperty: true })])
+        }
+        const r = n.parentElement?.getBoundingClientRect()
+        out.push({ t, r: r && [r.x, r.y, r.width, r.height], chain })
+      }
+      return out
+    })
+    console.error('FIDDEBUG', JSON.stringify(info))
+  }
   return { context, tab }
 }
