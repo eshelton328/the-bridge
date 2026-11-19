@@ -271,6 +271,37 @@ describe('the Evals tab on a tablet and the phone', () => {
     expect(selectedTab(root, 'writer')).toBe('Evals')
   })
 
+  it('spreads the chart over the panel on a tablet (T16 482:2288)', async () => {
+    const { root } = await renderToolkit('skillEvalsTablet', 'tablet')
+    const panel = root.querySelector('[data-figma="panel · opus by round"] .grouped-bar-chart__root')
+    if (!(panel instanceof HTMLElement)) throw new Error('no chart')
+    const chart = box(root, '[data-figma="chart"]')
+    const note = box(root, '[data-figma="panel · opus by round"] p')
+    // As wide as the panel's content, the line under it, and not cut.
+    expect(chart.width).toBeCloseTo(note.width, 0)
+    expect(chart.width).toBeGreaterThan(392)
+    expect(panel.scrollWidth).toBeLessThanOrEqual(panel.clientWidth)
+  })
+
+  it('draws the phone’s smaller chart inside its panel, with no sideways scroll (M18 482:2602)', async () => {
+    const { root } = await renderToolkit('skillEvalsPhone', 'phone')
+    const chart = box(root, '[data-figma="chart"]')
+    const panel = box(root, '[data-figma="panel · opus by round"]')
+    // 12 px bars, a group every 44: 308 wide, in the 332 px panel content.
+    expect(chart.width).toBeCloseTo(308, 0)
+    expect(chart.left).toBeGreaterThanOrEqual(panel.left)
+    expect(chart.right).toBeLessThanOrEqual(panel.right)
+    const scroller = root.querySelector('[data-figma="chart"] .grouped-bar-chart__root')
+    if (!(scroller instanceof HTMLElement)) throw new Error('no chart')
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth)
+    // A chart that does not scroll is no tab stop.
+    expect(scroller.hasAttribute('tabindex')).toBe(false)
+    // The last group, x1, shows in full.
+    const labels = [...root.querySelectorAll('[data-figma="chart"] text')].filter((t) => t.textContent === 'x1')
+    expect(labels).toHaveLength(1)
+    expect(labels[0]?.getBoundingClientRect().right).toBeLessThanOrEqual(panel.right)
+  })
+
   it('wraps the criteria to two rows on the phone (M18)', async () => {
     const { root } = await renderToolkit('skillEvalsPhone', 'phone')
     const first = box(root, '[data-figma="badge · D1 Quality"]')
