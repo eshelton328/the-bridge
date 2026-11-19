@@ -77,7 +77,10 @@ const outDir = join(reportsDir, page)
 mkdirSync(outDir, { recursive: true })
 
 const server = await serveStatic(storybookDir)
-const browser = await chromium.launch()
+// Chromium on Linux hints glyphs with FreeType, which makes text a few px
+// wider than on macOS, where the Figma frames were checked; with hinting
+// off, text widths in CI match a Mac's more closely.
+const browser = await chromium.launch({ args: ['--font-render-hinting=none'] })
 const summary: { frameId: string; ok: boolean; text?: boolean; position?: boolean; rules?: boolean; error?: string }[] =
   []
 
