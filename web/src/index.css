@@ -21,3 +21,15 @@ html[data-app] body {
 html[data-app] {
   touch-action: pan-x pan-y;
 }
+
+/* The app's root, which holds the Backdrop and the AppShell, is fixed to the
+   window, so nothing in the document's flow can be taller than it and the
+   document has no scroll range. iOS scrolled the document by the keyboard's
+   height (403 px in the standalone app's trace of 2026-11-19) each time the
+   composer took the focus, and the shell took it back a frame later: the
+   screen flashed. Each page's ScrollFrame body is the only thing that
+   scrolls. */
+html[data-app] #root {
+  position: fixed;
+  inset: 0;
+}
