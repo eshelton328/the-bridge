@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { MachineId } from '@bridge/contract'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
 import { type FakeHerdrSocket, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
 import { createHerdrAgents } from './herdrAgents.ts'
@@ -75,8 +76,20 @@ afterAll(() => socket.close())
 
 const port = () => createHerdrAgents({ socket: socket.path, machine, claudeProjects: projects })
 
+const statusLine = (pane: string, status: string) => ({
+  data: { agent: 'claude', agent_status: status, pane_id: pane, workspace_id: 'w17' },
+  event: 'pane.agent_status_changed',
+})
+
 describeAgentPort('herdr (recorded socket)', () =>
-  Promise.resolve({ port: port(), expected: { workspace: 'the-bridge loops', chat: 'bridge-coord' } }),
+  Promise.resolve({
+    port: port(),
+    expected: { workspace: 'the-bridge loops', chat: 'bridge-coord' },
+    setStatus: (status) => {
+      socket.push(statusLine('w17:p1', status))
+      return Promise.resolve()
+    },
+  }),
 )
 
 // Two panes that resumed the same Claude session, as `claude --resume` in a second pane gives.
@@ -107,6 +120,10 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
   Promise.resolve({
     port: createHerdrAgents({ socket: resumed.path, machine, claudeProjects: projects }),
     expected: { workspace: 'the-bridge loops', chat: 'bridge-coord 2' },
+    setStatus: (status) => {
+      resumed.push(statusLine('w17:p2', status))
+      return Promise.resolve()
+    },
   }),
 )
 
@@ -175,5 +192,89 @@ describe('herdr agents', () => {
     const read = await createHerdrAgents({ socket: odd.path, machine, claudeProjects: projects }).listWorkspaces()
     await odd.close()
     expect(!read.ok && read.error.reason).toBe('badReply')
+  })
+})
+
+describe('herdr agents: subscribe', () => {
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  const collect = (agents = port()) => {
+    const events: AgentEvent[] = []
+    const ends: string[] = []
+    const subscription = agents.subscribe(
+      (e) => events.push(e),
+      (e) => ends.push(e.message),
+    )
+    return { events, ends, subscription }
+  }
+
+  it("subscribes to the list events and the status of each Claude and Codex chat's pane, on one stream", async () => {
+    const { subscription } = collect()
+    await subscription.ready
+    expect(socket.streams()).toEqual([
+      [
+        { type: 'workspace.created' },
+        { type: 'workspace.closed' },
+        { type: 'workspace.renamed' },
+        { type: 'workspace.moved' },
+        { type: 'workspace.reordered' },
+        { type: 'pane.created' },
+        { type: 'pane.closed' },
+        { type: 'pane.moved' },
+        { type: 'pane.agent_detected' },
+        { type: 'pane.agent_status_changed', pane_id: 'w17:p1' },
+        { type: 'pane.agent_status_changed', pane_id: 'w17:p2' },
+      ],
+    ])
+    subscription.close()
+    await wait(50)
+    expect(socket.streams()).toEqual([])
+  })
+
+  it("maps herdr's blocked to needsYou, with the chat's listed ID", async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    socket.push(statusLine('w17:p2', 'blocked'))
+    await wait(50)
+    subscription.close()
+    expect(events).toEqual([{ type: 'chatStatus', chat: 'test-mac/term_2', status: 'needsYou' }])
+  })
+
+  it('opens the stream again after a burst of list events, then tells the app once', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    const before = socket.connections()
+    socket.push({ event: 'pane_created', data: { type: 'pane_created', pane: { pane_id: 'w17:p9' } } })
+    socket.push({ event: 'pane_agent_detected', data: { type: 'pane_agent_detected', pane_id: 'w17:p9' } })
+    await wait(400)
+    expect(events).toEqual([{ type: 'workspacesChanged' }])
+    // One agent.list and one new stream; the old stream is closed.
+    expect(socket.connections()).toBe(before + 2)
+    expect(socket.streams()).toHaveLength(1)
+    subscription.close()
+  })
+
+  it('treats a status line of an unknown pane as a list change', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    socket.push(statusLine('w17:p7', 'working'))
+    await wait(400)
+    subscription.close()
+    expect(events).toEqual([{ type: 'workspacesChanged' }])
+  })
+
+  it('ends the subscription once, with the reason, when herdr closes the stream', async () => {
+    const { ends, subscription } = collect()
+    await subscription.ready
+    socket.dropStreams()
+    await wait(50)
+    expect(ends).toEqual(['herdr closed the events.subscribe stream'])
+  })
+
+  it('ends the subscription when herdr does not answer, and opens nothing until subscribe', async () => {
+    const agents = createHerdrAgents({ socket: join(projects, 'none.sock'), machine, claudeProjects: projects })
+    const { ends, subscription } = collect(agents)
+    await subscription.ready
+    expect(ends).toHaveLength(1)
+    expect(ends[0]).toContain('none.sock')
   })
 })
