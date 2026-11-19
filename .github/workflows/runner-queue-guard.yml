@@ -1,0 +1,41 @@
+name: runner queue guard
+
+# A job queued for the self-hosted runner waits up to 24 hours when no
+# runner takes it, and timeout-minutes counts only from the job's start.
+# Every 5 minutes this cancels each run of this repository that has a job
+# queued for the label self-hosted for over 10 minutes while the runner's
+# heartbeat (the variable BRIDGE_RUNNER_SEEN, which the runner sets each
+# minute) is over 3 minutes old, or for over 30 minutes in any case. It runs
+# on a GitHub-hosted runner.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  guard:
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SEEN: ${{ vars.BRIDGE_RUNNER_SEEN }}
+        run: |
+          now=$(date +%s)
+          stale=1
+          if [ -n "$SEEN" ] && [ $(( now - SEEN )) -le 180 ]; then stale=0; fi
+          for run in $(gh api "repos/$REPO/actions/runs?status=queued" -q '.workflow_runs[].id') \
+                     $(gh api "repos/$REPO/actions/runs?status=in_progress" -q '.workflow_runs[].id'); do
+            waited=$(gh api "repos/$REPO/actions/runs/$run/jobs" -q '[.jobs[]
+              | select(.status == "queued" and (.labels | index("self-hosted")))
+              | (now - (.created_at | fromdate))] | max // 0' | cut -d. -f1)
+            waited=${waited:-0}
+            if { [ "$stale" = 1 ] && [ "$waited" -gt 600 ]; } || [ "$waited" -gt 1800 ]; then
+              echo "::warning::run $run: a self-hosted job queued $waited s (heartbeat stale: $stale); cancelling"
+              gh api -X POST "repos/$REPO/actions/runs/$run/cancel" >/dev/null || true
+            fi
+          done
