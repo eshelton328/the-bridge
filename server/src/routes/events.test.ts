@@ -78,6 +78,16 @@ describe('GET /api/events', () => {
     expect(agents.reads()).toBe(0)
   })
 
+  it('leaves no subscription and no timer when the client goes before it reads the first frame', async () => {
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner }).request('/api/events', { headers: local })
+    if (!res.body) throw new Error('no body')
+    await res.body.cancel()
+    await tick()
+    await tick()
+    expect(agents.subscriptions()).toBe(0)
+  })
+
   it('ends the stream when the agents stop answering', async () => {
     const agents = createFakeAgents(machine)
     const res = await createApp({ agents, owner }).request('/api/events', { headers: local })

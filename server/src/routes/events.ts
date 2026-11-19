@@ -15,25 +15,36 @@ const retryMs = 5_000
 export function eventsRoutes(live: LiveEvents) {
   return new Hono().get('/', (c) =>
     streamSSE(c, async (stream) => {
-      await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
-      await new Promise<void>((resolve) => {
-        const ping = setInterval(() => {
-          void stream.write(': ping\n\n')
-        }, pingMs)
-        const done = () => {
-          clearInterval(ping)
-          disconnect()
-          resolve()
-        }
-        const disconnect = live.connect({
-          send: (event) => {
-            const checked = LiveEvent.parse(event)
-            void stream.writeSSE({ event: checked.type, id: String(checked.seq), data: JSON.stringify(checked) })
-          },
-          end: done,
-        })
-        stream.onAbort(done)
+      let disconnect: (() => void) | undefined
+      let ping: ReturnType<typeof setInterval> | undefined
+      let finish: () => void = () => undefined
+      const closed = new Promise<void>((resolve) => {
+        finish = resolve
       })
+      const done = () => {
+        clearInterval(ping)
+        disconnect?.()
+        disconnect = undefined
+        finish()
+      }
+      // The cleanup is in place before the first write, so a client that goes during it leaves nothing open.
+      stream.onAbort(done)
+      await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
+      if (stream.aborted || stream.closed) {
+        done()
+        return
+      }
+      ping = setInterval(() => {
+        void stream.write(': ping\n\n')
+      }, pingMs)
+      disconnect = live.connect({
+        send: (event) => {
+          const checked = LiveEvent.parse(event)
+          void stream.writeSSE({ event: checked.type, id: String(checked.seq), data: JSON.stringify(checked) })
+        },
+        end: done,
+      })
+      await closed
     }),
   )
 }
