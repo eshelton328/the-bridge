@@ -4,8 +4,11 @@
 // `SideChatPanel placement="sheet"` draws the title with its command and ×.
 // The title and the composer stay put and only the transcript scrolls
 // (d-107). The focus goes to the message box when it opens. At a tablet's
-// width (T2 105:1914, `device="tablet"`) the panel's parts sit further in and
-// its note is larger. Props only.
+// width (T2 105:1914, `device="tablet"`) the panel's parts sit further in,
+// its note is larger and the sheet draws no scrim: Figma dims M5's chat
+// (its `scrim` layer, 105:3105) but leaves T2's chat above the sheet in full
+// colour. Either way the sheet is modal: a press above it closes it and the
+// focus goes back. Props only.
 import { BottomSheet } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -31,6 +34,7 @@ export function PhoneSideChat({ chat, open, onOpenChange, device, layers }: Phon
     <BottomSheet
       size="sm"
       label={chat.title}
+      scrim={device !== 'tablet'}
       open={open}
       onOpenChange={onOpenChange}
       initialFocus={() => ref.current?.querySelector('textarea') ?? null}
