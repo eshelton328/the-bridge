@@ -62,6 +62,10 @@ describe('the side chat on the tablet', () => {
     await expect
       .element(page.getByText('Brainstorm layouts for the-bridge that go beyond a sidebar and a chat.'))
       .toBeVisible()
+    // The sheet is open once the focus is in its message box and it has slid up; a press before then can come before
+    // the sheet listens for presses outside it.
+    await expect.element(sheet.getByRole('textbox', { name: 'Ask a side question' })).toHaveFocus()
+    await Promise.all(document.getAnimations().map((animation) => animation.finished))
     // The sheet stays modal: the press closes it and does not reach the chat's Back under it.
     // The open sheet blocks the page's pointer events, so the press needs `force`.
     await userEvent.click(page.getByRole('button', { name: data.phone.back, includeHidden: true }), { force: true })
