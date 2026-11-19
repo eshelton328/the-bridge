@@ -28,7 +28,7 @@
     "check:states": "node scripts/checkStates.ts",
     "test:scripts": "node --test scripts/*.test.ts scripts/fidelity/*.test.ts",
     "test": "vitest run",
-    "test:unit": "vitest run --project shared --project web",
+    "test:unit": "vitest run --project shared --project web ${VITEST_SHARD:+--shard=$VITEST_SHARD}",
     "test:stories": "vitest run --project storybook",
     "build": "pnpm --filter @bridge/web build",
     "build:canvas": "pnpm --filter @bridge/web build:canvas",
