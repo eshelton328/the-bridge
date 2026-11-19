@@ -77,7 +77,7 @@ async function typing(
   // With `label`, the field is the one of those that the label names.
   const find = () =>
     [...(shell?.querySelectorAll<HTMLElement>(field) ?? [])].find(
-      (el) => label === undefined || (el as HTMLTextAreaElement).labels?.[0]?.textContent === label,
+      (el) => label === undefined || (el instanceof HTMLTextAreaElement && el.labels[0]?.textContent === label),
     )
   await expect.poll(find).toBeDefined()
   await document.fonts.ready
