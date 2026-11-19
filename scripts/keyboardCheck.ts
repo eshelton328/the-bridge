@@ -92,7 +92,14 @@ for (const target of targets) {
   const field = page.locator('.app-shell__detail > .scroll-frame__root > .scroll-frame__footer textarea').first()
   await field.waitFor()
   await page.evaluate(() => document.fonts.ready)
-  await page.waitForTimeout(500)
+  // A state can open with the composer focused (phoneChatFull does). Blur it and let the shell settle, so the
+  // recording starts with no field focused and the tap is the focus that the check watches.
+  await page.evaluate(() => {
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
+  })
+  await page.waitForTimeout(600)
+  if (await field.evaluate((el) => el === document.activeElement))
+    throw new Error(`${target.name}: the composer kept the focus`)
   const recorder = await page.evaluateHandle(
     (o) => {
       const frames: {
@@ -103,6 +110,8 @@ for (const target of targets) {
         scrollY: number
         lastBottom: number
         footerTop: number
+        footerBottom: number
+        keyboardTop: number
         opacity: number
       }[] = []
       let phase: 'open' | 'close' = 'open'
@@ -146,6 +155,8 @@ for (const target of targets) {
           scrollY: window.scrollY,
           lastBottom,
           footerTop: footer?.getBoundingClientRect().top ?? Number.NaN,
+          footerBottom: footer?.getBoundingClientRect().bottom ?? Number.NaN,
+          keyboardTop: document.documentElement.clientHeight - height,
           opacity: Math.min(...[shell, frame, header, body, footer].map(drawn)),
         }
       }

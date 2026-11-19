@@ -13,8 +13,11 @@ export type Frame = {
   scrollY: number
   /** The bottom of the lowest text, image or icon in the chat's message list. */
   lastBottom: number
-  /** The top of the composer (the ScrollFrame footer). */
+  /** The top and bottom of the composer (the ScrollFrame footer). */
   footerTop: number
+  footerBottom: number
+  /** The bottom of the screen above the keyboard: the layout's height less the keyboard. */
+  keyboardTop: number
   /** The lowest opacity of the document, the shell and the chat's header, body and footer, multiplied down the tree. */
   opacity: number
 }
@@ -35,19 +38,29 @@ const tolerance = 0.5
 export function checkFrames(frames: readonly Frame[]): CheckResult[] {
   const first = frames[0]
   if (first === undefined) return [{ name: 'frames', ok: false, bad: 0 }]
-  const rule = (name: string, value: (f: Frame) => number, good: (v: number) => boolean): CheckResult => {
-    const bad = frames.filter((f) => !good(value(f)))
+  // `worse` says how far a value is from good, so `worst` is the frame that failed most.
+  const rule = (
+    name: string,
+    value: (f: Frame) => number,
+    good: (v: number) => boolean,
+    worse: (v: number) => number = Math.abs,
+    among: readonly Frame[] = frames,
+  ): CheckResult => {
+    const bad = among.filter((f) => !good(value(f)))
     const worst = bad.reduce<Frame | undefined>(
-      (w, f) => (w === undefined || Math.abs(value(f)) > Math.abs(value(w)) ? f : w),
+      (w, f) => (w === undefined || worse(value(f)) > worse(value(w)) ? f : w),
       undefined,
     )
     return {
       name,
-      ok: bad.length === 0,
+      ok: among.length > 0 && bad.length === 0,
       bad: bad.length,
       ...(worst === undefined ? {} : { worst: { t: worst.t, phase: worst.phase, value: value(worst) } }),
     }
   }
+  // The frames with the keyboard all the way open: there the composer must sit on it.
+  const full = Math.max(...frames.map((f) => f.keyboard))
+  const open = frames.filter((f) => f.phase === 'open' && f.keyboard === full)
   return [
     rule(
       'header top stays put (px moved)',
@@ -68,6 +81,14 @@ export function checkFrames(frames: readonly Frame[]): CheckResult[] {
       'no fade on the shell (lowest opacity)',
       (f) => f.opacity,
       (v) => v >= 1,
+      (v) => 1 - v,
+    ),
+    rule(
+      'composer above the open keyboard (px under its top)',
+      (f) => f.footerBottom - f.keyboardTop,
+      (v) => v <= tolerance,
+      Math.abs,
+      open,
     ),
   ]
 }

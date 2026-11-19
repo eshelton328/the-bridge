@@ -10,6 +10,8 @@ const frame = (over: Partial<Frame>): Frame => ({
   scrollY: 0,
   lastBottom: 300,
   footerTop: 500,
+  footerBottom: 600,
+  keyboardTop: 852,
   opacity: 1,
   ...over,
 })
@@ -35,6 +37,20 @@ void test('a window scroll, a message under the composer and a fade each fail', 
   assert.deepEqual(failed([frame({}), frame({ scrollY: 336 })]), ['window scrollY is 0'])
   assert.deepEqual(failed([frame({ lastBottom: 501 })]), ['last message above the composer (px under it)'])
   assert.deepEqual(failed([frame({ opacity: 0.9 })]), ['no fade on the shell (lowest opacity)'])
+})
+
+void test('a composer the open keyboard covers fails', () => {
+  const opened = { phase: 'open' as const, keyboard: 336, keyboardTop: 516 }
+  assert.deepEqual(failed([frame({}), frame({ ...opened, footerTop: 400, footerBottom: 516 })]), [])
+  assert.deepEqual(failed([frame({}), frame({ ...opened, footerBottom: 600 })]), [
+    'composer above the open keyboard (px under its top)',
+  ])
+})
+
+void test('the fade rule names the lowest opacity', () => {
+  const fade = checkFrames([frame({ opacity: 0.9 }), frame({ t: 16, opacity: 0 })]).at(3)
+  assert.ok(fade)
+  assert.deepEqual(fade.worst, { t: 16, phase: 'open', value: 0 })
 })
 
 void test('no frames fail', () => {
