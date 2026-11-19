@@ -55,7 +55,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   38), from the offsets above.
 - **Open chat.** Opens the finished task's chat in the task's place,
   as Reply here does on a running task; View task returns
-  (`InboxRoute.test.tsx`). No frame draws the finished chat: it is the
+  (the Inbox route tests). No frame draws the finished chat: it is the
   chat Start opened (D5), with its status Done and its last tool line
   done.
 - **Done rows.** `ListRow finished` (#101) draws the title of a done row
@@ -141,7 +141,7 @@ For D07 it also found:
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and
   the title "Workspaces is not built yet", keeps the focus and does
-  nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
+  nothing on a press (`InboxPhone.test.tsx`); since beta.5 (#105) a
   disabled secondary `Button` no longer fades: it keeps its fill and
   border and only its label and icon turn `fg.muted`, where Figma draws
   it enabled.

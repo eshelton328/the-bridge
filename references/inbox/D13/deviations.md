@@ -108,7 +108,7 @@ The blind second review of round 3 (`reports/fidelity/inbox/D13.sideBySide.png`,
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and
   the title "Workspaces is not built yet", keeps the focus and does
-  nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
+  nothing on a press (the Inbox route tests); since beta.5 (#105) a
   disabled secondary `Button` no longer fades: it keeps its fill and
   border and only its label and icon turn `fg.muted`, where Figma draws
   it enabled.

@@ -100,7 +100,7 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   stays. It is `fg.subtle` #7986a6 against Figma's #4a5675 (d-055).
 - Back did not return to the list (caller's review). Fixed: Back closes
   the open item through the page store (`inboxStore` `setItemOpen`), so
-  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
+  the list shows; the Inbox route tests check it at the tablet width.
 
 `section · SOURCES` passed in the beta.4 run only because the check
 then measured from the frame's top, above Figma's status bar, which

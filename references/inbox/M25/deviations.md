@@ -66,7 +66,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   no frame draws (D21 draws it on the desktop). Opening the row shows
   that page with Open discussion and Restore; Restore puts the task back
   in Next steps and the page shows it as a next step again
-  (`InboxRoute.test.tsx`, from the keyboard too). The note says this
+  (the Inbox route tests, from the keyboard too). The note says this
   flow is not decided; d-101 keeps it as built: a removed task goes to
   Done with its reason, and Restore puts it back.
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,

@@ -93,7 +93,7 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   chat starts 24 below the card (Figma 22, 24 on the grid, d-072).
 - Back did not return to the list (caller's review). Fixed: Back closes
   the open item through the page store (`inboxStore` `setItemOpen`), so
-  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
+  the list shows; the Inbox route tests check it at the tablet width.
 
 ## Disabled controls
 
@@ -101,7 +101,7 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`). Since beta.5 (#105) a disabled
+  a press (the Inbox route tests). Since beta.5 (#105) a disabled
   `secondary` Button keeps its fill and border and draws its label and
   icon in `fg.muted`, where Figma draws it enabled with a brighter
   label.

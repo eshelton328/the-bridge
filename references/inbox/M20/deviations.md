@@ -77,11 +77,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Button` at its default size, 32 high. Figma draws it in violet with a
   violet border; the library's button is the neutral secondary one.
   Library gap: Discuss toggle. It opens the discussion page (M18), with
-  no tab bar; `InboxRoute.test.tsx` checks it on the phone.
+  no tab bar; the Inbox route tests check it on the phone.
 - **Start.** Pinned above the tab bar, full width, as in M2 (`sticky
   action` passes); the bar is opaque.
   Start starts the task: its run card takes Start's place, and Reply
-  here opens its chat (`InboxRoute.test.tsx`).
+  here opens its chat (the Inbox route tests).
 - **Change line.** On the phone the line "Changed in a discussion ·
   just now" with Undo sits under Read the whole prompt, 8 below it, as
   Figma draws it (402:2440); the tablet keeps it beside the link. The

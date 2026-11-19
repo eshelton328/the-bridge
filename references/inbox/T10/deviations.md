@@ -85,5 +85,5 @@ it stays:
 - **Show it.** The Done hint's link selects the Done chip, which lists
   the match in Done: the search state holds that Done list (one finished
   task, "Save the Inbox frames as references"), which no frame draws, and
-  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  the hint leaves while Done is selected (the Inbox route tests,
   `listView.test.ts`).

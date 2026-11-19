@@ -67,7 +67,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   when it has a toast.
   It used to follow the last group, 47 above the tab bar. The new tasks
   come from the discussion's proposal applied in the state's `ui`, so
-  Undo takes them out (`InboxRoute.test.tsx`).
+  Undo takes them out (the Inbox route tests).
 - **List fits.** The checks render 806 px high (d-102). The list fits
   the screen above the tab bar, as Figma's does (`main.app-shell__detail`
   does not scroll), so the rules check passes. With 58 px rows and 38 px

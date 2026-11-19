@@ -134,7 +134,7 @@ For D10 it also found:
 - **Show it.** The Done hint's link selects the Done chip, which lists
   the match in Done: the search state holds that Done list (one finished
   task, "Save the Inbox frames as references"), which no frame draws, and
-  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  the hint leaves while Done is selected (the Inbox route tests,
   `listView.test.ts`).
 
 ## Disabled controls
@@ -143,7 +143,7 @@ For D10 it also found:
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and
   the title "Workspaces is not built yet", keeps the focus and does
-  nothing on a press (`InboxRoute.test.tsx`); since beta.5 (#105) a
+  nothing on a press (the Inbox route tests); since beta.5 (#105) a
   disabled secondary `Button` no longer fades: it keeps its fill and
   border and only its label and icon turn `fg.muted`, where Figma draws
   it enabled.

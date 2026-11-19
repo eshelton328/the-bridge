@@ -62,7 +62,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
-  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  (the Inbox route tests); nothing answers it in this mock-up. The box
   has no attach button, where Figma draws a clip at its start: no file
   flow is designed, and `Composer` cannot draw its attach button
   disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret
@@ -90,7 +90,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Suggestions.** On the phone they stack under "Try", full width,
   their labels at the start, as Figma draws them (402:2075); the label
   is `eyebrow` in `fg.subtle`. A suggestion puts its question in the
-  reply box (`InboxRoute.test.tsx`); Figma draws no state after the
+  reply box (the Inbox route tests); Figma draws no state after the
   press, and nothing sends it.
 - **Button labels.** The suggestions are `Button textSize="xs"`
   (`labelXs`, Medium 12/16), as Figma's Medium 12 (d-100); before, they

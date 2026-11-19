@@ -75,11 +75,11 @@ shorter, below Figma's status bar (d-102), and the position check adds
   `Button` at its default size, 32 high. Figma draws it in violet with a
   violet border; the library's button is the neutral secondary one.
   Library gap: Discuss toggle. It opens the discussion page (M18), with
-  no tab bar; `InboxRoute.test.tsx` checks it on the phone.
+  no tab bar; the Inbox route tests check it on the phone.
 - **Start.** Pinned above the tab bar, full width, as in M2 (`sticky
   action` passes); the bar is opaque.
   Start starts the task: its run card takes Start's place, and Reply
-  here opens its chat (`InboxRoute.test.tsx`).
+  here opens its chat (the Inbox route tests).
 - **Hidden Sources.** The checks render 806 px high (d-102). Figma keeps
   a SOURCES section at y 623 that it does not draw (frame.png shows Run
   in and My notes there); the render keeps Sources below My notes, under

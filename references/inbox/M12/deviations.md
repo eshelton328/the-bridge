@@ -67,7 +67,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   view and All off to the left, as Figma draws it. `FilterChips` scrolls
   a chip into view only when it takes the focus, so `InboxListPane`
   scrolls the selected chip into view when the filter changes
-  (`InboxRoute.test.tsx`). Library gap: Selected chip in view.
+  (the Inbox route tests). Library gap: Selected chip in view.
 - **Finished rows.** Each row says how it ended, in green or grey. The
   outcome line is `small` (13 px) against Figma's Regular 12, and the
   titles keep the default colour where Figma dims them a step. Library

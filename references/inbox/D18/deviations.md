@@ -33,7 +33,7 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
 - **Toast.** The library's `Toast tone="discuss"` with a check and Undo,
   12 px in and 16 px up from the list's bottom (`toast · created`
   passes). Undo takes the three new tasks out of Next steps, with the
-  counts and the toast (`InboxRoute.test.tsx`): the state names the rows
+  counts and the toast (the Inbox route tests): the state names the rows
   it draws as created, since Figma's task here has no discussion to
   apply, and its `ui` has the tasks created.
 - **List height.** The scrolling list ends at the toast's bottom edge

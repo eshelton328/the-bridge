@@ -86,4 +86,4 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
 
 - **Running row.** A tap on the task under Running opens its task page
   (T4, M10), as the M10, T4 and D6 notes say, not the chat: the state's
-  detail is T4's (`InboxRoute.test.tsx`).
+  detail is T4's (the Inbox route tests).

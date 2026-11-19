@@ -66,7 +66,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **My notes.** With no note yet, the notes are a 1-row `TextArea`
   (`notes field`), 5 px taller than Figma's 39 px field.
 - **Behaviour.** Discuss opens the discussion's page (T17); Back
-  ("Task") returns here. `InboxRoute.test.tsx` checks both at 756 px.
+  ("Task") returns here. The Inbox route tests check both at 756 px.
 - **Tab bar.** The tabs are one centred group, 456 px wide from x 150
   (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
   place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
@@ -85,5 +85,5 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 A second blind review compared `frame.png` with the render (2026-11-17). Each finding, fixed or with why it stays:
 
-- Reset looks disabled where Figma shows it enabled (P1): checked against the frames, and the rule stays. Figma draws Reset the same way in T2, T16 and T19 (and D1, D14 to D16): the label and icon in #8a97b8 (`fg.muted`) where Edit's are #e6ecff, with the same `border.default` border. So Figma dims Reset here too: T16 is T2 with Discuss, and its prompt is the suggestion, so Reset has nothing to bring back. The difference the review saw is the dim style: a disabled `Button` fades the whole button, border included, where Figma dims only the label and icon. `InboxRoute.test.tsx` checks that Reset is disabled in T2's task page. (Fixed by beta.5: a disabled secondary `Button` keeps its fill and `border.default` border and dims only its label and icon to `fg.muted`, as Figma draws Reset, #105.)
+- Reset looks disabled where Figma shows it enabled (P1): checked against the frames, and the rule stays. Figma draws Reset the same way in T2, T16 and T19 (and D1, D14 to D16): the label and icon in #8a97b8 (`fg.muted`) where Edit's are #e6ecff, with the same `border.default` border. So Figma dims Reset here too: T16 is T2 with Discuss, and its prompt is the suggestion, so Reset has nothing to bring back. The difference the review saw is the dim style: a disabled `Button` fades the whole button, border included, where Figma dims only the label and icon. The Inbox route tests check that Reset is disabled in T2's task page. (Fixed by beta.5: a disabled secondary `Button` keeps its fill and `border.default` border and dims only its label and icon to `fg.muted`, as Figma draws Reset, #105.)
 - Prompt's last line not faded (P2): stays, as in T2: `Clamp` fades only text it cuts. (Since beta.5 a cut prompt ends with no ellipsis, #104.)

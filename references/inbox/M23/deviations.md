@@ -63,7 +63,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
-  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  (the Inbox route tests); nothing answers it in this mock-up. The box
   has no attach button, where Figma draws a clip at its start: no file
   flow is designed, and `Composer` cannot draw its attach button
   disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret

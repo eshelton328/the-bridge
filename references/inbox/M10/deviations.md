@@ -65,13 +65,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Figma's 20. Library gap: Pill height.
 - **What the buttons do.** Reply here opens the started task's chat in
   the inbox (M8), with no tab bar; Back closes it and shows the list,
-  whose row opens the task again (`InboxRoute.test.tsx`). Open in
+  whose row opens the task again (the Inbox route tests). Open in
   Workspaces is disabled (see below). Read the whole
   prompt opens the sent prompt in its sheet with Copy only, since a
   sent prompt cannot be edited.
 - **Running row.** As the note says (and the T4 and D6 notes), a tap on
   the task under Running opens this page: the Running list (T6, M11)
-  holds this page's task as its detail, and `InboxRoute.test.tsx` taps
+  holds this page's task as its detail, and the Inbox route tests tap
   the row on the phone and finds the sent prompt and Reply here, not the
   chat. D5 still shows the chat beside the list, as Figma draws it.
 - **Hidden Figma text.** Figma keeps Reset and Edit as hidden layers in
@@ -96,7 +96,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); a disabled secondary `Button` keeps its
+  a press (the Inbox route tests); a disabled secondary `Button` keeps its
   fill and border and draws its label and icon in `fg.muted` (#105; before,
   the whole button faded), where Figma draws it enabled.
 - **Notes box (2026-11-18).** The note card is now the `notice`

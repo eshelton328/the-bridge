@@ -62,7 +62,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
-  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  (the Inbox route tests); nothing answers it in this mock-up. The box
   has no attach button, where Figma draws a clip at its start: no file
   flow is designed, and `Composer` cannot draw its attach button
   disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret
@@ -82,7 +82,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Behaviour.** Apply shows the task page with the new prompt (M20),
   Discard takes the proposal out, Edit first opens the prompt editor
   with the change filled in (M3), as on the tablet; the tablet tests in
-  `InboxRoute.test.tsx` use the same screen.
+  the Inbox route tests use the same screen.
 - **Button labels.** The proposal's Apply, Discard and Edit first are
   `ProposalBlock`'s own `size="sm"` buttons in `labelXs` (Medium 12/16),
   as Figma sets them (library beta.9). `Composer`'s send is larger than

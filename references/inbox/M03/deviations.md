@@ -47,7 +47,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   SOURCES` y -187), and the task frame ends there (`task · next
   step` h +24).
 - **Nav.** As in M2: the nav is 32 px against 40 (`nav` h -8).
-- **Editor.** Edit puts the focus in the editor (`InboxRoute.test.tsx`),
+- **Editor.** Edit puts the focus in the editor (`InboxPhone.test.tsx`),
   and the story focuses it, so it has Figma's focus border and a caret.
   The editor is 14 px shorter (`section · SUGGESTED PROMPT` h -14):
   `TextArea textSize="sm"` pads 8 with 20 px lines. Library gap: Small

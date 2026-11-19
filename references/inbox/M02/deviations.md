@@ -84,7 +84,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   bar is opaque, as Figma's: the chrome over the canvas, so the page
   that scrolls under it does not show through.
   Start starts the task: its run card takes Start's place, and Reply
-  here opens its chat (`InboxRoute.test.tsx`).
+  here opens its chat (the Inbox route tests).
 - **My notes and Sources.** The page scrolls under Start, as the note
   says. My notes starts lower than Figma's by what the sections above
   add, less the 21 px the Run in card saves (`section · MY NOTES` y -2,

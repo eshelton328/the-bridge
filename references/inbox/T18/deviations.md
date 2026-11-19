@@ -86,7 +86,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Behaviour.** Apply shows the task page with the new prompt (T19),
   Discard takes the proposal out, Edit first opens the prompt editor
   with the change filled in, and Undo takes the change back.
-  `InboxRoute.test.tsx` checks each at 756 px.
+  The Inbox route tests check each at 756 px.
 - **Button labels.** Apply, Discard and Edit first are `ProposalBlock`'s
   own `size="sm"` buttons in `labelXs` (Medium 12/16), as Figma sets
   them (library beta.9).

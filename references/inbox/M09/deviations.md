@@ -85,7 +85,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   still shows the ring.
 - **What the buttons do.** Edit prompt closes the sheet and opens the
   prompt editor with the focus in it (M3); Copy copies the whole prompt
-  (`InboxRoute.test.tsx`). A sent prompt's sheet (M10) has Copy only.
+  (the Inbox route tests). A sent prompt's sheet (M10) has Copy only.
 - **Sources under the sheet.** The checks render 806 px high (d-102).
   The source's detail lies under the prompt sheet in Figma and in the
   render (the exception says why).
