@@ -118,12 +118,10 @@ jobs:
   # (scripts/fidelity/AGENTS.md): each Figma string is in the render and
   # seen, no extra text, no clipped text, no scroll bar, full height.
   # POSITION is left out until frames pass it. No image is compared: the
-  # side-by-side PNGs are uploaded for a reviewer only. Frames on main
-  # still fail these checks, and ship-pr stops on any red check, so until
-  # this job passes on main it runs only on a push to main and by hand.
-  # Then it runs on each PR and becomes a required check.
+  # side-by-side PNGs are uploaded for a reviewer only. Every frame passed
+  # on main f83cc7db (run 44487438612), so the job runs on each PR too,
+  # and its four page jobs are required checks of the protect-main ruleset.
   fidelity:
-    if: github.event_name != 'pull_request'
     name: fidelity (${{ matrix.page }})
     strategy:
       fail-fast: false
