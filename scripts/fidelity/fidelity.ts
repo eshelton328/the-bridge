@@ -21,7 +21,7 @@ import { checkRules } from './checkRules.ts'
 import { checkText } from './checkText.ts'
 import { normaliseFrameId } from './figmaMetadata.ts'
 import { collectPageScript, type PageMeasure } from './inPage.ts'
-import { waitForAnimations } from './settle.ts'
+import { waitForAnimations, waitForLayout } from './settle.ts'
 import {
   frameDir,
   fidelityChecks,
@@ -197,5 +197,6 @@ async function openStory(
   await tab.evaluate(() => document.fonts.ready.then(() => undefined))
   await tab.waitForLoadState('networkidle')
   await waitForAnimations(tab)
+  await waitForLayout(tab)
   return { context, tab }
 }
