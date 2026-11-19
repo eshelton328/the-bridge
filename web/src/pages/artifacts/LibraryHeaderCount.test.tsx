@@ -8,7 +8,7 @@ import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import { artifactsStates } from './states/index.ts'
 
 // The library's count beside the page title: Figma's desktop count (D1 402:15373, D2's list) is Regular 16/20, the
-// library's `PageHeader countSize="lg"` (`pageCount`); the tablet and phone headers keep the default count.
+// library's `PageHeader countSize="lg"` (`pageCount`), and so are the tablet's (T1 405:108) and the phone's (M1 406:72).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -38,10 +38,17 @@ describe("the Artifacts header's count", () => {
     })
   }
 
-  it('keeps the default count on the tablet (libraryTablet)', async () => {
+  it('is Regular 16/20 on the tablet (libraryTablet)', async () => {
     await page.viewport(756, 1024)
     const { data, ui } = artifactsStates.libraryTablet
     view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="tablet" />)
-    expect((await countStyle()).size).not.toBe('16px')
+    expect(await countStyle()).toEqual({ size: '16px', line: '20px', weight: '400' })
+  })
+
+  it('is Regular 16/20 on the phone (libraryPhone)', async () => {
+    await page.viewport(390, 844)
+    const { data, ui } = artifactsStates.libraryPhone
+    view = await testRender(<ArtifactsScreen data={data} ui={ui} viewport="phone" />)
+    expect(await countStyle()).toEqual({ size: '16px', line: '20px', weight: '400' })
   })
 })

@@ -70,10 +70,9 @@ artifacts`): the text, position and rules results did not change.
   descriptions break where Figma's do. Library gaps "Sort and Filter
   button widths" and "Card body and line heights".
 - **Page title and thumbnails.** As T1, under the scrim: "Artifacts"
-  uses the phone title size (28 px type), a little smaller than Figma's;
+  uses the phone title size (28 px type), 2 px larger than Figma's 26;
   the chart bars are a brighter cyan and the ui preview draws lines where
-  Figma has a plain panel. Library gaps "Tablet page title size" and
-  "Thumbnail colour".
+  Figma has a plain panel. Library gap "Thumbnail colour".
 - **Show 7 artifacts.** The label is the primary button's Medium; Figma's
   looks a little heavier. The button is 46 high in Figma (407:1720) and
   `size="xl"` matches it within the tolerance, as the Inbox's M7 sheet.

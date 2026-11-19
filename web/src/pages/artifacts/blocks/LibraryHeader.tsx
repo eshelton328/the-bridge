@@ -36,8 +36,8 @@ export function LibraryHeader({ title, count, found, addLink, layout = 'desktop'
         count={count}
         countLabel={`${String(count)} artifacts`}
         size={desktop ? 'page' : 'phone'}
-        // D1's count (402:15373) is Regular 16/20 (library `countSize="lg"`); the tablet and phone keep the default.
-        countSize={desktop ? 'lg' : 'md'}
+        // The count is Regular 16/20 on every layout (library `countSize="lg"`): D1 402:15373, T1 405:108, M1 406:72.
+        countSize="lg"
       >
         {desktop ? <FoundStatus text={found} /> : null}
         {phone ? (

@@ -55,10 +55,14 @@ artifacts`): the text, position and rules results did not change.
   is 36 high against Figma's 34 (405:159), so the cards are 8 under it,
   not 10, and keep Figma's rows. Library gap "Card body and line
   heights".
-- **Page title.** "Artifacts" uses the library's phone title (28 px type,
-  `PageHeader size="phone"`), the largest it has; Figma's text box is
-  34 high and 110 wide, a little larger. Library gap "Tablet page title
-  size".
+- **Page title.** "Artifacts" uses the library's phone title (`heading`,
+  28 px SemiBold, `PageHeader size="phone"`); Figma's (405:107) is Geist
+  SemiBold 26 px with no text style, in a 34 × 110 box, so the render's
+  title is 2 px larger. The library's type scale merges the tablet's 26
+  into the phone's 28 (`page-header.ts`, "the inventory merges tablet's
+  26"), so no tablet size is added (2026-11-19, under Erik's standing
+  rule). The count beside it is Figma's Regular 16 (405:108,
+  `countSize="lg"`).
 - **Thumbnails.** The chart bars are a brighter cyan than Figma's muted
   teal-cyan; the ui preview draws a list of lines in its side panel and
   rows where Figma has a plain dark panel and plain rows; the diagram's
