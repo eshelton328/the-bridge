@@ -47,4 +47,12 @@ describe('the side chat on the phone', () => {
     await userEvent.click(page.getByRole('dialog', { name: 'bridge themes' }).getByText('Side chat'))
     await expect.element(page.getByRole('dialog', { name: 'Side chat' })).toBeVisible()
   })
+
+  it('dims the chat under the sheet with a scrim, as Figma does (105:3105)', async () => {
+    await page.viewport(390, 806)
+    const { data, ui } = workspacesStates.phoneSideChat
+    view = await testRender(<WorkspacesScreen data={data} ui={ui} viewport="phone" />)
+    await expect.element(page.getByRole('dialog', { name: 'Side chat' })).toBeVisible()
+    expect(document.querySelectorAll('[data-scope="dialog"][data-part="backdrop"]')).toHaveLength(1)
+  })
 })
