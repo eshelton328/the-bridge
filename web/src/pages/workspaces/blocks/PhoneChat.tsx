@@ -12,7 +12,8 @@
 // chat, such as the name field (M23). At a tablet's width (T2 105:1810,
 // `device="tablet"`) the header is 12 under the status bar, as the chat alone
 // draws it, and the transcript 16 under the rule and 24 in from the sides.
-// Props only.
+// The chat is one ScrollFrame, the header its header, straight in the
+// AppShell detail, which docks the composer on the keyboard (R20). Props only.
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -21,8 +22,6 @@ import { ChatHead } from './ChatHead.tsx'
 import { ChatPane } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 
-// The detail slot is a flex column; the chat fills it.
-const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]', minH: '[0]' })
 // Figma draws the back chevron and the ⋯ bare, 20 and 18 px (105:2750, 105:2765): the back in the accent colour, as a
 // text button draws its icon, and the ⋯ in the text colour. Each button is 24 square. The ⋯ is Figma's icon layer, not
 // a button, so its 20 px icon carries the layer, and the button reaches 2 into the header's end padding so the icon
@@ -107,46 +106,48 @@ export function PhoneChat(props: PhoneChatProps) {
       </span>
     </Button>
   )
+  const head = (
+    <ChatHead
+      size={device === 'tablet' ? 'full' : 'phone'}
+      head={pane.head}
+      workspace={workspace}
+      contextLabel={contextLabel}
+      back={
+        <Button
+          variant="text"
+          size="xs"
+          iconOnly
+          className={backButton}
+          aria-label={backLabel}
+          onClick={onBack}
+          data-figma={layers?.phoneBack}
+        >
+          <ChevronLeftIcon size="20" />
+        </Button>
+      }
+      menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
+      extra={folders}
+      extraAfterLabel={device === 'tablet'}
+      meta={meta}
+      rename={rename}
+      figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
+    />
+  )
   return (
-    <section aria-label={pane.head.title} className={column}>
-      <ChatHead
-        size={device === 'tablet' ? 'full' : 'phone'}
-        head={pane.head}
-        workspace={workspace}
-        contextLabel={contextLabel}
-        back={
-          <Button
-            variant="text"
-            size="xs"
-            iconOnly
-            className={backButton}
-            aria-label={backLabel}
-            onClick={onBack}
-            data-figma={layers?.phoneBack}
-          >
-            <ChevronLeftIcon size="20" />
-          </Button>
-        }
-        menu={noActions === true ? null : renderMenu === undefined ? more : renderMenu(more)}
-        extra={folders}
-        extraAfterLabel={device === 'tablet'}
-        meta={meta}
-        rename={rename}
-        figma={{ head: layers?.chatHead, actions: layers?.chatActions }}
-      />
-      <ChatPane
-        // Each chat its own composer, whose text is its state, so a typed message never carries to another chat.
-        key={pane.id}
-        size={device}
-        figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
-        entries={pane.entries}
-        composer={withDraft(pane.composer, draft)}
-        onTextChange={onTextChange}
-        skills={skills}
-        onSkillsOpenChange={onSkillsOpenChange}
-        autoFocus={skills.open || focusMessage}
-        above={above}
-      />
-    </section>
+    <ChatPane
+      // Each chat its own composer, whose text is its state, so a typed message never carries to another chat.
+      key={pane.id}
+      size={device}
+      header={head}
+      label={pane.head.title}
+      figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
+      entries={pane.entries}
+      composer={withDraft(pane.composer, draft)}
+      onTextChange={onTextChange}
+      skills={skills}
+      onSkillsOpenChange={onSkillsOpenChange}
+      autoFocus={skills.open || focusMessage}
+      above={above}
+    />
   )
 }

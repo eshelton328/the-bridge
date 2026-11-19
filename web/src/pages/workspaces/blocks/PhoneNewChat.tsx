@@ -4,15 +4,15 @@
 // up the choices over Start chat, within thumb reach. The header and the
 // start bar stay put and only the fields scroll (d-107, `ScrollFrame`).
 // With the keyboard up (M11 147:174) the start bar keeps Start chat alone,
-// just over the keyboard. Props only.
+// just over the keyboard: the form is one ScrollFrame straight in the
+// AppShell detail, which docks the start bar there (R20). Props only.
 import { ArrowUpIcon, Button, ScrollFrame } from '@eshelton328/component-library-1701'
 import { useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { NewChatForm, NewChatLayers, Workspace } from '../types.ts'
+import { frameRegion } from './frameRegion.ts'
 import { NewChatFields } from './NewChatFields.tsx'
 
-// The detail slot is a flex column; the form fills it.
-const column = css({ display: 'flex', flexDirection: 'column', flex: '1', minW: '[0]', minH: '[0]' })
 // M7 105:3273: Cancel 16 in from the start and the title centred on the screen; the row is 39 high.
 const header = css({
   display: 'grid',
@@ -74,35 +74,33 @@ export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen
   }, [focus])
   const line = keyboardOpen === true ? undefined : summaryText(form, workspaces)
   return (
-    <section aria-label={form.title} className={column}>
-      <ScrollFrame
-        bodyClassName={body}
-        header={
-          <div className={header} data-figma={layers?.header}>
-            <Button variant="text" size="xs" className={cancel} onClick={onCancel}>
-              <span data-figma={layers?.cancel}>{form.cancel}</span>
-            </Button>
-            <h2 className={title} data-figma={layers?.title}>
-              {form.title}
-            </h2>
-          </div>
-        }
-        footer={
-          <div className={bar} data-figma={layers?.startBar}>
-            {line === undefined ? null : (
-              <p className={summary} data-figma={layers?.summary}>
-                {line}
-              </p>
-            )}
-            <Button variant="primary" size="xl" className={start} onClick={onStart} data-figma={layers?.start}>
-              <ArrowUpIcon size="16" />
-              {form.start}
-            </Button>
-          </div>
-        }
-      >
-        <NewChatFields form={form} workspaces={workspaces} messageRef={messageRef} nameRef={nameRef} layers={layers} />
-      </ScrollFrame>
-    </section>
+    <ScrollFrame
+      bodyClassName={body}
+      header={
+        <div ref={frameRegion(form.title)} className={header} data-figma={layers?.header}>
+          <Button variant="text" size="xs" className={cancel} onClick={onCancel}>
+            <span data-figma={layers?.cancel}>{form.cancel}</span>
+          </Button>
+          <h2 className={title} data-figma={layers?.title}>
+            {form.title}
+          </h2>
+        </div>
+      }
+      footer={
+        <div className={bar} data-figma={layers?.startBar}>
+          {line === undefined ? null : (
+            <p className={summary} data-figma={layers?.summary}>
+              {line}
+            </p>
+          )}
+          <Button variant="primary" size="xl" className={start} onClick={onStart} data-figma={layers?.start}>
+            <ArrowUpIcon size="16" />
+            {form.start}
+          </Button>
+        </div>
+      }
+    >
+      <NewChatFields form={form} workspaces={workspaces} messageRef={messageRef} nameRef={nameRef} layers={layers} />
+    </ScrollFrame>
   )
 }
