@@ -71,7 +71,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Show it.** The Done hint's link selects the Done chip, which lists
   the match in Done: the search state holds that Done list (one finished
   task, "Save the Inbox frames as references"), which no frame draws, and
-  the hint leaves while Done is selected (`InboxRoute.test.tsx`,
+  the hint leaves while Done is selected (the Inbox route tests,
   `listView.test.ts`).
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `inbox list` x +0, y +0, w +0, h -10 (was x

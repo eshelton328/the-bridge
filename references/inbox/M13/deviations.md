@@ -60,13 +60,13 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Sort sheet.** The phone's Sort is a `BottomSheet` titled Sort with
   Done, the four choices as an `OptionList` with the check on Newest
   first, and the note under a rule. A choice sorts the list and closes
-  the sheet, from a tap or the keyboard (`InboxRoute.test.tsx`).
+  the sheet, from a tap or the keyboard (the Inbox route tests).
   Figma's choices are 58 px rows 2 apart; `OptionList` rows are 56 with
   no gap, so the sheet is a little shorter and starts lower. `BottomSheet`
   takes no `data-*` attribute, so the position check cannot measure the
   sheet. Done is `Button variant="text" size="sm"`, plain cyan text as
   Figma draws it, and the sheet opens with the focus on itself, so no
-  focus ring shows (`InboxRoute.test.tsx`). The header is about 3 px
+  focus ring shows (the Inbox route tests). The header is about 3 px
   taller than Figma's 40 (346:11808): "Sort" sits 39 below the sheet's
   top against 36, "Newest first" 81 against 78.
   Library gaps: Sort sheet rows, Bottom sheet sections and data

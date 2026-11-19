@@ -66,7 +66,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   exception says why). Library gap: Chip row fade.
 - **Sorted by project.** On the phone a sort other than Newest first
   shows a line under the tools, "Sorted by project" and Reset, which
-  brings back Newest first (`InboxRoute.test.tsx`); the Sort icon is
+  brings back Newest first (the Inbox route tests); the Sort icon is
   pressed with its cyan dot (`Button indicator`). The line is 16 px
   high against Figma's 18 (`sort applied` h -2). Each group has a
   heading per project (`GroupHeader variant="project"`).

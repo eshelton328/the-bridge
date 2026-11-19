@@ -97,7 +97,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   with 66 px boxes). The boxes and Also remove this task work: the count
   on Create follows them, Create adds the checked tasks to the list with
   a toast, and Also remove takes this task out too
-  (`InboxRoute.test.tsx`).
+  (the Inbox route tests).
 - **Button labels.** Create 3 tasks and Discard are `ProposalBlock`'s
   own `size="sm"` buttons in `labelXs` (Medium 12/16), as Figma sets
   them (402:11894; library beta.9).

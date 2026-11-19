@@ -117,4 +117,4 @@ was built (2026-11-17). Each finding, fixed or with why it stays:
   library gap: Sheet inset on the tablet).
 - Back did not return to the list (caller's review). Fixed: Back closes
   the open item through the page store (`inboxStore` `setItemOpen`), so
-  the list shows; `InboxRoute.test.tsx` checks it at the tablet width.
+  the list shows; the Inbox route tests check it at the tablet width.

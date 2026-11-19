@@ -91,7 +91,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   lines and 16 px `Panel` padding (`dialog · Remove this task` x -10, w
   +20, h +19). Keep it shows a focus ring, as in D20: the dialog gives
   the safe action the first focus. Remove task takes the task out of
-  the list and shows the list (`InboxRoute.test.tsx`).
+  the list and shows the list (the Inbox route tests).
 - **Focus after a tap (beta.54, 2026-11-18).** Library #177 shows the
   ring only after a key press: when a tap or click opens the dialog, the
   library's focus tracker marks Keep it `data-focus-quiet` and draws no

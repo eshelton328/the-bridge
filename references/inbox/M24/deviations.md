@@ -65,7 +65,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   composer, as Figma draws it with a caret; the focused border is cyan,
   not Figma's lighter grey (Library gap: Composer focus). Send adds
   Erik's message to the discussion and empties the box
-  (`InboxRoute.test.tsx`); nothing answers it in this mock-up. The box
+  (the Inbox route tests); nothing answers it in this mock-up. The box
   has no attach button, where Figma draws a clip at its start: no file
   flow is designed, and `Composer` cannot draw its attach button
   disabled (LIBRARY_GAPS.md, Waiting for a design). Figma's caret
@@ -114,7 +114,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   h +8), as in T23. Library gap: Styles that differ from Figma.
 - **Behaviour.** Remove task closes the sheet and the discussion and
   shows the list, the task in Done with its reason; Keep it closes the
-  sheet. `InboxRoute.test.tsx` checks both on the phone.
+  sheet. The Inbox route tests check both on the phone.
 - **Button labels.** The sheet's Remove task and Keep it are `size="xl"`
   with the default label. Behind the sheet, the proposal's Remove… and
   Keep it are `ProposalBlock`'s own `size="sm"` buttons in `labelXs`

@@ -77,7 +77,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   Medium 12 (d-100). Sort and Filter are icons. The labels match.
 - **Running row.** A tap on the task under Running opens its task page
   (T4, M10), as the M10, T4 and D6 notes say, not the chat: the state's
-  detail is T4's (`InboxRoute.test.tsx`).
+  detail is T4's (the Inbox route tests).
 - **Beta.7 (2026-11-17).** Library 1.0.0-beta.6 and beta.7 (#107,
   #108) move these layers: `inbox list` x +0, y +0, w +0, h -5 (was x
   +0, y +0, w +0, h +25); `group · NEXT STEPS` within tolerance (was x

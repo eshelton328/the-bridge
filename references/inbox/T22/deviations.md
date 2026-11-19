@@ -85,7 +85,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   icon before the eyebrow has no slot. Library gap: Proposal block icon
   and applied tone.
 - **Behaviour.** Remove… opens the confirm dialog (T23) and Keep it
-  takes the proposal out (`InboxRoute.test.tsx`).
+  takes the proposal out (the Inbox route tests).
 - **Button labels.** Remove… and Keep it are `ProposalBlock`'s own
   `size="sm"` buttons in `labelXs` (Medium 12/16), as Figma sets them
   (library beta.9).

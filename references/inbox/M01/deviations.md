@@ -70,7 +70,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
 - **Rows that open.** Only a row whose item has a detail in the state
   is a button (here Write the tickets for increment one); the others
   are plain rows with a long-press for their actions, so no row is a
-  control that does nothing (`InboxRoute.test.tsx`).
+  control that does nothing (the Inbox route tests).
 - **Sort and Filter.** Icon buttons (`Button iconOnly`), 32 px square
   as in Figma (346:9036, 346:9041).
 - **Below the fold.** The checks render 806 px high, the screen below

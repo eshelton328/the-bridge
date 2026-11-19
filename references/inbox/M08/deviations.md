@@ -73,6 +73,6 @@ shorter, below Figma's status bar (d-102), and the position check adds
   no Inbox frame draws where the button goes, so it waits for a design
   (LIBRARY_GAPS.md, Waiting for a design). It has `aria-disabled` and the
   title "Workspaces is not built yet", keeps the focus and does nothing on
-  a press (`InboxRoute.test.tsx`); a disabled secondary `Button` keeps its
+  a press (the Inbox route tests); a disabled secondary `Button` keeps its
   fill and border and draws its label and icon in `fg.muted` (#105; before,
   the whole button faded), where Figma draws it enabled.

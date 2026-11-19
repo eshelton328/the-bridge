@@ -50,7 +50,7 @@ shorter, below Figma's status bar (d-102), and the position check adds
   (`toast · created` y -4).
   Library gap: Toast width on the tablet. Undo takes the new tasks out,
   as on the phone (M22): the state names the rows it draws as created,
-  and Undo clears its applied Create (`InboxRoute.test.tsx`).
+  and Undo clears its applied Create (the Inbox route tests).
 - **Tab bar.** The tabs are one centred group, 456 px wide from x 150
   (library #125, `TabBar size="tablet"`), and the bar (`tab bar`) is in
   place. Figma draws five tabs of 91.2 px with no Artifacts tab; the app
