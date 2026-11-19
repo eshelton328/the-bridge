@@ -93,9 +93,13 @@ export const ArtifactDetail = z.object({
   /** Such as "updated 12m ago". */
   updated: z.string(),
   preview: ArtifactPreview,
-  /** The artifact's address without the scheme, as the preview's footer shows it. */
-  link: z.string(),
-  madeIn: ArtifactMadeIn,
+  /**
+   * The artifact's address without the scheme, as the preview's footer shows it; a card opened from the library
+   * (`ArtifactsUi.openId`) has one only when its card has.
+   */
+  link: z.string().optional(),
+  /** The chat that published it; a card opened from the library has none, and shows no Made in section. */
+  madeIn: ArtifactMadeIn.optional(),
   /**
    * How the artifact shows after Erik applies its discussion's proposal (D9): Apply republishes it to the same link,
    * so the link and the library entry stay; the bar's pill and line and the updated chip change.
@@ -360,6 +364,11 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
+  /**
+   * The card Erik opened from the library (a card on D1 or T1, a row on M1 or D2's list): it opens as `data.open` does
+   * (D2, T2, M2). `data.open`'s artifact when not set.
+   */
+  openId: z.string().optional(),
   /** Back closed the open artifact on a tablet (T2) or a phone (M2), and the library shows (T1, M1). */
   artifactClosed: z.boolean().optional(),
   /** The phone's ⋯ button opened File in a project (M7). */

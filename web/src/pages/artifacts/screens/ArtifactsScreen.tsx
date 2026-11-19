@@ -13,7 +13,8 @@
 // on a tablet, with the ⋯ button for File in a project (M2), which opens
 // it as a sheet (M7), and whose Discuss opens the discussion as a page of its
 // own with no tab bar, as on a tablet (M9); the phone's More opens the shared
-// More drawer over the tab bar (M8). A state file's data and ui are its props; the
+// More drawer over the tab bar (M8). A card or row of the library opens its
+// artifact the same way (`ui.openId`, openView.ts). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { AppRail } from '../../../blocks/AppRail.tsx'
@@ -32,6 +33,7 @@ import { ArtifactsLibrary } from './ArtifactsLibrary.tsx'
 import { appliedView, discussionEntries, proposalEffect } from './discussionView.ts'
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
+import { openArtifact } from './openView.ts'
 
 export type ArtifactsScreenProps = {
   data: ArtifactsData
@@ -49,9 +51,14 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
       {(layout) => {
         // D2: the desktop opens an artifact beside the list; T2 and M2: a tablet or phone on its own page, until Back
         // closes it.
-        const open = layout === 'desktop' || ui.artifactClosed !== true ? data.open : undefined
+        // A card or row opened from the library (`ui.openId`) opens the same way (openView.ts).
+        const open = openArtifact(data, ui, layout)
         // D9: after Apply the artifact shows Updated and the proposal its applied form.
-        const view = open === undefined ? undefined : appliedView(open, data.discussion, ui)
+        const view = open === undefined ? undefined : appliedView(open.artifact, open.discussion, ui)
+        // D1, T1, M1 and D2's list: a card or row opens its artifact; Back closes it again on a tablet or phone.
+        const openCard = (openId: string) => {
+          onUiChange?.({ openId, artifactClosed: false })
+        }
         // D7: Discuss opens the artifact's discussion beside it, and the list closes. T4 and M9: on a tablet or phone
         // it opens as a page of its own, and the tab bar hides.
         const discussion = view?.discussion
@@ -112,15 +119,27 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange }: 
               }
               list={
                 open === undefined || discussing || layout !== 'desktop' ? undefined : (
-                  <LibraryList data={data} ui={ui} selectedId={open.id} onUiChange={onUiChange} />
+                  <LibraryList
+                    data={data}
+                    ui={ui}
+                    selectedId={open.artifact.id}
+                    onUiChange={onUiChange}
+                    onOpenArtifact={openCard}
+                  />
                 )
               }
               detail={
                 (open === undefined || view === undefined) && layout === 'phone' ? (
                   // M1: on a phone the library is a list of rows with small previews.
-                  <LibraryPhone data={data} ui={ui} onUiChange={onUiChange} />
+                  <LibraryPhone data={data} ui={ui} onUiChange={onUiChange} onOpenArtifact={openCard} />
                 ) : open === undefined || view === undefined ? (
-                  <ArtifactsLibrary data={data} ui={ui} layout={layout} onUiChange={onUiChange} />
+                  <ArtifactsLibrary
+                    data={data}
+                    ui={ui}
+                    layout={layout}
+                    onUiChange={onUiChange}
+                    onOpenArtifact={openCard}
+                  />
                 ) : layout !== 'desktop' && discussing && thread !== undefined ? (
                   <ArtifactDiscussionPage
                     {...thread}

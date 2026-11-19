@@ -22,7 +22,17 @@ each file of a page folder is for.
   `MoreDrawer` over the tab bar, Artifacts selected with its count,
   `ui.moreOpen`, M8). Do not change `AppRail`, `AppTabBar`,
   `MoreDrawer` or another shared block from this page; a difference goes in `deviations.md`.
-  With an artifact open (`data.open`, D2) the desktop puts the library
+  A card (D1, T1), a phone row (M1) or a row of D2's list opens its
+  artifact: it sets `ui.openId` (and clears `ui.artifactClosed`), and
+  `openArtifact` in `screens/openView.ts` (pure, tested in
+  `openView.test.ts`) says what shows. The artifact `data.open` describes
+  opens as it is, with its discussion, so D2, T2, M2 and the states after
+  them do not change; any other card's detail is built from its own card
+  fields (`cardDetail`): "found 40m ago" and "updated 40m ago" from its
+  age, the chip's "Claude artifact" or "Codex site" (the phone keeps the
+  card's "Claude"), its link only when the card has one, and no Made in
+  and no discussion, as a card names no chat.
+  With an artifact open (`data.open` or `ui.openId`, D2) the desktop puts the library
   as a list in the shell's `list` (`LibraryList`) and the artifact in
   `detail` (`ArtifactDetail`). On a tablet (T2) it opens as its own page,
   `screens/ArtifactPage.tsx`, which runs under the tab bar as the library
@@ -32,8 +42,9 @@ each file of a page folder is for.
   in its header, so the Back bar stays at the top and only the page under
   it scrolls (d-107), then `ArtifactTitleBlock` with `ArtifactStatus`
   (New and who found it) over the title, a framed `Thumbnail
-  shape="wide"`, Open artifact the full width, the link and `MadeIn`,
-  20 apart. Back sets `ui.artifactClosed` and the library shows (T1).
+  shape="wide"`, Open artifact the full width, the link and `MadeIn`
+  (each only when the artifact has it), 20 apart. Back sets
+  `ui.artifactClosed` and the library shows (T1); the desktop has no Back.
   Discuss sets `ui.discussOpen`, and on a tablet the discussion opens as
   its own page, `screens/ArtifactDiscussionPage.tsx`, with no tab bar
   (T4), as the Inbox's (Inbox T17): the shared `DetailFrame` with the nav
@@ -151,7 +162,9 @@ each file of a page folder is for.
   without the view switch and a `RowGroup` per group.
   `screens/ArtifactDetail.tsx`: the open artifact in a `Container
   size="detail"`: `ArtifactBar`, `ArtifactTitleBlock`, `ArtifactPreview`
-  and `MadeIn`, 20 apart, and an optional `side` beside it (D7).
+  and `MadeIn` (only with `madeIn`), 20 apart, and an optional `side`
+  beside it (D7). `ArtifactPreview` keeps Open artifact at the end of its
+  footer when the artifact has no link.
   `screens/libraryView.ts` (pure, tested in `libraryView.test.ts` beside
   this file) keeps each group's cards that pass the chip and the search
   (title, description, link and project) and leaves out a group with none;
@@ -169,7 +182,8 @@ each file of a page folder is for.
   columns on the desktop) and `LibraryCard` (`Card` with a `Thumbnail`,
   New as `Badge tone="working"` at the end of the title row
   (`badgePosition="end"`), and a `MetaLine` with the `KindMark`,
-  source, project and age; `onOpen` makes it a button). For D2:
+  source, project and age; `onOpen` makes it a button, which
+  `ArtifactsScreen` passes on every width). For D2:
   `RowGroup` (rows 2 apart) and `ArtifactRow` (`ListRow padding="sm"
   trailingAlign="center"` with a `Thumbnail size="sm"`, the kind mark and
   project, the New dot at the end of the title line (`dot="working"
@@ -304,12 +318,12 @@ each file of a page folder is for.
 - `types.ts`: `ArtifactsData` (title, count, the found status, the chips,
   the search placeholder, the sorts and the groups of `ArtifactCard`s,
   each with its `preview` kind and `source`, and the optional `open`
-  `ArtifactDetail`, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu`, the
+  `ArtifactDetail`, whose `link` and `madeIn` are optional, `filterMenu` (with the tablet sheet's `clear`), `addLinkForm`, `sortMenu`, the
   open artifact's `discussion` and `fileMenu`) and `ArtifactsUi` (chip,
   sort, view, open groups, search text, and the optional open Filter
   menu and its checked boxes, whether the matches group is open, and the
   open Add a link dialog and its picked source, the open Sort menu,
-  whether Back closed the open artifact (T2, M2), whether the phone's ⋯
+  the card opened from the library (`openId`), whether Back closed the open artifact (T2, M2), whether the phone's ⋯
   opened File in a project (M7) and the project picked in it, whether
   the phone's More opened the More drawer (M8), and the open discussion, its draft, the sent messages and what Erik did to
   its proposal), each
@@ -319,10 +333,14 @@ each file of a page folder is for.
   (`loadArtifactsState.ts`, `pages/AGENTS.md`): D1's data with every
   card, T1's Filter menu, D6's sorts and Sort menu and "Search
   artifacts", with every menu, sheet and dialog closed, so the screen
-  draws D1's grid, T1's columns or M1's rows by the window's width and
-  Filter and Sort open at each width. It is not a Figma state.
-  `app/ArtifactsHome.test.tsx` checks it at 390, 756 and 1512 and on a
-  resize, and that a `?state=` still draws its frame.
+  draws D1's grid, T1's columns or M1's rows by the window's width,
+  Filter and Sort open at each width, and a card or row opens its artifact
+  (`ui.openId`): beside the list on a desktop, on its own page under Back
+  on a tablet or phone, where Back returns to the library. It has no
+  `data.open`, so every card's detail is built from its card. It is not
+  a Figma state. `app/ArtifactsHome.test.tsx` checks it at 390, 756 and
+  1512 and on a resize, and that a `?state=` still draws its frame;
+  `app/ArtifactsHomeOpen.test.tsx` opens a card at each width and Back.
 - `LIBRARY_GAPS.md`: what the Artifacts frames need that the component
   library cannot draw yet, for the batched library PR.
 

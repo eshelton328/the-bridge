@@ -4,7 +4,8 @@
 // every menu, sheet and dialog closed. It holds what each layout's buttons
 // open: T1's Filter menu (D3's, with the sheet's Clear and Show), so Filter
 // opens D3's popover on a desktop and T3's sheet on a tablet or a phone,
-// and D6's sorts and Sort menu, so Sort opens D6's menu or M4's sheet. The
+// and D6's sorts and Sort menu, so Sort opens D6's menu or M4's sheet. A
+// card or row opens its artifact (screens/openView.ts). The
 // search says "Search artifacts", T1's and M1's words, which fit the
 // phone's field; D1's longer words are cut there. It is not a Figma state:
 // it lives outside states/, so it has no frame, story, board or fidelity

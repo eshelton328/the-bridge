@@ -32,10 +32,17 @@ export function ArtifactPreview({ artifact, onOpenArtifact }: ArtifactPreviewPro
     <div className={box} data-figma="preview">
       <Thumbnail kind={artifact.preview} shape="banner" framed={false} label={`${artifact.title} preview`} />
       <Inline gap="8" align="center" className={footer} data-figma="preview footer">
-        <LinkMark />
-        <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
-          {artifact.link}
-        </a>
+        {/* A card opened from the library has a link only when its card has; the space keeps Open artifact at the end. */}
+        {artifact.link === undefined ? (
+          <span className={link} />
+        ) : (
+          <>
+            <LinkMark />
+            <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
+              {artifact.link}
+            </a>
+          </>
+        )}
         <span data-figma="button · Open artifact">
           <Button variant="primary" onClick={onOpenArtifact}>
             Open artifact

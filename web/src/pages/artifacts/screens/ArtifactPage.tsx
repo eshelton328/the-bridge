@@ -99,7 +99,7 @@ export function ArtifactPage({
               </Button>
             </span>
           </Grid>
-        ) : (
+        ) : artifact.link === undefined ? null : (
           <Inline gap="6" align="center" className={linkRow} data-figma="link">
             <LinkMark />
             <a className={link} href={`https://${artifact.link}`} target="_blank" rel="noreferrer">
@@ -107,7 +107,8 @@ export function ArtifactPage({
             </a>
           </Inline>
         )}
-        <MadeIn madeIn={artifact.madeIn} />
+        {/* A card opened from the library names no chat, so it has no Made in. */}
+        {artifact.madeIn === undefined ? null : <MadeIn madeIn={artifact.madeIn} />}
       </Stack>
     </DetailFrame>
   )

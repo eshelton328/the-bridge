@@ -53,7 +53,10 @@ export function ArtifactDetail({ artifact, badge, onDiscuss, side, madeInLayer }
       />
       <ArtifactTitleBlock artifact={artifact} />
       <ArtifactPreview artifact={artifact} />
-      <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : madeInLayer} />
+      {/* A card opened from the library names no chat, so it has no Made in. */}
+      {artifact.madeIn === undefined ? null : (
+        <MadeIn madeIn={artifact.madeIn} buttonLayer={side === undefined ? undefined : madeInLayer} />
+      )}
     </>
   )
   if (side === undefined)

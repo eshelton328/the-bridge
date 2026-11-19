@@ -26,7 +26,7 @@ const phoneRow = css({ alignItems: 'center' })
 const phoneText = css({ alignItems: 'flex-start', minW: '[0]' })
 
 export type MadeInProps = {
-  madeIn: ArtifactDetail['madeIn']
+  madeIn: NonNullable<ArtifactDetail['madeIn']>
   onOpenInWorkspace?: (() => void) | undefined
   /**
    * The Figma layer of Open in workspace: its name, or its node id where the frame has two layers of that name (D7,
