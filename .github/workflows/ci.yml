@@ -134,7 +134,7 @@ jobs:
     env:
       # The pages whose icon sizes the job gates too (--checks icons: no
       # iconSize diff in the position check). A page joins when it has none.
-      ICON_GATED_PAGES: "[]"
+      ICON_GATED_PAGES: '["artifacts"]'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup
