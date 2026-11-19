@@ -5,6 +5,8 @@ on:
     types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
+  # Runs every job, with the fidelity job, on a branch by hand.
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -109,6 +111,38 @@ jobs:
           browser: "true"
       - run: pnpm codegen
       - run: pnpm test:stories
+
+  # The fidelity TEXT and RULES checks of every frame of the four pages
+  # (scripts/fidelity/AGENTS.md): each Figma string is in the render and
+  # seen, no extra text, no clipped text, no scroll bar, full height.
+  # POSITION is left out until frames pass it. No image is compared: the
+  # side-by-side PNGs are uploaded for a reviewer only. Frames on main
+  # still fail these checks, and ship-pr stops on any red check, so until
+  # this job passes on main it runs only on a push to main and by hand.
+  # Then it runs on each PR and becomes a required check.
+  fidelity:
+    if: github.event_name != 'pull_request'
+    name: fidelity (${{ matrix.page }})
+    strategy:
+      fail-fast: false
+      matrix:
+        page: [inbox, workspaces, artifacts, toolkit]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup
+        with:
+          packages-token: ${{ secrets.GITHUB_TOKEN }}
+          browser: "true"
+      - run: pnpm codegen
+      - run: pnpm build-storybook
+      - run: pnpm fidelity ${{ matrix.page }} --skip-build --checks text,rules
+      - if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: fidelity-${{ matrix.page }}
+          path: reports/fidelity/${{ matrix.page }}/
+          retention-days: 7
 
   build:
     runs-on: ubuntu-24.04

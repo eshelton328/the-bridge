@@ -1,7 +1,18 @@
 // Tests for references.ts. Run with `pnpm test:scripts`.
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { parseExceptions, parseFrameRef, parseTolerance } from './references.ts'
+import { parseChecks, parseExceptions, parseFrameRef, parseTolerance } from './references.ts'
+
+void test('parseChecks takes one or more check names, comma-separated', () => {
+  assert.deepEqual(parseChecks('text,rules', '--checks'), ['text', 'rules'])
+  assert.deepEqual(parseChecks('position', '--checks'), ['position'])
+  assert.deepEqual(parseChecks('text, position ,rules', '--checks'), ['text', 'position', 'rules'])
+})
+
+void test('parseChecks rejects an empty, unknown or repeated name', () => {
+  for (const v of ['', ',', 'text,', 'colour', 'text,text', 'TEXT'])
+    assert.throws(() => parseChecks(v, '--checks'), /--checks: name each check once/)
+})
 
 void test('parseTolerance takes a plain number of px, 0 or more', () => {
   assert.equal(parseTolerance('4', '--tolerance'), 4)
