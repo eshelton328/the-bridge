@@ -271,6 +271,22 @@
     {
       "text": "writer",
       "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "agents/eval-case-writer.md",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "eval-grader",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "agents/eval-grader.md",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
+    },
+    {
+      "text": "→0 ←2",
+      "reason": "Figma draws the list pane scrolled to the Rules group (group · RULES 427:478, y 148) under a pinned header, chips and search. The render's pane starts at its header with the Skills group first, as in D3, because no page builds its own sticky layout until the library's ScrollFrame arrives with the move to 1.0.0-beta.15 (d-107). So this Skills and Agents text shows where Figma has scrolled it away."
     }
   ],
   "position": [
