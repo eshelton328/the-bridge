@@ -1,7 +1,7 @@
 // The boundary inside each Workbench pane, under the pane header, so the
 // title stays and the other panes keep working. It resets when the pane
 // shows another chat. Render panes through PaneSlot, which adds it.
-import type { ReactNode } from 'react'
+import { type ReactNode, useId } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ErrorFallback } from './ErrorFallback.tsx'
 
@@ -14,6 +14,7 @@ export type PaneBoundaryProps = {
 }
 
 export function PaneBoundary({ contentKey, onClosePane, children }: PaneBoundaryProps) {
+  const boundaryId = useId()
   return (
     <ErrorBoundary
       resetKeys={[contentKey]}
@@ -21,6 +22,7 @@ export function PaneBoundary({ contentKey, onClosePane, children }: PaneBoundary
         <ErrorFallback
           error={error}
           size="pane"
+          retryScope={boundaryId}
           title="This pane failed to render"
           onRetry={resetErrorBoundary}
           secondary={onClosePane === undefined ? undefined : { label: 'Close pane', onClick: onClosePane }}

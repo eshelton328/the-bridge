@@ -11,6 +11,8 @@ export type ErrorFallbackProps = {
   error: unknown
   size: NonNullable<ErrorStateProps['size']>
   title: string
+  /** The boundary's own key for the retry guard (`retryGuard.ts`), stable while the boundary is mounted. */
+  retryScope: string
   /** Tries again: resets the boundary or reloads the route. Without it the only action is Reload app. */
   onRetry?: (() => void) | undefined
   /** A second action, such as Close pane. */
@@ -27,10 +29,10 @@ function devDetails(error: unknown): string | undefined {
   return [getErrorMessage(error) ?? e.message, e.stack].filter((x) => x !== undefined && x !== '').join('\n\n')
 }
 
-export function ErrorFallback({ error, size, title, onRetry, secondary }: ErrorFallbackProps) {
-  const canRetry = onRetry !== undefined && !retriesExhausted()
+export function ErrorFallback({ error, size, title, retryScope, onRetry, secondary }: ErrorFallbackProps) {
+  const canRetry = onRetry !== undefined && !retriesExhausted(retryScope)
   const retry = () => {
-    recordRetry()
+    recordRetry(retryScope)
     onRetry?.()
   }
   return (

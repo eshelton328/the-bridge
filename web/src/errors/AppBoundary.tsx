@@ -7,7 +7,9 @@ import { ErrorFallback } from './ErrorFallback.tsx'
 export function AppBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
-      fallbackRender={({ error }) => <ErrorFallback error={error} size="page" title="The Bridge hit an error" />}
+      fallbackRender={({ error }) => (
+        <ErrorFallback error={error} size="page" title="The Bridge hit an error" retryScope="app" />
+      )}
     >
       {children}
     </ErrorBoundary>
