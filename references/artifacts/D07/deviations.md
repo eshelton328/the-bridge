@@ -34,7 +34,7 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   panel starts 8 px further right and is 620 wide against 628. No size
   token is 628 or 820 and `AppShell` has no side column. The panel pads
   12 at the start, so its content sits at Figma's x 905, as the Inbox's
-  panel. Library gaps "Discussion panel width" and "Detail column inset".
+  panel. Library gap "Discussion panel width"; the 40 px inset is d-072.
 - **Discuss.** `button · Discuss` x -4.2, w +4.8: `Button textSize="sm"`
   pads its sides more than Figma's 11 px, as in D2. It is pressed while the
   discussion is open; since library beta.36 (#138) its border is
@@ -79,11 +79,10 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   1.0.0-beta.71 (library PR 222), with its rows 10 apart, as in D2; its
   line is 36 against Figma's 34. The preview's bars are the library's
   chart drawing in its colours,
-  not Figma's heights and colours, its window dots are about 10 px and 18
-  apart against 5 and 9 (452:2374 to 452:2376) and its axis about 557
-  wide, 96 in from each side, against 628 and 60 (452:2387), and the
-  column starts 4 px further right, as in D2. Library gaps "Thumbnail
-  colour", "Artifact preview frame" and "Detail column inset".
+  not Figma's heights and colours. Its window dots (452:2374 to
+  452:2376) and axis (452:2387) are Figma's since library 1.0.0-beta.74,
+  as in D2. The column starts 4 px further right (d-072), as in D2.
+  Library gaps "Thumbnail colour" and "Artifact preview frame".
 - **Discussion blocks.** The Inbox page does not export its
   `DiscussionPanel`, so the Artifacts page has its own `DiscussionPanel`
   and `DiscussionEmpty`, built from the same library parts (`ModelChip`,

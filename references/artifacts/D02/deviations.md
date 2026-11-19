@@ -42,8 +42,7 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
   `chips` w -12.8, `chip · updated 12m ago` x -10.8. The project chip is
   a read-only `MetaChip` with no chevron and no menu, so it is narrower
   and the updated chip sits further left. The detail column also starts
-  4 px further right (below). Library gaps "Project chip menu" and
-  "Detail column inset".
+  4 px further right (below). Library gap "Project chip menu".
 - **Row thumbnails.** None left: since library 1.0.0-beta.36 the rows
   draw `Thumbnail size="sm"`, 64 × 40 as Figma's (403:194), with each
   kind's row drawing (the grid as six round-cornered cells, the ui as a
@@ -62,16 +61,15 @@ fidelity artifacts D02`, 2026-11-17, against the installed library
   a 34 px auto line and the render's 36 (on the 4 px grid), so the chips
   sit 2 px below Figma's and fail only on width (Project chip, above).
 - **Detail column.** The artifact column is 40 in from the list
-  (`Container size="detail"`) against Figma's 36. Library gap "Detail
-  column inset".
+  (`Container size="detail"`) against Figma's 36: no spacing token is 36,
+  and d-072 takes 40 (LIBRARY_GAPS.md, "Decided with no library change").
 - **Preview.** The chart's bars are the library's `Thumbnail kind="chart"`
   drawing, not Figma's heights and colours, and the frame around it is
-  built from tokens. The window bar's dots are about 10 px and 18 apart
-  against Figma's 5 and 9 (403:485 to 403:487), and the chart's axis is
-  about 557 wide, 96 in from each side, against Figma's 628 and 60
-  (403:498): `Thumbnail` draws both inside its SVG and scales them with
-  the banner. Library gaps "Thumbnail colour" and "Artifact preview
-  frame". The readme cold-reader row's chart is amber, as Figma's
+  built from tokens. Since library 1.0.0-beta.74 (library PR 226) the
+  window bar's dots are 5 px and 9 apart, as Figma's (403:485 to
+  403:487), and the chart's axis is 8 % in and 84 % wide, Figma's 628
+  and 60 (403:498). Library gaps "Thumbnail colour" and "Artifact
+  preview frame". The readme cold-reader row's chart is amber, as Figma's
   (`Thumbnail tone`, library 1.0.0-beta.68).
 - **Buttons with no screen yet.** Add a link, Discuss, Copy link,
   Remove, Open in workspace, Sort and Filter are buttons with no action;

@@ -39,16 +39,16 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   label: 'median 71%' }}` (`applied.reference` in `changeProposed`): the
   library draws the dashed line at 71 on its own axis in
   `status.needsYou.fg` and the label in mono. The bars are the library's
-  fixed sample, so they are not sorted, as in D08. The window dots (about 10 px against 5, 452:3602 to
-  452:3604) and the axis inset (96 against 60, 452:3615) are the
-  library's, as in D07. Library gaps "Artifact preview frame" and
-  "Thumbnail colour".
+  fixed sample, so they are not sorted, as in D08. The window dots
+  (452:3602 to 452:3604) and the axis (452:3615) are Figma's since
+  library 1.0.0-beta.74, as in D07. Library gaps "Artifact preview frame"
+  and "Thumbnail colour".
 - **Artifact pane and discussion panel.** `artifact pane` w +8,
   `discussion panel` x +8, w -8, as in D07 and D08: the artifact keeps
   `Container size="detail"` (828) against Figma's 820 pane, so the panel
   is 620 wide against 628; its 12 px start padding keeps the content at
-  Figma's x 905. Library gaps "Discussion panel width" and "Detail column
-  inset".
+  Figma's x 905. Library gap "Discussion panel width"; the 40 px inset is
+  d-072.
 - **Discuss.** `button · Discuss` x -4.2, w +4.8, as in D08: `Button
   textSize="sm"` pads its sides more than Figma's. It is pressed while the
   discussion is open; since library beta.36 (#138) its border is

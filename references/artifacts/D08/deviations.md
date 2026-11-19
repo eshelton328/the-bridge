@@ -34,8 +34,8 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
   `discussion panel` x +8, w -8, as in D07: the artifact keeps
   `Container size="detail"` (828) against Figma's 820 pane, so the panel
   is 620 wide against 628; its 12 px start padding keeps the content at
-  Figma's x 905. Library gaps "Discussion panel width" and "Detail column
-  inset".
+  Figma's x 905. Library gap "Discussion panel width"; the 40 px inset is
+  d-072.
 - **Discuss.** `button · Discuss` x -4.2, w +4.8, as in D07: `Button
   textSize="sm"` pads its sides more than Figma's. It is pressed while the
   discussion is open; since library beta.36 (#138) its border is
@@ -75,10 +75,9 @@ reason. The library gaps are in `web/src/pages/artifacts/LIBRARY_GAPS.md`.
 - **Artifact column.** The title is `headingSm` (26/36) since library
   1.0.0-beta.71 (library PR 222), its line 36 against Figma's 34, as in
   D2. The preview's bars are the library's chart drawing in its colours, not
-  Figma's heights and colours, and its window dots and axis inset are the
-  library's (about 10 px dots, an axis 96 in from each side, against
-  Figma's 5 px and 60, 452:2984 to 452:2986, 452:2997), as in D07. Library
-  gaps "Thumbnail colour" and "Artifact preview frame".
+  Figma's heights and colours. Its window dots (452:2984 to 452:2986) and
+  axis (452:2997) are Figma's since library 1.0.0-beta.74, as in D07.
+  Library gaps "Thumbnail colour" and "Artifact preview frame".
 - **Buttons of the proposal.** Discard drops the proposal from the
   discussion. Apply sets `ui.discussProposal` to `applied`, which shows
   D09: the artifact's pill says Updated, its bar "updated just now from
