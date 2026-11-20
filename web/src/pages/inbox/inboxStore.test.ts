@@ -109,7 +109,8 @@ describe('inboxStore ui edits', () => {
 // messages, and the draft empties only while it is the sent item's and holds the sent text.
 describe('inboxStore markSent', () => {
   it("adds the message over the state's own and empties the draft that holds it", () => {
-    const { setDraft, markSent } = inboxStore.getState().actions
+    const { setDraft, markSent, showState } = inboxStore.getState().actions
+    showState('discussOpen')
     setDraft('t1', 'discussion', 'why now?')
     markSent('discussOpen', ['earlier'], 't1', 'why now?')
     expect(inboxStore.getState().uiEdits).toEqual({ state: 'discussOpen', ui: { sent: ['earlier', 'why now?'] } })
@@ -130,8 +131,19 @@ describe('inboxStore markSent', () => {
     expect(inboxStore.getState().typed).toEqual({ item: 't2', values: { discussion: 'why now?' } })
   })
 
+  it('leaves the edits of a state shown after the send', () => {
+    const { setUi, showState, markSent } = inboxStore.getState().actions
+    showState('discussOpen')
+    markSent('discussOpen', [], 't1', 'one')
+    showState('list')
+    setUi('list', { sort: 'kind' })
+    markSent('discussOpen', [], 't1', 'two')
+    expect(inboxStore.getState().uiEdits).toEqual({ state: 'list', ui: { sort: 'kind' } })
+  })
+
   it('adds a second message after the first', () => {
-    const { markSent } = inboxStore.getState().actions
+    const { markSent, showState } = inboxStore.getState().actions
+    showState('discussOpen')
     markSent('discussOpen', [], 't1', 'one')
     markSent('discussOpen', [], 't1', 'two')
     expect(inboxStore.getState().uiEdits.ui.sent).toEqual(['one', 'two'])

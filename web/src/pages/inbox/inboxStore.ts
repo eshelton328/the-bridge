@@ -120,10 +120,13 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
     markSent: (state, sent, item, text) => {
       set(
         (s) => {
-          const ui = s.uiEdits.state === state ? s.uiEdits.ui : {}
           const kept = s.typed.item !== item || s.typed.values.discussion !== text
+          // A send that ends after another state shows leaves that state's edits as they are (Codex review of #265).
+          const shown = s.uiEdits.state === state
           return {
-            uiEdits: { state, ui: { ...ui, sent: [...(ui.sent ?? sent), text] } },
+            uiEdits: shown
+              ? { state, ui: { ...s.uiEdits.ui, sent: [...(s.uiEdits.ui.sent ?? sent), text] } }
+              : s.uiEdits,
             typed: kept ? s.typed : { item, values: { ...s.typed.values, discussion: '' } },
           }
         },
