@@ -171,9 +171,17 @@ export async function fetchWorkspaces(): Promise<Result<WorkspacesResponse, Live
       return err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' })
     throw thrown
   }
-  if (!res.ok) return err(missOf(res.status, await res.text(), res.headers.get('X-Request-Id') ?? undefined))
-  const body: unknown = await res.json()
-  return ok(WorkspacesResponse.parse(body))
+  try {
+    if (!res.ok) return err(missOf(res.status, await res.text(), res.headers.get('X-Request-Id') ?? undefined))
+    const body: unknown = await res.json()
+    return ok(WorkspacesResponse.parse(body))
+  } catch (thrown) {
+    // The connection can drop after the headers: the body read then rejects with a TypeError, and the answer never
+    // came in full. A body that is not JSON (SyntaxError) or that the contract refuses (ZodError) still throws.
+    if (thrown instanceof TypeError)
+      return err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' })
+    throw thrown
+  }
 }
 
 /** Carries a miss through the query client, which knows only thrown errors, to withLiveWorkspaces. */

@@ -549,6 +549,29 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
     )
   })
 
+  it('gives unreachable when the connection drops while the body is read', async () => {
+    const dropped = () =>
+      new ReadableStream<Uint8Array>({
+        start: (control) => {
+          control.error(new TypeError('network error'))
+        },
+      })
+    for (const status of [200, 502]) {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.resolve(new Response(dropped(), { status }))),
+      )
+      expect(await fetchWorkspaces()).toEqual(
+        err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' }),
+      )
+    }
+  })
+
+  it('throws, not a miss, when a 200 reply is not JSON', async () => {
+    answer('<html>ok</html>', 200)
+    await expect(fetchWorkspaces()).rejects.toThrow(SyntaxError)
+  })
+
   it('throws, not a miss, when a 200 reply does not match the contract', async () => {
     answer(JSON.stringify({ machine: 'mac-mini', workspaces: 'none' }), 200)
     await expect(fetchWorkspaces()).rejects.toThrow()
