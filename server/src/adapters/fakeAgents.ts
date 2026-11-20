@@ -5,7 +5,7 @@ import { ChatId, type ChatStatus, type MachineId, type WorkspaceSummary, Workspa
 import { err, ok } from '@bridge/shared'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 
-/** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner. */
+/** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
   const chat = (local: string) => ChatId.parse(`${machine}/${local}`)
   return [
@@ -33,7 +33,21 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
         },
       ],
     },
-    { id: WorkspaceId.parse(`${machine}/omni`), label: 'omni', chats: [] },
+    {
+      id: WorkspaceId.parse(`${machine}/omni`),
+      label: 'omni',
+      chats: [
+        {
+          id: chat('brain-git'),
+          kind: 'shell',
+          title: 'brain git',
+          model: 'zsh',
+          contextUsed: null,
+          status: 'idle',
+          parent: null,
+        },
+      ],
+    },
   ]
 }
 

@@ -1,6 +1,8 @@
 // The herdr adapter of the AgentPort (d-110). It reads herdr's
-// workspace.list and agent.list, finds each Claude chat's session file from
-// its agent_session, and reads the model from it. It reads only when
+// workspace.list, agent.list and pane.list, finds each Claude chat's session
+// file from its agent_session, and reads the model from it. Every pane that
+// is not a Claude or Codex chat is a shell chat; its model is the program
+// it runs, from pane.process_info. It reads only when
 // listWorkspaces is called. subscribe holds one events.subscribe stream
 // open: each chat's status, and the panes and workspaces that come and go;
 // when one comes or goes it opens the stream again for the new panes and
@@ -40,6 +42,44 @@ const AgentList = z.object({
   ),
 })
 type HerdrAgent = z.infer<typeof AgentList>['agents'][number]
+
+const PaneList = z.object({
+  panes: z.array(
+    z.object({
+      pane_id: z.string(),
+      terminal_id: LocalIdPart,
+      workspace_id: LocalIdPart,
+      agent_status: z.string(),
+      label: z.string().nullable().optional(),
+      terminal_title_stripped: z.string().nullable().optional(),
+    }),
+  ),
+})
+type HerdrPane = z.infer<typeof PaneList>['panes'][number]
+
+const ProcessInfo = z.object({
+  process_info: z.object({
+    shell_pid: z.number().nullable().optional(),
+    foreground_process_group_id: z.number().nullable().optional(),
+    foreground_processes: z.array(
+      z.object({ pid: z.number(), name: z.string(), cmdline: z.string().nullable().optional() }),
+    ),
+  }),
+})
+
+/**
+ * The program a shell pane runs: the shell's name when its own process group is in the foreground (no job),
+ * else the command line of each foreground process; null when herdr gives no process.
+ */
+function programOf({ process_info: info }: z.infer<typeof ProcessInfo>): string | null {
+  const shell = info.foreground_processes.find((p) => p.pid === info.shell_pid)
+  if (shell !== undefined) return shell.name
+  const commands = info.foreground_processes.map((p) => {
+    const line = p.cmdline ?? ''
+    return line === '' ? p.name : line
+  })
+  return commands.length === 0 ? null : commands.join(' | ')
+}
 
 const knownStatus = {
   working: 'working',
@@ -111,8 +151,12 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     return 'unknown'
   }
 
-  const call = async <T>(method: string, schema: z.ZodType<T>): Promise<Result<T, AgentPortError>> => {
-    const reply = await herdrRequest(socket, method, {})
+  const call = async <T>(
+    method: string,
+    schema: z.ZodType<T>,
+    params: Readonly<Record<string, unknown>> = {},
+  ): Promise<Result<T, AgentPortError>> => {
+    const reply = await herdrRequest(socket, method, params)
     if (!reply.ok) return err(portErrorOf(reply.error))
     const parsed = schema.safeParse(reply.value)
     return parsed.success
@@ -161,25 +205,59 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     }
   }
 
+  /** The ID of a shell chat: its pane's terminal ID. */
+  const shellIdOf = (pane: HerdrPane): ChatId => ChatId.parse(`${machine}/${pane.terminal_id}`)
+
+  /** The listed chat ID of each pane, by herdr pane ID: its Claude or Codex chat's, else its shell chat's. */
+  const chatIdsOf = (agents: readonly HerdrAgent[], panes: readonly HerdrPane[]): Map<string, ChatId> => {
+    const shared = sharedSessions(agents)
+    const agentOf = new Map(agents.map((a) => [a.pane_id, a]))
+    return new Map(
+      panes.map((p) => {
+        const agent = agentOf.get(p.pane_id)
+        return [p.pane_id, agent !== undefined && isChat(agent) ? chatIdOf(agent, shared) : shellIdOf(p)]
+      }),
+    )
+  }
+
+  /** A pane with no Claude or Codex chat: a shell chat named by its terminal ID; no model when herdr gives no process. */
+  const shellOf = async (pane: HerdrPane): Promise<ChatSummary> => {
+    const info = await call('pane.process_info', ProcessInfo, { pane_id: pane.pane_id })
+    const program = info.ok ? programOf(info.value) : null
+    return {
+      id: shellIdOf(pane),
+      kind: 'shell',
+      title: [pane.terminal_title_stripped, pane.label, program].find((t): t is string => Boolean(t)) ?? 'shell',
+      model: program,
+      contextUsed: null,
+      status: statusOf(pane.agent_status),
+      parent: null,
+    }
+  }
+
   return {
     machine,
     async listWorkspaces() {
-      const [workspaces, agents] = await Promise.all([
+      const [workspaces, agents, panes] = await Promise.all([
         call('workspace.list', WorkspaceList),
         call('agent.list', AgentList),
+        call('pane.list', PaneList),
       ])
       if (!workspaces.ok) return workspaces
       if (!agents.ok) return agents
+      if (!panes.ok) return panes
       const shared = sharedSessions(agents.value.agents)
+      const agentOf = new Map(agents.value.agents.map((a) => [a.pane_id, a]))
+      /** The chat of one pane: its Claude or Codex chat, else a shell chat. */
+      const chatOfPane = (pane: HerdrPane): Promise<ChatSummary> => {
+        const agent = agentOf.get(pane.pane_id)
+        return agent !== undefined && isChat(agent) ? chatOf(agent, agent.agent, shared) : shellOf(pane)
+      }
       const summaries = await Promise.all(
         workspaces.value.workspaces.map(async (w) => ({
           id: WorkspaceId.parse(`${machine}/${w.workspace_id}`),
           label: w.label,
-          chats: await Promise.all(
-            agents.value.agents.flatMap((a) =>
-              a.workspace_id === w.workspace_id && isChat(a) ? [chatOf(a, a.agent, shared)] : [],
-            ),
-          ),
+          chats: await Promise.all(panes.value.panes.filter((p) => p.workspace_id === w.workspace_id).map(chatOfPane)),
         })),
       )
       return ok(summaries)
@@ -206,14 +284,17 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
 
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
       const open = async (changed: boolean) => {
-        const agents = await call('agent.list', AgentList)
+        const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
         if (over) return
         if (!agents.ok) {
           end(agents.error)
           return
         }
-        const shared = sharedSessions(agents.value.agents)
-        const chats = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, chatIdOf(a, shared)]))
+        if (!panes.ok) {
+          end(panes.error)
+          return
+        }
+        const chats = chatIdsOf(agents.value.agents, panes.value.panes)
         const subscriptions = [
           ...listEvents.map((type) => ({ type })),
           ...[...chats.keys()].map((pane_id) => ({ type: 'pane.agent_status_changed', pane_id })),
