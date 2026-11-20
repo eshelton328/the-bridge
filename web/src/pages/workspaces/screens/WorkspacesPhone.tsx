@@ -85,7 +85,7 @@ export type WorkspacesPhoneProps = {
   onNavigate?: ((page: string) => void) | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
   /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string) => void
+  onDraftChange: (chat: string, text: string, sent?: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
@@ -338,8 +338,8 @@ export function WorkspacesPhone({
                 meta={meta}
                 focusMessage={ui.messageFocus}
                 draft={ui.drafts?.[chat.id]}
-                onTextChange={(draft) => {
-                  onDraftChange(chat.id, draft)
+                onTextChange={(draft, sent) => {
+                  onDraftChange(chat.id, draft, sent)
                 }}
                 onSend={onSend && ((message) => onSend(chat.id, message))}
                 onStop={onStop && (() => onStop(chat.id))}

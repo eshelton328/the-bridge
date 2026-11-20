@@ -103,7 +103,11 @@ export function WorkspacesScreen({
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  const draft = (chat: string, text: string) => {
+  // With `sent` (a send went through), the chat's draft changes only if it still holds the text sent: a send that ends
+  // after the owner opened the chat again and typed on keeps his newer draft.
+  const draft = (chat: string, text: string, sent?: string) => {
+    const saved = latestRef.current.drafts?.[chat]
+    if (sent !== undefined && saved !== undefined && saved !== sent) return
     change({ drafts: { ...latestRef.current.drafts, [chat]: text } })
   }
   // The notice the owner dismissed; a new load gives a new notice, which shows again.
@@ -147,7 +151,7 @@ type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange' | 'onRetry
   layout: Viewport
   change: (next: Partial<WorkspacesUi>) => void
   /** Sets one chat's draft, merged into the latest drafts. */
-  draft: (chat: string, text: string) => void
+  draft: (chat: string, text: string, sent?: string) => void
   /** The live-unavailable notice that the layout draws at the top of its content, or none. */
   notice: ReactNode
 }
@@ -402,8 +406,8 @@ function WorkspacesLayout({
                   }
                   layers={data.layers}
                   draft={ui.drafts?.[chat.id]}
-                  onTextChange={(text) => {
-                    draft(chat.id, text)
+                  onTextChange={(text, sent) => {
+                    draft(chat.id, text, sent)
                   }}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
                   onStop={onStop && (() => onStop(chat.id))}

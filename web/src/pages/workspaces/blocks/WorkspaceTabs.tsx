@@ -22,7 +22,7 @@ export type WorkspaceTabsProps = {
   /** The tab bar has the button that shows the sidebar; not when the sidebar shows. */
   toggle: boolean
   /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string) => void
+  onDraftChange: (chat: string, text: string, sent?: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */

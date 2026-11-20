@@ -167,8 +167,13 @@ type ChatPaneBase = {
   above?: ReactNode
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
-  /** Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts. */
-  onTextChange?: ((text: string) => void) | undefined
+  /**
+   * Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts.
+   * After a send went through it is called with `''` and the text sent (`sent`): the caller empties the chat's saved
+   * draft only if it still holds that text, as the pane may have unmounted and the chat opened again with a newer draft.
+   * The box follows a draft the caller changes this way (`composer.text`).
+   */
+  onTextChange?: ((text: string, sent?: string) => void) | undefined
   /**
    * Sends the message: resolves `true` once it is sent, `false` when the send failed and the caller reported it, or
    * the line to show under the composer (`ComposerAnswer`). The box empties only on `true`, and only when the owner has
@@ -239,6 +244,13 @@ export function ChatPane(props: ChatPaneProps) {
   // The text as typed now, for a send that ends after the owner typed on: the box empties only if it still holds what
   // was sent, as the library's own composer does with its uncontrolled text.
   const latestRef = useRef(composer.text)
+  // A draft the caller changed, such as one a send emptied after this pane opened again: the box follows it.
+  useEffect(() => {
+    if (composer.text === latestRef.current) return
+    latestRef.current = composer.text
+    setText(composer.text)
+    setQuery(skillQuery(composer.text, composer.text.length))
+  }, [composer.text])
   // The skill the arrow keys moved the highlight to, while the list is open.
   const [moved, setMoved] = useState<string | null>(null)
   // Where the caret goes once a picked skill is in the box.
@@ -329,7 +341,9 @@ export function ChatPane(props: ChatPaneProps) {
     onSend,
     onStop,
     clear: (submitted) => {
-      if (latestRef.current === submitted) onValueChange('')
+      // The caller keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
+      if (onTextChange !== undefined) onTextChange('', submitted)
+      else if (latestRef.current === submitted) onValueChange('')
     },
   })
   // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.

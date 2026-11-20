@@ -316,6 +316,45 @@ describe("a live Claude chat's Send (W1)", () => {
     await expect.element(box('review notes')).toHaveValue('a note for review')
   })
 
+  it('keeps a newer draft typed in the reopened chat when its earlier send then succeeds', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openAndType(phone, 'plan the slice')
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    // Back to the list and into the same chat again: a new composer, which starts from the saved draft.
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await userEvent.fill(box('plan the slice'), 'a newer draft')
+    answer.end(noContent())
+    await expect.poll(() => fake.posts.length).toBe(1)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await expect.element(box('plan the slice')).toHaveValue('a newer draft')
+    // The saved draft is the newer one too: the chat opened again shows it.
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue('a newer draft')
+  })
+
+  it('empties the reopened chat when its earlier send succeeds and the owner typed nothing more', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openAndType(phone, 'plan the slice')
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    answer.end(noContent())
+    await expect.element(box('plan the slice')).toHaveValue('')
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue('')
+  })
+
   it("keeps the other chat's composer when the send fails after a switch", async () => {
     const fake = withChats()
     const answer = held()

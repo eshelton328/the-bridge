@@ -43,7 +43,7 @@ export type MainChatProps = {
   /** The owner's draft in the composer, in place of the data's text (`ui.drafts`). */
   draft?: string | undefined
   /** Called with the composer's text as the owner types. */
-  onTextChange?: ((text: string) => void) | undefined
+  onTextChange?: ((text: string, sent?: string) => void) | undefined
   /** Sends the composer's message; resolves `true` once sent, else `false` or the composer's line (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
