@@ -19,14 +19,25 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('herdr-unavailable'), ...common }),
   /**
    * The chat cannot take the request now (409): it is a shell, it waits for the owner's answer to a question
-   * (`needsYou`), it has no work to stop (`notWorking`), or its input box holds text that a prompt would join
-   * (`inputNotEmpty`, for a prompt only).
+   * (`needsYou`), it has no work to stop (`notWorking`), its input box holds text that a prompt would join
+   * (`inputNotEmpty`, for a prompt only), or it takes no file (`noAttachments`, a Codex chat, for an upload).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
-    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty']),
+    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty', 'noAttachments']),
     ...common,
   }),
+  /** The file is larger than the server takes (413). */
+  z.object({ kind: z.literal('too-large'), ...common }),
+  /** The server cannot store the file in the form a chat reads, such as a HEIC photo it cannot convert (415). */
+  z.object({ kind: z.literal('unsupported-media'), ...common }),
+  /**
+   * The upload does not match what the server has (409): a chunk number or length that is wrong, a missing chunk
+   * at complete, or an attachment that is not complete or not of this chat.
+   */
+  z.object({ kind: z.literal('upload-conflict'), ...common }),
+  /** The server's disk has no space for the file (507). */
+  z.object({ kind: z.literal('storage-full'), ...common }),
   /** The client sent more requests of this kind than the server takes in a minute (429). */
   z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */
@@ -45,6 +56,10 @@ export const errorStatus = {
   'herdr-bad-reply': 502,
   'herdr-unavailable': 503,
   'chat-not-ready': 409,
+  'too-large': 413,
+  'unsupported-media': 415,
+  'upload-conflict': 409,
+  'storage-full': 507,
   'too-many-requests': 429,
   internal: 500,
 } as const satisfies Record<ErrorKind['kind'], number>

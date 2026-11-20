@@ -29,6 +29,13 @@ export type ChatId = z.infer<typeof ChatId>
 export const TabId = z.string().regex(scoped).brand<'TabId'>()
 export type TabId = z.infer<typeof TabId>
 
+/** A file that the owner uploads to attach to a prompt: 22 characters of base64url, made by the server at random. */
+export const UploadId = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{22}$/)
+  .brand<'UploadId'>()
+export type UploadId = z.infer<typeof UploadId>
+
 /** The machine ID and the local part of a workspace, chat or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')
