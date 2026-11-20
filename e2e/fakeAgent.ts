@@ -62,6 +62,11 @@ const send = (index: number): void => {
     conn.write(`${JSON.stringify({ id: `fake-agent:${String(index)}`, ...report })}\n`),
   )
   conn.setEncoding('utf8')
+  // Without this listener a socket error kills the agent with no line in its pane.
+  conn.on('error', (error) => {
+    console.error(`fake agent: herdr did not take ${report.method}: ${error.message}`)
+    process.exit(1)
+  })
   conn.on('data', (reply: string) => {
     console.log(`fake agent: herdr ${reply.includes('"error"') ? 'refused' : 'took'} ${report.method}`)
     conn.end()
