@@ -10,6 +10,9 @@ const machinePart = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const localPart = /^[A-Za-z0-9._:-]+$/
 const scoped = new RegExp(`^${machinePart.source.slice(1, -1)}/${localPart.source.slice(1, -1)}$`)
 
+/** The local part of a workspace or chat ID, as an adapter reads it before it adds the machine. */
+export const LocalIdPart = z.string().regex(localPart)
+
 /** The ID of one machine that runs a node of the-bridge server. */
 export const MachineId = z.string().regex(machinePart).brand<'MachineId'>()
 export type MachineId = z.infer<typeof MachineId>

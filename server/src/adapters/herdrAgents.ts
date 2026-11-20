@@ -7,10 +7,12 @@
 // tells the app to read the list again. herdr's pane IDs stay here: a chat's ID is its
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
+// A herdr ID that the contract's IDs cannot hold makes the reply badReply.
 import { join } from 'node:path'
-import { ChatId, type ChatStatus, type ChatSummary, type MachineId, WorkspaceId } from '@bridge/contract'
+import { ChatId, type ChatStatus, type ChatSummary, LocalIdPart, type MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
+import type { Logger } from '../logger.ts'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
@@ -18,7 +20,7 @@ import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
 const WorkspaceList = z.object({
-  workspaces: z.array(z.object({ workspace_id: z.string(), label: z.string() })),
+  workspaces: z.array(z.object({ workspace_id: LocalIdPart, label: z.string() })),
 })
 
 const AgentList = z.object({
@@ -26,19 +28,20 @@ const AgentList = z.object({
     z.object({
       agent: z.string().nullable().optional(),
       agent_session: z.object({ kind: z.string(), value: z.string() }).nullable().optional(),
-      agent_status: HerdrStatus,
+      // Read as any string: a status a new herdr adds is the chat's unknown, not a bad reply (audit S-3).
+      agent_status: z.string(),
       cwd: z.string().nullable().optional(),
       name: z.string().nullable().optional(),
       pane_id: z.string(),
-      terminal_id: z.string(),
+      terminal_id: LocalIdPart,
       terminal_title_stripped: z.string().nullable().optional(),
-      workspace_id: z.string(),
+      workspace_id: LocalIdPart,
     }),
   ),
 })
 type HerdrAgent = z.infer<typeof AgentList>['agents'][number]
 
-const statusOf = {
+const knownStatus = {
   working: 'working',
   blocked: 'needsYou',
   idle: 'idle',
@@ -49,7 +52,7 @@ const statusOf = {
 /** The status line of one pane, from events.subscribe. */
 const StatusChanged = z.object({
   event: z.literal('pane.agent_status_changed'),
-  data: z.object({ pane_id: z.string(), agent_status: HerdrStatus }),
+  data: z.object({ pane_id: z.string(), agent_status: z.string() }),
 })
 
 /** The events that change the list: a pane or workspace came, went, moved or was renamed. */
@@ -91,9 +94,23 @@ export type HerdrAgentsOptions = {
   readonly machine: MachineId
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** Gets one warning for each herdr status the adapter does not know. */
+  readonly log: Logger
 }
 
-export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgentsOptions): AgentPort {
+export function createHerdrAgents({ socket, machine, claudeProjects, log }: HerdrAgentsOptions): AgentPort {
+  const unknownSeen = new Set<string>()
+  /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
+  const statusOf = (status: string): ChatStatus => {
+    const known = HerdrStatus.safeParse(status)
+    if (known.success) return knownStatus[known.data]
+    if (!unknownSeen.has(status)) {
+      unknownSeen.add(status)
+      log.warn('herdr status not known', { status })
+    }
+    return 'unknown'
+  }
+
   const call = async <T>(method: string, schema: z.ZodType<T>): Promise<Result<T, AgentPortError>> => {
     const reply = await herdrRequest(socket, method, {})
     if (!reply.ok) return err(portErrorOf(reply.error))
@@ -139,7 +156,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
       title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
       model: path === undefined ? null : await readClaudeModel(path),
       contextUsed: null,
-      status: statusOf[agent.agent_status],
+      status: statusOf(agent.agent_status),
       parent: null,
     }
   }
@@ -210,7 +227,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects }: HerdrAgen
             const status = StatusChanged.safeParse(line)
             const chat = status.success ? chats.get(status.data.data.pane_id) : undefined
             if (status.success && chat)
-              tell({ type: 'chatStatus', chat, status: statusOf[status.data.data.agent_status] })
+              tell({ type: 'chatStatus', chat, status: statusOf(status.data.data.agent_status) })
             else reopen()
           },
           onEnd: (failure) => {
