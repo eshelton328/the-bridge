@@ -70,7 +70,10 @@ const reply = (id: string, text: string): TranscriptEntry => ({ type: 'assistant
 const long = (tag: string): TranscriptEntry[] =>
   Array.from({ length: 40 }, (_, i) => [
     user(`${tag}-u${String(i)}`, `${tag} question ${String(i)}`),
-    reply(`${tag}-a${String(i)}`, `${tag} answer ${String(i)}. ${'The build reads each file again and checks it. '.repeat(4)}`),
+    reply(
+      `${tag}-a${String(i)}`,
+      `${tag} answer ${String(i)}. ${'The build reads each file again and checks it. '.repeat(4)}`,
+    ),
   ]).flat()
 
 /**
@@ -91,7 +94,8 @@ function fakeServer(transcripts: FakeTranscriptServer, readGate?: Promise<void>)
           JSON.stringify({ machine: 'mac-mini', workspaces: [{ id: workspace, label: 'live work', chats }] }),
           { status: 200 },
         )
-      if (path === `/api/workspaces/${encodeURIComponent(workspace)}/layout`) return new Response(layout, { status: 200 })
+      if (path === `/api/workspaces/${encodeURIComponent(workspace)}/layout`)
+        return new Response(layout, { status: 200 })
       if (path === '/api/events') {
         const body = new ReadableStream<Uint8Array>({
           start: (control) => {
