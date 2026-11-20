@@ -4,10 +4,11 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { act } from 'react'
 import { createRoot } from 'react-dom/client'
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import { page } from 'vitest/browser'
 import { NotFound } from '../errors/NotFound.tsx'
 import { RouteError } from '../errors/RouteError.tsx'
+import { queryClient } from '../lib/queryClient.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
@@ -25,6 +26,16 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 // The live source reads a stubbed server, never the one on this machine (liveServerStub.ts).
 stubLiveServer()
+
+// A live read that fails with a 5xx is retried twice by the app client before the page shows its fallback. The
+// retries stay; only their waits (1 s and 2 s) go, so a retried read still ends within the polls' wait below.
+const queryDefaults = queryClient.getDefaultOptions()
+beforeAll(() => {
+  queryClient.setDefaultOptions({ ...queryDefaults, queries: { ...queryDefaults.queries, retryDelay: 0 } })
+})
+afterAll(() => {
+  queryClient.setDefaultOptions(queryDefaults)
+})
 
 afterEach(async () => {
   resetAllStores()
