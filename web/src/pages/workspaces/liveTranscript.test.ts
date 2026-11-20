@@ -4,7 +4,7 @@
 // report(). The server is the contract-checked fake (lib/fakeTranscriptServer.ts).
 import type { TranscriptEntry } from '@bridge/contract'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { clearReports, getReports } from '../../errors/reporter.ts'
+import { clearReports, getReports, repeatWindowMs } from '../../errors/reporter.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../../lib/fakeTranscriptServer.ts'
 import { workbench } from './states/workbench.ts'
 import {
@@ -60,6 +60,7 @@ const ids = () => view()?.entries.map((e) => e.id)
 
 afterEach(() => {
   for (const stop of stops.splice(0)) stop()
+  vi.useRealTimers()
   vi.unstubAllGlobals()
   clearReports()
 })
@@ -192,9 +193,34 @@ describe('watchTranscript', () => {
     expect(getReports()[0]?.error.message).toBe(
       'A chat transcript stream missed: ended herdr-unavailable (chat mac-mini/c1)',
     )
-    // A later failure is a new outage, with its own report.
+    // A later failure, after report()'s repeat window, is a new outage, with its own report. Only Date is faked, the
+    // clock report() reads, so the polls keep their real timers.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(Date.now() + repeatWindowMs)
     server.fail(chat)
     await expect.poll(() => getReports().length).toBe(2)
+  })
+
+  it("reports a second outage inside report()'s repeat window once: the screen line still shows it", async () => {
+    // Date stands still, so the second outage comes within the repeat window.
+    vi.useFakeTimers({ toFake: ['Date'] })
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    // The first outage: the line, then a read that ends it, and one report.
+    server.fail(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'after the first')])
+    await expect.poll(ids).toEqual(['u1', 'a1'])
+    expect(view()?.problem).toBeUndefined()
+    expect(getReports()).toHaveLength(1)
+    // The second outage of the same miss: the line shows it again, and report() drops the repeat.
+    server.fail(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'after the first'), reply('a2', 'after the second')])
+    await expect.poll(ids).toEqual(['u1', 'a1', 'a2'])
+    expect(getReports()).toHaveLength(1)
   })
 
   it('shows a stream that gives no answer as a timeout with the line, and connects again', async () => {
