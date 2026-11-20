@@ -76,7 +76,8 @@ export type ChatHeadProps = {
 
 export function ChatHead(props: ChatHeadProps) {
   const { head: chat, workspace, contextLabel, menu, rename, figma, size = 'full', back, extra, meta } = props
-  const contextText = <span className={label}>{contextLabel}</span>
+  // The "context" label names the meter, so a chat with no context share (a live chat, d-117) has neither.
+  const contextText = chat.context === undefined ? null : <span className={label}>{contextLabel}</span>
   return (
     <header
       data-figma={figma?.head ?? '105:785'}

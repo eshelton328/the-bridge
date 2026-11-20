@@ -267,8 +267,13 @@ export function ChatPane(props: ChatPaneProps) {
     if (ok && latestRef.current === submitted) onValueChange('')
     return ok
   }
+  // A live chat cannot send yet (d-117): its disabled composer sends nothing, and keeps nothing to send.
   const send = (submitted: string): boolean | Promise<boolean> =>
-    onSend === undefined ? sent(submitted)(true) : onSend(submitted).then(sent(submitted))
+    composer.notLive !== undefined
+      ? false
+      : onSend === undefined
+        ? sent(submitted)(true)
+        : onSend(submitted).then(sent(submitted))
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -279,8 +284,9 @@ export function ChatPane(props: ChatPaneProps) {
     )
   const box = (
     <Composer
-      label={composer.placeholder}
-      placeholder={composer.placeholder}
+      label={composer.notLive ?? composer.placeholder}
+      placeholder={composer.notLive ?? composer.placeholder}
+      disabled={composer.notLive !== undefined}
       value={text}
       onValueChange={onValueChange}
       onSend={send}

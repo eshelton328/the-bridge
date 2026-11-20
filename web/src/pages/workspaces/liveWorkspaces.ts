@@ -6,9 +6,11 @@
 // until the slice that brings them lands. When the read misses in a way the
 // page expects (the server cannot be reached, refuses this viewer or answers
 // an error status), the page shows no workspaces, never the sample ones, and
-// says why in a notice with Retry over every layout, in the status bar and in
-// the dev ErrorTray. A reply the contract refuses or a bug in the mapper is
-// not a miss: it throws, and the route shows RouteError.
+// says why in a notice with Retry over every layout and in the status bar.
+// A miss is a state the page shows, not an error, so it is not reported and
+// the dev ErrorTray does not count it. A reply the contract refuses or a bug
+// in the mapper is not a miss: it throws, the route shows RouteError and the
+// root hooks report it.
 // Slice 2: while the page shows, watchLiveWorkspaces keeps the query cache
 // current from the server's events (`GET /api/events`, SSE) and tells the
 // page to load again, at most once each `settleMs`; once the stream opens
@@ -24,7 +26,6 @@ import {
 } from '@bridge/contract'
 import type { QueryClient } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
-import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -111,11 +112,15 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
 }
 
 /** What a live chat's transcript and a live shell's terminal show until the slice that brings them lands (d-117). */
-const notLiveText = { transcript: 'Transcript not live yet', terminal: 'Terminal not live yet' } as const
+const notLiveText = {
+  transcript: 'Transcript not live yet',
+  terminal: 'Terminal not live yet',
+  sending: 'Sending not live yet',
+} as const
 
 /**
  * A pane for each live chat, with its header from the sidebar row and no sample text: a chat's transcript and a
- * shell's terminal say they are not live yet, and its composer starts empty.
+ * shell's terminal say they are not live yet, and a chat's composer is disabled and says sending is not live yet.
  */
 export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
@@ -139,11 +144,19 @@ export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
           text: '',
           attachments: [],
           running: false,
+          notLive: notLiveText.sending,
         },
         notLive: notLiveText.transcript,
       }
     }),
   )
+}
+
+/** The status bar's summary of `workspace` and its layout's panes, as `shownView` counts them; none with no workspace. */
+const summaryOf = (workspace: Workspace | undefined, layouts: Record<string, { panes: string[] }>) => {
+  if (workspace === undefined) return undefined
+  const count = layouts[workspace.id]?.panes.length ?? 0
+  return `${workspace.label} · ${String(count)} ${count === 1 ? 'pane' : 'panes'}`
 }
 
 /** The first chat of `ids` that is not a shell, else the first: the pane a workspace's layout focuses. */
@@ -181,8 +194,9 @@ function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): Worksp
       folderPicker: undefined,
       lastChats: undefined,
       toast: undefined,
-      // The sample's alert names a sample chat; the live alerts are set by the caller.
-      status: { ...data.status, alert: undefined },
+      // The sample's summary and alert name a sample workspace and chat. The summary counts the first workspace's
+      // panes, and none shows with no workspace; the live alerts are set by the caller.
+      status: { ...data.status, summary: summaryOf(workspaces[0], layouts), alert: undefined },
       ...(data.chatMenu === undefined
         ? {}
         : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
@@ -543,7 +557,7 @@ export function watchLiveWorkspaces({
         if (res.status >= 500) throw new Error(`the server answered ${String(res.status)} for the event stream`)
         if (!res.ok || res.body === null) {
           stopped = `Live updates stopped (the server answered ${String(res.status)} for the event stream); reload the page to start them again.`
-          report(new Error(stopped), 'handler')
+          // The status bar says it; a refused stream is a state the page shows, not a report.
           changed()
           return
         }
@@ -554,14 +568,12 @@ export function watchLiveWorkspaces({
         // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
         if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError')) return
         // The network dropped: keep the error for the status bar and connect again after the retry time. A long
-        // outage reports once, on its first error, not once for each reconnect.
+        // outage tells the page once, on its first error, not once for each reconnect; the status bar says it, so it
+        // is not reported.
         const first = lost === undefined
         const why = thrown instanceof Error ? thrown.message : String(thrown)
         lost = `Live updates lost the event stream (${why}); connecting again.`
-        if (first) {
-          report(new Error(lost, { cause: thrown }), 'handler')
-          changed()
-        }
+        if (first) changed()
       }
       await pause()
     }
@@ -620,8 +632,8 @@ export async function withLiveWorkspaces(
     )
   } catch (thrown) {
     if (!(thrown instanceof LiveMissError)) throw thrown
+    // The notice and the status bar say it: an expected miss is not reported (d-117).
     const alert = `Live data is not available (${thrown.miss.message}); the page shows no workspaces.`
-    report(new Error(alert, { cause: thrown }), 'handler')
     const empty = liveOnly(state, [])
     return {
       ...empty,

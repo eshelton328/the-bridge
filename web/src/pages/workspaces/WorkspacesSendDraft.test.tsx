@@ -11,6 +11,7 @@ import { resetAllStores } from '../../state/resetStores.ts'
 import { loadWorkspacesState } from './loadWorkspacesState.ts'
 import { workspacesSearch } from './search.ts'
 import { WorkspacesPage } from './WorkspacesPage.tsx'
+import { queryClient } from '../../lib/queryClient.ts'
 import { workspacesStore } from './workspacesStore.ts'
 
 // Audit L-3 (library beta.90 `onSend`): on the owner's path, /workspaces > a chat in the list, the composer keeps the
@@ -50,6 +51,8 @@ afterEach(async () => {
   await view?.unmount()
   view = undefined
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+  queryClient.clear()
   resetAllStores()
   clearReports()
   await setViewport(1512, 982)
@@ -129,5 +132,48 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
     view = await renderAt('/workspaces?state=twoPanes')
     await expect.element(other()).toHaveValue('typed while it sent')
     await expect.element(box()).toHaveValue('')
+  })
+
+  it('sends nothing to the store from a live chat, whose composer is disabled (d-117)', async () => {
+    await setViewport(390, 844)
+    const send = vi.spyOn(workspacesStore.getState().actions, 'send')
+    const body = JSON.stringify({
+      machine: 'mac-mini',
+      workspaces: [
+        {
+          id: 'mac-mini/w-live',
+          label: 'live work',
+          chats: [
+            {
+              id: 'mac-mini/p1',
+              kind: 'claude',
+              title: 'plan the slice',
+              model: 'claude-opus-5-5',
+              contextUsed: null,
+              status: 'idle',
+              parent: null,
+            },
+          ],
+        },
+      ],
+    })
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        return url.includes('/api/workspaces')
+          ? Promise.resolve(new Response(body, { status: 200 }))
+          : Promise.reject(new TypeError(`no stub for ${url}`))
+      }),
+    )
+    // No ?source= and no ?state=: the live source (d-117).
+    view = await renderAt('/workspaces')
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    const live = page.getByRole('textbox', { name: 'Sending not live yet' })
+    await expect.element(live).toBeDisabled()
+    await userEvent.click(live, { force: true })
+    await userEvent.keyboard('hello{Enter}')
+    await userEvent.click(page.getByRole('button', { name: 'Send', exact: true }), { force: true })
+    expect(send).not.toHaveBeenCalled()
   })
 })

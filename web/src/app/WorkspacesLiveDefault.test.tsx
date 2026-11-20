@@ -4,7 +4,9 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports } from '../errors/reporter.ts'
+import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { queryClient } from '../lib/queryClient.ts'
@@ -24,8 +26,15 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 const notice = 'Live data unavailable — no workspaces shown'
 /** Rows and texts of the sample data, which a live page never shows. */
-// The home's sample rows, and its status bar alert, which names a sample chat.
-const sample = ['bridge themes', 'release notes', 'omni-brain', 'hono server', 'the-bridge › hono server needs you']
+// The home's sample rows, and its status bar summary and alert, which name a sample workspace and chat.
+const sample = [
+  'bridge themes',
+  'release notes',
+  'omni-brain',
+  'hono server',
+  'omni-brain · 4 panes',
+  'the-bridge › hono server needs you',
+]
 
 type Chat = { local: string; kind: 'claude' | 'codex' | 'shell'; title: string; model: string | null }
 
@@ -133,15 +142,27 @@ afterEach(async () => {
   await setViewport(1512, 982)
 })
 
-/** The app with no URL parameters, as the owner opens it: "/" goes to the Inbox. */
+/**
+ * The app with no URL parameters, as the owner opens it: "/" goes to the Inbox. As in main.ts, the root error hooks
+ * report and the dev ErrorTray shows the reports.
+ */
 async function openApp(path = '/') {
   router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: [path] }),
     defaultErrorComponent: RouteError,
   })
-  view = await testRender(<RouterProvider router={router} />)
+  view = await testRender(
+    <>
+      <RouterProvider router={router} />
+      <ErrorTray />
+    </>,
+    rootErrorOptions,
+  )
 }
+
+/** The dev ErrorTray's badge, such as "3 errors". */
+const trayBadge = () => page.getByRole('complementary', { name: 'Error reports' })
 
 /** Opens the app on the phone and taps Workspaces in the tab bar; the URL has no parameters. */
 async function tapWorkspacesOnPhone() {
@@ -354,6 +375,108 @@ describe('Workspaces on the live source by default (d-117)', () => {
       await view?.unmount()
       view = undefined
     }
+    expect(server.reads).toEqual([])
+  })
+})
+
+// What the page shows of a miss is not counted again: the dev ErrorTray shows no badge for an expected miss, during
+// the outage or after the list comes back. The status bar shows only live values.
+describe('a live miss is a state the page shows, not an error (d-117)', () => {
+  it('shows no ErrorTray badge with the server down, nor once Retry loads the list, on the desktop', async () => {
+    const server = fakeServer('down')
+    await setViewport(1512, 982)
+    await openApp()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.element(noticeAlert()).toBeVisible()
+    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.element(trayBadge()).not.toBeInTheDocument()
+    server.answer(ok([plan]))
+    await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
+    await expect.element(page.getByText('plan the slice', { exact: true }).first()).toBeVisible()
+    await expect.element(trayBadge()).not.toBeInTheDocument()
+  })
+
+  it('shows no sample summary in the status bar with the server down, and the live one once it answers', async () => {
+    const server = fakeServer('down')
+    await setViewport(1512, 982)
+    await openApp()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.element(noticeAlert()).toBeVisible()
+    await expect.poll(() => server.reads.length).toBe(2)
+    await expect.element(page.getByText('omni-brain · 4 panes', { exact: true })).not.toBeInTheDocument()
+    await expect.element(page.getByText(/· \d+ panes?$/)).not.toBeInTheDocument()
+    server.answer(ok([plan, review]))
+    await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText('live work · 2 panes', { exact: true })).toBeVisible()
+  })
+
+  it('still shows RouteError, and counts it in the ErrorTray, for a reply the contract refuses', async () => {
+    fakeServer(() => new Response(JSON.stringify({ machine: 'mac-mini', workspaces: 'not a list' }), { status: 200 }))
+    await setViewport(1512, 982)
+    await openApp()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.element(noticeAlert()).not.toBeInTheDocument()
+    await expect.poll(() => router?.state.location.pathname).toBe('/workspaces')
+    await expect.element(page.getByText('This page failed to load')).toBeVisible()
+    // A real error is still reported, so the dev ErrorTray counts it.
+    await expect.element(trayBadge().getByRole('button', { name: '1 error' })).toBeVisible()
+  })
+})
+
+// A live chat cannot send yet: its composer is disabled and says so, and Send stays off (that no send reaches the store
+// is in WorkspacesSendDraft.test.tsx). Its header has no "context" label, as it has no context share. A fixtures chat
+// still sends.
+describe('a live chat that cannot send yet (d-117)', () => {
+  const sizes = [
+    { name: 'the phone', size: [390, 844] },
+    { name: 'the tablet', size: [756, 1129] },
+    { name: 'the desktop', size: [1512, 982] },
+  ] as const
+  for (const device of sizes) {
+    it(`disables the composer with "Sending not live yet" and sends nothing, on ${device.name}`, async () => {
+      fakeServer(ok([plan]))
+      await setViewport(device.size[0], device.size[1])
+      await openApp()
+      await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+      await expect.poll(() => router?.state.location.searchStr).toBe('')
+      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+      const box = page.getByRole('textbox', { name: 'Sending not live yet' })
+      await expect.element(box).toBeDisabled()
+      await expect.element(box).toHaveAttribute('placeholder', 'Sending not live yet')
+      // A press on the box and Enter send nothing.
+      await userEvent.click(box, { force: true })
+      await userEvent.keyboard('hello{Enter}')
+      await expect.element(box).toHaveValue('')
+      await expect.element(page.getByRole('button', { name: 'Send', exact: true })).toBeDisabled()
+    })
+
+    it(`draws no "context" label in a live chat's header, which has no context share, on ${device.name}`, async () => {
+      fakeServer(ok([plan]))
+      await setViewport(device.size[0], device.size[1])
+      await openApp()
+      await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+      await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+      await expect.element(page.getByText('context', { exact: true })).not.toBeInTheDocument()
+    })
+  }
+
+  it('still sends from a ?source=fixtures chat, whose header keeps its "context" label', async () => {
+    const server = fakeServer(ok([plan]))
+    await setViewport(390, 844)
+    await openApp('/workspaces?source=fixtures')
+    await userEvent.click(page.getByText('bridge themes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
+    await expect.element(page.getByText('context', { exact: true })).toBeVisible()
+    const box = page.getByRole('textbox')
+    await expect.element(box).toBeEnabled()
+    await userEvent.fill(box, 'send this')
+    await userEvent.click(page.getByRole('button', { name: 'Send', exact: true }))
+    // The store's send resolves, and a sent message empties the box.
+    await expect.element(box).toHaveValue('')
     expect(server.reads).toEqual([])
   })
 })

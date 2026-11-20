@@ -257,7 +257,7 @@ describe('withLiveWorkspaces', () => {
     expect(state.data.chatMenu?.map((a) => a.value)).not.toContain('subagents')
   })
 
-  it('shows no workspaces and gives the notice in the page, the status bar and the error tray when the server is down', async () => {
+  it('shows no workspaces, with the notice in the page and the status bar and no sample summary, and reports nothing when the server is down', async () => {
     const down = () =>
       Promise.resolve(
         err({
@@ -280,8 +280,10 @@ describe('withLiveWorkspaces', () => {
       title: 'Live data unavailable — no workspaces shown',
       description: 'The server answered 502.',
     })
+    expect(state.data.status.summary).toBeUndefined()
     expect(checkState(WorkspacesState, state).ok).toBe(true)
-    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
+    // The page shows the miss, so the dev ErrorTray does not count it.
+    expect(getReports()).toEqual([])
   })
 
   it('has no notice when the read succeeds', async () => {
@@ -473,7 +475,7 @@ describe('watchLiveWorkspaces', () => {
     expect(server.opened).toHaveLength(2)
   })
 
-  it('reports a stream that fails three times in a row once, and shows its last error', async () => {
+  it('shows the last error of a stream that fails three times in a row, and reports none', async () => {
     vi.useFakeTimers()
     try {
       const queries = client()
@@ -485,9 +487,7 @@ describe('watchLiveWorkspaces', () => {
       const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open })
       await vi.advanceTimersByTimeAsync(5000 * 2 + 100)
       expect(open).toHaveBeenCalledTimes(3)
-      expect(getReports().map((r) => r.error.message)).toEqual([
-        'Live updates lost the event stream (Failed to fetch 1); connecting again.',
-      ])
+      expect(getReports()).toEqual([])
       const state = await withLiveWorkspaces(workspacesHome, {
         client: queries,
         fetch: () => Promise.resolve(ok(response)),
@@ -522,9 +522,7 @@ describe('watchLiveWorkspaces', () => {
     const onChange = vi.fn()
     const stop = watchLiveWorkspaces({ onChange, client: client(), settleMs: 10, open })
     await vi.advanceTimersByTimeAsync(20)
-    expect(getReports().map((r) => r.error.message)).toEqual([
-      'Live updates lost the event stream (the server answered 500 for the event stream); connecting again.',
-    ])
+    expect(getReports()).toEqual([])
     onChange.mockClear()
     await vi.advanceTimersByTimeAsync(5000)
     expect(calls).toBe(2)
@@ -534,7 +532,7 @@ describe('watchLiveWorkspaces', () => {
     stop()
   })
 
-  it('stops with a notice in the status bar and the error tray when the server refuses the stream', async () => {
+  it('stops with a notice in the status bar, and reports nothing, when the server refuses the stream', async () => {
     const queries = client()
     const server = fakeServer()
     server.refuseWith(403)
@@ -543,7 +541,7 @@ describe('watchLiveWorkspaces', () => {
     await settle()
     const notice =
       'Live updates stopped (the server answered 403 for the event stream); reload the page to start them again.'
-    expect(getReports().map((r) => r.error.message)).toEqual([notice])
+    expect(getReports()).toEqual([])
     expect(onChange).toHaveBeenCalledTimes(1)
     const state = await withLiveWorkspaces(workspacesHome, {
       client: queries,
@@ -798,7 +796,7 @@ describe('a live read that never settles (W-3)', () => {
     expect(state.data.status.alert).toBe(
       'Live data is not available (the server did not answer within 8 s); the page shows no workspaces.',
     )
-    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
+    expect(getReports()).toEqual([])
   })
 
   it('stops the read when the router aborts the load, with no notice and nothing reported', async () => {
