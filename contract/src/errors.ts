@@ -1,0 +1,36 @@
+// The body of every error response (d-115). Each kind has a client
+// message, written for the page and with no path or login in it, and the
+// request ID that the server's log has for the request; some kinds add
+// their own fields. A client switches on `kind`.
+import { z } from 'zod'
+
+const common = { message: z.string(), requestId: z.string() }
+
+export const ErrorKind = z.discriminatedUnion('kind', [
+  /** The request did not come from the owner (403). */
+  z.object({ kind: z.literal('forbidden'), ...common }),
+  /** No route has this path (404). */
+  z.object({ kind: z.literal('not-found'), path: z.string(), ...common }),
+  /** The request's input is wrong (400); one line for each problem. */
+  z.object({ kind: z.literal('invalid-input'), issues: z.array(z.string()), ...common }),
+  /** herdr answered with something the server does not read (502). */
+  z.object({ kind: z.literal('herdr-bad-reply'), ...common }),
+  /** herdr does not answer (503). */
+  z.object({ kind: z.literal('herdr-unavailable'), ...common }),
+  /** A bug in the server (500); the server's log has the cause under the request ID. */
+  z.object({ kind: z.literal('internal'), ...common }),
+])
+export type ErrorKind = z.infer<typeof ErrorKind>
+
+export const ErrorBody = z.object({ error: ErrorKind })
+export type ErrorBody = z.infer<typeof ErrorBody>
+
+/** The HTTP status of each kind. */
+export const errorStatus = {
+  forbidden: 403,
+  'not-found': 404,
+  'invalid-input': 400,
+  'herdr-bad-reply': 502,
+  'herdr-unavailable': 503,
+  internal: 500,
+} as const satisfies Record<ErrorKind['kind'], number>

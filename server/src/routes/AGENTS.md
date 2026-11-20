@@ -13,6 +13,8 @@ Thin Hono sub-apps, one file for each area, named after the area
 - The SSE stream of `/api/events` sends an `open` frame with the retry
   time, then each event with its type as the SSE event name and its
   sequence number as the SSE id, and a comment line every 25 s so a
-  proxy keeps a quiet stream open (`events.test.ts`).
+  proxy keeps a quiet stream open. A failure in the stream sends one
+  `error` event with an `ErrorBody`, never the raw message, and ends it
+  (`events.test.ts`, d-115).
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
