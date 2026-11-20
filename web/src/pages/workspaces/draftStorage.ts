@@ -3,9 +3,10 @@
 // store holds in memory. WorkspacesPage saves them in sessionStorage by
 // chat id, with the `?state=` they belong to, as each change comes in, and
 // reads them back on load. Storage that is blocked or full keeps the
-// drafts in memory only, as before. resetAllStores() clears them, as it
-// clears the page store.
+// drafts in memory only, as before, and a failed write or removal goes to
+// report() (d-115). resetAllStores() clears them, as it clears the page store.
 import { z } from 'zod'
+import { report } from '../../errors/reporter.ts'
 import { registerReset } from '../../state/resetStores.ts'
 
 const storageKey = 'bridge/workspaces/drafts'
@@ -26,23 +27,25 @@ export function loadDrafts(state: string | undefined): Readonly<Record<string, s
 
 /**
  * Saves the drafts of `state` that hold text for this tab: the composer text by chat id and the state's name, nothing
- * else. A chat whose box is empty, as after a send, has no saved draft, and with none left the key goes. Does nothing
- * when storage is blocked or full.
+ * else. A chat whose box is empty, as after a send, has no saved draft, and with none left the key goes. When storage
+ * is blocked or full, the drafts stay in memory and report() gets the error.
  */
 export function saveDrafts(state: string | undefined, drafts: Readonly<Record<string, string>>): void {
   const kept = Object.fromEntries(Object.entries(drafts).filter(([, text]) => text !== ''))
   try {
     if (Object.keys(kept).length === 0) window.sessionStorage.removeItem(storageKey)
     else window.sessionStorage.setItem(storageKey, JSON.stringify({ state: state ?? null, drafts: kept }))
-  } catch {
+  } catch (error) {
     // Blocked or full: the drafts stay in memory only.
+    report(error, 'handler')
   }
 }
 
 registerReset(() => {
   try {
     window.sessionStorage.removeItem(storageKey)
-  } catch {
+  } catch (error) {
     // Blocked: nothing was saved.
+    report(error, 'handler')
   }
 })
