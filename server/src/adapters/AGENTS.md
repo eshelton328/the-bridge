@@ -18,6 +18,9 @@ client of a socket or a file sits beside them.
   (`pane.process_info`; no model when herdr gives none). A shell sends
   only process names, never an argument or its terminal title, which can
   hold a token or a path (`herdrAgents.test.ts`).
+- A layout names each pane by the chat ID that the list gives it; a
+  pane leaf's folder from `layout.export` stays here, and a tree that
+  the contract cannot hold is `badReply` (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once

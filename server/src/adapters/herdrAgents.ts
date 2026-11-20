@@ -3,8 +3,10 @@
 // file from its agent_session, and reads the model from it. Every pane that
 // is not a Claude or Codex chat is a shell chat; its model is the program
 // it runs, from pane.process_info: process names only, never an argument
-// or the terminal title, which can hold a token or a path. It reads only when
-// listWorkspaces is called. subscribe holds one events.subscribe stream
+// or the terminal title, which can hold a token or a path. readLayout reads
+// a workspace's tabs (tab.list) and each tab's split tree (layout.export),
+// and names each pane by the chat ID the list gives it. It reads only when
+// listWorkspaces or readLayout is called. subscribe holds one events.subscribe stream
 // open: each chat's status, and the panes and workspaces that come and go;
 // when one comes or goes it opens the stream again for the new panes and
 // tells the app to read the list again. herdr's pane IDs stay here: a chat's ID is its
@@ -12,7 +14,18 @@
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
 import { basename, join } from 'node:path'
-import { ChatId, type ChatStatus, type ChatSummary, LocalIdPart, type MachineId, WorkspaceId } from '@bridge/contract'
+import {
+  ChatId,
+  type ChatStatus,
+  type ChatSummary,
+  chatsOf,
+  type LayoutNode,
+  LocalIdPart,
+  type MachineId,
+  splitId,
+  WorkspaceId,
+  WorkspaceLayout,
+} from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { Logger } from '../logger.ts'
@@ -23,8 +36,43 @@ import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
 const WorkspaceList = z.object({
-  workspaces: z.array(z.object({ workspace_id: LocalIdPart, label: z.string() })),
+  workspaces: z.array(z.object({ workspace_id: LocalIdPart, label: z.string(), active_tab_id: z.string().optional() })),
 })
+
+const TabList = z.object({ tabs: z.array(z.object({ tab_id: LocalIdPart, label: z.string() })) })
+
+/** herdr's split tree; a pane leaf's other fields (its folder, its command) are not read. */
+const HerdrPaneNode = z.object({ type: z.literal('pane'), pane_id: z.string() })
+const HerdrSplitNode = z.object({
+  type: z.literal('split'),
+  direction: z.enum(['right', 'down']),
+  ratio: z.number(),
+  get first() {
+    return HerdrNode
+  },
+  get second() {
+    return HerdrNode
+  },
+})
+const HerdrNode: z.ZodDiscriminatedUnion<[typeof HerdrPaneNode, typeof HerdrSplitNode]> = z.discriminatedUnion('type', [
+  HerdrPaneNode,
+  HerdrSplitNode,
+])
+type HerdrNode = z.infer<typeof HerdrNode>
+
+const LayoutExport = z.object({ layout: z.object({ focused_pane_id: z.string(), root: HerdrNode }) })
+
+/** herdr's tree in the app's terms, each pane by its chat ID; undefined when a pane has no listed chat. */
+function nodeOf(node: HerdrNode, ids: ReadonlyMap<string, ChatId>): LayoutNode | undefined {
+  if (node.type === 'pane') {
+    const chat = ids.get(node.pane_id)
+    return chat === undefined ? undefined : { kind: 'pane', chat }
+  }
+  const first = nodeOf(node.first, ids)
+  const second = nodeOf(node.second, ids)
+  if (first === undefined || second === undefined) return undefined
+  return { kind: 'split', direction: node.direction === 'right' ? 'row' : 'column', ratio: node.ratio, first, second }
+}
 
 const AgentList = z.object({
   agents: z.array(
@@ -245,8 +293,72 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     }
   }
 
+  /** The chat of each pane, by herdr pane ID: its Claude or Codex chat, else a shell chat. */
+  const chatsOfPanes = async (
+    agents: readonly HerdrAgent[],
+    panes: readonly HerdrPane[],
+  ): Promise<Map<string, ChatSummary>> => {
+    const shared = sharedSessions(agents)
+    const agentOf = new Map(agents.map((a) => [a.pane_id, a]))
+    const chats = await Promise.all(
+      panes.map(async (pane) => {
+        const agent = agentOf.get(pane.pane_id)
+        return {
+          pane: pane.pane_id,
+          chat: agent !== undefined && isChat(agent) ? await chatOf(agent, agent.agent, shared) : await shellOf(pane),
+        }
+      }),
+    )
+    return new Map(chats.map((c) => [c.pane, c.chat]))
+  }
+
+  const badReply = (message: string): AgentPortError => ({ reason: 'badReply', message })
+
   return {
     machine,
+    async readLayout(workspace) {
+      const { machine: on, local } = splitId(workspace)
+      if (on !== machine) return ok(null)
+      const [workspaces, agents, panes] = await Promise.all([
+        call('workspace.list', WorkspaceList),
+        call('agent.list', AgentList),
+        call('pane.list', PaneList),
+      ])
+      if (!workspaces.ok) return workspaces
+      if (!agents.ok) return agents
+      if (!panes.ok) return panes
+      const found = workspaces.value.workspaces.find((w) => w.workspace_id === local)
+      if (found === undefined) return ok(null)
+      const tabs = await call('tab.list', TabList, { workspace_id: local })
+      if (!tabs.ok) return tabs
+      const exports = await Promise.all(
+        tabs.value.tabs.map((t) => call('layout.export', LayoutExport, { tab_id: t.tab_id })),
+      )
+      const own = panes.value.panes.filter((p) => p.workspace_id === local)
+      const summaries = await chatsOfPanes(agents.value.agents, own)
+      const byChat = new Map([...summaries.values()].map((c) => [c.id, c]))
+      const ids = new Map([...summaries].map(([pane, chat]) => [pane, chat.id]))
+      const layouts: unknown[] = []
+      for (const [at, tab] of tabs.value.tabs.entries()) {
+        const exported = exports[at]
+        if (exported === undefined) return err(badReply(`herdr layout.export: no reply for tab ${tab.tab_id}`))
+        if (!exported.ok) return exported
+        const root = nodeOf(exported.value.layout.root, ids)
+        if (root === undefined) return err(badReply('herdr layout.export: a pane that pane.list does not list'))
+        layouts.push({
+          id: `${machine}/${tab.tab_id}`,
+          label: tab.label,
+          active: tab.tab_id === found.active_tab_id,
+          root,
+          focusedChat: ids.get(exported.value.layout.focused_pane_id),
+          chats: chatsOf(root).map((id) => byChat.get(id)),
+        })
+      }
+      const layout = WorkspaceLayout.safeParse({ workspace, tabs: layouts })
+      return layout.success
+        ? ok(layout.data)
+        : err(badReply(`herdr layout: ${layout.error.issues[0]?.message ?? 'unknown shape'}`))
+    },
     async listWorkspaces() {
       const [workspaces, agents, panes] = await Promise.all([
         call('workspace.list', WorkspaceList),
@@ -256,21 +368,16 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
       if (!workspaces.ok) return workspaces
       if (!agents.ok) return agents
       if (!panes.ok) return panes
-      const shared = sharedSessions(agents.value.agents)
-      const agentOf = new Map(agents.value.agents.map((a) => [a.pane_id, a]))
-      /** The chat of one pane: its Claude or Codex chat, else a shell chat. */
-      const chatOfPane = (pane: HerdrPane): Promise<ChatSummary> => {
-        const agent = agentOf.get(pane.pane_id)
-        return agent !== undefined && isChat(agent) ? chatOf(agent, agent.agent, shared) : shellOf(pane)
-      }
-      const summaries = await Promise.all(
-        workspaces.value.workspaces.map(async (w) => ({
+      const chats = await chatsOfPanes(agents.value.agents, panes.value.panes)
+      return ok(
+        workspaces.value.workspaces.map((w) => ({
           id: WorkspaceId.parse(`${machine}/${w.workspace_id}`),
           label: w.label,
-          chats: await Promise.all(panes.value.panes.filter((p) => p.workspace_id === w.workspace_id).map(chatOfPane)),
+          chats: panes.value.panes
+            .filter((p) => p.workspace_id === w.workspace_id)
+            .flatMap((p) => chats.get(p.pane_id) ?? []),
         })),
       )
-      return ok(summaries)
     },
     subscribe(onEvent, onEnd) {
       let listening: () => void = () => undefined
