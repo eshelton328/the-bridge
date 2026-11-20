@@ -16,6 +16,7 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // Slice 3a: the Workspaces page draws each live workspace's herdr layout,
 // its active tab (`GET /api/workspaces/:workspace/layout`). Each test takes
@@ -196,6 +197,10 @@ let view: { unmount: () => Promise<void> } | undefined
 let router: ReturnType<typeof createRouter> | undefined
 /** The element testRender put the app in: the child of <body> that openApp added. */
 let viewContainer: Element | undefined
+
+// Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
+// server, never the one on this machine (liveServerStub.ts).
+stubLiveServer()
 
 afterEach(async () => {
   await view?.unmount()

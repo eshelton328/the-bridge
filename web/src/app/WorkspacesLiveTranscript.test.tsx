@@ -16,6 +16,7 @@ import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // Slice 3b: a live chat's pane shows its transcript. Each test takes the
 // owner's path: it opens the app with no URL parameters, taps Workspaces and
@@ -125,6 +126,10 @@ function withPlan(options: Parameters<typeof fakeTranscriptServer>[0] = {}) {
 
 let view: { unmount: () => Promise<void> } | undefined
 let router: ReturnType<typeof createRouter> | undefined
+
+// Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
+// server, never the one on this machine (liveServerStub.ts).
+stubLiveServer()
 
 afterEach(async () => {
   await view?.unmount()

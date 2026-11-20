@@ -16,6 +16,7 @@ import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // d-117: in development the Workspaces page reads the live source when the
 // URL names no ?state= and no ?source=. Each test takes the owner's path:
@@ -165,6 +166,10 @@ const errorAnswer = (status: number, kind: string) => () =>
 
 let view: { unmount: () => Promise<void> } | undefined
 let router: ReturnType<typeof createRouter> | undefined
+
+// Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
+// server, never the one on this machine (liveServerStub.ts).
+stubLiveServer()
 
 afterEach(async () => {
   await view?.unmount()
