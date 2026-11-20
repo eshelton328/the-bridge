@@ -15,6 +15,8 @@ from the outside world.
   stream, through the port, and reads it again on each change; it reads
   once when the stream opens, after the watch is ready, so no change is
   lost (`transcriptEvents.test.ts`).
+- `uploadStore.ts` is the port for the files that the owner attaches
+  to a prompt; `uploads.ts` lets only a Claude chat take one.
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open no herdr stream
