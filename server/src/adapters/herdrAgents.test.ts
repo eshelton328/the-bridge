@@ -308,6 +308,38 @@ describe('herdr agents: input to a chat', () => {
     }
   })
 
+  it('sends one Escape for two stops that come together or within 2 s, and one again after that', async () => {
+    let time = 1_000_000
+    const timed = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      now: () => time,
+    })
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'working' } : a)),
+    })
+    try {
+      const before = sentTo('agent.send_keys')
+      const both = await Promise.all([timed.cancel(chat), timed.cancel(chat)])
+      expect(both).toEqual([
+        { ok: true, value: 'sent' },
+        { ok: true, value: 'sent' },
+      ])
+      time += 1999
+      expect(await timed.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(before + 1)
+      time += 1
+      expect(await timed.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(before + 2)
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
   it("gives herdr's error code without its message, which could quote the prompt", async () => {
     socket.set('agent.list', {
       ...results['agent.list'],

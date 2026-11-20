@@ -233,7 +233,12 @@ export type HerdrAgentsOptions = {
   readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
   readonly log: Logger
+  /** The time in ms, for the stop hold; a test can move it. */
+  readonly now?: () => number
 }
+
+/** How long after a stop's Escape a pane gets no other Escape. */
+const stopHoldMs = 2000
 
 /** A Claude session ID that is safe in a file name: no slash and no dot. */
 const sessionName = /^[A-Za-z0-9_-]{1,100}$/
@@ -245,6 +250,7 @@ export function createHerdrAgents({
   home,
   log,
   watch: watchFs = (path, listener) => watch(path, listener),
+  now = Date.now,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -462,6 +468,12 @@ export function createHerdrAgents({
     })
   }
 
+  /**
+   * When each pane last got a stop's Escape. A second Escape soon after opens Claude Code's rewind menu, so a stop
+   * in the next `stopHoldMs` sends none: two taps of Stop, or two clients, give one Escape.
+   */
+  const stoppedAt = new Map<string, number>()
+
   /** The pane and status of a Claude or Codex chat, or why the chat takes no input: no such chat, or a shell. */
   const agentPane = async (
     chat: ChatId,
@@ -500,7 +512,12 @@ export function createHerdrAgents({
       if (typeof target.value === 'string') return ok(target.value)
       // A second Escape in Claude Code opens the rewind menu, so a chat that does not work gets none.
       if (target.value.status !== 'working') return ok('notWorking')
-      const sent = await input('agent.send_keys', { target: target.value.pane, keys: ['esc'] })
+      const { pane } = target.value
+      const last = stoppedAt.get(pane)
+      if (last !== undefined && now() - last < stopHoldMs) return ok('sent')
+      // Set before the send, so a stop that comes while this one waits for herdr sends nothing.
+      stoppedAt.set(pane, now())
+      const sent = await input('agent.send_keys', { target: pane, keys: ['esc'] })
       if (!sent.ok) return sent
       return ok(sent.value === 'needsYou' ? 'notWorking' : 'sent')
     },

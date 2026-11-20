@@ -44,7 +44,9 @@ client of a socket or a file sits beside them.
 - A prompt or a stop goes only to its own chat's pane, with herdr
   `agent.prompt` or one `esc` of `agent.send_keys`. A shell, a chat that
   waits for the owner (`blocked`) and, for a stop, a chat that does not
-  work get nothing: a second Escape opens Claude Code's rewind menu. A
+  work get nothing: a second Escape opens Claude Code's rewind menu, so
+  a pane gets no other Escape for 2 s after one (two taps of Stop send
+  one). A
   herdr error on an input keeps only its code, never its message, which
   could quote the prompt (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
