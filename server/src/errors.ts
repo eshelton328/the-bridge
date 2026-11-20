@@ -37,6 +37,7 @@ const plainKinds: ReadonlySet<string> = new Set<PlainErrorKind>([
   'forbidden',
   'herdr-bad-reply',
   'herdr-unavailable',
+  'too-many-requests',
   'internal',
 ])
 export const isPlainErrorKind = (kind: string): kind is PlainErrorKind => plainKinds.has(kind)

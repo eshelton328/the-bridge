@@ -16,6 +16,8 @@ The server's source in three layers: `routes/` call `services/`, and
   `ErrorBody` with the request ID; a port error maps to 503 or 502 in a
   checked switch, and the detail goes to the log only
   (`app.test.ts`, d-115).
+- `rateLimit.ts`: a fixed window in memory for each key; the error
+  report route takes 60 a minute (`rateLimit.test.ts`).
 - `processErrors.ts`: an uncaught error logs at fatal and exits with
   code 1 (`processErrors.test.ts`).
 - `config.ts`: every path and port comes from an environment variable,

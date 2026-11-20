@@ -17,3 +17,5 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   from the `ErrorKind` union, a client message with no path or login,
   and the request ID (d-115, `errors.test.ts`). A new kind gets a status
   in `errorStatus`.
+- A `ClientErrorReport` holds only its listed fields (a strict object),
+  so a report carries no page text or app state (`clientErrors.test.ts`).

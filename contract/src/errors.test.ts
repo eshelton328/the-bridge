@@ -16,5 +16,6 @@ describe('error bodies', () => {
   it('gives each kind a status, and only the kinds of the union', () => {
     expectTypeOf<keyof typeof errorStatus>().toEqualTypeOf<ErrorKind['kind']>()
     expect(errorStatus['herdr-unavailable']).toBe(503)
+    expect(errorStatus['too-many-requests']).toBe(429)
   })
 })
