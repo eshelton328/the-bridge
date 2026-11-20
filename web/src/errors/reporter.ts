@@ -12,6 +12,7 @@ export type ErrorSource =
   | 'rejection'
   | 'handler'
   | 'shell'
+  | 'live'
 
 export type ErrorReport = {
   readonly error: Error

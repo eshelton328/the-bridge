@@ -21,9 +21,16 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
   on load, on `workspaces.changed` and on that workspace's
   `layout.changed`, and `liveLayout.ts` maps the split tree to the
-  page's splits by the rule in its header. A layout read that misses
-  keeps the first four chats as the panes, with no notice and no report
-  (`app/WorkspacesLiveLayout.test.tsx`).
+  page's splits by the rule in its header: the focused pane and its
+  nearest neighbours when the tab has more than four, each pane's share
+  of the whole tab scaled to fill the space. A layout read that misses
+  keeps the first four chats as the panes, says "Layout not live — first
+  4 chats" in the status bar until a load reads every layout, and calls
+  `report()` once for each outage (d-115,
+  `app/WorkspacesLiveLayout.test.tsx`).
+- A stacked pane is never lower than its header and composer
+  (`blocks/paneFloors.ts`, measured, as no library token gives that
+  height); the room comes from the largest pane.
 
 ## Rules
 

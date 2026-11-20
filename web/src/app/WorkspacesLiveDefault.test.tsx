@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { type LayoutNode, WorkspacesResponse } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -66,11 +67,34 @@ const plan: Chat = { local: 'p1', kind: 'claude', title: 'plan the slice', model
 const logs: Chat = { local: 's1', kind: 'shell', title: 'tail logs', model: 'zsh' }
 
 /**
- * The stubbed server. `reply` answers each `GET /api/workspaces`: a Response, or `'down'` for no answer. A
- * workspace's layout (`GET /api/workspaces/:workspace/layout`, slice 3a) answers 503 herdr-unavailable, so each
- * workspace keeps its first chats as its panes (WorkspacesLiveLayout.test.tsx reads real layouts). The event
- * stream opens with `open` when the server is up, and fails as a network error when it is down; `send` writes an
- * event to every open stream.
+ * A workspace's layout (`GET /api/workspaces/:workspace/layout`, slice 3a) from the list that `reply` gives: one tab
+ * with the workspace's chats side by side, its first chat focused. A layout read that misses is reported (d-115), so
+ * these tests, which are about the list, give one (WorkspacesLiveLayout.test.tsx tests the layouts and their misses).
+ */
+async function layoutAnswer(reply: () => Response, url: string): Promise<Response> {
+  const id = decodeURIComponent(
+    /\/api\/workspaces\/([^/]+)\/layout$/.exec(new URL(url, window.location.origin).pathname)?.[1] ?? '',
+  )
+  const list: unknown = await reply().json()
+  const parsed = WorkspacesResponse.safeParse(list)
+  const chats = parsed.success ? (parsed.data.workspaces.find((w) => w.id === id)?.chats ?? []) : []
+  const [first, ...rest] = chats
+  if (first === undefined)
+    return new Response(JSON.stringify({ error: { kind: 'not-found', message: 'none', requestId: 'r-9' } }), {
+      status: 404,
+    })
+  const root = rest.reduce<LayoutNode>(
+    (left, c) => ({ kind: 'split', direction: 'row', ratio: 0.5, first: left, second: { kind: 'pane', chat: c.id } }),
+    { kind: 'pane', chat: first.id },
+  )
+  const tab = { id: `${id}:t1`, label: 'main', active: true, root, focusedChat: first.id, chats }
+  return new Response(JSON.stringify({ workspace: id, tabs: [tab] }), { status: 200 })
+}
+
+/**
+ * The stubbed server. `reply` answers each `GET /api/workspaces`: a Response, or `'down'` for no answer; a
+ * workspace's layout comes from it (`layoutAnswer`). The event stream opens with `open` when the server is up, and
+ * fails as a network error when it is down; `send` writes an event to every open stream.
  */
 function fakeServer(first: (() => Response) | 'down') {
   let reply = first
@@ -84,13 +108,7 @@ function fakeServer(first: (() => Response) | 'down') {
       const layout = url.includes('/api/workspaces/') && url.endsWith('/layout')
       if (url.includes('/api/workspaces') && !layout) reads.push(url)
       if (reply === 'down') return Promise.reject(new TypeError('Failed to fetch'))
-      if (layout)
-        return Promise.resolve(
-          new Response(
-            JSON.stringify({ error: { kind: 'herdr-unavailable', message: 'no herdr', requestId: 'r-9' } }),
-            { status: 503 },
-          ),
-        )
+      if (layout) return layoutAnswer(reply, url)
       if (url.includes('/api/events')) {
         const body = new ReadableStream<Uint8Array>({
           start: (control) => {
