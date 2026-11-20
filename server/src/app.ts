@@ -6,6 +6,8 @@ import { toAppError } from '@bridge/shared'
 import { type Access, access } from './auth.ts'
 import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './errors.ts'
 import type { Logger } from './logger.ts'
+import { createRateLimit } from './rateLimit.ts'
+import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
@@ -26,6 +28,8 @@ export function createApp({ agents, owner, log }: AppDeps) {
       .use(async (c, next) => {
         const start = performance.now()
         await next()
+        // A refused error report over the rate limit writes no line, so a crash loop cannot fill the log.
+        if (c.res.status === 429) return undefined
         log.info('request', {
           requestId: c.get('requestId'),
           method: c.req.method,
@@ -46,6 +50,7 @@ export function createApp({ agents, owner, log }: AppDeps) {
       })
       .route('/api/workspaces', workspacesRoutes(agents, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
+      .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.
       .onError((thrown, c) => {

@@ -17,6 +17,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('herdr-bad-reply'), ...common }),
   /** herdr does not answer (503). */
   z.object({ kind: z.literal('herdr-unavailable'), ...common }),
+  /** The client sent more requests of this kind than the server takes in a minute (429). */
+  z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */
   z.object({ kind: z.literal('internal'), ...common }),
 ])
@@ -32,5 +34,6 @@ export const errorStatus = {
   'invalid-input': 400,
   'herdr-bad-reply': 502,
   'herdr-unavailable': 503,
+  'too-many-requests': 429,
   internal: 500,
 } as const satisfies Record<ErrorKind['kind'], number>
