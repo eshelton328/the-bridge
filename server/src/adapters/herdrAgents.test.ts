@@ -87,7 +87,8 @@ const results = {
         terminal_id: 'term_5',
         workspace_id: 'w18',
         agent_status: 'unknown',
-        terminal_title_stripped: 'brain git',
+        label: 'brain git',
+        terminal_title_stripped: 'dev@example:/home/dev/ncc-1701',
       },
     ],
   },
@@ -122,7 +123,7 @@ describeAgentPort('herdr (recorded socket)', () =>
     expected: {
       workspace: 'the-bridge loops',
       chat: 'bridge-coord',
-      shell: { workspace: 'phone · shell', program: 'pnpm dev' },
+      shell: { workspace: 'phone · shell', program: 'pnpm' },
     },
     setStatus: (status) => {
       socket.push(statusLine('w17:p1', status))
@@ -176,7 +177,7 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
     expected: {
       workspace: 'the-bridge loops',
       chat: 'bridge-coord 2',
-      shell: { workspace: 'phone · shell', program: 'pnpm dev' },
+      shell: { workspace: 'phone · shell', program: 'pnpm' },
     },
     setStatus: (status) => {
       resumed.push(statusLine('w17:p2', status))
@@ -261,8 +262,8 @@ describe('herdr agents', () => {
             {
               id: 'test-mac/term_3',
               kind: 'shell',
-              title: 'gemini',
-              model: 'pnpm dev',
+              title: 'pnpm',
+              model: 'pnpm',
               contextUsed: null,
               status: 'working',
               parent: null,
@@ -271,7 +272,7 @@ describe('herdr agents', () => {
               id: 'test-mac/term_5',
               kind: 'shell',
               title: 'brain git',
-              model: 'pnpm dev',
+              model: 'pnpm',
               contextUsed: null,
               status: 'unknown',
               parent: null,
@@ -478,6 +479,52 @@ describe('herdr agents: subscribe', () => {
     await wait(400)
     subscription.close()
     expect(events).toEqual([{ type: 'workspacesChanged' }])
+  })
+
+  it('sends no shell argument or terminal title: not in the list, a status event or the log', async () => {
+    // A marker in place of a token: any argument must stay in the adapter.
+    const marker = 'argument-that-must-stay-here'
+    const command = `curl -H 'Authorization: Bearer ${marker}' https://example.com`
+    const logger = memoryLogger()
+    const leaky = await startFakeHerdrSocket({
+      ...results,
+      'pane.list': {
+        panes: [
+          {
+            pane_id: 'w18:p2',
+            terminal_id: 'term_5',
+            workspace_id: 'w18',
+            agent_status: 'unknown',
+            terminal_title_stripped: command,
+          },
+        ],
+      },
+      'pane.process_info': {
+        process_info: {
+          shell_pid: 10,
+          foreground_process_group_id: 11,
+          foreground_processes: [
+            { pid: 11, name: 'curl', argv0: '/usr/bin/curl', cmdline: command },
+            { pid: 12, name: 'jq', argv0: 'jq', cmdline: `jq --arg t ${marker} .token` },
+          ],
+        },
+      },
+    })
+    const adapter = createHerdrAgents({ socket: leaky.path, machine, log: logger.log, claudeProjects: projects })
+    const read = await adapter.listWorkspaces()
+    const { events, subscription } = collect(adapter)
+    await subscription.ready
+    leaky.push({
+      ...statusLine('w18:p2', 'blocked'),
+      data: { ...statusLine('w18:p2', 'blocked').data, workspace_id: 'w18' },
+    })
+    await wait(50)
+    subscription.close()
+    await leaky.close()
+    const shell = read.ok ? read.value.flatMap((w) => w.chats).find((c) => c.kind === 'shell') : undefined
+    expect(shell).toMatchObject({ id: 'test-mac/term_5', title: 'curl | jq', model: 'curl | jq' })
+    expect(events).toContainEqual({ type: 'chatStatus', chat: 'test-mac/term_5', status: 'needsYou' })
+    expect(JSON.stringify([read, events, logger.lines()])).not.toContain(marker)
   })
 
   it('ends the subscription once, with the reason, when herdr closes the stream', async () => {

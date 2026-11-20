@@ -15,7 +15,9 @@ client of a socket or a file sits beside them.
   into one adapter's test.
 - Every herdr pane is a chat: a Claude or Codex pane is an agent chat,
   and any other pane a shell chat with its program as the model
-  (`pane.process_info`; no model when herdr gives none).
+  (`pane.process_info`; no model when herdr gives none). A shell sends
+  only process names, never an argument or its terminal title, which can
+  hold a token or a path (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
