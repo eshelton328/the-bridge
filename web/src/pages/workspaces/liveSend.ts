@@ -13,11 +13,12 @@
 // the chat stopped already. report() gets a ChatSendMissError for a 5xx and
 // for an answer the page does not expect, with the action, the miss's kind
 // and the HTTP status only: never the message text, the chat ID or the
-// server's message. The routes are not in the RPC client until backend W1-2
-// merges, so the requests go out with fetch, the chat ID URL-encoded as the
-// RPC client encodes it.
+// server's message. The requests go through the typed RPC client (backend
+// #297), which puts the chat ID in the path as it is, so it is URL-encoded
+// here, once.
+import { ErrorBody, SendPromptRequest, StopChatRequest } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
-import { PromptErrorBody, SendPromptRequest, StopChatRequest } from '../../lib/promptContract.ts'
+import { api } from '../../lib/api.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
@@ -50,7 +51,7 @@ function unexpected(action: Action, kind: string, status: number | undefined): C
 
 /** What the composer shows for an answer that is not 204. */
 async function missOf(action: Action, res: Response): Promise<ComposerAnswer> {
-  const parsed = PromptErrorBody.safeParse(readJson(await res.text()))
+  const parsed = ErrorBody.safeParse(readJson(await res.text()))
   if (!parsed.success) {
     // A 5xx with no error body is the Vite proxy or `tailscale serve` answering for a server that is down.
     if (res.status >= 500) {
@@ -83,17 +84,12 @@ async function missOf(action: Action, res: Response): Promise<ComposerAnswer> {
   }
 }
 
-/** Posts `body` to the chat's `route` and gives the composer's answer: `true` on 204. */
-async function post(action: Action, chat: string, route: 'prompt' | 'stop', body: unknown): Promise<ComposerAnswer> {
+/** Posts with `call` and gives the composer's answer: `true` on 204. */
+async function post(action: Action, call: (signal: AbortSignal) => Promise<Response>): Promise<ComposerAnswer> {
   const signal = AbortSignal.timeout(liveReadTimeoutMs)
   let res: Response
   try {
-    res = await fetch(`/api/chats/${encodeURIComponent(chat)}/${route}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
-      signal,
-    })
+    res = await call(signal)
   } catch {
     // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
     return line(action, signal.aborted ? 'timeout' : 'unreachable', true)
@@ -114,10 +110,18 @@ async function post(action: Action, chat: string, route: 'prompt' | 'stop', body
 export function sendPrompt(chat: string, text: string): Promise<ComposerAnswer> {
   const body = SendPromptRequest.safeParse({ text })
   if (!body.success) return Promise.resolve(false)
-  return post('send', chat, 'prompt', body.data)
+  return post('send', (signal) =>
+    api.api.chats[':chat'].prompt.$post(
+      { param: { chat: encodeURIComponent(chat) }, json: body.data },
+      { init: { signal } },
+    ),
+  )
 }
 
 /** Stops the live chat `chat` (its server ID). */
 export function stopChat(chat: string): Promise<ComposerAnswer> {
-  return post('stop', chat, 'stop', StopChatRequest.parse({}))
+  const json = StopChatRequest.parse({})
+  return post('stop', (signal) =>
+    api.api.chats[':chat'].stop.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
+  )
 }

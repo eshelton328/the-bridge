@@ -52,8 +52,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   working is quiet (`blocks/useComposerActions.ts`). report() gets only a
   5xx or an answer the page does not expect, with the action, kind and
   status, never the message text (`app/WorkspacesLiveSend.test.tsx`). The
-  request and error schemas are a local mirror of backend W1-2
-  (`lib/promptContract.ts`) until it merges.
+  requests go through the typed RPC client with the chat ID URL-encoded
+  once, and the bodies are the contract's `SendPromptRequest` and
+  `StopChatRequest` (backend #297).
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).

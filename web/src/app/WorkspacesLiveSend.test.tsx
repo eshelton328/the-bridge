@@ -1,7 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
-import type { TranscriptEntry } from '@bridge/contract'
+import { maxPromptChars, type TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -12,7 +12,6 @@ import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { errorAnswer, type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
-import { maxPromptChars } from '../lib/promptContract.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -256,6 +255,8 @@ describe("a live Claude chat's Send (W1)", () => {
       await expect.element(sendButton('plan the slice')).toBeEnabled()
       await userEvent.click(sendButton('plan the slice'))
       await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+      // The chat ID is in the path URL-encoded once: its "/" is %2F, not %252F.
+      expect(fake.paths).toEqual(['/api/chats/mac-mini%2Fc1/prompt'])
       await expect.element(box('plan the slice')).toHaveValue('')
       // The prompt shows when the transcript stream brings it, as the server writes it to the session.
       fake.push(plan, [user('u3', secret)])
@@ -507,6 +508,7 @@ describe("a live Claude chat's Stop (W1)", () => {
     fake.answerStops(undefined)
     await userEvent.click(stopButton('plan the slice'))
     await expect.poll(() => fake.stops).toEqual([plan])
+    expect(fake.paths.at(-1)).toBe('/api/chats/mac-mini%2Fc1/stop')
     expect(getReports()).toEqual([])
   })
 

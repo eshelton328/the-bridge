@@ -5,8 +5,8 @@
 // `maxPromptChars` is not sent and the line says by how much. The line holds
 // only the page's own words, never the message text. Props only: the caller
 // passes what sends and what stops.
+import { maxPromptChars } from '@bridge/contract'
 import { useRef, useState } from 'react'
-import { maxPromptChars } from '../../../lib/promptContract.ts'
 
 /**
  * What a send or a stop gives the composer: `true` once it went through; `false` when it missed and the caller

@@ -10,17 +10,18 @@
 // with `{ text }`, `POST /api/chats/:chat/stop` with `{}`). As the server's
 // fake agents do, it only records them and answers 204: the prompt reaches
 // the transcript only when the test pushes it. A body or a content type the
-// contract refuses answers 400 invalid-input, and every error answer is
-// checked against the contract's error body (`PromptErrorBody`, a local
-// mirror until backend W1-2 merges).
+// contract refuses, and JSON that does not parse, answer 400
+// invalid-input, as the server's routes do (backend #297), and every error
+// answer is checked against the contract's `ErrorBody`.
 import {
   ErrorBody,
   maxTranscriptEntries,
+  SendPromptRequest,
+  StopChatRequest,
   TranscriptChangedEvent,
   type TranscriptEntry,
   TranscriptResponse,
 } from '@bridge/contract'
-import { PromptErrorBody, SendPromptRequest, StopChatRequest } from './promptContract.ts'
 
 type Stream = { readonly chat: string; readonly control: ReadableStreamDefaultController<Uint8Array> }
 
@@ -34,8 +35,8 @@ const notFound = (path: string) =>
 type ActionAnswer = () => Response | Promise<Response>
 
 /** An error answer of a send or a stop, its body checked against the contract. */
-export function errorAnswer(error: PromptErrorBody['error'], status: number): Response {
-  return new Response(JSON.stringify(PromptErrorBody.parse({ error })), {
+export function errorAnswer(error: ErrorBody['error'], status: number): Response {
+  return new Response(JSON.stringify(ErrorBody.parse({ error })), {
     status,
     headers: { 'content-type': 'application/json', 'X-Request-Id': error.requestId },
   })
@@ -74,6 +75,8 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   const stops: string[] = []
   /** Each send or stop the page posted, taken or not: its chat and route. */
   const posts: { chat: string; route: 'prompt' | 'stop' }[] = []
+  /** The path of each send or stop as the page wrote it, before any decoding. */
+  const paths: string[] = []
   let promptAnswer: ActionAnswer | undefined
   let stopAnswer: ActionAnswer | undefined
 
@@ -137,6 +140,7 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     prompts,
     stops,
     posts,
+    paths,
     /** Answers each send with `answer` until it is set to undefined; the send is not recorded in `prompts`. */
     answerPrompts: (answer: ActionAnswer | undefined) => {
       promptAnswer = answer
@@ -201,8 +205,10 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     /** The answer to a request for `path`, or undefined when it is not a transcript, send or stop route. */
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
       const action = /^\/api\/chats\/([^/]+)\/(prompt|stop)$/.exec(path)
-      if (action !== null && init?.method === 'POST')
+      if (action !== null && init?.method === 'POST') {
+        paths.push(path)
         return act(decodeURIComponent(action[1] ?? ''), action[2] === 'stop' ? 'stop' : 'prompt', init)
+      }
       const route = /^\/api\/chats\/([^/]+)\/transcript(\/events)?$/.exec(path)
       if (!route) return undefined
       const chat = decodeURIComponent(route[1] ?? '')
