@@ -14,6 +14,10 @@ state file and a page are in `screenState.ts` (d-082).
   ResizeObserver sets, wait with `setViewport()` or `afterRendering()`
   (`rendering.ts`): Chromium delivers the observer's notes only in a
   rendering step, which a busy CI runner can delay for seconds.
+- A browser test never reads the real server: `testSetup.ts` fails a test whose
+  `fetch` of `/api` has no stub (`serverGuard.test.ts`). A test file that
+  opens the Workspaces live source calls `stubLiveServer()` at its top
+  (`app/liveServerStub.ts`, RouteScroll `/workspaces?source=live`).
 - An `afterEach` that changes the viewport first calls
   `await unmountRendered()` (`testRender.ts`): a resize with the app still
   mounted lays it all out again. `testSetup.ts` fails such a test

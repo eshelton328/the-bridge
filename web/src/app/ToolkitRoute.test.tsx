@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { setViewport } from '../lib/rendering.ts'
 
@@ -13,6 +14,8 @@ import { setViewport } from '../lib/rendering.ts'
 // stories cannot show, because they do not navigate.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
+// The Workspaces home reads the live source (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 afterEach(() => {
   resetAllStores()

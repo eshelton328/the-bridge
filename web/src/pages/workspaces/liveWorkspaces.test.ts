@@ -104,6 +104,20 @@ const response = WorkspacesResponse.parse({
   ],
 })
 
+/**
+ * A layout read with no server, as in CI: the page keeps each workspace's first chats. A test that passes only
+ * `fetch` would read the layouts from the real server on this machine, so its result would depend on the machine.
+ */
+const noLayout = () =>
+  Promise.resolve(
+    err({
+      kind: 'unreachable' as const,
+      status: undefined,
+      requestId: undefined,
+      message: 'the server did not answer',
+    }),
+  )
+
 afterEach(() => {
   clearReports()
   vi.unstubAllGlobals()
@@ -205,6 +219,7 @@ describe('withLiveWorkspaces', () => {
 
   it("puts the server's workspaces on the home state, a pane for each chat, and shows the first one", async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: client(),
       fetch: () => Promise.resolve(ok(response)),
     })
@@ -217,6 +232,7 @@ describe('withLiveWorkspaces', () => {
 
   it('gives each workspace its own layout of its own chats, its first chat focused', async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: client(),
       fetch: () => Promise.resolve(ok(response)),
     })
@@ -233,6 +249,7 @@ describe('withLiveWorkspaces', () => {
 
   it('gives each live chat a pane with no sample text: its transcript and terminal are not live yet (d-117)', async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: client(),
       fetch: () => Promise.resolve(ok(response)),
     })
@@ -268,7 +285,7 @@ describe('withLiveWorkspaces', () => {
           message: 'the server answered 502: herdr socket: ENOENT',
         }),
       )
-    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: down })
+    const state = await withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: client(), fetch: down })
     expect(state.data.workspaces).toEqual([])
     expect(state.data.current).toBeNull()
     expect(state.data.panes).toEqual([])
@@ -288,6 +305,7 @@ describe('withLiveWorkspaces', () => {
 
   it('has no notice when the read succeeds', async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: client(),
       fetch: () => Promise.resolve(ok(response)),
     })
@@ -296,7 +314,9 @@ describe('withLiveWorkspaces', () => {
 
   it('does not take a reply the contract refuses for an outage: it rejects, for RouteError', async () => {
     const odd = () => Promise.resolve(ok(WorkspacesResponse.parse({ machine: 'x', workspaces: 'none' })))
-    await expect(withLiveWorkspaces(workspacesHome, { client: client(), fetch: odd })).rejects.toThrow()
+    await expect(
+      withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: client(), fetch: odd }),
+    ).rejects.toThrow()
     expect(getReports()).toEqual([])
   })
 
@@ -309,6 +329,7 @@ describe('withLiveWorkspaces', () => {
       },
     })
     const state = withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: new QueryClient({ defaultOptions: { queries: { retry: false, structuralSharing: false } } }),
       fetch: () => Promise.resolve(ok(broken)),
     })
@@ -428,7 +449,7 @@ describe('watchLiveWorkspaces', () => {
       new Promise<WorkspacesResponse>((resolve) => {
         answer = resolve
       }).then(ok)
-    const loading = withLiveWorkspaces(workspacesHome, { client: queries, fetch: slow })
+    const loading = withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: queries, fetch: slow })
     await settle(5)
     server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
     await settle(5)
@@ -497,16 +518,16 @@ describe('watchLiveWorkspaces', () => {
     const server = fakeServer()
     const fetch = vi.fn(() => Promise.resolve(ok(response)))
     const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open: server.open })
-    await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    await withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: queries, fetch })
     await settle(5)
     server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
     await settle()
-    const state = await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    const state = await withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: queries, fetch })
     expect(fetch).toHaveBeenCalledTimes(1)
     expect(state.data.workspaces[0]?.chats?.find((c) => c.id === 'drift-check')?.status.label).toBe('Idle')
     server.opened[0]?.send(server.frame('workspaces.changed', changed))
     await settle()
-    await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
+    await withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: queries, fetch })
     expect(fetch).toHaveBeenCalledTimes(2)
     stop()
   })
@@ -540,6 +561,7 @@ describe('watchLiveWorkspaces', () => {
       expect(open).toHaveBeenCalledTimes(3)
       expect(getReports()).toEqual([])
       const state = await withLiveWorkspaces(workspacesHome, {
+        fetchLayout: noLayout,
         client: queries,
         fetch: () => Promise.resolve(ok(response)),
       })
@@ -595,6 +617,7 @@ describe('watchLiveWorkspaces', () => {
     expect(getReports()).toEqual([])
     expect(onChange).toHaveBeenCalledTimes(1)
     const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: queries,
       fetch: () => Promise.resolve(ok(response)),
     })
@@ -832,7 +855,7 @@ describe('a live read that never settles (W-3)', () => {
     silentServer()
     fakeTimeouts()
     let done = false
-    const loading = withLiveWorkspaces(workspacesHome, { client: client() }).finally(() => {
+    const loading = withLiveWorkspaces(workspacesHome, { fetchLayout: noLayout, client: client() }).finally(() => {
       done = true
     })
     await vi.advanceTimersByTimeAsync(liveReadTimeoutMs - 1)
@@ -854,7 +877,11 @@ describe('a live read that never settles (W-3)', () => {
     silentServer()
     fakeTimeouts()
     const leave = new AbortController()
-    const loading = withLiveWorkspaces(workspacesHome, { client: client(), signal: leave.signal })
+    const loading = withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
+      client: client(),
+      signal: leave.signal,
+    })
     const settled = expect(loading).rejects.toMatchObject({ name: 'AbortError' })
     await vi.advanceTimersByTimeAsync(100)
     leave.abort()
@@ -872,11 +899,17 @@ describe('a live read that never settles (W-3)', () => {
       })
     const queries = client()
     const first = new AbortController()
-    const firstLoad = withLiveWorkspaces(workspacesHome, { client: queries, fetch, signal: first.signal })
+    const firstLoad = withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
+      client: queries,
+      fetch,
+      signal: first.signal,
+    })
     const firstEnded = expect(firstLoad).rejects.toMatchObject({ name: 'AbortError' })
     first.abort()
     await firstEnded
     const secondLoad = withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
       client: queries,
       fetch,
       signal: new AbortController().signal,
@@ -894,7 +927,11 @@ describe('an empty live list (P-3)', () => {
   const none = WorkspacesResponse.parse({ machine: 'mac-mini', workspaces: [] })
 
   it('shows no workspace, not a sample one, and passes the page schema', async () => {
-    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: () => Promise.resolve(ok(none)) })
+    const state = await withLiveWorkspaces(workspacesHome, {
+      fetchLayout: noLayout,
+      client: client(),
+      fetch: () => Promise.resolve(ok(none)),
+    })
     expect(state.data.workspaces).toEqual([])
     expect(state.data.current).toBeNull()
     expect(state.data.liveNotice).toBeUndefined()
