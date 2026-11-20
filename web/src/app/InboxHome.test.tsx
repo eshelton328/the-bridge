@@ -7,6 +7,7 @@ import { page, userEvent } from 'vitest/browser'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // /inbox with no ?state= opens the page's home (pages/inbox/home.ts): nothing
@@ -14,6 +15,8 @@ import { routeTree } from './routeTree.gen.ts'
 // ?state= still draws its own frame.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
+// The Workspaces home reads the live source (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 let router: ReturnType<typeof createRouter> | undefined
 

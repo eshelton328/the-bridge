@@ -10,6 +10,7 @@ import { NotFound } from '../errors/NotFound.tsx'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // iOS scrolled the installed app's document by the keyboard's height (403 px, the trace of 2026-11-19 in the brain's
@@ -21,6 +22,9 @@ import { routeTree } from './routeTree.gen.ts'
 Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
+
+// The live source reads a stubbed server, never the one on this machine (liveServerStub.ts).
+stubLiveServer()
 
 afterEach(async () => {
   resetAllStores()
