@@ -63,6 +63,18 @@ describe('POST /api/client-errors', () => {
     expect((await post(JSON.stringify(report))).status).toBe(204)
   })
 
+  it('counts the owner login in any letter case in one quota', async () => {
+    const { post } = setup()
+    const tailnet = { ...json, Host: 'mac.tailnet.example', 'X-Forwarded-For': '203.0.113.2' }
+    const statuses: number[] = []
+    for (let i = 0; i < 61; i += 1) {
+      const login = i % 2 === 0 ? owner : owner.toUpperCase()
+      statuses.push((await post(JSON.stringify(report), { ...tailnet, 'Tailscale-User-Login': login })).status)
+    }
+    expect(statuses.filter((s) => s === 204)).toHaveLength(60)
+    expect(statuses.at(-1)).toBe(429)
+  })
+
   it('takes 60 reports a minute, then answers 429 and writes no log line for the rest', async () => {
     const { logger, post } = setup()
     const statuses: number[] = []

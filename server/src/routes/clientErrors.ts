@@ -21,7 +21,8 @@ export function clientErrorsRoutes(log: Logger, limit: RateLimit) {
           message: 'the report must be JSON',
           issues: ['Content-Type must be application/json'],
         })
-      if (!limit.take(c.req.header('Tailscale-User-Login') ?? 'local'))
+      // Auth compares the login in any case, so the quota does too: one owner, one quota.
+      if (!limit.take(c.req.header('Tailscale-User-Login')?.toLowerCase() ?? 'local'))
         return errorJson(c, 'too-many-requests', { message: 'too many error reports; wait a minute' })
       await next()
       return undefined
