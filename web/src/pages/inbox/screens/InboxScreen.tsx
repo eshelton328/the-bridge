@@ -9,6 +9,7 @@
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
+import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -307,6 +308,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   return (
     <Backdrop size={layout}>
       <AppShell
+        onDiagnostic={reportShellDiagnostic}
         size={layout}
         view={open === null && rowOpened === undefined ? 'list' : 'detail'}
         rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}

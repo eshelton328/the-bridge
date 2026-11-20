@@ -17,6 +17,7 @@
 // artifact the same way (`ui.openId`, openView.ts). A state file's data and ui are its props; the
 // callbacks are optional, so a story or a canvas board needs none.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
+import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -113,6 +114,7 @@ export function ArtifactsScreen({ data, ui, viewport, onNavigate, onUiChange, on
         return (
           <Backdrop size={layout}>
             <AppShell
+              onDiagnostic={reportShellDiagnostic}
               size={layout}
               rail={
                 layout === 'desktop' ? (

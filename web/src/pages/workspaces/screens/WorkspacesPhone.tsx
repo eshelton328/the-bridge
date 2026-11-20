@@ -48,6 +48,7 @@
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useState } from 'react'
+import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
@@ -137,6 +138,7 @@ export function WorkspacesPhone({
     return (
       <Backdrop size={device}>
         <AppShell
+          onDiagnostic={reportShellDiagnostic}
           size={device}
           view="detail"
           detail={
@@ -165,6 +167,7 @@ export function WorkspacesPhone({
     return (
       <Backdrop size={device}>
         <AppShell
+          onDiagnostic={reportShellDiagnostic}
           size={device}
           view="detail"
           detail={
@@ -193,6 +196,7 @@ export function WorkspacesPhone({
     return (
       <Backdrop size={device}>
         <AppShell
+          onDiagnostic={reportShellDiagnostic}
           size={device}
           view="detail"
           detail={
@@ -256,6 +260,7 @@ export function WorkspacesPhone({
     return (
       <Backdrop size={device}>
         <AppShell
+          onDiagnostic={reportShellDiagnostic}
           size={device}
           view="detail"
           detail={
@@ -470,6 +475,7 @@ export function WorkspacesPhone({
   return (
     <Backdrop size={device}>
       <AppShell
+        onDiagnostic={reportShellDiagnostic}
         size={device}
         view="list"
         // The list runs under the tab bar, as Figma draws the phone pages; its last workspace scrolls clear of the bar
