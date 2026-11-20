@@ -9,6 +9,7 @@
 // page to load again, at most once each `settleMs`.
 import { type ChatSummary, LiveEvent, splitId, type WorkspaceSummary, WorkspacesResponse } from '@bridge/contract'
 import type { QueryClient } from '@tanstack/react-query'
+import { z } from 'zod'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
@@ -93,14 +94,64 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
 
-/** Reads the workspaces through the RPC client and checks them against the contract. */
-async function fetchWorkspaces(): Promise<WorkspacesResponse> {
-  const res = await api.api.workspaces.$get()
-  const body: unknown = await res.json()
-  if (!res.ok) {
-    const reason = typeof body === 'object' && body !== null && 'error' in body ? String(body.error) : ''
-    throw new Error(`the server answered ${String(res.status)}${reason ? `: ${reason}` : ''}`)
+const errorBase = { message: z.string(), requestId: z.string() }
+
+/**
+ * The kinds of error the server answers with (d-115), each with a message and a request ID: forbidden (403),
+ * not-found (404), invalid-input (400), herdr-bad-reply (502), herdr-unavailable (503) and internal (500). A local
+ * copy of backend-coord's contract shape (S-4) until `@bridge/contract` exports it; keys it does not name, such as
+ * `reason`, are dropped, so a socket path never reaches the page.
+ */
+const ErrorKind = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('forbidden'), ...errorBase }),
+  z.object({ kind: z.literal('not-found'), path: z.string(), ...errorBase }),
+  z.object({ kind: z.literal('invalid-input'), issues: z.array(z.string()), ...errorBase }),
+  z.object({ kind: z.literal('herdr-bad-reply'), ...errorBase }),
+  z.object({ kind: z.literal('herdr-unavailable'), ...errorBase }),
+  z.object({ kind: z.literal('internal'), ...errorBase }),
+])
+type ErrorKind = z.infer<typeof ErrorKind>
+
+/** The body of an error answer from the server. */
+const ErrorBody = z.object({ error: ErrorKind })
+
+/**
+ * A read the server answered with a status that is not 2xx. `kind` comes from an error body; a body that is not
+ * one, such as the HTML or empty page of the Vite proxy or `tailscale serve`, gives the status alone. `requestId`
+ * is the body's, else the answer's `X-Request-Id` header.
+ */
+class LiveReadError extends Error {
+  readonly status: number
+  readonly kind: ErrorKind['kind'] | undefined
+  readonly requestId: string | undefined
+
+  constructor(status: number, body: string, headerRequestId: string | undefined) {
+    const parsed = ErrorBody.safeParse(readJson(body))
+    const error = parsed.success ? parsed.data.error : undefined
+    const requestId = error?.requestId ?? headerRequestId
+    const detail =
+      error === undefined
+        ? requestId === undefined
+          ? ''
+          : ` (request ${requestId})`
+        : `: ${error.message} (${error.kind}, request ${error.requestId})`
+    super(`the server answered ${String(status)}${detail}`)
+    this.name = 'LiveReadError'
+    this.status = status
+    this.kind = error?.kind
+    this.requestId = requestId
   }
+}
+
+/**
+ * Reads the workspaces through the RPC client and checks them against the contract. The status comes first: an
+ * error answer may not be JSON (the Vite proxy or `tailscale serve` with the server down), so its body is read as
+ * text and parsed only if it can be.
+ */
+export async function fetchWorkspaces(): Promise<WorkspacesResponse> {
+  const res = await api.api.workspaces.$get()
+  if (!res.ok) throw new LiveReadError(res.status, await res.text(), res.headers.get('X-Request-Id') ?? undefined)
+  const body: unknown = await res.json()
   return WorkspacesResponse.parse(body)
 }
 
@@ -110,6 +161,8 @@ const queryKey = ['workspaces']
 let watching = 0
 /** Why the live updates stopped, shown in the status bar until a new watcher starts. */
 let stopped: string | undefined
+/** The event stream's last error while it connects again, shown in the status bar until a stream opens. */
+let lost: string | undefined
 /** How many events the watchers took; a read that saw it change while it ran may hold older data. */
 let taken = 0
 /** The open watcher's way to mark the cache invalid and load again. */
@@ -195,7 +248,8 @@ const openEvents: OpenStream = (signal) =>
  * the chat's status there; `workspaces.changed`, an event the cache cannot take, and each time the stream
  * opens (the first time and after it connects again) mark the cache invalid, so the next load reads the
  * server. A burst of events gives one `onChange`. When the stream ends or the network drops, it connects
- * again after the server's retry time (5 s), as EventSource does; when the server refuses the stream (403,
+ * again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
+ * dev ErrorTray once for each outage; when the server refuses the stream (403,
  * 502), it stops and shows a notice in the status bar and the dev ErrorTray, as a failed read does. The
  * result stops it.
  */
@@ -207,6 +261,7 @@ export function watchLiveWorkspaces({
 }: WatchDeps): () => void {
   watching += 1
   stopped = undefined
+  lost = undefined
   const abort = new AbortController()
   let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -254,8 +309,10 @@ export function watchLiveWorkspaces({
         resolve()
       })
     })
+  // A call, so that each read sees the signal as it is now.
+  const closed = () => abort.signal.aborted
   const run = async () => {
-    while (!abort.signal.aborted) {
+    while (!closed()) {
       try {
         const res = await open(abort.signal)
         if (!res.ok || res.body === null) {
@@ -264,9 +321,21 @@ export function watchLiveWorkspaces({
           changed()
           return
         }
+        // The stream is open: the outage, if there was one, is over.
+        lost = undefined
         for await (const frame of frames(res.body)) take(frame)
-      } catch {
-        // The network dropped or the watcher stopped: connect again after the retry time, or end.
+      } catch (thrown) {
+        // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
+        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError')) return
+        // The network dropped: keep the error for the status bar and connect again after the retry time. A long
+        // outage reports once, on its first error, not once for each reconnect.
+        const first = lost === undefined
+        const why = thrown instanceof Error ? thrown.message : String(thrown)
+        lost = `Live updates lost the event stream (${why}); connecting again.`
+        if (first) {
+          report(new Error(lost, { cause: thrown }), 'handler')
+          changed()
+        }
       }
       await pause()
     }
@@ -307,7 +376,8 @@ export async function withLiveWorkspaces(
     }
     const response = await client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 })
     const workspaces = toWorkspaces(response)
-    const status = stopped === undefined ? state.data.status : { ...state.data.status, alert: stopped }
+    const alert = stopped ?? lost
+    const status = alert === undefined ? state.data.status : { ...state.data.status, alert }
     return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? state.data.current } }
   } catch (thrown) {
     const why = thrown instanceof Error ? thrown.message : String(thrown)
