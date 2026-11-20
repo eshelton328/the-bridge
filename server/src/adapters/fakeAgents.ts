@@ -67,6 +67,8 @@ export type FakeAgents = AgentPort & {
   readonly subscriptions: () => number
   /** Gives a chat a new status, as an agent would, and tells each subscription. */
   readonly setStatus: (chat: ChatId, status: ChatStatus) => void
+  /** Tells each subscription that the layout of `workspace` changed. */
+  readonly changeLayout: (workspace: WorkspaceId) => void
   /** Tells each subscription that the list changed. */
   readonly changeList: () => void
   /** Ends each subscription with `error`, as a host that stops answering. */
@@ -152,6 +154,9 @@ export function createFakeAgents(
     setStatus(chat, status) {
       for (const workspace of data ?? []) for (const c of workspace.chats) if (c.id === chat) c.status = status
       tell({ type: 'chatStatus', chat, status })
+    },
+    changeLayout(workspace) {
+      tell({ type: 'layoutChanged', workspace })
     },
     changeList() {
       tell({ type: 'workspacesChanged' })

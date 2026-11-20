@@ -5,6 +5,7 @@ import { describe, expect, inject, it } from 'vitest'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
 import { memoryLogger } from '../server/src/logger.ts'
+import { renameTab } from './renameTab.ts'
 import { reportAgent } from './reportAgent.ts'
 
 const machine = MachineId.parse('e2e-mac')
@@ -21,6 +22,7 @@ describeAgentPort('herdr (real session)', () =>
       shell: inject('shellChat'),
     },
     setStatus: reportAgent,
+    changeLayout: renameTab,
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,
       machine,

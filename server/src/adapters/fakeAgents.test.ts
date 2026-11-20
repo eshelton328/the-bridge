@@ -1,4 +1,4 @@
-import { ChatId, MachineId } from '@bridge/contract'
+import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { describeAgentPort } from './agentPortContract.ts'
 import { createFakeAgents } from './fakeAgents.ts'
@@ -12,6 +12,10 @@ describeAgentPort('fake', () => {
     expected: { workspace: 'omni-brain', chat: 'drift check', shell: { workspace: 'omni', program: 'zsh' } },
     setStatus: (status) => {
       port.setStatus(ChatId.parse('test-mac/drift-check'), status)
+      return Promise.resolve()
+    },
+    changeLayout: () => {
+      port.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))
       return Promise.resolve()
     },
     unreachable: createFakeAgents(machine, { error: { reason: 'unreachable', message: 'herdr socket: ENOENT' } }),

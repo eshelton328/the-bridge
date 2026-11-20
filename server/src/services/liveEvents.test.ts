@@ -1,4 +1,4 @@
-import { ChatId, LiveEvent, MachineId } from '@bridge/contract'
+import { ChatId, LiveEvent, MachineId, WorkspaceId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createLiveEvents } from './liveEvents.ts'
@@ -35,9 +35,11 @@ describe('live events', () => {
     live.connect(b)
     agents.setStatus(drift, 'working')
     agents.changeList()
+    agents.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))
     const expected = [
       { source: 'test-mac/agents', seq: 0, type: 'chat.status', data: { chat: drift, status: 'working' } },
       { source: 'test-mac/agents', seq: 1, type: 'workspaces.changed', data: {} },
+      { source: 'test-mac/agents', seq: 2, type: 'layout.changed', data: { workspace: 'test-mac/omni-brain' } },
     ]
     expect(a.events).toEqual(expected)
     expect(b.events).toEqual(expected)
