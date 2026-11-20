@@ -177,4 +177,11 @@ describe('withLoadedLayouts', () => {
     expect(merged.focusedPane).toBe('c')
     expect(withLoadedLayouts(ui({ w: two, v: one }), { ...changed, workspace: 'v' }, 'w').focusedPane).toBe('b')
   })
+
+  it("ends a handle drag's sizes when a newer layout replaces the shown workspace's, and keeps them otherwise", () => {
+    const resize = { part: 'rows' as const, sizes: [70, 30] }
+    const changed = { layouts: { w: mine }, focusedPane: 'b', resize, layoutsSeen: layoutsSeenOf({ w: one }) }
+    expect(withLoadedLayouts(ui({ w: two }), changed, 'w').resize).toBeNull()
+    expect(withLoadedLayouts(ui({ w: one }), changed, 'w').resize).toEqual(resize)
+  })
 })
