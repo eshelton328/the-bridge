@@ -23,6 +23,8 @@ declare module 'vitest' {
 const session = `bridge-e2e-${String(process.pid)}`
 const herdr = (...args: string[]) =>
   execFileSync('herdr', ['--session', session, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+/** One shell word: herdr's pane run takes a command line, so each path and title is quoted. */
+const shellWord = (word: string) => `'${word.replaceAll("'", `'\\''`)}'`
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const Created = z.object({ result: z.object({ root_pane: z.object({ pane_id: z.string() }) }) })
@@ -60,13 +62,13 @@ export default async function setup(project: TestProject) {
   )
   const pane = created.result.root_pane.pane_id
   const fakeAgent = join(import.meta.dirname, 'fakeAgent.ts')
-  herdr('pane', 'run', pane, `node ${fakeAgent} ${claudeProjects} fake-e2e-session '${title}'`)
+  herdr('pane', 'run', pane, ['node', fakeAgent, claudeProjects, 'fake-e2e-session', title].map(shellWord).join(' '))
   await until('the fake agent show in herdr', () => herdr('agent', 'list').includes('fake-e2e-session'))
   // The second fake chat has no session, so herdr takes its status from pane.report_agent.
   const statusTitle = 'fake status chat'
   const statusPane = Split.parse(JSON.parse(herdr('pane', 'split', pane, '--direction', 'right', '--no-focus'))).result
     .pane.pane_id
-  herdr('pane', 'run', statusPane, `node ${fakeAgent} ${claudeProjects} - '${statusTitle}'`)
+  herdr('pane', 'run', statusPane, ['node', fakeAgent, claudeProjects, '-', statusTitle].map(shellWord).join(' '))
   await until('the status chat show in herdr', () => herdr('agent', 'list').includes(statusTitle))
   project.provide('herdrSocket', herdrSocket)
   project.provide('claudeProjects', claudeProjects)
@@ -77,11 +79,8 @@ export default async function setup(project: TestProject) {
       herdr('server', 'stop')
     } finally {
       server?.kill()
-      try {
-        execFileSync('herdr', ['session', 'delete', session])
-      } catch {
-        // The session is gone already.
-      }
+      // herdr exits 0 for a session that is gone already, so an error here is a real one.
+      execFileSync('herdr', ['session', 'delete', session])
     }
   }
 }
