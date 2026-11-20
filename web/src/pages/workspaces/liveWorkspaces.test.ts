@@ -158,6 +158,32 @@ describe('the live mapper', () => {
     expect(toWorkspaces(fork)[0]?.count).toBe(1)
   })
 
+  it('gives a shell row "shell · <program>" and no context meter', () => {
+    const shells = WorkspacesResponse.parse({
+      machine: 'mac-mini',
+      workspaces: [
+        {
+          id: 'mac-mini/w1',
+          label: 'w1',
+          chats: [
+            chat('dev', { kind: 'shell', title: 'dev server', model: 'pnpm dev', contextUsed: 0.3, status: 'working' }),
+            chat('sh', { kind: 'shell', title: 'a shell', model: null, status: 'idle' }),
+          ],
+        },
+      ],
+    })
+    expect(toWorkspaces(shells)[0]?.chats).toEqual([
+      {
+        id: 'dev',
+        kind: 'shell',
+        title: 'dev server',
+        model: 'shell · pnpm dev',
+        status: { label: 'Running', tone: 'running' },
+      },
+      { id: 'sh', kind: 'shell', title: 'a shell', model: 'shell', status: { label: 'Idle', tone: 'idle' } },
+    ])
+  })
+
   it('writes model IDs as the app does', () => {
     expect(modelLabel('claude-opus-5-5')).toBe('Opus 5.5')
     expect(modelLabel('claude-fable-5-2[1m]')).toBe('Fable 5.2')

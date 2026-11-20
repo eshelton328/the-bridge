@@ -80,7 +80,8 @@ function sidebarChat(chat: ChatSummary, titles: ReadonlyMap<string, string>): Si
     kind: chat.kind,
     title: chat.title,
     model,
-    ...(chat.contextUsed === null ? {} : { context: Math.round(chat.contextUsed * 100) }),
+    // A shell has no context window, so its row has no context meter, as D2 draws "brain git".
+    ...(chat.kind === 'shell' || chat.contextUsed === null ? {} : { context: Math.round(chat.contextUsed * 100) }),
     status: statusOf(chat),
     ...(parent ? { level: 1 as const } : {}),
     ...(parent?.relation === 'fork'
