@@ -60,8 +60,17 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       buffer += chunk
       const end = buffer.indexOf('\n')
       if (end === -1) return
-      const request: unknown = JSON.parse(buffer.slice(0, end))
+      const line = buffer.slice(0, end)
       buffer = buffer.slice(end + 1)
+      let request: unknown
+      try {
+        request = JSON.parse(line)
+      } catch (error) {
+        // A test that sends a bad line sees herdr's kind of answer, not a crash of the socket.
+        if (!(error instanceof SyntaxError)) throw error
+        conn.end(`${JSON.stringify({ id: '', error: { code: 'invalid_request', message: error.message } })}\n`)
+        return
+      }
       const id = field(request, 'id') ?? ''
       const method = field(request, 'method')
       switch (mode) {
