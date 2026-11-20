@@ -17,5 +17,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   from the `ErrorKind` union, a client message with no path or login,
   and the request ID (d-115, `errors.test.ts`). A new kind gets a status
   in `errorStatus`.
+- A layout names each pane by its chat ID, as `GET /api/workspaces`
+  does, never by a herdr pane ID; `TabLayout` checks that its chats are
+  its panes in tree order and that the focused chat is in the tree
+  (`layout.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).

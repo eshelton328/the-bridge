@@ -25,8 +25,12 @@ export type WorkspaceId = z.infer<typeof WorkspaceId>
 export const ChatId = z.string().regex(scoped).brand<'ChatId'>()
 export type ChatId = z.infer<typeof ChatId>
 
-/** The machine ID and the local part of a workspace or chat ID. */
-export function splitId(id: WorkspaceId | ChatId): { machine: MachineId; local: string } {
+/** A tab of a workspace on a machine: "<machine>/<local>", such as "mac-mini/w17:t1". */
+export const TabId = z.string().regex(scoped).brand<'TabId'>()
+export type TabId = z.infer<typeof TabId>
+
+/** The machine ID and the local part of a workspace, chat or tab ID. */
+export function splitId(id: WorkspaceId | ChatId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')
   return { machine: MachineId.parse(id.slice(0, at)), local: id.slice(at + 1) }
 }

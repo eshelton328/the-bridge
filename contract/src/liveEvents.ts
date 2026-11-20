@@ -4,7 +4,7 @@
 // opens, so an event lost while it was closed does no harm.
 import { z } from 'zod'
 import { eventOf } from './events.ts'
-import { ChatId } from './ids.ts'
+import { ChatId, WorkspaceId } from './ids.ts'
 import { ChatStatus } from './workspaces.ts'
 
 /** A chat's status changed. */
@@ -19,6 +19,14 @@ export type ChatStatusEvent = z.infer<typeof ChatStatusEvent>
 export const WorkspacesChangedEvent = eventOf('workspaces.changed', z.object({}))
 export type WorkspacesChangedEvent = z.infer<typeof WorkspacesChangedEvent>
 
+/**
+ * The tabs or panes of a workspace changed (a tab or pane came, went, moved or was renamed, a split was
+ * resized, or the focus moved): read `GET /api/workspaces/:workspace/layout` again. A `workspaces.changed`
+ * event can also change a layout.
+ */
+export const LayoutChangedEvent = eventOf('layout.changed', z.object({ workspace: WorkspaceId }))
+export type LayoutChangedEvent = z.infer<typeof LayoutChangedEvent>
+
 /** One event of the stream. Its `type` is also the SSE event name, and its `seq` the SSE id. */
-export const LiveEvent = z.discriminatedUnion('type', [ChatStatusEvent, WorkspacesChangedEvent])
+export const LiveEvent = z.discriminatedUnion('type', [ChatStatusEvent, LayoutChangedEvent, WorkspacesChangedEvent])
 export type LiveEvent = z.infer<typeof LiveEvent>
