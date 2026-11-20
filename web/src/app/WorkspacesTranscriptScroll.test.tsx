@@ -306,6 +306,13 @@ describe("a live chat's Markdown", () => {
     // HTML stays text: the tags show and no element is made from them.
     expect(region.textContent).toContain('<b>x</b>')
     expect(region.querySelector('b')).toBeNull()
+    // The text keeps the message's colour, not MarkdownView's muted body text.
+    for (const text of region.querySelectorAll('.markdown-view')) {
+      const body = text.closest('.message__body')
+      if (body === null) throw new Error('Markdown outside a message')
+      expect(getComputedStyle(text).color).toBe(getComputedStyle(body).color)
+    }
+    expect(region.querySelectorAll('.markdown-view')).toHaveLength(2)
     // A link keeps only a safe URL.
     const links = [...region.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')])
     expect(links).toContainEqual(['the log', 'https://example.com/log'])
