@@ -30,6 +30,7 @@ import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
+import { SlotBoundary } from '../../../errors/SlotBoundary.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { css } from '../../../../styled-system/css/index.js'
 import { LiveNotice } from '../blocks/LiveNotice.tsx'
@@ -304,6 +305,9 @@ function WorkspacesLayout({
           figma={data.layers?.toast}
         />
       ) : undefined
+    // The side slot gets a boundary only when it shows something: an empty slot draws no side column.
+    const sideSlot = subagents ?? folderPicker ?? sideChat
+    const sideKey = `${subagents === undefined ? (folderPicker === undefined ? 'sideChat' : 'folders') : 'subagents'}:${chat?.id ?? ''}`
     return (
       <Backdrop size={viewport}>
         <AppShell
@@ -312,74 +316,80 @@ function WorkspacesLayout({
           listWidth="sidebar"
           rail={rail}
           list={
-            <WorkspaceSidebar
-              text={data.sidebar}
-              workspaces={workspaces}
-              selected={ui.focusedPane}
-              openable={openableChats(named, ui)}
-              onSelect={(picked) => {
-                change(openChat(named, ui, picked))
-              }}
-              ui={ui}
-              onUiChange={change}
-              layers={data.layers}
-              notice={notice}
-            />
+            <SlotBoundary contentKey="sidebar">
+              <WorkspaceSidebar
+                text={data.sidebar}
+                workspaces={workspaces}
+                selected={ui.focusedPane}
+                openable={openableChats(named, ui)}
+                onSelect={(picked) => {
+                  change(openChat(named, ui, picked))
+                }}
+                ui={ui}
+                onUiChange={change}
+                layers={data.layers}
+                notice={notice}
+              />
+            </SlotBoundary>
           }
           detail={
             ui.workbench === true || chat === undefined ? (
-              <WorkspaceTabs
-                data={named}
-                ui={ui}
-                onUiChange={change}
-                onDraftChange={draft}
-                toggle={false}
-                onSend={onSend}
-              />
+              <SlotBoundary contentKey="workbench">
+                <WorkspaceTabs
+                  data={named}
+                  ui={ui}
+                  onUiChange={change}
+                  onDraftChange={draft}
+                  toggle={false}
+                  onSend={onSend}
+                />
+              </SlotBoundary>
             ) : (
-              <MainChat
-                pane={chat}
-                workspace={current?.label ?? shown.current ?? ''}
-                contextLabel={data.sidebar.contextLabel}
-                skills={{
-                  label: data.skillsLabel,
-                  matching: data.skillsMatching,
-                  items: data.skills,
-                  value: ui.skill,
-                  open: ui.skillsFor === chat.id,
-                }}
-                onSkillsOpenChange={(open) => {
-                  change({ skillsFor: open ? chat.id : null })
-                }}
-                menu={data.chatActions === false ? null : chatMenu}
-                folders={
-                  data.folders === undefined ? undefined : (
-                    <FoldersControl
-                      folders={data.folders}
-                      open={ui.foldersOpen === true}
-                      onOpenChange={(foldersOpen) => {
-                        change({ foldersOpen })
-                      }}
-                      onAdd={() => {
-                        change({ foldersOpen: false, folderPickerOpen: true })
-                      }}
-                    />
-                  )
-                }
-                layers={data.layers}
-                draft={ui.drafts?.[chat.id]}
-                onTextChange={(text) => {
-                  draft(chat.id, text)
-                }}
-                onSend={onSend && ((text) => onSend(chat.id, text))}
-                rename={rename}
-                above={toast}
-                overlay={dropZone}
-              />
+              <SlotBoundary contentKey={chat.id}>
+                <MainChat
+                  pane={chat}
+                  workspace={current?.label ?? shown.current ?? ''}
+                  contextLabel={data.sidebar.contextLabel}
+                  skills={{
+                    label: data.skillsLabel,
+                    matching: data.skillsMatching,
+                    items: data.skills,
+                    value: ui.skill,
+                    open: ui.skillsFor === chat.id,
+                  }}
+                  onSkillsOpenChange={(open) => {
+                    change({ skillsFor: open ? chat.id : null })
+                  }}
+                  menu={data.chatActions === false ? null : chatMenu}
+                  folders={
+                    data.folders === undefined ? undefined : (
+                      <FoldersControl
+                        folders={data.folders}
+                        open={ui.foldersOpen === true}
+                        onOpenChange={(foldersOpen) => {
+                          change({ foldersOpen })
+                        }}
+                        onAdd={() => {
+                          change({ foldersOpen: false, folderPickerOpen: true })
+                        }}
+                      />
+                    )
+                  }
+                  layers={data.layers}
+                  draft={ui.drafts?.[chat.id]}
+                  onTextChange={(text) => {
+                    draft(chat.id, text)
+                  }}
+                  onSend={onSend && ((text) => onSend(chat.id, text))}
+                  rename={rename}
+                  above={toast}
+                  overlay={dropZone}
+                />
+              </SlotBoundary>
             )
           }
           sideWidth={subagents === undefined ? 'side' : 'wide'}
-          side={subagents ?? folderPicker ?? sideChat}
+          side={sideSlot === undefined ? undefined : <SlotBoundary contentKey={sideKey}>{sideSlot}</SlotBoundary>}
         />
         {data.newChat === undefined ? null : (
           <NewChatDialog
@@ -421,15 +431,17 @@ function WorkspacesLayout({
         size="desktop"
         rail={rail}
         detail={
-          <WorkspaceTabs
-            data={named}
-            ui={ui}
-            onUiChange={change}
-            onDraftChange={draft}
-            toggle
-            onSend={onSend}
-            notice={notice}
-          />
+          <SlotBoundary contentKey="workbench">
+            <WorkspaceTabs
+              data={named}
+              ui={ui}
+              onUiChange={change}
+              onDraftChange={draft}
+              toggle
+              onSend={onSend}
+              notice={notice}
+            />
+          </SlotBoundary>
         }
       />
     </Backdrop>
