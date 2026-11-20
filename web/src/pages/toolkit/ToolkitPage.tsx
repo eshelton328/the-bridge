@@ -5,11 +5,16 @@
 // The open item's copy button writes its path to the clipboard here.
 import { getRouteApi } from '@tanstack/react-router'
 import { useState } from 'react'
+import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
 
 const route = getRouteApi('/toolkit')
+
+const reportCopy = (error: unknown) => {
+  report(error, 'handler')
+}
 
 type Changed = { of: ToolkitUi; ui: Partial<ToolkitUi> }
 
@@ -32,12 +37,13 @@ export function ToolkitPage() {
         setChanged({ of: state.ui, ui: { ...own, ...change } })
       }}
       onCopyPath={(path) => {
-        // The badge's copy button; a page without clipboard access (an insecure origin) copies nothing.
-        copyText(path)
+        // The badge's copy button shows no result; a page without clipboard access (an insecure origin) copies
+        // nothing, and a fault is reported.
+        void copyText(path, { report: reportCopy })
       }}
       onCopyText={(text) => {
         // An answer's Copy in the item's discussion (D5).
-        copyText(text)
+        void copyText(text, { report: reportCopy })
       }}
     />
   )

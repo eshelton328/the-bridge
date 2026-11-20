@@ -3,8 +3,10 @@
 // Discuss, and Copy link and Remove as icons; on a phone only the ⋯ button,
 // which opens File in a project (M7). It stays at the top while the page
 // under it scrolls (d-107). Props only; the page entry closes the artifact.
-import { BackRow, BubbleIcon, Button, CopyIcon, MoreIcon, TrashIcon } from '@eshelton328/component-library-1701'
+import { BackRow, BubbleIcon, Button, MoreIcon, TrashIcon } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import type { CopyLinkStatus } from '../types.ts'
+import { CopyLinkButton } from './CopyLinkButton.tsx'
 
 // T2: the bar is 20 under the status bar (the Container's 12 and 8) and the title block 18 under it (20 on the 4 px
 // grid, d-100: a tie takes the larger token, d-072).
@@ -22,6 +24,8 @@ export type ArtifactTopBarProps = {
   /** Discuss was pressed; without it Discuss does nothing. */
   onDiscuss?: (() => void) | undefined
   onCopyLink?: (() => void) | undefined
+  /** What the last Copy link did: the tablet's copy icon and its name show it. */
+  copyLinkStatus?: CopyLinkStatus | undefined
   onRemove?: (() => void) | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
@@ -33,6 +37,7 @@ export function ArtifactTopBar({
   onBack,
   onDiscuss,
   onCopyLink,
+  copyLinkStatus,
   onRemove,
   onMore,
 }: ArtifactTopBarProps) {
@@ -57,9 +62,7 @@ export function ArtifactTopBar({
                 </Button>
               </span>
               <span data-figma="button · copy">
-                <Button size="lg" iconOnly aria-label="Copy link" onClick={onCopyLink}>
-                  <CopyIcon />
-                </Button>
+                <CopyLinkButton size="lg" iconOnly status={copyLinkStatus} onClick={onCopyLink} />
               </span>
               <span data-figma="button · trash">
                 <Button size="lg" iconOnly variant="secondaryDanger" aria-label="Remove" onClick={onRemove}>

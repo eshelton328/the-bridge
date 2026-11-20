@@ -10,7 +10,6 @@
 import {
   BubbleIcon,
   Button,
-  CopyIcon,
   ExternalLinkIcon,
   Grid,
   Inline,
@@ -22,9 +21,10 @@ import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
 import { ArtifactStatus } from '../blocks/ArtifactStatus.tsx'
 import { ArtifactTitleBlock, type ProjectMenu } from '../blocks/ArtifactTitleBlock.tsx'
 import { ArtifactTopBar } from '../blocks/ArtifactTopBar.tsx'
+import { CopyLinkButton } from '../blocks/CopyLinkButton.tsx'
 import { LinkMark } from '../blocks/LinkMark.tsx'
 import { MadeIn } from '../blocks/MadeIn.tsx'
-import type { ArtifactDetail } from '../types.ts'
+import type { ArtifactDetail, CopyLinkStatus } from '../types.ts'
 
 // 405:467, 406:407: Open artifact takes the page's width; so do Copy link and Discuss their halves (406:411).
 const wide = css({ w: '[100%]' })
@@ -45,6 +45,8 @@ export type ArtifactPageProps = {
   onOpenArtifact?: (() => void) | undefined
   /** Copy link was pressed, in the tablet's bar or under the phone's Open artifact; without it Copy link does nothing. */
   onCopyLink?: (() => void) | undefined
+  /** What the last Copy link did, which its control shows ("Copied" or "Copy failed"). */
+  copyLinkStatus?: CopyLinkStatus | undefined
   /** The phone's ⋯ button was pressed: File in a project opens (M7). */
   onMore?: (() => void) | undefined
   /** The menu the tablet's project chip opens; on the phone the chip opens File in a project, as the ⋯ button. */
@@ -60,6 +62,7 @@ export function ArtifactPage({
   onDiscuss,
   onOpenArtifact,
   onCopyLink,
+  copyLinkStatus,
   onMore,
   projectMenu,
 }: ArtifactPageProps) {
@@ -74,6 +77,7 @@ export function ArtifactPage({
           onBack={onBack}
           onDiscuss={onDiscuss}
           onCopyLink={onCopyLink}
+          copyLinkStatus={copyLinkStatus}
           onMore={onMore}
         />
       }
@@ -107,10 +111,7 @@ export function ArtifactPage({
           // height); 36 and 44 tie, and the tie takes the larger, the 44 px `xl` (d-072).
           <Grid columns="2" gap="8" data-figma="secondary actions">
             <span data-figma="button · Copy link">
-              <Button size="xl" className={wide} onClick={onCopyLink}>
-                <CopyIcon />
-                Copy link
-              </Button>
+              <CopyLinkButton size="xl" className={wide} status={copyLinkStatus} onClick={onCopyLink} />
             </span>
             <span data-figma="button · Discuss">
               <Button size="xl" className={wide} onClick={onDiscuss}>
