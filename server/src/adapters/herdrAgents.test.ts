@@ -227,6 +227,20 @@ describe('herdr agents', () => {
     expect(!read.ok && read.error.message).toContain('none.sock')
   })
 
+  it('gives badReply, and does not throw, for a herdr ID that a chat or workspace ID cannot hold', async () => {
+    const agent = results['agent.list'].agents[0]
+    for (const reply of [
+      { ...results, 'agent.list': { agents: [{ ...agent, agent_session: null, terminal_id: 'term/1' }] } },
+      { ...results, 'workspace.list': { workspaces: [{ workspace_id: 'w 17', label: 'odd' }] } },
+    ]) {
+      const odd = await startFakeHerdrSocket(reply)
+      const read = await createHerdrAgents({ socket: odd.path, machine, claudeProjects: projects })
+        .listWorkspaces()
+        .finally(() => odd.close())
+      expect(read.ok ? undefined : read.error.reason).toBe('badReply')
+    }
+  })
+
   it('reports a reply of an unknown shape', async () => {
     const odd = await startFakeHerdrSocket({ 'workspace.list': { workspaces: 'none' }, 'agent.list': { agents: [] } })
     const read = await createHerdrAgents({ socket: odd.path, machine, claudeProjects: projects }).listWorkspaces()

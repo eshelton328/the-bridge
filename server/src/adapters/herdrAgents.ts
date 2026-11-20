@@ -7,8 +7,9 @@
 // tells the app to read the list again. herdr's pane IDs stay here: a chat's ID is its
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
+// A herdr ID that the contract's IDs cannot hold makes the reply badReply.
 import { join } from 'node:path'
-import { ChatId, type ChatStatus, type ChatSummary, type MachineId, WorkspaceId } from '@bridge/contract'
+import { ChatId, type ChatStatus, type ChatSummary, LocalIdPart, type MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
@@ -18,7 +19,7 @@ import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
 const WorkspaceList = z.object({
-  workspaces: z.array(z.object({ workspace_id: z.string(), label: z.string() })),
+  workspaces: z.array(z.object({ workspace_id: LocalIdPart, label: z.string() })),
 })
 
 const AgentList = z.object({
@@ -30,9 +31,9 @@ const AgentList = z.object({
       cwd: z.string().nullable().optional(),
       name: z.string().nullable().optional(),
       pane_id: z.string(),
-      terminal_id: z.string(),
+      terminal_id: LocalIdPart,
       terminal_title_stripped: z.string().nullable().optional(),
-      workspace_id: z.string(),
+      workspace_id: LocalIdPart,
     }),
   ),
 })
