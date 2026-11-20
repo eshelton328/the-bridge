@@ -12,9 +12,13 @@ highlighted from `ui.menuHighlight`) and Move to workspace closed.
 
 ## Checks
 
-- Text: pass. Every Figma string shows, the lifted copy's "drift check",
-  "GPT-5.5", "23%" and "Needs you" included; the row under the copy is
-  covered, as Figma draws the copy (146:252) over it (146:117).
+- Text: pass, with four exceptions (`exceptions.json`): the lifted copy's
+  "drift check", "GPT-5.5", "23%" and "Needs you" (146:258, 146:260,
+  146:264, 146:267). The library draws the copy (BottomSheet `lifted`)
+  with no pointer events, so the check's hit test skips it and reads its
+  strings as covered; `WorkspacesPhoneHoldChat.test.tsx` finds the copy on
+  top at its centre. The row under the copy is hidden while the sheet is
+  open, where Figma draws the copy (146:252) over it (146:117).
 - Position: fail, 24 of 38 layers pass: the list (`146:67`), the header
   (`146:68`), Edit (`146:73`), + (`146:75`), omni-brain's header and rows
   with their ⋯, the lifted copy (`146:252`) and its ⋯ (`146:268`), the-bridge's
@@ -69,13 +73,14 @@ highlighted from `ui.menuHighlight`) and Move to workspace closed.
   `data-figma`, so the position check does not measure them.
 - **Header (Phone page header).** As in M01, `PageHeader size="phone"`
   is 40 high against Figma's 44; the header pads 4 under it.
-- **The lifted row is the page's own (Held row lift).** The library has
-  no hold and no row lifted over a sheet's scrim. `HoldArea` opens the
-  actions after 500 ms of a still finger (a move past 8 px cancels it,
-  and the click that ends a hold does not open the chat) and turns off
-  text selection and the callout; the copy is `DragPreview` (cyan border,
-  `surface.overlay`, `lift` shadow) 6 above the row with `zIndex: 1`, so
-  it shows over the scrim as Figma's copy does.
+- **The hold is the page's own (Long press).** The library has no
+  hold. `HoldArea` opens the actions after 500 ms of a still finger (a
+  move past 8 px cancels it, and the click that ends a hold does not open
+  the chat) and turns off text selection and the callout. The copy is the
+  library's: `PhoneChatActions` passes the sheet `lifted`, with the row as
+  the anchor and `LiftedChatRow` (`DragPreview`: cyan border,
+  `surface.overlay`, `lift` shadow, 6 above the row) as the content, and
+  the sheet draws it over its scrim (library 1.0.0-beta.93).
 - **No home indicator.** The app draws no status bar or home indicator
   (d-089), so the side-by-side shows a blank band at the top.
 - **Actions still to build.** Move to workspace opens and closes its

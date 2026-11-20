@@ -1,0 +1,24 @@
+{
+  "missing": [
+    {
+      "text": "drift check",
+      "layers": ["146:258"],
+      "reason": "The held row's copy (146:252) is BottomSheet `lifted` content (library 1.0.0-beta.93), which the library draws with pointer-events none so a tap there reaches the scrim. elementsFromPoint skips such an element, so the text check reads the copy's strings as covered, though the render draws the copy over the scrim (WorkspacesPhoneHoldChat.test.tsx finds the copy on top at its centre). The position check still measures 146:252 and 146:268."
+    },
+    {
+      "text": "GPT-5.5",
+      "layers": ["146:260"],
+      "reason": "Text of the lifted copy (146:252), which the hit test cannot see (pointer-events none); see the drift check entry."
+    },
+    {
+      "text": "23%",
+      "layers": ["146:264"],
+      "reason": "Text of the lifted copy (146:252), which the hit test cannot see (pointer-events none); see the drift check entry."
+    },
+    {
+      "text": "Needs you",
+      "layers": ["146:267"],
+      "reason": "Text of the lifted copy (146:252), which the hit test cannot see (pointer-events none); see the drift check entry."
+    }
+  ]
+}
