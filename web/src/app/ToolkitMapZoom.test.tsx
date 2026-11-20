@@ -4,7 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { userEvent } from 'vitest/browser'
-import { testRender } from '../lib/testRender.ts'
+import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { setViewport } from '../lib/rendering.ts'
@@ -55,6 +55,7 @@ function touch(target: EventTarget, type: string, pointerId: number, x: number, 
 }
 
 afterEach(async () => {
+  await unmountRendered()
   resetAllStores()
   await setViewport(1512, 982)
 })

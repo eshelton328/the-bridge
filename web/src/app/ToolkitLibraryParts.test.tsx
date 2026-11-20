@@ -4,7 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { setViewport } from '../lib/rendering.ts'
-import { testRender } from '../lib/testRender.ts'
+import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
@@ -43,6 +43,7 @@ function size(el: Element) {
 }
 
 afterEach(async () => {
+  await unmountRendered()
   resetAllStores()
   await setViewport(1512, 982)
 })

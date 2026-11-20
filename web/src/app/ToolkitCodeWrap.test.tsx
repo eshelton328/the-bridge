@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
-import { testRender } from '../lib/testRender.ts'
+import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { setViewport } from '../lib/rendering.ts'
@@ -24,6 +24,7 @@ function renderToolkit(state: string) {
 }
 
 afterEach(async () => {
+  await unmountRendered()
   resetAllStores()
   await setViewport(1512, 982)
 })

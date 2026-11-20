@@ -14,6 +14,10 @@ state file and a page are in `screenState.ts` (d-082).
   ResizeObserver sets, wait with `setViewport()` or `afterRendering()`
   (`rendering.ts`): Chromium delivers the observer's notes only in a
   rendering step, which a busy CI runner can delay for seconds.
+- An `afterEach` that changes the viewport first calls
+  `await unmountRendered()` (`testRender.ts`): a resize with the app still
+  mounted lays it all out again. `testSetup.ts` fails such a test
+  (`viewportGuard.test.ts`).
 - A loader names its state type, `readState<ScreenState<Data, Ui>>(…)`
   (`dataSource.ts`). Inferred from a page's states, the type is a union
   of every state's literal type, which made the lint take 23 s and a
