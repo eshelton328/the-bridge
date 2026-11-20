@@ -21,6 +21,14 @@ describe('tool target', () => {
     expect(programsOf('pnpm test >out.log 2>&1; cat out.log')).toBe('pnpm | cat')
   })
 
+  it('reads no word of a heredoc body, after an escaped separator or across a line continuation', () => {
+    expect(programsOf(`cat <<EOF > notes.txt\n${marker}\nEOF\nls`)).toBe('cat | ls')
+    expect(programsOf(`cat <<-'END'\n\t${marker} | x\n\tEND`)).toBe('cat')
+    expect(programsOf(`cat <<EOF\n${marker}`)).toBe('cat')
+    expect(programsOf(`echo a\\|${marker} | wc`)).toBe('echo | wc')
+    expect(programsOf(`git commit -m x \\\n  ${marker} && ls`)).toBe('git | ls')
+  })
+
   it('drops a word that is not a program name, such as a command substitution', () => {
     expect(programsOf('$(cat /home/dev/.token) --flag')).toBe('cat')
     expect(programsOf('"quoted thing" arg')).toBe('')

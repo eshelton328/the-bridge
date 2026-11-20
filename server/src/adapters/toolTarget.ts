@@ -32,6 +32,8 @@ const programName = /^[A-Za-z0-9][A-Za-z0-9._+-]*$/
 const assignment = /^[A-Za-z_][A-Za-z0-9_]*=/
 const prefixes = new Set(['sudo', 'env', 'time', 'nohup', 'exec', 'command', 'builtin'])
 
+/** A heredoc from its marker to its end line (or to the end of the command), whose body is text, not commands. */
+const heredoc = /<<-?[ \t]*(['"]?)([A-Za-z0-9_]+)\1[^\n]*(?:\n[\s\S]*?\n[ \t]*\2[ \t]*(?=\n|$)|[\s\S]*$)/g
 /** A quoted string, which is never a program name and can hold a separator such as "|". */
 const quoted = /'[^']*'|"(?:\\.|[^"\\])*"/g
 /** A redirection, such as "2>&1" or ">>". */
@@ -39,8 +41,12 @@ const redirection = /\d*[<>]+&?\d*-?/g
 
 /** The program names of a shell command line, joined with " | ", such as "git | grep". */
 export function programsOf(command: string): string {
-  // "@" stands for each quoted string: it is not a program name.
-  let line = command.replace(quoted, ' @ ')
+  // A backslash and a newline join two lines; "@" stands for a heredoc, an escaped character and a quoted string.
+  let line = command
+    .replace(/\\\n/g, ' ')
+    .replace(heredoc, ' @ ')
+    .replace(/\\[\s\S]/g, ' @ ')
+    .replace(quoted, ' @ ')
   // A quote that does not close: nothing after it is read.
   const unclosed = line.search(/['"]/)
   if (unclosed >= 0) line = line.slice(0, unclosed)
