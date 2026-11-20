@@ -1,8 +1,8 @@
 // A discussion's entries (or, before the first message, the empty state)
 // and its reply box under them: the part the desktop panel and the tablet
 // page share. A suggestion puts its question in the reply box. The reply box keeps what the owner types in `drafts`, so closing
-// and opening the discussion keeps it; send gives his message to `onSend`, which adds it to the discussion, and
-// empties the box. The box has no attach button: no file flow is designed, and `Composer` cannot draw its attach
+// and opening the discussion keeps it; send gives his message to `onSend`, which adds it to the discussion and
+// empties the box once it is sent; a failed send keeps the draft. The box has no attach button: no file flow is designed, and `Composer` cannot draw its attach
 // button disabled (LIBRARY_GAPS.md, Waiting for a design). The reply box stays at the bottom and the `header` at the
 // top of the panel or page, and only the entries (and `before`) between them scroll (d-107). The entries and the reply
 // box each sit in a library `ChatColumn`, so on a wide screen they keep one readable column in the middle and line
@@ -41,8 +41,12 @@ export type DiscussionThreadProps = {
   drafts?: InboxDrafts | undefined
   /** The phone's empty state: the suggestions one under the other, under their label (M18). */
   stacked?: boolean | undefined
-  /** The owner sent a message from the reply box. */
-  onSend?: ((text: string) => void) | undefined
+  /**
+   * The owner sent a message from the reply box. The box keeps the draft until it returns or resolves true; the
+   * caller empties the box then, as the box is controlled (library `Composer` `onSend`, audit L-3). Without it, the
+   * box empties at once.
+   */
+  onSend?: ((text: string) => boolean | Promise<boolean>) | undefined
   /** Stays at the top while the entries scroll, such as the page's Back or the panel's title. */
   header?: ReactNode
   /** Scrolls above the entries, such as the page's task card. */
@@ -82,9 +86,10 @@ export function DiscussionThread({
             label={discussion.placeholder}
             placeholder={discussion.placeholder}
             {...draftProps(drafts, 'discussion')}
-            onSubmit={(text) => {
-              onSend?.(text)
+            onSend={(text) => {
+              if (onSend !== undefined) return onSend(text)
               drafts?.onChange('discussion', '')
+              return true
             }}
           />
         </ChatColumn>

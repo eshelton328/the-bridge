@@ -63,12 +63,18 @@ export type InboxScreenProps = {
    * what he did to its proposals. The caller merges it into `ui`.
    */
   onUiChange?: ((change: Partial<InboxUi>) => void) | undefined
+  /**
+   * Sends the owner's message from the discussion's reply box. It resolves true once the message is sent, and the
+   * caller adds it to `ui.sent` and empties the box; false keeps the draft (audit L-3). Without it, the screen adds the
+   * message to the discussion and empties the box at once.
+   */
+  onSend?: ((text: string) => Promise<boolean>) | undefined
 }
 
 type InboxLayoutProps = Omit<InboxScreenProps, 'viewport' | 'drafts'> & { layout: Viewport; drafts: InboxDrafts }
 
 function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
-  const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange } = props
+  const { ui, onNavigate, onSelectItem, onBack, onPromptOpenChange, onRemoveOpenChange, onUiChange, onSend } = props
   const data = startView(discussionView(props.data, ui), ui)
   const { discussion } = data
   const desktop = layout === 'desktop'
@@ -137,8 +143,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
     },
   }
   // Send in the discussion's reply box: the message follows its entries (`discussionView`).
-  const send = (text: string) => {
+  const send = (text: string): boolean | Promise<boolean> => {
+    if (onSend !== undefined) return onSend(text)
     onUiChange?.({ sent: [...ui.sent, text] })
+    drafts.onChange('discussion', '')
+    return true
   }
   const closeDiscussion = () => {
     onUiChange?.({ discussOpen: false })
