@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
@@ -133,6 +133,17 @@ const results = {
   },
 }
 
+let appended = 0
+/** Adds a prompt to session-a's file, as Claude Code would. */
+const appendToSessionA = () => {
+  appended += 1
+  appendFileSync(
+    join(projects, '-home-dev-ncc-1701', 'session-a.jsonl'),
+    `\n${JSON.stringify({ type: 'user', uuid: `appended-${String(appended)}`, message: { content: 'Go on.' } })}`,
+  )
+  return Promise.resolve()
+}
+
 let socket: FakeHerdrSocket
 beforeAll(async () => {
   socket = await startFakeHerdrSocket(results)
@@ -158,6 +169,7 @@ describeAgentPort('herdr (recorded socket)', () =>
       socket.push(statusLine('w17:p1', status))
       return Promise.resolve()
     },
+    transcript: { chat: 'bridge-coord', append: appendToSessionA },
     changeLayout: () => {
       socket.push({
         event: 'tab.renamed',
@@ -221,6 +233,7 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
       resumed.push(statusLine('w17:p2', status))
       return Promise.resolve()
     },
+    transcript: { chat: 'bridge-coord 2', append: appendToSessionA },
     changeLayout: () => {
       resumed.push({
         event: 'tab.renamed',
@@ -827,6 +840,28 @@ describe('herdr adapter transcripts', () => {
     expect(JSON.stringify(logger.lines())).not.toContain(secretText)
   })
 
+  it("tells a transcript watcher when the chat's pane stops working, with no write to the file", async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'working',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    let changes = 0
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => (changes += 1),
+      () => undefined,
+    )
+    await watch.ready
+    fake.push(statusLine('w17:p1', 'idle'))
+    for (const end = Date.now() + 5000; changes === 0 && Date.now() < end; ) await new Promise((r) => setTimeout(r, 20))
+    watch.close()
+    await fake.close()
+    expect(changes).toBeGreaterThan(0)
+  })
+
   it('reads no file for a session ID that could leave the projects folder', async () => {
     writeFileSync(
       join(projects, 'escape.jsonl'),
@@ -858,6 +893,36 @@ describe('herdr adapter transcripts', () => {
     const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
     const read = await adapter.readTranscript(ChatId.parse('test-mac/term_1')).finally(() => fake.close())
     expect(read.ok && read.value?.entries.map((e) => e.id)).toEqual(['u1', 't1'])
+  })
+
+  it('tells a watcher of a chat whose session folder is not there yet when the folder and the file come', async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        cwd: '/home/dev/new-project',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-n' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    let changes = 0
+    const ends: string[] = []
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-n'),
+      () => (changes += 1),
+      (error) => ends.push(error.reason),
+    )
+    await watch.ready
+    const later = join(projects, '-home-dev-new-project')
+    mkdirSync(later)
+    await new Promise((r) => setTimeout(r, 100))
+    writeFileSync(
+      join(later, 'session-n.jsonl'),
+      JSON.stringify({ type: 'user', uuid: 'n1', message: { content: 'hi' } }),
+    )
+    for (const end = Date.now() + 5000; changes < 2 && Date.now() < end; ) await new Promise((r) => setTimeout(r, 20))
+    watch.close()
+    await fake.close()
+    expect(changes).toBeGreaterThanOrEqual(2)
+    expect(ends).toEqual([])
   })
 
   it('gives null for a chat of another machine, with no connection', async () => {

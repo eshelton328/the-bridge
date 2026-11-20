@@ -28,6 +28,8 @@ export type ContractSetup = {
   readonly setStatus: (status: 'working' | 'idle') => Promise<void>
   /** Changes the layout of the expected workspace (such as a tab's name), as the owner would in herdr. */
   readonly changeLayout: () => Promise<void>
+  /** A chat that has a transcript (its title), and a function that adds an entry to it, as its agent would. */
+  readonly transcript: { readonly chat: string; readonly append: () => Promise<void> }
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
   readonly unreachable: AgentPort
 }
@@ -107,6 +109,56 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.readTranscript(shell.id)).toEqual({ ok: true, value: { entries: [], earlier: false } })
     })
 
+    it("tells a watcher when a chat's transcript changes, with the new entry in the next read, and nothing after close", async () => {
+      const { port, transcript } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === transcript.chat)
+      if (!chat) throw new Error(`no chat ${transcript.chat}`)
+      const before = await port.readTranscript(chat.id)
+      if (!before.ok || before.value === null) throw new Error('no transcript to watch')
+      let changes = 0
+      const watch = port.watchTranscript(
+        chat.id,
+        () => (changes += 1),
+        (error) => {
+          throw new Error(error.message)
+        },
+      )
+      await watch.ready
+      await transcript.append()
+      await until('the transcript change', () => changes > 0)
+      const after = await port.readTranscript(chat.id)
+      if (!after.ok || after.value === null) throw new Error('no transcript after the change')
+      expect(after.value.entries.length).toBe(before.value.entries.length + 1)
+      watch.close()
+      const closedAt = changes
+      await transcript.append()
+      await new Promise((r) => setTimeout(r, 200))
+      expect(changes).toBe(closedAt)
+    })
+
+    it("tells a transcript watcher when the chat's status changes, as a tool stops running with it", async () => {
+      const { port, expected, setStatus } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === expected.chat)
+      if (!chat) throw new Error(`no chat ${expected.chat}`)
+      let changes = 0
+      const watch = port.watchTranscript(
+        chat.id,
+        () => (changes += 1),
+        (error) => {
+          throw new Error(error.message)
+        },
+      )
+      await watch.ready
+      await setStatus('working')
+      await setStatus('idle')
+      await until('the status change', () => changes > 0)
+      watch.close()
+    })
+
     it('gives no transcript for a chat that the machine does not have', async () => {
       const { port } = await setup()
       for (const id of [`${port.machine}/no-such-chat`, 'another-mac/no-such-chat'])
@@ -127,6 +179,14 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(layout.ok ? undefined : layout.error.reason).toBe('unreachable')
       const transcript = await unreachable.readTranscript(ChatId.parse(`${unreachable.machine}/c1`))
       expect(transcript.ok ? undefined : transcript.error.reason).toBe('unreachable')
+      const watchEnds: string[] = []
+      unreachable.watchTranscript(
+        ChatId.parse(`${unreachable.machine}/c1`),
+        () => undefined,
+        (error) => watchEnds.push(error.reason),
+      )
+      await until('the end of the watch', () => watchEnds.length > 0)
+      expect(watchEnds).toEqual(['unreachable'])
       const ends: string[] = []
       const subscription = unreachable.subscribe(
         () => undefined,

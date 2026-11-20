@@ -24,6 +24,8 @@ not in CI or `pnpm verify`.
   from the screen.
 - `renameTab.ts`: renames the e2e workspace's first tab (`tab.rename`),
   a layout change for the contract suite's `layout.changed` case.
+- `appendTranscript.ts`: adds a prompt to the fake chat's session file,
+  a transcript change for the contract suite's watch case.
 - `fakeAgent.ts`: the fake agent. It writes a Claude Code session file
   (a prompt, a tool call with its result and a reply) where Claude Code
   puts one, prints a fixed script and reports itself
