@@ -252,7 +252,38 @@ describe("a live chat's transcript (slice 3b)", () => {
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
     await userEvent.click(chatRegion('plan the slice').getByRole('button', { name: 'Copy' }))
     await expect.poll(() => written).toEqual(['Looking at the build now.'])
+    // The button says it copied, as a sample reply's does (audit P-4).
+    await expect.element(chatRegion('plan the slice').getByRole('button', { name: 'Copied' })).toBeVisible()
     expect(getReports()).toEqual([])
+  })
+
+  it("reads Copy failed on a live reply's Copy when the clipboard refuses, and reports without its text", async () => {
+    withPlan()
+    const broken = new Error('the clipboard broke')
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation(() => Promise.reject(broken))
+    await tapWorkspaces([756, 1129])
+    await tapChat('plan the slice')
+    const chat = chatRegion('plan the slice')
+    await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    await userEvent.click(chat.getByRole('button', { name: 'Copy' }))
+    await expect.element(chat.getByRole('button', { name: 'Copy failed' })).toBeVisible()
+    expect(getReports().map((r) => r.error)).toEqual([broken])
+    expect(JSON.stringify(getReports().map((r) => [r.error.message, r.error.stack]))).not.toContain('Looking at')
+    // The open ErrorTray shows the clipboard's error alone.
+    const trays = () => [...document.querySelectorAll('aside[aria-label="Error reports"]')]
+    await userEvent.click(page.getByRole('button', { name: '1 error' }))
+    await expect
+      .poll(() =>
+        trays()
+          .map((t) => t.textContent)
+          .join('\n'),
+      )
+      .toContain('the clipboard broke')
+    expect(
+      trays()
+        .map((t) => t.textContent)
+        .join('\n'),
+    ).not.toContain('Looking at')
   })
 
   it('shows a quiet empty line for a Claude chat whose transcript has no entries', async () => {

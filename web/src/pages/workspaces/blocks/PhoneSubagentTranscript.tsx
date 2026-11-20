@@ -19,7 +19,7 @@ import {
 import { css } from '../../../../styled-system/css/index.js'
 import type { Subagent, SubagentTranscriptLayers } from '../types.ts'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import { ChatEntryView } from './ChatEntryView.tsx'
+import { ChatEntryView, type CopyReply } from './ChatEntryView.tsx'
 import { TranscriptTrail } from './TranscriptTrail.tsx'
 
 // The detail slot is a flex column; the view fills it.
@@ -67,6 +67,8 @@ export type PhoneSubagentTranscriptProps = {
   /** The back chevron and Subagents: back to the subagents. */
   onSubagents?: (() => void) | undefined
   layers?: SubagentTranscriptLayers | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
 export function PhoneSubagentTranscript({
@@ -76,6 +78,7 @@ export function PhoneSubagentTranscript({
   onChat,
   onSubagents,
   layers,
+  onCopy,
 }: PhoneSubagentTranscriptProps) {
   const running = item.status.tone === 'running' || item.status.tone === 'working'
   const fill = (text: string) => text.replace('{chat}', chat)
@@ -149,7 +152,7 @@ export function PhoneSubagentTranscript({
                   className={entry.type === 'tool' ? hug : undefined}
                   data-figma={layers?.entries?.[i]}
                 >
-                  <ChatEntryView entry={entry} />
+                  <ChatEntryView entry={entry} onCopy={onCopy} />
                 </div>
               ))}
             </BlockBoundary>

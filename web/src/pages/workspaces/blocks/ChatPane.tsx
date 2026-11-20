@@ -30,7 +30,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
-import { ChatEntryView } from './ChatEntryView.tsx'
+import { ChatEntryView, type CopyReply } from './ChatEntryView.tsx'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
@@ -43,8 +43,6 @@ export type TranscriptWatch = {
   readonly watch: (chat: string) => () => void
   /** Reads `chat`'s transcript again now: the problem line's Retry. */
   readonly retry: (chat: string) => void
-  /** Writes a live reply's text to the clipboard: its Copy button. */
-  readonly copy: (text: string) => void
 }
 
 const body = css({
@@ -130,6 +128,8 @@ type ChatPaneBase = {
   /** A live chat's server chat ID: while the pane shows, `transcripts` reads its transcript (slice 3b). */
   liveChat?: string | undefined
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
   /** The line over the entries, such as "Earlier entries not live yet"; none when not set. */
   earlier?: string | undefined
   /** The line in place of the entries of a read transcript with none, such as "No messages yet"; none when not set. */
@@ -203,6 +203,7 @@ export function ChatPane(props: ChatPaneProps) {
     notLive,
     liveChat,
     transcripts,
+    onCopy,
     earlier,
     empty,
     problem,
@@ -423,7 +424,7 @@ export function ChatPane(props: ChatPaneProps) {
               key={`${entry.type}-${String(i)}`}
               entry={entry}
               figma={figma.entries?.[i]}
-              onCopy={transcripts?.copy}
+              onCopy={onCopy}
             />
           ))}
         </BlockBoundary>

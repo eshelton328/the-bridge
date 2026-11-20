@@ -48,6 +48,7 @@ import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
+import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -68,6 +69,8 @@ export type WorkspacesScreenProps = {
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
 export function WorkspacesScreen({
@@ -79,6 +82,7 @@ export function WorkspacesScreen({
   onSend,
   onRetry,
   transcripts,
+  onCopy,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -124,6 +128,7 @@ export function WorkspacesScreen({
           onNavigate={onNavigate}
           onSend={onSend}
           transcripts={transcripts}
+          onCopy={onCopy}
           change={change}
           draft={draft}
           notice={notice}
@@ -150,6 +155,7 @@ function WorkspacesLayout({
   onNavigate,
   onSend,
   transcripts,
+  onCopy,
   change,
   draft,
   notice,
@@ -191,6 +197,7 @@ function WorkspacesLayout({
         onDraftChange={draft}
         onSend={onSend}
         transcripts={transcripts}
+        onCopy={onCopy}
         notice={notice}
       />
     )
@@ -272,6 +279,7 @@ function WorkspacesLayout({
         <SideChatPanel
           chat={data.sideChat}
           layers={data.layers}
+          onCopy={onCopy}
           onClose={() => {
             change({ sideChatOpen: false })
           }}
@@ -350,6 +358,7 @@ function WorkspacesLayout({
                   toggle={false}
                   onSend={onSend}
                   transcripts={transcripts}
+                  onCopy={onCopy}
                 />
               </SlotBoundary>
             ) : (
@@ -390,6 +399,7 @@ function WorkspacesLayout({
                   }}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
                   transcripts={transcripts}
+                  onCopy={onCopy}
                   rename={rename}
                   above={toast}
                   overlay={dropZone}
@@ -449,6 +459,7 @@ function WorkspacesLayout({
               toggle
               onSend={onSend}
               transcripts={transcripts}
+              onCopy={onCopy}
               notice={notice}
             />
           </SlotBoundary>

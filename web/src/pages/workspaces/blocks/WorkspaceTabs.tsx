@@ -9,6 +9,7 @@ import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-l
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { CopyReply } from './ChatEntryView.tsx'
 import type { TranscriptWatch } from './ChatPane.tsx'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
@@ -25,6 +26,8 @@ export type WorkspaceTabsProps = {
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
   /**
    * The live-unavailable notice (LiveNotice), drawn over the shown workspace's panes; none when not set. Beside the
    * sidebar the sidebar draws it, so the page passes none.
@@ -44,6 +47,7 @@ export function WorkspaceTabs({
   toggle,
   onSend,
   transcripts,
+  onCopy,
   notice,
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
@@ -63,6 +67,7 @@ export function WorkspaceTabs({
       onDraftChange={onDraftChange}
       onSend={onSend}
       transcripts={transcripts}
+      onCopy={onCopy}
     />
   )
   const workbench = (

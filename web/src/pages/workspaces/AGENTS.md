@@ -69,6 +69,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   pane's id, so a switch mounts that chat's own draft.
 - A chat's Send goes to the store's `send` through the library's
   `onSend`; a failed send keeps the draft (`WorkspacesSendDraft.test.tsx`).
+- Every reply's Copy, sample or live, goes through the screen's `onCopy`
+  to `WorkspacesPage`, which copies with `copyText`; the button
+  (`blocks/ReplyCopyButton.tsx`) reads Copied or Copy failed for 2 s. A
+  fault goes to `report()` with the clipboard's error only, never the
+  reply's text (audit P-4, `app/WorkspacesReplyCopy.test.tsx`).
 - The screen lays out by its width (`ViewportFrame`): `data.phone` draws
   `WorkspacesPhone` at a phone's width, and at a tablet's width too with
   `data.tabletList`; every other case draws the desktop layout.
