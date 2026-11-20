@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createQueryClient } from '../lib/queryClient.ts'
 import { installGlobalHandlers } from './globalHandlers.ts'
 import { clearReports, getReports } from './reporter.ts'
 
@@ -39,5 +40,18 @@ describe('installGlobalHandlers', () => {
     target.dispatchEvent(new ErrorEvent('error', { message: 'Script error.' }))
     remove()
     expect(getReports()[0]?.error.message).toBe('Script error.')
+  })
+
+  it('reports a query that fails for good until removed (audit W-7)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const remove = installGlobalHandlers(target)
+    const client = createQueryClient()
+    const failed = Object.assign(new Error('Not found'), { status: 404 })
+    await client.query({ queryKey: ['reported'], queryFn: () => Promise.reject(failed) }).catch(() => undefined)
+    remove()
+    await client
+      .query({ queryKey: ['after'], queryFn: () => Promise.reject(new Error('after removal')), retry: false })
+      .catch(() => undefined)
+    expect(getReports().map((r) => [r.source, r.error])).toEqual([['query', failed]])
   })
 })

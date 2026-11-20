@@ -434,14 +434,43 @@ function noteLayoutMiss(miss: LiveMiss | undefined): void {
   report(new LayoutReadMissError(miss), 'live')
 }
 
-/** Carries a miss through the query client, which knows only thrown errors, to withLiveWorkspaces. */
+/**
+ * The meta of the live reads: their misses are expected and shown in the notice and the status bar, so the query
+ * client does not report them (d-117).
+ */
+const expectedMiss = { expected: true }
+
+/** The HTTP status a miss stands for: its own, or the one its error kind comes with; none for a timeout. */
+function statusOfMiss(miss: LiveMiss): number | undefined {
+  switch (miss.kind) {
+    case 'herdr-unavailable':
+      return 503
+    case 'herdr-bad-reply':
+      return 502
+    case 'internal':
+      return 500
+    case 'timeout':
+      return undefined
+    case 'unreachable':
+    case 'forbidden':
+    case 'status':
+      return miss.status
+  }
+}
+
+/**
+ * Carries a miss through the query client, which knows only thrown errors, to withLiveWorkspaces. Its `status` is
+ * the miss's HTTP status, so the client's shouldRetry tries a 5xx, a 408 or a 429 again as for any query.
+ */
 class LiveMissError extends Error {
   readonly miss: LiveMiss
+  readonly status: number | undefined
 
   constructor(miss: LiveMiss) {
     super(miss.message)
     this.name = 'LiveMissError'
     this.miss = miss
+    this.status = statusOfMiss(miss)
   }
 }
 
@@ -754,7 +783,7 @@ export async function withLiveWorkspaces(
   let response: WorkspacesResponse
   try {
     response = await untilAborted(
-      client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 }),
+      client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0, meta: expectedMiss }),
       signal,
     )
   } catch (thrown) {
@@ -815,6 +844,7 @@ async function layoutsOf(
           queryKey: layoutKey(summary.id),
           queryFn: read(summary.id),
           staleTime: watching > 0 ? Infinity : 0,
+          meta: expectedMiss,
         })
         return [workspace.id, layoutOfTab(layout.tabs)]
       } catch (thrown) {

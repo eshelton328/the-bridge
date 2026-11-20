@@ -2,7 +2,7 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
 import { clearReports, getReports } from '../errors/reporter.ts'
@@ -201,6 +201,16 @@ let viewContainer: Element | undefined
 // Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
 // server, never the one on this machine (liveServerStub.ts).
 stubLiveServer()
+
+// A layout read that a 5xx fails is retried twice by the app client. The retries stay; only their waits (1 s and 2 s)
+// go, so settled() never takes a pause between tries for the end of the reads.
+const queryDefaults = queryClient.getDefaultOptions()
+beforeAll(() => {
+  queryClient.setDefaultOptions({ ...queryDefaults, queries: { ...queryDefaults.queries, retryDelay: 0 } })
+})
+afterAll(() => {
+  queryClient.setDefaultOptions(queryDefaults)
+})
 
 afterEach(async () => {
   await view?.unmount()

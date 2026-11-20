@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { readState, readsLive } from './dataSource.ts'
+import { isNotBuilt, readState, readsLive } from './dataSource.ts'
 
 const states = { first: { n: 1 }, second: { n: 2 } }
 
@@ -97,5 +97,26 @@ describe('readState', () => {
     expect(readsLive({ state: 'second', source: 'live' }, options)).toBe(true)
     expect(readsLive({ state: undefined, source: undefined }, { built: ['live'] })).toBe(false)
     expect(readsLive({ state: undefined, source: 'live' })).toBe(false)
+  })
+})
+
+describe('isNotBuilt (audit W-8)', () => {
+  it('accepts a notBuilt miss with a known source', () => {
+    expect(isNotBuilt({ reason: 'notBuilt', source: 'mock-api' })).toBe(true)
+    const miss = readState(states, { state: undefined, source: 'mock-api' })
+    expect(!miss.ok && isNotBuilt(miss.error)).toBe(import.meta.env.DEV)
+  })
+
+  it('rejects a notBuilt reason with no source, an unknown source or a source that is not a string', () => {
+    expect(isNotBuilt({ reason: 'notBuilt' })).toBe(false)
+    expect(isNotBuilt({ reason: 'notBuilt', source: 'ftp' })).toBe(false)
+    expect(isNotBuilt({ reason: 'notBuilt', source: 3 })).toBe(false)
+  })
+
+  it('rejects the other misses and values that are no miss', () => {
+    expect(isNotBuilt({ reason: 'unknownSource', source: 'ftp' })).toBe(false)
+    expect(isNotBuilt({ reason: 'unknownState', state: 'x' })).toBe(false)
+    expect(isNotBuilt(undefined)).toBe(false)
+    expect(isNotBuilt('notBuilt')).toBe(false)
   })
 })

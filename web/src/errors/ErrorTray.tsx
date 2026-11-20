@@ -36,7 +36,7 @@ export function ErrorTray() {
         {open ? (
           <>
             {reports.map((r) => (
-              <p key={r.at + r.error.message} className={line}>
+              <p key={r.seq} className={line}>
                 {`${r.source} · ${r.route} · ${r.error.message}`}
               </p>
             ))}
