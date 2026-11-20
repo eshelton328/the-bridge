@@ -24,10 +24,16 @@ export function loadDrafts(state: string | undefined): Readonly<Record<string, s
   }
 }
 
-/** Saves `drafts` of `state` for this tab; does nothing when storage is blocked or full. */
+/**
+ * Saves the drafts of `state` that hold text for this tab: the composer text by chat id and the state's name, nothing
+ * else. A chat whose box is empty, as after a send, has no saved draft, and with none left the key goes. Does nothing
+ * when storage is blocked or full.
+ */
 export function saveDrafts(state: string | undefined, drafts: Readonly<Record<string, string>>): void {
+  const kept = Object.fromEntries(Object.entries(drafts).filter(([, text]) => text !== ''))
   try {
-    window.sessionStorage.setItem(storageKey, JSON.stringify({ state: state ?? null, drafts }))
+    if (Object.keys(kept).length === 0) window.sessionStorage.removeItem(storageKey)
+    else window.sessionStorage.setItem(storageKey, JSON.stringify({ state: state ?? null, drafts: kept }))
   } catch {
     // Blocked or full: the drafts stay in memory only.
   }

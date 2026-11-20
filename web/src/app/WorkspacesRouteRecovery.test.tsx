@@ -129,4 +129,16 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     const saved = window.sessionStorage.getItem('bridge/workspaces/drafts') ?? ''
     expect(saved).toContain('almost!')
   })
+
+  it('saves only the composer text by chat id and the state, and drops a draft once it is sent', async () => {
+    view = await renderAt('/workspaces')
+    await page.getByText('bridge themes', { exact: true }).click()
+    await userEvent.type(page.getByRole('textbox'), 'send me')
+    const saved: unknown = JSON.parse(window.sessionStorage.getItem('bridge/workspaces/drafts') ?? 'null')
+    expect(saved).toEqual({ state: null, drafts: { 'bridge-themes': 'send me' } })
+    expect(Object.keys(saved ?? {}).sort()).toEqual(['drafts', 'state'])
+    await page.getByRole('button', { name: 'Send' }).click()
+    await expect.element(page.getByRole('textbox')).toHaveValue('')
+    expect(window.sessionStorage.getItem('bridge/workspaces/drafts')).toBeNull()
+  })
 })
