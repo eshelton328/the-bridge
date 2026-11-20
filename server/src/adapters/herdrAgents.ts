@@ -2,7 +2,8 @@
 // workspace.list, agent.list and pane.list, finds each Claude chat's session
 // file from its agent_session, and reads the model from it. Every pane that
 // is not a Claude or Codex chat is a shell chat; its model is the program
-// it runs, from pane.process_info. It reads only when
+// it runs, from pane.process_info: process names only, never an argument
+// or the terminal title, which can hold a token or a path. It reads only when
 // listWorkspaces is called. subscribe holds one events.subscribe stream
 // open: each chat's status, and the panes and workspaces that come and go;
 // when one comes or goes it opens the stream again for the new panes and
@@ -10,7 +11,7 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { ChatId, type ChatStatus, type ChatSummary, LocalIdPart, type MachineId, WorkspaceId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
@@ -51,7 +52,6 @@ const PaneList = z.object({
       workspace_id: LocalIdPart,
       agent_status: z.string(),
       label: z.string().nullable().optional(),
-      terminal_title_stripped: z.string().nullable().optional(),
     }),
   ),
 })
@@ -62,23 +62,32 @@ const ProcessInfo = z.object({
     shell_pid: z.number().nullable().optional(),
     foreground_process_group_id: z.number().nullable().optional(),
     foreground_processes: z.array(
-      z.object({ pid: z.number(), name: z.string(), cmdline: z.string().nullable().optional() }),
+      z.object({ pid: z.number(), name: z.string(), argv0: z.string().nullable().optional() }),
     ),
   }),
 })
 
 /**
- * The program a shell pane runs: the shell's name when its own process group is in the foreground (no job),
- * else the command line of each foreground process; null when herdr gives no process.
+ * A process's name with no path, no login-shell dash and no argument: the base name of argv0, else herdr's name
+ * when argv0 is empty or holds a space (a program such as Node can write its arguments into argv0), and only
+ * the first word of what remains.
+ */
+const processName = (p: { readonly name: string; readonly argv0?: string | null | undefined }): string => {
+  const argv0 = p.argv0 ?? ''
+  const name = basename(argv0 === '' || /\s/.test(argv0) ? p.name : argv0).replace(/^-/, '')
+  return name.split(/\s/)[0] ?? name
+}
+
+/**
+ * The program a shell pane runs, as process names only, never their arguments: the shell's name when its own
+ * process group is in the foreground (no job), else each foreground process's name, joined with " | "; null when
+ * herdr gives no process.
  */
 function programOf({ process_info: info }: z.infer<typeof ProcessInfo>): string | null {
   const shell = info.foreground_processes.find((p) => p.pid === info.shell_pid)
-  if (shell !== undefined) return shell.name
-  const commands = info.foreground_processes.map((p) => {
-    const line = p.cmdline ?? ''
-    return line === '' ? p.name : line
-  })
-  return commands.length === 0 ? null : commands.join(' | ')
+  if (shell !== undefined) return processName(shell)
+  const names = info.foreground_processes.map(processName)
+  return names.length === 0 ? null : names.join(' | ')
 }
 
 const knownStatus = {
@@ -227,7 +236,8 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     return {
       id: shellIdOf(pane),
       kind: 'shell',
-      title: [pane.terminal_title_stripped, pane.label, program].find((t): t is string => Boolean(t)) ?? 'shell',
+      // Never the terminal title: a shell sets it to the command line or to user@host:path.
+      title: [pane.label, program].find((t): t is string => Boolean(t)) ?? 'shell',
       model: program,
       contextUsed: null,
       status: statusOf(pane.agent_status),
