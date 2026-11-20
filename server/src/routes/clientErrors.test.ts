@@ -57,6 +57,12 @@ describe('POST /api/client-errors', () => {
     expect(logger.lines().filter((e) => e.msg === 'client error')).toHaveLength(0)
   })
 
+  it('does not count a post with another content type, so cross-site forms cannot use up the quota', async () => {
+    const { post } = setup()
+    for (let i = 0; i < 60; i += 1) await post(JSON.stringify(report), { ...local, 'Content-Type': 'text/plain' })
+    expect((await post(JSON.stringify(report))).status).toBe(204)
+  })
+
   it('takes 60 reports a minute, then answers 429 and writes no log line for the rest', async () => {
     const { logger, post } = setup()
     const statuses: number[] = []
