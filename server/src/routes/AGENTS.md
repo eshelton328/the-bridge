@@ -16,8 +16,8 @@ Thin Hono sub-apps, one file for each area, named after the area
   proxy keeps a quiet stream open. A failure in the stream sends one
   `error` event with an `ErrorBody`, never the raw message, and ends it
   (`events.test.ts`, d-115).
-- `POST /api/client-errors` checks the rate limit, then the JSON
-  content type, the size and the contract, and only then logs; a 429
-  writes no log line (`clientErrors.test.ts`, d-115).
+- `POST /api/client-errors` checks the JSON content type, then the rate
+  limit (by the login in lower case), the size and the contract, and only
+  then logs; a 429 writes no log line (`clientErrors.test.ts`, d-115).
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
