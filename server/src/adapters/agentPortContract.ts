@@ -6,8 +6,15 @@ import type { AgentEvent, AgentPort } from '../services/agentPort.ts'
 
 export type ContractSetup = {
   readonly port: AgentPort
-  /** A workspace the adapter must list, and the title of a chat in it. */
-  readonly expected: { readonly workspace: string; readonly chat: string }
+  /**
+   * A workspace the adapter must list, and the title of a chat in it; and a workspace with a shell pane, and the
+   * program that shell runs.
+   */
+  readonly expected: {
+    readonly workspace: string
+    readonly chat: string
+    readonly shell: { readonly workspace: string; readonly program: string }
+  }
   /** Gives the expected chat `status` (`working` or `idle`), as its agent would. */
   readonly setStatus: (status: 'working' | 'idle') => Promise<void>
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
@@ -44,6 +51,16 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       if (!read.ok) throw new Error(read.error.message)
       const workspace = read.value.find((w) => w.label === expected.workspace)
       expect(workspace?.chats.map((c) => c.title)).toContain(expected.chat)
+    })
+
+    it('lists a pane with no Claude or Codex chat as a shell chat, with its program as the model', async () => {
+      const { port, expected } = await setup()
+      const read = await port.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      const workspace = read.value.find((w) => w.label === expected.shell.workspace)
+      const shells = workspace?.chats.filter((c) => c.kind === 'shell') ?? []
+      expect(shells.map((c) => c.model)).toContain(expected.shell.program)
+      for (const shell of shells) expect(shell.contextUsed).toBeNull()
     })
 
     it('says the agents are unreachable when they do not answer, to a read and to a subscriber', async () => {

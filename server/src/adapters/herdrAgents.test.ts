@@ -68,6 +68,39 @@ const results = {
       },
     ],
   },
+  // Every pane, the agents' too: w18:p2 is a shell with no agent.
+  'pane.list': {
+    type: 'pane_list',
+    panes: [
+      { pane_id: 'w17:p1', terminal_id: 'term_1', workspace_id: 'w17', agent: 'claude', agent_status: 'blocked' },
+      { pane_id: 'w17:p2', terminal_id: 'term_2', workspace_id: 'w17', agent: 'codex', agent_status: 'idle' },
+      {
+        pane_id: 'w18:p1',
+        terminal_id: 'term_3',
+        workspace_id: 'w18',
+        agent: 'gemini',
+        agent_status: 'working',
+        terminal_title_stripped: 'gemini',
+      },
+      {
+        pane_id: 'w18:p2',
+        terminal_id: 'term_5',
+        workspace_id: 'w18',
+        agent_status: 'unknown',
+        terminal_title_stripped: 'brain git',
+      },
+    ],
+  },
+  // A shell that runs a job: the foreground group is not the shell's.
+  'pane.process_info': {
+    type: 'pane_process_info',
+    process_info: {
+      pane_id: 'w18:p2',
+      shell_pid: 10,
+      foreground_process_group_id: 11,
+      foreground_processes: [{ pid: 11, name: 'node', argv0: 'pnpm', cmdline: 'pnpm dev' }],
+    },
+  },
 }
 
 let socket: FakeHerdrSocket
@@ -86,7 +119,11 @@ const statusLine = (pane: string, status: string) => ({
 describeAgentPort('herdr (recorded socket)', () =>
   Promise.resolve({
     port: port(),
-    expected: { workspace: 'the-bridge loops', chat: 'bridge-coord' },
+    expected: {
+      workspace: 'the-bridge loops',
+      chat: 'bridge-coord',
+      shell: { workspace: 'phone · shell', program: 'pnpm dev' },
+    },
     setStatus: (status) => {
       socket.push(statusLine('w17:p1', status))
       return Promise.resolve()
@@ -98,6 +135,20 @@ describeAgentPort('herdr (recorded socket)', () =>
 // Two panes that resumed the same Claude session, as `claude --resume` in a second pane gives.
 const resumedTwice = {
   'workspace.list': results['workspace.list'],
+  'pane.list': {
+    type: 'pane_list',
+    panes: [
+      ...['term_1', 'term_4'].map((terminal_id, i) => ({
+        pane_id: `w17:p${String(i + 1)}`,
+        terminal_id,
+        workspace_id: 'w17',
+        agent: 'claude',
+        agent_status: 'idle',
+      })),
+      { pane_id: 'w18:p2', terminal_id: 'term_5', workspace_id: 'w18', agent_status: 'unknown' },
+    ],
+  },
+  'pane.process_info': results['pane.process_info'],
   'agent.list': {
     type: 'agent_list',
     agents: ['term_1', 'term_4'].map((terminal_id, i) => ({
@@ -122,7 +173,11 @@ afterAll(() => resumed.close())
 describeAgentPort('herdr (one session resumed in two panes)', () =>
   Promise.resolve({
     port: createHerdrAgents({ socket: resumed.path, machine, log, claudeProjects: projects }),
-    expected: { workspace: 'the-bridge loops', chat: 'bridge-coord 2' },
+    expected: {
+      workspace: 'the-bridge loops',
+      chat: 'bridge-coord 2',
+      shell: { workspace: 'phone · shell', program: 'pnpm dev' },
+    },
     setStatus: (status) => {
       resumed.push(statusLine('w17:p2', status))
       return Promise.resolve()
@@ -199,7 +254,30 @@ describe('herdr agents', () => {
             },
           ],
         },
-        { id: 'test-mac/w18', label: 'phone · shell', chats: [] },
+        {
+          id: 'test-mac/w18',
+          label: 'phone · shell',
+          chats: [
+            {
+              id: 'test-mac/term_3',
+              kind: 'shell',
+              title: 'gemini',
+              model: 'pnpm dev',
+              contextUsed: null,
+              status: 'working',
+              parent: null,
+            },
+            {
+              id: 'test-mac/term_5',
+              kind: 'shell',
+              title: 'brain git',
+              model: 'pnpm dev',
+              contextUsed: null,
+              status: 'unknown',
+              parent: null,
+            },
+          ],
+        },
       ],
     })
   })
@@ -223,7 +301,8 @@ describe('herdr agents', () => {
     const agents = port()
     expect(socket.connections()).toBe(before)
     await agents.listWorkspaces()
-    expect(socket.connections()).toBe(before + 2)
+    // workspace.list, agent.list, pane.list, and one pane.process_info for each of the two shells.
+    expect(socket.connections()).toBe(before + 5)
   })
 
   it('names the socket when herdr does not answer', async () => {
@@ -257,7 +336,7 @@ describe('herdr agents', () => {
     await adapter.listWorkspaces()
     await odd.close()
     if (!first.ok) throw new Error(first.error.message)
-    const chats = first.value.flatMap((w) => w.chats)
+    const chats = first.value[0]?.chats ?? []
     expect(chats.map((c) => c.status)).toEqual(['unknown', 'idle'])
     expect(
       logger
@@ -265,6 +344,40 @@ describe('herdr agents', () => {
         .filter((e) => e.msg === 'herdr status not known')
         .map((e) => e.status),
     ).toEqual(['paused'])
+  })
+
+  it("names a shell with no job by the shell's name", async () => {
+    const idle = await startFakeHerdrSocket({
+      ...results,
+      'pane.process_info': {
+        type: 'pane_process_info',
+        process_info: {
+          pane_id: 'w18:p2',
+          shell_pid: 10,
+          foreground_process_group_id: 10,
+          foreground_processes: [{ pid: 10, name: 'zsh', argv0: 'zsh', argv: ['-zsh'], cmdline: '-zsh' }],
+        },
+      },
+    })
+    const read = await createHerdrAgents({ socket: idle.path, machine, log, claudeProjects: projects })
+      .listWorkspaces()
+      .finally(() => idle.close())
+    const shells = read.ok ? read.value.flatMap((w) => w.chats).filter((c) => c.kind === 'shell') : []
+    expect(shells.map((c) => c.model)).toEqual(['zsh', 'zsh'])
+  })
+
+  it("keeps the list, with no model, when herdr does not give a shell's processes", async () => {
+    const odd = await startFakeHerdrSocket(
+      Object.fromEntries(Object.entries(results).filter(([method]) => method !== 'pane.process_info')),
+    )
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      .listWorkspaces()
+      .finally(() => odd.close())
+    if (!read.ok) throw new Error(read.error.message)
+    expect(read.value[1]?.chats.map((c) => [c.id, c.model])).toEqual([
+      ['test-mac/term_3', null],
+      ['test-mac/term_5', null],
+    ])
   })
 
   it('reports a reply of an unknown shape', async () => {

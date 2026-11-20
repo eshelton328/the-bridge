@@ -1,12 +1,12 @@
 // The E2E suite's global setup: a separate herdr session (never the owner's),
 // a workspace in it and the fake agent in that workspace's pane, in a
 // temporary folder, and a second fake chat with no session whose status
-// the tests set. It gives the tests the socket, the Claude projects folder
+// the tests set, and an idle shell pane. It gives the tests the socket, the Claude projects folder
 // and both chats, and stops and deletes the session after them.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
 import { mkdtempSync, realpathSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import type { TestProject } from 'vitest/node'
 import { z } from 'zod'
 
@@ -17,6 +17,8 @@ declare module 'vitest' {
     fakeChat: { workspace: string; title: string }
     /** The fake chat with no session, whose status a test sets, and its herdr pane (reportAgent.ts). */
     statusChat: { title: string; pane: string }
+    /** The workspace of the idle shell pane, and the shell it runs (the caller's login shell). */
+    shellChat: { workspace: string; program: string }
   }
 }
 
@@ -70,10 +72,13 @@ export default async function setup(project: TestProject) {
     .pane.pane_id
   herdr('pane', 'run', statusPane, ['node', fakeAgent, claudeProjects, '-', statusTitle].map(shellWord).join(' '))
   await until('the status chat show in herdr', () => herdr('agent', 'list').includes(statusTitle))
+  // A shell pane with no job, which the adapter lists as a shell chat named by its shell.
+  Split.parse(JSON.parse(herdr('pane', 'split', statusPane, '--direction', 'down', '--no-focus')))
   project.provide('herdrSocket', herdrSocket)
   project.provide('claudeProjects', claudeProjects)
   project.provide('fakeChat', { workspace, title })
   project.provide('statusChat', { title: statusTitle, pane: statusPane })
+  project.provide('shellChat', { workspace, program: basename(process.env.SHELL ?? 'zsh') })
   return () => {
     try {
       herdr('server', 'stop')

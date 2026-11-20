@@ -15,7 +15,11 @@ const port = () =>
 describeAgentPort('herdr (real session)', () =>
   Promise.resolve({
     port: port(),
-    expected: { workspace: inject('fakeChat').workspace, chat: inject('statusChat').title },
+    expected: {
+      workspace: inject('fakeChat').workspace,
+      chat: inject('statusChat').title,
+      shell: inject('shellChat'),
+    },
     setStatus: reportAgent,
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,

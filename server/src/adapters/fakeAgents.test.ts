@@ -9,7 +9,7 @@ describeAgentPort('fake', () => {
   const port = createFakeAgents(machine)
   return Promise.resolve({
     port,
-    expected: { workspace: 'omni-brain', chat: 'drift check' },
+    expected: { workspace: 'omni-brain', chat: 'drift check', shell: { workspace: 'omni', program: 'zsh' } },
     setStatus: (status) => {
       port.setStatus(ChatId.parse('test-mac/drift-check'), status)
       return Promise.resolve()
