@@ -272,7 +272,7 @@ export function WorkspacesPhone({
           detail={
             <PhoneChat
               pane={chat}
-              workspace={data.workspaces.find((w) => w.id === data.current)?.label ?? data.current}
+              workspace={data.workspaces.find((w) => w.id === data.current)?.label ?? data.current ?? ''}
               contextLabel={data.sidebar?.contextLabel ?? ''}
               backLabel={text.back ?? text.title}
               notice={notice}

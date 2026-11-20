@@ -328,7 +328,7 @@ function WorkspacesLayout({
             ) : (
               <MainChat
                 pane={chat}
-                workspace={current?.label ?? shown.current}
+                workspace={current?.label ?? shown.current ?? ''}
                 contextLabel={data.sidebar.contextLabel}
                 skills={{
                   label: data.skillsLabel,

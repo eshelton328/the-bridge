@@ -7,8 +7,8 @@
 // change that a tab switch, a resize or a closed pane makes.
 import type { SplitSizes, WorkbenchPane, WorkspaceLayout, WorkspacesData, WorkspacesUi } from '../types.ts'
 
-/** The workspace whose tab is selected: the one the owner picked, else the state's. */
-export const shownWorkspace = (data: WorkspacesData, ui: WorkspacesUi): string => ui.workspace ?? data.current
+/** The workspace whose tab is selected: the one the owner picked, else the state's; null when there are none. */
+export const shownWorkspace = (data: WorkspacesData, ui: WorkspacesUi): string | null => ui.workspace ?? data.current
 
 /** The sizes the shown split has now: its handles' sizes with the dragged handle's (D14) over them. */
 const liveSizes = (data: WorkspacesData, ui: WorkspacesUi, sizes: SplitSizes | undefined): SplitSizes | undefined =>
@@ -16,8 +16,12 @@ const liveSizes = (data: WorkspacesData, ui: WorkspacesUi, sizes: SplitSizes | u
     ? { ...sizes, [ui.resize.part]: ui.resize.sizes }
     : sizes
 
-/** The layout of `workspace`: the saved one, else the state's own for `data.current`, else its last chat alone. */
-function layoutOf(data: WorkspacesData, ui: WorkspacesUi, workspace: string): WorkspaceLayout {
+/**
+ * The layout of `workspace`: the saved one, else the state's own for `data.current`, else its last chat alone. With
+ * no workspace (`null`, an empty live list) it has no panes.
+ */
+function layoutOf(data: WorkspacesData, ui: WorkspacesUi, workspace: string | null): WorkspaceLayout {
+  if (workspace === null) return { panes: [] }
   const saved = ui.layouts?.[workspace]
   if (saved !== undefined) return saved
   if (workspace === data.current) {
@@ -49,9 +53,10 @@ export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: Works
   })
   const own = shown === data.current && panes.length === data.panes.length
   const label = data.workspaces.find((w) => w.id === shown)?.label ?? shown
-  const summary = own
-    ? data.status.summary
-    : `${label} · ${String(panes.length)} ${panes.length === 1 ? 'pane' : 'panes'}`
+  const summary =
+    own || label === null
+      ? data.status.summary
+      : `${label} · ${String(panes.length)} ${panes.length === 1 ? 'pane' : 'panes'}`
   const { split, ...rest } = data
   const viewData = { ...rest, current: shown, panes, status: { ...data.status, summary } }
   return {
@@ -78,7 +83,7 @@ export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): 
   const focusedPane = target.focusedPane ?? target.panes[0]
   return {
     workspace: next,
-    layouts: { ...ui.layouts, [shown]: saved },
+    layouts: shown === null ? ui.layouts : { ...ui.layouts, [shown]: saved },
     focusedPane: focusedPane ?? ui.focusedPane,
     sideChatOpen: target.sideChatOpen ?? false,
     menuFor: null,
@@ -92,6 +97,7 @@ export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): 
 /** The ui change of a handle of the shown split resized: the shown workspace's layout keeps the sizes. */
 export function resizeShown(data: WorkspacesData, ui: WorkspacesUi, splitSizes: SplitSizes): Partial<WorkspacesUi> {
   const shown = shownWorkspace(data, ui)
+  if (shown === null) return {}
   return { layouts: { ...ui.layouts, [shown]: { ...layoutOf(data, ui, shown), splitSizes } } }
 }
 
@@ -101,6 +107,7 @@ export function resizeShown(data: WorkspacesData, ui: WorkspacesUi, splitSizes: 
  */
 export function closeShownPane(data: WorkspacesData, ui: WorkspacesUi, pane: string): Partial<WorkspacesUi> {
   const shown = shownWorkspace(data, ui)
+  if (shown === null) return {}
   const layout = layoutOf(data, ui, shown)
   const panes = layout.panes.filter((id) => id !== pane)
   const focusedPane = ui.focusedPane === pane ? panes[0] : ui.focusedPane

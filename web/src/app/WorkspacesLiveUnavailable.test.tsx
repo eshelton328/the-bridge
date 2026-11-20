@@ -88,4 +88,14 @@ describe('the live Workspaces page on the phone', () => {
     await expect.element(page.getByText('release notes')).not.toBeInTheDocument()
     await expect.element(page.getByText('Live data unavailable — showing sample data')).not.toBeInTheDocument()
   })
+
+  it('shows an empty list, with no sample workspace and no notice, when the server has no workspaces (P-3)', async () => {
+    answer(JSON.stringify({ machine: 'mac-mini', workspaces: [] }), 200)
+    await openLive()
+    await expect.element(page.getByRole('heading', { name: 'Workspaces' })).toBeVisible()
+    await expect.element(page.getByText('release notes')).not.toBeInTheDocument()
+    await expect.element(page.getByText('omni-brain')).not.toBeInTheDocument()
+    await expect.element(page.getByText('This page failed to load')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Live data unavailable — showing sample data')).not.toBeInTheDocument()
+  })
 })

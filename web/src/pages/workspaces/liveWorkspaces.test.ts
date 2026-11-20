@@ -2,13 +2,23 @@
 // with the page's state files, so the mocks are the backend's expected output.
 import { WorkspacesResponse } from '@bridge/contract'
 import { QueryClient } from '@tanstack/react-query'
-import { err, ok } from '@bridge/shared'
+import { err, ok, type Result } from '@bridge/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports } from '../../errors/reporter.ts'
+import { checkState } from '../../lib/screenState.ts'
 import { workspacesHome } from './home.ts'
-import { fetchWorkspaces, modelLabel, toWorkspaces, watchLiveWorkspaces, withLiveWorkspaces } from './liveWorkspaces.ts'
+import {
+  fetchWorkspaces,
+  type LiveMiss,
+  liveReadTimeoutMs,
+  modelLabel,
+  toWorkspaces,
+  watchLiveWorkspaces,
+  withLiveWorkspaces,
+} from './liveWorkspaces.ts'
 import { sideChat } from './states/sideChat.ts'
 import { workbench } from './states/workbench.ts'
+import { WorkspacesState } from './types.ts'
 
 const chat = (local: string, rest: Record<string, unknown>) => ({
   id: `mac-mini/${local}`,
@@ -96,6 +106,8 @@ const response = WorkspacesResponse.parse({
 afterEach(() => {
   clearReports()
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+  vi.useRealTimers()
 })
 
 describe('the live mapper', () => {
@@ -464,11 +476,11 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
 
   it('gives unreachable for an HTML 502 or 503, with the X-Request-Id header when it has one', async () => {
     answer('<html><body>Bad Gateway</body></html>', 502)
-    expect(await fetchWorkspaces()).toEqual(
+    expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
       err({ kind: 'unreachable', status: 502, requestId: undefined, message: 'the server answered 502' }),
     )
     answer('<html><body>Service Unavailable</body></html>', 503, 'r-7')
-    expect(await fetchWorkspaces()).toEqual(
+    expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
       err({ kind: 'unreachable', status: 503, requestId: 'r-7', message: 'the server answered 503 (request r-7)' }),
     )
   })
@@ -483,7 +495,9 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
     expect(state.data.liveNotice?.description).toBe(
       'Herdr is not available on the server (request r-42). Start it, then reload.',
     )
-    expect(await fetchWorkspaces()).toMatchObject({ error: { kind: 'herdr-unavailable', requestId: 'r-42' } })
+    expect(await fetchWorkspaces(new AbortController().signal)).toMatchObject({
+      error: { kind: 'herdr-unavailable', requestId: 'r-42' },
+    })
   })
 
   it('gives status with the kind for each other kind of the contract', async () => {
@@ -495,7 +509,7 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
     ]
     for (const { status, kind, more } of bodies) {
       answer(errorBody(kind, more), status)
-      expect(await fetchWorkspaces()).toMatchObject({
+      expect(await fetchWorkspaces(new AbortController().signal)).toMatchObject({
         error: { kind: 'status', status, errorKind: kind, requestId: 'r-42' },
       })
     }
@@ -503,7 +517,7 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
 
   it("drops an error body's reason", async () => {
     answer(errorBody('herdr-unavailable', { reason: 'connect ENOENT herdr.sock' }), 503)
-    const answered = await fetchWorkspaces()
+    const answered = await fetchWorkspaces(new AbortController().signal)
     expect(answered).toMatchObject({
       error: { message: 'the server answered 503: herdr is not running (herdr-unavailable, request r-42)' },
     })
@@ -512,7 +526,7 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
 
   it('names only the status and request ID of a JSON body that is not an error body', async () => {
     answer(JSON.stringify({ error: 'herdr is not running' }), 500, 'r-9')
-    expect(await fetchWorkspaces()).toEqual(
+    expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
       err({
         kind: 'status',
         status: 500,
@@ -522,14 +536,14 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
       }),
     )
     answer(JSON.stringify({ error: { kind: 'unknown-kind', message: 'x', requestId: 'r-10' } }), 500)
-    expect(await fetchWorkspaces()).toMatchObject({
+    expect(await fetchWorkspaces(new AbortController().signal)).toMatchObject({
       error: { kind: 'status', errorKind: undefined, message: 'the server answered 500' },
     })
   })
 
   it('gives refused for a 403, as the owner check sends', async () => {
     answer(errorBody('forbidden', { message: 'not the owner' }), 403)
-    expect(await fetchWorkspaces()).toEqual(
+    expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
       err({
         kind: 'refused',
         status: 403,
@@ -544,7 +558,7 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
       'fetch',
       vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))),
     )
-    expect(await fetchWorkspaces()).toEqual(
+    expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
       err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' }),
     )
   })
@@ -561,7 +575,7 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
         'fetch',
         vi.fn(() => Promise.resolve(new Response(dropped(), { status }))),
       )
-      expect(await fetchWorkspaces()).toEqual(
+      expect(await fetchWorkspaces(new AbortController().signal)).toEqual(
         err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' }),
       )
     }
@@ -569,11 +583,130 @@ describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
 
   it('throws, not a miss, when a 200 reply is not JSON', async () => {
     answer('<html>ok</html>', 200)
-    await expect(fetchWorkspaces()).rejects.toThrow(SyntaxError)
+    await expect(fetchWorkspaces(new AbortController().signal)).rejects.toThrow(SyntaxError)
   })
 
   it('throws, not a miss, when a 200 reply does not match the contract', async () => {
     answer(JSON.stringify({ machine: 'mac-mini', workspaces: 'none' }), 200)
-    await expect(fetchWorkspaces()).rejects.toThrow()
+    await expect(fetchWorkspaces(new AbortController().signal)).rejects.toThrow()
+  })
+})
+
+describe('a live read that never settles (W-3)', () => {
+  const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+  /** A server that takes the request and never answers: fetch settles only when its signal aborts, as a real one. */
+  function silentServer() {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_input: RequestInfo | URL, init?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              const reason: unknown = init.signal?.reason
+              reject(reason instanceof Error ? reason : new Error('aborted'))
+            })
+          }),
+      ),
+    )
+  }
+
+  /**
+   * AbortSignal.timeout runs on the browser's own clock, which fake timers do not move; this one aborts with the
+   * same TimeoutError from a setTimeout that they do.
+   */
+  function fakeTimeouts() {
+    vi.useFakeTimers()
+    vi.spyOn(AbortSignal, 'timeout').mockImplementation((ms) => {
+      const controller = new AbortController()
+      setTimeout(() => {
+        controller.abort(new DOMException('The operation timed out.', 'TimeoutError'))
+      }, ms)
+      return controller.signal
+    })
+  }
+
+  it('waits 8 s', () => {
+    expect(liveReadTimeoutMs).toBe(8000)
+  })
+
+  it('shows the sample data with the timeout notice after 8 s, and not before', async () => {
+    silentServer()
+    fakeTimeouts()
+    let done = false
+    const loading = withLiveWorkspaces(workspacesHome, { client: client() }).finally(() => {
+      done = true
+    })
+    await vi.advanceTimersByTimeAsync(liveReadTimeoutMs - 1)
+    expect(done).toBe(false)
+    await vi.advanceTimersByTimeAsync(1)
+    const state = await loading
+    expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
+    expect(state.data.liveNotice).toEqual({
+      title: 'Live data unavailable — showing sample data',
+      description: 'The-bridge server took more than 8 seconds to answer. Check that it is not stuck, then reload.',
+    })
+    expect(state.data.status.alert).toBe(
+      'Live data is not available (the server did not answer within 8 s); the page shows mock data.',
+    )
+    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
+  })
+
+  it('stops the read when the router aborts the load, with no notice and nothing reported', async () => {
+    silentServer()
+    fakeTimeouts()
+    const leave = new AbortController()
+    const loading = withLiveWorkspaces(workspacesHome, { client: client(), signal: leave.signal })
+    const settled = expect(loading).rejects.toMatchObject({ name: 'AbortError' })
+    await vi.advanceTimersByTimeAsync(100)
+    leave.abort()
+    await settled
+    expect(getReports()).toEqual([])
+  })
+
+  it('keeps one read for loads that abort each other, as a burst of events reloads the page', async () => {
+    let answer: ((value: Result<WorkspacesResponse, LiveMiss>) => void) | undefined
+    const reads: AbortSignal[] = []
+    const fetch = (read: AbortSignal) =>
+      new Promise<Result<WorkspacesResponse, LiveMiss>>((resolve) => {
+        reads.push(read)
+        answer = resolve
+      })
+    const queries = client()
+    const first = new AbortController()
+    const firstLoad = withLiveWorkspaces(workspacesHome, { client: queries, fetch, signal: first.signal })
+    const firstEnded = expect(firstLoad).rejects.toMatchObject({ name: 'AbortError' })
+    first.abort()
+    await firstEnded
+    const secondLoad = withLiveWorkspaces(workspacesHome, {
+      client: queries,
+      fetch,
+      signal: new AbortController().signal,
+    })
+    answer?.(ok(response))
+    const state = await secondLoad
+    expect(reads).toHaveLength(1)
+    expect(reads[0]?.aborted).toBe(false)
+    expect(state.data.workspaces).toEqual(toWorkspaces(response))
+  })
+})
+
+describe('an empty live list (P-3)', () => {
+  const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const none = WorkspacesResponse.parse({ machine: 'mac-mini', workspaces: [] })
+
+  it('shows no workspace, not a sample one, and passes the page schema', async () => {
+    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: () => Promise.resolve(ok(none)) })
+    expect(state.data.workspaces).toEqual([])
+    expect(state.data.current).toBeNull()
+    expect(state.data.liveNotice).toBeUndefined()
+    expect(checkState(WorkspacesState, state).ok).toBe(true)
+  })
+
+  it('has a page schema that refuses a current naming no workspace, as the sample omni-brain with an empty list', () => {
+    const stale = { ...workspacesHome, data: { ...workspacesHome.data, workspaces: [] } }
+    expect(checkState(WorkspacesState, stale).ok).toBe(false)
+    const unknown = { ...workspacesHome, data: { ...workspacesHome.data, current: 'not-a-workspace' } }
+    expect(checkState(WorkspacesState, unknown).ok).toBe(false)
   })
 })
