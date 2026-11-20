@@ -12,7 +12,7 @@
 export type Box = { readonly top: number; readonly right: number; readonly bottom: number; readonly left: number }
 
 /** The parts the tray must never cover. */
-export const keepClearSelector = '.composer__root, [role="alert"]'
+const keepClearSelector = '.composer__root, [role="alert"]'
 
 /** The tray's distance from the window's edges at rest, in px: the `12` of its CSS. */
 export const trayInset = 12
