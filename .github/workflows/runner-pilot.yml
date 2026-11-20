@@ -37,7 +37,8 @@ jobs:
           PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pnpm install --frozen-lockfile
       - run: pnpm codegen
-      - run: pnpm test:unit
+      # Two CPUs for each worker, as on a 2-vCPU GitHub runner with one worker.
+      - run: pnpm test:unit --maxWorkers=4
 
   pilot-test-stories:
     name: pilot test-stories
