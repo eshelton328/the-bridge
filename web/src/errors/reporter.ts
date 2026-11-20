@@ -4,7 +4,14 @@
 // sink: the console in development today, a server or Sentry later.
 import { toError } from './appError.ts'
 
-export type ErrorSource = 'root-caught' | 'root-uncaught' | 'root-recoverable' | 'window' | 'rejection' | 'handler'
+export type ErrorSource =
+  | 'root-caught'
+  | 'root-uncaught'
+  | 'root-recoverable'
+  | 'window'
+  | 'rejection'
+  | 'handler'
+  | 'shell'
 
 export type ErrorReport = {
   readonly error: Error
