@@ -24,7 +24,7 @@ const terminal: LogSink = {
 }
 const log = createLogger(teeSinks(dailyFiles(logDir), terminal), logLevel).child({ machine })
 handleProcessErrors(process, log)
-const agents = createHerdrAgents({ socket: herdrSocket, machine, claudeProjects })
+const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects })
 const server = serve({ fetch: createApp({ agents, owner, log }).fetch, port, hostname: '127.0.0.1' }, (info) => {
   log.info('server started', { port: info.port })
 })

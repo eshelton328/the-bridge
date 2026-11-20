@@ -22,6 +22,7 @@ const logMessages = [
   'route error',
   'event stream error',
   'event stream ended',
+  'herdr status not known',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

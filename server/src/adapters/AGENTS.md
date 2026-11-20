@@ -14,3 +14,6 @@ client of a socket or a file sits beside them.
   real herdr session. A new behaviour of a port goes into the suite, not
   into one adapter's test.
 - Tests here use a fake socket, never a real herdr.
+- A herdr reply that the contract cannot hold is `badReply`, never a
+  throw; a status herdr adds later is the chat's `unknown`, logged once
+  (`herdrAgents.test.ts`, audit S-2 and S-3).

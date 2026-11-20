@@ -4,11 +4,13 @@ import { MachineId } from '@bridge/contract'
 import { describe, expect, inject, it } from 'vitest'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
+import { memoryLogger } from '../server/src/logger.ts'
 import { reportAgent } from './reportAgent.ts'
 
 const machine = MachineId.parse('e2e-mac')
+const { log } = memoryLogger()
 const port = () =>
-  createHerdrAgents({ socket: inject('herdrSocket'), machine, claudeProjects: inject('claudeProjects') })
+  createHerdrAgents({ socket: inject('herdrSocket'), machine, log, claudeProjects: inject('claudeProjects') })
 
 describeAgentPort('herdr (real session)', () =>
   Promise.resolve({
@@ -18,6 +20,7 @@ describeAgentPort('herdr (real session)', () =>
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,
       machine,
+      log,
       claudeProjects: inject('claudeProjects'),
     }),
   }),
