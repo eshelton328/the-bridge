@@ -15,7 +15,7 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
-import { type FSWatcher, watch } from 'node:fs'
+import { existsSync, type FSWatcher, watch } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import {
   ChatId,
@@ -484,32 +484,47 @@ export function createHerdrAgents({
       const failed = () => {
         end({ reason: 'unreachable', message: 'transcript watch failed' })
       }
+      let session: string | undefined
+      let onFile = false
       /**
-       * Watches the session file's folder, filtered to the file, which can come later. For a chat whose folder is
-       * not there yet, watches the projects folder until it comes.
+       * Watches the session file itself once it is there. On macOS a folder watch (FSEvents) can lose a write while
+       * it starts, and a file watch (kqueue) cannot. Until the file is there, a watch of its folder, or of the
+       * projects folder until the folder is there, and each status change of the chat look for it again; when it
+       * comes, `tell` makes the reader read it.
        */
-      const watchFile = (path: string) => {
+      const attach = (told: boolean) => {
+        if (over || onFile || session === undefined) return
+        const path = session
         const folder = dirname(path)
+        // What the watch waits for: the file, or its folder when the folder is not there yet.
+        let awaited = path
+        watcher?.close()
+        watcher = undefined
         try {
-          watcher = watchFs(folder, (_, name) => {
-            if (name === basename(path)) tell()
-          })
-          watcher.on('error', failed)
-          return
-        } catch {
-          // No folder yet.
-        }
-        try {
-          watcher = watchFs(dirname(folder), (_, name) => {
-            if (over || name !== basename(folder)) return
-            watcher?.close()
-            watchFile(path)
-            tell()
-          })
+          if (existsSync(path)) {
+            watcher = watchFs(path, tell)
+            onFile = true
+          } else if (existsSync(folder)) {
+            watcher = watchFs(folder, (_, name) => {
+              if (name === basename(path)) attach(true)
+            })
+          } else {
+            awaited = folder
+            watcher = watchFs(dirname(folder), (_, name) => {
+              if (name === basename(folder)) attach(true)
+            })
+          }
           watcher.on('error', failed)
         } catch {
           failed()
+          return
         }
+        if (onFile) {
+          if (told) tell()
+          return
+        }
+        // What the watch waits for can come between the check and the watch.
+        if (existsSync(awaited)) attach(true)
       }
       const ready = locate(chat).then(async (located) => {
         if (over) return
@@ -520,14 +535,17 @@ export function createHerdrAgents({
         const found = located.value
         if (found === null) return
         const { path, pane } = found
-        if (path !== undefined) watchFile(path)
+        session = path
+        attach(false)
         if (pane === undefined) return
         // A tool stops running when its chat stops working, which can come with no write to the session file.
         await new Promise<void>((started) => {
           stream = herdrSubscribe(socket, [{ type: 'pane.agent_status_changed', pane_id: pane }], {
             onStart: started,
             onEvent: (line) => {
-              if (StatusChanged.safeParse(line).success) tell()
+              if (!StatusChanged.safeParse(line).success) return
+              attach(true)
+              tell()
             },
             onEnd: (failure) => {
               started()

@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, statSync, watch, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
@@ -903,26 +903,74 @@ describe('herdr adapter transcripts', () => {
       }),
     )
     const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
-    let changes = 0
-    const ends: string[] = []
-    const watch = adapter.watchTranscript(
-      ChatId.parse('test-mac/session-n'),
-      () => (changes += 1),
-      (error) => ends.push(error.reason),
-    )
-    await watch.ready
     const later = join(projects, '-home-dev-new-project')
-    mkdirSync(later)
-    await new Promise((r) => setTimeout(r, 100))
-    writeFileSync(
-      join(later, 'session-n.jsonl'),
-      JSON.stringify({ type: 'user', uuid: 'n1', message: { content: 'hi' } }),
-    )
-    for (const end = Date.now() + 5000; changes < 2 && Date.now() < end; ) await new Promise((r) => setTimeout(r, 20))
-    watch.close()
+    const session = join(later, 'session-n.jsonl')
+    const ends: string[] = []
+    // A change that the watcher can read (the file is there when it is told), then a change for a write to the
+    // file, which only a watch of the new folder sees.
+    const told = new Promise<void>((resolve) => {
+      let appended = false
+      const watch = adapter.watchTranscript(
+        ChatId.parse('test-mac/session-n'),
+        () => {
+          if (!existsSync(session)) return
+          if (appended) {
+            watch.close()
+            resolve()
+            return
+          }
+          appended = true
+          appendFileSync(session, `\n${JSON.stringify({ type: 'user', uuid: 'n2', message: { content: 'more' } })}`)
+        },
+        (error) => ends.push(error.reason),
+      )
+      void watch.ready.then(() => {
+        // Claude Code makes the folder and the file at once, before the watch of the projects folder can tell.
+        mkdirSync(later)
+        writeFileSync(session, JSON.stringify({ type: 'user', uuid: 'n1', message: { content: 'hi' } }))
+        // The chat starts to work as it writes; that status change also makes the watch look for the file.
+        fake.push(statusLine('w17:p1', 'working'))
+      })
+    })
+    await told
     await fake.close()
-    expect(changes).toBeGreaterThanOrEqual(2)
     expect(ends).toEqual([])
+  })
+
+  it('loses no write when a folder watch loses its events, as a new one can on macOS', async () => {
+    const session = join(folder, 'session-w.jsonl')
+    writeFileSync(session, JSON.stringify({ type: 'user', uuid: 'w1', message: { content: 'hi' } }))
+    // A watch whose folder watches tell nothing, as a macOS folder watch can as it starts; file watches tell.
+    const folderDeaf = (path: string, listener: (event: string, name: string | null) => void) =>
+      watch(path, (event, name) => {
+        if (!statSync(path).isDirectory()) listener(event, name)
+      })
+    const fake = await startFakeHerdrSocket(
+      withAgent({ agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-w' } }),
+    )
+    const adapter = createHerdrAgents({
+      socket: fake.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      watch: folderDeaf,
+    })
+    const told = new Promise<void>((resolve) => {
+      const watch = adapter.watchTranscript(
+        ChatId.parse('test-mac/session-w'),
+        () => {
+          watch.close()
+          resolve()
+        },
+        () => undefined,
+      )
+      void watch.ready.then(() => {
+        appendFileSync(session, `\n${JSON.stringify({ type: 'user', uuid: 'w2', message: { content: 'more' } })}`)
+      })
+    })
+    await told
+    await fake.close()
   })
 
   it('gives null for a chat of another machine, with no connection', async () => {
