@@ -158,7 +158,7 @@ describe('the live mapper', () => {
     expect(toWorkspaces(fork)[0]?.count).toBe(1)
   })
 
-  it('gives a shell row "shell · <program>" and no context meter', () => {
+  it('gives a shell row "shell · <program>" ("shell" with no program) and no context meter', () => {
     const shells = WorkspacesResponse.parse({
       machine: 'mac-mini',
       workspaces: [
@@ -168,6 +168,7 @@ describe('the live mapper', () => {
           chats: [
             chat('dev', { kind: 'shell', title: 'dev server', model: 'pnpm dev', contextUsed: 0.3, status: 'working' }),
             chat('sh', { kind: 'shell', title: 'a shell', model: null, status: 'idle' }),
+            chat('pipe', { kind: 'shell', title: 'logs', model: 'tail -f a.log | grep err', status: 'idle' }),
           ],
         },
       ],
@@ -181,6 +182,13 @@ describe('the live mapper', () => {
         status: { label: 'Running', tone: 'running' },
       },
       { id: 'sh', kind: 'shell', title: 'a shell', model: 'shell', status: { label: 'Idle', tone: 'idle' } },
+      {
+        id: 'pipe',
+        kind: 'shell',
+        title: 'logs',
+        model: 'shell · tail -f a.log | grep err',
+        status: { label: 'Idle', tone: 'idle' },
+      },
     ])
   })
 
