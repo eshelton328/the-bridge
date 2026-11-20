@@ -44,16 +44,26 @@ export const buildRecord = z.strictObject({
 
 export type BuildRecord = z.infer<typeof buildRecord>
 
+/** The value of `text` as JSON, or the parse error for text that is not JSON. */
+function jsonOf(
+  text: string,
+): { readonly ok: true; readonly value: unknown } | { readonly ok: false; readonly error: unknown } {
+  try {
+    const value: unknown = JSON.parse(text)
+    return { ok: true, value }
+  } catch (error) {
+    return { ok: false, error }
+  }
+}
+
 /** The first JSON object in a reply, which may hold prose or a code fence around it. */
 export function firstObject(reply: string): unknown {
   for (let i = reply.indexOf('{'); i !== -1; i = reply.indexOf('{', i + 1)) {
     for (let j = reply.lastIndexOf('}'); j > i; j = reply.lastIndexOf('}', j - 1)) {
-      try {
-        const value: unknown = JSON.parse(reply.slice(i, j + 1))
-        if (typeof value === 'object' && value !== null && !Array.isArray(value)) return value
-      } catch {
-        // not JSON at this span; try a shorter one
-      }
+      // A span that is not JSON is skipped for a shorter one.
+      const parsed = jsonOf(reply.slice(i, j + 1))
+      const value = parsed.ok ? parsed.value : undefined
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) return value
     }
   }
   return undefined

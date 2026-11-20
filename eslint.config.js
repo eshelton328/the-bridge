@@ -25,6 +25,25 @@ import {
 } from './web/src/structure.ts'
 
 const tsFiles = ['**/*.{ts,tsx}']
+// Test code may catch to check a failure; the rule below covers the rest.
+const testFiles = ['**/*.test.{ts,tsx}', 'e2e/**']
+
+// d-115: no silent catch. A catch block with no statement, or only a comment, hides an error from the logs.
+const noSilentCatch = {
+  meta: {
+    type: 'problem',
+    schema: [],
+    messages: {
+      silent:
+        'A catch must not be silent (d-115). Log the error with the server logger or report() in web, return it as a Result, or throw it again.',
+    },
+  },
+  create: (context) => ({
+    CatchClause: (node) => {
+      if (node.body.body.length === 0) context.report({ node, messageId: 'silent' })
+    },
+  }),
+}
 const webFiles = ['web/src/**/*.{ts,tsx}', 'web/.storybook/**/*.{ts,tsx}']
 const nodeFiles = ['scripts/**/*.ts', '*.ts', 'web/*.ts', 'web/.storybook/main.ts', 'server/src/**/*.ts', 'e2e/**/*.ts']
 
@@ -287,6 +306,12 @@ export default tseslint.config(
     ],
     languageOptions: { parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname } },
     rules: { ...typeRules, 'no-restricted-syntax': ['error', ...typeSyntax] },
+  },
+  {
+    files: tsFiles,
+    ignores: testFiles,
+    plugins: { bridge: { rules: { 'no-silent-catch': noSilentCatch } } },
+    rules: { 'bridge/no-silent-catch': 'error' },
   },
   { files: nodeFiles, languageOptions: { globals: globals.node } },
   { files: ['shared/src/**/*.ts', 'contract/src/**/*.ts'], languageOptions: { globals: {} } },

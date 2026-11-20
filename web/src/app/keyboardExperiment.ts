@@ -25,6 +25,7 @@
 // development, so a build has none of it.
 
 import { token } from '../../styled-system/tokens/index.js'
+import { report } from '../errors/reporter.ts'
 
 /** An experiment's name, from '?kb-experiment=' or the dev server's switch. */
 export type KeyboardExperiment = 'proxy' | 'prevent'
@@ -355,8 +356,9 @@ export function startKeyboardExperiment({
       if (isStopped() || typeof body !== 'object' || body === null) return
       active = parseExperiment(Reflect.get(body, 'experiment'))
       mark()
-    } catch {
-      // The dev server is away for a moment: the experiment stays.
+    } catch (error) {
+      // The dev server is away for a moment: the experiment stays, and the reporter drops a repeated report.
+      report(error, 'handler')
     } finally {
       asking = false
     }
