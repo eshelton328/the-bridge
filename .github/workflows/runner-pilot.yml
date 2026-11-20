@@ -1,8 +1,10 @@
 name: runner pilot
 
 # The pilot of the self-hosted runner on the owner's Mac (brain:
-# engine/projects/ncc-1701/toolkit/runner/): the heavy test jobs run there
-# too, beside ci.yml, so their times and results can be compared. No check
+# engine/projects/ncc-1701/toolkit/runner/): test:unit and test:stories run
+# there too, beside ci.yml, so their times and results can be compared.
+# Fidelity is not here: on arm64, inbox frames M12 and M25 failed the text
+# check (run 44646326424), so it stays on x64 until that is explained. No check
 # here is required, and ci.yml does not change. Jobs run only for a PR from
 # a branch of this repository (no fork code) while the repository is
 # private; each has a read-only token and a time limit.
@@ -59,38 +61,3 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm codegen
       - run: pnpm test:stories
-
-  # The four fidelity pages of ci.yml, with the same checks, so the result
-  # JSON and the side-by-side PNGs can be compared with ci.yml's x64
-  # GitHub runners before fidelity moves.
-  pilot-fidelity:
-    name: pilot fidelity
-    if: github.event.pull_request.head.repo.full_name == github.repository && github.event.repository.private
-    runs-on: [self-hosted, linux, arm64, mac]
-    timeout-minutes: 25
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24
-      # The image has Chromium (PLAYWRIGHT_BROWSERS_PATH) and its packages,
-      # and the pnpm store is on the runner's cache volume, so no setup action.
-      - run: echo "//npm.pkg.github.com/:_authToken=${PACKAGES_TOKEN}" >> "$HOME/.npmrc"
-        env:
-          PACKAGES_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm codegen
-      - run: pnpm build-storybook
-      - run: |
-          status=0
-          for page in inbox workspaces artifacts toolkit; do
-            pnpm fidelity "$page" --skip-build --checks text,rules,icons || status=1
-          done
-          exit "$status"
-      - if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: pilot-fidelity
-          path: reports/fidelity/
-          retention-days: 7
