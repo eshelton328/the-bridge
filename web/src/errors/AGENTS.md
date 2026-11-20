@@ -36,12 +36,15 @@ Every error path of the app (d-084).
   Retry in another (`app/WorkspacesRouteRecovery.test.tsx`, audit W-10).
 - `clientErrorSender.ts` posts each report to `POST /api/client-errors`
   (d-115), added by `main.ts` only in a build that reads the live server
-  (`readsLiveServer`, d-117). A report holds the error's name, its own
-  message, the stack frames with no header and the route's path. An
-  error whose message can hold transcript, draft, tool or server text
-  (`kindOnly`: the transcript, layout and live misses, ZodError,
-  SyntaxError) sends its name and kind only; add a new such error there
-  (`clientErrorSender.test.ts`, `pages/workspaces/liveTranscriptReport.test.ts`).
+  (`readsLiveServer`, d-117). A report holds the error's name, the stack
+  frames with no header and the route's path. Only the errors on the
+  allowlist (`ownMessage`: the JS built-ins, `ShellDiagnosticError`,
+  `FixtureError`) send their own message; the transcript, layout and
+  live misses send their kind and a ZodError its issue codes
+  (`kindOnly`); every other error sends an empty message. A new error
+  class sends no message until it is added to the allowlist, with a
+  one-line reason (`clientErrorSender.test.ts`,
+  `pages/workspaces/liveTranscriptReport.test.ts`).
 - The sender sends one report at a time from a short queue. A 429 stops
   it for the server's 60 s window, a 400 drops the report with one dev
   warning, and a network failure or a post with no answer in 8 s drops

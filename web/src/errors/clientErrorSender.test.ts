@@ -86,12 +86,43 @@ describe('toClientErrorReport', () => {
   })
 
   it("cuts the message, name and route to the contract's limits", () => {
-    const error = new Error('m'.repeat(5000))
-    error.name = 'N'.repeat(300)
-    const body = toClientErrorReport(entry(error, 'handler', `/${'p'.repeat(800)}`))
+    const body = toClientErrorReport(entry(new TypeError('m'.repeat(5000)), 'handler', `/${'p'.repeat(800)}`))
     expect(body?.message).toHaveLength(2000)
-    expect(body?.name).toHaveLength(200)
     expect(body?.route).toHaveLength(500)
+    const named = new Error('x')
+    named.name = 'N'.repeat(300)
+    expect(toClientErrorReport(entry(named))?.name).toHaveLength(200)
+  })
+
+  it('sends the own message of the allowlisted errors only', () => {
+    const allowed = [
+      new TypeError('a'),
+      new RangeError('b'),
+      new ReferenceError('c'),
+      new EvalError('d'),
+      new URIError('e'),
+    ]
+    for (const error of allowed) expect(toClientErrorReport(entry(error))?.message).toBe(error.message)
+    for (const name of ['ShellDiagnosticError', 'FixtureError']) {
+      const error = new Error('library or sample text')
+      error.name = name
+      expect(toClientErrorReport(entry(error))?.message).toBe('library or sample text')
+    }
+  })
+
+  it('sends an empty message for a plain Error and an error class it does not know, and no text in the stack', () => {
+    const secret = 'the draft the owner was typing'
+    class SomeNewError extends Error {
+      constructor(message: string) {
+        super(message)
+        this.name = 'SomeNewError'
+      }
+    }
+    for (const error of [new SomeNewError(`could not send: ${secret}`), new Error(`failed: ${secret}`)]) {
+      const body = toClientErrorReport(entry(error))
+      expect(body).toMatchObject({ name: error.name, message: '' })
+      expect(JSON.stringify(body)).not.toContain(secret)
+    }
   })
 
   it('sends only the name and kind of an error whose message can hold page or server text', () => {
@@ -141,8 +172,8 @@ describe('createClientErrorSender', () => {
   it('posts each report once, one at a time, as JSON the contract reads', async () => {
     const { bodies, post } = recorder()
     const sink = createClientErrorSender({ post })
-    sink(entry(new Error('first')))
-    sink(entry(new Error('second')))
+    sink(entry(new TypeError('first')))
+    sink(entry(new TypeError('second')))
     expect(post).toHaveBeenCalledTimes(1)
     await settle()
     expect(bodies.map((b) => ClientErrorReport.parse(b).message)).toEqual(['first', 'second'])
@@ -152,16 +183,16 @@ describe('createClientErrorSender', () => {
     let clock = 1000
     const { bodies, post } = recorder((call) => (call === 1 ? 429 : 204))
     const sink = createClientErrorSender({ post, now: () => clock })
-    sink(entry(new Error('limited')))
-    sink(entry(new Error('waiting')))
+    sink(entry(new TypeError('limited')))
+    sink(entry(new TypeError('waiting')))
     await settle()
     expect(post).toHaveBeenCalledTimes(1)
     clock += pauseAfterLimitMs - 1
-    sink(entry(new Error('in the window')))
+    sink(entry(new TypeError('in the window')))
     await settle()
     expect(post).toHaveBeenCalledTimes(1)
     clock += 1
-    sink(entry(new Error('after the window')))
+    sink(entry(new TypeError('after the window')))
     await settle()
     expect(bodies.map((b) => ClientErrorReport.parse(b).message)).toEqual(['limited', 'after the window'])
   })
@@ -170,8 +201,8 @@ describe('createClientErrorSender', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     const { bodies, post } = recorder((call) => (call === 1 ? 400 : 204))
     const sink = createClientErrorSender({ post })
-    sink(entry(new Error('refused')))
-    sink(entry(new Error('next')))
+    sink(entry(new TypeError('refused')))
+    sink(entry(new TypeError('next')))
     await settle()
     expect(bodies.map((b) => ClientErrorReport.parse(b).message)).toEqual(['refused', 'next'])
     expect(warn).toHaveBeenCalledTimes(1)
@@ -184,8 +215,8 @@ describe('createClientErrorSender', () => {
       return bodies.length === 1 ? Promise.reject(new TypeError('Failed to fetch')) : Promise.resolve(204)
     })
     const sink = createClientErrorSender({ post })
-    sink(entry(new Error('lost')))
-    sink(entry(new Error('next')))
+    sink(entry(new TypeError('lost')))
+    sink(entry(new TypeError('next')))
     await settle()
     expect(post).toHaveBeenCalledTimes(2)
   })
@@ -211,8 +242,8 @@ describe('createClientErrorSender', () => {
       })
     })
     const sink = createClientErrorSender({ post })
-    sink(entry(new Error('stalled')))
-    sink(entry(new Error('next')))
+    sink(entry(new TypeError('stalled')))
+    sink(entry(new TypeError('next')))
     await vi.advanceTimersByTimeAsync(postTimeoutMs - 1)
     expect(sent).toEqual(['stalled'])
     await vi.advanceTimersByTimeAsync(1)
@@ -223,7 +254,7 @@ describe('createClientErrorSender', () => {
   it(`keeps at most ${String(maxWaiting)} reports waiting`, async () => {
     const { post } = recorder()
     const sink = createClientErrorSender({ post })
-    for (let i = 0; i < maxWaiting + 10; i += 1) sink(entry(new Error(String(i))))
+    for (let i = 0; i < maxWaiting + 10; i += 1) sink(entry(new TypeError(String(i))))
     await settle()
     // The first is sent at once; the next maxWaiting wait.
     expect(post).toHaveBeenCalledTimes(maxWaiting + 1)

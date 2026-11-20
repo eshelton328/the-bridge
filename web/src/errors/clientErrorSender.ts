@@ -3,11 +3,13 @@
 // reads the live server (lib/dataSource.ts `readsLiveServer`); a
 // production build reads its fixtures and sends nothing.
 //
-// Privacy: a report carries the error's name, its own message, the stack
-// frames and the route's path, and nothing from the page. An error whose
-// message can hold transcript text, a tool target, a draft or the
-// server's text (`kindOnly`) sends its name and its kind only, and no
-// stack header, which repeats the message.
+// Privacy: a report carries the error's name, the stack frames with no
+// header (which repeats the message) and the route's path, and nothing
+// from the page. Only the errors on an allowlist (`ownMessage`: the JS
+// built-ins and two app classes) send their own message. The transcript,
+// layout and live misses send their kind and a ZodError its issue codes
+// (`kindOnly`); every other error sends an empty message, so a new error
+// class sends no transcript, draft, tool or server text by default.
 //
 // Sending: one report at a time from a short queue. A 429 stops all
 // sending until the server's window (60 reports a minute for each login)
@@ -48,9 +50,25 @@ const stringAt = (value: unknown, key: string): string | undefined => {
 }
 
 /**
- * The kind of an error whose message can hold page or server text, by its name: the transcript and layout misses
- * name a chat and the server's error kind, a live miss holds the server's message, a ZodError's issues can quote
- * what it read, and a SyntaxError from JSON.parse quotes the start of the text. Undefined for any other error.
+ * The errors that send their own message: the allowlist. Every other error (a plain Error, a SyntaxError, an unknown
+ * class) sends its name and an empty message, so a new error class sends no page text until it is checked and added.
+ */
+const ownMessage: ReadonlySet<string> = new Set([
+  // The JS built-ins the engine throws: their message names the code that failed, such as "x is undefined".
+  'TypeError',
+  'RangeError',
+  'ReferenceError',
+  'EvalError',
+  'URIError',
+  // AppShell's diagnostics: the library's English text on how to fix a page mistake (shellDiagnostic.ts).
+  'ShellDiagnosticError',
+  // A state file that breaks its schema: the state's key and the field, from the app's own sample data (appError.ts).
+  'FixtureError',
+])
+
+/**
+ * The kind an error sends in place of its message, by its name: the transcript and layout misses name a chat and the
+ * server's error kind, a live miss holds the server's message, and a ZodError's issues can quote what it read.
  */
 const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
   TranscriptMissError: (error) => stringAt(error, 'miss') ?? '',
@@ -61,7 +79,13 @@ const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
     const codes = Array.isArray(issues) ? issues.map((issue: unknown) => stringAt(issue, 'code') ?? '') : []
     return [...new Set(codes)].join(', ')
   },
-  SyntaxError: () => '',
+}
+
+/** What a report says in its message: the kind, the error's own message on the allowlist, else nothing. */
+function messageOf(error: Error, name: string): string {
+  const kind = Object.hasOwn(kindOnly, name) ? kindOnly[name] : undefined
+  if (kind !== undefined) return kind(error)
+  return ownMessage.has(name) ? error.message : ''
 }
 
 /** A V8 frame ("at f (url:1:2)") or a Firefox or Safari one ("f@url:1:2"). */
@@ -83,8 +107,7 @@ const requestIdOf = (error: Error) => stringAt(error, 'requestId') ?? stringAt(R
 export function toClientErrorReport(entry: ErrorReport): ClientErrorReport | undefined {
   const { error } = entry
   const name = (error.name === '' ? 'Error' : error.name).slice(0, limits.name)
-  const kind = Object.hasOwn(kindOnly, name) ? kindOnly[name] : undefined
-  const message = (kind === undefined ? error.message : kind(error)).slice(0, limits.message)
+  const message = messageOf(error, name).slice(0, limits.message)
   const stack = framesOf(error)
   const requestId = requestIdOf(error)?.slice(0, limits.requestId)
   const parsed = ClientErrorReport.safeParse({
