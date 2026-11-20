@@ -25,7 +25,8 @@ not in CI or `pnpm verify`.
 - `renameTab.ts`: renames the e2e workspace's first tab (`tab.rename`),
   a layout change for the contract suite's `layout.changed` case.
 - `fakeAgent.ts`: the fake agent. It writes a Claude Code session file
-  where Claude Code puts one, prints a fixed script and reports itself
+  (a prompt, a tool call with its result and a reply) where Claude Code
+  puts one, prints a fixed script and reports itself
   to herdr as a Claude agent with that session.
 - `herdrAgents.e2e.test.ts`: the `AgentPort` contract suite on the herdr
   adapter and the real session.

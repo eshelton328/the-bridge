@@ -23,5 +23,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   URL-encoded; an ID with no machine is 400 `invalid-input`, and an
   unknown workspace or one of another machine is 404 `not-found`
   (`app.test.ts`).
+- `GET /api/chats/:chat/transcript` takes the chat ID URL-encoded; an
+  ID with no machine is 400 `invalid-input` and an unknown chat 404
+  `not-found`. Transcript text goes only into the 200 body, never into
+  a log line or an `ErrorBody` (`app.test.ts`).
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

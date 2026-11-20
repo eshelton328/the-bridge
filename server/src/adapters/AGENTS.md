@@ -25,6 +25,13 @@ client of a socket or a file sits beside them.
   for that workspace, once for each burst (100 ms quiet, at most 500 ms
   from its first event); one that names no
   workspace reads the list again (`herdrAgents.test.ts`).
+- A Claude chat's transcript comes from its own session file only, read
+  from the end (`claudeTranscript.ts`): prompts, reply text and each
+  tool call's name and target, never thinking, a tool's arguments or
+  its result. A shell tool's target is its program names, a file tool's
+  its path from the chat's folder or with "~", a web tool's its host
+  (`toolTarget.ts`). A line that is not JSON is skipped. Nothing logs
+  transcript text.
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
