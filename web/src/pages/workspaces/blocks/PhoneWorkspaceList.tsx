@@ -18,6 +18,7 @@
 // Move to workspace's list open. At a tablet's width (T1, `device`) the list
 // takes the tablet's inset. Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
+import type { MouseEvent, Ref } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
@@ -58,6 +59,33 @@ export type PhoneWorkspaceListProps = {
   onAdd?: ((action: 'newChat' | 'newWorkspace') => void) | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
+  /** The ref the held chat's row takes (M9): the anchor that WorkspacesPhone's actions sheet lifts over its scrim. */
+  heldRow?: Ref<HTMLDivElement> | undefined
+}
+
+/** A chat row's ⋯ (M1 146:3), on the row and on its lifted copy (M9 146:268). */
+export function RowMenuButton({
+  chat,
+  layer,
+  onClick,
+}: {
+  chat: SidebarChat
+  layer: string | undefined
+  onClick?: ((event: MouseEvent) => void) | undefined
+}) {
+  return (
+    <Button
+      variant="text"
+      size="lg"
+      iconOnly
+      className={rowMenu}
+      aria-label={`${chat.title} actions`}
+      data-figma={layer}
+      onClick={onClick}
+    >
+      <MoreIcon size="20" />
+    </Button>
+  )
 }
 
 export function PhoneWorkspaceList({
@@ -70,6 +98,7 @@ export function PhoneWorkspaceList({
   onUiChange,
   onAdd,
   layers,
+  heldRow,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
   const editing = ui.editing === true && text.done !== undefined
@@ -86,13 +115,9 @@ export function PhoneWorkspaceList({
           onUiChange?.({ menuFor: chat, moveOpen: false, menuHighlight: text.rowMenu?.[0]?.value ?? null })
   const held = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.menuFor)
   const more = (chat: SidebarChat, layer: string | undefined) => (
-    <Button
-      variant="text"
-      size="lg"
-      iconOnly
-      className={rowMenu}
-      aria-label={`${chat.title} actions`}
-      data-figma={layer}
+    <RowMenuButton
+      chat={chat}
+      layer={layer}
       onClick={
         openActions === undefined
           ? undefined
@@ -102,9 +127,7 @@ export function PhoneWorkspaceList({
               openActions(chat.id)
             }
       }
-    >
-      <MoreIcon size="20" />
-    </Button>
+    />
   )
   const closed = ui.closedWorkspaces ?? []
   const closeText = text.closeWorkspace
@@ -197,9 +220,9 @@ export function PhoneWorkspaceList({
             onHold={openActions}
             onActions={text.workspaceMenu === undefined ? undefined : () => onUiChange?.({ workspaceMenuFor: w.id })}
             lifted={
-              openActions === undefined || held === undefined
+              openActions === undefined || held === undefined || heldRow === undefined
                 ? undefined
-                : { chat: held.id, menu: more(held, layers?.liftedMenu) }
+                : { chat: held.id, ref: heldRow }
             }
           />
         ),

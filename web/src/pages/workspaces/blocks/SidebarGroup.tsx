@@ -16,7 +16,7 @@ import {
   MoreIcon,
   Stack,
 } from '@eshelton328/component-library-1701'
-import { type ReactNode, useId } from 'react'
+import { type ReactNode, type Ref, useId } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarChat, SidebarLayers, Workspace } from '../types.ts'
 import { SidebarChatRow } from './SidebarChatRow.tsx'
@@ -92,8 +92,8 @@ export type SidebarGroupProps = {
   rowMenu?: ((chat: SidebarChat) => ReactNode) | undefined
   /** Called when the owner holds a chat's row, as the phone's list does (M9); the desktop sidebar has none. */
   onHold?: ((chat: string) => void) | undefined
-  /** The held chat, whose row lifts over the scrim (M9 146:252), and its copy's ⋯. */
-  lifted?: { chat: string; menu?: ReactNode } | undefined
+  /** The held chat (M9) and the ref its row's element takes, the anchor the actions sheet lifts over its scrim. */
+  lifted?: { chat: string; ref: Ref<HTMLDivElement> } | undefined
   /** Called by the header's ⋯, which opens the workspace's actions on the phone (M14); without it, the ⋯ draws only. */
   onActions?: (() => void) | undefined
 }
@@ -188,7 +188,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
                       onHold(chat.id)
                     }
               }
-              lifted={lifted?.chat === chat.id ? { figma: layers?.liftedRow, menu: lifted.menu } : undefined}
+              anchorRef={lifted?.chat === chat.id ? lifted.ref : undefined}
             />
           ))}
         </Stack>

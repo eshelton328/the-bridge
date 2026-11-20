@@ -47,7 +47,7 @@
 // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -65,7 +65,8 @@ import { PhoneSideChat } from '../blocks/PhoneSideChat.tsx'
 import { PhoneSubagentTranscript } from '../blocks/PhoneSubagentTranscript.tsx'
 import { PhoneSubagents } from '../blocks/PhoneSubagents.tsx'
 import { PhoneSubtask } from '../blocks/PhoneSubtask.tsx'
-import { PhoneWorkspaceList } from '../blocks/PhoneWorkspaceList.tsx'
+import { PhoneWorkspaceList, RowMenuButton } from '../blocks/PhoneWorkspaceList.tsx'
+import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
@@ -99,7 +100,9 @@ export function WorkspacesPhone({
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
   const chat = ui.phoneView === 'chat' && focused?.type === 'chat' ? focused : undefined
-  // M9: the chat of the list whose actions are open, and its workspace.
+  // M9: the chat of the list whose actions are open, and its workspace. Its row takes `heldRowRef`, and the actions
+  // sheet lifts a copy of the row over its scrim there (BottomSheet `lifted`).
+  const heldRowRef = useRef<HTMLDivElement>(null)
   const held = data.workspaces
     .flatMap((w) => (w.chats ?? []).map((c) => ({ chat: c, workspace: w.id })))
     .find((h) => h.chat.id === ui.menuFor)
@@ -504,6 +507,7 @@ export function WorkspacesPhone({
             onUiChange={onUiChange}
             onAdd={add}
             layers={data.layers}
+            heldRow={heldRowRef}
           />
         }
       />
@@ -527,6 +531,16 @@ export function WorkspacesPhone({
           }}
           highlight={ui.menuHighlight}
           layers={data.layers?.sheetIcons}
+          lifted={{
+            content: (
+              <LiftedChatRow
+                chat={held.chat}
+                figma={data.layers?.liftedRow}
+                menu={<RowMenuButton chat={held.chat} layer={data.layers?.liftedMenu} />}
+              />
+            ),
+            anchor: heldRowRef,
+          }}
         />
       )}
       {actionsFor === undefined || text.workspaceMenu === undefined ? null : (
