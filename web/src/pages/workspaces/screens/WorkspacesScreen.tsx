@@ -53,6 +53,7 @@ import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
+import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 
 // The rail's slot is a flex column; the rail fills it.
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -64,7 +65,9 @@ export type WorkspacesScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
-  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
+  onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
@@ -80,6 +83,7 @@ export function WorkspacesScreen({
   onNavigate,
   onUiChange,
   onSend,
+  onStop,
   onRetry,
   transcripts,
   onCopy,
@@ -99,7 +103,11 @@ export function WorkspacesScreen({
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  const draft = (chat: string, text: string) => {
+  // With `sent` (a send went through), the chat's draft changes only if it still holds the text sent: a send that ends
+  // after the owner opened the chat again and typed on keeps his newer draft.
+  const draft = (chat: string, text: string, sent?: string) => {
+    const saved = latestRef.current.drafts?.[chat]
+    if (sent !== undefined && saved !== undefined && saved !== sent) return
     change({ drafts: { ...latestRef.current.drafts, [chat]: text } })
   }
   // The notice the owner dismissed; a new load gives a new notice, which shows again.
@@ -127,6 +135,7 @@ export function WorkspacesScreen({
           viewport={viewport}
           onNavigate={onNavigate}
           onSend={onSend}
+          onStop={onStop}
           transcripts={transcripts}
           onCopy={onCopy}
           change={change}
@@ -142,7 +151,7 @@ type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange' | 'onRetry
   layout: Viewport
   change: (next: Partial<WorkspacesUi>) => void
   /** Sets one chat's draft, merged into the latest drafts. */
-  draft: (chat: string, text: string) => void
+  draft: (chat: string, text: string, sent?: string) => void
   /** The live-unavailable notice that the layout draws at the top of its content, or none. */
   notice: ReactNode
 }
@@ -154,6 +163,7 @@ function WorkspacesLayout({
   viewport,
   onNavigate,
   onSend,
+  onStop,
   transcripts,
   onCopy,
   change,
@@ -196,6 +206,7 @@ function WorkspacesLayout({
         onUiChange={change}
         onDraftChange={draft}
         onSend={onSend}
+        onStop={onStop}
         transcripts={transcripts}
         onCopy={onCopy}
         notice={notice}
@@ -357,6 +368,7 @@ function WorkspacesLayout({
                   onDraftChange={draft}
                   toggle={false}
                   onSend={onSend}
+                  onStop={onStop}
                   transcripts={transcripts}
                   onCopy={onCopy}
                 />
@@ -394,10 +406,11 @@ function WorkspacesLayout({
                   }
                   layers={data.layers}
                   draft={ui.drafts?.[chat.id]}
-                  onTextChange={(text) => {
-                    draft(chat.id, text)
+                  onTextChange={(text, sent) => {
+                    draft(chat.id, text, sent)
                   }}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
+                  onStop={onStop && (() => onStop(chat.id))}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   rename={rename}
@@ -458,6 +471,7 @@ function WorkspacesLayout({
               onDraftChange={draft}
               toggle
               onSend={onSend}
+              onStop={onStop}
               transcripts={transcripts}
               onCopy={onCopy}
               notice={notice}

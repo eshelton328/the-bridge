@@ -24,6 +24,10 @@ Every error path of the app (d-084).
 - Only this folder imports react-error-boundary, listens for `error` or
   `unhandledrejection`, or logs; the lint enforces it.
 - Each boundary has a Vitest test and a crash story.
+- The dev `ErrorTray` sits at the window's bottom right unless that covers
+  a library composer or an alert (an error line with Retry); then it moves
+  up above them, measured each frame while it shows (`trayPlace.ts`,
+  `app/WorkspacesLiveSend.test.tsx`).
 - `report()` keeps an error once: it drops the same object, and an
   equal one (source, name, message, first stack frame) within 2 s, and
   skips `redirect`, `notFound` and `AbortError` (`reporter.test.ts`,
@@ -39,8 +43,8 @@ Every error path of the app (d-084).
   (`readsLiveServer`, d-117). A report holds the error's name, the stack
   frames with no header and the route's path. Only the errors on the
   allowlist (`ownMessage`: the JS built-ins, `ShellDiagnosticError`,
-  `FixtureError`) send their own message; the transcript, layout and
-  live misses send their kind and a ZodError its issue codes
+  `FixtureError`) send their own message; the transcript, layout, live,
+  send and stop misses send their kind and a ZodError its issue codes
   (`kindOnly`); every other error sends an empty message. A new error
   class sends no message until it is added to the allowlist, with a
   one-line reason (`clientErrorSender.test.ts`,

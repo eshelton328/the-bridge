@@ -18,7 +18,10 @@
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Send goes through `onSend` (library
-// beta.90): the box keeps the draft until the send succeeds. A live chat
+// beta.90): the box keeps the draft until the send succeeds. Send and Stop
+// (W1, `useComposerActions`): one send and one stop in flight, and a miss
+// shows one quiet line under the composer, with Retry when it may work
+// later; a text over the server's limit is not sent and the line says so. A live chat
 // (`liveChat`, slice 3b) asks `transcripts` to read its transcript while it
 // shows, draws the earlier line over the entries, the empty line when it has
 // none and the problem line with Retry under them; it opens at the newest entry
@@ -35,6 +38,7 @@ import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
+import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
 
 /** Reads a live chat's transcript while its pane shows (the page's liveTranscript.ts). */
@@ -163,14 +167,22 @@ type ChatPaneBase = {
   above?: ReactNode
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
-  /** Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts. */
-  onTextChange?: ((text: string) => void) | undefined
   /**
-   * Sends the message: resolves `true` once it is sent and `false` when the send failed, which the caller reports. The
-   * box empties only on `true`, and only when the owner has not typed on meanwhile, so a failed send keeps the draft.
-   * Not set, as in a side chat, the message counts as sent at once.
+   * Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts.
+   * After a send went through it is called with `''` and the text sent (`sent`): the caller empties the chat's saved
+   * draft only if it still holds that text, as the pane may have unmounted and the chat opened again with a newer draft.
+   * The box follows a draft the caller changes this way (`composer.text`).
    */
-  onSend?: ((text: string) => Promise<boolean>) | undefined
+  onTextChange?: ((text: string, sent?: string) => void) | undefined
+  /**
+   * Sends the message: resolves `true` once it is sent, `false` when the send failed and the caller reported it, or
+   * the line to show under the composer (`ComposerAnswer`). The box empties only on `true`, and only when the owner has
+   * not typed on meanwhile, so a failed send keeps the draft. Not set, as in a side chat, the message counts as sent at
+   * once.
+   */
+  onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the chat: the running composer's Stop. Its answer is a send's (`ComposerAnswer`); Stop does nothing when not set. */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
 }
 
 export type ChatPaneProps = ChatPaneBase &
@@ -220,6 +232,7 @@ export function ChatPane(props: ChatPaneProps) {
     autoFocus = false,
     onTextChange,
     onSend,
+    onStop,
   } = props
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
@@ -231,6 +244,13 @@ export function ChatPane(props: ChatPaneProps) {
   // The text as typed now, for a send that ends after the owner typed on: the box empties only if it still holds what
   // was sent, as the library's own composer does with its uncontrolled text.
   const latestRef = useRef(composer.text)
+  // A draft the caller changed, such as one a send emptied after this pane opened again: the box follows it.
+  useEffect(() => {
+    if (composer.text === latestRef.current) return
+    latestRef.current = composer.text
+    setText(composer.text)
+    setQuery(skillQuery(composer.text, composer.text.length))
+  }, [composer.text])
   // The skill the arrow keys moved the highlight to, while the list is open.
   const [moved, setMoved] = useState<string | null>(null)
   // Where the caret goes once a picked skill is in the box.
@@ -316,17 +336,19 @@ export function ChatPane(props: ChatPaneProps) {
     else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
   }
   // The box is controlled, so the composer never empties it: a sent message empties it here.
-  const sent = (submitted: string) => (ok: boolean) => {
-    if (ok && latestRef.current === submitted) onValueChange('')
-    return ok
-  }
-  // A live chat cannot send yet (d-117): its disabled composer sends nothing, and keeps nothing to send.
+  const actions = useComposerActions({
+    text,
+    onSend,
+    onStop,
+    clear: (submitted) => {
+      // The caller keeps the draft by chat: it empties it only if it still holds what was sent, and the box follows.
+      if (onTextChange !== undefined) onTextChange('', submitted)
+      else if (latestRef.current === submitted) onValueChange('')
+    },
+  })
+  // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.
   const send = (submitted: string): boolean | Promise<boolean> =>
-    composer.notLive !== undefined
-      ? false
-      : onSend === undefined
-        ? sent(submitted)(true)
-        : onSend(submitted).then(sent(submitted))
+    composer.notLive !== undefined ? false : actions.send(submitted)
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -344,6 +366,7 @@ export function ChatPane(props: ChatPaneProps) {
       onValueChange={onValueChange}
       onSend={send}
       running={composer.running}
+      onStop={actions.stop}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}
       onAttach={attach ? () => undefined : undefined}
@@ -412,6 +435,8 @@ export function ChatPane(props: ChatPaneProps) {
         </div>
       </SkillPicker>
     )
+  // The quiet line under the composer when a send or a stop missed, or the text is over the limit.
+  const sendLine = actions.line === undefined ? null : <TranscriptProblem text={actions.line} onRetry={actions.retry} />
   // One bad entry shows an inline fallback in the transcript, and the header and the composer keep working (audit P-1).
   const entryViews =
     notLive === undefined ? (
@@ -455,6 +480,7 @@ export function ChatPane(props: ChatPaneProps) {
           <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer)}>
             {above}
             {composerBox}
+            {sendLine}
           </div>
         }
       >
@@ -473,6 +499,7 @@ export function ChatPane(props: ChatPaneProps) {
           <div ref={footerRef} className={cx(footer, gaps[size].footer)} data-pane-floor>
             {above}
             {composerBox}
+            {sendLine}
           </div>
         }
       >

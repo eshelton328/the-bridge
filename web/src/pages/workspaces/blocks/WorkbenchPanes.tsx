@@ -25,6 +25,7 @@ import { ResizeReadout } from './ResizeReadout.tsx'
 import { RowsSplit } from './RowsSplit.tsx'
 import { ShellPane } from './ShellPane.tsx'
 import { SideChatPanel } from './SideChatPanel.tsx'
+import type { ComposerAnswer } from './useComposerActions.ts'
 
 // D1's Figma layers of the panes by their place in the split, and of the chats' composers and entries; a state's
 // `layers` replace them.
@@ -48,9 +49,11 @@ export type WorkbenchPanesProps = {
   /** Called with a pane's id when the owner closes it with the empty pane's Close pane (D13). */
   onClosePane?: ((pane: string) => void) | undefined
   /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string) => void
+  onDraftChange: (chat: string, text: string, sent?: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
-  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
+  onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -64,6 +67,7 @@ export function WorkbenchPanes({
   onClosePane,
   onDraftChange,
   onSend,
+  onStop,
   transcripts,
   onCopy,
 }: WorkbenchPanesProps) {
@@ -147,10 +151,11 @@ export function WorkbenchPanes({
             empty={pane.empty}
             problem={pane.problem}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
-            onTextChange={(text) => {
-              onDraftChange(pane.id, text)
+            onTextChange={(text, sent) => {
+              onDraftChange(pane.id, text, sent)
             }}
             onSend={onSend && ((text) => onSend(pane.id, text))}
+            onStop={onStop && (() => onStop(pane.id))}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,

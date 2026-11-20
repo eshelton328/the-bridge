@@ -127,8 +127,9 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
 }
 
 /**
- * What a live shell's terminal, a live Codex chat's transcript and a live chat's composer show until the slice that
- * brings them lands (d-117). The server reads only a Claude chat's transcript (slice 3b).
+ * What a live shell's terminal, a live Codex chat's transcript and a live Codex chat's composer show until the slice
+ * that brings them lands (d-117). The server reads only a Claude chat's transcript (slice 3b), and takes a prompt and a
+ * stop only for a Claude chat (W1; Codex in W8).
  */
 const notLiveText = {
   transcript: 'Transcript not live yet',
@@ -138,9 +139,10 @@ const notLiveText = {
 
 /**
  * A pane for each live chat, with its header from the sidebar row and no sample text: a shell's terminal and a Codex
- * chat's transcript say they are not live yet, and a chat's composer is disabled and says sending is not live yet. A
- * Claude chat's pane has no entries and names its server chat ID, `<machine>/<local>` (`liveChat`), so the page reads
- * its transcript while the pane shows (liveTranscript.ts); a Codex chat's pane names none, so the page reads nothing.
+ * chat's transcript say they are not live yet, and a Codex chat's composer is disabled and says sending is not live
+ * yet. A Claude chat's pane has no entries and names its server chat ID, `<machine>/<local>` (`liveChat`), so the page
+ * reads its transcript while the pane shows (liveTranscript.ts) and sends its prompts and stops to it (liveSend.ts);
+ * its composer shows Stop while the chat works. A Codex chat's pane names none, so the page reads nothing.
  */
 export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
@@ -154,19 +156,21 @@ export function livePanes(workspaces: readonly Workspace[], machine: string): Wo
       }
       if (chat.kind === 'shell')
         return { type: 'shell', id: chat.id, head, lines: [], prompt: '', notLive: notLiveText.terminal }
+      const claude = chat.kind === 'claude'
       return {
         type: 'chat',
         id: chat.id,
         head,
         entries: [],
         composer: {
-          placeholder: chat.kind === 'codex' ? 'Reply to Codex' : 'Message, or / for a skill',
+          placeholder: claude ? 'Message, or / for a skill' : 'Reply to Codex',
           text: '',
           attachments: [],
-          running: false,
-          notLive: notLiveText.sending,
+          // The server's `working` status: "Working", or "Running" for a chat another chat started (statusOf).
+          running: claude && (chat.status.tone === 'working' || chat.status.tone === 'running'),
+          ...(claude ? {} : { notLive: notLiveText.sending }),
         },
-        ...(chat.kind === 'claude' ? { liveChat: `${machine}/${chat.id}` } : { notLive: notLiveText.transcript }),
+        ...(claude ? { liveChat: `${machine}/${chat.id}` } : { notLive: notLiveText.transcript }),
       }
     }),
   )

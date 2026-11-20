@@ -22,6 +22,7 @@ import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
+import type { ComposerAnswer } from './useComposerActions.ts'
 
 // Figma draws the back chevron and the ⋯ bare, 20 and 18 px (105:2750, 105:2765): the back in the accent colour, as a
 // text button draws its icon, and the ⋯ in the text colour. Each button is 24 square. The ⋯ is Figma's icon layer, not
@@ -78,9 +79,11 @@ export type PhoneChatProps = {
   /** The owner's draft in the composer, in place of the data's text (`ui.drafts`), so Back and a tap on the chat keep it. */
   draft?: string | undefined
   /** Called with the composer's text as the owner types. */
-  onTextChange?: ((text: string) => void) | undefined
-  /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
-  onSend?: ((text: string) => Promise<boolean>) | undefined
+  onTextChange?: ((text: string, sent?: string) => void) | undefined
+  /** Sends the composer's message; resolves `true` once sent, else `false` or the composer's line (ChatPane `onSend`). */
+  onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
+  onStop?: (() => Promise<ComposerAnswer>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -110,6 +113,7 @@ export function PhoneChat(props: PhoneChatProps) {
     draft,
     onTextChange,
     onSend,
+    onStop,
     transcripts,
     onCopy,
     notice,
@@ -178,6 +182,7 @@ export function PhoneChat(props: PhoneChatProps) {
       composer={withDraft(pane.composer, draft)}
       onTextChange={onTextChange}
       onSend={onSend}
+      onStop={onStop}
       skills={skills}
       onSkillsOpenChange={onSkillsOpenChange}
       autoFocus={skills.open || focusMessage}

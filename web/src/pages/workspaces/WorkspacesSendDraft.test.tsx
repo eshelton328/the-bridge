@@ -151,7 +151,7 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
     await expect.element(box()).toHaveValue('')
   })
 
-  it('sends nothing to the store from a live chat, whose composer is disabled (d-117)', async () => {
+  it('sends nothing to the store from a live Codex chat, whose composer is disabled (d-117, until W8)', async () => {
     await setViewport(390, 844)
     const send = vi.spyOn(workspacesStore.getState().actions, 'send')
     const body = JSON.stringify({
@@ -163,9 +163,9 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
           chats: [
             {
               id: 'mac-mini/p1',
-              kind: 'claude',
-              title: 'plan the slice',
-              model: 'claude-opus-5-5',
+              kind: 'codex',
+              title: 'drift check',
+              model: 'gpt-5.5',
               contextUsed: null,
               status: 'idle',
               parent: null,
@@ -187,7 +187,7 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
     )
     // No ?source= and no ?state=: the live source (d-117).
     view = await renderAt('/workspaces')
-    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await userEvent.click(page.getByText('drift check', { exact: true }).first())
     const live = page.getByRole('textbox', { name: 'Sending not live yet' })
     await expect.element(live).toBeDisabled()
     await userEvent.click(live, { force: true })

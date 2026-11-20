@@ -7,7 +7,7 @@
 // header (which repeats the message) and the route's path, and nothing
 // from the page. Only the errors on an allowlist (`ownMessage`: the JS
 // built-ins and two app classes) send their own message. The transcript,
-// layout and live misses send their kind and a ZodError its issue codes
+// layout, live, send and stop misses send their kind and a ZodError its issue codes
 // (`kindOnly`); every other error sends an empty message, so a new error
 // class sends no transcript, draft, tool or server text by default.
 //
@@ -73,6 +73,8 @@ const ownMessage: ReadonlySet<string> = new Set([
 const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
   TranscriptMissError: (error) => stringAt(error, 'miss') ?? '',
   LayoutReadMissError: (error) => stringAt(error, 'miss') ?? '',
+  // A live chat's Send or Stop that missed (W1): its kind only, never the message text or the chat ID.
+  ChatSendMissError: (error) => stringAt(error, 'miss') ?? '',
   LiveMissError: (error) => stringAt(Reflect.get(error, 'miss'), 'kind') ?? '',
   ZodError: (error) => {
     const issues: unknown = Reflect.get(error, 'issues')
