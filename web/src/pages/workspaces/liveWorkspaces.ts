@@ -111,11 +111,15 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
 }
 
 /** What a live chat's transcript and a live shell's terminal show until the slice that brings them lands (d-117). */
-const notLiveText = { transcript: 'Transcript not live yet', terminal: 'Terminal not live yet' } as const
+const notLiveText = {
+  transcript: 'Transcript not live yet',
+  terminal: 'Terminal not live yet',
+  sending: 'Sending not live yet',
+} as const
 
 /**
  * A pane for each live chat, with its header from the sidebar row and no sample text: a chat's transcript and a
- * shell's terminal say they are not live yet, and its composer starts empty.
+ * shell's terminal say they are not live yet, and a chat's composer is disabled and says sending is not live yet.
  */
 export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
@@ -139,6 +143,7 @@ export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
           text: '',
           attachments: [],
           running: false,
+          notLive: notLiveText.sending,
         },
         notLive: notLiveText.transcript,
       }

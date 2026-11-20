@@ -97,6 +97,11 @@ export const ComposerState = z.object({
   model: z.string().optional(),
   /** The chat is working: the composer shows Stop. */
   running: z.boolean(),
+  /**
+   * A live chat (d-117) that cannot send yet: the composer is disabled and shows this text, such as "Sending not live
+   * yet", in place of its placeholder, and sends nothing; none when not set.
+   */
+  notLive: z.string().optional(),
 })
 export type ComposerState = z.infer<typeof ComposerState>
 
