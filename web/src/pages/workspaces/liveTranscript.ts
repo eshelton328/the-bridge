@@ -34,6 +34,7 @@ import {
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
+import { api } from '../../lib/api.ts'
 import { type Frame, frames, type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
 import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
@@ -147,21 +148,23 @@ function noteOutage(chat: string, miss: TranscriptMiss): void {
   report(new TranscriptMissError(chat, miss), 'live')
 }
 
-/** Where a chat's transcript and its stream are, the chat ID URL-encoded. */
-const transcriptPath = (chat: ChatId) => `/api/chats/${encodeURIComponent(chat)}/transcript`
-
 export type TranscriptDeps = {
   /** How long to wait before connecting again after a drop, until the stream's `retry` says otherwise. */
   readonly retryMs?: number
 }
 
-// The RPC client has no transcript routes until the server's slice 3b lands, so these read with fetch.
+// The RPC client has no stream route until backend 3b-3 lands, so the stream opens with fetch, the chat ID
+// URL-encoded as the RPC client encodes it for the read.
 const openStream = (chat: ChatId, signal: AbortSignal) =>
-  fetch(`${transcriptPath(chat)}/events`, { signal, headers: { Accept: 'text/event-stream' } })
+  fetch(`/api/chats/${encodeURIComponent(chat)}/transcript/events`, {
+    signal,
+    headers: { Accept: 'text/event-stream' },
+  })
 
 const readTranscript = (chat: ChatId, signal: AbortSignal) =>
   readChecked(
-    (init) => fetch(transcriptPath(chat), { signal: init }),
+    (init) =>
+      api.api.chats[':chat'].transcript.$get({ param: { chat: encodeURIComponent(chat) } }, { init: { signal: init } }),
     (body) => TranscriptResponse.parse(body),
     AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]),
   )
