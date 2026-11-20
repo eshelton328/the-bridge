@@ -43,5 +43,6 @@ tracing on or off, or change what a trace records.
 - Under automation (`navigator.webdriver`) the switch starts no trace;
   the param still traces, marked `automated` (`keyboardTraceSwitch.test.ts`).
 - `keyboardExperiment.ts` (dev only) runs `?kb-experiment=proxy|prevent`
-  of screen review R26; it acts only on a press on a composer field,
-  never on Send, Stop or Attach (`keyboardExperiment.test.ts`).
+  of screen reviews R26 and R27; it acts only on a tap on a composer
+  field or its box, never on Send, Stop, Attach or another control, and
+  never on a long press (`keyboardExperiment.test.ts`).

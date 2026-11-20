@@ -48,22 +48,45 @@ export function experimentFromSearch(search: string): KeyboardExperiment | null 
 
 type Field = HTMLTextAreaElement | HTMLInputElement
 
-/** The composer field that a press on 'target' would focus: a text area or text input in a ScrollFrame footer. */
-// The composer's field and its Send, Stop and Attach controls sit in one 'data-keyboard-keep' wrapper, so only the
-// pressed element itself counts: a press on a field is taken, and a press on a control is never one on a field.
+/** A text area, or a text or search input: a field the composer types in. */
+function textField(element: Element | null): Field | null {
+  if (element instanceof HTMLTextAreaElement) return element
+  if (element instanceof HTMLInputElement && (element.type === 'text' || element.type === 'search')) return element
+  return null
+}
+
+/** The elements in a composer box that do their own action on a tap: Send, Stop, Attach, the model chip, a chip's remove. */
+const CONTROL = 'button, a[href], select, summary, [role="button"], [role="link"], [role="menuitem"], [role="option"]'
+
+/**
+ * The composer field that a press on 'target' would focus: a text area or text input in a ScrollFrame footer, pressed
+ * itself or through its composer box. The composer's field and its Send, Stop and Attach controls sit in one
+ * 'data-keyboard-keep' wrapper, the box the owner sees. Its field is one line (20 px) in a box about 112 px tall, so a
+ * finger often lands on the box beside the line; iOS then moves the tap's click to the field and focuses it with its
+ * own scroll into view (screen review R27, the prevent traces of 2026-11-20). A press on the box takes the box's one
+ * field; a press on a control, or in a box with no field or more than one, is never one on a field.
+ */
 export function pressedField(target: EventTarget | null): Field | null {
   if (!(target instanceof Element)) return null
   if (target.closest('.scroll-frame__footer') === null) return null
-  const field = target.closest('textarea, input')
-  if (field instanceof HTMLTextAreaElement) return field
-  if (field instanceof HTMLInputElement && (field.type === 'text' || field.type === 'search')) return field
-  return null
+  const own = target.closest('textarea, input')
+  if (own !== null) return textField(own)
+  if (target.closest(CONTROL) !== null) return null
+  const box = target.closest('[data-keyboard-keep]')
+  if (box === null) return null
+  const fields = [...box.querySelectorAll('textarea, input')].flatMap((element) => textField(element) ?? [])
+  return fields.length === 1 ? (fields[0] ?? null) : null
 }
 
 /** How far the visual viewport must be under its height at the press to count as the keyboard up, in px. */
 const KEYBOARD_UP_PX = 100
 /** How far a touch may move and still be a tap, in px; past it the touch is a scroll. */
 const TAP_SLOP_PX = 10
+/**
+ * How long a touch may stay down and still be a tap, in ms. iOS starts its long press (the magnifier, the paste menu) at
+ * 500 ms, so a longer touch keeps its default.
+ */
+const TAP_MAX_MS = 450
 /** How long the proxy waits, after the keyboard's report, for the shell to move the composer above the keyboard, in ms. */
 const DOCK_WAIT_MS = 400
 /** The attributes that pick the keyboard iOS draws, copied to the proxy so the keyboard does not change at the move. */
@@ -219,14 +242,14 @@ export type ExperimentOptions = {
 export function installKeyboardExperiment({ win = window, current, proxyWaitMs = 600 }: ExperimentOptions): () => void {
   const doc = win.document
   // The touch that is down on a composer field with no focus, until it moves, is cancelled or ends.
-  let press: { field: Field; x: number; y: number } | undefined
+  let press: { field: Field; x: number; y: number; at: number } | undefined
   let proxying = false
   const onPointerDown = (event: PointerEvent) => {
     press = undefined
     if (event.pointerType !== 'touch' || current() === null) return
     const field = pressedField(event.target)
     if (field === null || field === doc.activeElement || field.disabled) return
-    press = { field, x: event.clientX, y: event.clientY }
+    press = { field, x: event.clientX, y: event.clientY, at: event.timeStamp }
   }
   const onPointerMove = (event: PointerEvent) => {
     if (press !== undefined && Math.hypot(event.clientX - press.x, event.clientY - press.y) > TAP_SLOP_PX)
@@ -242,11 +265,15 @@ export function installKeyboardExperiment({ win = window, current, proxyWaitMs =
     press = undefined
     const experiment = current()
     if (taken === undefined || experiment === null || !event.cancelable) return
+    // A long press keeps its default: iOS's magnifier and paste menu.
+    if (event.timeStamp - taken.at > TAP_MAX_MS) return
     const { field } = taken
     if (!field.isConnected || field.disabled || field === doc.activeElement) return
     event.preventDefault()
     if (experiment === 'prevent') {
       field.focus({ preventScroll: true })
+      // The tap's own caret placement was cancelled with its default: the caret goes to the end of the draft.
+      field.setSelectionRange(field.value.length, field.value.length)
       return
     }
     if (proxying) return

@@ -119,15 +119,17 @@ describe('keyboard trace sampler', () => {
       expect(sample?.vvHeight).toBe(window.visualViewport?.height)
       expect(sample?.innerHeight).toBe(window.innerHeight)
     }
-    for (const type of ['pointerdown', 'pointerup', 'resize', 'raf'])
-      expect(ofType(samples, type).at(0)).not.toHaveProperty('targetTag')
-    expect(ofType(samples, 'focusin').at(0)).toMatchObject({ targetTag: 'input', targetRole: 'combobox' })
+    for (const type of ['resize', 'raf']) expect(ofType(samples, type).at(0)).not.toHaveProperty('targetTag')
+    for (const type of ['focusin', 'pointerdown', 'pointerup'])
+      expect(ofType(samples, type).at(0), type).toMatchObject({ targetTag: 'input', targetRole: 'combobox' })
   })
 
-  it('records no text, value, name, id or label of a focused field', async () => {
+  it('records no text, value, name, id or label of a focused or pressed field', async () => {
     const input = mountShell().querySelector('input')
     if (input === null) throw new Error('no input')
     const running = trace()
+    input.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }))
+    input.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }))
     input.focus()
     input.value = 'typed secret'
     input.dispatchEvent(new Event('input', { bubbles: true }))
