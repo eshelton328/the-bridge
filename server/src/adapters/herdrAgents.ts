@@ -7,7 +7,8 @@
 // a workspace's tabs (tab.list) and each tab's split tree (layout.export),
 // and names each pane by the chat ID the list gives it. It reads only when
 // listWorkspaces or readLayout is called. subscribe holds one events.subscribe stream
-// open: each chat's status, and the panes and workspaces that come and go;
+// open: each chat's status, each workspace's layout changes, and the panes
+// and workspaces that come and go;
 // when one comes or goes it opens the stream again for the new panes and
 // tells the app to read the list again. herdr's pane IDs stay here: a chat's ID is its
 // agent session ID, or herdr's terminal ID when it has none or when another
@@ -154,6 +155,31 @@ const knownStatus = {
 const StatusChanged = z.object({
   event: z.literal('pane.agent_status_changed'),
   data: z.object({ pane_id: z.string(), agent_status: z.string() }),
+})
+
+/**
+ * The events that change a workspace's layout: a tab came, went, moved, was renamed or focused, a pane was
+ * focused, or a split changed. Each names its workspace, so the app reads that workspace's layout again.
+ */
+const layoutEvents = [
+  'tab.created',
+  'tab.closed',
+  'tab.renamed',
+  'tab.moved',
+  'tab.focused',
+  'pane.focused',
+  'layout.updated',
+] as const
+const isLayoutEvent: ReadonlySet<string> = new Set(layoutEvents)
+
+/** A layout event line: its workspace is in data, in data.layout or in data.tab. */
+const LayoutLine = z.object({
+  event: z.string(),
+  data: z.object({
+    workspace_id: z.string().optional(),
+    layout: z.object({ workspace_id: z.string() }).optional(),
+    tab: z.object({ workspace_id: z.string() }).optional(),
+  }),
 })
 
 /** The events that change the list: a pane or workspace came, went, moved or was renamed. */
@@ -410,12 +436,38 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
         if (over) return
         over = true
         clearTimeout(settle)
+        clearTimeout(layoutSettle)
         stream?.close()
         listening()
         onEnd(error)
       }
       const tell = (event: AgentEvent) => {
         if (!over) onEvent(event)
+      }
+
+      /** The workspace a layout event names, in the app's terms; undefined for any other line. */
+      const layoutWorkspaceOf = (line: unknown): WorkspaceId | undefined => {
+        const parsed = LayoutLine.safeParse(line)
+        if (!parsed.success) return undefined
+        // herdr names an event "tab.created" in a stream; accept its "tab_created" form too.
+        const name = parsed.data.event.includes('.') ? parsed.data.event : parsed.data.event.replace('_', '.')
+        const { data } = parsed.data
+        const local = data.workspace_id ?? data.layout?.workspace_id ?? data.tab?.workspace_id
+        const id = WorkspaceId.safeParse(`${machine}/${local ?? ''}`)
+        return isLayoutEvent.has(name) && local !== undefined && id.success ? id.data : undefined
+      }
+
+      /** Layout events come in bursts (a focus and a split change): tell each workspace once when it settles. */
+      const changedLayouts = new Set<WorkspaceId>()
+      let layoutSettle: ReturnType<typeof setTimeout> | undefined
+      const changedLayout = (workspace: WorkspaceId) => {
+        changedLayouts.add(workspace)
+        clearTimeout(layoutSettle)
+        layoutSettle = setTimeout(() => {
+          const changed = [...changedLayouts]
+          changedLayouts.clear()
+          for (const w of changed) tell({ type: 'layoutChanged', workspace: w })
+        }, settleMs)
       }
 
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
@@ -433,6 +485,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
         const chats = chatIdsOf(agents.value.agents, panes.value.panes)
         const subscriptions = [
           ...listEvents.map((type) => ({ type })),
+          ...layoutEvents.map((type) => ({ type })),
           ...[...chats.keys()].map((pane_id) => ({ type: 'pane.agent_status_changed', pane_id })),
         ]
         stream = herdrSubscribe(socket, subscriptions, {
@@ -443,9 +496,13 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
           onEvent: (line) => {
             const status = StatusChanged.safeParse(line)
             const chat = status.success ? chats.get(status.data.data.pane_id) : undefined
-            if (status.success && chat)
+            if (status.success && chat) {
               tell({ type: 'chatStatus', chat, status: statusOf(status.data.data.agent_status) })
-            else reopen()
+              return
+            }
+            const workspace = layoutWorkspaceOf(line)
+            if (workspace === undefined) reopen()
+            else changedLayout(workspace)
           },
           onEnd: (failure) => {
             end(portErrorOf(failure))
@@ -470,6 +527,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
           over = true
           listening()
           clearTimeout(settle)
+          clearTimeout(layoutSettle)
           stream?.close()
         },
       }

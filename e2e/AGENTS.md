@@ -22,6 +22,8 @@ not in CI or `pnpm verify`.
   (`pane.report_agent`), as an agent's hook would. herdr ignores such a
   report for a pane with a `herdr:claude` session, whose status it reads
   from the screen.
+- `renameTab.ts`: renames the e2e workspace's first tab (`tab.rename`),
+  a layout change for the contract suite's `layout.changed` case.
 - `fakeAgent.ts`: the fake agent. It writes a Claude Code session file
   where Claude Code puts one, prints a fixed script and reports itself
   to herdr as a Claude agent with that session.

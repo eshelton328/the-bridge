@@ -21,6 +21,9 @@ client of a socket or a file sits beside them.
 - A layout names each pane by the chat ID that the list gives it; a
   pane leaf's folder from `layout.export` stays here, and a tree that
   the contract cannot hold is `badReply` (`herdrAgents.test.ts`).
+- A tab, focus or split event that names its workspace is `layoutChanged`
+  for that workspace, once for each burst (100 ms); one that names no
+  workspace reads the list again (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once

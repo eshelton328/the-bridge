@@ -9,9 +9,13 @@ import type { Result } from '@bridge/shared'
 /** Why a port could not answer: the agents' host did not answer, or its reply had an unknown shape. */
 export type AgentPortError = { readonly reason: 'unreachable' | 'badReply'; readonly message: string }
 
-/** What a subscription tells: a chat's new status, or that the list of workspaces and chats changed. */
+/**
+ * What a subscription tells: a chat's new status, that a workspace's tabs or panes changed (read its layout
+ * again), or that the list of workspaces and chats changed.
+ */
 export type AgentEvent =
   | { readonly type: 'chatStatus'; readonly chat: ChatId; readonly status: ChatStatus }
+  | { readonly type: 'layoutChanged'; readonly workspace: WorkspaceId }
   | { readonly type: 'workspacesChanged' }
 
 export type AgentSubscription = {

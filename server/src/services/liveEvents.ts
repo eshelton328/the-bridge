@@ -29,9 +29,14 @@ export function createLiveEvents(agents: AgentPort): LiveEvents {
 
   const envelope = (event: AgentEvent): LiveEvent => {
     const base = { source, seq: seq++ }
-    return event.type === 'chatStatus'
-      ? { ...base, type: 'chat.status', data: { chat: event.chat satisfies ChatId, status: event.status } }
-      : { ...base, type: 'workspaces.changed', data: {} }
+    switch (event.type) {
+      case 'chatStatus':
+        return { ...base, type: 'chat.status', data: { chat: event.chat satisfies ChatId, status: event.status } }
+      case 'layoutChanged':
+        return { ...base, type: 'layout.changed', data: { workspace: event.workspace } }
+      case 'workspacesChanged':
+        return { ...base, type: 'workspaces.changed', data: {} }
+    }
   }
 
   const broadcast = (event: AgentEvent) => {

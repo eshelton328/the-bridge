@@ -17,6 +17,8 @@ export type ContractSetup = {
   }
   /** Gives the expected chat `status` (`working` or `idle`), as its agent would. */
   readonly setStatus: (status: 'working' | 'idle') => Promise<void>
+  /** Changes the layout of the expected workspace (such as a tab's name), as the owner would in herdr. */
+  readonly changeLayout: () => Promise<void>
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
   readonly unreachable: AgentPort
 }
@@ -108,6 +110,25 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
         return read.value.map((w) => [w.id, w.chats.map((c) => c.id)])
       }
       expect(await ids()).toEqual(await ids())
+    })
+
+    it("tells a subscriber when a workspace's layout changes, with the workspace's listed ID", async () => {
+      const { port, expected, changeLayout } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const workspace = list.value.find((w) => w.label === expected.workspace)
+      if (!workspace) throw new Error(`no workspace ${expected.workspace}`)
+      const events: AgentEvent[] = []
+      const subscription = port.subscribe(
+        (event) => events.push(event),
+        () => undefined,
+      )
+      await subscription.ready
+      await changeLayout()
+      await until('the layout event', () =>
+        events.some((e) => e.type === 'layoutChanged' && e.workspace === workspace.id),
+      )
+      subscription.close()
     })
 
     it("tells a subscriber a chat's new status with the chat's listed ID, and nothing after close", async () => {

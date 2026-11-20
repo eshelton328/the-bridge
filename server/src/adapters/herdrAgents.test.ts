@@ -157,6 +157,13 @@ describeAgentPort('herdr (recorded socket)', () =>
       socket.push(statusLine('w17:p1', status))
       return Promise.resolve()
     },
+    changeLayout: () => {
+      socket.push({
+        event: 'tab.renamed',
+        data: { type: 'tab_renamed', tab_id: 'w17:t1', workspace_id: 'w17', label: 'renamed' },
+      })
+      return Promise.resolve()
+    },
     unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, log, claudeProjects: projects }),
   }),
 )
@@ -211,6 +218,13 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
     },
     setStatus: (status) => {
       resumed.push(statusLine('w17:p2', status))
+      return Promise.resolve()
+    },
+    changeLayout: () => {
+      resumed.push({
+        event: 'tab.renamed',
+        data: { type: 'tab_renamed', tab_id: 'w17:t1', workspace_id: 'w17', label: 'renamed' },
+      })
       return Promise.resolve()
     },
     unreachable: createHerdrAgents({ socket: `${resumed.path}.none`, machine, log, claudeProjects: projects }),
@@ -537,6 +551,13 @@ describe('herdr agents: subscribe', () => {
         { type: 'pane.closed' },
         { type: 'pane.moved' },
         { type: 'pane.agent_detected' },
+        { type: 'tab.created' },
+        { type: 'tab.closed' },
+        { type: 'tab.renamed' },
+        { type: 'tab.moved' },
+        { type: 'tab.focused' },
+        { type: 'pane.focused' },
+        { type: 'layout.updated' },
         { type: 'pane.agent_status_changed', pane_id: 'w17:p1' },
         { type: 'pane.agent_status_changed', pane_id: 'w17:p2' },
         { type: 'pane.agent_status_changed', pane_id: 'w18:p1' },
@@ -591,6 +612,33 @@ describe('herdr agents: subscribe', () => {
     expect(socket.connections()).toBe(before + 3)
     expect(socket.streams()).toHaveLength(1)
     subscription.close()
+  })
+
+  it("tells one layoutChanged for a burst of one workspace's layout events, and keeps the stream", async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    events.length = 0
+    const before = socket.connections()
+    socket.push({ event: 'pane.focused', data: { type: 'pane_focused', pane_id: 'w17:p2', workspace_id: 'w17' } })
+    socket.push({
+      event: 'layout.updated',
+      data: { type: 'layout_updated', layout: { workspace_id: 'w17', tab_id: 'w17:t1' } },
+    })
+    socket.push({ event: 'tab_created', data: { type: 'tab_created', tab: { tab_id: 'w17:t2', workspace_id: 'w17' } } })
+    await wait(400)
+    subscription.close()
+    expect(events).toEqual([{ type: 'layoutChanged', workspace: 'test-mac/w17' }])
+    expect(socket.connections()).toBe(before)
+  })
+
+  it('treats a layout event that names no workspace as a list change', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    events.length = 0
+    socket.push({ event: 'tab.focused', data: { type: 'tab_focused', tab_id: 'w17:t1' } })
+    await wait(400)
+    subscription.close()
+    expect(events).toEqual([{ type: 'workspacesChanged' }])
   })
 
   it('treats a status line of an unknown pane as a list change', async () => {
