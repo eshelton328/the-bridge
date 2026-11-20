@@ -22,8 +22,8 @@ function scrolls(element: Element): boolean {
 /**
  * The least height of the pane in `panel`, in px: from its top to the end of its last part marked
  * `paneFloorAttribute` (a chat's composer) at that part's full height, else to the top of what scrolls (a shell's
- * lines), with the padding and border below it in each box up to the pane. What scrolls can shrink to nothing, so
- * the pane's height now does not count. 0 when the panel holds no pane.
+ * lines), with the padding and border below it in each box up to the pane. What scrolls above that part (a chat's
+ * transcript) can shrink to nothing, so its height now is left out. 0 when the panel holds no pane.
  */
 export function floorOf(panel: Element): number {
   const pane = panel.querySelector('section')
@@ -31,7 +31,17 @@ export function floorOf(panel: Element): number {
   const kept = [...pane.querySelectorAll(`[${paneFloorAttribute}]`)].at(-1)
   const anchor = kept ?? [...pane.querySelectorAll('*')].find(scrolls)
   if (anchor === undefined) return pane.getBoundingClientRect().height
-  let end = anchor.getBoundingClientRect().top - pane.getBoundingClientRect().top + (kept?.scrollHeight ?? 0)
+  const top = anchor.getBoundingClientRect().top
+  // The outermost boxes that scroll and end above the anchor.
+  const above = [...pane.querySelectorAll('*')].filter(
+    (element) => scrolls(element) && !element.contains(anchor) && element.getBoundingClientRect().bottom <= top + 0.5,
+  )
+  const outer = above.filter((element) => !above.some((other) => other !== element && other.contains(element)))
+  let end =
+    top -
+    pane.getBoundingClientRect().top -
+    outer.reduce((sum, element) => sum + element.getBoundingClientRect().height, 0) +
+    (kept?.scrollHeight ?? 0)
   for (let box = anchor.parentElement; box !== null && pane.contains(box); box = box.parentElement) end += below(box)
   return end
 }

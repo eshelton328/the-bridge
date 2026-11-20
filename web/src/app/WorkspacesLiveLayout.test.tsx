@@ -415,6 +415,20 @@ describe("a live workspace's herdr layout on the desktop (slice 3a)", () => {
     expect(getReports().filter((r) => r.error.name === 'LayoutReadMissError')).toHaveLength(1)
   })
 
+  it('lets the owner drag the handle of two stacked chats, whose floors leave out the transcript', async () => {
+    fakeServer(chats, { [live]: oneTab(column(0.5, pane(plan), pane(tokens)), plan) })
+    await showPanes(true)
+    await expect.element(maximise(tokens)).toBeVisible()
+    const handle = page.getByRole('separator', { name: 'Resize rows' })
+    await expect.element(handle).toHaveAttribute('aria-valuenow', '50')
+    // Each pane is far higher than its header and composer, so the handle moves both ways.
+    await userEvent.click(handle)
+    for (let i = 0; i < 5; i += 1) await userEvent.keyboard('{ArrowUp}')
+    await expect.poll(() => Number(handle.element().getAttribute('aria-valuenow'))).toBeLessThan(50)
+    for (let i = 0; i < 10; i += 1) await userEvent.keyboard('{ArrowDown}')
+    await expect.poll(() => Number(handle.element().getAttribute('aria-valuenow'))).toBeGreaterThan(50)
+  })
+
   it('draws the focused pane of a tree of six, not only the first four', async () => {
     const six = [review, logs, tokens, drift, evals].reduce<Node>((above, c) => column(0.5, above, pane(c)), pane(plan))
     fakeServer(chats, { [live]: oneTab(six, drift) })
