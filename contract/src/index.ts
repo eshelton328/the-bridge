@@ -5,4 +5,15 @@ export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export { chatsOf, LayoutNode, SplitDirection, TabLayout, WorkspaceLayout } from './layout.ts'
 export { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
+export {
+  AssistantEntry,
+  EntryId,
+  maxEntryText,
+  maxTranscriptEntries,
+  ToolEntry,
+  TranscriptChangedEvent,
+  TranscriptEntry,
+  TranscriptResponse,
+  UserEntry,
+} from './transcripts.ts'
 export { ChatKind, ChatParent, ChatStatus, ChatSummary, WorkspaceSummary, WorkspacesResponse } from './workspaces.ts'

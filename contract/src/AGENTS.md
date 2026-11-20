@@ -21,5 +21,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   does, never by a herdr pane ID; `TabLayout` checks that its chats are
   its panes in tree order and that the focused chat is in the tree
   (`layout.test.ts`).
+- A transcript entry has an ID that is stable in its chat; a change
+  event replaces the entry with that ID or adds it at the end. A tool
+  entry has a name and a short target, never its arguments or its
+  result (`transcripts.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
