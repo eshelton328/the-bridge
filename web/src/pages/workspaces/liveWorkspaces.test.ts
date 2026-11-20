@@ -207,6 +207,22 @@ describe('withLiveWorkspaces', () => {
     expect(checkState(WorkspacesState, state).ok).toBe(true)
   })
 
+  it('gives each workspace its own layout of its own chats, its first chat focused', async () => {
+    const state = await withLiveWorkspaces(workspacesHome, {
+      client: client(),
+      fetch: () => Promise.resolve(ok(response)),
+    })
+    expect(state.ui.layouts).toEqual({
+      'omni-brain': {
+        panes: ['bridge-themes', 'theme-tokens', 'drift-check', 'brain-git'],
+        focusedPane: 'bridge-themes',
+      },
+      'the-bridge': { panes: ['hono-server', 'dev-server'], focusedPane: 'hono-server' },
+      omni: { panes: ['release-notes'], focusedPane: 'release-notes' },
+      'skill-evals': { panes: ['eval-round'], focusedPane: 'eval-round' },
+    })
+  })
+
   it('gives each live chat a pane with no sample text: its transcript and terminal are not live yet (d-117)', async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
       client: client(),

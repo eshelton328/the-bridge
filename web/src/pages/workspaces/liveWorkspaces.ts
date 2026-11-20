@@ -28,6 +28,7 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
+import { maxPanes } from './blocks/workspaceLayout.ts'
 import type { SidebarChat, WorkbenchPane, Workspace, WorkspacesData, WorkspacesUi } from './types.ts'
 
 type WorkspacesScreenState = ScreenState<WorkspacesData, WorkspacesUi>
@@ -145,21 +146,34 @@ export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
   )
 }
 
+/** The first chat of `ids` that is not a shell, else the first: the pane a workspace's layout focuses. */
+const focusOf = (ids: readonly string[], panes: readonly WorkbenchPane[]) =>
+  ids.find((id) => panes.find((p) => p.id === id)?.type === 'chat') ?? ids[0]
+
 /**
- * `state` with only what the live source gives: `workspaces` and a pane for each of their chats, the first chat
- * focused, and none of the home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast).
- * With no workspaces (an empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
+ * `state` with only what the live source gives: `workspaces`, a pane for each of their chats, and each workspace's
+ * own layout of its first `maxPanes` chats, its first chat focused, so a tab shows only its own chats; none of the
+ * home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast). With no workspaces (an
+ * empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
  */
 function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): WorkspacesScreenState {
   const panes = livePanes(workspaces)
   const data = state.data
-  const first = panes.find((p) => p.type === 'chat') ?? panes[0]
+  const layouts = Object.fromEntries(
+    workspaces.map((w) => {
+      const ids = (w.chats ?? []).map((c) => c.id).slice(0, maxPanes)
+      const focusedPane = focusOf(ids, panes)
+      return [w.id, focusedPane === undefined ? { panes: ids } : { panes: ids, focusedPane }]
+    }),
+  )
+  const current = workspaces[0]?.id ?? null
+  const focused = current === null ? undefined : layouts[current]?.focusedPane
   return {
     ...state,
     data: {
       ...data,
       workspaces,
-      current: workspaces[0]?.id ?? null,
+      current,
       panes,
       sideChat: undefined,
       subagents: undefined,
@@ -171,7 +185,13 @@ function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): Worksp
         ? {}
         : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
     },
-    ui: { ...state.ui, focusedPane: first?.id ?? state.ui.focusedPane, sideChatOpen: false, subagentsOpen: false },
+    ui: {
+      ...state.ui,
+      focusedPane: focused ?? state.ui.focusedPane,
+      layouts,
+      sideChatOpen: false,
+      subagentsOpen: false,
+    },
   }
 }
 

@@ -47,7 +47,7 @@ import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
-import { shownView } from '../blocks/workspaceLayout.ts'
+import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 
@@ -316,7 +316,10 @@ function WorkspacesLayout({
               text={data.sidebar}
               workspaces={workspaces}
               selected={ui.focusedPane}
-              openable={shown.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
+              openable={openableChats(named, ui)}
+              onSelect={(picked) => {
+                change(openChat(named, ui, picked))
+              }}
               ui={ui}
               onUiChange={change}
               layers={data.layers}

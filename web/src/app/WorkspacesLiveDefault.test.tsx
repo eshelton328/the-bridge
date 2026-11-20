@@ -28,23 +28,27 @@ const sample = ['bridge themes', 'release notes', 'omni-brain', 'hono server']
 
 type Chat = { local: string; kind: 'claude' | 'codex' | 'shell'; title: string; model: string | null }
 
-const workspacesBody = (chats: readonly Chat[]) =>
+const summary = (c: Chat) => ({
+  id: `mac-mini/${c.local}`,
+  kind: c.kind,
+  title: c.title,
+  model: c.model,
+  contextUsed: null,
+  status: 'idle',
+  parent: null,
+})
+
+/** The server's answer: `chats` in the workspace "live work", then each of `more` with its own chats. */
+const workspacesBody = (chats: readonly Chat[], more: readonly { label: string; chats: readonly Chat[] }[] = []) =>
   JSON.stringify({
     machine: 'mac-mini',
     workspaces: [
-      {
-        id: 'mac-mini/w-live',
-        label: 'live work',
-        chats: chats.map((c) => ({
-          id: `mac-mini/${c.local}`,
-          kind: c.kind,
-          title: c.title,
-          model: c.model,
-          contextUsed: null,
-          status: 'idle',
-          parent: null,
-        })),
-      },
+      { id: 'mac-mini/w-live', label: 'live work', chats: chats.map(summary) },
+      ...more.map((w) => ({
+        id: `mac-mini/w-${w.label.replace(' ', '-')}`,
+        label: w.label,
+        chats: w.chats.map(summary),
+      })),
     ],
   })
 
@@ -104,7 +108,11 @@ function fakeServer(first: (() => Response) | 'down') {
   }
 }
 
-const ok = (chats: readonly Chat[]) => () => new Response(workspacesBody(chats), { status: 200 })
+const ok =
+  (chats: readonly Chat[], more: readonly { label: string; chats: readonly Chat[] }[] = []) =>
+  () =>
+    new Response(workspacesBody(chats, more), { status: 200 })
+const review: Chat = { local: 'p3', kind: 'codex', title: 'review notes', model: 'gpt-5.5' }
 const errorAnswer = (status: number, kind: string) => () =>
   new Response(JSON.stringify({ error: { kind, message: 'it failed', requestId: 'r-7' } }), { status })
 
@@ -210,6 +218,42 @@ describe('Workspaces on the live source by default (d-117)', () => {
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
     await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+    await expect.element(noticeAlert()).not.toBeInTheDocument()
+  })
+
+  it("opens each workspace's own chats: from the sidebar, and in its tab with the sidebar hidden", async () => {
+    fakeServer(ok([plan], [{ label: 'second space', chats: [review] }]))
+    await setViewport(1512, 982)
+    await openApp()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+    // A chat of the second workspace opens alone from the sidebar.
+    await userEvent.click(page.getByRole('button', { name: 'review notes', exact: true }))
+    await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
+    await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+    // With the sidebar hidden, each tab shows its own chat, not the other workspace's.
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await userEvent.click(page.getByRole('tab', { name: /live work/ }))
+    await expect.element(page.getByRole('button', { name: 'Maximise plan the slice' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Maximise review notes' })).not.toBeInTheDocument()
+    await userEvent.click(page.getByRole('tab', { name: /second space/ }))
+    await expect.element(page.getByRole('button', { name: 'Maximise review notes' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Maximise plan the slice' })).not.toBeInTheDocument()
+  })
+
+  it('keeps the notice and Retry with the desktop sidebar hidden, with the server down', async () => {
+    const server = fakeServer('down')
+    await setViewport(1512, 982)
+    await openApp()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await expect.element(noticeAlert()).toBeVisible()
+    await expect.poll(() => server.reads.length).toBe(2)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(noticeAlert()).toBeVisible()
+    await expectNoSample()
+    server.answer(ok([plan]))
+    await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
+    await expect.element(page.getByRole('button', { name: 'Maximise plan the slice' })).toBeVisible()
     await expect.element(noticeAlert()).not.toBeInTheDocument()
   })
 
