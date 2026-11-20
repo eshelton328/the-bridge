@@ -161,6 +161,8 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
         const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        // The workspace's layout (slice 3a) misses, so its panes are its first chats.
+        if (url.endsWith('/layout')) return Promise.resolve(new Response('', { status: 503 }))
         return url.includes('/api/workspaces')
           ? Promise.resolve(new Response(body, { status: 200 }))
           : Promise.reject(new TypeError(`no stub for ${url}`))

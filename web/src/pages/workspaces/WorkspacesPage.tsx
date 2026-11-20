@@ -12,6 +12,7 @@ import { useEffect, useMemo } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
 
@@ -41,15 +42,23 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
-  // One object per change, so the screen starts again from the merged ui only when the store changes.
-  const ui = useMemo(() => ({ ...state.ui, ...changed }), [state.ui, changed])
+  // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
+  // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
+  const current = state.data.current
+  const ui = useMemo(() => withLoadedLayouts(state.ui, changed, current), [state.ui, changed, current])
   return (
     <WorkspacesScreen
       data={state.data}
       ui={ui}
       viewport="desktop"
       onUiChange={(change) => {
-        setUi(search.state, change)
+        // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
+        // replaces only what he changed before it came.
+        setUi(search.state, {
+          ...(ui.layouts === undefined ? {} : { layouts: ui.layouts, focusedPane: ui.focusedPane }),
+          ...change,
+          layoutsSeen: layoutsSeenOf(state.ui.layouts),
+        })
       }}
       onRetry={() => void router.invalidate()}
       onSend={(chat, text) =>

@@ -723,6 +723,14 @@ export type PaneDrop = z.infer<typeof PaneDrop>
 export const Skill = z.object({ name: z.string(), description: z.string() })
 export type Skill = z.infer<typeof Skill>
 
+/**
+ * How a split places its panes when it is not the library's `SplitPanes`, which splits the columns first:
+ * - `rows` (D14): the first two panes side by side in the top row and the others in the bottom row, each row with its
+ *   own column handle;
+ * - `stack`: the panes one above the other, as herdr's `column` split of two panes (slice 3a).
+ */
+const PaneSplit = z.enum(['rows', 'stack'])
+
 const WorkspacesDataFields = z.object({
   /** The number of Inbox items that need the owner, on the rail. */
   railBadge: z.number(),
@@ -777,11 +785,8 @@ const WorkspacesDataFields = z.object({
   folderPicker: FolderPicker.optional(),
   /** The drop zone's text while a chat is dragged onto the chat shown alone (D6) or a pane of the workbench (D8). */
   paneDrop: PaneDrop.optional(),
-  /**
-   * `rows` (D14): the split puts the first two panes side by side in the top row and the others in the bottom row,
-   * each row with its own column handle. When not set, the library's `SplitPanes` splits the columns first.
-   */
-  split: z.enum(['rows']).optional(),
+  /** How the split places the panes (`PaneSplit`); the library's `SplitPanes`, columns first, when not set. */
+  split: PaneSplit.optional(),
   /** The readout beside a handle while the owner drags it (D14), such as "{ratio}  ·  double-click for 50 : 50". */
   resizeHint: z.string().optional(),
   /**
@@ -831,6 +836,8 @@ export const WorkspaceLayout = z.object({
   panes: z.array(z.string()),
   splitSizes: SplitSizes.optional(),
   focusedPane: z.string().optional(),
+  /** How its split places the panes (`PaneSplit`); the state's own for `data.current` when not set. */
+  split: PaneSplit.optional(),
   /** The workspace's side chat is open (`ui.sideChatOpen`); closed when not set. */
   sideChatOpen: z.boolean().optional(),
 })
@@ -909,6 +916,12 @@ export const WorkspacesUi = z.object({
    * is `data.current`, and its last chat (`data.lastChats`) alone in one pane when it is another.
    */
   layouts: z.record(z.string(), WorkspaceLayout).optional(),
+  /**
+   * The loaded state's layouts, by workspace id, each as JSON, when the owner last changed the `ui`
+   * (`blocks/workspaceLayout.ts`, `withLoadedLayouts`): a loaded layout that differs is newer than his change, such as
+   * a herdr layout read again (slice 3a), and replaces his layout of that workspace.
+   */
+  layoutsSeen: z.record(z.string(), z.string()).optional(),
   /**
    * What the owner has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
    * when its pane mounts again, after a visit to another page or a closed pane, so it starts from its draft here.

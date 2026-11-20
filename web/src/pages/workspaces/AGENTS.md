@@ -17,6 +17,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   workspaces, never the sample ones, and `blocks/LiveNotice.tsx` with
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`).
+- Each live workspace's panes are its herdr layout's active tab (slice
+  3a): `liveWorkspaces.ts` reads `GET /api/workspaces/:workspace/layout`
+  on load, on `workspaces.changed` and on that workspace's
+  `layout.changed`, and `liveLayout.ts` maps the split tree to the
+  page's splits by the rule in its header. A layout read that misses
+  keeps the first four chats as the panes, with no notice and no report
+  (`app/WorkspacesLiveLayout.test.tsx`).
 
 ## Rules
 

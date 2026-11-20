@@ -15,22 +15,32 @@
 // current from the server's events (`GET /api/events`, SSE) and tells the
 // page to load again, at most once each `settleMs`; once the stream opens
 // again after an outage, the page loads again and the notice goes.
+// Slice 3a: each workspace's panes are its herdr layout's active tab
+// (`GET /api/workspaces/:workspace/layout`, liveLayout.ts), read with the
+// list and again on `workspaces.changed` or that workspace's
+// `layout.changed`. A layout read that misses keeps the workspace's first
+// `maxPanes` chats as its panes; it is an expected miss, so the page shows
+// no notice and nothing is reported. A layout the contract refuses throws,
+// as a list it refuses does.
 import {
   type ChatSummary,
   ErrorBody,
   type ErrorKind,
   LiveEvent,
   splitId,
+  type WorkspaceId,
+  WorkspaceLayout as LayoutResponse,
   type WorkspaceSummary,
   WorkspacesResponse,
 } from '@bridge/contract'
-import type { QueryClient } from '@tanstack/react-query'
+import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
-import type { SidebarChat, WorkbenchPane, Workspace, WorkspacesData, WorkspacesUi } from './types.ts'
+import { layoutOfTab } from './liveLayout.ts'
+import type { SidebarChat, WorkbenchPane, Workspace, WorkspaceLayout, WorkspacesData, WorkspacesUi } from './types.ts'
 
 type WorkspacesScreenState = ScreenState<WorkspacesData, WorkspacesUi>
 
@@ -165,15 +175,22 @@ const focusOf = (ids: readonly string[], panes: readonly WorkbenchPane[]) =>
 
 /**
  * `state` with only what the live source gives: `workspaces`, a pane for each of their chats, and each workspace's
- * own layout of its first `maxPanes` chats, its first chat focused, so a tab shows only its own chats; none of the
- * home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast, the status bar's alert).
- * With no workspaces (an empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
+ * own layout, so a tab shows only its own chats: its herdr layout from `herdr` by workspace ID, else its first
+ * `maxPanes` chats with its first chat that is not a shell focused; none of the home's sample parts (side chat,
+ * subagents, folders, a workspace's last chat, the toast, the status bar's alert). With no workspaces (an empty live
+ * list or a missed read) no workspace is shown, never one of the sample's (P-3).
  */
-function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): WorkspacesScreenState {
+function liveOnly(
+  state: WorkspacesScreenState,
+  workspaces: Workspace[],
+  herdr: ReadonlyMap<string, WorkspaceLayout> = new Map(),
+): WorkspacesScreenState {
   const panes = livePanes(workspaces)
   const data = state.data
   const layouts = Object.fromEntries(
-    workspaces.map((w) => {
+    workspaces.map((w): [string, WorkspaceLayout] => {
+      const read = herdr.get(w.id)
+      if (read !== undefined) return [w.id, read]
       const ids = (w.chats ?? []).map((c) => c.id).slice(0, maxPanes)
       const focusedPane = focusOf(ids, panes)
       return [w.id, focusedPane === undefined ? { panes: ids } : { panes: ids, focusedPane }]
@@ -282,22 +299,35 @@ function missOf(status: number, body: string, headerRequestId: string | undefine
 const timedOut = (signal: AbortSignal) =>
   signal.aborted && signal.reason instanceof DOMException && signal.reason.name === 'TimeoutError'
 
+/** What a read needs of the RPC client's answer. */
+type Answer = {
+  readonly ok: boolean
+  readonly status: number
+  readonly headers: Headers
+  text: () => Promise<string>
+  json: () => Promise<unknown>
+}
+
 /**
- * Reads the workspaces through the RPC client and checks them against the contract. The status comes first: an
- * error answer may not be JSON (the Vite proxy or `tailscale serve` with the server down), so its body is read as
- * text and parsed only if it can be. An expected miss is the Result's error; a reply the contract refuses throws.
- * `signal` ends the read: on its timeout the read is a `timeout` miss; on any other abort, such as the owner
- * leaving the page, it throws the abort.
+ * Reads the server through the RPC client (`call`) and checks the answer with `parse`, the contract's schema. The
+ * status comes first: an error answer may not be JSON (the Vite proxy or `tailscale serve` with the server down), so
+ * its body is read as text and parsed only if it can be. An expected miss is the Result's error; a reply the contract
+ * refuses throws. `signal` ends the read: on its timeout the read is a `timeout` miss; on any other abort, such as the
+ * owner leaving the page, it throws the abort.
  */
-export async function fetchWorkspaces(signal: AbortSignal): Promise<Result<WorkspacesResponse, LiveMiss>> {
+async function readChecked<T>(
+  call: (signal: AbortSignal) => Promise<Answer>,
+  parse: (body: unknown) => T,
+  signal: AbortSignal,
+): Promise<Result<T, LiveMiss>> {
   const timeout = {
     kind: 'timeout',
     requestId: undefined,
     message: `the server did not answer within ${String(liveReadTimeoutMs / 1000)} s`,
   } as const
-  let res: Awaited<ReturnType<typeof api.api.workspaces.$get>>
+  let res: Answer
   try {
-    res = await api.api.workspaces.$get(undefined, { init: { signal } })
+    res = await call(signal)
   } catch (thrown) {
     if (timedOut(signal)) return err(timeout)
     // fetch rejects with a TypeError when no answer comes: the server or the tailnet cannot be reached.
@@ -308,7 +338,7 @@ export async function fetchWorkspaces(signal: AbortSignal): Promise<Result<Works
   try {
     if (!res.ok) return err(missOf(res.status, await res.text(), res.headers.get('X-Request-Id') ?? undefined))
     const body: unknown = await res.json()
-    return ok(WorkspacesResponse.parse(body))
+    return ok(parse(body))
   } catch (thrown) {
     // The body can stall after the headers; the timeout ends that read too.
     if (timedOut(signal)) return err(timeout)
@@ -318,6 +348,28 @@ export async function fetchWorkspaces(signal: AbortSignal): Promise<Result<Works
       return err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' })
     throw thrown
   }
+}
+
+/** Reads the workspaces and checks them against the contract (`readChecked`). */
+export function fetchWorkspaces(signal: AbortSignal): Promise<Result<WorkspacesResponse, LiveMiss>> {
+  return readChecked(
+    (init) => api.api.workspaces.$get(undefined, { init: { signal: init } }),
+    (body) => WorkspacesResponse.parse(body),
+    signal,
+  )
+}
+
+/** Reads one workspace's tabs and panes, its ID URL-encoded, and checks them against the contract (`readChecked`). */
+function fetchLayout(workspace: WorkspaceId, signal: AbortSignal): Promise<Result<LayoutResponse, LiveMiss>> {
+  return readChecked(
+    (init) =>
+      api.api.workspaces[':workspace'].layout.$get(
+        { param: { workspace: encodeURIComponent(workspace) } },
+        { init: { signal: init } },
+      ),
+    (body) => LayoutResponse.parse(body),
+    signal,
+  )
 }
 
 /**
@@ -393,6 +445,8 @@ function noticeOf(miss: LiveMiss): { title: string; description: string } {
 }
 
 const queryKey = ['workspaces']
+/** A workspace's layout in the query cache, under the list's key, so whatever marks the list invalid marks it too. */
+const layoutKey = (workspace: string): QueryKey => ['workspaces', 'layout', workspace]
 
 /** How many watchers are open; while one is, the cache is current. */
 let watching = 0
@@ -402,8 +456,16 @@ let stopped: string | undefined
 let lost: string | undefined
 /** How many events the watchers took; a read that saw it change while it ran may hold older data. */
 let taken = 0
-/** The open watcher's way to mark the cache invalid and load again. */
-let reload: (() => void) | undefined
+/** How many `layout.changed` events the watchers took for each workspace, by ID, as `taken` counts for the list. */
+const layoutsTaken = new Map<string, number>()
+/**
+ * The workspaces of the last list a load read, by ID: the page shows their layouts. A `layout.changed` event for one
+ * of them reads it again even when its query is gone, as the query client drops a query no component observes after
+ * five idle minutes.
+ */
+const shownWorkspaces = new Set<string>()
+/** The open watcher's way to mark the cache invalid (the list and every layout, or the query of `key`) and load again. */
+let reload: ((key?: QueryKey) => void) | undefined
 
 /** Opens the event stream; `signal` aborts it. */
 type OpenStream = (signal: AbortSignal) => Promise<Response>
@@ -483,9 +545,10 @@ const openEvents: OpenStream = (signal) =>
 /**
  * Reads the event stream and keeps the workspaces in the query cache current: a `chat.status` event changes
  * the chat's status there; `workspaces.changed`, an event the cache cannot take, and each time the stream
- * opens (the first time and after it connects again) mark the cache invalid, so the next load reads the
- * server. A burst of events gives one `onChange`. When the stream ends or the network drops, it connects
- * again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
+ * opens (the first time and after it connects again) mark the cache invalid, with every layout, so the next load
+ * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the page shows that
+ * workspace (`shownWorkspaces`): a workspace the page does not show is not read. A burst of events gives one
+ * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
  * dev ErrorTray once for each outage; a 5xx is an outage too, as the Vite proxy answers 5xx while the server is down.
  * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
  * ErrorTray, as a failed read does. The result stops it.
@@ -508,13 +571,29 @@ export function watchLiveWorkspaces({
       onChange()
     }, settleMs)
   }
-  const invalidate = () => {
-    void client.invalidateQueries({ queryKey, refetchType: 'none' })
+  const invalidate = (key: QueryKey = queryKey) => {
+    void client.invalidateQueries({ queryKey: key, refetchType: 'none' })
     changed()
   }
   reload = invalidate
+  const takeLayout = (frame: Frame) => {
+    const parsed = LiveEvent.safeParse(readJson(frame.data))
+    // An event the page cannot read may name any workspace: read them all again.
+    if (!parsed.success || parsed.data.type !== 'layout.changed') {
+      invalidate()
+      return
+    }
+    const { workspace } = parsed.data.data
+    layoutsTaken.set(workspace, (layoutsTaken.get(workspace) ?? 0) + 1)
+    if (!shownWorkspaces.has(workspace)) return
+    invalidate(layoutKey(workspace))
+  }
   const take = (frame: Frame) => {
     if (frame.retry !== undefined) retryMs = frame.retry
+    if (frame.event === 'layout.changed') {
+      takeLayout(frame)
+      return
+    }
     if (frame.event === 'open' || frame.event === 'workspaces.changed' || frame.event === 'chat.status') taken += 1
     if (frame.event === 'open' || frame.event === 'workspaces.changed') {
       invalidate()
@@ -591,6 +670,8 @@ export type LiveDeps = {
   readonly client?: QueryClient
   /** Reads the server; `signal` ends the read. */
   readonly fetch?: (signal: AbortSignal) => Promise<Result<WorkspacesResponse, LiveMiss>>
+  /** Reads one workspace's layout; `signal` ends the read. */
+  readonly fetchLayout?: (workspace: WorkspaceId, signal: AbortSignal) => Promise<Result<LayoutResponse, LiveMiss>>
   /** The router's signal for this load: it aborts when the owner leaves the page or the load starts again. */
   readonly signal?: AbortSignal | undefined
 }
@@ -605,7 +686,7 @@ export type LiveDeps = {
  */
 export async function withLiveWorkspaces(
   state: WorkspacesScreenState,
-  { client = queryClient, fetch = fetchWorkspaces, signal }: LiveDeps = {},
+  { client = queryClient, fetch = fetchWorkspaces, fetchLayout: readLayout = fetchLayout, signal }: LiveDeps = {},
 ): Promise<WorkspacesScreenState> {
   // While the events keep the cache current, a load reads the cache; an event that cannot be applied to it
   // marks it invalid, and then the load reads the server.
@@ -640,7 +721,57 @@ export async function withLiveWorkspaces(
       data: { ...empty.data, status: { ...empty.data.status, alert }, liveNotice: noticeOf(thrown.miss) },
     }
   }
-  const live = liveOnly(state, toWorkspaces(response))
+  const workspaces = toWorkspaces(response)
+  const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
+  const live = liveOnly(state, workspaces, herdr)
   const alert = stopped ?? lost
   return alert === undefined ? live : { ...live, data: { ...live.data, status: { ...live.data.status, alert } } }
+}
+
+/**
+ * The herdr layout of each workspace of `response` as the page's own (`layoutOfTab`), by the page's workspace ID, each
+ * read through the query client as the list is, so the loads of a burst share one read. A workspace whose read missed
+ * has none, so the page keeps its first chats (`liveOnly`): an expected miss, which is not reported. A layout the
+ * contract refuses rejects, for RouteError.
+ */
+async function layoutsOf(
+  response: WorkspacesResponse,
+  workspaces: readonly Workspace[],
+  client: QueryClient,
+  fetch: NonNullable<LiveDeps['fetchLayout']>,
+): Promise<Map<string, WorkspaceLayout>> {
+  const read =
+    (id: WorkspaceId) =>
+    async ({ signal: cancel }: { signal: AbortSignal }) => {
+      const before = [taken, layoutsTaken.get(id) ?? 0]
+      const answer = await fetch(id, AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+      if (!answer.ok) throw new LiveMissError(answer.error)
+      // An event during the read may be newer than its answer: read this layout again once the answer is cached.
+      if (before[0] !== taken || before[1] !== (layoutsTaken.get(id) ?? 0))
+        setTimeout(() => {
+          reload?.(layoutKey(id))
+        }, 0)
+      return answer.value
+    }
+  shownWorkspaces.clear()
+  for (const summary of response.workspaces) shownWorkspaces.add(summary.id)
+  const pairs = await Promise.all(
+    response.workspaces.map(async (summary, at): Promise<[string, WorkspaceLayout] | undefined> => {
+      const workspace = workspaces[at]
+      if (workspace === undefined) return undefined
+      try {
+        const layout = await client.query({
+          queryKey: layoutKey(summary.id),
+          queryFn: read(summary.id),
+          staleTime: watching > 0 ? Infinity : 0,
+        })
+        const shells = new Set((workspace.chats ?? []).filter((c) => c.kind === 'shell').map((c) => c.id))
+        return [workspace.id, layoutOfTab(layout.tabs, (id) => shells.has(id))]
+      } catch (thrown) {
+        if (thrown instanceof LiveMissError) return undefined
+        throw thrown
+      }
+    }),
+  )
+  return new Map(pairs.filter((pair) => pair !== undefined))
 }

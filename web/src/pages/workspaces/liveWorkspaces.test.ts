@@ -1,6 +1,6 @@
 // The mapper test (d-113): domain data in, the view model out, compared
 // with the page's state files, so the mocks are the backend's expected output.
-import { WorkspacesResponse } from '@bridge/contract'
+import { WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
 import { QueryClient } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -438,6 +438,57 @@ describe('watchLiveWorkspaces', () => {
     await settle()
     expect(queries.getQueryState(['workspaces'])?.isInvalidated).toBe(true)
     expect(onChange).toHaveBeenCalled()
+    stop()
+  })
+
+  it("reads a shown workspace's layout again on layout.changed after the query client dropped its query", async () => {
+    const queries = client()
+    const server = fakeServer()
+    const onChange = vi.fn()
+    const layout = WorkspaceLayout.parse({
+      workspace: 'mac-mini/omni-brain',
+      tabs: [
+        {
+          id: 'mac-mini/omni-brain:t1',
+          label: 'main',
+          active: true,
+          root: { kind: 'pane', chat: 'mac-mini/bridge-themes' },
+          focusedChat: 'mac-mini/bridge-themes',
+          chats: [response.workspaces[0]?.chats[0]],
+        },
+      ],
+    })
+    const fetchLayout = vi.fn(() => Promise.resolve(ok(layout)))
+    await withLiveWorkspaces(workspacesHome, {
+      client: queries,
+      fetch: () => Promise.resolve(ok(response)),
+      fetchLayout,
+    })
+    const stop = watchLiveWorkspaces({ onChange, client: queries, settleMs: 10, open: server.open })
+    await settle(5)
+    // What the query client does to a query no component observes after five idle minutes.
+    queries.removeQueries({ queryKey: ['workspaces', 'layout'] })
+    server.opened[0]?.send(
+      server.frame('layout.changed', {
+        source: 'mac-mini/agents',
+        seq: 1,
+        type: 'layout.changed',
+        data: { workspace: 'mac-mini/omni-brain' },
+      }),
+    )
+    await settle()
+    expect(onChange).toHaveBeenCalledTimes(1)
+    // A workspace the page does not show reads nothing.
+    server.opened[0]?.send(
+      server.frame('layout.changed', {
+        source: 'mac-mini/agents',
+        seq: 2,
+        type: 'layout.changed',
+        data: { workspace: 'mac-mini/gone' },
+      }),
+    )
+    await settle()
+    expect(onChange).toHaveBeenCalledTimes(1)
     stop()
   })
 
