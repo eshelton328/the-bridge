@@ -466,9 +466,9 @@ describe('a live miss is a state the page shows, not an error (d-117)', () => {
   })
 })
 
-// A live chat cannot send yet: its composer is disabled and says so, and Send stays off (that no send reaches the store
-// is in WorkspacesSendDraft.test.tsx). Its header has no "context" label, as it has no context share. A fixtures chat
-// still sends.
+// A live Codex chat cannot send yet (until W8; a live Claude chat sends, WorkspacesLiveSend.test.tsx): its composer is
+// disabled and says so, and Send stays off (that no send reaches the store is in WorkspacesSendDraft.test.tsx). A live
+// chat's header has no "context" label, as it has no context share. A fixtures chat still sends.
 describe('a live chat that cannot send yet (d-117)', () => {
   const sizes = [
     { name: 'the phone', size: [390, 844] },
@@ -476,14 +476,14 @@ describe('a live chat that cannot send yet (d-117)', () => {
     { name: 'the desktop', size: [1512, 982] },
   ] as const
   for (const device of sizes) {
-    it(`disables the composer with "Sending not live yet" and sends nothing, on ${device.name}`, async () => {
-      fakeServer(ok([plan]))
+    it(`disables a Codex chat's composer with "Sending not live yet" and sends nothing, on ${device.name}`, async () => {
+      fakeServer(ok([review]))
       await setViewport(device.size[0], device.size[1])
       await openApp()
       await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
       await expect.poll(() => router?.state.location.searchStr).toBe('')
-      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
-      await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+      await userEvent.click(page.getByText('review notes', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
       const box = page.getByRole('textbox', { name: 'Sending not live yet' })
       await expect.element(box).toBeDisabled()
       await expect.element(box).toHaveAttribute('placeholder', 'Sending not live yet')

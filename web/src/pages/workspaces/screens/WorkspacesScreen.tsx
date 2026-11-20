@@ -53,6 +53,7 @@ import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
+import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 
 // The rail's slot is a flex column; the rail fills it.
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -64,7 +65,9 @@ export type WorkspacesScreenProps = {
   onNavigate?: ((page: string) => void) | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
-  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
+  /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
+  onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
@@ -80,6 +83,7 @@ export function WorkspacesScreen({
   onNavigate,
   onUiChange,
   onSend,
+  onStop,
   onRetry,
   transcripts,
   onCopy,
@@ -127,6 +131,7 @@ export function WorkspacesScreen({
           viewport={viewport}
           onNavigate={onNavigate}
           onSend={onSend}
+          onStop={onStop}
           transcripts={transcripts}
           onCopy={onCopy}
           change={change}
@@ -154,6 +159,7 @@ function WorkspacesLayout({
   viewport,
   onNavigate,
   onSend,
+  onStop,
   transcripts,
   onCopy,
   change,
@@ -196,6 +202,7 @@ function WorkspacesLayout({
         onUiChange={change}
         onDraftChange={draft}
         onSend={onSend}
+        onStop={onStop}
         transcripts={transcripts}
         onCopy={onCopy}
         notice={notice}
@@ -357,6 +364,7 @@ function WorkspacesLayout({
                   onDraftChange={draft}
                   toggle={false}
                   onSend={onSend}
+                  onStop={onStop}
                   transcripts={transcripts}
                   onCopy={onCopy}
                 />
@@ -398,6 +406,7 @@ function WorkspacesLayout({
                     draft(chat.id, text)
                   }}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
+                  onStop={onStop && (() => onStop(chat.id))}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   rename={rename}
@@ -458,6 +467,7 @@ function WorkspacesLayout({
               onDraftChange={draft}
               toggle
               onSend={onSend}
+              onStop={onStop}
               transcripts={transcripts}
               onCopy={onCopy}
               notice={notice}

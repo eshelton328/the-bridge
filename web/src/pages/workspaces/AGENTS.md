@@ -11,9 +11,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   shows the home's sample data, and a `?state=` its fixture state.
   `liveWorkspaces.ts` maps the server's workspaces, with a pane for each
   chat; a shell's terminal and a Codex chat's transcript say they are not
-  live yet (`blocks/NotLive.tsx`). A live chat's composer is disabled and says
-  "Sending not live yet" (`composer.notLive`), so no message goes to the
-  store's `send`, which goes nowhere. On an expected miss the page shows no
+  live yet (`blocks/NotLive.tsx`). A live Codex chat's composer is disabled
+  and says "Sending not live yet" (`composer.notLive`) until W8. On an
+  expected miss the page shows no
   workspaces, never the sample ones, and `blocks/LiveNotice.tsx` with
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`).
@@ -40,6 +40,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
   the server fake is `lib/fakeTranscriptServer.ts`).
+- A live Claude chat sends and stops (W1): `liveSend.ts` posts
+  `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
+  to the chat whose composer sent it, read at send time, and a 204 empties
+  the box; the prompt shows when the transcript stream brings it, and the
+  status when the workspace events do. The composer shows Stop only while
+  the chat works. One send and one stop are in flight at a time, a text
+  over `maxPromptChars` is not sent, and a miss keeps the text and shows
+  one quiet line under the composer by kind ("Not sent — herdr-unavailable",
+  with Retry for a 5xx, no answer or a 429); a Stop that finds the chat not
+  working is quiet (`blocks/useComposerActions.ts`). report() gets only a
+  5xx or an answer the page does not expect, with the action, kind and
+  status, never the message text (`app/WorkspacesLiveSend.test.tsx`). The
+  request and error schemas are a local mirror of backend W1-2
+  (`lib/promptContract.ts`) until it merges.
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).
@@ -67,8 +81,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A composer's text lives in `ui.drafts` by chat id (`blocks/chatDraft.ts`),
   so a pane that unmounts keeps its draft. Key each `ChatPane` by its
   pane's id, so a switch mounts that chat's own draft.
-- A chat's Send goes to the store's `send` through the library's
+- A sample chat's Send goes to the store's `send` through the library's
   `onSend`; a failed send keeps the draft (`WorkspacesSendDraft.test.tsx`).
+- A send that ends after the owner opened another chat changes only the
+  sent chat's draft: `WorkspacesPage` merges each ui change into the ui
+  shown now, not the one of the render that sent it.
 - Every reply's Copy, sample or live, goes through the screen's `onCopy`
   to `WorkspacesPage`, which copies with `copyText`; the button
   (`blocks/ReplyCopyButton.tsx`) reads Copied or Copy failed for 2 s. A

@@ -5,6 +5,14 @@
 // not. A test plugs `handle` into its `fetch` stub. `streams: 'missing'` is
 // a server with the read and no stream route yet (backend 3b-2 alone): the
 // stream answers 404 not-found, as Hono does for an unknown route.
+//
+// W1: it also takes a chat's Send and Stop (`POST /api/chats/:chat/prompt`
+// with `{ text }`, `POST /api/chats/:chat/stop` with `{}`). As the server's
+// fake agents do, it only records them and answers 204: the prompt reaches
+// the transcript only when the test pushes it. A body or a content type the
+// contract refuses answers 400 invalid-input, and every error answer is
+// checked against the contract's error body (`PromptErrorBody`, a local
+// mirror until backend W1-2 merges).
 import {
   ErrorBody,
   maxTranscriptEntries,
@@ -12,6 +20,7 @@ import {
   type TranscriptEntry,
   TranscriptResponse,
 } from '@bridge/contract'
+import { PromptErrorBody, SendPromptRequest, StopChatRequest } from './promptContract.ts'
 
 type Stream = { readonly chat: string; readonly control: ReadableStreamDefaultController<Uint8Array> }
 
@@ -20,6 +29,25 @@ const notFound = (path: string) =>
     status: 404,
     headers: { 'content-type': 'application/json', 'X-Request-Id': 'r-404' },
   })
+
+/** An answer the test picks for a send or a stop: such as a 503, or one that waits until the test ends it. */
+type ActionAnswer = () => Response | Promise<Response>
+
+/** An error answer of a send or a stop, its body checked against the contract. */
+export function errorAnswer(error: PromptErrorBody['error'], status: number): Response {
+  return new Response(JSON.stringify(PromptErrorBody.parse({ error })), {
+    status,
+    headers: { 'content-type': 'application/json', 'X-Request-Id': error.requestId },
+  })
+}
+
+const readBody = (init: RequestInit | undefined): unknown => {
+  try {
+    return typeof init?.body === 'string' ? JSON.parse(init.body) : undefined
+  } catch {
+    return undefined
+  }
+}
 
 export type FakeTranscriptOptions = {
   /** `open`: the stream route answers; `missing`: it answers 404, as before backend 3b-3. */
@@ -40,6 +68,34 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   /** An answer in place of the stream's, while set: such as a 500. */
   let streamAnswer: (() => Response) | undefined
   let seq = 0
+  /** Each send the server took, in order: the chat and the text. */
+  const prompts: { chat: string; text: string }[] = []
+  /** The chat of each stop the server took, in order. */
+  const stops: string[] = []
+  /** Each send or stop the page posted, taken or not: its chat and route. */
+  const posts: { chat: string; route: 'prompt' | 'stop' }[] = []
+  let promptAnswer: ActionAnswer | undefined
+  let stopAnswer: ActionAnswer | undefined
+
+  /** A send or a stop: the contract's checks, then the test's answer or 204. */
+  const act = (chat: string, route: 'prompt' | 'stop', init: RequestInit | undefined) => {
+    posts.push({ chat, route })
+    const json = new Headers(init?.headers).get('content-type') === 'application/json'
+    const body = readBody(init)
+    const parsed = route === 'prompt' ? SendPromptRequest.safeParse(body) : StopChatRequest.safeParse(body)
+    if (!json || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    const answer = route === 'prompt' ? promptAnswer : stopAnswer
+    if (answer !== undefined) return answer()
+    if (route === 'prompt') {
+      const text = SendPromptRequest.parse(body).text
+      prompts.push({ chat, text })
+    } else stops.push(chat)
+    return new Response(null, { status: 204 })
+  }
 
   const read = (chat: string) => {
     const entries = transcripts.get(chat) ?? []
@@ -78,6 +134,17 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   return {
     reads,
     opens,
+    prompts,
+    stops,
+    posts,
+    /** Answers each send with `answer` until it is set to undefined; the send is not recorded in `prompts`. */
+    answerPrompts: (answer: ActionAnswer | undefined) => {
+      promptAnswer = answer
+    },
+    /** Answers each stop with `answer` until it is set to undefined; the stop is not recorded in `stops`. */
+    answerStops: (answer: ActionAnswer | undefined) => {
+      stopAnswer = answer
+    },
     /** The chats whose stream is open now, one item for each stream. */
     openStreams: () => open.map((s) => s.chat),
     /** Sets a chat's transcript, as its session file holds it; `older` marks entries before the ones kept. */
@@ -131,8 +198,11 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     answerStreams: (answer: (() => Response) | undefined) => {
       streamAnswer = answer
     },
-    /** The answer to a request for `path`, or undefined when it is not a transcript route. */
-    handle: (path: string, init?: RequestInit): Response | undefined => {
+    /** The answer to a request for `path`, or undefined when it is not a transcript, send or stop route. */
+    handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
+      const action = /^\/api\/chats\/([^/]+)\/(prompt|stop)$/.exec(path)
+      if (action !== null && init?.method === 'POST')
+        return act(decodeURIComponent(action[1] ?? ''), action[2] === 'stop' ? 'stop' : 'prompt', init)
       const route = /^\/api\/chats\/([^/]+)\/transcript(\/events)?$/.exec(path)
       if (!route) return undefined
       const chat = decodeURIComponent(route[1] ?? '')

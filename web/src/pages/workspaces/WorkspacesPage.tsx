@@ -6,15 +6,16 @@
 // `?source=live`, d-117) it watches the server's events while it shows
 // (liveWorkspaces.ts) and loads its state again when they change it, and the
 // live-unavailable notice's Retry loads it again; each live chat pane reads
-// its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A chat's Send goes to the page
-// store's `send`; a failed send is reported and the composer keeps the draft.
+// its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A live Claude chat's Send and
+// Stop go to the server (liveSend.ts, W1), to the chat whose composer sent them; any other chat's Send goes to the
+// page store's `send`, and a failed send is reported. A failed send keeps the composer's draft.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
 // (draftStorage.ts). Every reply's Copy, sample or live, writes the clipboard
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
@@ -22,10 +23,18 @@ import { workspacesSources } from './loadWorkspacesState.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
+import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
+
+/** The live module's send or stop, loaded when first used; a module that fails to load is reported. */
+const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
+  import('./liveSend.ts').then(use, (error: unknown) => {
+    report(error, 'handler')
+    return false
+  })
 
 /** A reply's Copy: a refusal that is not the browser's NotAllowedError goes to `report`, without the text. */
 const copyReply = (text: string) =>
@@ -68,7 +77,19 @@ export function WorkspacesPage() {
     const merged = withLoadedLayouts(state.ui, changed, current)
     return Object.keys(saved).length === 0 ? merged : { ...merged, drafts: { ...saved, ...merged.drafts } }
   }, [state.ui, changed, current, saved])
+  // The ui now, also for a change that comes after a later render: a send that ends after the owner opened another
+  // chat clears its draft, and must keep the layouts and focus he sees then, not the ones of the render that sent it.
+  const uiRef = useRef(ui)
+  useLayoutEffect(() => {
+    uiRef.current = ui
+  })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  // The server ID of the live Claude chat whose pane is `chat`, read when its composer sends: none for a sample chat.
+  const liveChatOf = (chat: string) => {
+    if (!import.meta.env.DEV || !live) return undefined
+    const pane = data.panes.find((p) => p.id === chat)
+    return pane?.type === 'chat' ? pane.liveChat : undefined
+  }
   return (
     <WorkspacesScreen
       data={data}
@@ -79,8 +100,9 @@ export function WorkspacesPage() {
         if (change.drafts !== undefined) saveDrafts(search.state, change.drafts)
         // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
         // replaces only what he changed before it came.
+        const now = uiRef.current
         setUi(search.state, {
-          ...(ui.layouts === undefined ? {} : { layouts: ui.layouts, focusedPane: ui.focusedPane }),
+          ...(now.layouts === undefined ? {} : { layouts: now.layouts, focusedPane: now.focusedPane }),
           ...change,
           layoutsSeen: layoutsSeenOf(state.ui.layouts),
         })
@@ -88,15 +110,21 @@ export function WorkspacesPage() {
       onRetry={() => void router.invalidate()}
       transcripts={transcripts}
       onCopy={copyReply}
-      onSend={(chat, text) =>
-        send(chat, text).then(
+      onSend={(chat, text) => {
+        const liveChat = liveChatOf(chat)
+        if (liveChat !== undefined) return viaLive((m) => m.sendPrompt(liveChat, text))
+        return send(chat, text).then(
           () => true,
           (error: unknown) => {
             report(error, 'handler')
             return false
           },
         )
-      }
+      }}
+      onStop={(chat) => {
+        const liveChat = liveChatOf(chat)
+        return liveChat === undefined ? Promise.resolve(false) : viaLive((m) => m.stopChat(liveChat))
+      }}
       onNavigate={(page) => {
         // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route
         // (d-105), as the tablet has no rail.
