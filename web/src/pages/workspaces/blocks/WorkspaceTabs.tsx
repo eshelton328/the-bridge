@@ -9,6 +9,7 @@ import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-l
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { TranscriptWatch } from './ChatPane.tsx'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
 
@@ -22,6 +23,8 @@ export type WorkspaceTabsProps = {
   onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
   /**
    * The live-unavailable notice (LiveNotice), drawn over the shown workspace's panes; none when not set. Beside the
    * sidebar the sidebar draws it, so the page passes none.
@@ -33,7 +36,16 @@ export type WorkspaceTabsProps = {
 const withNotice = css({ display: 'flex', flexDirection: 'column', gap: '8', flex: '1', minH: '[0]' })
 const panesSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
 
-export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onSend, notice }: WorkspaceTabsProps) {
+export function WorkspaceTabs({
+  data,
+  ui,
+  onUiChange,
+  onDraftChange,
+  toggle,
+  onSend,
+  transcripts,
+  notice,
+}: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
   const view = shownView(data, ui)
@@ -50,6 +62,7 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
       onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
       onDraftChange={onDraftChange}
       onSend={onSend}
+      transcripts={transcripts}
     />
   )
   const workbench = (

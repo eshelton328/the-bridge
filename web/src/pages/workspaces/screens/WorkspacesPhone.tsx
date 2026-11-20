@@ -69,6 +69,7 @@ import { PhoneSubtask } from '../blocks/PhoneSubtask.tsx'
 import { PhoneWorkspaceList, RowMenuButton } from '../blocks/PhoneWorkspaceList.tsx'
 import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
+import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
 export type WorkspacesPhoneProps = {
@@ -85,6 +86,8 @@ export type WorkspacesPhoneProps = {
   onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the list and of a chat; none when not set. */
   notice?: ReactNode
 }
@@ -98,6 +101,7 @@ export function WorkspacesPhone({
   onUiChange,
   onDraftChange,
   onSend,
+  transcripts,
   notice,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
@@ -329,6 +333,7 @@ export function WorkspacesPhone({
                   onDraftChange(chat.id, draft)
                 }}
                 onSend={onSend && ((message) => onSend(chat.id, message))}
+                transcripts={transcripts}
                 rename={
                   ui.renaming === true ? (
                     <ChatNameField

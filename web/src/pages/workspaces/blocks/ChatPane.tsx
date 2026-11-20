@@ -18,7 +18,10 @@
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
 // (library beta.61, screen review R20). Send goes through `onSend` (library
-// beta.90): the box keeps the draft until the send succeeds. Props only.
+// beta.90): the box keeps the draft until the send succeeds. A live chat
+// (`liveChat`, slice 3b) asks `transcripts` to read its transcript while it
+// shows, draws the earlier line over the entries, the empty line when it has
+// none and the problem line with Retry under them. Props only.
 import { Composer, Inline, ModelChip, PlusIcon, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -29,6 +32,17 @@ import { ChatEntryView } from './ChatEntryView.tsx'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
+import { TranscriptProblem } from './TranscriptProblem.tsx'
+
+/** Reads a live chat's transcript while its pane shows (the page's liveTranscript.ts). */
+export type TranscriptWatch = {
+  /** Starts reading `chat`'s transcript into the pane's entries; the result stops it. */
+  readonly watch: (chat: string) => () => void
+  /** Reads `chat`'s transcript again now: the problem line's Retry. */
+  readonly retry: (chat: string) => void
+  /** Writes a live reply's text to the clipboard: its Copy button. */
+  readonly copy: (text: string) => void
+}
 
 const body = css({
   position: 'relative',
@@ -87,6 +101,8 @@ const footerShrinks = {
   inset: false,
 } satisfies Record<keyof typeof sizes, boolean>
 const footer = css({ display: 'flex', flexDirection: 'column' })
+// The line over a live transcript whose older entries the server did not send: quiet, as the composer's hint.
+const earlierLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 // With `header` the frame is the root: the body's padding of `sizes` moves onto the transcript and the composer, so the
 // header runs edge to edge and the parts sit where they did (M3 105:2784, T2 105:1894).
 const framed = {
@@ -108,6 +124,15 @@ type ChatPaneBase = {
   entries: readonly ChatEntry[]
   /** A live chat's text in place of its transcript, such as "Transcript not live yet" (d-117); `entries` when not set. */
   notLive?: string | undefined
+  /** A live chat's server chat ID: while the pane shows, `transcripts` reads its transcript (slice 3b). */
+  liveChat?: string | undefined
+  transcripts?: TranscriptWatch | undefined
+  /** The line over the entries, such as "Earlier entries not live yet"; none when not set. */
+  earlier?: string | undefined
+  /** The line in place of the entries of a read transcript with none, such as "No messages yet"; none when not set. */
+  empty?: string | undefined
+  /** The line under the entries, with Retry, when the transcript's read or updates failed; none when not set. */
+  problem?: string | undefined
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
   skills?:
@@ -173,6 +198,11 @@ export function ChatPane(props: ChatPaneProps) {
     chatId,
     entries,
     notLive,
+    liveChat,
+    transcripts,
+    earlier,
+    empty,
+    problem,
     composer,
     skills,
     onSkillsOpenChange,
@@ -202,6 +232,11 @@ export function ChatPane(props: ChatPaneProps) {
   // Where the caret goes once a picked skill is in the box.
   const caretRef = useRef<number | null>(null)
   const textArea = () => areaRef.current?.querySelector('textarea') ?? null
+  // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
+  useEffect(
+    () => (liveChat === undefined || transcripts === undefined ? undefined : transcripts.watch(liveChat)),
+    [liveChat, transcripts],
+  )
   useLayoutEffect(() => {
     const caret = caretRef.current
     const area = textArea()
@@ -366,11 +401,32 @@ export function ChatPane(props: ChatPaneProps) {
   // One bad entry shows an inline fallback in the transcript, and the header and the composer keep working (audit P-1).
   const entryViews =
     notLive === undefined ? (
-      <BlockBoundary contentKey={chatId}>
-        {entries.map((entry, i) => (
-          <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
-        ))}
-      </BlockBoundary>
+      <>
+        {earlier === undefined ? null : <span className={earlierLine}>{earlier}</span>}
+        {empty === undefined ? null : <span className={earlierLine}>{empty}</span>}
+        <BlockBoundary contentKey={chatId}>
+          {entries.map((entry, i) => (
+            <ChatEntryView
+              key={`${entry.type}-${String(i)}`}
+              entry={entry}
+              figma={figma.entries?.[i]}
+              onCopy={transcripts?.copy}
+            />
+          ))}
+        </BlockBoundary>
+        {problem === undefined ? null : (
+          <TranscriptProblem
+            text={problem}
+            onRetry={
+              liveChat === undefined || transcripts === undefined
+                ? undefined
+                : () => {
+                    transcripts.retry(liveChat)
+                  }
+            }
+          />
+        )}
+      </>
     ) : (
       <NotLive text={notLive} />
     )

@@ -19,7 +19,7 @@ import type { ReactElement, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
-import { ChatPane } from './ChatPane.tsx'
+import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 
 // Figma draws the back chevron and the ⋯ bare, 20 and 18 px (105:2750, 105:2765): the back in the accent colour, as a
@@ -80,6 +80,8 @@ export type PhoneChatProps = {
   onTextChange?: ((text: string) => void) | undefined
   /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<boolean>) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
   notice?: ReactNode
 }
@@ -105,6 +107,7 @@ export function PhoneChat(props: PhoneChatProps) {
     draft,
     onTextChange,
     onSend,
+    transcripts,
     notice,
   } = props
   const more = (
@@ -162,6 +165,11 @@ export function PhoneChat(props: PhoneChatProps) {
       figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
       entries={pane.entries}
       notLive={pane.notLive}
+      liveChat={pane.liveChat}
+      transcripts={transcripts}
+      earlier={pane.earlier}
+      empty={pane.empty}
+      problem={pane.problem}
       composer={withDraft(pane.composer, draft)}
       onTextChange={onTextChange}
       onSend={onSend}

@@ -10,18 +10,22 @@ import { clearReports } from '../errors/reporter.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
+import { fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // d-117: in development the Workspaces page reads the live source when the
 // URL names no ?state= and no ?source=. Each test takes the owner's path:
 // it opens the app with no URL parameters and taps Workspaces in the tab
 // bar or the rail, with a stubbed server (`fetch`). A failed read shows no
 // sample workspace, only the notice and Retry; a live chat shows no sample
-// transcript or terminal. ?state= and ?source=fixtures still show fixtures.
+// transcript or terminal: a Claude chat shows its own transcript (slice 3b,
+// WorkspacesLiveTranscript.test.tsx tests it). ?state= and ?source=fixtures
+// still show fixtures.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -65,6 +69,8 @@ const workspacesBody = (chats: readonly Chat[], more: readonly { label: string; 
 
 const plan: Chat = { local: 'p1', kind: 'claude', title: 'plan the slice', model: 'claude-opus-5-5' }
 const logs: Chat = { local: 's1', kind: 'shell', title: 'tail logs', model: 'zsh' }
+/** The one entry of plan's transcript, from the contract-checked transcript fake. */
+const planEntry = 'Plan the slice from the contract'
 
 /**
  * A workspace's layout (`GET /api/workspaces/:workspace/layout`, slice 3a) from the list that `reply` gives: one tab
@@ -101,6 +107,8 @@ function fakeServer(first: (() => Response) | 'down') {
   const encoder = new TextEncoder()
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
   const reads: string[] = []
+  const transcripts = fakeTranscriptServer()
+  transcripts.set('mac-mini/p1', [{ type: 'user', id: 'u1', text: planEntry, cut: false }])
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -108,6 +116,8 @@ function fakeServer(first: (() => Response) | 'down') {
       const layout = url.includes('/api/workspaces/') && url.endsWith('/layout')
       if (url.includes('/api/workspaces') && !layout) reads.push(url)
       if (reply === 'down') return Promise.reject(new TypeError('Failed to fetch'))
+      const transcript = transcripts.handle(new URL(url, window.location.origin).pathname, init)
+      if (transcript !== undefined) return Promise.resolve(transcript)
       if (layout) return layoutAnswer(reply, url)
       if (url.includes('/api/events')) {
         const body = new ReadableStream<Uint8Array>({
@@ -156,6 +166,10 @@ const errorAnswer = (status: number, kind: string) => () =>
 
 let view: { unmount: () => Promise<void> } | undefined
 let router: ReturnType<typeof createRouter> | undefined
+
+// Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
+// server, never the one on this machine (liveServerStub.ts).
+stubLiveServer()
 
 afterEach(async () => {
   await view?.unmount()
@@ -208,7 +222,7 @@ async function expectNoSample() {
 }
 
 describe('Workspaces on the live source by default (d-117)', () => {
-  it("lists the server's chats, and a tapped chat shows that its transcript is not live yet", async () => {
+  it("lists the server's chats, and a tapped chat shows its own transcript, never the sample's", async () => {
     fakeServer(ok([plan, logs]))
     await tapWorkspacesOnPhone()
     await expect.element(page.getByText('live work')).toBeVisible()
@@ -218,7 +232,7 @@ describe('Workspaces on the live source by default (d-117)', () => {
     await expect.element(noticeAlert()).not.toBeInTheDocument()
     await userEvent.click(page.getByRole('button', { name: 'plan the slice', exact: true }))
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
-    await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+    await expect.element(page.getByText(planEntry)).toBeVisible()
     // The sample transcript of the home's chat never shows.
     await expect.element(page.getByText('Opus', { exact: true })).not.toBeInTheDocument()
     await expect.element(page.getByText('Terminal not live yet')).not.toBeInTheDocument()
@@ -267,7 +281,7 @@ describe('Workspaces on the live source by default (d-117)', () => {
     server.answer(ok([plan]))
     await userEvent.click(noticeAlert().getByRole('button', { name: 'Retry' }))
     await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
-    await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+    await expect.element(page.getByText(planEntry)).toBeVisible()
     await expect.element(noticeAlert()).not.toBeInTheDocument()
   })
 
@@ -487,7 +501,7 @@ describe('a live chat that cannot send yet (d-117)', () => {
       await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
       await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
       await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
-      await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+      await expect.element(page.getByText(planEntry)).toBeVisible()
       await expect.element(page.getByText('context', { exact: true })).not.toBeInTheDocument()
     })
   }

@@ -1,7 +1,9 @@
 // One entry of a chat pane's transcript: the owner's message, a tool line, an
 // agent's reply with Copy, progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
-// fork starts (D16 417:718). The caller names the entry's Figma layer. Props only.
+// fork starts (D16 417:718). A live message or reply whose text the server cut
+// shows a quiet line under it (`cut`, slice 3b). The caller names the entry's
+// Figma layer. Props only.
 import {
   Button,
   CopyIcon,
@@ -20,20 +22,25 @@ const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' }
 // but never wider than the transcript, so a long event truncates on a narrow phone.
 // The one grid column can shrink below the text, so the line never pushes the transcript wider.
 const eventLine = css({ display: 'grid', gridTemplateColumns: 'minmax(0, auto)', w: 'fit-content', maxW: '[100%]' })
+// The line under a cut message: quiet, as the transcript's earlier line.
+const cutLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 
 export type ChatEntryViewProps = {
   entry: ChatEntry
   /** The Figma layer the entry stands for, for the fidelity checks. */
   figma?: string | undefined
   onAct?: ((action: string) => void) | undefined
+  /** A reply's Copy: writes its text to the clipboard (a live chat's reply, slice 3b). */
+  onCopy?: ((text: string) => void) | undefined
 }
 
-export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
+export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
   switch (entry.type) {
     case 'user':
       return (
         <div data-figma={figma}>
           <Message from="user">{entry.text}</Message>
+          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
         </div>
       )
     case 'tool':
@@ -53,7 +60,18 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
             name={entry.name}
             actions={
               entry.copy === undefined ? undefined : (
-                <Button size="xs" textSize="xs" keepIconSize>
+                <Button
+                  size="xs"
+                  textSize="xs"
+                  keepIconSize
+                  onClick={
+                    onCopy === undefined
+                      ? undefined
+                      : () => {
+                          onCopy(entry.text)
+                        }
+                  }
+                >
                   <CopyIcon size="12" />
                   {entry.copy}
                 </Button>
@@ -62,6 +80,7 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
           >
             {entry.text}
           </Message>
+          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
         </div>
       )
     case 'progress':

@@ -5,7 +5,8 @@
 // More drawer. When it reads the live source in development (its home, or
 // `?source=live`, d-117) it watches the server's events while it shows
 // (liveWorkspaces.ts) and loads its state again when they change it, and the
-// live-unavailable notice's Retry loads it again; a build has no live code. A chat's Send goes to the page
+// live-unavailable notice's Retry loads it again; each live chat pane reads
+// its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A chat's Send goes to the page
 // store's `send`; a failed send is reported and the composer keeps the draft.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
@@ -14,6 +15,7 @@ import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
+import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
@@ -46,9 +48,10 @@ export function WorkspacesPage() {
   // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
   const current = state.data.current
   const ui = useMemo(() => withLoadedLayouts(state.ui, changed, current), [state.ui, changed, current])
+  const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   return (
     <WorkspacesScreen
-      data={state.data}
+      data={data}
       ui={ui}
       viewport="desktop"
       onUiChange={(change) => {
@@ -61,6 +64,7 @@ export function WorkspacesPage() {
         })
       }}
       onRetry={() => void router.invalidate()}
+      transcripts={transcripts}
       onSend={(chat, text) =>
         send(chat, text).then(
           () => true,

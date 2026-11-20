@@ -14,7 +14,7 @@
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
-import { ChatPane } from './ChatPane.tsx'
+import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
@@ -50,9 +50,19 @@ export type WorkbenchPanesProps = {
   onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
 }
 
-export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChange, onSend }: WorkbenchPanesProps) {
+export function WorkbenchPanes({
+  data,
+  ui,
+  onUiChange,
+  onClosePane,
+  onDraftChange,
+  onSend,
+  transcripts,
+}: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
   const chatsLayers = data.layers?.paneChats ?? chatLayers
@@ -126,6 +136,11 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
             figma={layers}
             entries={pane.entries}
             notLive={pane.notLive}
+            liveChat={pane.liveChat}
+            transcripts={transcripts}
+            earlier={pane.earlier}
+            empty={pane.empty}
+            problem={pane.problem}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
             onTextChange={(text) => {
               onDraftChange(pane.id, text)
