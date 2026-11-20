@@ -6,7 +6,7 @@
 // It resets when the slot shows other content. Like every boundary it does
 // not report: React's root hook (rootErrorOptions.ts) sends what it catches
 // to report().
-import type { ReactNode } from 'react'
+import { type ReactNode, useId } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { ErrorFallback } from './ErrorFallback.tsx'
 
@@ -22,6 +22,7 @@ export type SlotBoundaryProps = {
 }
 
 export function SlotBoundary({ contentKey, secondary, children }: SlotBoundaryProps) {
+  const boundaryId = useId()
   return (
     <ErrorBoundary
       resetKeys={[contentKey]}
@@ -29,6 +30,7 @@ export function SlotBoundary({ contentKey, secondary, children }: SlotBoundaryPr
         <ErrorFallback
           error={error}
           size="pane"
+          retryScope={boundaryId}
           title="This part of the page failed to render"
           onRetry={resetErrorBoundary}
           secondary={secondary}
