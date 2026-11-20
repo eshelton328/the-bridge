@@ -3,7 +3,10 @@
 // `chunkSize` bytes; chunk n holds bytes n × chunkSize up to the next
 // chunk, and only the last is shorter. The store never runs a file and
 // never looks at what it holds, and keeps its name only to give the chat
-// a file with the same extension. Its contract suite is adapters/uploadStoreContract.ts.
+// a file with the same extension. A HEIC photo becomes a JPEG at complete,
+// as a chat cannot read HEIC; the original stays beside it. Each start
+// first removes the uploads that are past their time: an unfinished one
+// after 24 hours, a complete one after 7 days. Its contract suite is adapters/uploadStoreContract.ts.
 import type { ChatId, UploadId } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
@@ -31,14 +34,35 @@ export type UploadStore = {
     n: number,
     bytes: AsyncIterable<Uint8Array>,
   ): Promise<Result<UploadOutcome<'written'>, UploadStoreError>>
-  /** Makes the upload a complete file once each chunk is there (`conflict` before that); again, it changes nothing. */
-  complete(upload: UploadId): Promise<Result<UploadOutcome<'complete'>, UploadStoreError>>
+  /**
+   * Makes the upload a complete file once each chunk is there (`conflict` before that); again, it changes nothing.
+   * A HEIC file that does not convert to JPEG is `unsupported`, and stays not complete.
+   */
+  complete(upload: UploadId): Promise<Result<UploadOutcome<'complete' | 'unsupported'>, UploadStoreError>>
+  /** The path of a complete upload's file, as the chat reads it; null when it is not a complete upload of `chat`. */
+  attachment(upload: UploadId, chat: ChatId): Promise<Result<string | null, UploadStoreError>>
   /** Deletes the upload and its file. */
   remove(upload: UploadId): Promise<Result<'removed' | 'notFound', UploadStoreError>>
 }
 
 /** The chunk size that the server gives, 8 MiB: a request a proxy passes, and a short retry when one fails. */
 export const defaultChunkBytes = 8 * 1024 ** 2
+
+/** How long an unfinished upload stays: 24 hours. */
+const unfinishedMs = 24 * 60 * 60 * 1000
+
+/** How long a complete upload stays, so a chat can read it again later: 7 days. */
+const keptMs = 7 * 24 * 60 * 60 * 1000
+
+/** Whether an upload started at `startedAt` and complete at `completedAt` (null: not complete) is past its time. */
+export const expired = (startedAt: number, completedAt: number | null, now: number): boolean =>
+  completedAt === null ? now - startedAt >= unfinishedMs : now - completedAt >= keptMs
+
+/** Whether a file name is a HEIC or HEIF photo, by its extension. */
+export const isHeic = (name: string): boolean => /\.(heic|heif)$/i.test(name)
+
+/** The name of a HEIC photo's JPEG copy: the same name with the extension .jpg. */
+export const jpegName = (name: string): string => name.replace(/\.[^.]*$/, '.jpg')
 
 /** How many chunks a file of `size` bytes has. */
 export const chunkCount = (size: number, chunkSize: number): number => Math.ceil(size / chunkSize)

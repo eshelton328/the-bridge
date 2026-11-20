@@ -79,7 +79,11 @@ client of a socket or a file sits beside them.
   replaced in one rename, and complete joins the chunks in turn with
   their renames,
   and never runs a file; it reads the bytes only to join the chunks. It keeps only a safe file
-  name with its extension, and a fault gives only its errno code
+  name with its extension, and a fault gives only its errno code. A
+  HEIC photo gets a JPEG copy beside it at complete (`sipsConvert.ts`:
+  macOS `sips` with an argument list, never a shell), and the chat
+  gets the copy's path. Each start removes an unfinished upload after
+  24 hours and a complete one after 7 days, with no timer
   (`diskUploads.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a

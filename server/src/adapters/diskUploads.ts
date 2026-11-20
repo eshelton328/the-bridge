@@ -1,7 +1,8 @@
 // The upload store on disk (slice W1b). Each upload is a folder under
 // `root`: `state.json` (the chat, the safe name, the size and the chunks
 // that came), `chunks/<n>` (one file for each chunk) and, once complete,
-// `file/<safe name>`. A chunk goes to a temporary file first, and takes
+// `file/<safe name>` (and for a HEIC photo its JPEG copy beside it, made
+// by `convert`). Each start first removes the uploads past their time. A chunk goes to a temporary file first, and takes
 // its place only when its length is right, so a short retry never changes
 // a chunk that came. The state file is replaced in one rename, so a read
 // never sees half of it. Complete joins the chunks in order, in turn with
@@ -10,7 +11,7 @@
 // its bytes only to join the chunks. A fault gives only its errno code,
 // as its message can hold a path with the file name.
 import { randomBytes } from 'node:crypto'
-import { chmod, type FileHandle, mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, type FileHandle, mkdir, open, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ChatId, type UploadId, UploadId as UploadIdSchema } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -19,6 +20,9 @@ import {
   chunkCount,
   chunkLength,
   defaultChunkBytes,
+  expired,
+  isHeic,
+  jpegName,
   safeFileName,
   type UploadStore,
   type UploadStoreError,
@@ -29,7 +33,11 @@ const State = z.object({
   name: z.string(),
   size: z.number().int().min(1),
   received: z.array(z.number().int()),
-  complete: z.boolean(),
+  startedAt: z.number(),
+  /** When it became complete; null before that. */
+  completedAt: z.number().nullable(),
+  /** The name of the file the chat reads: the safe name, or its JPEG copy's. */
+  file: z.string().nullable(),
 })
 type State = z.infer<typeof State>
 
@@ -37,6 +45,9 @@ export type DiskUploadsOptions = {
   /** The folder of all uploads, such as ~/.local/share/the-bridge/uploads; made 0700 when missing. */
   readonly root: string
   readonly chunkSize?: number
+  /** Makes the JPEG copy of a HEIC photo at `jpeg`; false when it cannot. main.ts gives `sipsConvert`. */
+  readonly convert: (heic: string, jpeg: string) => Promise<boolean>
+  readonly now?: () => number
 }
 
 const errnoCode = (error: unknown): string | undefined => {
@@ -70,10 +81,12 @@ async function guarded<T>(work: () => Promise<T>): Promise<Result<T, UploadStore
   }
 }
 
-export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskUploadsOptions): UploadStore & {
-  /** The path of a complete upload's file; null for one that is not complete. */
-  readonly pathOf: (upload: UploadId) => Promise<string | null>
-} {
+export function createDiskUploads({
+  root,
+  chunkSize = defaultChunkBytes,
+  convert,
+  now = Date.now,
+}: DiskUploadsOptions): UploadStore {
   const folder = (upload: UploadId) => join(root, upload)
   const statePath = (upload: UploadId) => join(folder(upload), 'state.json')
   const chunksPath = (upload: UploadId) => join(folder(upload), 'chunks')
@@ -106,6 +119,17 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
     const temp = tempName(statePath(upload))
     await writeFile(temp, JSON.stringify(state), { mode: 0o600 })
     await rename(temp, statePath(upload))
+  }
+  /** Removes each upload past its time; a folder whose state it cannot read stays. */
+  const sweep = async () => {
+    const entries = await readdir(root, { withFileTypes: true })
+    for (const entry of entries) {
+      const id = UploadIdSchema.safeParse(entry.name)
+      if (!entry.isDirectory() || !id.success) continue
+      const state = await readState(id.data).catch(() => null)
+      if (state !== null && expired(state.startedAt, state.completedAt, now()))
+        await inTurn(id.data, () => rm(folder(id.data), { recursive: true, force: true }))
+    }
   }
   /** Writes chunk `n` to a temporary file: its path, or null when its length is not `length` (the file is gone then). */
   const receive = async (
@@ -144,10 +168,19 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
       guarded(async () => {
         await mkdir(root, { recursive: true, mode: 0o700 })
         await chmod(root, 0o700)
+        await sweep()
         const upload = UploadIdSchema.parse(randomBytes(16).toString('base64url'))
         await mkdir(folder(upload), { mode: 0o700 })
         await mkdir(chunksPath(upload), { mode: 0o700 })
-        await writeState(upload, { chat, name: safeFileName(name), size, received: [], complete: false })
+        await writeState(upload, {
+          chat,
+          name: safeFileName(name),
+          size,
+          received: [],
+          startedAt: now(),
+          completedAt: null,
+          file: null,
+        })
         return upload
       }),
     writeChunk: (upload, n, bytes) =>
@@ -155,12 +188,12 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
         const state = await readState(upload)
         if (state === null) return 'notFound' as const
         const length = chunkLength(state.size, chunkSize, n)
-        if (state.complete || length === null) return 'conflict' as const
+        if (state.completedAt !== null || length === null) return 'conflict' as const
         const temp = await receive(upload, n, length, bytes)
         if (temp === null) return 'conflict' as const
         return inTurn(upload, async () => {
           const current = await readState(upload)
-          if (current === null || current.complete) {
+          if (current?.completedAt !== null) {
             await rm(temp, { force: true })
             return current === null ? ('notFound' as const) : ('conflict' as const)
           }
@@ -175,7 +208,7 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
         inTurn(upload, async () => {
           const state = await readState(upload)
           if (state === null) return 'notFound' as const
-          if (state.complete) return 'complete' as const
+          if (state.completedAt !== null) return 'complete' as const
           if (state.received.length !== chunkCount(state.size, chunkSize)) return 'conflict' as const
           const files = join(folder(upload), 'file')
           // Recursive, so a complete that failed after it made the folder can run again.
@@ -192,7 +225,14 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
           }
           await out.close()
           await rename(temp, join(files, state.name))
-          await writeState(upload, { ...state, complete: true })
+          let file = state.name
+          if (isHeic(state.name)) {
+            // A photo that does not convert keeps its chunks, so a later complete can try again.
+            file = jpegName(state.name)
+            if (!(await convert(join(files, state.name), join(files, file)))) return 'unsupported' as const
+            await chmod(join(files, file), 0o600)
+          }
+          await writeState(upload, { ...state, completedAt: now(), file })
           await rm(chunksPath(upload), { recursive: true, force: true })
           return 'complete' as const
         }),
@@ -205,9 +245,11 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
           return 'removed' as const
         }),
       ),
-    pathOf: async (upload) => {
-      const state = await readState(upload)
-      return state?.complete === true ? join(folder(upload), 'file', state.name) : null
-    },
+    attachment: (upload, chat) =>
+      guarded(async () => {
+        const state = await readState(upload)
+        if (typeof state?.file !== 'string' || state.completedAt === null || state.chat !== chat) return null
+        return join(folder(upload), 'file', state.file)
+      }),
   }
 }

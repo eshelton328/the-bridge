@@ -49,7 +49,8 @@ Thin Hono sub-apps, one file for each area, named after the area
   `PUT /:upload/chunks/:n` as `application/octet-stream` and streams
   it to the store, then `POST /:upload/complete` and
   `DELETE /:upload`. A wrong chunk or an early complete is 409
-  `upload-conflict`, a full disk 507 `storage-full`. The file name and
+  `upload-conflict`, a HEIC photo that does not convert 415
+  `unsupported-media`, a full disk 507 `storage-full`. The file name and
   bytes never go into a log line or an `ErrorBody` (`uploads.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
