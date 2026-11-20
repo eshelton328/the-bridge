@@ -1,7 +1,8 @@
 // The one place errors are reported (d-084). React's root hooks and the
 // window listeners call report(); boundaries never do. A report goes to a
 // ring buffer of the last 50, which the dev ErrorTray shows, and to each
-// sink: the console in development today, a server or Sentry later.
+// sink: the console in development, and the server's log when the app
+// reads the live server (clientErrorSender.ts).
 // Control flow is not an error: the router's redirect and notFound and an
 // aborted fetch are never reported.
 import { isNotFound, isRedirect } from '@tanstack/react-router'
@@ -121,6 +122,11 @@ export function addSink(sink: Sink): () => void {
   return () => {
     sinks.delete(sink)
   }
+}
+
+/** Logs a warning in development, such as a report the server refused; a build logs nothing. Never a report. */
+export function warnInDev(...parts: unknown[]): void {
+  if (import.meta.env.DEV) console.warn(...parts)
 }
 
 /** The last reports, oldest first. The array is replaced on each report, so it works with useSyncExternalStore. */

@@ -69,13 +69,22 @@ function events(signal: AbortSignal | null | undefined): Response {
   return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } })
 }
 
+export type LiveServerStubOptions = {
+  /** The body of `GET /api/workspaces`; `liveWorkspacesBody` when not set, such as a reply the contract refuses. */
+  readonly workspaces?: unknown
+}
+
+/** What the stub saw: the body of each `POST /api/client-errors`, which it answers 204, as the server does. */
+export type LiveServerStub = { readonly clientErrors: string[] }
+
 /**
  * Answers the API as a server with `liveWorkspacesBody` would, from the file's first test to its last; any other URL
  * goes to the real fetch. Call it at the top of a test file whose tests render a route that reads the live source. It
  * stays for the whole file, as a page can start a read after its test ended: the router still runs a load that the
  * page's last event started, and that read must not reach the real server in the next test.
  */
-export function stubLiveServer(): void {
+export function stubLiveServer(options: LiveServerStubOptions = {}): LiveServerStub {
+  const stub: LiveServerStub = { clientErrors: [] }
   let before: typeof globalThis.fetch | undefined
   beforeAll(() => {
     const real = globalThis.fetch
@@ -86,7 +95,11 @@ export function stubLiveServer(): void {
         window.location.origin,
       )
       if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) return real(input, init)
-      if (url.pathname === '/api/workspaces') return Promise.resolve(json(liveWorkspacesBody))
+      if (url.pathname === '/api/workspaces') return Promise.resolve(json(options.workspaces ?? liveWorkspacesBody))
+      if (url.pathname === '/api/client-errors' && init?.method === 'POST') {
+        stub.clientErrors.push(typeof init.body === 'string' ? init.body : '')
+        return Promise.resolve(new Response(null, { status: 204 }))
+      }
       const layout = /^\/api\/workspaces\/([^/]+)\/layout$/.exec(url.pathname)
       if (layout?.[1] !== undefined) return Promise.resolve(layoutOf(decodeURIComponent(layout[1])))
       if (url.pathname === '/api/events') return Promise.resolve(events(init?.signal))
@@ -96,4 +109,5 @@ export function stubLiveServer(): void {
   afterAll(() => {
     if (before !== undefined) globalThis.fetch = before
   })
+  return stub
 }

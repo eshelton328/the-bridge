@@ -68,11 +68,18 @@ export function isNotBuilt(data: unknown): data is z.infer<typeof NotBuiltMiss> 
 export type PageHome<S> = string | { readonly key: string; readonly state: S }
 
 /**
+ * Whether this build can read the live server: a development build. A production build reads every page from its
+ * fixtures until the server ships with the build (d-117), so it reads no server and sends it nothing, not even an
+ * error report (errors/clientErrorSender.ts).
+ */
+export const readsLiveServer = (): boolean => import.meta.env.DEV
+
+/**
  * The source a request reads: `fixtures` in a production build; in development the one `?source=` names, else the
  * page's `default` when no `?state=` is named, else `fixtures`. A value that is not a source comes back as it is.
  */
 function requestedSource(request: DataSourceRequest, options: DataSourceOptions = {}): string {
-  if (!import.meta.env.DEV) return 'fixtures'
+  if (!readsLiveServer()) return 'fixtures'
   if (request.source !== undefined) return request.source
   return request.state === undefined ? (options.default ?? 'fixtures') : 'fixtures'
 }
