@@ -1,7 +1,7 @@
 import { notFound, redirect } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { FixtureError } from './appError.ts'
-import { clearReports, getReports, repeatWindowMs, report, subscribeReports } from './reporter.ts'
+import { addSink, clearReports, getReports, repeatWindowMs, report, subscribeReports } from './reporter.ts'
 
 afterEach(() => {
   clearReports()
@@ -112,5 +112,24 @@ describe('report', () => {
     report(fromHere(), 'handler')
     report(fromThere(), 'handler')
     expect(getReports()).toHaveLength(2)
+  })
+
+  it('logs a sink that throws once and still gives the report to the other sinks and the buffer (2b-6)', () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const failure = new Error('sink down')
+    const removeBroken = addSink(() => {
+      throw failure
+    })
+    const next = vi.fn()
+    const removeNext = addSink(next)
+    const error = new Error('first')
+    report(error, 'handler')
+    removeBroken()
+    removeNext()
+    const sinkLogs = log.mock.calls.filter(([message]) => message === '[bridge] error sink failed')
+    expect(sinkLogs).toEqual([['[bridge] error sink failed', failure]])
+    expect(next).toHaveBeenCalledTimes(1)
+    expect(next.mock.calls[0]?.[0]).toMatchObject({ error, source: 'handler' })
+    expect(getReports().map((r) => r.error)).toEqual([error])
   })
 })

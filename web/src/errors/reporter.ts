@@ -39,7 +39,7 @@ const consoleSink: Sink = (r) => {
   if (import.meta.env.DEV) console.error(`[${r.source}]`, r.error, r.componentStack ?? '')
 }
 
-const sinks: readonly Sink[] = [consoleSink]
+const sinks = new Set<Sink>([consoleSink])
 let seen = new WeakSet<object>()
 /** When each report's signature was last kept, for the repeat window. */
 let recent = new Map<string, number>()
@@ -108,9 +108,18 @@ export function report(thrown: unknown, source: ErrorSource, componentStack?: st
   for (const sink of sinks) {
     try {
       sink(entry)
-    } catch {
-      // A sink must never throw; the report is already in the buffer.
+    } catch (sinkError) {
+      // Not report(): a sink that throws on each report would loop. The report is already in the buffer.
+      console.error('[bridge] error sink failed', sinkError)
     }
+  }
+}
+
+/** Sends each later report to the sink too, after the console; returns the removal. */
+export function addSink(sink: Sink): () => void {
+  sinks.add(sink)
+  return () => {
+    sinks.delete(sink)
   }
 }
 
