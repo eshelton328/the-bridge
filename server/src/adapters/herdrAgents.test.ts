@@ -370,6 +370,50 @@ describe('herdr agents: input to a chat', () => {
     }
   })
 
+  it('after a stop, keeps a draft that differs from the last prompt only in its spaces', async () => {
+    const list = (status: string) => ({
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: status } : a)),
+    })
+    const ours = port()
+    socket.set('agent.list', list('idle'))
+    try {
+      expect(await ours.sendPrompt(chat, 'Check every one.')).toEqual({ ok: true, value: 'sent' })
+      socket.set('agent.list', list('working'))
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('Check everyone.')))
+      })
+      const before = socket.requests().length
+      expect(await ours.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      const keys = socket
+        .requests()
+        .slice(before)
+        .filter((r) => r.method === 'agent.send_keys')
+        .map((r) => field(r.params, 'keys'))
+      expect(keys).toEqual([['esc']])
+    } finally {
+      socket.onRequest(undefined)
+      socket.set('pane.read', undefined)
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('sends no prompt to a box that it cannot read, such as a draft with a line of "─"', async () => {
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    socket.set('pane.read', paneRead('w17:p1', claudeScreen(`notes\n${'─'.repeat(20)}\nmore notes`)))
+    try {
+      const before = socket.requests().filter((r) => r.method === 'agent.prompt').length
+      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(socket.requests().filter((r) => r.method === 'agent.prompt').length).toBe(before)
+    } finally {
+      socket.set('pane.read', undefined)
+      socket.set('agent.list', undefined)
+    }
+  })
+
   it('sends one Escape for two stops that come together or within 2 s, and one again after that', async () => {
     let time = 1_000_000
     const timed = createHerdrAgents({

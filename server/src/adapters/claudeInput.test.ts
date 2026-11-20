@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { bareText, inputBoxOf } from './claudeInput.ts'
+import { boxKeys, inputBoxOf, promptKey } from './claudeInput.ts'
 import { claudeScreen } from './fakeHerdrSocket.ts'
 
 const esc = String.fromCharCode(27)
@@ -26,6 +26,10 @@ describe('inputBoxOf', () => {
     expect(inputBoxOf(`${line}\r\nold output\r\n${screen('❯ draft')}`)).toEqual({ text: 'draft', lines: 1 })
   })
 
+  it('gives null for a draft with a line of "─" in it, which looks like the end of the box', () => {
+    expect(inputBoxOf(screen('❯ notes', `  ${'─'.repeat(20)}`, '  more notes'))).toBeNull()
+  })
+
   it('gives null for a screen with no box, such as a dialog', () => {
     expect(inputBoxOf('Quick safety check: Is this a project you trust?\r\n ❯ No, exit')).toBeNull()
     expect(inputBoxOf(screen('  1. Yes', '  2. No'))).toBeNull()
@@ -37,8 +41,20 @@ describe('inputBoxOf', () => {
   })
 })
 
-describe('bareText', () => {
-  it('matches a prompt to the box that shows it wrapped', () => {
-    expect(bareText('line A xx\n  xx end')).toBe(bareText('line A xxxx end'))
+describe('boxKeys', () => {
+  const keys = (text: string) => boxKeys({ text, lines: text.split('\n').length })
+
+  it('matches a prompt to the box that wraps it at a space or inside a word', () => {
+    expect(keys('Write a long\nessay.')).toContain(promptKey('Write a long essay.'))
+    expect(keys('line A xx\nxx end')).toContain(promptKey('line A xxxx end'))
+    expect(keys('First line.\nSecond line.')).toContain(promptKey('First line.\nSecond line.'))
+  })
+
+  it('does not match words that differ only in their spaces on one line', () => {
+    expect(keys('Check everyone.')).not.toContain(promptKey('Check every one.'))
+  })
+
+  it('gives no key for a box with more than 12 line ends', () => {
+    expect(keys(Array.from({ length: 14 }, (_, at) => String(at)).join('\n'))).toEqual([])
   })
 })

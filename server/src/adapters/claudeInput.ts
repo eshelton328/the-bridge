@@ -28,5 +28,22 @@ export function inputBoxOf(screen: string): InputBox | null {
   return { text: text.trim() === '' ? '' : text.trimEnd(), lines: box.length }
 }
 
-/** `text` with no white space, so a prompt matches the box that shows it wrapped onto more lines. */
-export const bareText = (text: string): string => text.replace(/\s+/g, '')
+/** A prompt as the box can show it: each run of white space one space, with none at the ends. */
+export const promptKey = (text: string): string => text.replace(/\s+/g, ' ').trim()
+
+/** The most line ends in a box that `boxKeys` reads: 2 ** 12 joins. */
+const maxLineEnds = 12
+
+/**
+ * Each prompt that `box` can show, as `promptKey` gives it. At each line end the box either wrapped at a space,
+ * which it dropped, or broke a word or showed a line break of the prompt; so each line end joins with a space or
+ * with nothing. A box with more line ends gives none, and its text is never cleared.
+ */
+export function boxKeys(box: InputBox): string[] {
+  const lines = box.text.split('\n')
+  if (lines.length - 1 > maxLineEnds) return []
+  const keys = new Set<string>()
+  for (let joins = 0; joins < 2 ** (lines.length - 1); joins += 1)
+    keys.add(promptKey(lines.reduce((text, line, at) => `${text}${(joins >> (at - 1)) & 1 ? ' ' : ''}${line}`)))
+  return [...keys]
+}

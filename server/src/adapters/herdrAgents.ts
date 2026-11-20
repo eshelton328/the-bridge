@@ -35,7 +35,7 @@ import { z } from 'zod'
 import type { Logger } from '../logger.ts'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
-import { bareText, type InputBox, inputBoxOf } from './claudeInput.ts'
+import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { claudeProjectFolder, readClaudeSession } from './sessionFile.ts'
 
@@ -249,8 +249,8 @@ const putBackReadGapMs = 100
 
 const PaneRead = z.object({ read: z.object({ text: z.string() }) })
 
-/** A prompt's hash with no white space, so it matches the box that shows the prompt wrapped. */
-const hashOf = (text: string) => createHash('sha256').update(bareText(text)).digest('hex')
+/** The hash of a prompt as the box can show it (`promptKey`). */
+const hashOf = (key: string) => createHash('sha256').update(key).digest('hex')
 
 /** A Claude session ID that is safe in a file name: no slash and no dot. */
 const sessionName = /^[A-Za-z0-9_-]{1,100}$/
@@ -504,8 +504,8 @@ export function createHerdrAgents({
   }
 
   /**
-   * The hash of the last prompt this port sent to each pane, with no white space: never the text itself. A stop
-   * clears the box only when it holds that prompt.
+   * The hash of the last prompt this port sent to each pane, as the box can show it (`promptKey`): never the text
+   * itself. A stop clears the box only when it holds that prompt.
    */
   const lastSent = new Map<string, string>()
 
@@ -528,7 +528,7 @@ export function createHerdrAgents({
       const box = await inputBox(pane)
       if (!box.ok || box.value === null) return
       if (box.value.text !== '') {
-        if (hashOf(box.value.text) !== sent) return
+        if (!boxKeys(box.value).some((key) => hashOf(key) === sent)) return
         lastSent.delete(pane)
         const keys = Array.from({ length: box.value.lines * 2 }, () => 'ctrl+u')
         await herdrRequest(socket, 'agent.send_keys', { target: pane, keys })
@@ -563,10 +563,11 @@ export function createHerdrAgents({
       if (claude) {
         const box = await inputBox(pane)
         if (!box.ok) return box
-        if (box.value !== null && box.value.text !== '') return ok('inputNotEmpty')
+        // A screen whose box the adapter cannot read, such as a draft with a line of "─" in it, may hold text too.
+        if (box.value?.text !== '') return ok('inputNotEmpty')
       }
       const sent = await input('agent.prompt', { target: pane, text })
-      if (sent.ok && sent.value === 'sent') lastSent.set(pane, hashOf(text))
+      if (sent.ok && sent.value === 'sent') lastSent.set(pane, hashOf(promptKey(text)))
       return sent
     },
     async cancel(chat) {
