@@ -1,6 +1,7 @@
 // The herdr adapter of the AgentPort (d-110). It reads herdr's
 // workspace.list, agent.list and pane.list, finds each Claude chat's session
-// file from its agent_session, and reads the model from it. Every pane that
+// file from its agent_session, and reads the model and the context share
+// from it. Every pane that
 // is not a Claude or Codex chat is a shell chat; its model is the program
 // it runs, from pane.process_info: process names only, never an argument
 // or the terminal title, which can hold a token or a path. readLayout reads
@@ -34,7 +35,7 @@ import type { Logger } from '../logger.ts'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
-import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
+import { claudeProjectFolder, readClaudeSession } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
@@ -295,12 +296,13 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
     shared: ReadonlySet<string>,
   ): Promise<ChatSummary> => {
     const path = kind === 'claude' ? sessionPath(agent) : undefined
+    const session = path === undefined ? { model: null, contextUsed: null } : await readClaudeSession(path)
     return {
       id: chatIdOf(agent, shared),
       kind,
       title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
-      model: path === undefined ? null : await readClaudeModel(path),
-      contextUsed: null,
+      model: session.model,
+      contextUsed: session.contextUsed,
       status: statusOf(agent.agent_status),
       parent: null,
     }
@@ -635,7 +637,10 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
             const status = StatusChanged.safeParse(line)
             const chat = status.success ? chats.get(status.data.data.pane_id) : undefined
             if (status.success && chat) {
-              tell({ type: 'chatStatus', chat, status: statusOf(status.data.data.agent_status) })
+              const next = statusOf(status.data.data.agent_status)
+              tell({ type: 'chatStatus', chat, status: next })
+              // A turn that ends changes the chat's model and context share: the app reads the list again.
+              if (next === 'idle') tell({ type: 'workspacesChanged' })
               return
             }
             const workspace = layoutWorkspaceOf(line)

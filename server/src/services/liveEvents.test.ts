@@ -58,7 +58,7 @@ describe('live events', () => {
     live.connect(b)
     expect(agents.subscriptions()).toBe(1)
     agents.setStatus(drift, 'idle')
-    expect(b.events.map((e) => e.seq)).toEqual([0])
+    expect(b.events.map((e) => e.type)).toEqual(['chat.status', 'workspaces.changed'])
     expect(a.events).toEqual([])
   })
 })
