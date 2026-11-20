@@ -18,6 +18,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Subagent, SubagentTranscriptLayers } from '../types.ts'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { TranscriptTrail } from './TranscriptTrail.tsx'
 
@@ -140,15 +141,18 @@ export function PhoneSubagentTranscript({
                 <p className={task}>{item.full.task}</p>
               </ProposalBlock>
             </div>
-            {item.full.entries.map((entry, i) => (
-              <div
-                key={`${entry.type}-${String(i)}`}
-                className={entry.type === 'tool' ? hug : undefined}
-                data-figma={layers?.entries?.[i]}
-              >
-                <ChatEntryView entry={entry} />
-              </div>
-            ))}
+            {/* One bad entry shows an inline fallback, and the header and the note keep working (audit P-1). */}
+            <BlockBoundary contentKey={item.id}>
+              {item.full.entries.map((entry, i) => (
+                <div
+                  key={`${entry.type}-${String(i)}`}
+                  className={entry.type === 'tool' ? hug : undefined}
+                  data-figma={layers?.entries?.[i]}
+                >
+                  <ChatEntryView entry={entry} />
+                </div>
+              ))}
+            </BlockBoundary>
           </>
         )}
       </ScrollFrame>

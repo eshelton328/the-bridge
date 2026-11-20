@@ -24,6 +24,7 @@ import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef,
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { ChatEntryView } from './ChatEntryView.tsx'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
@@ -102,6 +103,8 @@ type ChatPaneBase = {
     /** The skill list; D1's when not set. */
     skills?: string | undefined
   }
+  /** The chat the transcript belongs to; a new id resets the transcript's boundary. */
+  chatId: string
   entries: readonly ChatEntry[]
   /** A live chat's text in place of its transcript, such as "Transcript not live yet" (d-117); `entries` when not set. */
   notLive?: string | undefined
@@ -167,6 +170,7 @@ export type ChatPaneProps = ChatPaneBase &
 export function ChatPane(props: ChatPaneProps) {
   const {
     figma,
+    chatId,
     entries,
     notLive,
     composer,
@@ -359,11 +363,14 @@ export function ChatPane(props: ChatPaneProps) {
         </div>
       </SkillPicker>
     )
+  // One bad entry shows an inline fallback in the transcript, and the header and the composer keep working (audit P-1).
   const entryViews =
     notLive === undefined ? (
-      entries.map((entry, i) => (
-        <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
-      ))
+      <BlockBoundary contentKey={chatId}>
+        {entries.map((entry, i) => (
+          <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
+        ))}
+      </BlockBoundary>
     ) : (
       <NotLive text={notLive} />
     )

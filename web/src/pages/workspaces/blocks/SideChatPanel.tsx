@@ -135,6 +135,8 @@ export function SideChatPanel({ chat, placement = 'side', onClose, device = 'pho
       </div>
       <ChatPane
         size={placement === 'pane' ? 'inset' : placement}
+        // The side chat's data has no id of its own; its command and title name it.
+        chatId={`${chat.command} ${chat.title}`}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],

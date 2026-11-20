@@ -122,6 +122,7 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
           <ChatPane
             // Each chat its own composer, whose text is its state: a pane that shows another chat starts from its draft.
             key={pane.id}
+            chatId={pane.id}
             figma={layers}
             entries={pane.entries}
             notLive={pane.notLive}
@@ -151,6 +152,7 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
           />
         ) : (
           <ShellPane
+            paneId={pane.id}
             label={pane.head.title}
             lines={pane.lines}
             prompt={pane.prompt}

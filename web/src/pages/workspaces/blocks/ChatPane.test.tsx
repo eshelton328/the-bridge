@@ -22,6 +22,7 @@ function Chat({ text }: { text: string }) {
   return (
     <ChatPane
       figma={{ composer: 'composer' }}
+      chatId="chat-1"
       entries={[]}
       composer={{ placeholder: 'Message, or / for a skill', text, attachments: [], running: false }}
       skills={{ label: skillsLabel, items: skills, value: null, open }}
@@ -74,6 +75,7 @@ describe('the skill list of a chat', () => {
     view = await testRender(
       <ChatPane
         figma={{ composer: 'composer' }}
+        chatId="chat-1"
         entries={[]}
         composer={{ placeholder: 'Message, or / for a skill', text: '', attachments: [], running: false }}
         skills={{ label: skillsLabel, matching: 'SKILLS MATCHING {query}', items: skills, value: null, open: true }}
@@ -91,6 +93,7 @@ describe('the skill list of a chat', () => {
     view = await testRender(
       <ChatPane
         figma={{ composer: 'composer' }}
+        chatId="chat-1"
         entries={[]}
         composer={{ placeholder: 'Message, or / for a skill', text: '', attachments: [], running: false }}
         skills={{ label: skillsLabel, matching: 'SKILLS MATCHING {query}', items: skills, value: null, open: true }}

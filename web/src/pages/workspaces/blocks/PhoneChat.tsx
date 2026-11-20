@@ -147,6 +147,7 @@ export function PhoneChat(props: PhoneChatProps) {
       // Each chat its own composer, whose text is its state, so a typed message never carries to another chat.
       key={pane.id}
       size={device}
+      chatId={pane.id}
       header={
         notice === undefined ? (
           head

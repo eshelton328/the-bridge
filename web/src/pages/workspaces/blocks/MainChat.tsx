@@ -78,6 +78,7 @@ export function MainChat(props: MainChatProps) {
         // alone (a fork and its original) mounts the other chat's composer from its draft.
         key={pane.id}
         size="full"
+        chatId={pane.id}
         figma={{
           composer: layers?.composer ?? '105:889',
           entries: layers?.entries ?? ['105:869', undefined, '105:874'],
