@@ -458,6 +458,12 @@ let lost: string | undefined
 let taken = 0
 /** How many `layout.changed` events the watchers took for each workspace, by ID, as `taken` counts for the list. */
 const layoutsTaken = new Map<string, number>()
+/**
+ * The workspaces of the last list a load read, by ID: the page shows their layouts. A `layout.changed` event for one
+ * of them reads it again even when its query is gone, as the query client drops a query no component observes after
+ * five idle minutes.
+ */
+const shownWorkspaces = new Set<string>()
 /** The open watcher's way to mark the cache invalid (the list and every layout, or the query of `key`) and load again. */
 let reload: ((key?: QueryKey) => void) | undefined
 
@@ -540,9 +546,9 @@ const openEvents: OpenStream = (signal) =>
  * Reads the event stream and keeps the workspaces in the query cache current: a `chat.status` event changes
  * the chat's status there; `workspaces.changed`, an event the cache cannot take, and each time the stream
  * opens (the first time and after it connects again) mark the cache invalid, with every layout, so the next load
- * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the cache holds
- * it: a workspace the page does not show is not read. A burst of events gives one `onChange`. When the stream ends or the network drops, it connects
- * again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
+ * reads the server. A `layout.changed` event marks that workspace's layout invalid, and only when the page shows that
+ * workspace (`shownWorkspaces`): a workspace the page does not show is not read. A burst of events gives one
+ * `onChange`. When the stream ends or the network drops, it connects again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
  * dev ErrorTray once for each outage; a 5xx is an outage too, as the Vite proxy answers 5xx while the server is down.
  * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
  * ErrorTray, as a failed read does. The result stops it.
@@ -579,7 +585,7 @@ export function watchLiveWorkspaces({
     }
     const { workspace } = parsed.data.data
     layoutsTaken.set(workspace, (layoutsTaken.get(workspace) ?? 0) + 1)
-    if (client.getQueryState(layoutKey(workspace)) === undefined) return
+    if (!shownWorkspaces.has(workspace)) return
     invalidate(layoutKey(workspace))
   }
   const take = (frame: Frame) => {
@@ -747,6 +753,8 @@ async function layoutsOf(
         }, 0)
       return answer.value
     }
+  shownWorkspaces.clear()
+  for (const summary of response.workspaces) shownWorkspaces.add(summary.id)
   const pairs = await Promise.all(
     response.workspaces.map(async (summary, at): Promise<[string, WorkspaceLayout] | undefined> => {
       const workspace = workspaces[at]
