@@ -1,8 +1,15 @@
 // API integration tests (d-113): the app in process, with the fake adapter.
-import { chatsOf, ErrorBody, MachineId, WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
+import {
+  chatsOf,
+  ErrorBody,
+  MachineId,
+  TranscriptResponse,
+  WorkspaceLayout,
+  WorkspacesResponse,
+} from '@bridge/contract'
 import type { InferResponseType } from 'hono/client'
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { createFakeAgents, fakeWorkspaces } from './adapters/fakeAgents.ts'
+import { createFakeAgents, fakeTranscript, fakeWorkspaces } from './adapters/fakeAgents.ts'
 import { createApp } from './app.ts'
 import type { Client } from './client.ts'
 import { memoryLogger } from './logger.ts'
@@ -206,6 +213,71 @@ describe('GET /api/workspaces/:workspace/layout', () => {
       headers: { ...tailnet, 'Tailscale-User-Login': 'someone@example.com' },
     })
     expect(res.status).toBe(403)
+  })
+})
+
+describe('GET /api/chats/:chat/transcript', () => {
+  const transcriptPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/transcript`
+  const themes = `${machine}/bridge-themes`
+
+  it("returns the chat's last entries, reads only that chat and logs no transcript text", async () => {
+    const logger = memoryLogger()
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log: logger.log }).request(transcriptPath(themes), { headers: local })
+    expect(res.status).toBe(200)
+    const body = TranscriptResponse.parse(await res.json())
+    expect(body).toEqual({ chat: themes, ...fakeTranscript() })
+    expect(agents.transcriptReads()).toEqual([themes])
+    const logs = JSON.stringify(logger.lines())
+    for (const entry of body.entries) if (entry.type !== 'tool') expect(logs).not.toContain(entry.text)
+  })
+
+  it('returns no entries for a shell chat', async () => {
+    const res = await createApp({ agents: createFakeAgents(machine), owner, log }).request(
+      transcriptPath(`${machine}/brain-git`),
+      { headers: local },
+    )
+    expect(TranscriptResponse.parse(await res.json())).toEqual({
+      chat: `${machine}/brain-git`,
+      entries: [],
+      earlier: false,
+    })
+  })
+
+  it('answers 404 not-found for a chat that the machine does not have', async () => {
+    const res = await createApp({ agents: createFakeAgents(machine), owner, log }).request(
+      transcriptPath(`${machine}/no-such-chat`),
+      { headers: local },
+    )
+    expect(res.status).toBe(404)
+    expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
+  })
+
+  it('answers 400 invalid-input for an ID with no machine, and reads nothing', async () => {
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log }).request(transcriptPath('bridge-themes'), { headers: local })
+    expect(res.status).toBe(400)
+    expect(ErrorBody.parse(await res.json()).error.kind).toBe('invalid-input')
+    expect(agents.transcriptReads()).toEqual([])
+  })
+
+  it('answers 503 herdr-unavailable when herdr does not answer, with no socket path in the body', async () => {
+    const error = { reason: 'unreachable', message: 'herdr socket /home/dev/.config/herdr/herdr.sock: ENOENT' } as const
+    const res = await createApp({ agents: createFakeAgents(machine, { error }), owner, log }).request(
+      transcriptPath(themes),
+      { headers: local },
+    )
+    expect(res.status).toBe(503)
+    expect(JSON.stringify(ErrorBody.parse(await res.json()))).not.toContain('/home/dev')
+  })
+
+  it('refuses another Tailscale login before it reads', async () => {
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log }).request(transcriptPath(themes), {
+      headers: { ...tailnet, 'Tailscale-User-Login': 'someone@example.com' },
+    })
+    expect(res.status).toBe(403)
+    expect(agents.transcriptReads()).toEqual([])
   })
 })
 

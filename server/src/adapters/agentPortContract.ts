@@ -1,6 +1,15 @@
 // The one contract test suite of the AgentPort (d-113). Every adapter runs
 // it, the fake and herdr's, so the fake cannot drift from what it stands for.
-import { type ChatStatus, chatsOf, splitId, WorkspaceId, WorkspaceLayout, WorkspaceSummary } from '@bridge/contract'
+import {
+  ChatId,
+  type ChatStatus,
+  chatsOf,
+  splitId,
+  TranscriptEntry,
+  WorkspaceId,
+  WorkspaceLayout,
+  WorkspaceSummary,
+} from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import type { AgentEvent, AgentPort } from '../services/agentPort.ts'
 
@@ -80,6 +89,30 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect([...panes].sort()).toEqual(workspace.chats.map((c) => c.id).sort())
     })
 
+    it("reads the expected chat's transcript in the contract's shape, and none for a shell", async () => {
+      const { port, expected } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chats = list.value.flatMap((w) => w.chats)
+      const chat = chats.find((c) => c.title === expected.chat)
+      if (!chat) throw new Error(`no chat ${expected.chat}`)
+      const read = await port.readTranscript(chat.id)
+      if (!read.ok) throw new Error(read.error.message)
+      if (read.value === null) throw new Error(`no transcript for ${chat.id}`)
+      for (const entry of read.value.entries) expect(TranscriptEntry.parse(entry)).toEqual(entry)
+      expect(new Set(read.value.entries.map((e) => e.id)).size).toBe(read.value.entries.length)
+      const shellWorkspace = list.value.find((w) => w.label === expected.shell.workspace)
+      const shell = shellWorkspace?.chats.find((c) => c.kind === 'shell')
+      if (!shell) throw new Error('no shell chat')
+      expect(await port.readTranscript(shell.id)).toEqual({ ok: true, value: { entries: [], earlier: false } })
+    })
+
+    it('gives no transcript for a chat that the machine does not have', async () => {
+      const { port } = await setup()
+      for (const id of [`${port.machine}/no-such-chat`, 'another-mac/no-such-chat'])
+        expect(await port.readTranscript(ChatId.parse(id))).toEqual({ ok: true, value: null })
+    })
+
     it('gives no layout for a workspace that the machine does not have', async () => {
       const { port } = await setup()
       const read = await port.readLayout(WorkspaceId.parse(`${port.machine}/no-such-workspace`))
@@ -92,6 +125,8 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(read.ok ? undefined : read.error.reason).toBe('unreachable')
       const layout = await unreachable.readLayout(WorkspaceId.parse(`${unreachable.machine}/w1`))
       expect(layout.ok ? undefined : layout.error.reason).toBe('unreachable')
+      const transcript = await unreachable.readTranscript(ChatId.parse(`${unreachable.machine}/c1`))
+      expect(transcript.ok ? undefined : transcript.error.reason).toBe('unreachable')
       const ends: string[] = []
       const subscription = unreachable.subscribe(
         () => undefined,

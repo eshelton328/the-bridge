@@ -2,6 +2,7 @@
 // setting comes from the environment (config.ts). The log goes to a file
 // for each day in BRIDGE_LOG_DIR and to the terminal: JSON lines, or
 // readable lines when the terminal is a TTY (d-115).
+import { homedir } from 'node:os'
 import { serve } from '@hono/node-server'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
 import { createApp } from './app.ts'
@@ -24,7 +25,7 @@ const terminal: LogSink = {
 }
 const log = createLogger(teeSinks(dailyFiles(logDir), terminal), logLevel).child({ machine })
 handleProcessErrors(process, log)
-const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects })
+const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects, home: homedir() })
 const server = serve({ fetch: createApp({ agents, owner, log }).fetch, port, hostname: '127.0.0.1' }, (info) => {
   log.info('server started', { port: info.port })
 })

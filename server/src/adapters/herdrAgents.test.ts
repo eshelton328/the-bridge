@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { MachineId, WorkspaceId } from '@bridge/contract'
+import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -13,6 +13,7 @@ const machine = MachineId.parse('test-mac')
 const { log } = memoryLogger()
 const projects = mkdtempSync(join(tmpdir(), 'claude-projects-'))
 const cwd = '/home/dev/ncc-1701'
+const home = '/home/dev'
 mkdirSync(join(projects, '-home-dev-ncc-1701'))
 writeFileSync(
   join(projects, '-home-dev-ncc-1701', 'session-a.jsonl'),
@@ -138,7 +139,7 @@ beforeAll(async () => {
 })
 afterAll(() => socket.close())
 
-const port = () => createHerdrAgents({ socket: socket.path, machine, log, claudeProjects: projects })
+const port = () => createHerdrAgents({ socket: socket.path, machine, log, claudeProjects: projects, home })
 
 const statusLine = (pane: string, status: string) => ({
   data: { agent: 'claude', agent_status: status, pane_id: pane, workspace_id: 'w17' },
@@ -164,7 +165,7 @@ describeAgentPort('herdr (recorded socket)', () =>
       })
       return Promise.resolve()
     },
-    unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, log, claudeProjects: projects }),
+    unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, log, claudeProjects: projects, home }),
   }),
 )
 
@@ -210,7 +211,7 @@ afterAll(() => resumed.close())
 
 describeAgentPort('herdr (one session resumed in two panes)', () =>
   Promise.resolve({
-    port: createHerdrAgents({ socket: resumed.path, machine, log, claudeProjects: projects }),
+    port: createHerdrAgents({ socket: resumed.path, machine, log, claudeProjects: projects, home }),
     expected: {
       workspace: 'the-bridge loops',
       chat: 'bridge-coord 2',
@@ -227,7 +228,7 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
       })
       return Promise.resolve()
     },
-    unreachable: createHerdrAgents({ socket: `${resumed.path}.none`, machine, log, claudeProjects: projects }),
+    unreachable: createHerdrAgents({ socket: `${resumed.path}.none`, machine, log, claudeProjects: projects, home }),
   }),
 )
 
@@ -237,7 +238,7 @@ describe('herdr agents: a reply the adapter does not read', () => {
     broken = await startFakeHerdrSocket(results)
   })
   afterAll(() => broken.close())
-  const brokenPort = () => createHerdrAgents({ socket: broken.path, machine, log, claudeProjects: projects })
+  const brokenPort = () => createHerdrAgents({ socket: broken.path, machine, log, claudeProjects: projects, home })
 
   it('gives badReply, not unreachable, for a line that is not JSON or the reply to another request', async () => {
     for (const mode of ['garbage', 'wrongId'] as const) {
@@ -333,6 +334,7 @@ describe('herdr agents', () => {
       machine,
       log,
       claudeProjects: projects,
+      home,
     }).listWorkspaces()
     const chats = read.ok ? read.value[0]?.chats : undefined
     expect(chats?.map((c) => [c.id, c.model])).toEqual([
@@ -351,7 +353,13 @@ describe('herdr agents', () => {
   })
 
   it('names the socket when herdr does not answer', async () => {
-    const agents = createHerdrAgents({ socket: join(projects, 'none.sock'), machine, log, claudeProjects: projects })
+    const agents = createHerdrAgents({
+      socket: join(projects, 'none.sock'),
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+    })
     const read = await agents.listWorkspaces()
     expect(read.ok).toBe(false)
     expect(!read.ok && read.error.reason).toBe('unreachable')
@@ -365,7 +373,7 @@ describe('herdr agents', () => {
       { ...results, 'workspace.list': { workspaces: [{ workspace_id: 'w 17', label: 'odd' }] } },
     ]) {
       const odd = await startFakeHerdrSocket(reply)
-      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects, home })
         .listWorkspaces()
         .finally(() => odd.close())
       expect(read.ok ? undefined : read.error.reason).toBe('badReply')
@@ -376,7 +384,7 @@ describe('herdr agents', () => {
     const logger = memoryLogger()
     const agents = results['agent.list'].agents.map((a, i) => (i === 0 ? { ...a, agent_status: 'paused' } : a))
     const odd = await startFakeHerdrSocket({ ...results, 'agent.list': { agents } })
-    const adapter = createHerdrAgents({ socket: odd.path, machine, log: logger.log, claudeProjects: projects })
+    const adapter = createHerdrAgents({ socket: odd.path, machine, log: logger.log, claudeProjects: projects, home })
     const first = await adapter.listWorkspaces()
     await adapter.listWorkspaces()
     await odd.close()
@@ -404,7 +412,7 @@ describe('herdr agents', () => {
         },
       },
     })
-    const read = await createHerdrAgents({ socket: idle.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: idle.path, machine, log, claudeProjects: projects, home })
       .listWorkspaces()
       .finally(() => idle.close())
     const shells = read.ok ? read.value.flatMap((w) => w.chats).filter((c) => c.kind === 'shell') : []
@@ -415,7 +423,7 @@ describe('herdr agents', () => {
     const odd = await startFakeHerdrSocket(
       Object.fromEntries(Object.entries(results).filter(([method]) => method !== 'pane.process_info')),
     )
-    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects, home })
       .listWorkspaces()
       .finally(() => odd.close())
     if (!read.ok) throw new Error(read.error.message)
@@ -463,7 +471,7 @@ describe('herdr agents', () => {
       ...results,
       'layout.export': { layout: { ...results['layout.export'].layout, root: stray, focused_pane_id: 'w17:p9' } },
     })
-    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects, home })
       .readLayout(WorkspaceId.parse('test-mac/w17'))
       .finally(() => odd.close())
     expect(read.ok ? undefined : read.error.reason).toBe('badReply')
@@ -484,7 +492,7 @@ describe('herdr agents', () => {
         'workspace.list': { workspaces: [{ ...w17, active_tab_id: undefined }, w18] },
         'tab.list': { tabs },
       })
-      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects, home })
         .readLayout(WorkspaceId.parse('test-mac/w17'))
         .finally(() => odd.close())
       if (!read.ok) throw new Error(read.error.message)
@@ -498,7 +506,7 @@ describe('herdr agents', () => {
     closing.once('layout.export', {
       layout: { ...layout, root: { ...layout.root, second: { type: 'pane', pane_id: 'w17:p9' } } },
     })
-    const read = await createHerdrAgents({ socket: closing.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: closing.path, machine, log, claudeProjects: projects, home })
       .readLayout(WorkspaceId.parse('test-mac/w17'))
       .finally(() => closing.close())
     expect(read.ok ? read.value?.tabs[0]?.focusedChat : read.error.message).toBe('test-mac/term_2')
@@ -510,7 +518,7 @@ describe('herdr agents', () => {
       ...results,
       'layout.export': { layout: { ...layout, root: { ...layout.root, ratio: 1 } } },
     })
-    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects, home })
       .readLayout(WorkspaceId.parse('test-mac/w17'))
       .finally(() => odd.close())
     const root = read.ok ? read.value?.tabs[0]?.root : undefined
@@ -519,7 +527,13 @@ describe('herdr agents', () => {
 
   it('reports a reply of an unknown shape', async () => {
     const odd = await startFakeHerdrSocket({ 'workspace.list': { workspaces: 'none' }, 'agent.list': { agents: [] } })
-    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects }).listWorkspaces()
+    const read = await createHerdrAgents({
+      socket: odd.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+    }).listWorkspaces()
     await odd.close()
     expect(!read.ok && read.error.reason).toBe('badReply')
   })
@@ -708,7 +722,7 @@ describe('herdr agents: subscribe', () => {
         },
       },
     })
-    const adapter = createHerdrAgents({ socket: leaky.path, machine, log: logger.log, claudeProjects: projects })
+    const adapter = createHerdrAgents({ socket: leaky.path, machine, log: logger.log, claudeProjects: projects, home })
     const read = await adapter.listWorkspaces()
     const { events, subscription } = collect(adapter)
     await subscription.ready
@@ -737,7 +751,7 @@ describe('herdr agents: subscribe', () => {
         },
       },
     })
-    const read = await createHerdrAgents({ socket: retitled.path, machine, log, claudeProjects: projects })
+    const read = await createHerdrAgents({ socket: retitled.path, machine, log, claudeProjects: projects, home })
       .listWorkspaces()
       .finally(() => retitled.close())
     const shell = read.ok ? read.value[1]?.chats.find((c) => c.id === 'test-mac/term_3') : undefined
@@ -754,10 +768,81 @@ describe('herdr agents: subscribe', () => {
   })
 
   it('ends the subscription when herdr does not answer, and opens nothing until subscribe', async () => {
-    const agents = createHerdrAgents({ socket: join(projects, 'none.sock'), machine, log, claudeProjects: projects })
+    const agents = createHerdrAgents({
+      socket: join(projects, 'none.sock'),
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+    })
     const { ends, subscription } = collect(agents)
     await subscription.ready
     expect(ends).toHaveLength(1)
     expect(ends[0]).toContain('none.sock')
+  })
+})
+
+describe('herdr adapter transcripts', () => {
+  const folder = join(projects, '-home-dev-ncc-1701')
+  const secretText = 'prompt text that must stay out of logs'
+  writeFileSync(
+    join(folder, 'session-t.jsonl'),
+    [
+      { type: 'user', uuid: 'u1', message: { content: secretText } },
+      {
+        type: 'assistant',
+        uuid: 'a1',
+        message: {
+          model: 'claude-opus-5-5',
+          content: [{ type: 'tool_use', id: 't1', name: 'Bash', input: { command: 'pnpm test' } }],
+        },
+      },
+    ]
+      .map((l) => JSON.stringify(l))
+      .join('\n'),
+  )
+  const agent = results['agent.list'].agents[0]
+  const withAgent = (more: object) => ({ ...results, 'agent.list': { agents: [{ ...agent, ...more }] } })
+
+  it("reads only the chat's own session, with the chat's status for a running tool, and logs no text", async () => {
+    const logger = memoryLogger()
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'working',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log: logger.log, claudeProjects: projects, home })
+    const read = await adapter.readTranscript(ChatId.parse('test-mac/session-t')).finally(() => fake.close())
+    expect(read).toEqual({
+      ok: true,
+      value: {
+        entries: [
+          { type: 'user', id: 'u1', text: secretText, cut: false },
+          { type: 'tool', id: 't1', name: 'Bash', target: 'pnpm', running: true },
+        ],
+        earlier: false,
+      },
+    })
+    expect(JSON.stringify(logger.lines())).not.toContain(secretText)
+  })
+
+  it('reads no file for a session ID that could leave the projects folder', async () => {
+    writeFileSync(
+      join(projects, 'escape.jsonl'),
+      JSON.stringify({ type: 'user', uuid: 'x1', message: { content: 'outside' } }),
+    )
+    const fake = await startFakeHerdrSocket(
+      withAgent({ agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: '../escape' } }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    const read = await adapter.readTranscript(ChatId.parse('test-mac/term_1')).finally(() => fake.close())
+    expect(read).toEqual({ ok: true, value: { entries: [], earlier: false } })
+  })
+
+  it('gives null for a chat of another machine, with no connection', async () => {
+    const before = socket.connections()
+    expect(await port().readTranscript(ChatId.parse('laptop/session-a'))).toEqual({ ok: true, value: null })
+    expect(socket.connections()).toBe(before)
   })
 })

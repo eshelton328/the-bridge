@@ -12,7 +12,20 @@ import {
   WorkspaceId,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
-import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
+import type { AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
+
+/** The fake's transcript of its working chat "bridge themes": a prompt, a tool call that runs and a reply. */
+export function fakeTranscript(): TranscriptRead {
+  return {
+    entries: [
+      { type: 'user', id: 'u1', text: 'Make the dark theme follow the system setting.', cut: false },
+      { type: 'tool', id: 't1', name: 'Read', target: 'web/src/theme.ts', running: false },
+      { type: 'assistant', id: 'a1', text: 'The theme now reads `prefers-color-scheme`.', cut: false },
+      { type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: true },
+    ],
+    earlier: false,
+  }
+}
 
 /** The fake's default data: two workspaces of `machine`, one with a chat that needs the owner, one with a shell. */
 export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
@@ -63,6 +76,8 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
 export type FakeAgents = AgentPort & {
   /** How many times a caller read the workspaces. */
   readonly reads: () => number
+  /** The chats whose transcript a caller read, in order. */
+  readonly transcriptReads: () => ChatId[]
   /** How many subscriptions are open now. */
   readonly subscriptions: () => number
   /** Gives a chat a new status, as an agent would, and tells each subscription. */
@@ -117,6 +132,7 @@ export function createFakeAgents(
   },
 ): FakeAgents {
   let reads = 0
+  const transcriptReads: ChatId[] = []
   const data = 'error' in answer ? undefined : structuredClone(answer.workspaces)
   const listeners = new Set<Listener>()
   const tell = (event: AgentEvent) => {
@@ -125,10 +141,18 @@ export function createFakeAgents(
   return {
     machine,
     reads: () => reads,
+    transcriptReads: () => [...transcriptReads],
     subscriptions: () => listeners.size,
     listWorkspaces() {
       reads += 1
       return Promise.resolve('error' in answer ? err(answer.error) : ok(structuredClone(data ?? [])))
+    },
+    readTranscript(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      transcriptReads.push(chat)
+      const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
+      if (found === undefined) return Promise.resolve(ok(null))
+      return Promise.resolve(ok(found.title === 'bridge themes' ? fakeTranscript() : { entries: [], earlier: false }))
     },
     readLayout(workspace) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

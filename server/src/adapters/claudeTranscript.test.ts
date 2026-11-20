@@ -1,0 +1,104 @@
+import { mkdtempSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { maxEntryText, maxTranscriptEntries, TranscriptEntry } from '@bridge/contract'
+import { describe, expect, it } from 'vitest'
+import { readClaudeTranscript } from './claudeTranscript.ts'
+
+const dir = mkdtempSync(join(tmpdir(), 'transcript-'))
+let files = 0
+const file = (lines: readonly (object | string)[]) => {
+  files += 1
+  const path = join(dir, `${String(files)}.jsonl`)
+  writeFileSync(path, lines.map((l) => (typeof l === 'string' ? l : JSON.stringify(l))).join('\n'))
+  return path
+}
+const options = { working: true, cwd: '/home/dev/ncc-1701', home: '/home/dev' }
+const user = (uuid: string, content: unknown, more: object = {}) => ({
+  type: 'user',
+  uuid,
+  message: { content },
+  ...more,
+})
+const assistant = (uuid: string, content: unknown[], more: object = {}) => ({
+  type: 'assistant',
+  uuid,
+  message: { model: 'claude-opus-5-5', content },
+  ...more,
+})
+const text = (t: string) => ({ type: 'text', text: t })
+const toolUse = (id: string, command: string) => ({ type: 'tool_use', id, name: 'Bash', input: { command } })
+const toolResult = (id: string, content: string) => ({ type: 'tool_result', tool_use_id: id, content })
+
+describe('Claude transcript', () => {
+  it('keeps prompts, reply text and tool calls in order, and drops thinking, results, side chains and meta lines', async () => {
+    const path = file([
+      { type: 'queue-operation', operation: 'enqueue' },
+      user('u1', 'Fix the build'),
+      assistant('a1', [{ type: 'thinking', thinking: 'private plan' }]),
+      assistant('a2', [text('Checking.'), toolUse('t1', 'pnpm build')]),
+      user('r1', [toolResult('t1', 'build output with a secret')]),
+      assistant('s1', [text('a side chain reply')], { isSidechain: true }),
+      user('m1', [text('<command-name>/clear</command-name>')], { isMeta: true }),
+      assistant('a3', [text('**Fixed.**')]),
+    ])
+    const read = await readClaudeTranscript(path, options)
+    expect(read).toEqual({
+      entries: [
+        { type: 'user', id: 'u1', text: 'Fix the build', cut: false },
+        { type: 'assistant', id: 'a2:0', text: 'Checking.', cut: false },
+        { type: 'tool', id: 't1', name: 'Bash', target: 'pnpm', running: false },
+        { type: 'assistant', id: 'a3:0', text: '**Fixed.**', cut: false },
+      ],
+      earlier: false,
+    })
+    for (const entry of read.entries) TranscriptEntry.parse(entry)
+    const json = JSON.stringify(read)
+    for (const hidden of ['private plan', 'build output', 'side chain', '/clear']) expect(json).not.toContain(hidden)
+  })
+
+  it('shows a tool call with no result as running only while the chat is working', async () => {
+    const path = file([assistant('a1', [toolUse('t1', 'pnpm test')])])
+    expect((await readClaudeTranscript(path, options)).entries[0]).toMatchObject({ running: true })
+    expect((await readClaudeTranscript(path, { ...options, working: false })).entries[0]).toMatchObject({
+      running: false,
+    })
+  })
+
+  it('skips a line that is not JSON, in the middle and at the end, where Claude Code still writes', async () => {
+    const path = file([
+      user('u1', 'first'),
+      '{"type": "assistant", "uu',
+      user('u2', 'second'),
+      '{"type":"user","uuid":"u3","mess',
+    ])
+    expect((await readClaudeTranscript(path, options)).entries.map((e) => e.id)).toEqual(['u1', 'u2'])
+  })
+
+  it(`gives the last ${String(maxTranscriptEntries)} entries of a long file, with earlier`, async () => {
+    const filler = 'x'.repeat(4000)
+    const lines = Array.from({ length: 700 }, (_, i) => user(`u${String(i)}`, `${String(i)} ${filler}`))
+    const read = await readClaudeTranscript(file(lines), options)
+    expect(read.earlier).toBe(true)
+    expect(read.entries).toHaveLength(maxTranscriptEntries)
+    expect(read.entries[0]?.id).toBe('u200')
+    expect(read.entries.at(-1)?.id).toBe('u699')
+  })
+
+  it('cuts text over the limit and marks it cut', async () => {
+    const read = await readClaudeTranscript(file([user('u1', 'y'.repeat(maxEntryText + 10))]), options)
+    expect(read.entries[0]).toMatchObject({ cut: true })
+    expect(read.entries[0]?.type === 'user' ? read.entries[0].text.length : 0).toBe(maxEntryText)
+  })
+
+  it('keeps one entry for an ID that the file has twice, the later one', async () => {
+    const path = file([user('u1', 'old'), user('u1', 'new')])
+    expect((await readClaudeTranscript(path, options)).entries).toEqual([
+      { type: 'user', id: 'u1', text: 'new', cut: false },
+    ])
+  })
+
+  it('gives no entries for a missing file', async () => {
+    expect(await readClaudeTranscript(join(dir, 'missing.jsonl'), options)).toEqual({ entries: [], earlier: false })
+  })
+})

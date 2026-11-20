@@ -25,9 +25,24 @@ if (!projects || !session || !title || !socket || !pane) {
 const withSession = session !== '-'
 const folder = join(projects, process.cwd().replace(/[^A-Za-z0-9]/g, '-'))
 const lines = [
-  { type: 'user', message: { role: 'user', content: 'Say hello.' } },
+  { type: 'user', uuid: 'e2e-u1', message: { role: 'user', content: 'Say hello.' } },
   {
     type: 'assistant',
+    uuid: 'e2e-a1',
+    message: {
+      role: 'assistant',
+      model: 'claude-opus-5-5',
+      content: [{ type: 'tool_use', id: 'e2e-t1', name: 'Bash', input: { command: 'git status --short' } }],
+    },
+  },
+  {
+    type: 'user',
+    uuid: 'e2e-r1',
+    message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'e2e-t1' }] },
+  },
+  {
+    type: 'assistant',
+    uuid: 'e2e-a2',
     message: { role: 'assistant', model: 'claude-opus-5-5', content: [{ type: 'text', text: 'Hello.' }] },
   },
 ]

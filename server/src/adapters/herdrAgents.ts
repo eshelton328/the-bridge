@@ -32,6 +32,7 @@ import { z } from 'zod'
 import type { Logger } from '../logger.ts'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
+import { readClaudeTranscript } from './claudeTranscript.ts'
 import { claudeProjectFolder, readClaudeModel } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
@@ -224,11 +225,16 @@ export type HerdrAgentsOptions = {
   readonly machine: MachineId
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** The owner's home folder: a transcript shows a path in it with "~". */
+  readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
   readonly log: Logger
 }
 
-export function createHerdrAgents({ socket, machine, claudeProjects, log }: HerdrAgentsOptions): AgentPort {
+/** A Claude session ID that is safe in a file name: no slash and no dot. */
+const sessionName = /^[A-Za-z0-9_-]{1,100}$/
+
+export function createHerdrAgents({ socket, machine, claudeProjects, home, log }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
   const statusOf = (status: string): ChatStatus => {
@@ -258,7 +264,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     const session = agent.agent_session
     if (!session) return undefined
     if (session.kind === 'path') return session.value
-    if (session.kind === 'id' && agent.cwd)
+    if (session.kind === 'id' && agent.cwd && sessionName.test(session.value))
       return join(claudeProjects, claudeProjectFolder(agent.cwd), `${session.value}.jsonl`)
     return undefined
   }
@@ -402,6 +408,24 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
 
   return {
     machine,
+    async readTranscript(chat) {
+      const { machine: on } = splitId(chat)
+      if (on !== machine) return ok(null)
+      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+      if (!agents.ok) return agents
+      if (!panes.ok) return panes
+      const shared = sharedSessions(agents.value.agents)
+      const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
+      if (agent === undefined) {
+        const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
+        return ok(shell ? { entries: [], earlier: false } : null)
+      }
+      // Only this chat's session is read. A Codex transcript is not read yet.
+      const path = agent.agent === 'claude' ? sessionPath(agent) : undefined
+      if (path === undefined) return ok({ entries: [], earlier: false })
+      const working = statusOf(agent.agent_status) === 'working'
+      return ok(await readClaudeTranscript(path, { working, cwd: agent.cwd ?? undefined, home }))
+    },
     async readLayout(workspace) {
       const first = await readLayoutOnce(workspace)
       // A pane can close between layout.export and pane.list; one more read sees the tree without it.

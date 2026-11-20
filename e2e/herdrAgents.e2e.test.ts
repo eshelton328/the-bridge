@@ -1,6 +1,6 @@
 // The AgentPort contract suite on the herdr adapter and a real herdr
 // session (d-113), as it runs on the fake adapter in server/.
-import { MachineId } from '@bridge/contract'
+import { ChatId, MachineId } from '@bridge/contract'
 import { describe, expect, inject, it } from 'vitest'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
@@ -11,7 +11,13 @@ import { reportAgent } from './reportAgent.ts'
 const machine = MachineId.parse('e2e-mac')
 const { log } = memoryLogger()
 const port = () =>
-  createHerdrAgents({ socket: inject('herdrSocket'), machine, log, claudeProjects: inject('claudeProjects') })
+  createHerdrAgents({
+    socket: inject('herdrSocket'),
+    machine,
+    log,
+    claudeProjects: inject('claudeProjects'),
+    home: '/home/dev',
+  })
 
 describeAgentPort('herdr (real session)', () =>
   Promise.resolve({
@@ -28,6 +34,7 @@ describeAgentPort('herdr (real session)', () =>
       machine,
       log,
       claudeProjects: inject('claudeProjects'),
+      home: '/home/dev',
     }),
   }),
 )
@@ -42,6 +49,21 @@ describe('herdr adapter on a real session', () => {
       kind: 'claude',
       model: 'claude-opus-5-5',
       status: 'idle',
+    })
+  })
+
+  it("reads the fake chat's transcript from its session file", async () => {
+    const read = await port().readTranscript(ChatId.parse('e2e-mac/fake-e2e-session'))
+    expect(read).toEqual({
+      ok: true,
+      value: {
+        entries: [
+          { type: 'user', id: 'e2e-u1', text: 'Say hello.', cut: false },
+          { type: 'tool', id: 'e2e-t1', name: 'Bash', target: 'git', running: false },
+          { type: 'assistant', id: 'e2e-a2:0', text: 'Hello.', cut: false },
+        ],
+        earlier: false,
+      },
     })
   })
 })

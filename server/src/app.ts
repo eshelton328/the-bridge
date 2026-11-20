@@ -7,6 +7,7 @@ import { type Access, access } from './auth.ts'
 import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './errors.ts'
 import type { Logger } from './logger.ts'
 import { createRateLimit } from './rateLimit.ts'
+import { chatsRoutes } from './routes/chats.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
@@ -49,6 +50,7 @@ export function createApp({ agents, owner, log }: AppDeps) {
         return undefined
       })
       .route('/api/workspaces', workspacesRoutes(agents, log))
+      .route('/api/chats', chatsRoutes(agents, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
