@@ -13,6 +13,8 @@
 //   `column(row(a, b), c)` its three-pane form; `row(column(a, c),
 //   column(b, d))` is the columns-first 2×2, and `row(a, column(b, c))` its
 //   three-pane form. Each handle takes the ratio of its split.
+// - A tree of `column` splits only puts its panes one above the other
+//   (`stack`), each pane's share the product of the ratios above it.
 // - Any other tree takes the nearest layout: the rows-first split when its
 //   root is a `column`, else the columns-first split, its panes in tree
 //   order from the top left, row by row, with equal shares.
@@ -36,6 +38,22 @@ function prune(node: LayoutNode, kept: ReadonlySet<ChatId>): LayoutNode | undefi
 function shares(ratio: number): number[] {
   const first = Math.round(ratio * 10_000) / 100
   return [first, Math.round((100 - first) * 100) / 100]
+}
+
+/** Every split of `node` is a `column`. */
+const onlyColumns = (node: LayoutNode): boolean =>
+  node.kind === 'pane' || (node.direction === 'column' && onlyColumns(node.first) && onlyColumns(node.second))
+
+/** Each pane of a tree of `column` splits, top first, with its share of `share` percent. */
+function stacked(node: LayoutNode, share: number): { chat: ChatId; share: number }[] {
+  if (node.kind === 'pane') return [{ chat: node.chat, share }]
+  return [...stacked(node.first, share * node.ratio), ...stacked(node.second, share * (1 - node.ratio))]
+}
+
+/** `shares` rounded to 0.01, the last one taking what makes 100. */
+function summed(shares: readonly number[]): number[] {
+  const rounded = shares.slice(0, -1).map((s) => Math.round(s * 100) / 100)
+  return [...rounded, Math.round((100 - rounded.reduce((sum, s) => sum + s, 0)) * 100) / 100]
 }
 
 type Split = Extract<LayoutNode, { kind: 'split' }>
@@ -92,6 +110,10 @@ function place(node: LayoutNode): Placed {
         panes: [first.chat, right.first.chat, right.second.chat],
         splitSizes: { columns: shares(ratio), right: shares(right.ratio) },
       }
+  }
+  if (onlyColumns(node)) {
+    const parts = stacked(node, 100)
+    return { panes: parts.map((p) => p.chat), split: 'stack', splitSizes: { rows: summed(parts.map((p) => p.share)) } }
   }
   // The nearest layout: the panes in tree order, row by row from the top left; a fourth pane is the bottom left,
   // so it comes last in the clockwise places.

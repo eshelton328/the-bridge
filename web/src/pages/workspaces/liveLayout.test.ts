@@ -2,7 +2,10 @@
 // layout out, for each shape the rule names and for the nearest layout.
 import { ChatSummary, LayoutNode, TabLayout, chatsOf } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
+import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
+import { workspacesHome } from './home.ts'
 import { layoutOfTab } from './liveLayout.ts'
+import type { WorkspacesUi } from './types.ts'
 
 const pane = (local: string) => ({ kind: 'pane', chat: `mac-mini/${local}` }) as const
 type Raw =
@@ -102,6 +105,28 @@ describe('layoutOfTab', () => {
     ).toEqual({ panes: ['a', 'b', 'd', 'c'], split: 'rows', focusedPane: 'a' })
   })
 
+  it('puts a tree of columns only one above the other, each pane at its share of the space', () => {
+    expect(
+      layoutOfTab(
+        [tab(column(0.5, column(0.5, column(0.5, pane('a'), pane('b')), pane('c')), pane('d')), 'c')],
+        noShell,
+      ),
+    ).toEqual({
+      panes: ['a', 'b', 'c', 'd'],
+      split: 'stack',
+      splitSizes: { rows: [12.5, 12.5, 25, 50] },
+      focusedPane: 'c',
+    })
+    // herdr's tab of ten panes in a column beside two: the first four in tree order are the column's top four.
+    const ten = ['a', 'b', 'c', 'd', 'e', 'f'].reduce<Raw>((above, id) => column(0.5, above, pane(id)), pane('top'))
+    expect(layoutOfTab([tab(row(0.5, ten, column(0.5, pane('x'), pane('y'))), 'top')], noShell)).toEqual({
+      panes: ['top', 'a', 'b', 'c'],
+      split: 'stack',
+      splitSizes: { rows: [12.5, 12.5, 25, 50] },
+      focusedPane: 'top',
+    })
+  })
+
   it('keeps the first four panes in tree order, and a split that loses a part becomes the other', () => {
     const six = row(
       0.5,
@@ -126,5 +151,30 @@ describe('layoutOfTab', () => {
   it("draws the active tab's tree only", () => {
     const tabs = [tab(row(0.5, pane('a'), pane('b')), 'a', false), tab(pane('c'), 'c')]
     expect(layoutOfTab(tabs, noShell)).toEqual({ panes: ['c'], focusedPane: 'c' })
+  })
+})
+
+describe('withLoadedLayouts', () => {
+  const ui = (layouts: WorkspacesUi['layouts'], focusedPane = 'a'): WorkspacesUi => ({
+    ...workspacesHome.ui,
+    focusedPane,
+    layouts,
+  })
+  const one = { panes: ['a', 'b'], focusedPane: 'a' }
+  const two = { panes: ['a', 'c'], split: 'stack' as const, focusedPane: 'c' }
+  const mine = { panes: ['b'], focusedPane: 'b' }
+
+  it("keeps the owner's layout while the loaded one is the one he saw, as a fixture's always is", () => {
+    const changed = { layouts: { w: mine }, focusedPane: 'b', layoutsSeen: layoutsSeenOf({ w: one }) }
+    expect(withLoadedLayouts(ui({ w: one }), changed, 'w').layouts?.w).toEqual(mine)
+    expect(withLoadedLayouts(ui({ w: one }), changed, 'w').focusedPane).toBe('b')
+  })
+
+  it('takes a newer loaded layout over his, with its focus when that workspace is shown, and keeps the others', () => {
+    const changed = { layouts: { w: mine, v: mine }, focusedPane: 'b', layoutsSeen: layoutsSeenOf({ w: one, v: one }) }
+    const merged = withLoadedLayouts(ui({ w: two, v: one, n: one }), changed, 'w')
+    expect(merged.layouts).toEqual({ w: two, v: mine, n: one })
+    expect(merged.focusedPane).toBe('c')
+    expect(withLoadedLayouts(ui({ w: two, v: one }), { ...changed, workspace: 'v' }, 'w').focusedPane).toBe('b')
   })
 })

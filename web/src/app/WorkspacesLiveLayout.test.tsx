@@ -392,6 +392,25 @@ describe("a live workspace's herdr layout on the desktop (slice 3a)", () => {
     expect(router?.state.location.pathname).toBe('/workspaces')
   })
 
+  it('redraws a newer herdr layout after the owner switched tabs and focused a pane', async () => {
+    const server = fakeServer(chats, { [live]: oneTab(row(0.5, pane(plan), pane(review)), plan) }, true)
+    await showPanes()
+    await expect.element(maximise(review)).toBeVisible()
+    await settled(() => server.layoutReads.filter((id) => id === live).length)
+    // The owner's changes: a tab switch there and back, which keeps each workspace's layout, and a pane focused.
+    await userEvent.click(page.getByRole('tab', { name: /other work/ }))
+    await userEvent.click(page.getByRole('tab', { name: /live work/ }))
+    await userEvent.click(page.getByText('review notes', { exact: true }).first())
+    await expect.poll(focusedTitle).toBe('review notes')
+    server.answer({ [live]: oneTab(column(0.25, pane(plan), pane(drift)), drift) })
+    server.send('layout.changed', { workspace: live })
+    await expect.element(maximise(drift)).toBeVisible()
+    await expect.element(maximise(review)).not.toBeInTheDocument()
+    expect(paneBox(plan).bottom).toBeLessThanOrEqual(paneBox(drift).top)
+    await expect.element(page.getByRole('separator', { name: 'Resize rows' })).toHaveAttribute('aria-valuenow', '25')
+    expect(focusedTitle()).toBe('drift check')
+  })
+
   it("does not read the shown workspace's layout on layout.changed for another workspace", async () => {
     const server = fakeServer(chats, { [live]: oneTab(pane(plan), plan) }, true)
     await showPanes()

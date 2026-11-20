@@ -917,6 +917,12 @@ export const WorkspacesUi = z.object({
    */
   layouts: z.record(z.string(), WorkspaceLayout).optional(),
   /**
+   * The loaded state's layouts, by workspace id, each as JSON, when the owner last changed the `ui`
+   * (`blocks/workspaceLayout.ts`, `withLoadedLayouts`): a loaded layout that differs is newer than his change, such as
+   * a herdr layout read again (slice 3a), and replaces his layout of that workspace.
+   */
+  layoutsSeen: z.record(z.string(), z.string()).optional(),
+  /**
    * What the owner has typed in each chat's composer, by chat id, in place of the data's text. The composer is drawn anew
    * when its pane mounts again, after a visit to another page or a closed pane, so it starts from its draft here.
    */

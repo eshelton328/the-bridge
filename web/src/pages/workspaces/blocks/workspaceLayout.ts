@@ -155,3 +155,30 @@ export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): 
     focusedPane: chat,
   }
 }
+
+/** Each layout of `layouts` as JSON, by workspace id: what `layoutsSeen` holds. */
+export const layoutsSeenOf = (layouts: WorkspacesUi['layouts']): Record<string, string> =>
+  Object.fromEntries(Object.entries(layouts ?? {}).map(([id, layout]) => [id, JSON.stringify(layout)]))
+
+/**
+ * The ui the screen draws: the loaded state's `loaded` with the owner's `changed` over it, each workspace's layout
+ * merged by id, so a workspace that came after his change keeps its loaded layout. A loaded layout that differs from
+ * the one he saw when he last changed the ui (`changed.layoutsSeen`) is newer than his change: a herdr layout read
+ * again (slice 3a). It replaces his layout of that workspace, and the focused pane too when that workspace is shown
+ * (`current` when he picked none). A state whose layouts never change, such as a fixture, keeps every change.
+ */
+export function withLoadedLayouts(
+  loaded: WorkspacesUi,
+  changed: Partial<WorkspacesUi>,
+  current: string | null,
+): WorkspacesUi {
+  const merged = { ...loaded, ...changed }
+  if (loaded.layouts === undefined || changed.layouts === undefined) return merged
+  const seen = changed.layoutsSeen ?? {}
+  const now = layoutsSeenOf(loaded.layouts)
+  const newer = Object.entries(loaded.layouts).filter(([id]) => seen[id] !== undefined && seen[id] !== now[id])
+  const layouts = { ...loaded.layouts, ...changed.layouts, ...Object.fromEntries(newer) }
+  const shown = merged.workspace ?? current
+  const focus = newer.find(([id]) => id === shown)?.[1].focusedPane
+  return { ...merged, layouts, focusedPane: focus ?? merged.focusedPane }
+}
