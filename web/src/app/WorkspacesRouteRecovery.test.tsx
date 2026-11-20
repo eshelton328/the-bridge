@@ -70,7 +70,7 @@ afterEach(async () => {
 describe('the Workspaces route after a crash (audit W-10)', () => {
   it('offers Go to Inbox when the page crashes in an open chat, and the tap reaches the Inbox and its tab bar', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     const composer = page.getByRole('textbox')
     await userEvent.type(composer, 'half a thought')
@@ -102,7 +102,7 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
   })
 
   it('brings the draft back after a reload', async () => {
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     await userEvent.type(page.getByRole('textbox'), 'keep this')
     await view.unmount()
@@ -111,14 +111,14 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     const tab = keys.map((key) => [key, window.sessionStorage.getItem(key) ?? ''] as const)
     resetAllStores()
     for (const [key, value] of tab) window.sessionStorage.setItem(key, value)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     await expect.element(page.getByRole('textbox')).toHaveValue('keep this')
   })
 
   it('keeps the keystroke that crashed the page for the reload', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     await userEvent.type(page.getByRole('textbox'), 'almost')
     crash.shell = true
@@ -131,7 +131,7 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
   })
 
   it('saves only the composer text by chat id and the state, and drops a draft once it is sent', async () => {
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     await userEvent.type(page.getByRole('textbox'), 'send me')
     const saved: unknown = JSON.parse(window.sessionStorage.getItem('bridge/workspaces/drafts') ?? 'null')
