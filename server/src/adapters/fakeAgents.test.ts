@@ -32,6 +32,14 @@ describeAgentPort('fake', () => {
       port.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))
       return Promise.resolve()
     },
+    typeInput: (text) => {
+      port.typeInput(ChatId.parse('test-mac/drift-check'), text)
+      return Promise.resolve()
+    },
+    clearInput: () => {
+      port.typeInput(ChatId.parse('test-mac/drift-check'), '')
+      return Promise.resolve()
+    },
     received: () =>
       Promise.resolve(
         port

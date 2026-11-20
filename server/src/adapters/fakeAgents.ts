@@ -98,6 +98,8 @@ export type FakeAgents = AgentPort & {
   readonly endAll: (error: AgentPortError) => void
   /** Each prompt and stop that a chat got, in order. */
   readonly inputs: () => FakeInput[]
+  /** Puts `text` in a chat's input box, as the owner typing in its terminal; '' empties the box. */
+  readonly typeInput: (chat: ChatId, text: string) => void
 }
 
 /** The fake's layout of a workspace: one tab with its chats side by side, the first focused; null with no chat. */
@@ -158,6 +160,8 @@ export function createFakeAgents(
   const data = 'error' in answer ? undefined : structuredClone(answer.workspaces)
   const listeners = new Set<Listener>()
   const inputs: FakeInput[] = []
+  /** The text in each chat's input box; the fake's stop puts no prompt back, as the real port clears it. */
+  const drafts = new Map<ChatId, string>()
   const chatOf = (chat: ChatId) => (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
@@ -236,12 +240,16 @@ export function createFakeAgents(
       tell({ type: 'workspacesChanged' })
     },
     inputs: () => [...inputs],
+    typeInput: (chat, text) => {
+      drafts.set(chat, text)
+    },
     sendPrompt(chat, text) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = chatOf(chat)
       if (found === undefined) return Promise.resolve(ok('notFound'))
       if (found.kind === 'shell') return Promise.resolve(ok('shell'))
       if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
       inputs.push({ chat, text })
       return Promise.resolve(ok('sent'))
     },

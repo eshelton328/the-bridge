@@ -156,6 +156,8 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
     expect(await states(await post(promptPath('test-mac/drift-check'), { text: 'Go on.' }))).toEqual([409, 'needsYou'])
     expect(await states(await post(stopPath('test-mac/drift-check'), {}))).toEqual([409, 'notWorking'])
     expect(await states(await post(stopPath('test-mac/brain-git'), {}))).toEqual([409, 'shell'])
+    agents.typeInput(ChatId.parse(themes), 'half a thought')
+    expect(await states(await post(promptPath(themes), { text: 'Go on.' }))).toEqual([409, 'inputNotEmpty'])
     expect(agents.inputs()).toEqual([])
   })
 

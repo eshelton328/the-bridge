@@ -23,6 +23,8 @@ describe('error bodies', () => {
   it("reads a chat-not-ready body only with the chat's state", () => {
     const body = { error: { kind: 'chat-not-ready', state: 'notWorking', message: 'm', requestId: 'r' } }
     expect(ErrorBody.parse(body)).toEqual(body)
+    const full = { error: { ...body.error, state: 'inputNotEmpty' } }
+    expect(ErrorBody.parse(full)).toEqual(full)
     expect(ErrorBody.safeParse({ error: { ...body.error, state: 'busy' } }).success).toBe(false)
   })
 })

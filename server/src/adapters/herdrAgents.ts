@@ -15,6 +15,7 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
+import { createHash } from 'node:crypto'
 import { existsSync, type FSWatcher, watch } from 'node:fs'
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import {
@@ -34,6 +35,7 @@ import { z } from 'zod'
 import type { Logger } from '../logger.ts'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
+import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { claudeProjectFolder, readClaudeSession } from './sessionFile.ts'
 
@@ -239,6 +241,16 @@ export type HerdrAgentsOptions = {
 
 /** How long after a stop's Escape a pane gets no other Escape. */
 const stopHoldMs = 2000
+/** How long a stop waits for the chat to go idle, and so put the stopped prompt back, before it reads the box. */
+const putBackWaitMs = 3000
+/** How many times a stop reads the box for the prompt that comes back, and the time between two reads. */
+const putBackReads = 5
+const putBackReadGapMs = 100
+
+const PaneRead = z.object({ read: z.object({ text: z.string() }) })
+
+/** The hash of a prompt as the box can show it (`promptKey`). */
+const hashOf = (key: string) => createHash('sha256').update(key).digest('hex')
 
 /** A Claude session ID that is safe in a file name: no slash and no dot. */
 const sessionName = /^[A-Za-z0-9_-]{1,100}$/
@@ -442,6 +454,7 @@ export function createHerdrAgents({
         status: ChatStatus
         cwd: string | undefined
         pane: string | undefined
+        claude: boolean
       } | null,
       AgentPortError
     >
@@ -455,7 +468,11 @@ export function createHerdrAgents({
     const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
     if (agent === undefined) {
       const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
-      return ok(shell ? { path: undefined, working: false, status: 'idle', cwd: undefined, pane: undefined } : null)
+      return ok(
+        shell
+          ? { path: undefined, working: false, status: 'idle', cwd: undefined, pane: undefined, claude: false }
+          : null,
+      )
     }
     // Only this chat's session is read. A Codex transcript is not read yet.
     const status = statusOf(agent.agent_status)
@@ -465,6 +482,7 @@ export function createHerdrAgents({
       status,
       cwd: agent.cwd ?? undefined,
       pane: agent.pane_id,
+      claude: agent.agent === 'claude',
     })
   }
 
@@ -477,12 +495,48 @@ export function createHerdrAgents({
   /** The pane and status of a Claude or Codex chat, or why the chat takes no input: no such chat, or a shell. */
   const agentPane = async (
     chat: ChatId,
-  ): Promise<Result<{ pane: string; status: ChatStatus } | 'notFound' | 'shell', AgentPortError>> => {
+  ): Promise<Result<{ pane: string; status: ChatStatus; claude: boolean } | 'notFound' | 'shell', AgentPortError>> => {
     const located = await locate(chat)
     if (!located.ok) return located
     if (located.value === null) return ok('notFound')
-    const { pane, status } = located.value
-    return ok(pane === undefined ? 'shell' : { pane, status })
+    const { pane, status, claude } = located.value
+    return ok(pane === undefined ? 'shell' : { pane, status, claude })
+  }
+
+  /**
+   * The hash of the last prompt this port sent to each pane, as the box can show it (`promptKey`): never the text
+   * itself. A stop clears the box only when it holds that prompt.
+   */
+  const lastSent = new Map<string, string>()
+
+  /** The input box of a Claude chat's pane, from its screen; null when the screen shows none. */
+  const inputBox = async (pane: string): Promise<Result<InputBox | null, AgentPortError>> => {
+    const read = await call('pane.read', PaneRead, { pane_id: pane, source: 'visible', format: 'ansi' })
+    return read.ok ? ok(inputBoxOf(read.value.read.text)) : read
+  }
+
+  /**
+   * After a stop, Claude Code puts the stopped prompt back in its input box when its turn ends. When the box holds
+   * the last prompt this port sent, this clears it: one ctrl+u deletes one screen line, and one more the line break
+   * before it. Other text stays, so the next prompt gets `inputNotEmpty`; a failed step leaves the box as it is.
+   */
+  const clearPutBack = async (pane: string) => {
+    const sent = lastSent.get(pane)
+    if (sent === undefined) return
+    await herdrRequest(socket, 'agent.wait', { target: pane, until: ['idle'], timeout_ms: putBackWaitMs })
+    for (let read = 0; read < putBackReads; read += 1) {
+      const box = await inputBox(pane)
+      if (!box.ok || box.value === null) return
+      if (box.value.text !== '') {
+        if (!boxKeys(box.value).some((key) => hashOf(key) === sent)) return
+        lastSent.delete(pane)
+        const keys = Array.from({ length: box.value.lines * 2 }, () => 'ctrl+u')
+        await herdrRequest(socket, 'agent.send_keys', { target: pane, keys })
+        return
+      }
+      // The turn ended, but the prompt may come back a moment later.
+      await new Promise((resolve) => setTimeout(resolve, putBackReadGapMs))
+    }
   }
 
   /**
@@ -503,8 +557,18 @@ export function createHerdrAgents({
       const target = await agentPane(chat)
       if (!target.ok) return target
       if (typeof target.value === 'string') return ok(target.value)
-      if (target.value.status === 'needsYou') return ok('needsYou')
-      return input('agent.prompt', { target: target.value.pane, text })
+      const { pane, status, claude } = target.value
+      if (status === 'needsYou') return ok('needsYou')
+      // The prompt would join text in the box: text the owner typed, or a prompt that a stop put back.
+      if (claude) {
+        const box = await inputBox(pane)
+        if (!box.ok) return box
+        // A screen whose box the adapter cannot read, such as a draft with a line of "─" in it, may hold text too.
+        if (box.value?.text !== '') return ok('inputNotEmpty')
+      }
+      const sent = await input('agent.prompt', { target: pane, text })
+      if (sent.ok && sent.value === 'sent') lastSent.set(pane, hashOf(promptKey(text)))
+      return sent
     },
     async cancel(chat) {
       const target = await agentPane(chat)
@@ -519,7 +583,9 @@ export function createHerdrAgents({
       stoppedAt.set(pane, now())
       const sent = await input('agent.send_keys', { target: pane, keys: ['esc'] })
       if (!sent.ok) return sent
-      return ok(sent.value === 'needsYou' ? 'notWorking' : 'sent')
+      if (sent.value === 'needsYou') return ok('notWorking')
+      if (target.value.claude) await clearPutBack(pane)
+      return ok('sent')
     },
     async readTranscript(chat) {
       const located = await locate(chat)
