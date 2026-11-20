@@ -31,10 +31,10 @@ export type AgentEvent =
  * What a send or a stop did: `sent`; `notFound` when this machine has no such chat; `shell` when the chat is a
  * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question.
  */
-type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou'
+export type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
-type CancelOutcome = Exclude<SendOutcome, 'needsYou'> | 'notWorking'
+export type CancelOutcome = Exclude<SendOutcome, 'needsYou'> | 'notWorking'
 
 /** The last entries of a chat's transcript, and whether older entries exist. */
 export type TranscriptRead = { readonly entries: TranscriptEntry[]; readonly earlier: boolean }

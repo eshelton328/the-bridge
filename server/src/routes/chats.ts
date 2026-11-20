@@ -4,18 +4,39 @@
 // after it opens as server-sent events, as /api/events does. Both read
 // only that chat's session. Transcript text goes only into a 200 body or
 // an event, never into a log line or an ErrorBody (d-115).
-import { ChatId, ErrorBody, TranscriptChangedEvent, TranscriptResponse } from '@bridge/contract'
-import type { Context } from 'hono'
+// POST /:chat/prompt sends the owner's prompt to that chat, and POST
+// /:chat/stop stops its work (slice W1); each answers 204. Both take only
+// JSON, so a cross-site form cannot post. The prompt text goes to the
+// port only, never into a log line or an ErrorBody.
+import {
+  ChatId,
+  ErrorBody,
+  maxPromptChars,
+  SendPromptRequest,
+  StopChatRequest,
+  TranscriptChangedEvent,
+  TranscriptResponse,
+} from '@bridge/contract'
+import type { Context, Next } from 'hono'
 import { Hono } from 'hono'
+import { bodyLimit } from 'hono/body-limit'
+import { validator } from 'hono/validator'
+import type { z } from 'zod'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
-import type { AgentPort, AgentPortError } from '../services/agentPort.ts'
-import { readTranscript } from '../services/chats.ts'
+import type { AgentPort, AgentPortError, CancelOutcome, SendOutcome } from '../services/agentPort.ts'
+import { readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
 
 const pingMs = 25_000
 const retryMs = 5_000
+
+/**
+ * A prompt body's limit: the longest prompt and its JSON. JSON can write each character as a 6-byte \\u escape,
+ * which is more than its UTF-8 bytes (at most 4).
+ */
+const maxPromptBytes = maxPromptChars * 6 + 1024
 
 const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
   stream.writeSSE({ event: 'error', data: JSON.stringify(ErrorBody.parse(body)) })
@@ -33,8 +54,72 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
   }
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
+  const jsonOnly = async (c: Context<AppEnv>, next: Next) => {
+    if (!/^application\/json(;|$)/i.test(c.req.header('Content-Type') ?? ''))
+      return errorJson(c, 'invalid-input', {
+        message: 'the request must be JSON',
+        issues: ['Content-Type must be application/json'],
+      })
+    // Parsed here, so malformed JSON is a 400; hono's validator would throw it to onError as a 500. The
+    // validator below reads the parsed body from hono's cache.
+    const read = await c.req.json().then(
+      () => true,
+      () => false,
+    )
+    if (!read)
+      return errorJson(c, 'invalid-input', { message: 'the request must be JSON', issues: ['body: invalid_json'] })
+    await next()
+    return undefined
+  }
+  /** Checks the body with `schema`; an issue names the field and the rule only, never the text. */
+  const body = <S extends z.ZodType>(schema: S) =>
+    validator('json', (value, c: Context<AppEnv>) => {
+      const parsed = schema.safeParse(value)
+      if (parsed.success) return parsed.data
+      return errorJson(c, 'invalid-input', {
+        message: 'the request does not match the contract',
+        issues: parsed.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.code}`),
+      })
+    })
+  /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
+  const answer = (c: Context<AppEnv>, outcome: SendOutcome | CancelOutcome) => {
+    switch (outcome) {
+      case 'sent':
+        return c.body(null, 204)
+      case 'notFound':
+        return notFound(c)
+      case 'shell':
+        return errorJson(c, 'chat-not-ready', { state: 'shell', message: 'a shell chat takes no prompt' })
+      case 'needsYou':
+        return errorJson(c, 'chat-not-ready', { state: 'needsYou', message: 'the chat waits for your answer' })
+      case 'notWorking':
+        return errorJson(c, 'chat-not-ready', { state: 'notWorking', message: 'the chat has no work to stop' })
+    }
+  }
 
   return new Hono<AppEnv>()
+    .post(
+      '/:chat/prompt',
+      bodyLimit({
+        maxSize: maxPromptBytes,
+        onError: (c: Context<AppEnv>) =>
+          errorJson(c, 'invalid-input', { message: 'the prompt is too long', issues: ['the body is too large'] }),
+      }),
+      jsonOnly,
+      body(SendPromptRequest),
+      async (c) => {
+        const id = chatOf(c)
+        if (!id.success) return invalid(c)
+        const sent = await sendPrompt(agents, id.data, c.req.valid('json').text)
+        return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
+      },
+    )
+    .post('/:chat/stop', jsonOnly, body(StopChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const stopped = await stopChat(agents, id.data)
+      return stopped.ok ? answer(c, stopped.value) : failed(c, stopped.error)
+    })
     .get('/:chat/transcript', async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)

@@ -32,7 +32,7 @@ export function agentErrorJson(c: Context<AppEnv>, error: AgentPortError) {
 }
 
 /** The kinds that need no field besides the message, so a thrown AppError can carry one. */
-export type PlainErrorKind = Exclude<ErrorKind['kind'], 'not-found' | 'invalid-input'>
+export type PlainErrorKind = Exclude<ErrorKind['kind'], 'not-found' | 'invalid-input' | 'chat-not-ready'>
 const plainKinds: ReadonlySet<string> = new Set<PlainErrorKind>([
   'forbidden',
   'herdr-bad-reply',

@@ -17,6 +17,11 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('herdr-bad-reply'), ...common }),
   /** herdr does not answer (503). */
   z.object({ kind: z.literal('herdr-unavailable'), ...common }),
+  /**
+   * The chat cannot take the request now (409): it is a shell, it waits for the owner's answer to a question
+   * (`needsYou`), or it has no work to stop (`notWorking`).
+   */
+  z.object({ kind: z.literal('chat-not-ready'), state: z.enum(['shell', 'needsYou', 'notWorking']), ...common }),
   /** The client sent more requests of this kind than the server takes in a minute (429). */
   z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */
@@ -34,6 +39,7 @@ export const errorStatus = {
   'invalid-input': 400,
   'herdr-bad-reply': 502,
   'herdr-unavailable': 503,
+  'chat-not-ready': 409,
   'too-many-requests': 429,
   internal: 500,
 } as const satisfies Record<ErrorKind['kind'], number>
