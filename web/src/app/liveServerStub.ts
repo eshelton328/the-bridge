@@ -51,16 +51,19 @@ function layoutOf(id: string): Response {
 
 /** The event stream: it opens, sends nothing more and ends when the page aborts it. */
 function events(signal: AbortSignal | null | undefined): Response {
+  // The page's reader can end the stream first; then there is nothing to close.
+  let ended = false
   const body = new ReadableStream<Uint8Array>({
     start: (control) => {
       control.enqueue(new TextEncoder().encode('event: open\ndata: {}\n\n'))
       signal?.addEventListener('abort', () => {
-        try {
-          control.close()
-        } catch {
-          // The page's reader already ended the stream.
-        }
+        if (ended) return
+        ended = true
+        control.close()
       })
+    },
+    cancel: () => {
+      ended = true
     },
   })
   return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } })

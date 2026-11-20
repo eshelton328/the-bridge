@@ -15,8 +15,8 @@ const root = fileURLToPath(new URL('..', import.meta.url))
 // The rule IDs the repository's ESLint config reports for this code. The
 // typed rules need a file the TypeScript project includes, so the code is
 // written to shared/src for the run and removed after it.
-async function ruleIds(code: string): Promise<string[]> {
-  const path = join(root, 'shared/src', `plantedGate${String(process.pid)}.ts`)
+async function ruleIds(code: string, suffix = '.ts'): Promise<string[]> {
+  const path = join(root, 'shared/src', `plantedGate${String(process.pid)}${suffix}`)
   writeFileSync(path, code)
   try {
     const [result] = await new ESLint({ cwd: root }).lintFiles([path])
@@ -53,6 +53,24 @@ void test('G-2: the lint never asks for a non-null assertion, which no-non-null-
   const ids = await ruleIds(code)
   assert.ok(!ids.includes('@typescript-eslint/non-nullable-type-assertion-style'), ids.join(', '))
   assert.deepEqual(ids, ['@typescript-eslint/no-unsafe-type-assertion'])
+})
+
+void test('d-115: an empty or comment-only catch fails the lint outside tests', async () => {
+  const code = (body: string) =>
+    [
+      'export function parse(text: string): unknown {',
+      '  try {',
+      '    return JSON.parse(text)',
+      `  } catch {${body}}`,
+      '  return undefined',
+      '}',
+      '',
+    ].join('\n')
+  // ESLint's no-empty also fails an empty catch; only this rule fails one that holds only a comment.
+  assert.ok((await ruleIds(code(''))).includes('bridge/no-silent-catch'))
+  assert.deepEqual(await ruleIds(code('\n    // not JSON\n  ')), ['bridge/no-silent-catch'])
+  assert.deepEqual(await ruleIds(code('\n    return null\n  ')), [])
+  assert.deepEqual(await ruleIds(code('\n    // not JSON\n  '), '.test.ts'), [])
 })
 
 void test('G-3: a token reference that does not exist fails panda codegen and cssgen', () => {

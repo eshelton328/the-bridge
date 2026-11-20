@@ -53,21 +53,24 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
 
   const stream = (chat: string, signal: AbortSignal | null | undefined) => {
     let control: ReadableStreamDefaultController<Uint8Array> | undefined
+    // The page's reader can end the stream first; then there is nothing to close.
+    let ended = false
     const body = new ReadableStream<Uint8Array>({
       start: (c) => {
         control = c
         c.enqueue(encoder.encode('event: open\nretry: 100\ndata: {}\n\n'))
+      },
+      cancel: () => {
+        ended = true
       },
     })
     if (control !== undefined) open.push({ chat, control })
     signal?.addEventListener('abort', () => {
       const at = open.findIndex((s) => s.control === control)
       if (at !== -1) open.splice(at, 1)
-      try {
-        control?.error(new DOMException('The stream was closed.', 'AbortError'))
-      } catch {
-        // The stream had ended already.
-      }
+      if (ended) return
+      ended = true
+      control?.error(new DOMException('The stream was closed.', 'AbortError'))
     })
     return new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } })
   }
