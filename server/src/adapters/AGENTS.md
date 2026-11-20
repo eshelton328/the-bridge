@@ -32,11 +32,12 @@ client of a socket or a file sits beside them.
   its path from the chat's folder or with "~", a web tool's its host
   (`toolTarget.ts`). A line that is not JSON is skipped. Nothing logs
   transcript text. A transcript watch is an `fs.watch` on the session
-  file's folder, filtered to that file, with no timer, and a herdr
-  status stream for the chat's pane: a tool stops running when its
-  chat stops working, with no write to the file. Before the folder
-  exists it watches the projects folder for it; a watch that fails ends
-  the stream as `unreachable`.
+  file itself (on macOS a folder watch can lose a write as it starts, a
+  file watch cannot), with no timer, and a herdr status stream for the
+  chat's pane: a tool stops running when its chat stops working, with
+  no write to the file. Until the file is there, a watch of its folder,
+  or of the projects folder, and each status change look for it; a
+  watch that fails ends the stream as `unreachable`.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's context window; a model that `sessionFile.ts`
   has no window for gets `null` (`sessionFile.test.ts`).
