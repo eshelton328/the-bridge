@@ -33,8 +33,12 @@ const Line = z.object({
   message: z.object({ content: z.union([z.string(), z.array(z.unknown())]) }),
 })
 
-const textOf = (text: string) =>
-  text.length > maxEntryText ? { text: text.slice(0, maxEntryText), cut: true } : { text, cut: false }
+/** The text, cut at the limit; a cut never splits a character's surrogate pair. */
+const textOf = (text: string) => {
+  if (text.length <= maxEntryText) return { text, cut: false }
+  const high = text.charCodeAt(maxEntryText - 1)
+  return { text: text.slice(0, high >= 0xd800 && high <= 0xdbff ? maxEntryText - 1 : maxEntryText), cut: true }
+}
 
 export type TranscriptOptions = TargetContext & {
   /** True when the chat's status is `working`; a tool call with no result is running only then. */
@@ -92,10 +96,19 @@ export async function readClaudeTranscript(path: string, options: TranscriptOpti
       const part = Buffer.alloc(end - start)
       await handle.read(part, 0, part.length, start)
       const data = Buffer.concat([part, carry])
-      const lines = data.toString('utf8').split('\n')
-      // The first piece can be the end of a line that starts before this part.
-      const first = start > stopAt ? lines.shift() : undefined
-      carry = first === undefined ? Buffer.alloc(0) : Buffer.from(first, 'utf8')
+      // The bytes before the first newline can be the end of a line that starts before this part: keep them as
+      // bytes, as the part can start inside a character.
+      const firstNewline = start > stopAt ? data.indexOf(10) : -1
+      if (start > stopAt && firstNewline === -1) {
+        carry = data
+        end = start
+        continue
+      }
+      carry = start > stopAt ? data.subarray(0, firstNewline) : Buffer.alloc(0)
+      const lines = data
+        .subarray(start > stopAt ? firstNewline + 1 : 0)
+        .toString('utf8')
+        .split('\n')
       for (const text of lines.reverse()) {
         if (text.trim() === '') continue
         let value: unknown

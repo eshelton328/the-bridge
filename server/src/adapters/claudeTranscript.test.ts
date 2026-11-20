@@ -98,6 +98,21 @@ describe('Claude transcript', () => {
     ])
   })
 
+  it('keeps a character whole when a 1 MiB part starts inside it, and when a cut falls inside it', async () => {
+    const emoji = String.fromCodePoint(0x1f600)
+    const replacement = String.fromCodePoint(0xfffd)
+    for (const pad of ['', 'a', 'ab', 'abc']) {
+      const long = `${pad}${emoji.repeat(300_000)}`
+      const path = file([user('u1', long), user('u2', `end ${emoji}`)])
+      const read = await readClaudeTranscript(path, options)
+      const texts = read.entries.map((e) => (e.type === 'tool' ? '' : e.text))
+      expect(texts[1]).toBe(`end ${emoji}`)
+      expect(texts[0]?.includes(replacement)).toBe(false)
+      expect(texts[0]?.startsWith(`${pad}${emoji}`)).toBe(true)
+      expect((texts[0] ?? '').slice(pad.length).replaceAll(emoji, '')).toBe('')
+    }
+  })
+
   it('gives no entries for a missing file', async () => {
     expect(await readClaudeTranscript(join(dir, 'missing.jsonl'), options)).toEqual({ entries: [], earlier: false })
   })
