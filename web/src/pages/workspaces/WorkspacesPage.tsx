@@ -10,10 +10,13 @@
 // store's `send`; a failed send is reported and the composer keeps the draft.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
-// (draftStorage.ts).
+// (draftStorage.ts). Every reply's Copy, sample or live, writes the clipboard
+// here through copyText, and its button shows Copied or Copy failed; a fault
+// is reported with the clipboard's error only, never the reply's text (audit P-4).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
+import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
@@ -23,6 +26,14 @@ import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
+
+/** A reply's Copy: a refusal that is not the browser's NotAllowedError goes to `report`, without the text. */
+const copyReply = (text: string) =>
+  copyText(text, {
+    report: (error) => {
+      report(error, 'handler')
+    },
+  })
 
 export function WorkspacesPage() {
   const state = route.useLoaderData()
@@ -76,6 +87,7 @@ export function WorkspacesPage() {
       }}
       onRetry={() => void router.invalidate()}
       transcripts={transcripts}
+      onCopy={copyReply}
       onSend={(chat, text) =>
         send(chat, text).then(
           () => true,

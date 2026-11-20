@@ -9,6 +9,7 @@
 import { BubbleIcon, Button, CloseIcon, type IconSize, Inline, SplitIcon } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
+import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane } from './ChatPane.tsx'
 
 const panel = css({ display: 'flex', flexDirection: 'column', minH: '[0]' })
@@ -87,9 +88,18 @@ export type SideChatPanelProps = {
   device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
-export function SideChatPanel({ chat, placement = 'side', onClose, device = 'phone', layers }: SideChatPanelProps) {
+export function SideChatPanel({
+  chat,
+  placement = 'side',
+  onClose,
+  device = 'phone',
+  layers,
+  onCopy,
+}: SideChatPanelProps) {
   const tablet = placement === 'sheet' && device === 'tablet'
   const openAsPane =
     chat.openAsPane === undefined ? undefined : (
@@ -137,6 +147,7 @@ export function SideChatPanel({ chat, placement = 'side', onClose, device = 'pho
         size={placement === 'pane' ? 'inset' : placement}
         // The side chat's data has no id of its own; its command and title name it.
         chatId={`${chat.command} ${chat.title}`}
+        onCopy={onCopy}
         figma={{
           composer: layers?.sideComposer ?? '105:948',
           entries: layers?.sideEntries ?? ['105:933', '105:935'],

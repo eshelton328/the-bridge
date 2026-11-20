@@ -1,21 +1,15 @@
 // One entry of a chat pane's transcript: the owner's message, a tool line, an
-// agent's reply with Copy, progress lines or a command waiting for approval
+// agent's reply with Copy (`ReplyCopyButton`), progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
 // is Markdown (`EntryText`). The caller names the entry's Figma layer. Props only.
-import {
-  Button,
-  CopyIcon,
-  Message,
-  ProposalBlock,
-  ProposalCommand,
-  Stack,
-  ToolLine,
-} from '@eshelton328/component-library-1701'
+import { Message, ProposalBlock, ProposalCommand, Stack, ToolLine } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
+import type { CopyTextResult } from '../../../lib/copyText.ts'
 import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
+import { ReplyCopyButton } from './ReplyCopyButton.tsx'
 
 // The progress lines keep their leading spaces, as a terminal does.
 const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
@@ -26,13 +20,16 @@ const eventLine = css({ display: 'grid', gridTemplateColumns: 'minmax(0, auto)',
 // The line under a cut message: quiet, as the transcript's earlier line.
 const cutLine = css({ display: 'block', textStyle: 'small', color: 'fg.muted' })
 
+/** Writes a reply's text to the clipboard and says whether it did (the page's copyText). */
+export type CopyReply = (text: string) => Promise<CopyTextResult>
+
 export type ChatEntryViewProps = {
   entry: ChatEntry
   /** The Figma layer the entry stands for, for the fidelity checks. */
   figma?: string | undefined
   onAct?: ((action: string) => void) | undefined
-  /** A reply's Copy: writes its text to the clipboard (a live chat's reply, slice 3b). */
-  onCopy?: ((text: string) => void) | undefined
+  /** A reply's Copy: writes its text to the clipboard and says whether it did, which the button shows (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
 export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
@@ -63,21 +60,10 @@ export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProp
             name={entry.name}
             actions={
               entry.copy === undefined ? undefined : (
-                <Button
-                  size="xs"
-                  textSize="xs"
-                  keepIconSize
-                  onClick={
-                    onCopy === undefined
-                      ? undefined
-                      : () => {
-                          onCopy(entry.text)
-                        }
-                  }
-                >
-                  <CopyIcon size="12" />
-                  {entry.copy}
-                </Button>
+                <ReplyCopyButton
+                  label={entry.copy}
+                  onCopy={onCopy === undefined ? undefined : () => onCopy(entry.text)}
+                />
               )
             }
           >

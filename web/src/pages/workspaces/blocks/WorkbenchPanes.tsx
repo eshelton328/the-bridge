@@ -14,6 +14,7 @@
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
+import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 import { EmptyPane } from './EmptyPane.tsx'
@@ -52,6 +53,8 @@ export type WorkbenchPanesProps = {
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
 export function WorkbenchPanes({
@@ -62,6 +65,7 @@ export function WorkbenchPanes({
   onDraftChange,
   onSend,
   transcripts,
+  onCopy,
 }: WorkbenchPanesProps) {
   const targets = data.workspaces.filter((w) => w.id !== data.current)
   const panes = data.layers?.panes ?? paneLayers
@@ -138,6 +142,7 @@ export function WorkbenchPanes({
             notLive={pane.notLive}
             liveChat={pane.liveChat}
             transcripts={transcripts}
+            onCopy={onCopy}
             earlier={pane.earlier}
             empty={pane.empty}
             problem={pane.problem}
@@ -160,6 +165,7 @@ export function WorkbenchPanes({
                   chat={side}
                   placement="pane"
                   layers={data.layers}
+                  onCopy={onCopy}
                   onClose={() => onUiChange?.({ sideChatOpen: false })}
                 />
               ) : undefined

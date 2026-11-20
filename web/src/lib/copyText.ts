@@ -10,6 +10,9 @@ import { err, ok, type Result } from '@bridge/shared'
 /** The part of `navigator.clipboard` this needs; null when the page has none. */
 type ClipboardWriter = Pick<Clipboard, 'writeText'> | null
 
+/** What a copy did: ok, or why it copied nothing. */
+export type CopyTextResult = Result<void, 'unavailable' | 'refused'>
+
 export type CopyTextOptions = {
   /** Gets a refusal that is not NotAllowedError, such as `(e) => report(e, 'handler')` (errors/reporter.ts). */
   readonly report: (error: unknown) => void
@@ -32,7 +35,7 @@ function isNotAllowed(error: unknown): boolean {
 export async function copyText(
   text: string,
   { report, clipboard = pageClipboard() }: CopyTextOptions,
-): Promise<Result<void, 'unavailable' | 'refused'>> {
+): Promise<CopyTextResult> {
   if (clipboard === null) return err('unavailable')
   try {
     await clipboard.writeText(text)

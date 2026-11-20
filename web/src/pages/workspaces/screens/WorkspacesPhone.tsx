@@ -69,6 +69,7 @@ import { PhoneSubtask } from '../blocks/PhoneSubtask.tsx'
 import { PhoneWorkspaceList, RowMenuButton } from '../blocks/PhoneWorkspaceList.tsx'
 import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
+import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 
@@ -88,6 +89,8 @@ export type WorkspacesPhoneProps = {
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the list and of a chat; none when not set. */
   notice?: ReactNode
 }
@@ -102,6 +105,7 @@ export function WorkspacesPhone({
   onDraftChange,
   onSend,
   transcripts,
+  onCopy,
   notice,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
@@ -218,6 +222,7 @@ export function WorkspacesPhone({
                   onUiChange({ phoneView: 'subagents', subagentFor: null })
                 }}
                 layers={data.layers?.subagentTranscript}
+                onCopy={onCopy}
               />
             </SlotBoundary>
           }
@@ -334,6 +339,7 @@ export function WorkspacesPhone({
                 }}
                 onSend={onSend && ((message) => onSend(chat.id, message))}
                 transcripts={transcripts}
+                onCopy={onCopy}
                 rename={
                   ui.renaming === true ? (
                     <ChatNameField
@@ -464,6 +470,7 @@ export function WorkspacesPhone({
               onUiChange({ sideChatOpen })
             }}
             layers={data.layers}
+            onCopy={onCopy}
           />
         )}
         {data.fork === undefined || device !== 'phone' ? null : (

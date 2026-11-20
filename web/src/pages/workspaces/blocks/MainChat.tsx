@@ -7,6 +7,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
+import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 
@@ -46,6 +47,8 @@ export type MainChatProps = {
   onSend?: ((text: string) => Promise<boolean>) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
 export function MainChat(props: MainChatProps) {
@@ -65,6 +68,7 @@ export function MainChat(props: MainChatProps) {
     onTextChange,
     onSend,
     transcripts,
+    onCopy,
   } = props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
@@ -90,6 +94,7 @@ export function MainChat(props: MainChatProps) {
         notLive={pane.notLive}
         liveChat={pane.liveChat}
         transcripts={transcripts}
+        onCopy={onCopy}
         earlier={pane.earlier}
         empty={pane.empty}
         problem={pane.problem}

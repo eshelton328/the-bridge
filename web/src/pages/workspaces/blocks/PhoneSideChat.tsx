@@ -13,6 +13,7 @@ import { BottomSheet } from '@eshelton328/component-library-1701'
 import { useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SideChat, SidebarLayers } from '../types.ts'
+import type { CopyReply } from './ChatEntryView.tsx'
 import { SideChatPanel } from './SideChatPanel.tsx'
 
 // The sheet is a flex column; the panel fills it and shrinks with it.
@@ -26,9 +27,11 @@ export type PhoneSideChatProps = {
   device?: 'phone' | 'tablet' | undefined
   /** The frame's Figma layers. */
   layers?: SidebarLayers | undefined
+  /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
+  onCopy?: CopyReply | undefined
 }
 
-export function PhoneSideChat({ chat, open, onOpenChange, device, layers }: PhoneSideChatProps) {
+export function PhoneSideChat({ chat, open, onOpenChange, device, layers, onCopy }: PhoneSideChatProps) {
   const ref = useRef<HTMLDivElement>(null)
   return (
     <BottomSheet
@@ -45,6 +48,7 @@ export function PhoneSideChat({ chat, open, onOpenChange, device, layers }: Phon
           placement="sheet"
           device={device}
           layers={layers}
+          onCopy={onCopy}
           onClose={() => {
             onOpenChange?.(false)
           }}
