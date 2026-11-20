@@ -87,7 +87,8 @@ jobs:
           USD_TITLE = "Actions spend at a monthly alert level"
           CAP = 1000
           # USD a minute, GitHub's hosted runner prices from 2026-01-01.
-          PRICES = {"ubuntu-slim": 0.002, "linux": 0.006, "windows": 0.010, "macos": 0.062, "self-hosted": 0.0}
+          PRICES = {"ubuntu-slim": 0.002, "linux": 0.006, "linux-arm": 0.005, "windows": 0.010, "macos": 0.062,
+                    "self-hosted": 0.0}
           SETTLE = 2  # days a re-run may still add jobs to a day's runs
 
 
@@ -166,8 +167,15 @@ jobs:
                   return PRICES["self-hosted"]
               if low.startswith("ubuntu-slim"):
                   return PRICES["ubuntu-slim"]
-              for os_name, pre in (("windows", "windows-"), ("macos", "macos-"), ("linux", "ubuntu-")):
-                  if re.fullmatch(re.escape(pre) + r"[0-9.]+(-arm)?|" + re.escape(pre) + "latest", low):
+              # Standard runners only (docs.github.com/en/billing/reference/actions-runner-pricing):
+              # Linux arm64 has its own price; Windows arm64 costs as Windows x64, and
+              # macOS costs the same on M1 and Intel (macos-15-intel). Larger runners
+              # have no rule, so they are "unpriced".
+              if re.fullmatch(r"ubuntu-[0-9.]+-arm", low):
+                  return PRICES["linux-arm"]
+              for os_name, pre, tail in (("windows", "windows-", "(-arm)?"), ("macos", "macos-", "(-intel)?"),
+                                         ("linux", "ubuntu-", "")):
+                  if re.fullmatch(re.escape(pre) + r"[0-9.]+" + tail + "|" + re.escape(pre) + "latest", low):
                       return PRICES[os_name]
               return None
 
@@ -331,7 +339,9 @@ jobs:
               for j in res["top_jobs"]:
                   lines.append(f"| {j['job']} | {j['minutes']:,} | {j['jobs']} |")
               pk = res.get("packages")
-              if pk:
+              if pk and "error" in pk:
+                  lines += ["", f"GitHub Packages: the storage of {pk['name']} was not counted: {pk['error'][:200]}"]
+              elif pk:
                   lines += ["", f"GitHub Packages: {pk['name']} stores {pk['mb']} MB in {pk['versions']} versions, "
                                 f"{pk['percent']} % of {pk['storage_mb']} MB. Data transfer is not in the API, so it is not counted."]
               if res["partial"]:
@@ -369,12 +379,15 @@ jobs:
                   if mine:
                       n = mine[0]["number"]
                       was = level_of(mine[0].get("body"))
-                      api.send("PATCH", f"/repos/{repo}/issues/{n}", {"body": body})
+                      # The body records the notified level, so it changes only after the
+                      # comment that notifies went out: a failed comment is sent again.
                       if rank(level) > rank(was):
                           api.send("POST", f"/repos/{repo}/issues/{n}/comments",
                                    {"body": f"The spend reached the {level} level: ${res['budget']['usd']:,.2f}, "
                                             f"{res['budget']['percent']} % (forecast {res['budget']['forecast_percent']} %)."})
+                          api.send("PATCH", f"/repos/{repo}/issues/{n}", {"body": body})
                           return {"action": "raised", "number": n, "level": level}
+                      api.send("PATCH", f"/repos/{repo}/issues/{n}", {"body": body})
                       return {"action": "updated", "number": n, "level": level}
                   made = api.send("POST", f"/repos/{repo}/issues", {"title": USD_TITLE, "body": usd_body(res, repo, level)})
                   return {"action": "opened", "number": made.get("number"), "level": level}
