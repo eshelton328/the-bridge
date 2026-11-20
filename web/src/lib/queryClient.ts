@@ -3,7 +3,8 @@
 // A query that fails retries at most twice, and only when a later try can
 // fix it: a network error (fetch's TypeError), a 5xx, a 408 or a 429. A query or mutation that fails
 // for good goes to the error sink, which errors/globalHandlers.ts points at
-// report() (lib may not import errors/).
+// report() (lib may not import errors/), except a query whose meta says its
+// misses are expected (`expected: true`, the live reads, d-117).
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query'
 
 /** Where a failed query or mutation goes, and which of the two it was. */
@@ -44,7 +45,9 @@ export function shouldRetry(failureCount: number, error: unknown): boolean {
 export function createQueryClient(): QueryClient {
   return new QueryClient({
     queryCache: new QueryCache({
-      onError: (error) => {
+      onError: (error, query) => {
+        // A query that marks its misses as expected shows them on its page instead (d-117).
+        if (query.meta?.expected === true) return
         sink?.(error, 'query')
       },
     }),

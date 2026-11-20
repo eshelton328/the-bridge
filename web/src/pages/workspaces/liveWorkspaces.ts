@@ -434,6 +434,12 @@ function noteLayoutMiss(miss: LiveMiss | undefined): void {
   report(new LayoutReadMissError(miss), 'live')
 }
 
+/**
+ * The meta of the live reads: their misses are expected and shown in the notice and the status bar, so the query
+ * client does not report them (d-117).
+ */
+const expectedMiss = { expected: true }
+
 /** The HTTP status a miss stands for: its own, or the one its error kind comes with; none for a timeout. */
 function statusOfMiss(miss: LiveMiss): number | undefined {
   switch (miss.kind) {
@@ -777,7 +783,7 @@ export async function withLiveWorkspaces(
   let response: WorkspacesResponse
   try {
     response = await untilAborted(
-      client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 }),
+      client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0, meta: expectedMiss }),
       signal,
     )
   } catch (thrown) {
@@ -838,6 +844,7 @@ async function layoutsOf(
           queryKey: layoutKey(summary.id),
           queryFn: read(summary.id),
           staleTime: watching > 0 ? Infinity : 0,
+          meta: expectedMiss,
         })
         return [workspace.id, layoutOfTab(layout.tabs)]
       } catch (thrown) {
