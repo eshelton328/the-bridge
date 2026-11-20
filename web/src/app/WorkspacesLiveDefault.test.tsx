@@ -385,6 +385,17 @@ describe('a live chat that cannot send yet (d-117)', () => {
       await expect.element(box).toHaveValue('')
       await expect.element(page.getByRole('button', { name: 'Send', exact: true })).toBeDisabled()
     })
+
+    it(`draws no "context" label in a live chat's header, which has no context share, on ${device.name}`, async () => {
+      fakeServer(ok([plan]))
+      await setViewport(device.size[0], device.size[1])
+      await openApp()
+      await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+      await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+      await expect.element(page.getByText('context', { exact: true })).not.toBeInTheDocument()
+    })
   }
 
   it('still sends from a ?source=fixtures chat, whose header keeps its "context" label', async () => {
