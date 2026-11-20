@@ -44,5 +44,6 @@ Every error path of the app (d-084).
   (`clientErrorSender.test.ts`, `pages/workspaces/liveTranscriptReport.test.ts`).
 - The sender sends one report at a time from a short queue. A 429 stops
   it for the server's 60 s window, a 400 drops the report with one dev
-  warning, and a network failure drops it. It never calls `report()` and
+  warning, and a network failure or a post with no answer in 8 s drops
+  it. It never calls `report()` and
   never throws.

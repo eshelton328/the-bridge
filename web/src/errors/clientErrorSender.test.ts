@@ -15,6 +15,7 @@ afterEach(() => {
   clearReports()
   vi.restoreAllMocks()
   vi.unstubAllEnvs()
+  vi.useRealTimers()
 })
 
 const entry = (error: Error, source: ErrorSource = 'handler', route = '/workspaces'): ErrorReport => ({
@@ -187,6 +188,36 @@ describe('createClientErrorSender', () => {
     sink(entry(new Error('next')))
     await settle()
     expect(post).toHaveBeenCalledTimes(2)
+  })
+
+  it('aborts a post that gets no answer in 8 s, drops it and sends the next', async () => {
+    const postTimeoutMs = 8000
+    vi.useFakeTimers()
+    const sent: string[] = []
+    const aborted: string[] = []
+    // The fetch's own signal: the sender's, when it passes one.
+    const post = vi.fn<PostReport>((body, ...rest: unknown[]) => {
+      const { message } = ClientErrorReport.parse(JSON.parse(body))
+      sent.push(message)
+      if (message !== 'stalled') return Promise.resolve(204)
+      const [signal] = rest
+      // The server took the post and never answers: only the abort ends it.
+      return new Promise<number>((_resolve, reject) => {
+        if (signal instanceof AbortSignal)
+          signal.addEventListener('abort', () => {
+            aborted.push(message)
+            reject(new DOMException('aborted', 'AbortError'))
+          })
+      })
+    })
+    const sink = createClientErrorSender({ post })
+    sink(entry(new Error('stalled')))
+    sink(entry(new Error('next')))
+    await vi.advanceTimersByTimeAsync(postTimeoutMs - 1)
+    expect(sent).toEqual(['stalled'])
+    await vi.advanceTimersByTimeAsync(1)
+    expect(aborted).toEqual(['stalled'])
+    expect(sent).toEqual(['stalled', 'next'])
   })
 
   it(`keeps at most ${String(maxWaiting)} reports waiting`, async () => {

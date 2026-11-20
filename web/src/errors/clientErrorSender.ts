@@ -12,7 +12,8 @@
 // Sending: one report at a time from a short queue. A 429 stops all
 // sending until the server's window (60 reports a minute for each login)
 // has passed, and drops what waits; a 400 drops the report with one dev
-// warning; a network failure or any other answer drops it. The sink never
+// warning; a network failure, no answer within 8 s or any other answer
+// drops it. The sink never
 // calls report() and never throws, so a failed send cannot loop.
 import { ClientErrorReport, type ClientErrorSource } from '@bridge/contract'
 import { readsLiveServer } from '../lib/dataSource.ts'
@@ -97,20 +98,45 @@ export function toClientErrorReport(entry: ErrorReport): ClientErrorReport | und
   return parsed.success ? parsed.data : undefined
 }
 
-/** Posts one report's JSON and gives the answer's status; rejects when no answer comes. */
-export type PostReport = (body: string) => Promise<number>
+/** How long one post may take to answer before it is aborted and dropped, so a stalled server does not hold the queue. */
+const postTimeoutMs = 8000
 
-const postToServer: PostReport = async (body) => {
+/** Posts one report's JSON and gives the answer's status; rejects when no answer comes or `signal` aborts it. */
+export type PostReport = (body: string, signal: AbortSignal) => Promise<number>
+
+const postToServer: PostReport = async (body, signal) => {
   const res = await fetch('/api/client-errors', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body,
     keepalive: true,
+    signal,
   })
   return res.status
 }
 
 export type SenderDeps = { readonly post?: PostReport; readonly now?: () => number }
+
+/** `post`'s status, or a rejection once `postTimeoutMs` passes with no answer, which also aborts the post. */
+function postWithTimeout(post: PostReport, body: string): Promise<number> {
+  const abort = new AbortController()
+  return new Promise<number>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      abort.abort()
+      reject(new DOMException('The error report got no answer in time.', 'TimeoutError'))
+    }, postTimeoutMs)
+    const done = () => {
+      clearTimeout(timer)
+    }
+    try {
+      post(body, abort.signal).then(resolve, reject).finally(done)
+    } catch (thrown) {
+      // A post that throws at once is a post with no answer.
+      done()
+      reject(thrown instanceof Error ? thrown : new Error('the post threw'))
+    }
+  })
+}
 
 /** A reporter sink that sends each report to the server (see the top of this file). */
 export function createClientErrorSender({
@@ -125,9 +151,9 @@ export function createClientErrorSender({
   const sendOne = async (next: ClientErrorReport) => {
     let status: number
     try {
-      status = await post(JSON.stringify(next))
+      status = await postWithTimeout(post, JSON.stringify(next))
     } catch {
-      // No answer: the server or the network is down. Drop it; reporting it would loop.
+      // No answer, or none in time: the server or the network is down or stalled. Drop it; reporting it would loop.
       return
     }
     if (status === 429) {
