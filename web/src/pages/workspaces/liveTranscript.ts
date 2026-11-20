@@ -151,6 +151,8 @@ function noteOutage(chat: string, miss: TranscriptMiss): void {
 export type TranscriptDeps = {
   /** How long to wait before connecting again after a drop, until the stream's `retry` says otherwise. */
   readonly retryMs?: number
+  /** How long the stream may take to answer (its headers) before it counts as a timeout; 8 s by default. */
+  readonly openMs?: number
 }
 
 // The RPC client has no stream route until backend 3b-3 lands, so the stream opens with fetch, the chat ID
@@ -239,13 +241,22 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     const connection = new AbortController()
     const signal = AbortSignal.any([abort.signal, connection.signal])
     let res: Response
+    // A stream that gives no answer at all would leave the pane blank, as the read waits for it: after `openMs` it
+    // is a timeout, with the line, and it connects again. The limit ends once the answer's headers come.
+    const opening = { late: false }
+    const limit = setTimeout(() => {
+      opening.late = true
+      connection.abort()
+    }, deps.openMs ?? liveReadTimeoutMs)
     try {
       res = await openStream(chat, signal)
     } catch {
       if (closed()) return 'wait'
-      // fetch rejects when no answer comes: the server or the tailnet cannot be reached.
-      fail(transcriptText.dropped, { part: 'stream', kind: 'unreachable' })
+      // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
+      fail(transcriptText.dropped, { part: 'stream', kind: opening.late ? 'timeout' : 'unreachable' })
       return 'again'
+    } finally {
+      clearTimeout(limit)
     }
     if (res.status === 404) {
       // The read decides: a 404 read shows its line (an unknown chat); a 200 read shows the transcript with no line,

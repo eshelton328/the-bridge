@@ -180,6 +180,38 @@ describe('watchTranscript', () => {
     await expect.poll(() => getReports().length).toBe(2)
   })
 
+  it('shows a stream that gives no answer as a timeout with the line, and connects again', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // The stream gives no answer (no headers) until the page aborts it, while `stall` is set.
+    let stall = true
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+        const path = new URL(url, window.location.origin).pathname
+        if (stall && path.endsWith('/events'))
+          return new Promise<Response>((_, reject) => {
+            init?.signal?.addEventListener('abort', () => {
+              reject(new DOMException('The stream was closed.', 'AbortError'))
+            })
+          })
+        const answer = server.handle(path, init)
+        return answer === undefined ? Promise.reject(new TypeError(`no stub for ${url}`)) : Promise.resolve(answer)
+      }),
+    )
+    stops.push(watchTranscript(chat, { retryMs: 50, openMs: 100 }))
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: timeout (chat mac-mini/c1)',
+    ])
+    stall = false
+    await expect.poll(ids).toEqual(['u1'])
+    expect(view()?.problem).toBeUndefined()
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    expect(getReports()).toHaveLength(1)
+  })
+
   it('marks a transcript with earlier entries and keeps it marked once the cap drops one', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')], true)
