@@ -14,7 +14,7 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
-import { basename, join } from 'node:path'
+import { basename, isAbsolute, join, relative, resolve } from 'node:path'
 import {
   ChatId,
   type ChatStatus,
@@ -263,7 +263,11 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
   const sessionPath = (agent: HerdrAgent): string | undefined => {
     const session = agent.agent_session
     if (!session) return undefined
-    if (session.kind === 'path') return session.value
+    // A path from herdr is read only when it is a session file in the Claude projects folder.
+    if (session.kind === 'path') {
+      const rel = relative(claudeProjects, resolve(session.value))
+      return rel.startsWith('..') || isAbsolute(rel) || !rel.endsWith('.jsonl') ? undefined : session.value
+    }
     if (session.kind === 'id' && agent.cwd && sessionName.test(session.value))
       return join(claudeProjects, claudeProjectFolder(agent.cwd), `${session.value}.jsonl`)
     return undefined

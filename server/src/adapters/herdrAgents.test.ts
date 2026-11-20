@@ -840,6 +840,26 @@ describe('herdr adapter transcripts', () => {
     expect(read).toEqual({ ok: true, value: { entries: [], earlier: false } })
   })
 
+  it('reads no file for a session path outside the projects folder or not a session file', async () => {
+    const outside = join(projects, '..', 'outside.jsonl')
+    writeFileSync(outside, JSON.stringify({ type: 'user', uuid: 'x2', message: { content: 'outside' } }))
+    for (const value of [outside, join(folder, 'session-t.txt')]) {
+      const fake = await startFakeHerdrSocket(
+        withAgent({ agent_session: { agent: 'claude', kind: 'path', source: 'herdr:claude', value } }),
+      )
+      const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+      const read = await adapter.readTranscript(ChatId.parse('test-mac/term_1')).finally(() => fake.close())
+      expect(read).toEqual({ ok: true, value: { entries: [], earlier: false } })
+    }
+    const inside = join(folder, 'session-t.jsonl')
+    const fake = await startFakeHerdrSocket(
+      withAgent({ agent_session: { agent: 'claude', kind: 'path', source: 'herdr:claude', value: inside } }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    const read = await adapter.readTranscript(ChatId.parse('test-mac/term_1')).finally(() => fake.close())
+    expect(read.ok && read.value?.entries.map((e) => e.id)).toEqual(['u1', 't1'])
+  })
+
   it('gives null for a chat of another machine, with no connection', async () => {
     const before = socket.connections()
     expect(await port().readTranscript(ChatId.parse('laptop/session-a'))).toEqual({ ok: true, value: null })
