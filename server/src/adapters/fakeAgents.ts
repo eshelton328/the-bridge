@@ -219,6 +219,7 @@ export function createFakeAgents(
     setStatus(chat, status) {
       for (const workspace of data ?? []) for (const c of workspace.chats) if (c.id === chat) c.status = status
       tell({ type: 'chatStatus', chat, status })
+      for (const w of [...watchers]) if (w.chat === chat) w.onChange()
     },
     changeLayout(workspace) {
       tell({ type: 'layoutChanged', workspace })

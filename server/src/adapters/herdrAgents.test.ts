@@ -840,6 +840,28 @@ describe('herdr adapter transcripts', () => {
     expect(JSON.stringify(logger.lines())).not.toContain(secretText)
   })
 
+  it("tells a transcript watcher when the chat's pane stops working, with no write to the file", async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'working',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    let changes = 0
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => (changes += 1),
+      () => undefined,
+    )
+    await watch.ready
+    fake.push(statusLine('w17:p1', 'idle'))
+    for (const end = Date.now() + 5000; changes === 0 && Date.now() < end; ) await new Promise((r) => setTimeout(r, 20))
+    watch.close()
+    await fake.close()
+    expect(changes).toBeGreaterThan(0)
+  })
+
   it('reads no file for a session ID that could leave the projects folder', async () => {
     writeFileSync(
       join(projects, 'escape.jsonl'),

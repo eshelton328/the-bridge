@@ -138,6 +138,27 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(changes).toBe(closedAt)
     })
 
+    it("tells a transcript watcher when the chat's status changes, as a tool stops running with it", async () => {
+      const { port, expected, setStatus } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === expected.chat)
+      if (!chat) throw new Error(`no chat ${expected.chat}`)
+      let changes = 0
+      const watch = port.watchTranscript(
+        chat.id,
+        () => (changes += 1),
+        (error) => {
+          throw new Error(error.message)
+        },
+      )
+      await watch.ready
+      await setStatus('working')
+      await setStatus('idle')
+      await until('the status change', () => changes > 0)
+      watch.close()
+    })
+
     it('gives no transcript for a chat that the machine does not have', async () => {
       const { port } = await setup()
       for (const id of [`${port.machine}/no-such-chat`, 'another-mac/no-such-chat'])

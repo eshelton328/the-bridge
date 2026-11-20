@@ -415,7 +415,10 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
   const locate = async (
     chat: ChatId,
   ): Promise<
-    Result<{ path: string | undefined; working: boolean; cwd: string | undefined } | null, AgentPortError>
+    Result<
+      { path: string | undefined; working: boolean; cwd: string | undefined; pane: string | undefined } | null,
+      AgentPortError
+    >
   > => {
     const { machine: on } = splitId(chat)
     if (on !== machine) return ok(null)
@@ -426,13 +429,14 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
     const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
     if (agent === undefined) {
       const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
-      return ok(shell ? { path: undefined, working: false, cwd: undefined } : null)
+      return ok(shell ? { path: undefined, working: false, cwd: undefined, pane: undefined } : null)
     }
     // Only this chat's session is read. A Codex transcript is not read yet.
     return ok({
       path: agent.agent === 'claude' ? sessionPath(agent) : undefined,
       working: statusOf(agent.agent_status) === 'working',
       cwd: agent.cwd ?? undefined,
+      pane: agent.pane_id,
     })
   }
 
@@ -449,32 +453,59 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
     watchTranscript(chat, onChange, onEnd) {
       let over = false
       let watcher: FSWatcher | undefined
+      let stream: HerdrStream | undefined
       const close = () => {
         over = true
         watcher?.close()
         watcher = undefined
+        stream?.close()
+        stream = undefined
       }
-      const ready = locate(chat).then((located) => {
+      const end = (error: AgentPortError) => {
+        if (over) return
+        close()
+        onEnd(error)
+      }
+      const tell = () => {
+        if (!over) onChange()
+      }
+      const ready = locate(chat).then(async (located) => {
         if (over) return
         if (!located.ok) {
-          close()
-          onEnd(located.error)
+          end(located.error)
           return
         }
-        const path = located.value?.path
-        if (path === undefined) return
-        // The folder, not the file: the file can come later, for a chat that has not written yet.
-        try {
-          watcher = watch(dirname(path), (_, name) => {
-            if (!over && name === basename(path)) onChange()
-          })
-          watcher.on('error', () => {
-            watcher?.close()
-            watcher = undefined
-          })
-        } catch {
-          // No folder yet: no change to tell.
+        const found = located.value
+        if (found === null) return
+        const { path, pane } = found
+        if (path !== undefined) {
+          // The folder, not the file: the file can come later, for a chat that has not written yet.
+          try {
+            watcher = watch(dirname(path), (_, name) => {
+              if (name === basename(path)) tell()
+            })
+            watcher.on('error', () => {
+              watcher?.close()
+              watcher = undefined
+            })
+          } catch {
+            // No folder yet: no change to tell.
+          }
         }
+        if (pane === undefined) return
+        // A tool stops running when its chat stops working, which can come with no write to the session file.
+        await new Promise<void>((started) => {
+          stream = herdrSubscribe(socket, [{ type: 'pane.agent_status_changed', pane_id: pane }], {
+            onStart: started,
+            onEvent: (line) => {
+              if (StatusChanged.safeParse(line).success) tell()
+            },
+            onEnd: (failure) => {
+              started()
+              end(portErrorOf(failure))
+            },
+          })
+        })
       })
       return { ready, close }
     },
