@@ -240,6 +240,21 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(getReports()).toEqual([])
     })
 
+  it("copies a live reply's text with its Copy button, on the phone", async () => {
+    withPlan()
+    const written: string[] = []
+    vi.spyOn(navigator.clipboard, 'writeText').mockImplementation((text) => {
+      written.push(text)
+      return Promise.resolve()
+    })
+    await tapWorkspaces([390, 844])
+    await tapChat('plan the slice')
+    await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    await userEvent.click(chatRegion('plan the slice').getByRole('button', { name: 'Copy' }))
+    await expect.poll(() => written).toEqual(['Looking at the build now.'])
+    expect(getReports()).toEqual([])
+  })
+
   it('shows a quiet empty line for a Claude chat whose transcript has no entries', async () => {
     const server = fakeTranscriptServer()
     server.set(plan, [])

@@ -30,9 +30,11 @@ export type ChatEntryViewProps = {
   /** The Figma layer the entry stands for, for the fidelity checks. */
   figma?: string | undefined
   onAct?: ((action: string) => void) | undefined
+  /** A reply's Copy: writes its text to the clipboard (a live chat's reply, slice 3b). */
+  onCopy?: ((text: string) => void) | undefined
 }
 
-export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
+export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
   switch (entry.type) {
     case 'user':
       return (
@@ -58,7 +60,18 @@ export function ChatEntryView({ entry, figma, onAct }: ChatEntryViewProps) {
             name={entry.name}
             actions={
               entry.copy === undefined ? undefined : (
-                <Button size="xs" textSize="xs" keepIconSize>
+                <Button
+                  size="xs"
+                  textSize="xs"
+                  keepIconSize
+                  onClick={
+                    onCopy === undefined
+                      ? undefined
+                      : () => {
+                          onCopy(entry.text)
+                        }
+                  }
+                >
                   <CopyIcon size="12" />
                   {entry.copy}
                 </Button>

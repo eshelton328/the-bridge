@@ -40,6 +40,8 @@ export type TranscriptWatch = {
   readonly watch: (chat: string) => () => void
   /** Reads `chat`'s transcript again now: the problem line's Retry. */
   readonly retry: (chat: string) => void
+  /** Writes a live reply's text to the clipboard: its Copy button. */
+  readonly copy: (text: string) => void
 }
 
 const body = css({
@@ -404,7 +406,12 @@ export function ChatPane(props: ChatPaneProps) {
         {empty === undefined ? null : <span className={earlierLine}>{empty}</span>}
         <BlockBoundary contentKey={chatId}>
           {entries.map((entry, i) => (
-            <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
+            <ChatEntryView
+              key={`${entry.type}-${String(i)}`}
+              entry={entry}
+              figma={figma.entries?.[i]}
+              onCopy={transcripts?.copy}
+            />
           ))}
         </BlockBoundary>
         {problem === undefined ? null : (
