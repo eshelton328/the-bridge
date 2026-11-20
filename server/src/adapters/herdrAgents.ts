@@ -39,7 +39,9 @@ const WorkspaceList = z.object({
   workspaces: z.array(z.object({ workspace_id: LocalIdPart, label: z.string(), active_tab_id: z.string().optional() })),
 })
 
-const TabList = z.object({ tabs: z.array(z.object({ tab_id: LocalIdPart, label: z.string() })) })
+const TabList = z.object({
+  tabs: z.array(z.object({ tab_id: LocalIdPart, label: z.string(), focused: z.boolean().optional() })),
+})
 
 /** herdr's split tree; a pane leaf's other fields (its folder, its command) are not read. */
 const HerdrPaneNode = z.object({ type: z.literal('pane'), pane_id: z.string() })
@@ -71,7 +73,9 @@ function nodeOf(node: HerdrNode, ids: ReadonlyMap<string, ChatId>): LayoutNode |
   const first = nodeOf(node.first, ids)
   const second = nodeOf(node.second, ids)
   if (first === undefined || second === undefined) return undefined
-  return { kind: 'split', direction: node.direction === 'right' ? 'row' : 'column', ratio: node.ratio, first, second }
+  // The contract takes a ratio strictly between 0 and 1; a pane at its minimum size could give 0 or 1.
+  const ratio = Math.min(Math.max(node.ratio, 0.01), 0.99)
+  return { kind: 'split', direction: node.direction === 'right' ? 'row' : 'column', ratio, first, second }
 }
 
 const AgentList = z.object({
@@ -314,50 +318,65 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
 
   const badReply = (message: string): AgentPortError => ({ reason: 'badReply', message })
 
+  const strayPane = 'herdr layout.export: a pane that pane.list does not list'
+
+  /** One read of a workspace's layout; `strayPane` when a tree names a pane that pane.list does not list. */
+  const readLayoutOnce = async (workspace: WorkspaceId): Promise<Result<WorkspaceLayout | null, AgentPortError>> => {
+    const { machine: on, local } = splitId(workspace)
+    if (on !== machine) return ok(null)
+    const [workspaces, agents, panes] = await Promise.all([
+      call('workspace.list', WorkspaceList),
+      call('agent.list', AgentList),
+      call('pane.list', PaneList),
+    ])
+    if (!workspaces.ok) return workspaces
+    if (!agents.ok) return agents
+    if (!panes.ok) return panes
+    const found = workspaces.value.workspaces.find((w) => w.workspace_id === local)
+    if (found === undefined) return ok(null)
+    const tabs = await call('tab.list', TabList, { workspace_id: local })
+    if (!tabs.ok) return tabs
+    const exports = await Promise.all(
+      tabs.value.tabs.map((t) => call('layout.export', LayoutExport, { tab_id: t.tab_id })),
+    )
+    // herdr names the active tab; without it, the tab that tab.list marks focused, else the first.
+    const listed = tabs.value.tabs
+    const active =
+      listed.find((t) => t.tab_id === found.active_tab_id)?.tab_id ??
+      listed.find((t) => t.focused === true)?.tab_id ??
+      listed[0]?.tab_id
+    const own = panes.value.panes.filter((p) => p.workspace_id === local)
+    const summaries = await chatsOfPanes(agents.value.agents, own)
+    const byChat = new Map([...summaries.values()].map((c) => [c.id, c]))
+    const ids = new Map([...summaries].map(([pane, chat]) => [pane, chat.id]))
+    const layouts: unknown[] = []
+    for (const [at, tab] of tabs.value.tabs.entries()) {
+      const exported = exports[at]
+      if (exported === undefined) return err(badReply(`herdr layout.export: no reply for tab ${tab.tab_id}`))
+      if (!exported.ok) return exported
+      const root = nodeOf(exported.value.layout.root, ids)
+      if (root === undefined) return err(badReply(strayPane))
+      layouts.push({
+        id: `${machine}/${tab.tab_id}`,
+        label: tab.label,
+        active: tab.tab_id === active,
+        root,
+        focusedChat: ids.get(exported.value.layout.focused_pane_id),
+        chats: chatsOf(root).map((id) => byChat.get(id)),
+      })
+    }
+    const layout = WorkspaceLayout.safeParse({ workspace, tabs: layouts })
+    return layout.success
+      ? ok(layout.data)
+      : err(badReply(`herdr layout: ${layout.error.issues[0]?.message ?? 'unknown shape'}`))
+  }
+
   return {
     machine,
     async readLayout(workspace) {
-      const { machine: on, local } = splitId(workspace)
-      if (on !== machine) return ok(null)
-      const [workspaces, agents, panes] = await Promise.all([
-        call('workspace.list', WorkspaceList),
-        call('agent.list', AgentList),
-        call('pane.list', PaneList),
-      ])
-      if (!workspaces.ok) return workspaces
-      if (!agents.ok) return agents
-      if (!panes.ok) return panes
-      const found = workspaces.value.workspaces.find((w) => w.workspace_id === local)
-      if (found === undefined) return ok(null)
-      const tabs = await call('tab.list', TabList, { workspace_id: local })
-      if (!tabs.ok) return tabs
-      const exports = await Promise.all(
-        tabs.value.tabs.map((t) => call('layout.export', LayoutExport, { tab_id: t.tab_id })),
-      )
-      const own = panes.value.panes.filter((p) => p.workspace_id === local)
-      const summaries = await chatsOfPanes(agents.value.agents, own)
-      const byChat = new Map([...summaries.values()].map((c) => [c.id, c]))
-      const ids = new Map([...summaries].map(([pane, chat]) => [pane, chat.id]))
-      const layouts: unknown[] = []
-      for (const [at, tab] of tabs.value.tabs.entries()) {
-        const exported = exports[at]
-        if (exported === undefined) return err(badReply(`herdr layout.export: no reply for tab ${tab.tab_id}`))
-        if (!exported.ok) return exported
-        const root = nodeOf(exported.value.layout.root, ids)
-        if (root === undefined) return err(badReply('herdr layout.export: a pane that pane.list does not list'))
-        layouts.push({
-          id: `${machine}/${tab.tab_id}`,
-          label: tab.label,
-          active: tab.tab_id === found.active_tab_id,
-          root,
-          focusedChat: ids.get(exported.value.layout.focused_pane_id),
-          chats: chatsOf(root).map((id) => byChat.get(id)),
-        })
-      }
-      const layout = WorkspaceLayout.safeParse({ workspace, tabs: layouts })
-      return layout.success
-        ? ok(layout.data)
-        : err(badReply(`herdr layout: ${layout.error.issues[0]?.message ?? 'unknown shape'}`))
+      const first = await readLayoutOnce(workspace)
+      // A pane can close between layout.export and pane.list; one more read sees the tree without it.
+      return !first.ok && first.error.message === strayPane ? readLayoutOnce(workspace) : first
     },
     async listWorkspaces() {
       const [workspaces, agents, panes] = await Promise.all([

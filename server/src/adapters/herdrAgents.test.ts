@@ -455,6 +455,54 @@ describe('herdr agents', () => {
     expect(read.ok ? undefined : read.error.reason).toBe('badReply')
   })
 
+  it('takes the tab that tab.list marks focused, else the first, when herdr gives no active tab', async () => {
+    const [w17, w18] = results['workspace.list'].workspaces
+    const second = { tab_id: 'w17:t2', workspace_id: 'w17', label: '2', number: 2, focused: true }
+    for (const [tabs, active] of [
+      [[{ ...results['tab.list'].tabs[0], focused: false }, second], ['test-mac/w17:t2']],
+      [
+        [{ ...second, focused: false }, results['tab.list'].tabs[0]].map((t) => ({ ...t, focused: false })),
+        ['test-mac/w17:t2'],
+      ],
+    ] as const) {
+      const odd = await startFakeHerdrSocket({
+        ...results,
+        'workspace.list': { workspaces: [{ ...w17, active_tab_id: undefined }, w18] },
+        'tab.list': { tabs },
+      })
+      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+        .readLayout(WorkspaceId.parse('test-mac/w17'))
+        .finally(() => odd.close())
+      if (!read.ok) throw new Error(read.error.message)
+      expect(read.value?.tabs.filter((t) => t.active).map((t) => t.id)).toEqual(active)
+    }
+  })
+
+  it('reads once more when a pane closed between layout.export and pane.list', async () => {
+    const closing = await startFakeHerdrSocket(results)
+    const layout = results['layout.export'].layout
+    closing.once('layout.export', {
+      layout: { ...layout, root: { ...layout.root, second: { type: 'pane', pane_id: 'w17:p9' } } },
+    })
+    const read = await createHerdrAgents({ socket: closing.path, machine, log, claudeProjects: projects })
+      .readLayout(WorkspaceId.parse('test-mac/w17'))
+      .finally(() => closing.close())
+    expect(read.ok ? read.value?.tabs[0]?.focusedChat : read.error.message).toBe('test-mac/term_2')
+  })
+
+  it('moves a ratio of 0 or 1 just inside, so the contract holds', async () => {
+    const layout = results['layout.export'].layout
+    const odd = await startFakeHerdrSocket({
+      ...results,
+      'layout.export': { layout: { ...layout, root: { ...layout.root, ratio: 1 } } },
+    })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      .readLayout(WorkspaceId.parse('test-mac/w17'))
+      .finally(() => odd.close())
+    const root = read.ok ? read.value?.tabs[0]?.root : undefined
+    expect(root?.kind === 'split' ? root.ratio : undefined).toBe(0.99)
+  })
+
   it('reports a reply of an unknown shape', async () => {
     const odd = await startFakeHerdrSocket({ 'workspace.list': { workspaces: 'none' }, 'agent.list': { agents: [] } })
     const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects }).listWorkspaces()
