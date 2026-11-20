@@ -1,6 +1,6 @@
 // Each workspace keeps its own layout (R6, D1's open question 4): its panes,
-// the sizes of its handles, its focused pane and whether its side chat is
-// open, in `ui.layouts` by
+// how its split places them, the sizes of its handles, its focused pane and
+// whether its side chat is open, in `ui.layouts` by
 // workspace id. A workspace with no saved layout shows the state's panes
 // when it is `data.current`, and its last chat alone in one pane when it is
 // another. These helpers give the shown workspace's layout and the ui
@@ -27,6 +27,7 @@ function layoutOf(data: WorkspacesData, ui: WorkspacesUi, workspace: string | nu
   if (workspace === data.current) {
     return {
       panes: data.panes.map((p) => p.id),
+      split: data.split,
       splitSizes: ui.splitSizes,
       focusedPane: ui.focusedPane,
       sideChatOpen: ui.sideChatOpen,
@@ -41,8 +42,8 @@ const paneById = (data: WorkspacesData, id: string): WorkbenchPane | undefined =
   data.panes.find((p) => p.id === id) ?? Object.values(data.lastChats ?? {}).find((p) => p.id === id)
 
 /**
- * The data and ui the shown workspace's panes draw from: its panes, its split (rows first only for the state's own
- * workspace) and its sizes, and the status bar's summary counted again when the panes are not the state's.
+ * The data and ui the shown workspace's panes draw from: its panes, its split (its layout's, else the state's for the
+ * state's own workspace) and its sizes, and the status bar's summary counted again when the panes are not the state's.
  */
 export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: WorkspacesData; ui: WorkspacesUi } {
   const shown = shownWorkspace(data, ui)
@@ -57,10 +58,11 @@ export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: Works
     own || label === null
       ? data.status.summary
       : `${label} · ${String(panes.length)} ${panes.length === 1 ? 'pane' : 'panes'}`
-  const { split, ...rest } = data
+  const { split: stateSplit, ...rest } = data
+  const split = layout.split ?? (shown === data.current ? stateSplit : undefined)
   const viewData = { ...rest, current: shown, panes, status: { ...data.status, summary } }
   return {
-    data: shown === data.current && split !== undefined ? { ...viewData, split } : viewData,
+    data: split === undefined ? viewData : { ...viewData, split },
     ui: { ...ui, splitSizes: layout.splitSizes },
   }
 }
@@ -75,6 +77,7 @@ export function switchTo(data: WorkspacesData, ui: WorkspacesUi, next: string): 
   const left = layoutOf(data, ui, shown)
   const saved: WorkspaceLayout = {
     panes: left.panes,
+    split: left.split,
     splitSizes: liveSizes(data, ui, left.splitSizes),
     focusedPane: ui.focusedPane,
     sideChatOpen: ui.sideChatOpen,
@@ -112,7 +115,7 @@ export function closeShownPane(data: WorkspacesData, ui: WorkspacesUi, pane: str
   const panes = layout.panes.filter((id) => id !== pane)
   const focusedPane = ui.focusedPane === pane ? panes[0] : ui.focusedPane
   return {
-    layouts: { ...ui.layouts, [shown]: { panes, focusedPane, sideChatOpen: layout.sideChatOpen } },
+    layouts: { ...ui.layouts, [shown]: { panes, split: layout.split, focusedPane, sideChatOpen: layout.sideChatOpen } },
     focusedPane: focusedPane ?? ui.focusedPane,
     resize: null,
   }

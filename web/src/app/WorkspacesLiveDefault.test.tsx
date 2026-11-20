@@ -66,7 +66,9 @@ const plan: Chat = { local: 'p1', kind: 'claude', title: 'plan the slice', model
 const logs: Chat = { local: 's1', kind: 'shell', title: 'tail logs', model: 'zsh' }
 
 /**
- * The stubbed server. `reply` answers each `GET /api/workspaces`: a Response, or `'down'` for no answer. The event
+ * The stubbed server. `reply` answers each `GET /api/workspaces`: a Response, or `'down'` for no answer. A
+ * workspace's layout (`GET /api/workspaces/:workspace/layout`, slice 3a) answers 503 herdr-unavailable, so each
+ * workspace keeps its first chats as its panes (WorkspacesLiveLayout.test.tsx reads real layouts). The event
  * stream opens with `open` when the server is up, and fails as a network error when it is down; `send` writes an
  * event to every open stream.
  */
@@ -79,8 +81,16 @@ function fakeServer(first: (() => Response) | 'down') {
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      if (url.includes('/api/workspaces')) reads.push(url)
+      const layout = url.includes('/api/workspaces/') && url.endsWith('/layout')
+      if (url.includes('/api/workspaces') && !layout) reads.push(url)
       if (reply === 'down') return Promise.reject(new TypeError('Failed to fetch'))
+      if (layout)
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ error: { kind: 'herdr-unavailable', message: 'no herdr', requestId: 'r-9' } }),
+            { status: 503 },
+          ),
+        )
       if (url.includes('/api/events')) {
         const body = new ReadableStream<Uint8Array>({
           start: (control) => {

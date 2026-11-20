@@ -4,7 +4,8 @@
 // to (D5), and a chat dragged from the sidebar over a pane shows the drop
 // zone over the part of the pane where it would open (D8). With `data.split`
 // `rows` the split is rows first (D14), and a dragged handle shows its
-// readout over the pane before it. Each handle's sizes are in `ui.splitSizes`.
+// readout over the pane before it; with `stack` the panes are one above the
+// other. Each handle's sizes are in `ui.splitSizes`.
 // The empty pane's Close pane reports the pane closed (`onClosePane`).
 // A chat's composer starts from the owner's draft (`ui.drafts`) and reports what
 // he types, so the draft outlives the pane: a page visit, a closed pane. Its
@@ -161,6 +162,15 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
     )
   }
   const shown = data.panes.map((pane, i) => ({ id: pane.id, content: render(pane, i) }))
+  if (data.split === 'stack')
+    return (
+      <RowsSplit
+        stack
+        panes={shown}
+        sizes={ui.splitSizes}
+        onSizeChange={(part, next) => onUiChange?.({ splitSizes: { ...ui.splitSizes, [part]: next } })}
+      />
+    )
   if (data.split === 'rows')
     return (
       <RowsSplit
