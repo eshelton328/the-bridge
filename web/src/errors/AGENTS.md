@@ -28,3 +28,9 @@ Every error path of the app (d-084).
   equal one (source, name, message, first stack frame) within 2 s, and
   skips `redirect`, `notFound` and `AbortError` (`reporter.test.ts`,
   audit W-5).
+- `RouteError` replaces the page with its rail and tab bar, so it offers
+  Go to Inbox beside Retry, except on the Inbox
+  (`app/WorkspacesRouteRecovery.test.tsx`, audit W-10).
+- Each boundary passes `ErrorFallback` its own `retryScope` (`useId()`,
+  or the path for `RouteError`), so used-up retries in one boundary leave
+  Retry in another (`app/WorkspacesRouteRecovery.test.tsx`, audit W-10).

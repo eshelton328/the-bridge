@@ -1,0 +1,51 @@
+// The composer drafts that outlive a reload (audit W-10): Reload app, the
+// way out of a fallback that keeps failing, would drop the drafts the page
+// store holds in memory. WorkspacesPage saves them in sessionStorage by
+// chat id, with the `?state=` they belong to, as each change comes in, and
+// reads them back on load. Storage that is blocked or full keeps the
+// drafts in memory only, as before, and a failed write or removal goes to
+// report() (d-115). resetAllStores() clears them, as it clears the page store.
+import { z } from 'zod'
+import { report } from '../../errors/reporter.ts'
+import { registerReset } from '../../state/resetStores.ts'
+
+const storageKey = 'bridge/workspaces/drafts'
+const Saved = z.object({ state: z.string().nullable(), drafts: z.record(z.string(), z.string()) })
+const none: Readonly<Record<string, string>> = {}
+
+/** The drafts saved in this tab for `state` (undefined is the default state), by chat id; empty when there are none. */
+export function loadDrafts(state: string | undefined): Readonly<Record<string, string>> {
+  try {
+    const raw = window.sessionStorage.getItem(storageKey)
+    if (raw === null) return none
+    const saved = Saved.safeParse(JSON.parse(raw))
+    return saved.success && saved.data.state === (state ?? null) ? saved.data.drafts : none
+  } catch {
+    return none
+  }
+}
+
+/**
+ * Saves the drafts of `state` that hold text for this tab: the composer text by chat id and the state's name, nothing
+ * else. A chat whose box is empty, as after a send, has no saved draft, and with none left the key goes. When storage
+ * is blocked or full, the drafts stay in memory and report() gets the error.
+ */
+export function saveDrafts(state: string | undefined, drafts: Readonly<Record<string, string>>): void {
+  const kept = Object.fromEntries(Object.entries(drafts).filter(([, text]) => text !== ''))
+  try {
+    if (Object.keys(kept).length === 0) window.sessionStorage.removeItem(storageKey)
+    else window.sessionStorage.setItem(storageKey, JSON.stringify({ state: state ?? null, drafts: kept }))
+  } catch (error) {
+    // Blocked or full: the drafts stay in memory only.
+    report(error, 'handler')
+  }
+}
+
+registerReset(() => {
+  try {
+    window.sessionStorage.removeItem(storageKey)
+  } catch (error) {
+    // Blocked: nothing was saved.
+    report(error, 'handler')
+  }
+})

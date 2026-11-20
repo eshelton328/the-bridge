@@ -86,6 +86,23 @@ describe('a Workspaces chat keeps its draft until the send succeeds', () => {
     })
   }
 
+  it('keeps the saved draft after a failed send and drops it after a sent one (audit W-10)', async () => {
+    await setViewport(390, 844)
+    const saved = (): unknown => JSON.parse(window.sessionStorage.getItem('bridge/workspaces/drafts') ?? 'null')
+    const send = vi.spyOn(workspacesStore.getState().actions, 'send')
+    send.mockRejectedValueOnce(new Error('the chat server is down'))
+    view = await renderAt()
+    await userEvent.click(page.getByText(chatName, { exact: true }).first())
+    await userEvent.fill(box(), 'keep this prompt')
+    expect(saved()).toEqual({ state: null, drafts: { 'bridge-themes': 'keep this prompt' } })
+    await userEvent.click(sendButton())
+    await expect.poll(() => getReports().length).toBe(1)
+    expect(saved()).toEqual({ state: null, drafts: { 'bridge-themes': 'keep this prompt' } })
+    await userEvent.click(sendButton())
+    await expect.element(box()).toHaveValue('')
+    expect(saved()).toBeNull()
+  })
+
   it('keeps what the owner typed while a send was pending, on the phone', async () => {
     await setViewport(390, 844)
     let resolve: () => void = () => undefined
