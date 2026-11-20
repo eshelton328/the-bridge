@@ -400,7 +400,7 @@ describe('herdr agents: subscribe', () => {
     return { events, ends, subscription }
   }
 
-  it("subscribes to the list events and the status of each Claude and Codex chat's pane, on one stream", async () => {
+  it("subscribes to the list events and the status of each chat's pane, shells too, on one stream", async () => {
     const { subscription } = collect()
     await subscription.ready
     expect(socket.streams()).toEqual([
@@ -416,6 +416,8 @@ describe('herdr agents: subscribe', () => {
         { type: 'pane.agent_detected' },
         { type: 'pane.agent_status_changed', pane_id: 'w17:p1' },
         { type: 'pane.agent_status_changed', pane_id: 'w17:p2' },
+        { type: 'pane.agent_status_changed', pane_id: 'w18:p1' },
+        { type: 'pane.agent_status_changed', pane_id: 'w18:p2' },
       ],
     ])
     subscription.close()
@@ -440,6 +442,19 @@ describe('herdr agents: subscribe', () => {
     expect(events).toEqual([{ type: 'chatStatus', chat: 'test-mac/term_2', status: 'needsYou' }])
   })
 
+  it("tells a shell chat's new status with the shell's listed ID", async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    events.length = 0
+    socket.push({
+      ...statusLine('w18:p1', 'blocked'),
+      data: { ...statusLine('w18:p1', 'blocked').data, workspace_id: 'w18' },
+    })
+    await wait(50)
+    subscription.close()
+    expect(events).toEqual([{ type: 'chatStatus', chat: 'test-mac/term_3', status: 'needsYou' }])
+  })
+
   it('opens the stream again after a burst of list events, then tells the app once', async () => {
     const { events, subscription } = collect()
     await subscription.ready
@@ -449,8 +464,8 @@ describe('herdr agents: subscribe', () => {
     socket.push({ event: 'pane_agent_detected', data: { type: 'pane_agent_detected', pane_id: 'w17:p9' } })
     await wait(400)
     expect(events).toEqual([{ type: 'workspacesChanged' }])
-    // One agent.list and one new stream; the old stream is closed.
-    expect(socket.connections()).toBe(before + 2)
+    // One agent.list, one pane.list and one new stream; the old stream is closed.
+    expect(socket.connections()).toBe(before + 3)
     expect(socket.streams()).toHaveLength(1)
     subscription.close()
   })

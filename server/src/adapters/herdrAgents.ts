@@ -205,12 +205,27 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
     }
   }
 
+  /** The ID of a shell chat: its pane's terminal ID. */
+  const shellIdOf = (pane: HerdrPane): ChatId => ChatId.parse(`${machine}/${pane.terminal_id}`)
+
+  /** The listed chat ID of each pane, by herdr pane ID: its Claude or Codex chat's, else its shell chat's. */
+  const chatIdsOf = (agents: readonly HerdrAgent[], panes: readonly HerdrPane[]): Map<string, ChatId> => {
+    const shared = sharedSessions(agents)
+    const agentOf = new Map(agents.map((a) => [a.pane_id, a]))
+    return new Map(
+      panes.map((p) => {
+        const agent = agentOf.get(p.pane_id)
+        return [p.pane_id, agent !== undefined && isChat(agent) ? chatIdOf(agent, shared) : shellIdOf(p)]
+      }),
+    )
+  }
+
   /** A pane with no Claude or Codex chat: a shell chat named by its terminal ID; no model when herdr gives no process. */
   const shellOf = async (pane: HerdrPane): Promise<ChatSummary> => {
     const info = await call('pane.process_info', ProcessInfo, { pane_id: pane.pane_id })
     const program = info.ok ? programOf(info.value) : null
     return {
-      id: ChatId.parse(`${machine}/${pane.terminal_id}`),
+      id: shellIdOf(pane),
       kind: 'shell',
       title: [pane.terminal_title_stripped, pane.label, program].find((t): t is string => Boolean(t)) ?? 'shell',
       model: program,
@@ -269,14 +284,17 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
 
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
       const open = async (changed: boolean) => {
-        const agents = await call('agent.list', AgentList)
+        const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
         if (over) return
         if (!agents.ok) {
           end(agents.error)
           return
         }
-        const shared = sharedSessions(agents.value.agents)
-        const chats = new Map(agents.value.agents.filter(isChat).map((a) => [a.pane_id, chatIdOf(a, shared)]))
+        if (!panes.ok) {
+          end(panes.error)
+          return
+        }
+        const chats = chatIdsOf(agents.value.agents, panes.value.panes)
         const subscriptions = [
           ...listEvents.map((type) => ({ type })),
           ...[...chats.keys()].map((pane_id) => ({ type: 'pane.agent_status_changed', pane_id })),
