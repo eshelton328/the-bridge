@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
-import { ChatStatusEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
+import { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
 
 const status = {
   source: 'mac-mini/herdr',
@@ -8,6 +8,7 @@ const status = {
   data: { chat: 'mac-mini/session-a', status: 'needsYou' },
 }
 const changed = { source: 'mac-mini/herdr', seq: 4, type: 'workspaces.changed', data: {} }
+const layout = { source: 'mac-mini/herdr', seq: 5, type: 'layout.changed', data: { workspace: 'mac-mini/w17' } }
 
 describe('live events', () => {
   it('parses a status event and a change event', () => {
@@ -20,6 +21,13 @@ describe('live events', () => {
     if (parsed.type !== 'chat.status') throw new Error('not a status event')
     expectTypeOf(parsed.data.status).toEqualTypeOf<'working' | 'needsYou' | 'idle' | 'done' | 'unknown'>()
     expect(LiveEvent.parse(changed).type).toBe('workspaces.changed')
+  })
+
+  it('parses a layout event that names its workspace, and refuses one without it', () => {
+    expect(LayoutChangedEvent.parse(layout)).toEqual(layout)
+    expect(LiveEvent.parse(layout).type).toBe('layout.changed')
+    expect(LiveEvent.safeParse({ ...layout, data: {} }).success).toBe(false)
+    expect(LiveEvent.safeParse({ ...layout, data: { workspace: 'w17' } }).success).toBe(false)
   })
 
   it('refuses an unknown type, a status the app does not know and a chat ID without its machine', () => {
