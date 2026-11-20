@@ -4,7 +4,7 @@ export { ClientErrorReport, ClientErrorSource } from './clientErrors.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export { chatsOf, LayoutNode, SplitDirection, TabLayout, WorkspaceLayout } from './layout.ts'
-export { maxPromptChars, SendPromptRequest } from './prompts.ts'
+export { maxPromptChars, SendPromptRequest, StopChatRequest } from './prompts.ts'
 export { ChatStatusEvent, LayoutChangedEvent, LiveEvent, WorkspacesChangedEvent } from './liveEvents.ts'
 export {
   AssistantEntry,

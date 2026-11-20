@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { maxPromptChars, SendPromptRequest } from './prompts.ts'
+import { maxPromptChars, SendPromptRequest, StopChatRequest } from './prompts.ts'
 
 describe('prompt requests', () => {
   it('reads a prompt with text, up to the limit', () => {
@@ -16,5 +16,12 @@ describe('prompt requests', () => {
       {},
     ])
       expect(SendPromptRequest.safeParse(body).success).toBe(false)
+  })
+})
+
+describe('StopChatRequest', () => {
+  it('takes only an empty object', () => {
+    expect(StopChatRequest.safeParse({}).success).toBe(true)
+    expect(StopChatRequest.safeParse({ text: 'Stop.' }).success).toBe(false)
   })
 })

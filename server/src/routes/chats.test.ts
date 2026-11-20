@@ -1,6 +1,7 @@
 // API tests of GET /api/chats/:chat/transcript/events (d-113): the app in
 // process with the fake adapter, the SSE body read as it streams.
 import { ChatId, ErrorBody, MachineId, maxPromptChars, TranscriptChangedEvent } from '@bridge/contract'
+import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
@@ -111,9 +112,9 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
   const setup = (agents = createFakeAgents(machine)) => {
     const logger = memoryLogger()
     const app = createApp({ agents, owner, log: logger.log })
-    const post = (path: string, body: unknown, headers: Record<string, string> = json) =>
-      app.request(path, { method: 'POST', headers, body: JSON.stringify(body) })
-    return { agents, logger, post }
+    const post = (path: string, body: unknown, headers: Record<string, string> = json, raw?: string) =>
+      app.request(path, { method: 'POST', headers, body: raw ?? JSON.stringify(body) })
+    return { agents, logger, post, app }
   }
 
   it('sends the prompt to that chat only, answers 204 and logs none of the text, while the chat works', async () => {
@@ -156,6 +157,37 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
     expect(await states(await post(stopPath('test-mac/drift-check'), {}))).toEqual([409, 'notWorking'])
     expect(await states(await post(stopPath('test-mac/brain-git'), {}))).toEqual([409, 'shell'])
     expect(agents.inputs()).toEqual([])
+  })
+
+  it('takes the longest prompt when JSON writes each character as a \\u escape', async () => {
+    const { agents, post } = setup()
+    const text = 'é'.repeat(maxPromptChars)
+    const escaped = JSON.stringify({ text }).replaceAll('é', '\\u00e9')
+    expect((await post(promptPath(themes), undefined, json, escaped)).status).toBe(204)
+    expect(agents.inputs()).toEqual([{ chat: themes, text }])
+  })
+
+  it('answers 400, not 500, to a body that is not valid JSON, with no text in the error', async () => {
+    const { agents, post } = setup()
+    for (const path of [promptPath(themes), stopPath(themes)]) {
+      const res = await post(path, undefined, json, '{"text": "marker-5150')
+      expect(res.status).toBe(400)
+      expect(await res.text()).not.toContain('marker-5150')
+    }
+    expect(agents.inputs()).toEqual([])
+  })
+
+  it("lets the typed client send a prompt and a stop with the contract's shapes", async () => {
+    const { agents, app } = setup()
+    const chats = testClient(app, undefined, undefined, { headers: local }).api.chats[':chat']
+    // The client puts the param in the path as it is, so the caller encodes the "/" of the chat ID.
+    const chat = encodeURIComponent(themes)
+    expect((await chats.prompt.$post({ param: { chat }, json: { text: 'Go on.' } })).status).toBe(204)
+    expect((await chats.stop.$post({ param: { chat }, json: {} })).status).toBe(204)
+    expect(agents.inputs()).toEqual([
+      { chat: themes, text: 'Go on.' },
+      { chat: themes, stop: true },
+    ])
   })
 
   it('stops a chat that works with 204, and takes a stop only as JSON', async () => {

@@ -17,3 +17,7 @@ export const SendPromptRequest = z.strictObject({
     .refine((text) => text.trim() !== '', 'the prompt has no text'),
 })
 export type SendPromptRequest = z.infer<typeof SendPromptRequest>
+
+/** The body of a stop: an empty JSON object, so a stop is JSON as a prompt is. */
+export const StopChatRequest = z.strictObject({})
+export type StopChatRequest = z.infer<typeof StopChatRequest>

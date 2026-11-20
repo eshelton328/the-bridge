@@ -32,7 +32,8 @@ Thin Hono sub-apps, one file for each area, named after the area
   each `transcript.changed` event holds only the entries that are new
   or changed since the stream opened (`chats.test.ts`).
 - `POST /api/chats/:chat/prompt` and `POST /api/chats/:chat/stop` take
-  only JSON. A sent input is 204; an unknown chat is 404; a shell, a chat
+  only JSON, and check the body with the contract in a hono `validator`,
+  so the typed client knows the body; malformed JSON is 400, not a throw. A sent input is 204; an unknown chat is 404; a shell, a chat
   that waits for the owner, or a stop to a chat that does not work is
   409 `chat-not-ready` with that state. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the
