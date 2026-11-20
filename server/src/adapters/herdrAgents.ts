@@ -469,6 +469,37 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
       const tell = () => {
         if (!over) onChange()
       }
+      // A watch that fails ends the stream, so the client opens it again; it does not go quiet.
+      const failed = () => {
+        end({ reason: 'unreachable', message: 'transcript watch failed' })
+      }
+      /**
+       * Watches the session file's folder, filtered to the file, which can come later. For a chat whose folder is
+       * not there yet, watches the projects folder until it comes.
+       */
+      const watchFile = (path: string) => {
+        const folder = dirname(path)
+        try {
+          watcher = watch(folder, (_, name) => {
+            if (name === basename(path)) tell()
+          })
+          watcher.on('error', failed)
+          return
+        } catch {
+          // No folder yet.
+        }
+        try {
+          watcher = watch(dirname(folder), (_, name) => {
+            if (over || name !== basename(folder)) return
+            watcher?.close()
+            watchFile(path)
+            tell()
+          })
+          watcher.on('error', failed)
+        } catch {
+          failed()
+        }
+      }
       const ready = locate(chat).then(async (located) => {
         if (over) return
         if (!located.ok) {
@@ -478,20 +509,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
         const found = located.value
         if (found === null) return
         const { path, pane } = found
-        if (path !== undefined) {
-          // The folder, not the file: the file can come later, for a chat that has not written yet.
-          try {
-            watcher = watch(dirname(path), (_, name) => {
-              if (name === basename(path)) tell()
-            })
-            watcher.on('error', () => {
-              watcher?.close()
-              watcher = undefined
-            })
-          } catch {
-            // No folder yet: no change to tell.
-          }
-        }
+        if (path !== undefined) watchFile(path)
         if (pane === undefined) return
         // A tool stops running when its chat stops working, which can come with no write to the session file.
         await new Promise<void>((started) => {

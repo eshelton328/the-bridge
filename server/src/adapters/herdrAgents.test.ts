@@ -895,6 +895,36 @@ describe('herdr adapter transcripts', () => {
     expect(read.ok && read.value?.entries.map((e) => e.id)).toEqual(['u1', 't1'])
   })
 
+  it('tells a watcher of a chat whose session folder is not there yet when the folder and the file come', async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        cwd: '/home/dev/new-project',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-n' },
+      }),
+    )
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    let changes = 0
+    const ends: string[] = []
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-n'),
+      () => (changes += 1),
+      (error) => ends.push(error.reason),
+    )
+    await watch.ready
+    const later = join(projects, '-home-dev-new-project')
+    mkdirSync(later)
+    await new Promise((r) => setTimeout(r, 100))
+    writeFileSync(
+      join(later, 'session-n.jsonl'),
+      JSON.stringify({ type: 'user', uuid: 'n1', message: { content: 'hi' } }),
+    )
+    for (const end = Date.now() + 5000; changes < 2 && Date.now() < end; ) await new Promise((r) => setTimeout(r, 20))
+    watch.close()
+    await fake.close()
+    expect(changes).toBeGreaterThanOrEqual(2)
+    expect(ends).toEqual([])
+  })
+
   it('gives null for a chat of another machine, with no connection', async () => {
     const before = socket.connections()
     expect(await port().readTranscript(ChatId.parse('laptop/session-a'))).toEqual({ ok: true, value: null })

@@ -34,7 +34,9 @@ client of a socket or a file sits beside them.
   transcript text. A transcript watch is an `fs.watch` on the session
   file's folder, filtered to that file, with no timer, and a herdr
   status stream for the chat's pane: a tool stops running when its
-  chat stops working, with no write to the file.
+  chat stops working, with no write to the file. Before the folder
+  exists it watches the projects folder for it; a watch that fails ends
+  the stream as `unreachable`.
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
