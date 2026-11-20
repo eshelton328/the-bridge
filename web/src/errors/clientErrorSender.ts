@@ -202,8 +202,9 @@ export function createClientErrorSender({
       if (body === undefined) return
       waiting.push(body)
       drain().catch(() => undefined)
-    } catch {
-      // Never throw into the reporter, and never report: the report is already in its buffer.
+    } catch (thrown) {
+      // Never throw into the reporter, and never report (a loop): log it in development. The report is in the buffer.
+      warnInDev('[bridge] the error sender dropped a report:', thrown)
     }
   }
 }
