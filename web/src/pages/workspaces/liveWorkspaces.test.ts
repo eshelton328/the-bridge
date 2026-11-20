@@ -2,13 +2,14 @@
 // with the page's state files, so the mocks are the backend's expected output.
 import { WorkspacesResponse } from '@bridge/contract'
 import { QueryClient } from '@tanstack/react-query'
-import { err, ok } from '@bridge/shared'
+import { err, ok, type Result } from '@bridge/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports } from '../../errors/reporter.ts'
 import { checkState } from '../../lib/screenState.ts'
 import { workspacesHome } from './home.ts'
 import {
   fetchWorkspaces,
+  type LiveMiss,
   liveReadTimeoutMs,
   modelLabel,
   toWorkspaces,
@@ -661,6 +662,32 @@ describe('a live read that never settles (W-3)', () => {
     leave.abort()
     await settled
     expect(getReports()).toEqual([])
+  })
+
+  it('keeps one read for loads that abort each other, as a burst of events reloads the page', async () => {
+    let answer: ((value: Result<WorkspacesResponse, LiveMiss>) => void) | undefined
+    const reads: AbortSignal[] = []
+    const fetch = (read: AbortSignal) =>
+      new Promise<Result<WorkspacesResponse, LiveMiss>>((resolve) => {
+        reads.push(read)
+        answer = resolve
+      })
+    const queries = client()
+    const first = new AbortController()
+    const firstLoad = withLiveWorkspaces(workspacesHome, { client: queries, fetch, signal: first.signal })
+    const firstEnded = expect(firstLoad).rejects.toMatchObject({ name: 'AbortError' })
+    first.abort()
+    await firstEnded
+    const secondLoad = withLiveWorkspaces(workspacesHome, {
+      client: queries,
+      fetch,
+      signal: new AbortController().signal,
+    })
+    answer?.(ok(response))
+    const state = await secondLoad
+    expect(reads).toHaveLength(1)
+    expect(reads[0]?.aborted).toBe(false)
+    expect(state.data.workspaces).toEqual(toWorkspaces(response))
   })
 })
 

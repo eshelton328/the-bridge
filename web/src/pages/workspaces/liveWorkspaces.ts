@@ -206,6 +206,24 @@ export async function fetchWorkspaces(signal: AbortSignal): Promise<Result<Works
   }
 }
 
+/**
+ * `pending`, or its rejection with `signal`'s reason once `signal` aborts: the load stops waiting, and `pending`
+ * goes on for the loads that share it.
+ */
+function untilAborted<T>(pending: Promise<T>, signal: AbortSignal | undefined): Promise<T> {
+  if (signal === undefined) return pending
+  return new Promise<T>((resolve, reject) => {
+    const stop = () => {
+      reject(signal.reason instanceof Error ? signal.reason : new DOMException('The load was aborted.', 'AbortError'))
+    }
+    if (signal.aborted) stop()
+    signal.addEventListener('abort', stop, { once: true })
+    pending.then(resolve, reject).finally(() => {
+      signal.removeEventListener('abort', stop)
+    })
+  })
+}
+
 /** Carries a miss through the query client, which knows only thrown errors, to withLiveWorkspaces. */
 class LiveMissError extends Error {
   readonly miss: LiveMiss
@@ -471,11 +489,12 @@ export async function withLiveWorkspaces(
   // marks it invalid, and then the load reads the server.
   // An event during the read may be newer than the read's answer, so the cache is then marked invalid again
   // once it holds the answer, and the page loads once more.
-  // The read ends on the router's abort, the query's cancel or the timeout, whichever comes first.
+  // The read ends on the query's cancel or the timeout, whichever comes first. It is shared by every load while it
+  // runs, so the router's abort of one load does not end it: a burst of events reloads the page, and each reload
+  // aborts the one before, which would otherwise start the read again each time.
   const read = async ({ signal: cancel }: { signal: AbortSignal }) => {
     const before = taken
-    const ends = [cancel, AbortSignal.timeout(liveReadTimeoutMs), ...(signal === undefined ? [] : [signal])]
-    const answer = await fetch(AbortSignal.any(ends))
+    const answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
     if (!answer.ok) throw new LiveMissError(answer.error)
     if (taken !== before)
       setTimeout(() => {
@@ -485,7 +504,10 @@ export async function withLiveWorkspaces(
   }
   let response: WorkspacesResponse
   try {
-    response = await client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 })
+    response = await untilAborted(
+      client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 }),
+      signal,
+    )
   } catch (thrown) {
     if (!(thrown instanceof LiveMissError)) throw thrown
     const alert = `Live data is not available (${thrown.miss.message}); the page shows mock data.`
