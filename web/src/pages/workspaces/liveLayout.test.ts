@@ -178,6 +178,13 @@ describe('withLoadedLayouts', () => {
     expect(withLoadedLayouts(ui({ w: two, v: one }), { ...changed, workspace: 'v' }, 'w').focusedPane).toBe('b')
   })
 
+  it('keeps the chat the owner opened on the phone or the tablet, and a focus outside the shown workspace', () => {
+    const changed = { layouts: { w: one }, focusedPane: 'b', layoutsSeen: layoutsSeenOf({ w: one }) }
+    expect(withLoadedLayouts(ui({ w: two }), { ...changed, phoneView: 'chat' }, 'w').focusedPane).toBe('b')
+    expect(withLoadedLayouts(ui({ w: two }), { ...changed, focusedPane: 'z' }, 'w').focusedPane).toBe('z')
+    expect(withLoadedLayouts(ui({ w: two }), { ...changed, phoneView: 'list' }, 'w').focusedPane).toBe('c')
+  })
+
   it("ends a handle drag's sizes when a newer layout replaces the shown workspace's, and keeps them otherwise", () => {
     const resize = { part: 'rows' as const, sizes: [70, 30] }
     const changed = { layouts: { w: mine }, focusedPane: 'b', resize, layoutsSeen: layoutsSeenOf({ w: one }) }

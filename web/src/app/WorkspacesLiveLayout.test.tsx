@@ -446,6 +446,21 @@ describe('the herdr layout on the phone and the tablet, and with the fixtures (s
       expect(drawn()).toEqual([])
     })
 
+  for (const device of sizes)
+    it(`keeps the chat the owner opened on ${device.name} when the first workspace's layout changes`, async () => {
+      const server = fakeServer([plan, drift], { [live]: oneTab(row(0.5, pane(plan), pane(drift)), plan) }, true)
+      await tapWorkspaces(device.size)
+      await settled(() => server.layoutReads.filter((id) => id === live).length)
+      await userEvent.click(page.getByText('review notes', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
+      server.answer({ [live]: oneTab(column(0.5, pane(plan), pane(drift)), drift) })
+      server.send('layout.changed', { workspace: live })
+      await expect.poll(() => server.layoutReads.filter((id) => id === live).length).toBeGreaterThan(1)
+      await new Promise((resolve) => setTimeout(resolve, 300))
+      await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
+      await expect.element(page.getByRole('heading', { name: 'drift check' })).not.toBeInTheDocument()
+    })
+
   it('makes no layout request for ?source=fixtures or ?state=', async () => {
     const server = fakeServer(chats, { [live]: oneTab(pane(plan), plan) })
     await setViewport(1512, 982)
