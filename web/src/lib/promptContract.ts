@@ -32,8 +32,7 @@ const ChatNotReady = z.object({
 })
 
 /** `ErrorKind` with W1-2's `chat-not-ready`. */
-export const PromptErrorKind = z.union([ErrorKind, ChatNotReady])
-export type PromptErrorKind = z.infer<typeof PromptErrorKind>
+const PromptErrorKind = z.union([ErrorKind, ChatNotReady])
 
 /** `ErrorBody` with W1-2's `chat-not-ready`. */
 export const PromptErrorBody = z.object({ error: PromptErrorKind })
