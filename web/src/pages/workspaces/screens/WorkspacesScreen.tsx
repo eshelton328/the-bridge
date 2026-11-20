@@ -24,6 +24,7 @@
 // width, and a state without them, draws the desktop layout.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { useLayoutEffect, useRef, useState } from 'react'
+import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { ViewportFrame } from '../../../blocks/ViewportFrame.tsx'
 import type { Viewport } from '../../../lib/screenState.ts'
@@ -268,6 +269,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, chan
     return (
       <Backdrop size={viewport}>
         <AppShell
+          onDiagnostic={reportShellDiagnostic}
           size="desktop"
           listWidth="sidebar"
           rail={rail}
@@ -373,6 +375,7 @@ function WorkspacesLayout({ layout, data, ui, viewport, onNavigate, onSend, chan
   return (
     <Backdrop size={viewport}>
       <AppShell
+        onDiagnostic={reportShellDiagnostic}
         size="desktop"
         rail={rail}
         detail={<WorkspaceTabs data={named} ui={ui} onUiChange={change} onDraftChange={draft} toggle onSend={onSend} />}

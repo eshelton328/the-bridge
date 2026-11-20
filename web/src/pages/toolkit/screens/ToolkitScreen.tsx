@@ -29,6 +29,7 @@
 import { AppShell, Backdrop, Container, FilterChips } from '@eshelton328/component-library-1701'
 import { useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
+import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
 import { AppRail } from '../../../blocks/AppRail.tsx'
 import { AppTabBar } from '../../../blocks/AppTabBar.tsx'
 import { MoreDrawer } from '../../../blocks/MoreDrawer.tsx'
@@ -441,6 +442,7 @@ function ToolkitLayout({
   return (
     <Backdrop size={layout}>
       <AppShell
+        onDiagnostic={reportShellDiagnostic}
         size={layout}
         view="detail"
         rail={desktop ? <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
