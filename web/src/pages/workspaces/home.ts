@@ -4,15 +4,22 @@
 // (D2b's sidebar on a desktop, the list with the tab bar on a tablet or a
 // phone), and every menu, list, popover and dialog closed. It is not a
 // Figma state: it lives outside states/, so it has no frame, story, board
-// or fidelity check.
+// or fidelity check. It takes M9's chat actions (phoneHoldChat), so a hold
+// on a chat row or a tap on its ⋯ opens them; they stay closed until then.
+// The live source (liveWorkspaces.ts) starts from this state and keeps them.
 import type { ScreenState } from '../../lib/screenState.ts'
+import { phoneHoldChat } from './states/phoneHoldChat.ts'
 import { phoneHome } from './states/phoneHome.ts'
 import type { WorkspacesData, WorkspacesUi } from './types.ts'
 
 export const workspacesHome = {
   title: 'Workspaces as the app opens',
   frames: [],
-  data: { ...phoneHome.data, tabletList: true },
+  data: {
+    ...phoneHome.data,
+    phone: { ...phoneHome.data.phone, rowMenu: phoneHoldChat.data.phone.rowMenu },
+    tabletList: true,
+  },
   ui: {
     ...phoneHome.ui,
     menuFor: null,

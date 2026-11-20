@@ -182,3 +182,85 @@ describe('a chat held in the phone list, on the owner path at 390 x 844', () => 
     await expect.element(page.getByRole('button', { name: 'Back to Workspaces' })).not.toBeInTheDocument()
   })
 })
+
+// The owner opens the app with no ?state=: the page's home (home.ts) with M1's layers, where the list's rows must
+// still open their actions on a hold or on their ⋯, and lift the row over the scrim.
+describe('a chat held in the home list, on the owner path at 390 x 844', () => {
+  /** drift check's row in the home's list (M1 105:2367). */
+  const homeRow = () => {
+    const el = document.querySelector('[data-figma="105:2367"]')
+    if (!(el instanceof HTMLElement)) throw new Error('no drift check row')
+    return el
+  }
+  /** The sheet's lifted copy of the held row, once placed. */
+  const placed = () => document.querySelector<HTMLElement>('.bottom-sheet__lifted[data-placed]')
+
+  /** The sheet is open, the row hidden at its place and its copy at the same box, drawn over the scrim. */
+  async function expectHomeLifted(at: number[]) {
+    await expect.element(page.getByRole('dialog', { name: 'drift check' })).toBeVisible()
+    await expect.element(page.getByRole('radio', { name: 'Rename' })).toBeChecked()
+    await expect.poll(() => placed()).not.toBeNull()
+    const lifted = placed()
+    const back = scrim()
+    if (!lifted || !(back instanceof HTMLElement)) throw new Error('no lifted copy or scrim')
+    expect(lifted.textContent).toContain('drift check')
+    expect(round(lifted.getBoundingClientRect())).toEqual(at)
+    expect(back.compareDocumentPosition(lifted) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const inner = lifted.firstElementChild
+    if (!(inner instanceof HTMLElement)) throw new Error('no copy in the lifted box')
+    expect(inner.contains(topAt(inner))).toBe(true)
+    expect(getComputedStyle(homeRow()).visibility).toBe('hidden')
+    expect(round(homeRow().getBoundingClientRect())).toEqual(at)
+  }
+
+  /** A tap on the scrim above the sheet closes it, and the row shows again. */
+  async function tapScrim() {
+    const point = { x: 195, y: 60 }
+    const back = scrim()
+    if (!(back instanceof HTMLElement)) throw new Error('no scrim')
+    const r = back.getBoundingClientRect()
+    expect(point.y >= r.top && point.y <= r.bottom).toBe(true)
+    await userEvent.click(document.documentElement, { position: point })
+    await expect.element(page.getByRole('dialog', { name: 'drift check' })).not.toBeInTheDocument()
+    await expect.poll(() => placed()).toBeNull()
+    await expect.poll(() => getComputedStyle(homeRow()).visibility).toBe('visible')
+  }
+
+  it('opens the actions on a hold, lifts the row over the scrim and closes on a tap of the scrim', async () => {
+    await page.viewport(390, 844)
+    view = await renderRoute('/workspaces')
+    await expect.poll(() => document.querySelector('[data-figma="105:2367"]')).not.toBeNull()
+    await expect.element(page.getByRole('dialog', { name: 'drift check' })).not.toBeInTheDocument()
+    const at = round(homeRow().getBoundingClientRect())
+    await press(homeRow(), 700)
+    await expectHomeLifted(at)
+    await expect.element(page.getByRole('button', { name: 'Back to Workspaces' })).not.toBeInTheDocument()
+    await tapScrim()
+  })
+
+  it("opens the same actions from the row's ⋯ and closes on a tap of the scrim", async () => {
+    await page.viewport(390, 844)
+    view = await renderRoute('/workspaces')
+    await expect.poll(() => document.querySelector('[data-figma="105:2367"]')).not.toBeNull()
+    const at = round(homeRow().getBoundingClientRect())
+    await userEvent.click(page.getByRole('button', { name: 'drift check actions' }))
+    await expectHomeLifted(at)
+    await tapScrim()
+  })
+  it('runs a picked action in the held chat: Rename opens the chat with its name as a field', async () => {
+    await page.viewport(390, 844)
+    view = await renderRoute('/workspaces')
+    // bridge themes has a pane to show (the mock's only openable chat), so its actions can run in it.
+    await expect.poll(() => document.querySelector('[data-figma="105:2350"]')).not.toBeNull()
+    const row = document.querySelector('[data-figma="105:2350"]')
+    if (!(row instanceof HTMLElement)) throw new Error('no bridge themes row')
+    await press(row, 700)
+    const sheet = page.getByRole('dialog', { name: 'bridge themes' })
+    await expect.element(sheet).toBeVisible()
+    await userEvent.click(sheet.getByText('Rename', { exact: true }))
+    await expect.element(sheet).not.toBeInTheDocument()
+    // The chat fills the screen: its back button (labelled with the list's title in the home) and its name as a field.
+    await expect.element(page.getByRole('button', { name: 'Workspaces', exact: true })).toBeVisible()
+    await expect.element(page.getByRole('searchbox', { name: 'Rename bridge themes' })).toBeVisible()
+  })
+})
