@@ -6,7 +6,8 @@
 // On the phone the row ends with its ⋯, after the status (M1 146:2), and in
 // edit mode starts with its drag handle (M2 105:2557). Holding a phone row
 // opens its actions (M9 146:42): the row lifts over the sheet's scrim, a copy
-// of it in the library's `DragPreview` (146:252). Props only.
+// of it in the library's `DragPreview` (146:252, `LiftedChatRow`), which the
+// sheet draws over the row (BottomSheet `lifted`). Props only.
 import {
   BranchIcon,
   DragPreview,
@@ -16,7 +17,7 @@ import {
   ListRow,
   StatusPill,
 } from '@eshelton328/component-library-1701'
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarChat } from '../types.ts'
 import { ChatMeta } from './ChatMeta.tsx'
@@ -27,10 +28,9 @@ const faded = css({ opacity: 'disabled' })
 // M2 105:2557: the handle is 10 in from the row's edge, where a compact sidebar row pads 20, and the kind mark 10
 // after it (105:2564); the leading slot reaches 10 into that padding (LIBRARY_GAPS.md: Phone chat row).
 const gripLead = css({ ms: '-10', color: 'fg.subtle' })
-// M9 146:252: the held row's copy lies 6 above the row (146:117), as wide, over the sheet's scrim; the row stays
-// under it. The copy is the only thing of the page over the scrim, so it needs no more than the first layer.
-const holder = css({ position: 'relative' })
-const lift = css({ position: 'absolute', insetInline: '0', top: '-6', zIndex: '1' })
+// M9 146:252: the held row's copy lies 6 above the row (146:117), as wide. The sheet places the copy at the row's
+// box (BottomSheet `lifted`), so the copy moves itself 6 up in that box.
+const lift = css({ position: 'relative', top: '-6' })
 
 export type SidebarChatRowProps = {
   chat: SidebarChat
@@ -48,27 +48,35 @@ export type SidebarChatRowProps = {
   /** Called when the owner holds the row (M9); the phone opens the chat's actions. */
   onHold?: (() => void) | undefined
   /**
-   * The row is held: its copy lifts over the scrim of the sheet it opened (M9 146:252), with this Figma layer and
-   * its own ⋯ (146:268), as the row's ⋯ carries the row's layer.
+   * The row is held (M9): the sheet it opened lifts a copy of it (`LiftedChatRow`) over its scrim, at this element,
+   * and hides the row while the sheet is open.
    */
-  lifted?: { figma?: string | undefined; menu?: ReactNode } | undefined
+  anchorRef?: Ref<HTMLDivElement> | undefined
 }
 
 export function SidebarChatRow(props: SidebarChatRowProps) {
-  const { figma, moving, onHold, lifted } = props
+  const { figma, moving, onHold, anchorRef } = props
   return (
-    <HoldArea
-      data-figma={figma}
-      onHold={onHold}
-      className={moving === true ? faded : lifted === undefined ? undefined : holder}
-    >
+    <HoldArea ref={anchorRef} data-figma={figma} onHold={onHold} className={moving === true ? faded : undefined}>
       {row(props)}
-      {lifted === undefined ? null : (
-        <div className={lift} data-figma={lifted.figma}>
-          <DragPreview>{row({ ...props, selected: false, onSelect: undefined, menu: lifted.menu })}</DragPreview>
-        </div>
-      )}
     </HoldArea>
+  )
+}
+
+export type LiftedChatRowProps = {
+  chat: SidebarChat
+  /** The copy's Figma layer (146:252). */
+  figma?: string | undefined
+  /** The copy's own ⋯ (146:268), as the row's ⋯ carries the row's layer. */
+  menu?: ReactNode
+}
+
+/** The held row's copy over the sheet's scrim (M9 146:252): the BottomSheet's `lifted` content. */
+export function LiftedChatRow({ chat, figma, menu }: LiftedChatRowProps) {
+  return (
+    <div className={lift} data-figma={figma}>
+      <DragPreview>{row({ chat, selected: false, menu })}</DragPreview>
+    </div>
   )
 }
 

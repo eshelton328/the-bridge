@@ -4,7 +4,7 @@
 // hold does not reach the children (a held row does not open its chat). The
 // area turns off Safari's text selection and callout, so the hold reaches
 // the page. Props only.
-import { type PointerEvent, type ReactNode, useEffect, useRef } from 'react'
+import { type PointerEvent, type ReactNode, type Ref, useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 
 /** How long a finger rests before the hold fires, in ms (M9's note: about half a second). */
@@ -20,9 +20,11 @@ export type HoldAreaProps = {
   onHold?: (() => void) | undefined
   className?: string | undefined
   'data-figma'?: string | undefined
+  /** The area's element, such as the anchor that a BottomSheet lifts over its scrim (M9). */
+  ref?: Ref<HTMLDivElement> | undefined
 }
 
-export function HoldArea({ children, onHold, className, 'data-figma': figma }: HoldAreaProps) {
+export function HoldArea({ children, onHold, className, 'data-figma': figma, ref }: HoldAreaProps) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const startRef = useRef<{ x: number; y: number } | undefined>(undefined)
   const heldRef = useRef(false)
@@ -34,12 +36,13 @@ export function HoldArea({ children, onHold, className, 'data-figma': figma }: H
   useEffect(() => cancel, [])
   if (onHold === undefined)
     return (
-      <div className={className} data-figma={figma}>
+      <div ref={ref} className={className} data-figma={figma}>
         {children}
       </div>
     )
   return (
     <div
+      ref={ref}
       className={className === undefined ? area : `${area} ${className}`}
       data-figma={figma}
       onPointerDown={(event: PointerEvent) => {

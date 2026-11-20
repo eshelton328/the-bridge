@@ -11,6 +11,7 @@
 // 208:235). Props only.
 import {
   BottomSheet,
+  type BottomSheetLifted,
   BranchIcon,
   BubbleIcon,
   ChevronDownIcon,
@@ -97,6 +98,8 @@ export type PhoneChatActionsProps = {
   onSelect?: ((action: PaneAction['value']) => void) | undefined
   /** The icons' Figma layers, by action value, workspace id or `new`. */
   layers?: Record<string, string> | undefined
+  /** A copy of the held row that the sheet lifts over its scrim, at the row's place (M9 146:252). */
+  lifted?: BottomSheetLifted | undefined
 }
 
 export function PhoneChatActions(props: PhoneChatActionsProps) {
@@ -151,7 +154,14 @@ export function PhoneChatActions(props: PhoneChatActionsProps) {
   ]
   const moveLabel = actions.find((a) => a.value === 'move')?.label ?? newWorkspace
   return (
-    <BottomSheet size="sm" title={title} trigger={trigger} open={open} onOpenChange={onOpenChange}>
+    <BottomSheet
+      size="sm"
+      title={title}
+      trigger={trigger}
+      open={open}
+      onOpenChange={onOpenChange}
+      lifted={props.lifted}
+    >
       <OptionList
         label={title}
         items={before.map(row)}
