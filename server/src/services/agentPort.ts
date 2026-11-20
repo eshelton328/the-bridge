@@ -1,8 +1,9 @@
 // The AgentPort: the only way the server reaches agents (d-110), in the
 // app's terms. Slice 1 reads; slice 2 adds subscribe, the live events;
+// slice 3a adds readLayout, the tabs and panes of a workspace;
 // later slices add startChat, sendPrompt, cancel and answerApproval, each
 // with the contract suite in adapters/agentPortContract.ts.
-import type { ChatId, ChatStatus, MachineId, WorkspaceSummary } from '@bridge/contract'
+import type { ChatId, ChatStatus, MachineId, WorkspaceId, WorkspaceLayout, WorkspaceSummary } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
 /** Why a port could not answer: the agents' host did not answer, or its reply had an unknown shape. */
@@ -25,6 +26,11 @@ export type AgentPort = {
   readonly machine: MachineId
   /** The workspaces and their chats, in the order the machine shows them. It reads only when called. */
   listWorkspaces(): Promise<Result<WorkspaceSummary[], AgentPortError>>
+  /**
+   * The tabs of one workspace and the split tree of each, with each pane named by the chat ID that
+   * `listWorkspaces` gives it; `null` when this machine has no such workspace. It reads only when called.
+   */
+  readLayout(workspace: WorkspaceId): Promise<Result<WorkspaceLayout | null, AgentPortError>>
   /**
    * Starts one subscription: `onEvent` gets each change until `close()`. An adapter whose subscription starts
    * after the call returns tells `workspacesChanged` when it starts, as the list may have changed in between. When the host stops answering,

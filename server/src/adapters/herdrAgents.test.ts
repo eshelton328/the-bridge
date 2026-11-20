@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { MachineId } from '@bridge/contract'
+import { MachineId, WorkspaceId } from '@bridge/contract'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -29,7 +29,14 @@ const results = {
   'workspace.list': {
     type: 'workspace_list',
     workspaces: [
-      { workspace_id: 'w17', label: 'the-bridge loops', number: 1, focused: true, agent_status: 'working' },
+      {
+        workspace_id: 'w17',
+        label: 'the-bridge loops',
+        number: 1,
+        focused: true,
+        agent_status: 'working',
+        active_tab_id: 'w17:t1',
+      },
       { workspace_id: 'w18', label: 'phone · shell', number: 2, focused: false, agent_status: 'unknown' },
     ],
   },
@@ -92,6 +99,27 @@ const results = {
       },
     ],
   },
+  // One tab, with the agents' two panes one above the other; herdr gives each leaf its folder too.
+  'tab.list': {
+    type: 'tab_list',
+    tabs: [{ tab_id: 'w17:t1', workspace_id: 'w17', label: '1', number: 1, focused: true }],
+  },
+  'layout.export': {
+    type: 'layout_export',
+    layout: {
+      workspace_id: 'w17',
+      tab_id: 'w17:t1',
+      zoomed: false,
+      focused_pane_id: 'w17:p2',
+      root: {
+        type: 'split',
+        direction: 'down',
+        ratio: 0.25,
+        first: { type: 'pane', pane_id: 'w17:p2', cwd },
+        second: { type: 'pane', pane_id: 'w17:p1', cwd },
+      },
+    },
+  },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
     type: 'pane_process_info',
@@ -150,6 +178,8 @@ const resumedTwice = {
     ],
   },
   'pane.process_info': results['pane.process_info'],
+  'tab.list': results['tab.list'],
+  'layout.export': results['layout.export'],
   'agent.list': {
     type: 'agent_list',
     agents: ['term_1', 'term_4'].map((terminal_id, i) => ({
@@ -379,6 +409,98 @@ describe('herdr agents', () => {
       ['test-mac/term_3', null],
       ['test-mac/term_5', null],
     ])
+  })
+
+  it("maps herdr's tabs and split tree to the app's terms, with each pane's listed chat and no folder", async () => {
+    const read = await port().readLayout(WorkspaceId.parse('test-mac/w17'))
+    if (!read.ok) throw new Error(read.error.message)
+    expect(read.value).toMatchObject({
+      workspace: 'test-mac/w17',
+      tabs: [
+        {
+          id: 'test-mac/w17:t1',
+          label: '1',
+          active: true,
+          root: {
+            kind: 'split',
+            direction: 'column',
+            ratio: 0.25,
+            first: { kind: 'pane', chat: 'test-mac/term_2' },
+            second: { kind: 'pane', chat: 'test-mac/session-a' },
+          },
+          focusedChat: 'test-mac/term_2',
+        },
+      ],
+    })
+    expect(read.value?.tabs[0]?.chats.map((c) => c.title)).toEqual(['drift', 'bridge-coord'])
+    expect(JSON.stringify(read.value)).not.toContain(cwd)
+  })
+
+  it('reads nothing for a workspace of another machine', async () => {
+    const before = socket.connections()
+    const read = await port().readLayout(WorkspaceId.parse('laptop/w17'))
+    expect(read).toEqual({ ok: true, value: null })
+    expect(socket.connections()).toBe(before)
+  })
+
+  it('gives badReply, and does not throw, for a tree with a pane that pane.list does not list', async () => {
+    const stray = { type: 'pane', pane_id: 'w17:p9' }
+    const odd = await startFakeHerdrSocket({
+      ...results,
+      'layout.export': { layout: { ...results['layout.export'].layout, root: stray, focused_pane_id: 'w17:p9' } },
+    })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      .readLayout(WorkspaceId.parse('test-mac/w17'))
+      .finally(() => odd.close())
+    expect(read.ok ? undefined : read.error.reason).toBe('badReply')
+  })
+
+  it('takes the tab that tab.list marks focused, else the first, when herdr gives no active tab', async () => {
+    const [w17, w18] = results['workspace.list'].workspaces
+    const second = { tab_id: 'w17:t2', workspace_id: 'w17', label: '2', number: 2, focused: true }
+    for (const [tabs, active] of [
+      [[{ ...results['tab.list'].tabs[0], focused: false }, second], ['test-mac/w17:t2']],
+      [
+        [{ ...second, focused: false }, results['tab.list'].tabs[0]].map((t) => ({ ...t, focused: false })),
+        ['test-mac/w17:t2'],
+      ],
+    ] as const) {
+      const odd = await startFakeHerdrSocket({
+        ...results,
+        'workspace.list': { workspaces: [{ ...w17, active_tab_id: undefined }, w18] },
+        'tab.list': { tabs },
+      })
+      const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+        .readLayout(WorkspaceId.parse('test-mac/w17'))
+        .finally(() => odd.close())
+      if (!read.ok) throw new Error(read.error.message)
+      expect(read.value?.tabs.filter((t) => t.active).map((t) => t.id)).toEqual(active)
+    }
+  })
+
+  it('reads once more when a pane closed between layout.export and pane.list', async () => {
+    const closing = await startFakeHerdrSocket(results)
+    const layout = results['layout.export'].layout
+    closing.once('layout.export', {
+      layout: { ...layout, root: { ...layout.root, second: { type: 'pane', pane_id: 'w17:p9' } } },
+    })
+    const read = await createHerdrAgents({ socket: closing.path, machine, log, claudeProjects: projects })
+      .readLayout(WorkspaceId.parse('test-mac/w17'))
+      .finally(() => closing.close())
+    expect(read.ok ? read.value?.tabs[0]?.focusedChat : read.error.message).toBe('test-mac/term_2')
+  })
+
+  it('moves a ratio of 0 or 1 just inside, so the contract holds', async () => {
+    const layout = results['layout.export'].layout
+    const odd = await startFakeHerdrSocket({
+      ...results,
+      'layout.export': { layout: { ...layout, root: { ...layout.root, ratio: 1 } } },
+    })
+    const read = await createHerdrAgents({ socket: odd.path, machine, log, claudeProjects: projects })
+      .readLayout(WorkspaceId.parse('test-mac/w17'))
+      .finally(() => odd.close())
+    const root = read.ok ? read.value?.tabs[0]?.root : undefined
+    expect(root?.kind === 'split' ? root.ratio : undefined).toBe(0.99)
   })
 
   it('reports a reply of an unknown shape', async () => {

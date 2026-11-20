@@ -1,5 +1,5 @@
 // API integration tests (d-113): the app in process, with the fake adapter.
-import { ErrorBody, MachineId, WorkspacesResponse } from '@bridge/contract'
+import { chatsOf, ErrorBody, MachineId, WorkspaceLayout, WorkspacesResponse } from '@bridge/contract'
 import type { InferResponseType } from 'hono/client'
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import { createFakeAgents, fakeWorkspaces } from './adapters/fakeAgents.ts'
@@ -155,7 +155,68 @@ describe('request IDs and the request log', () => {
   })
 })
 
+describe('GET /api/workspaces/:workspace/layout', () => {
+  const layoutPath = (id: string) => `/api/workspaces/${encodeURIComponent(id)}/layout`
+
+  it("returns a workspace's tabs, with a pane for each of its listed chats", async () => {
+    const res = await createApp({ agents: createFakeAgents(machine), owner, log }).request(
+      layoutPath(`${machine}/omni-brain`),
+      { headers: local },
+    )
+    expect(res.status).toBe(200)
+    const layout = WorkspaceLayout.parse(await res.json())
+    const listed = fakeWorkspaces(machine)
+      .find((w) => w.label === 'omni-brain')
+      ?.chats.map((c) => c.id)
+    expect(layout.tabs.flatMap((t) => chatsOf(t.root))).toEqual(listed)
+  })
+
+  it('answers 404 not-found for a workspace that the machine does not have, or one of another machine', async () => {
+    const app = createApp({ agents: createFakeAgents(machine), owner, log })
+    for (const id of [`${machine}/no-such-workspace`, 'laptop/omni-brain']) {
+      const res = await app.request(layoutPath(id), { headers: local })
+      expect(res.status).toBe(404)
+      expect(ErrorBody.parse(await res.json()).error.kind).toBe('not-found')
+    }
+  })
+
+  it('answers 400 invalid-input for an ID with no machine, and reads nothing', async () => {
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log }).request(layoutPath('omni-brain'), { headers: local })
+    expect(res.status).toBe(400)
+    expect(ErrorBody.parse(await res.json()).error.kind).toBe('invalid-input')
+    expect(agents.reads()).toBe(0)
+  })
+
+  it('answers 503 herdr-unavailable when herdr does not answer, with no socket path in the body', async () => {
+    const error = { reason: 'unreachable', message: 'herdr socket /home/dev/.config/herdr/herdr.sock: ENOENT' } as const
+    const res = await createApp({ agents: createFakeAgents(machine, { error }), owner, log }).request(
+      layoutPath(`${machine}/omni-brain`),
+      { headers: local },
+    )
+    expect(res.status).toBe(503)
+    const body = ErrorBody.parse(await res.json())
+    expect(body.error.kind).toBe('herdr-unavailable')
+    expect(JSON.stringify(body)).not.toContain('/home/dev')
+  })
+
+  it('refuses another Tailscale login before it reads', async () => {
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log }).request(layoutPath(`${machine}/omni-brain`), {
+      headers: { ...tailnet, 'Tailscale-User-Login': 'someone@example.com' },
+    })
+    expect(res.status).toBe(403)
+  })
+})
+
 describe('the typed error responses', () => {
+  it('gives the RPC client the ErrorBody of each error status of GET /api/workspaces/:workspace/layout', () => {
+    type Get = Client['api']['workspaces'][':workspace']['layout']['$get']
+    expectTypeOf<InferResponseType<Get, 404>>().toEqualTypeOf<ErrorBody>()
+    expectTypeOf<InferResponseType<Get, 400>>().toEqualTypeOf<ErrorBody>()
+    expectTypeOf<InferResponseType<Get, 503>>().toEqualTypeOf<ErrorBody>()
+  })
+
   it('gives the RPC client the ErrorBody of each error status of GET /api/workspaces', () => {
     type Get = Client['api']['workspaces']['$get']
     expectTypeOf<InferResponseType<Get, 503>>().toEqualTypeOf<ErrorBody>()

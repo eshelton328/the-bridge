@@ -1,7 +1,16 @@
 // The fake adapter of the AgentPort: fixed workspaces and chats, or a fixed
 // error. API tests and web's mock-api source use it; the contract suite in
 // agentPortContract.ts keeps it true to the herdr adapter.
-import { ChatId, type ChatStatus, type MachineId, type WorkspaceSummary, WorkspaceId } from '@bridge/contract'
+import {
+  ChatId,
+  type ChatStatus,
+  type LayoutNode,
+  type MachineId,
+  TabId,
+  type WorkspaceLayout,
+  type WorkspaceSummary,
+  WorkspaceId,
+} from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
 import type { AgentEvent, AgentPort, AgentPortError } from '../services/agentPort.ts'
 
@@ -64,6 +73,38 @@ export type FakeAgents = AgentPort & {
   readonly endAll: (error: AgentPortError) => void
 }
 
+/** The fake's layout of a workspace: one tab with its chats side by side, the first focused; null with no chat. */
+function layoutOf(workspace: WorkspaceSummary): WorkspaceLayout | null {
+  const [first, ...rest] = workspace.chats
+  if (first === undefined) return null
+  // Each split gives its first pane an equal share of what is left, so n panes get 1/n each.
+  const root = (at: number): LayoutNode => {
+    const chat = workspace.chats[at] ?? first
+    return at === workspace.chats.length - 1
+      ? { kind: 'pane', chat: chat.id }
+      : {
+          kind: 'split',
+          direction: 'row',
+          ratio: 1 / (workspace.chats.length - at),
+          first: { kind: 'pane', chat: chat.id },
+          second: root(at + 1),
+        }
+  }
+  return {
+    workspace: workspace.id,
+    tabs: [
+      {
+        id: TabId.parse(`${workspace.id}:t1`),
+        label: '1',
+        active: true,
+        root: rest.length === 0 ? { kind: 'pane', chat: first.id } : root(0),
+        focusedChat: first.id,
+        chats: structuredClone(workspace.chats),
+      },
+    ],
+  }
+}
+
 type Listener = { readonly onEvent: (event: AgentEvent) => void; readonly onEnd: (error: AgentPortError) => void }
 
 /** A port that answers with `workspaces`, or always fails with `error`. */
@@ -86,6 +127,11 @@ export function createFakeAgents(
     listWorkspaces() {
       reads += 1
       return Promise.resolve('error' in answer ? err(answer.error) : ok(structuredClone(data ?? [])))
+    },
+    readLayout(workspace) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = (data ?? []).find((w) => w.id === workspace)
+      return Promise.resolve(ok(found === undefined ? null : layoutOf(found)))
     },
     subscribe(onEvent, onEnd) {
       const listener = { onEvent, onEnd }

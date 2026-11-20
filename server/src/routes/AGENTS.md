@@ -19,5 +19,9 @@ Thin Hono sub-apps, one file for each area, named after the area
 - `POST /api/client-errors` checks the JSON content type, then the rate
   limit (by the login in lower case), the size and the contract, and only
   then logs; a 429 writes no log line (`clientErrors.test.ts`, d-115).
+- `GET /api/workspaces/:workspace/layout` takes the workspace ID
+  URL-encoded; an ID with no machine is 400 `invalid-input`, and an
+  unknown workspace or one of another machine is 404 `not-found`
+  (`app.test.ts`).
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
