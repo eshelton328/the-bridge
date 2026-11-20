@@ -8,7 +8,7 @@
 // box each sit in a library `ChatColumn`, so on a wide screen they keep one readable column in the middle and line
 // up (R1); the panel and the pages of the Figma frames are narrower than it, so there they fill. Props only.
 import { ChatColumn, Composer, ScrollFrame, Stack } from '@eshelton328/component-library-1701'
-import type { ReactNode } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { draftProps, type InboxDiscussion, type InboxDrafts } from '../types.ts'
 import { DiscussionEmpty } from './DiscussionEmpty.tsx'
@@ -33,6 +33,8 @@ export type DiscussionThreadProps = {
   className?: string | undefined
   /** A class for the frame's root, such as the page's padding. */
   frameClassName?: string | undefined
+  /** The space under the reply box off the keyboard, such as the page's (`compactChatFoot`); none on the keyboard. */
+  foot?: ComponentProps<typeof ScrollFrame>['foot']
   /** The empty state sits in the middle of the column (the desktop panel, D14) rather than at its top (T17). */
   centred?: boolean | undefined
   /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
@@ -54,6 +56,7 @@ export function DiscussionThread({
   control,
   className,
   frameClassName,
+  foot,
   centred = true,
   drafts,
   stacked = false,
@@ -66,6 +69,7 @@ export function DiscussionThread({
   return (
     <ScrollFrame
       className={frameClassName}
+      foot={foot}
       gap={gap}
       bodyClassName={bodyGap[gap]}
       header={header}

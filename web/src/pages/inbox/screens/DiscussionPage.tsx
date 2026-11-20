@@ -15,7 +15,7 @@ import {
   TruncatedText,
 } from '@eshelton328/component-library-1701'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { compactChatPadding } from '../../../lib/compactPadding.ts'
+import { compactChatFoot, compactChatPadding } from '../../../lib/compactPadding.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DiscussionGuard } from '../blocks/DiscussionGuard.tsx'
 import { DiscussionThread } from '../blocks/DiscussionThread.tsx'
@@ -67,6 +67,7 @@ export function DiscussionPage({
     // bottom (d-107).
     <DiscussionThread
       frameClassName={compactChatPadding[layout === 'tablet' ? 'tablet' : 'phone']}
+      foot={compactChatFoot[layout === 'tablet' ? 'tablet' : 'phone']}
       discussion={discussion}
       control={control}
       centred={false}
