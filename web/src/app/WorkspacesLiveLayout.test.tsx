@@ -9,6 +9,7 @@ import { clearReports, getReports } from '../errors/reporter.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
+import { fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -42,6 +43,8 @@ const tokens = chatOf('c4', 'theme tokens')
 const drift = chatOf('c5', 'drift check', 'codex')
 const evals = chatOf('c6', 'eval round')
 const chats = [plan, review, logs, tokens, drift, evals]
+/** The one entry of plan's transcript. */
+const planEntry = 'Plan the slice from the contract'
 
 const summary = (c: Chat) => ({
   id: `mac-mini/${c.local}`,
@@ -110,11 +113,16 @@ function fakeServer(listed: readonly Chat[], first: Partial<Record<string, () =>
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
   const layoutReads: string[] = []
   const listReads: string[] = []
+  // Each Claude chat's transcript (slice 3b): the contract-checked fake, with one entry for plan.
+  const transcripts = fakeTranscriptServer()
+  transcripts.set(`mac-mini/${plan.local}`, [{ type: 'user', id: 'u1', text: planEntry, cut: false }])
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      const transcript = transcripts.handle(path, init)
+      if (transcript !== undefined) return Promise.resolve(transcript)
       const layout = /^\/api\/workspaces\/([^/]+)\/layout$/.exec(path)
       if (layout) {
         const id = decodeURIComponent(layout[1] ?? '')
@@ -543,7 +551,7 @@ describe('the herdr layout on the phone and the tablet, and with the fixtures (s
       expect(drawn()).toEqual([])
       await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
       await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
-      await expect.element(page.getByText('Transcript not live yet')).toBeVisible()
+      await expect.element(page.getByText(planEntry)).toBeVisible()
       expect(drawn()).toEqual([])
     })
 

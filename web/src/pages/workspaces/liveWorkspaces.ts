@@ -2,8 +2,10 @@
 // and `?source=live`: the workspaces and chats from the-bridge server,
 // through the Hono RPC client and the query client, mapped to the page's
 // view model and put on its home state. Each chat is a pane with no sample
-// text: a chat's transcript and a shell's terminal say they are not live yet
-// until the slice that brings them lands. When the read misses in a way the
+// text: a shell's terminal and a Codex chat's transcript say they are not
+// live yet until the slice that brings them lands, and a Claude chat's pane
+// names its server chat ID (`liveChat`), whose transcript liveTranscript.ts
+// reads while the pane shows (slice 3b). When the read misses in a way the
 // page expects (the server cannot be reached, refuses this viewer or answers
 // an error status), the page shows no workspaces, never the sample ones, and
 // says why in a notice with Retry over every layout and in the status bar.
@@ -124,7 +126,10 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
 
-/** What a live chat's transcript and a live shell's terminal show until the slice that brings them lands (d-117). */
+/**
+ * What a live shell's terminal, a live Codex chat's transcript and a live chat's composer show until the slice that
+ * brings them lands (d-117). The server reads only a Claude chat's transcript (slice 3b).
+ */
 const notLiveText = {
   transcript: 'Transcript not live yet',
   terminal: 'Terminal not live yet',
@@ -132,10 +137,12 @@ const notLiveText = {
 } as const
 
 /**
- * A pane for each live chat, with its header from the sidebar row and no sample text: a chat's transcript and a
- * shell's terminal say they are not live yet, and a chat's composer is disabled and says sending is not live yet.
+ * A pane for each live chat, with its header from the sidebar row and no sample text: a shell's terminal and a Codex
+ * chat's transcript say they are not live yet, and a chat's composer is disabled and says sending is not live yet. A
+ * Claude chat's pane has no entries and names its server chat ID, `<machine>/<local>` (`liveChat`), so the page reads
+ * its transcript while the pane shows (liveTranscript.ts); a Codex chat's pane names none, so the page reads nothing.
  */
-export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
+export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
     (w.chats ?? []).map((chat): WorkbenchPane => {
       const head = {
@@ -159,7 +166,7 @@ export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
           running: false,
           notLive: notLiveText.sending,
         },
-        notLive: notLiveText.transcript,
+        ...(chat.kind === 'claude' ? { liveChat: `${machine}/${chat.id}` } : { notLive: notLiveText.transcript }),
       }
     }),
   )
@@ -186,9 +193,10 @@ const focusOf = (ids: readonly string[], panes: readonly WorkbenchPane[]) =>
 function liveOnly(
   state: WorkspacesScreenState,
   workspaces: Workspace[],
+  machine = '',
   herdr: ReadonlyMap<string, WorkspaceLayout> = new Map(),
 ): WorkspacesScreenState {
-  const panes = livePanes(workspaces)
+  const panes = livePanes(workspaces, machine)
   const data = state.data
   const layouts = Object.fromEntries(
     workspaces.map((w): [string, WorkspaceLayout] => {
@@ -318,7 +326,7 @@ type Answer = {
  * refuses throws. `signal` ends the read: on its timeout the read is a `timeout` miss; on any other abort, such as the
  * owner leaving the page, it throws the abort.
  */
-async function readChecked<T>(
+export async function readChecked<T>(
   call: (signal: AbortSignal) => Promise<Answer>,
   parse: (body: unknown) => T,
   signal: AbortSignal,
@@ -515,10 +523,10 @@ export type WatchDeps = {
 }
 
 /** One server-sent event: its name and its data. */
-type Frame = { readonly event: string; readonly data: string; readonly retry: number | undefined }
+export type Frame = { readonly event: string; readonly data: string; readonly retry: number | undefined }
 
 /** The SSE frames of `body` as they come; comment lines (the server's pings) give none. */
-async function* frames(body: ReadableStream<Uint8Array>): AsyncGenerator<Frame> {
+export async function* frames(body: ReadableStream<Uint8Array>): AsyncGenerator<Frame> {
   const decoder = new TextDecoder()
   const reader = body.getReader()
   let text = ''
@@ -567,7 +575,7 @@ function withStatus(
 }
 
 /** The JSON in `text`, or undefined when it is not JSON. */
-function readJson(text: string): unknown {
+export function readJson(text: string): unknown {
   try {
     return JSON.parse(text)
   } catch {
@@ -762,7 +770,7 @@ export async function withLiveWorkspaces(
   const workspaces = toWorkspaces(response)
   const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
   noteLayoutMiss(herdr.missed)
-  const live = liveOnly(state, workspaces, herdr.layouts)
+  const live = liveOnly(state, workspaces, response.machine, herdr.layouts)
   const alert = stopped ?? lost
   const hints = herdr.missed === undefined ? live.data.status.hints : [layoutMissLine, ...live.data.status.hints]
   return {

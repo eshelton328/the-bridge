@@ -60,16 +60,18 @@ export type PaneHead = z.infer<typeof PaneHead>
 
 /** One entry of a chat's transcript, a union on `type`. */
 export const ChatEntry = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('user'), text: z.string() }),
+  /** The owner's message; `cut` is the line under text the server cut, such as "Cut — full text not live yet". */
+  z.object({ type: z.literal('user'), text: z.string(), cut: z.string().optional() }),
   /** A tool call; `running` draws its dot in the running colour, as the call still runs (M12 147:383). */
   z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), running: z.boolean().optional() }),
-  /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). */
+  /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). `cut` as for `user`. */
   z.object({
     type: z.literal('assistant'),
     kind: AgentKind,
     name: z.string(),
     text: z.string(),
     copy: z.string().optional(),
+    cut: z.string().optional(),
   }),
   /**
    * A line that records what happened to the chat, such as where a fork starts (D16 417:718): a done dot and the
@@ -129,6 +131,20 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     composer: ComposerState,
     /** A live chat (d-117): the text in place of its transcript, such as "Transcript not live yet"; none when not set. */
     notLive: z.string().optional(),
+    /**
+     * A live chat (slice 3b): its server chat ID, such as "mac-mini/c1". While the pane shows, the page reads its
+     * transcript into `entries` (liveTranscript.ts); a fixture's chat has none.
+     */
+    liveChat: z.string().optional(),
+    /** The line over the entries when the transcript has older entries than it shows, such as "Earlier entries not live yet". */
+    earlier: z.string().optional(),
+    /** The line in place of the entries when a read transcript has none, such as "No messages yet". */
+    empty: z.string().optional(),
+    /**
+     * The line under the entries, with Retry, when the transcript's read or its updates failed, such as "Transcript not
+     * live — unreachable"; none when not set.
+     */
+    problem: z.string().optional(),
   }),
   z.object({
     type: z.literal('shell'),

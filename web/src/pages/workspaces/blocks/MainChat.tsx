@@ -7,7 +7,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
-import { ChatPane } from './ChatPane.tsx'
+import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
 import { withDraft } from './chatDraft.ts'
 
 // The detail slot is a flex column; the chat fills it.
@@ -44,6 +44,8 @@ export type MainChatProps = {
   onTextChange?: ((text: string) => void) | undefined
   /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<boolean>) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
 }
 
 export function MainChat(props: MainChatProps) {
@@ -62,6 +64,7 @@ export function MainChat(props: MainChatProps) {
     draft,
     onTextChange,
     onSend,
+    transcripts,
   } = props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
@@ -85,6 +88,11 @@ export function MainChat(props: MainChatProps) {
         }}
         entries={pane.entries}
         notLive={pane.notLive}
+        liveChat={pane.liveChat}
+        transcripts={transcripts}
+        earlier={pane.earlier}
+        empty={pane.empty}
+        problem={pane.problem}
         composer={withDraft(pane.composer, draft)}
         onTextChange={onTextChange}
         onSend={onSend}

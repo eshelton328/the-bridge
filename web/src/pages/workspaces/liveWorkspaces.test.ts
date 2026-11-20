@@ -225,7 +225,7 @@ describe('withLiveWorkspaces', () => {
     })
     expect(state.data.workspaces).toEqual(toWorkspaces(response))
     expect(state.data.current).toBe('omni-brain')
-    expect(state.data.panes).toEqual(livePanes(toWorkspaces(response)))
+    expect(state.data.panes).toEqual(livePanes(toWorkspaces(response), response.machine))
     expect(state.ui.focusedPane).toBe('bridge-themes')
     expect(checkState(WorkspacesState, state).ok).toBe(true)
   })
@@ -247,7 +247,7 @@ describe('withLiveWorkspaces', () => {
     })
   })
 
-  it('gives each live chat a pane with no sample text: its transcript and terminal are not live yet (d-117)', async () => {
+  it("gives each live chat a pane with no sample text: a shell's terminal and a Codex transcript are not live yet, a Claude transcript is read by its chat ID", async () => {
     const state = await withLiveWorkspaces(workspacesHome, {
       fetchLayout: noLayout,
       client: client(),
@@ -259,7 +259,15 @@ describe('withLiveWorkspaces', () => {
       if (pane.type === 'chat') {
         expect(pane.entries).toEqual([])
         expect(pane.composer.text).toBe('')
-        expect(pane.notLive).toBe('Transcript not live yet')
+        if (pane.head.kind === 'claude') {
+          // The page reads a Claude chat's transcript while the pane shows (liveTranscript.ts), by its server chat ID.
+          expect(pane.notLive).toBeUndefined()
+          expect(pane.liveChat).toBe(`${response.machine}/${pane.id}`)
+        } else {
+          // The server reads no Codex transcript yet: the pane says so and the page reads nothing.
+          expect(pane.notLive).toBe('Transcript not live yet')
+          expect(pane.liveChat).toBeUndefined()
+        }
       } else if (pane.type === 'shell') {
         expect(pane.lines).toEqual([])
         expect(pane.notLive).toBe('Terminal not live yet')

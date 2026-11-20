@@ -48,6 +48,7 @@ import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
+import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
@@ -65,6 +66,8 @@ export type WorkspacesScreenProps = {
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
   onRetry?: (() => void) | undefined
+  /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
+  transcripts?: TranscriptWatch | undefined
 }
 
 export function WorkspacesScreen({
@@ -75,6 +78,7 @@ export function WorkspacesScreen({
   onUiChange,
   onSend,
   onRetry,
+  transcripts,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -119,6 +123,7 @@ export function WorkspacesScreen({
           viewport={viewport}
           onNavigate={onNavigate}
           onSend={onSend}
+          transcripts={transcripts}
           change={change}
           draft={draft}
           notice={notice}
@@ -144,6 +149,7 @@ function WorkspacesLayout({
   viewport,
   onNavigate,
   onSend,
+  transcripts,
   change,
   draft,
   notice,
@@ -184,6 +190,7 @@ function WorkspacesLayout({
         onUiChange={change}
         onDraftChange={draft}
         onSend={onSend}
+        transcripts={transcripts}
         notice={notice}
       />
     )
@@ -342,6 +349,7 @@ function WorkspacesLayout({
                   onDraftChange={draft}
                   toggle={false}
                   onSend={onSend}
+                  transcripts={transcripts}
                 />
               </SlotBoundary>
             ) : (
@@ -381,6 +389,7 @@ function WorkspacesLayout({
                     draft(chat.id, text)
                   }}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
+                  transcripts={transcripts}
                   rename={rename}
                   above={toast}
                   overlay={dropZone}
@@ -439,6 +448,7 @@ function WorkspacesLayout({
               onDraftChange={draft}
               toggle
               onSend={onSend}
+              transcripts={transcripts}
               notice={notice}
             />
           </SlotBoundary>
