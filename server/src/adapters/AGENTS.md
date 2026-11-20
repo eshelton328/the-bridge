@@ -37,6 +37,9 @@ client of a socket or a file sits beside them.
   chat stops working, with no write to the file. Before the folder
   exists it watches the projects folder for it; a watch that fails ends
   the stream as `unreachable`.
+- A Claude chat's `contextUsed` is its last request's input and cache
+  tokens over the model's context window; a model that `sessionFile.ts`
+  has no window for gets `null` (`sessionFile.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
