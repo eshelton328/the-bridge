@@ -13,7 +13,8 @@
 // folders chip in the chat's header opens, with the folder picker
 // (`ui.folderPickerOpen`) under the folders. M9 is a chat held in the list:
 // its actions open in the same sheet (`ui.menuFor`, PhoneChatActions with
-// `data.phone.rowMenu`) and its row lifts over the scrim. M10 is the chat
+// `data.phone.rowMenu`) and its row lifts over the scrim; an action that acts
+// in the chat opens the chat and runs there, as from M4. M10 is the chat
 // with the keyboard up (`ui.keyboardOpen`): its header shrinks to one line.
 // M11 is New chat with the keyboard up: the name has the focus and the start
 // bar keeps Start chat alone. M12 is a subagent's full transcript
@@ -259,6 +260,15 @@ export function WorkspacesPhone({
     if (action === 'subagents' && data.subagents !== undefined)
       onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })
   }
+  // M9: the chats with a pane to show. An action picked in a held row's sheet that acts in the chat (Rename, Fork,
+  // Side chat, Subtask, Subagents) opens that chat and runs there, as from the chat's own ⋯ (M4).
+  const openable = data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))
+  const inChatActions: readonly string[] = ['rename', 'fork', 'sideChat', 'subtask', 'subagents']
+  const pickHeldAction = (chatId: string, action: string) => {
+    if (!openable.includes(chatId) || !inChatActions.includes(action)) return
+    onUiChange({ focusedPane: chatId, phoneView: 'chat' })
+    pickChatAction(action)
+  }
   if (chat !== undefined)
     return (
       <Backdrop size={device}>
@@ -502,7 +512,7 @@ export function WorkspacesPhone({
             text={text}
             workspaces={data.workspaces}
             selected={ui.focusedPane}
-            openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
+            openable={openable}
             ui={ui}
             onUiChange={onUiChange}
             onAdd={add}
@@ -530,6 +540,9 @@ export function WorkspacesPhone({
             onUiChange({ moveTarget })
           }}
           highlight={ui.menuHighlight}
+          onSelect={(action) => {
+            pickHeldAction(held.chat.id, action)
+          }}
           layers={data.layers?.sheetIcons}
           lifted={{
             content: (

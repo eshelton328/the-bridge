@@ -247,4 +247,20 @@ describe('a chat held in the home list, on the owner path at 390 x 844', () => {
     await expectHomeLifted(at)
     await tapScrim()
   })
+  it('runs a picked action in the held chat: Rename opens the chat with its name as a field', async () => {
+    await page.viewport(390, 844)
+    view = await renderRoute('/workspaces')
+    // bridge themes has a pane to show (the mock's only openable chat), so its actions can run in it.
+    await expect.poll(() => document.querySelector('[data-figma="105:2350"]')).not.toBeNull()
+    const row = document.querySelector('[data-figma="105:2350"]')
+    if (!(row instanceof HTMLElement)) throw new Error('no bridge themes row')
+    await press(row, 700)
+    const sheet = page.getByRole('dialog', { name: 'bridge themes' })
+    await expect.element(sheet).toBeVisible()
+    await userEvent.click(sheet.getByText('Rename', { exact: true }))
+    await expect.element(sheet).not.toBeInTheDocument()
+    // The chat fills the screen: its back button (labelled with the list's title in the home) and its name as a field.
+    await expect.element(page.getByRole('button', { name: 'Workspaces', exact: true })).toBeVisible()
+    await expect.element(page.getByRole('searchbox', { name: 'Rename bridge themes' })).toBeVisible()
+  })
 })
