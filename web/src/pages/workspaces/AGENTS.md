@@ -11,7 +11,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   shows the home's sample data, and a `?state=` its fixture state.
   `liveWorkspaces.ts` maps the server's workspaces, with a pane for each
   chat whose transcript or terminal says it is not live yet
-  (`blocks/NotLive.tsx`). On an expected miss the page shows no
+  (`blocks/NotLive.tsx`). A live chat's composer is disabled and says
+  "Sending not live yet" (`composer.notLive`), so no message goes to the
+  store's `send`, which goes nowhere. On an expected miss the page shows no
   workspaces, never the sample ones, and `blocks/LiveNotice.tsx` with
   Retry in every layout; any other error goes to RouteError
   (`app/WorkspacesLiveDefault.test.tsx`).
