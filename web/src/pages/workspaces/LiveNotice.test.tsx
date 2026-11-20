@@ -18,10 +18,10 @@ import type { WorkspacesData, WorkspacesUi } from './types.ts'
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
-const title = 'Live data unavailable — showing sample data'
+const title = 'Live data unavailable — no workspaces shown'
 const liveNotice = {
   title,
-  description: 'The-bridge server did not answer (502). Start it or check the tailnet, then reload.',
+  description: 'The-bridge server did not answer (502). Start it or check the tailnet, then retry.',
 }
 
 let view: { unmount: () => Promise<void> } | undefined
@@ -53,9 +53,7 @@ describe('the live-unavailable notice', () => {
       const notice = page.getByRole('alert').filter({ hasText: title })
       await expect.element(notice).toBeVisible()
       await expect
-        .element(
-          notice.getByText('The-bridge server did not answer (502). Start it or check the tailnet, then reload.'),
-        )
+        .element(notice.getByText('The-bridge server did not answer (502). Start it or check the tailnet, then retry.'))
         .toBeVisible()
       await userEvent.click(page.getByRole('button', { name: 'Dismiss' }))
       await expect.element(page.getByText(title)).not.toBeInTheDocument()

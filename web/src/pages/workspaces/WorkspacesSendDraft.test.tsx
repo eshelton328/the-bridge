@@ -21,7 +21,8 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 const chatName = 'bridge themes'
 
-function renderAt(path = '/workspaces') {
+// The home's sample chats (?source=fixtures): in development the home reads the live source (d-117).
+function renderAt(path = '/workspaces?source=fixtures') {
   const root = createRootRoute()
   const workspaces = createRoute({
     getParentRoute: () => root,

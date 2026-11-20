@@ -123,6 +123,7 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
             key={pane.id}
             figma={layers}
             entries={pane.entries}
+            notLive={pane.notLive}
             composer={withDraft(pane.composer, ui.drafts?.[pane.id])}
             onTextChange={(text) => {
               onDraftChange(pane.id, text)
@@ -148,7 +149,13 @@ export function WorkbenchPanes({ data, ui, onUiChange, onClosePane, onDraftChang
             }
           />
         ) : (
-          <ShellPane label={pane.head.title} lines={pane.lines} prompt={pane.prompt} figma={data.layers?.shell} />
+          <ShellPane
+            label={pane.head.title}
+            lines={pane.lines}
+            prompt={pane.prompt}
+            notLive={pane.notLive}
+            figma={data.layers?.shell}
+          />
         )}
       </PaneFrame>
     )

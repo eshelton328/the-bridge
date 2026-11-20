@@ -117,3 +117,38 @@ export function closeShownPane(data: WorkspacesData, ui: WorkspacesUi, pane: str
     resize: null,
   }
 }
+
+/** The most panes a workspace's split draws (the library's `SplitPanes`). */
+export const maxPanes = 4
+
+/** The workspace that lists `chat` in the sidebar, or none. */
+const ownerOf = (data: WorkspacesData, chat: string) => data.workspaces.find((w) => w.chats?.some((c) => c.id === chat))
+
+/**
+ * The chats a sidebar row can open alone: the chat panes of the shown workspace, and those of the state's own panes,
+ * which a live state gives every chat of every workspace (d-117).
+ */
+export function openableChats(data: WorkspacesData, ui: WorkspacesUi): string[] {
+  const shown = shownView(data, ui).data.panes
+  return [...new Set([...shown, ...data.panes].flatMap((p) => (p.type === 'chat' ? [p.id] : [])))]
+}
+
+/**
+ * The ui change of a sidebar row picked: its chat shows alone, focused. A chat of another workspace switches to that
+ * workspace first (`switchTo`), and a chat its workspace's layout does not hold goes first in it, within `maxPanes`.
+ */
+export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): Partial<WorkspacesUi> {
+  const shown = shownWorkspace(data, ui)
+  // A chat the shown workspace's panes hold shows at once, as a row always has.
+  if (shown !== null && layoutOf(data, ui, shown).panes.includes(chat)) return { focusedPane: chat }
+  const owner = ownerOf(data, chat)?.id
+  if (owner === undefined) return { focusedPane: chat }
+  const change = owner === shown ? {} : switchTo(data, ui, owner)
+  const layout = layoutOf(data, ui, owner)
+  const panes = layout.panes.includes(chat) ? layout.panes : [chat, ...layout.panes].slice(0, maxPanes)
+  return {
+    ...change,
+    layouts: { ...(change.layouts ?? ui.layouts), [owner]: { ...layout, panes, focusedPane: chat } },
+    focusedPane: chat,
+  }
+}

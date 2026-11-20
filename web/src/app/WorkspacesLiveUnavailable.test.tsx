@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { page, userEvent } from 'vitest/browser'
+import { page } from 'vitest/browser'
 import { clearReports } from '../errors/reporter.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
@@ -13,8 +13,8 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 
-// /workspaces?source=live on the phone (audit W-2): when the live read
-// misses, the page shows its sample data with a notice in the page itself;
+// /workspaces?source=live on the phone (audit W-2, d-117): when the live read
+// misses, the page shows no workspaces, with a notice and Retry in the page;
 // a reply the contract refuses is a bug, so the route shows RouteError.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
@@ -53,29 +53,18 @@ async function openLive() {
 }
 
 describe('the live Workspaces page on the phone', () => {
-  it('shows the live-unavailable notice on the phone list and in a chat the owner taps, with the server down', async () => {
+  it('shows the live-unavailable notice on the phone list, with no sample workspace, with the server down', async () => {
     answer('', 502)
     await openLive()
-    const notice = () => page.getByRole('alert').filter({ hasText: 'Live data unavailable — showing sample data' })
-    // The list.
+    const notice = () => page.getByRole('alert').filter({ hasText: 'Live data unavailable — no workspaces shown' })
     await expect.element(notice()).toBeVisible()
     await expect
-      .element(
-        notice().getByText('The-bridge server did not answer (502). Start it or check the tailnet, then reload.'),
-      )
+      .element(notice().getByText('The-bridge server did not answer (502). Start it or check the tailnet, then retry.'))
       .toBeVisible()
-    await expect.element(page.getByText('release notes')).toBeVisible()
-    // A tap on a chat opens it, as the owner does on the phone; the notice stays.
-    await userEvent.click(page.getByRole('button', { name: 'bridge themes', exact: true }))
-    // The chat fills the screen: its heading and its back button, which the home's labels name "Workspaces".
-    const back = page.getByRole('button', { name: 'Workspaces', exact: true })
-    await expect.element(page.getByRole('heading', { name: 'bridge themes' })).toBeVisible()
-    await expect.element(back).toBeVisible()
-    await expect.element(notice()).toBeVisible()
-    // Back to the list: still there.
-    await userEvent.click(back)
-    await expect.element(page.getByText('release notes')).toBeVisible()
-    await expect.element(notice()).toBeVisible()
+    await expect.element(notice().getByRole('button', { name: 'Retry' })).toBeVisible()
+    await expect.element(page.getByRole('heading', { name: 'Workspaces' })).toBeVisible()
+    await expect.element(page.getByText('release notes')).not.toBeInTheDocument()
+    await expect.element(page.getByText('bridge themes')).not.toBeInTheDocument()
   })
 
   it('shows RouteError, not the sample data, when a 200 reply does not match the contract', async () => {
@@ -86,7 +75,7 @@ describe('the live Workspaces page on the phone', () => {
     await openLive()
     await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
     await expect.element(page.getByText('release notes')).not.toBeInTheDocument()
-    await expect.element(page.getByText('Live data unavailable — showing sample data')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Live data unavailable — no workspaces shown')).not.toBeInTheDocument()
   })
 
   it('shows an empty list, with no sample workspace and no notice, when the server has no workspaces (P-3)', async () => {
@@ -96,6 +85,6 @@ describe('the live Workspaces page on the phone', () => {
     await expect.element(page.getByText('release notes')).not.toBeInTheDocument()
     await expect.element(page.getByText('omni-brain')).not.toBeInTheDocument()
     await expect.element(page.getByText('This page failed to load')).not.toBeInTheDocument()
-    await expect.element(page.getByText('Live data unavailable — showing sample data')).not.toBeInTheDocument()
+    await expect.element(page.getByText('Live data unavailable — no workspaces shown')).not.toBeInTheDocument()
   })
 })

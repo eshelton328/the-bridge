@@ -31,7 +31,8 @@ const sizes = [
 ]
 
 describe('the document never scrolls', () => {
-  for (const path of ['/inbox', '/workspaces', '/artifacts', '/toolkit']) {
+  // The Workspaces home reads the live source in development (d-117); its sample data needs no server.
+  for (const path of ['/inbox', '/workspaces?source=fixtures', '/artifacts', '/toolkit']) {
     for (const size of sizes) {
       it(`on ${path} at the ${size.name} size (${String(size.width)} x ${String(size.height)})`, async () => {
         await page.viewport(size.width, size.height)

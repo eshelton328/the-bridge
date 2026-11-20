@@ -23,7 +23,8 @@
 // and at a tablet's width too when it has `tabletList` (T1); every other
 // width, and a state without them, draws the desktop layout. With
 // `liveNotice` (the live source could not be read) each layout draws the
-// notice at the top of its content until the owner dismisses it (LiveNotice).
+// notice at the top of its content until the owner dismisses it, with Retry
+// when the page passes `onRetry` (LiveNotice).
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
@@ -46,7 +47,7 @@ import { PaneDropZone } from '../blocks/PaneDropZone.tsx'
 import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
-import { shownView } from '../blocks/workspaceLayout.ts'
+import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 
@@ -61,6 +62,8 @@ export type WorkspacesScreenProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /** Reads the live source again: the live-unavailable notice's Retry. */
+  onRetry?: (() => void) | undefined
 }
 
 export function WorkspacesScreen({
@@ -70,6 +73,7 @@ export function WorkspacesScreen({
   onNavigate,
   onUiChange,
   onSend,
+  onRetry,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -100,6 +104,7 @@ export function WorkspacesScreen({
         onDismiss={() => {
           setDismissed(shownNotice)
         }}
+        onRetry={onRetry}
       />
     )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
@@ -122,7 +127,7 @@ export function WorkspacesScreen({
   )
 }
 
-type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange'> & {
+type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange' | 'onRetry'> & {
   layout: Viewport
   change: (next: Partial<WorkspacesUi>) => void
   /** Sets one chat's draft, merged into the latest drafts. */
@@ -193,7 +198,10 @@ function WorkspacesLayout({
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.
   const focused = shown.panes.find((p) => p.id === ui.focusedPane)
   const chat = focused?.type === 'chat' ? focused : undefined
-  if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined)) {
+  // With no workspace (an empty or failed live read, d-117) the sidebar still shows, with the notice at its top: the
+  // workbench's tabs have no workspace to draw it in.
+  const empty = workspaces.length === 0
+  if (ui.sidebar === true && data.sidebar !== undefined && (ui.workbench === true || chat !== undefined || empty)) {
     const menuOpen = ui.menuFor === chat?.id
     const chatMenu =
       data.chatMenu === undefined || chat === undefined ? undefined : (
@@ -308,7 +316,10 @@ function WorkspacesLayout({
               text={data.sidebar}
               workspaces={workspaces}
               selected={ui.focusedPane}
-              openable={shown.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
+              openable={openableChats(named, ui)}
+              onSelect={(picked) => {
+                change(openChat(named, ui, picked))
+              }}
               ui={ui}
               onUiChange={change}
               layers={data.layers}

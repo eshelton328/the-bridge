@@ -25,6 +25,8 @@ export type WorkspaceSidebarProps = {
   layers?: SidebarLayers | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
   notice?: ReactNode
+  /** Opens a chat's row; `onUiChange` with the chat focused when not set. */
+  onSelect?: ((chat: string) => void) | undefined
 }
 
 const fill = (template: string, values: Record<string, string>) =>
@@ -39,6 +41,7 @@ export function WorkspaceSidebar({
   onUiChange,
   layers,
   notice,
+  onSelect = (chat) => onUiChange?.({ focusedPane: chat }),
 }: WorkspaceSidebarProps) {
   const collapsed = ui.collapsed ?? []
   const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.drag?.chat)
@@ -59,7 +62,7 @@ export function WorkspaceSidebar({
           counts={text.counts}
           grip={text.grip}
           moving={ui.paneDrag?.chat}
-          onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
+          onSelect={onSelect}
           drop={
             dragged !== undefined && ui.drag?.over === w.id
               ? { chat: dragged, hint: fill(text.dropHint, { chat: dragged.title, workspace: w.label }) }

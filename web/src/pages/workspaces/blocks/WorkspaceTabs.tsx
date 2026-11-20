@@ -52,7 +52,7 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
       onSend={onSend}
     />
   )
-  return (
+  const workbench = (
     <Workbench
       // No workspace (an empty live list): no tab is selected.
       value={shown ?? undefined}
@@ -105,5 +105,13 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
       hints={data.status.hints}
       alert={data.status.alert}
     />
+  )
+  // No workspace (an empty or failed live read, d-117): no tab can hold the notice, so it sits over the workbench.
+  if (data.workspaces.length > 0 || notice === undefined) return workbench
+  return (
+    <div className={withNotice}>
+      {notice}
+      <div className={panesSlot}>{workbench}</div>
+    </div>
   )
 }

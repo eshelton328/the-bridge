@@ -160,6 +160,7 @@ export function PhoneChat(props: PhoneChatProps) {
       label={pane.head.title}
       figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
       entries={pane.entries}
+      notLive={pane.notLive}
       composer={withDraft(pane.composer, draft)}
       onTextChange={onTextChange}
       onSend={onSend}
