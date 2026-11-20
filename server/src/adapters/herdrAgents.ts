@@ -227,6 +227,8 @@ export type HerdrAgentsOptions = {
   readonly machine: MachineId
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** Starts a file system watch; a test can give one that loses events, as a macOS folder watch can. */
+  readonly watch?: (path: string, listener: (event: string, name: string | null) => void) => FSWatcher
   /** The owner's home folder: a transcript shows a path in it with "~". */
   readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
@@ -236,7 +238,14 @@ export type HerdrAgentsOptions = {
 /** A Claude session ID that is safe in a file name: no slash and no dot. */
 const sessionName = /^[A-Za-z0-9_-]{1,100}$/
 
-export function createHerdrAgents({ socket, machine, claudeProjects, home, log }: HerdrAgentsOptions): AgentPort {
+export function createHerdrAgents({
+  socket,
+  machine,
+  claudeProjects,
+  home,
+  log,
+  watch: watchFs = (path, listener) => watch(path, listener),
+}: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
   const statusOf = (status: string): ChatStatus => {
@@ -482,7 +491,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
       const watchFile = (path: string) => {
         const folder = dirname(path)
         try {
-          watcher = watch(folder, (_, name) => {
+          watcher = watchFs(folder, (_, name) => {
             if (name === basename(path)) tell()
           })
           watcher.on('error', failed)
@@ -491,7 +500,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
           // No folder yet.
         }
         try {
-          watcher = watch(dirname(folder), (_, name) => {
+          watcher = watchFs(dirname(folder), (_, name) => {
             if (over || name !== basename(folder)) return
             watcher?.close()
             watchFile(path)
