@@ -6,6 +6,7 @@
 // a server with the read and no stream route yet (backend 3b-2 alone): the
 // stream answers 404 not-found, as Hono does for an unknown route.
 import {
+  ErrorBody,
   maxTranscriptEntries,
   TranscriptChangedEvent,
   type TranscriptEntry,
@@ -104,6 +105,19 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
       for (const s of open.filter((o) => o.chat === chat)) {
         open.splice(open.indexOf(s), 1)
         s.control.error(new TypeError('network error'))
+      }
+    },
+    /**
+     * Ends each open stream of `chat` as the server does when its herdr watch fails (backend 3b-3): one `error` event
+     * with an ErrorBody of `kind`, then the end of the stream.
+     */
+    fail: (chat: string, kind: 'herdr-unavailable' | 'herdr-bad-reply' | 'internal' = 'herdr-unavailable') => {
+      const body = ErrorBody.parse({ error: { kind, message: 'herdr stopped answering', requestId: 'r-watch' } })
+      const text = `event: error\ndata: ${JSON.stringify(body)}\n\n`
+      for (const s of open.filter((o) => o.chat === chat)) {
+        open.splice(open.indexOf(s), 1)
+        s.control.enqueue(encoder.encode(text))
+        s.control.close()
       }
     },
     /** Answers each read with `answer` until it is set to undefined. */

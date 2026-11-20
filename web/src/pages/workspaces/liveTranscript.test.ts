@@ -105,6 +105,20 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it("applies a status change's tool entries in place: a running tool stops, and no entry is added", async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go'), tool('t1', true, 'pnpm test'), tool('t2', true, 'pnpm lint')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1', 't1', 't2'])
+    // The chat stops working: the server sends the changed tool entries with running false (backend 3b-3).
+    server.push(chat, [tool('t1', false, 'pnpm test'), tool('t2', false, 'pnpm lint')])
+    await expect
+      .poll(() => view()?.entries.map((e) => (e.type === 'tool' ? e.running : undefined)))
+      .toEqual([undefined, false, false])
+    expect(ids()).toEqual(['u1', 't1', 't2'])
+    expect(view()?.problem).toBeUndefined()
+  })
+
   it('applies an event that came before the read answered after the read', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])
@@ -133,6 +147,37 @@ describe('watchTranscript', () => {
     expect(getReports().map((r) => r.error.message)).toEqual([
       'A chat transcript stream missed: ended (chat mac-mini/c1)',
     ])
+  })
+
+  it('shows a failed watch (an error event) as one outage: the line while it connects again, a read, one report', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    // The first connection after the error event fails too: still the same outage.
+    server.answerStreams(
+      () =>
+        new Response(
+          JSON.stringify({ error: { kind: 'herdr-unavailable', message: 'herdr is down', requestId: 'r-5' } }),
+          { status: 503 },
+        ),
+    )
+    server.fail(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    expect(ids()).toEqual(['u1'])
+    await expect.poll(() => server.opens.length).toBeGreaterThanOrEqual(2)
+    server.answerStreams(undefined)
+    server.set(chat, [user('u1', 'go'), reply('a1', 'after the outage')])
+    await expect.poll(ids).toEqual(['u1', 'a1'])
+    expect(view()?.problem).toBeUndefined()
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    expect(getReports()).toHaveLength(1)
+    expect(getReports()[0]?.error.message).toBe(
+      'A chat transcript stream missed: ended herdr-unavailable (chat mac-mini/c1)',
+    )
+    // A later failure is a new outage, with its own report.
+    server.fail(chat)
+    await expect.poll(() => getReports().length).toBe(2)
   })
 
   it('marks a transcript with earlier entries and keeps it marked once the cap drops one', async () => {
