@@ -44,6 +44,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).
   Fixture chats keep their scroll, so the fidelity frames do not move.
+- A message's and a reply's text renders as Markdown in the library's
+  `MarkdownView`, as the Inbox detail draws its text
+  (`blocks/EntryText.tsx`): HTML in the text stays text, a link keeps
+  only a safe URL, and an image shows its alt text.
 - A stacked pane is never lower than its header and composer
   (`blocks/paneFloors.ts`, measured, as no library token gives that
   height); the room comes from the largest pane.

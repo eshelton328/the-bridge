@@ -33,6 +33,7 @@ catalog:
   "@tanstack/eslint-plugin-router": 1.162.0
   zustand: 5.1.0
   react-error-boundary: 6.1.6
+  react-markdown: 10.1.0
   zod: 4.6.7
   hono: 4.13.19
   "@hono/node-server": 2.1.9

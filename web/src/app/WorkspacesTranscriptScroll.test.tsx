@@ -284,3 +284,28 @@ describe("a live chat's transcript scroll", () => {
     expect(planPane.scrollTop).toBe(0)
   })
 })
+
+describe("a live chat's Markdown", () => {
+  it('renders **bold** as strong text, keeps HTML as text and drops a javascript: link, on the phone', async () => {
+    const server = fakeTranscriptServer()
+    server.set(plan, [
+      user('u1', 'Make **this** bold and keep <b>x</b> as text'),
+      reply('a1', 'The **build** passes. [Run it](javascript:alert(1)) or see [the log](https://example.com/log).'),
+    ])
+    fakeServer(server)
+    await tapWorkspaces([390, 844])
+    await tapChat('plan the slice')
+    const chat = page.getByRole('region', { name: 'plan the slice' })
+    await expect.element(chat.getByText('build', { exact: true })).toBeVisible()
+    const region = chat.element()
+    expect([...region.querySelectorAll('strong')].map((el) => el.textContent)).toEqual(['this', 'build'])
+    // HTML stays text: the tags show and no element is made from them.
+    expect(region.textContent).toContain('<b>x</b>')
+    expect(region.querySelector('b')).toBeNull()
+    // A link keeps only a safe URL.
+    const links = [...region.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')])
+    expect(links).toContainEqual(['the log', 'https://example.com/log'])
+    for (const [, href] of links) expect(href ?? '').not.toMatch(/^javascript:/i)
+    expect(getReports()).toEqual([])
+  })
+})
