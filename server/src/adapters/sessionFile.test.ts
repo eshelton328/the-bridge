@@ -68,6 +68,15 @@ describe('session file', () => {
     expect((await readClaudeSession(file('g.jsonl', line('claude-haiku-4-5', 50_000)))).contextUsed).toBe(0.25)
   })
 
+  it("gives no share for a model whose window the session picks, and a dated ID its alias's window", async () => {
+    const line = (model: string, input: number) =>
+      JSON.stringify({ type: 'assistant', message: { model, usage: { input_tokens: input } } })
+    for (const model of ['claude-opus-4-6', 'claude-sonnet-4-6'])
+      expect((await readClaudeSession(file(`${model}.jsonl`, line(model, 100_000)))).contextUsed).toBeNull()
+    const dated = await readClaudeSession(file('h.jsonl', line('claude-haiku-4-5-20251001', 100_000)))
+    expect(dated).toEqual({ model: 'claude-haiku-4-5-20251001', contextUsed: 0.5 })
+  })
+
   it("names a working directory's folder as Claude Code does", () => {
     expect(claudeProjectFolder('/home/dev/ncc-1701/the.bridge')).toBe('-home-dev-ncc-1701-the-bridge')
   })

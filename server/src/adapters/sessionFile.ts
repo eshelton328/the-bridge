@@ -21,7 +21,8 @@ const AssistantLine = z.object({
 
 /**
  * The context window of each model, in tokens (the claude-api reference, cached 2026-11-03). A model that is not
- * here has no `contextUsed`: the app shows none rather than a wrong share.
+ * here has no `contextUsed`: the app shows none rather than a wrong share. Opus 4.6 and Sonnet 4.6 are not here,
+ * because a session picks a 200K or a 1M window for them and the session file does not say which.
  */
 const contextWindows: Readonly<Record<string, number>> = {
   'claude-fable-5-2': 1_000_000,
@@ -31,10 +32,8 @@ const contextWindows: Readonly<Record<string, number>> = {
   'claude-opus-5': 1_000_000,
   'claude-opus-4-8': 1_000_000,
   'claude-opus-4-7': 1_000_000,
-  'claude-opus-4-6': 1_000_000,
   'claude-sonnet-5-5': 1_000_000,
   'claude-sonnet-5': 1_000_000,
-  'claude-sonnet-4-6': 1_000_000,
   'claude-haiku-5-5': 1_000_000,
   'claude-haiku-4-5': 200_000,
 }
@@ -75,7 +74,8 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
     // subagent's own context.
     if (!entry.success || entry.data.message.model === '<synthetic>' || entry.data.isSidechain === true) continue
     const { model, usage } = entry.data.message
-    const window = contextWindows[model]
+    // A dated ID, such as "claude-haiku-4-5-20251001", has the window of its alias.
+    const window = contextWindows[model.replace(/-\d{8}$/, '')]
     const used = usage
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
       : undefined
