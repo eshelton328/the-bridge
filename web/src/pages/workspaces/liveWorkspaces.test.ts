@@ -340,6 +340,44 @@ describe('watchLiveWorkspaces', () => {
     expect(server.opened).toHaveLength(2)
   })
 
+  it('reports a stream that fails three times in a row once, and shows its last error', async () => {
+    vi.useFakeTimers()
+    try {
+      const queries = client()
+      let fails = 0
+      const open = vi.fn(() => {
+        fails += 1
+        return Promise.reject(new TypeError(`Failed to fetch ${String(fails)}`))
+      })
+      const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open })
+      await vi.advanceTimersByTimeAsync(5000 * 2 + 100)
+      expect(open).toHaveBeenCalledTimes(3)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'Live updates lost the event stream (Failed to fetch 1); connecting again.',
+      ])
+      const state = await withLiveWorkspaces(workspacesHome, {
+        client: queries,
+        fetch: () => Promise.resolve(response),
+      })
+      expect(state.data.status.alert).toBe('Live updates lost the event stream (Failed to fetch 3); connecting again.')
+      stop()
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('reports nothing when the page closes the stream', async () => {
+    const server = fakeServer()
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, client: client(), settleMs: 10, open: server.open })
+    await settle(5)
+    server.opened[0]?.send('event: open\ndata: {}\n\n')
+    await settle(5)
+    stop()
+    await settle(20)
+    expect(getReports()).toEqual([])
+    expect(server.opened).toHaveLength(1)
+  })
+
   it('stops with a notice in the status bar and the error tray when the server refuses the stream', async () => {
     const queries = client()
     const server = fakeServer()

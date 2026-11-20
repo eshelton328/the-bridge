@@ -161,6 +161,8 @@ const queryKey = ['workspaces']
 let watching = 0
 /** Why the live updates stopped, shown in the status bar until a new watcher starts. */
 let stopped: string | undefined
+/** The event stream's last error while it connects again, shown in the status bar until a stream opens. */
+let lost: string | undefined
 /** How many events the watchers took; a read that saw it change while it ran may hold older data. */
 let taken = 0
 /** The open watcher's way to mark the cache invalid and load again. */
@@ -246,7 +248,8 @@ const openEvents: OpenStream = (signal) =>
  * the chat's status there; `workspaces.changed`, an event the cache cannot take, and each time the stream
  * opens (the first time and after it connects again) mark the cache invalid, so the next load reads the
  * server. A burst of events gives one `onChange`. When the stream ends or the network drops, it connects
- * again after the server's retry time (5 s), as EventSource does; when the server refuses the stream (403,
+ * again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
+ * dev ErrorTray once for each outage; when the server refuses the stream (403,
  * 502), it stops and shows a notice in the status bar and the dev ErrorTray, as a failed read does. The
  * result stops it.
  */
@@ -258,6 +261,7 @@ export function watchLiveWorkspaces({
 }: WatchDeps): () => void {
   watching += 1
   stopped = undefined
+  lost = undefined
   const abort = new AbortController()
   let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
@@ -305,8 +309,10 @@ export function watchLiveWorkspaces({
         resolve()
       })
     })
+  // A call, so that each read sees the signal as it is now.
+  const closed = () => abort.signal.aborted
   const run = async () => {
-    while (!abort.signal.aborted) {
+    while (!closed()) {
       try {
         const res = await open(abort.signal)
         if (!res.ok || res.body === null) {
@@ -315,9 +321,21 @@ export function watchLiveWorkspaces({
           changed()
           return
         }
+        // The stream is open: the outage, if there was one, is over.
+        lost = undefined
         for await (const frame of frames(res.body)) take(frame)
-      } catch {
-        // The network dropped or the watcher stopped: connect again after the retry time, or end.
+      } catch (thrown) {
+        // The watcher stopped (the page closed the stream; fetch rejects with an AbortError): end, with no report.
+        if (closed() || (thrown instanceof DOMException && thrown.name === 'AbortError')) return
+        // The network dropped: keep the error for the status bar and connect again after the retry time. A long
+        // outage reports once, on its first error, not once for each reconnect.
+        const first = lost === undefined
+        const why = thrown instanceof Error ? thrown.message : String(thrown)
+        lost = `Live updates lost the event stream (${why}); connecting again.`
+        if (first) {
+          report(new Error(lost, { cause: thrown }), 'handler')
+          changed()
+        }
       }
       await pause()
     }
@@ -358,7 +376,8 @@ export async function withLiveWorkspaces(
     }
     const response = await client.query({ queryKey, queryFn: read, staleTime: watching > 0 ? Infinity : 0 })
     const workspaces = toWorkspaces(response)
-    const status = stopped === undefined ? state.data.status : { ...state.data.status, alert: stopped }
+    const alert = stopped ?? lost
+    const status = alert === undefined ? state.data.status : { ...state.data.status, alert }
     return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? state.data.current } }
   } catch (thrown) {
     const why = thrown instanceof Error ? thrown.message : String(thrown)
