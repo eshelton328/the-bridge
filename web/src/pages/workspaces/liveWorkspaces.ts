@@ -19,9 +19,11 @@
 // (`GET /api/workspaces/:workspace/layout`, liveLayout.ts), read with the
 // list and again on `workspaces.changed` or that workspace's
 // `layout.changed`. A layout read that misses keeps the workspace's first
-// `maxPanes` chats as its panes; it is an expected miss, so the page shows
-// no notice and nothing is reported. A layout the contract refuses throws,
-// as a list it refuses does.
+// `maxPanes` chats as its panes, and is not silent (d-115): the status bar
+// says "Layout not live — first 4 chats" until a load reads every layout,
+// and report() gets one LayoutReadMissError for each outage, not one for
+// each read again. A layout the contract refuses throws, as a list it
+// refuses does.
 import {
   type ChatSummary,
   ErrorBody,
@@ -35,6 +37,7 @@ import {
 } from '@bridge/contract'
 import type { QueryClient, QueryKey } from '@tanstack/react-query'
 import { err, ok, type Result } from '@bridge/shared'
+import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
@@ -390,6 +393,39 @@ function untilAborted<T>(pending: Promise<T>, signal: AbortSignal | undefined): 
   })
 }
 
+/**
+ * A layout read that missed, for report(): a stable name, and in its message only the miss's kind and status, never
+ * text from the server (the 2b-5 sender posts reports to the server).
+ */
+class LayoutReadMissError extends Error {
+  readonly miss: LiveMiss['kind']
+
+  constructor(miss: LiveMiss) {
+    const status = 'status' in miss && miss.status !== undefined ? ` ${String(miss.status)}` : ''
+    const errorKind = miss.kind === 'status' && miss.errorKind !== undefined ? ` ${miss.errorKind}` : ''
+    super(`A workspace layout read missed: ${miss.kind}${status}${errorKind}`)
+    this.name = 'LayoutReadMissError'
+    this.miss = miss.kind
+  }
+}
+
+/** The status bar's line while a layout read misses: the page draws each such workspace's first chats. */
+const layoutMissLine = `Layout not live — first ${String(maxPanes)} chats`
+
+/** A layout read missed and was reported, and no load has read every layout since: the outage goes on. */
+let layoutOutage = false
+
+/** Reports the first miss of an outage (`miss`), once; a load with no miss (`undefined`) ends the outage. */
+function noteLayoutMiss(miss: LiveMiss | undefined): void {
+  if (miss === undefined) {
+    layoutOutage = false
+    return
+  }
+  if (layoutOutage) return
+  layoutOutage = true
+  report(new LayoutReadMissError(miss), 'live')
+}
+
 /** Carries a miss through the query client, which knows only thrown errors, to withLiveWorkspaces. */
 class LiveMissError extends Error {
   readonly miss: LiveMiss
@@ -661,6 +697,8 @@ export function watchLiveWorkspaces({
   return () => {
     if (reload === invalidate) reload = undefined
     watching -= 1
+    // The owner left the page: a layout miss on his next visit is reported again.
+    if (watching === 0) layoutOutage = false
     clearTimeout(timer)
     abort.abort()
   }
@@ -723,23 +761,28 @@ export async function withLiveWorkspaces(
   }
   const workspaces = toWorkspaces(response)
   const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
-  const live = liveOnly(state, workspaces, herdr)
+  noteLayoutMiss(herdr.missed)
+  const live = liveOnly(state, workspaces, herdr.layouts)
   const alert = stopped ?? lost
-  return alert === undefined ? live : { ...live, data: { ...live.data, status: { ...live.data.status, alert } } }
+  const hints = herdr.missed === undefined ? live.data.status.hints : [layoutMissLine, ...live.data.status.hints]
+  return {
+    ...live,
+    data: { ...live.data, status: { ...live.data.status, hints, ...(alert === undefined ? {} : { alert }) } },
+  }
 }
 
 /**
  * The herdr layout of each workspace of `response` as the page's own (`layoutOfTab`), by the page's workspace ID, each
- * read through the query client as the list is, so the loads of a burst share one read. A workspace whose read missed
- * has none, so the page keeps its first chats (`liveOnly`): an expected miss, which is not reported. A layout the
- * contract refuses rejects, for RouteError.
+ * read through the query client as the list is, so the loads of a burst share one read, and the first miss when a
+ * read missed. A workspace whose read missed has no layout, so the page keeps its first chats (`liveOnly`). A layout
+ * the contract refuses rejects, for RouteError.
  */
 async function layoutsOf(
   response: WorkspacesResponse,
   workspaces: readonly Workspace[],
   client: QueryClient,
   fetch: NonNullable<LiveDeps['fetchLayout']>,
-): Promise<Map<string, WorkspaceLayout>> {
+): Promise<{ layouts: Map<string, WorkspaceLayout>; missed: LiveMiss | undefined }> {
   const read =
     (id: WorkspaceId) =>
     async ({ signal: cancel }: { signal: AbortSignal }) => {
@@ -756,7 +799,7 @@ async function layoutsOf(
   shownWorkspaces.clear()
   for (const summary of response.workspaces) shownWorkspaces.add(summary.id)
   const pairs = await Promise.all(
-    response.workspaces.map(async (summary, at): Promise<[string, WorkspaceLayout] | undefined> => {
+    response.workspaces.map(async (summary, at): Promise<[string, WorkspaceLayout] | LiveMiss | undefined> => {
       const workspace = workspaces[at]
       if (workspace === undefined) return undefined
       try {
@@ -765,13 +808,18 @@ async function layoutsOf(
           queryFn: read(summary.id),
           staleTime: watching > 0 ? Infinity : 0,
         })
-        const shells = new Set((workspace.chats ?? []).filter((c) => c.kind === 'shell').map((c) => c.id))
-        return [workspace.id, layoutOfTab(layout.tabs, (id) => shells.has(id))]
+        return [workspace.id, layoutOfTab(layout.tabs)]
       } catch (thrown) {
-        if (thrown instanceof LiveMissError) return undefined
+        if (thrown instanceof LiveMissError) return thrown.miss
         throw thrown
       }
     }),
   )
-  return new Map(pairs.filter((pair) => pair !== undefined))
+  const layouts = new Map<string, WorkspaceLayout>()
+  let missed: LiveMiss | undefined
+  for (const pair of pairs) {
+    if (Array.isArray(pair)) layouts.set(pair[0], pair[1])
+    else missed ??= pair
+  }
+  return { layouts, missed }
 }

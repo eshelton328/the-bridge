@@ -103,6 +103,12 @@ export function WorkspacesPhone({
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
   const chat = ui.phoneView === 'chat' && focused?.type === 'chat' ? focused : undefined
+  // The workspace that holds the open chat: a live state's panes hold every chat of every workspace (d-117), so the
+  // chat may be another workspace's than `data.current`. A chat no workspace lists (a fixture's) is the current one's.
+  const chatWorkspace =
+    chat === undefined
+      ? data.current
+      : (data.workspaces.find((w) => w.chats?.some((c) => c.id === chat.id))?.id ?? data.current)
   // M9: the chat of the list whose actions are open, and its workspace. Its row takes `heldRowRef`, and the actions
   // sheet lifts a copy of the row over its scrim there (BottomSheet `lifted`).
   const heldRowRef = useRef<HTMLDivElement>(null)
@@ -253,7 +259,7 @@ export function WorkspacesPhone({
   const pickChatAction = (action: string) => {
     // T7: New chat opens in the current chat's workspace.
     if (action === 'newChat' && data.newChat !== undefined)
-      onUiChange({ newChatOpen: true, newChatWorkspace: data.current })
+      onUiChange({ newChatOpen: true, newChatWorkspace: chatWorkspace })
     if (action === 'rename')
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
     if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
@@ -272,7 +278,7 @@ export function WorkspacesPhone({
           detail={
             <PhoneChat
               pane={chat}
-              workspace={data.workspaces.find((w) => w.id === data.current)?.label ?? data.current ?? ''}
+              workspace={data.workspaces.find((w) => w.id === chatWorkspace)?.label ?? chatWorkspace ?? ''}
               contextLabel={data.sidebar?.contextLabel ?? ''}
               backLabel={text.back ?? text.title}
               notice={notice}
@@ -330,7 +336,7 @@ export function WorkspacesPhone({
                       <ChatActionsMenu
                         title={chat.head.title}
                         actions={data.chatMenu ?? []}
-                        targets={data.workspaces.filter((w) => w.id !== data.current)}
+                        targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                         newWorkspace={data.newWorkspace}
                         trigger={trigger}
                         open={ui.menuFor === chat.id}
@@ -362,7 +368,7 @@ export function WorkspacesPhone({
                         <PhoneChatActions
                           title={chat.head.title}
                           actions={text.chatMenu ?? []}
-                          targets={data.workspaces.filter((w) => w.id !== data.current)}
+                          targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                           newWorkspace={data.newWorkspace}
                           trigger={trigger}
                           open={ui.menuFor === chat.id}

@@ -392,7 +392,8 @@ export function ChatPane(props: ChatPaneProps) {
         footerShrink={footerShrinks[size]}
         bodyClassName={gaps[size].body}
         footer={
-          <div className={cx(footer, gaps[size].footer)}>
+          // The part of a pane a stacked split keeps in view (paneFloors.ts).
+          <div className={cx(footer, gaps[size].footer)} data-pane-floor>
             {above}
             {composerBox}
           </div>
