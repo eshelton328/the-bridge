@@ -267,6 +267,16 @@ async function settled(count: () => number): Promise<number> {
   }
 }
 
+/** The back button of an open chat's header, named after the list it goes back to. */
+const back = 'button[aria-label$="Workspaces"]'
+
+/** The text of the open chat's header: the smallest box around its heading `title` that holds the back button. */
+function headerText(title: string): string {
+  let box = page.getByRole('heading', { name: title }).element().parentElement
+  while (box !== null && box.querySelector(back) === null) box = box.parentElement
+  return box?.textContent ?? ''
+}
+
 const trayBadge = () => page.getByRole('complementary', { name: 'Error reports' })
 
 describe("a live workspace's herdr layout on the desktop (slice 3a)", () => {
@@ -459,6 +469,31 @@ describe('the herdr layout on the phone and the tablet, and with the fixtures (s
       await new Promise((resolve) => setTimeout(resolve, 300))
       await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
       await expect.element(page.getByRole('heading', { name: 'drift check' })).not.toBeInTheDocument()
+    })
+
+  // A live state's panes hold every chat of every workspace (d-117), so the chat's header names the workspace that
+  // lists the chat, not the first workspace (`data.current`).
+  for (const device of sizes)
+    it(`names the workspace that holds the opened chat in its header on ${device.name}`, async () => {
+      const otherTab = () =>
+        new Response(layoutBody(other, [{ label: 'main', active: true, root: pane(review), focused: review }]), {
+          status: 200,
+        })
+      fakeServer([plan, drift], { [live]: oneTab(row(0.5, pane(plan), pane(drift)), plan), [other]: otherTab }, true)
+      await tapWorkspaces(device.size)
+      // A chat of the second workspace.
+      await userEvent.click(page.getByText('review notes', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
+      await expect.poll(() => headerText('review notes')).toContain('other work')
+      expect(headerText('review notes')).not.toContain('live work')
+      // Back to the list, then a chat of the first workspace.
+      const backButton = document.querySelector<HTMLElement>(back)
+      if (backButton === null) throw new Error('no back button')
+      await userEvent.click(backButton)
+      await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+      await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+      await expect.poll(() => headerText('plan the slice')).toContain('live work')
+      expect(headerText('plan the slice')).not.toContain('other work')
     })
 
   it('makes no layout request for ?source=fixtures or ?state=', async () => {
