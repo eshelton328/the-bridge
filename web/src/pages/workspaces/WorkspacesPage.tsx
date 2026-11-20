@@ -84,6 +84,17 @@ export function WorkspacesPage() {
     uiRef.current = ui
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
+  // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile.
+  const pendingRef = useRef(new Set<string>())
+  const once = (key: string, run: () => Promise<ComposerAnswer>): Promise<ComposerAnswer> => {
+    const pending = pendingRef.current
+    if (pending.has(key)) return Promise.resolve(false)
+    pending.add(key)
+    return run().finally(() => {
+      pending.delete(key)
+    })
+  }
   // The server ID of the live Claude chat whose pane is `chat`, read when its composer sends: none for a sample chat.
   const liveChatOf = (chat: string) => {
     if (!import.meta.env.DEV || !live) return undefined
@@ -110,20 +121,24 @@ export function WorkspacesPage() {
       onRetry={() => void router.invalidate()}
       transcripts={transcripts}
       onCopy={copyReply}
-      onSend={(chat, text) => {
-        const liveChat = liveChatOf(chat)
-        if (liveChat !== undefined) return viaLive((m) => m.sendPrompt(liveChat, text))
-        return send(chat, text).then(
-          () => true,
-          (error: unknown) => {
-            report(error, 'handler')
-            return false
-          },
-        )
-      }}
+      onSend={(chat, text) =>
+        once(`send:${chat}`, () => {
+          const liveChat = liveChatOf(chat)
+          if (liveChat !== undefined) return viaLive((m) => m.sendPrompt(liveChat, text))
+          return send(chat, text).then(
+            () => true,
+            (error: unknown) => {
+              report(error, 'handler')
+              return false
+            },
+          )
+        })
+      }
       onStop={(chat) => {
         const liveChat = liveChatOf(chat)
-        return liveChat === undefined ? Promise.resolve(false) : viaLive((m) => m.stopChat(liveChat))
+        return liveChat === undefined
+          ? Promise.resolve(false)
+          : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
       }}
       onNavigate={(page) => {
         // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route

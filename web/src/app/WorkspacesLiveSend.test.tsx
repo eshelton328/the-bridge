@@ -355,6 +355,29 @@ describe("a live Claude chat's Send (W1)", () => {
     await expect.element(box('plan the slice')).toHaveValue('')
   })
 
+  it('posts no second send when the owner reopens the chat and taps Send while the first is pending', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openAndType(phone, 'plan the slice')
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await userEvent.click(sendButton('plan the slice'), { force: true })
+    await userEvent.keyboard('{Enter}')
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(fake.posts).toEqual([{ chat: plan, route: 'prompt' }])
+    answer.end(noContent())
+    await expect.element(box('plan the slice')).toHaveValue('')
+    // Once the answer came, the chat sends again.
+    fake.answerPrompts(undefined)
+    await userEvent.fill(box('plan the slice'), 'the next message')
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(2)
+  })
+
   it("keeps the other chat's composer when the send fails after a switch", async () => {
     const fake = withChats()
     const answer = held()
@@ -549,6 +572,22 @@ describe("a live Claude chat's Stop (W1)", () => {
     await expect.poll(() => fake.stops).toEqual([plan])
     expect(fake.paths.at(-1)).toBe('/api/chats/mac-mini%2Fc1/stop')
     expect(getReports()).toEqual([])
+  })
+
+  it('posts no second stop when the owner reopens the chat and taps Stop while the first is pending', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerStops(answer.answer)
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    await userEvent.click(stopButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await userEvent.click(stopButton('plan the slice'))
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(fake.posts).toEqual([{ chat: plan, route: 'stop' }])
+    answer.end(noContent())
   })
 
   it('is quiet on a 409 notWorking: no line and no report', async () => {
