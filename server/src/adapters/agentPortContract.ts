@@ -226,6 +226,32 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       subscription.close()
     })
 
+    it('tells a subscriber to read the list again when a chat goes idle, for its new context share', async () => {
+      const { port, expected, setStatus } = await setup()
+      const read = await port.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      const chat = read.value.flatMap((w) => w.chats).find((c) => c.title === expected.chat)
+      if (!chat) throw new Error(`no chat ${expected.chat}`)
+      const events: AgentEvent[] = []
+      const subscription = port.subscribe(
+        (event) => events.push(event),
+        (error) => {
+          throw new Error(error.message)
+        },
+      )
+      await subscription.ready
+      await setStatus('working')
+      await until('the working status event', () => events.some((e) => e.type === 'chatStatus'))
+      // The stream itself tells one list change when it starts; a working chat adds none.
+      const lists = () => events.filter((e) => e.type === 'workspacesChanged').length
+      await new Promise((r) => setTimeout(r, 300))
+      const before = lists()
+      await setStatus('idle')
+      await until('the list change after idle', () => lists() > before)
+      subscription.close()
+      await new Promise((r) => setTimeout(r, 300))
+    })
+
     it("tells a subscriber a chat's new status with the chat's listed ID, and nothing after close", async () => {
       const { port, expected, setStatus } = await setup()
       const read = await port.listWorkspaces()

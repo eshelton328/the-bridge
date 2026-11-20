@@ -637,7 +637,10 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
             const status = StatusChanged.safeParse(line)
             const chat = status.success ? chats.get(status.data.data.pane_id) : undefined
             if (status.success && chat) {
-              tell({ type: 'chatStatus', chat, status: statusOf(status.data.data.agent_status) })
+              const next = statusOf(status.data.data.agent_status)
+              tell({ type: 'chatStatus', chat, status: next })
+              // A turn that ends changes the chat's model and context share: the app reads the list again.
+              if (next === 'idle') tell({ type: 'workspacesChanged' })
               return
             }
             const workspace = layoutWorkspaceOf(line)
