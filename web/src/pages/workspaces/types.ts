@@ -732,10 +732,10 @@ const WorkspacesDataFields = z.object({
   /** The current workspace's panes, clockwise from the top left. */
   panes: z.array(WorkbenchPane),
   /**
-   * The status bar: the shown view's summary, the key hints and an alert on the right. A live state has an alert
-   * only when the live source says something (liveWorkspaces.ts).
+   * The status bar: the shown view's summary, the key hints and an alert on the right. A live state with no
+   * workspace has no summary, and has an alert only when the live source says something (liveWorkspaces.ts).
    */
-  status: z.object({ summary: z.string(), hints: z.array(z.string()), alert: z.string().optional() }),
+  status: z.object({ summary: z.string().optional(), hints: z.array(z.string()), alert: z.string().optional() }),
   /**
    * The notice over every layout when the live source could not be read and the page shows no workspaces
    * (liveWorkspaces.ts), with Retry; a state without it shows none.
