@@ -1,6 +1,6 @@
 // API tests of GET /api/chats/:chat/transcript/events (d-113): the app in
 // process with the fake adapter, the SSE body read as it streams.
-import { ChatId, ErrorBody, MachineId, TranscriptChangedEvent } from '@bridge/contract'
+import { ChatId, ErrorBody, MachineId, maxPromptChars, TranscriptChangedEvent } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
@@ -100,5 +100,77 @@ describe('GET /api/chats/:chat/transcript/events', () => {
     })
     expect(res.status).toBe(403)
     expect(agents.watchers()).toBe(0)
+  })
+})
+
+describe('POST /api/chats/:chat/prompt and /stop', () => {
+  const promptPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/prompt`
+  const stopPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/stop`
+  const json = { ...local, 'Content-Type': 'application/json' }
+  const secret = 'Deploy with token marker-5150'
+  const setup = (agents = createFakeAgents(machine)) => {
+    const logger = memoryLogger()
+    const app = createApp({ agents, owner, log: logger.log })
+    const post = (path: string, body: unknown, headers: Record<string, string> = json) =>
+      app.request(path, { method: 'POST', headers, body: JSON.stringify(body) })
+    return { agents, logger, post }
+  }
+
+  it('sends the prompt to that chat only, answers 204 and logs none of the text, while the chat works', async () => {
+    const { agents, logger, post } = setup()
+    const res = await post(promptPath(themes), { text: secret })
+    expect(res.status).toBe(204)
+    expect(await res.text()).toBe('')
+    expect(agents.inputs()).toEqual([{ chat: themes, text: secret }])
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+  })
+
+  it('refuses a body that is not JSON, an empty prompt, an extra field and a prompt over the limit, with no text in the error', async () => {
+    const { agents, logger, post } = setup()
+    const refused = [
+      await post(promptPath(themes), { text: secret }, local),
+      await post(promptPath(themes), { text: '  ' }),
+      await post(promptPath(themes), { text: secret, chat: 'test-mac/drift-check' }),
+      await post(promptPath(themes), { text: `${secret} ${'x'.repeat(maxPromptChars)}` }),
+      await post(promptPath('no-machine'), { text: secret }),
+    ]
+    for (const res of refused) {
+      expect(res.status).toBe(400)
+      const body = await res.text()
+      expect(ErrorBody.parse(JSON.parse(body)).error.kind).toBe('invalid-input')
+      expect(body).not.toContain('marker-5150')
+    }
+    expect(agents.inputs()).toEqual([])
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+  })
+
+  it("answers 404 for an unknown chat and 409 with the chat's state for a shell or a chat that waits for the owner", async () => {
+    const { agents, post } = setup()
+    const states = async (res: Response) => {
+      const { error } = ErrorBody.parse(await res.json())
+      return [res.status, error.kind === 'chat-not-ready' ? error.state : error.kind]
+    }
+    expect(await states(await post(promptPath('test-mac/none'), { text: 'Go on.' }))).toEqual([404, 'not-found'])
+    expect(await states(await post(promptPath('test-mac/brain-git'), { text: 'ls' }))).toEqual([409, 'shell'])
+    expect(await states(await post(promptPath('test-mac/drift-check'), { text: 'Go on.' }))).toEqual([409, 'needsYou'])
+    expect(await states(await post(stopPath('test-mac/drift-check'), {}))).toEqual([409, 'notWorking'])
+    expect(await states(await post(stopPath('test-mac/brain-git'), {}))).toEqual([409, 'shell'])
+    expect(agents.inputs()).toEqual([])
+  })
+
+  it('stops a chat that works with 204, and takes a stop only as JSON', async () => {
+    const { agents, post } = setup()
+    expect((await post(stopPath(themes), {}, local)).status).toBe(400)
+    expect((await post(stopPath(themes), {})).status).toBe(204)
+    expect(agents.inputs()).toEqual([{ chat: themes, stop: true }])
+  })
+
+  it('answers 503 when herdr does not answer, with no prompt text in the log', async () => {
+    const { logger, post } = setup(
+      createFakeAgents(machine, { error: { reason: 'unreachable', message: 'herdr socket: ENOENT' } }),
+    )
+    expect((await post(promptPath(themes), { text: secret })).status).toBe(503)
+    expect((await post(stopPath(themes), {})).status).toBe(503)
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
   })
 })
