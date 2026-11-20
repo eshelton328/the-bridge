@@ -1,12 +1,16 @@
 // The upload store on disk (slice W1b). Each upload is a folder under
 // `root`: `state.json` (the chat, the safe name, the size and the chunks
-// that came), `data` (the bytes, each chunk at its offset) and, once
-// complete, `file/<safe name>`. The folders are 0700 and the files 0600,
-// so only the owner's account reads them. The store never opens a file to
-// read or run it. A fault gives only its errno code, as its message can
-// hold a path with the file name.
+// that came), `chunks/<n>` (one file for each chunk) and, once complete,
+// `file/<safe name>`. A chunk goes to a temporary file first, and takes
+// its place only when its length is right, so a short retry never changes
+// a chunk that came. The state file is replaced in one rename, so a read
+// never sees half of it. Complete joins the chunks in order, in turn with
+// the chunks' renames. The folders are 0700 and the files 0600, so only
+// the owner's account reads them. The store never runs a file and reads
+// its bytes only to join the chunks. A fault gives only its errno code,
+// as its message can hold a path with the file name.
 import { randomBytes } from 'node:crypto'
-import { chmod, mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises'
+import { chmod, type FileHandle, mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { ChatId, type UploadId, UploadId as UploadIdSchema } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
@@ -46,6 +50,17 @@ const faultOf = (error: unknown): UploadStoreError => ({
   code: errnoCode(error),
 })
 
+/** Writes all of `bytes` at the file's end; a write can take fewer bytes than it gets. */
+async function writeAll(file: FileHandle, bytes: Uint8Array): Promise<void> {
+  for (let done = 0; done < bytes.length; ) {
+    const { bytesWritten } = await file.write(bytes, done, bytes.length - done)
+    done += bytesWritten
+  }
+}
+
+/** A name for a temporary file that no other request uses. */
+const tempName = (base: string) => `${base}.${randomBytes(6).toString('hex')}.part`
+
 /** Runs `work`, and gives a fault for anything it throws. */
 async function guarded<T>(work: () => Promise<T>): Promise<Result<T, UploadStoreError>> {
   try {
@@ -61,7 +76,8 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
 } {
   const folder = (upload: UploadId) => join(root, upload)
   const statePath = (upload: UploadId) => join(folder(upload), 'state.json')
-  const dataPath = (upload: UploadId) => join(folder(upload), 'data')
+  const chunksPath = (upload: UploadId) => join(folder(upload), 'chunks')
+  const chunkPath = (upload: UploadId, n: number) => join(chunksPath(upload), String(n))
   /** Each upload's state change waits for the one before it, so two chunks never lose each other's mark. */
   const queues = new Map<UploadId, Promise<unknown>>()
   const inTurn = <T>(upload: UploadId, work: () => Promise<T>): Promise<T> => {
@@ -85,8 +101,42 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
     const state = State.safeParse(JSON.parse(text))
     return state.success ? state.data : null
   }
-  const writeState = (upload: UploadId, state: State) =>
-    writeFile(statePath(upload), JSON.stringify(state), { mode: 0o600 })
+  /** Replaces the state file in one rename, so a read sees the old state or the new one, never part of one. */
+  const writeState = async (upload: UploadId, state: State) => {
+    const temp = tempName(statePath(upload))
+    await writeFile(temp, JSON.stringify(state), { mode: 0o600 })
+    await rename(temp, statePath(upload))
+  }
+  /** Writes chunk `n` to a temporary file: its path, or null when its length is not `length` (the file is gone then). */
+  const receive = async (
+    upload: UploadId,
+    n: number,
+    length: number,
+    bytes: AsyncIterable<Uint8Array>,
+  ): Promise<string | null> => {
+    const temp = tempName(chunkPath(upload, n))
+    const file = await open(temp, 'wx', 0o600)
+    let read = 0
+    let fits = true
+    try {
+      for await (const piece of bytes) {
+        if (read + piece.length > length) {
+          fits = false
+          break
+        }
+        await writeAll(file, piece)
+        read += piece.length
+      }
+    } catch (error) {
+      await file.close()
+      await rm(temp, { force: true })
+      throw error
+    }
+    await file.close()
+    if (fits && read === length) return temp
+    await rm(temp, { force: true })
+    return null
+  }
 
   return {
     chunkSize,
@@ -96,7 +146,7 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
         await chmod(root, 0o700)
         const upload = UploadIdSchema.parse(randomBytes(16).toString('base64url'))
         await mkdir(folder(upload), { mode: 0o700 })
-        await (await open(dataPath(upload), 'wx', 0o600)).close()
+        await mkdir(chunksPath(upload), { mode: 0o700 })
         await writeState(upload, { chat, name: safeFileName(name), size, received: [], complete: false })
         return upload
       }),
@@ -106,23 +156,17 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
         if (state === null) return 'notFound' as const
         const length = chunkLength(state.size, chunkSize, n)
         if (state.complete || length === null) return 'conflict' as const
-        const file = await open(dataPath(upload), 'r+')
-        let read = 0
-        try {
-          for await (const piece of bytes) {
-            if (read + piece.length > length) return 'conflict' as const
-            await file.write(piece, 0, piece.length, n * chunkSize + read)
-            read += piece.length
-          }
-        } finally {
-          await file.close()
-        }
-        if (read !== length) return 'conflict' as const
+        const temp = await receive(upload, n, length, bytes)
+        if (temp === null) return 'conflict' as const
         return inTurn(upload, async () => {
-          const now = await readState(upload)
-          if (now === null) return 'notFound' as const
-          if (now.complete) return 'conflict' as const
-          if (!now.received.includes(n)) await writeState(upload, { ...now, received: [...now.received, n] })
+          const current = await readState(upload)
+          if (current === null || current.complete) {
+            await rm(temp, { force: true })
+            return current === null ? ('notFound' as const) : ('conflict' as const)
+          }
+          await rename(temp, chunkPath(upload, n))
+          if (!current.received.includes(n))
+            await writeState(upload, { ...current, received: [...current.received, n] })
           return 'written' as const
         })
       }),
@@ -133,9 +177,23 @@ export function createDiskUploads({ root, chunkSize = defaultChunkBytes }: DiskU
           if (state === null) return 'notFound' as const
           if (state.complete) return 'complete' as const
           if (state.received.length !== chunkCount(state.size, chunkSize)) return 'conflict' as const
-          await mkdir(join(folder(upload), 'file'), { mode: 0o700 })
-          await rename(dataPath(upload), join(folder(upload), 'file', state.name))
+          const files = join(folder(upload), 'file')
+          // Recursive, so a complete that failed after it made the folder can run again.
+          await mkdir(files, { recursive: true, mode: 0o700 })
+          const temp = tempName(join(files, state.name))
+          const out = await open(temp, 'w', 0o600)
+          try {
+            for (let n = 0; n < chunkCount(state.size, chunkSize); n++)
+              await writeAll(out, await readFile(chunkPath(upload, n)))
+          } catch (error) {
+            await out.close()
+            await rm(temp, { force: true })
+            throw error
+          }
+          await out.close()
+          await rename(temp, join(files, state.name))
           await writeState(upload, { ...state, complete: true })
+          await rm(chunksPath(upload), { recursive: true, force: true })
           return 'complete' as const
         }),
       ),

@@ -49,6 +49,17 @@ export function describeUploadStore(name: string, setup: () => Promise<UploadSto
       expect(new TextDecoder().decode((await file(upload))?.bytes)).toBe('abcd')
     })
 
+    it('keeps a chunk that came when a retry of it is short or long', async () => {
+      const { store, file } = await setup()
+      const upload = await started(store, 'a.bin', 8)
+      await store.writeChunk(upload, 0, bytesOf('abcd'))
+      await store.writeChunk(upload, 1, bytesOf('efgh'))
+      expect(await store.writeChunk(upload, 0, bytesOf('xy'))).toEqual({ ok: true, value: 'conflict' })
+      expect(await store.writeChunk(upload, 1, bytesOf('wxyz', 'v'))).toEqual({ ok: true, value: 'conflict' })
+      expect(await store.complete(upload)).toEqual({ ok: true, value: 'complete' })
+      expect(new TextDecoder().decode((await file(upload))?.bytes)).toBe('abcdefgh')
+    })
+
     it('refuses a chunk outside the file, of the wrong length, or after complete, and a complete with a chunk missing', async () => {
       const { store } = await setup()
       const upload = await started(store, 'a.bin', 6)

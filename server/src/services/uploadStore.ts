@@ -1,9 +1,9 @@
 // The UploadStore: where the files that the owner attaches to a prompt
 // wait until a chat reads them (slice W1b). A file goes up in chunks of
 // `chunkSize` bytes; chunk n holds bytes n × chunkSize up to the next
-// chunk, and only the last is shorter. The store never opens or runs a
-// file, and keeps its name only to give the chat a file with the same
-// extension. Its contract suite is adapters/uploadStoreContract.ts.
+// chunk, and only the last is shorter. The store never runs a file and
+// never looks at what it holds, and keeps its name only to give the chat
+// a file with the same extension. Its contract suite is adapters/uploadStoreContract.ts.
 import type { ChatId, UploadId } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
