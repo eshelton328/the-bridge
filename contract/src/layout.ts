@@ -2,10 +2,12 @@
 // its panes (slice 3a). `GET /api/workspaces/:workspace/layout` returns it,
 // with the workspace ID URL-encoded; the `layout.changed` live event says
 // when to read it again. Each pane shows one chat (an agent session or a
-// shell), named by its chat ID, the same ID as in `GET /api/workspaces`.
+// shell), named by its chat ID. Each pane's chat, shells too, is also in the
+// workspace's chats in `GET /api/workspaces`, with the same ID, so the app
+// opens a pane from a list row by that ID.
 // The server sends every tab and the whole tree; the app picks what to draw.
 import { z } from 'zod'
-import { ChatId, TabId, WorkspaceId } from './ids.ts'
+import { ChatId, splitId, TabId, WorkspaceId } from './ids.ts'
 import { ChatSummary } from './workspaces.ts'
 
 /** How a split places its two parts: `row` side by side, `column` one above the other. */
@@ -88,6 +90,17 @@ export type TabLayout = z.infer<typeof TabLayout>
 export const WorkspaceLayout = z.object({ workspace: WorkspaceId, tabs: z.array(TabLayout).min(1) }).check((ctx) => {
   if (ctx.value.tabs.filter((t) => t.active).length !== 1)
     ctx.issues.push({ code: 'custom', message: 'one tab must be active', input: ctx.value, path: ['tabs'] })
+  const machine = splitId(ctx.value.workspace).machine
+  const elsewhere = ctx.value.tabs
+    .flatMap((t) => [t.id, ...chatsOf(t.root)])
+    .filter((id) => splitId(id).machine !== machine)
+  if (elsewhere.length > 0)
+    ctx.issues.push({
+      code: 'custom',
+      message: 'a tab or chat is on another machine',
+      input: ctx.value,
+      path: ['tabs'],
+    })
   const ids = ctx.value.tabs.map((t) => t.id)
   if (new Set(ids).size !== ids.length)
     ctx.issues.push({ code: 'custom', message: 'two tabs have one ID', input: ctx.value, path: ['tabs'] })

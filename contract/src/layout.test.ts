@@ -74,6 +74,14 @@ describe('layout', () => {
     expect(WorkspaceLayout.parse(layout)).toEqual(layout)
   })
 
+  it("refuses a tab or a pane's chat on another machine than the workspace", () => {
+    const workspace = 'mac-mini/w17'
+    expect(WorkspaceLayout.safeParse({ workspace, tabs: [{ ...tab, id: 'laptop/w17:t1' }] }).success).toBe(false)
+    const elsewhere = { kind: 'pane', chat: 'laptop/a' }
+    const other = { ...tab, root: elsewhere, focusedChat: 'laptop/a', chats: [{ ...chat('a'), id: 'laptop/a' }] }
+    expect(WorkspaceLayout.safeParse({ workspace, tabs: [other] }).success).toBe(false)
+  })
+
   it('refuses a workspace layout with no tab, no active tab, two active tabs or two tabs with one ID', () => {
     const workspace = 'mac-mini/w17'
     expect(WorkspaceLayout.safeParse({ workspace, tabs: [] }).success).toBe(false)
