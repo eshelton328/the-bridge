@@ -15,6 +15,9 @@ import {
 import { err, ok } from '@bridge/shared'
 import type { AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
 
+/** What a chat of the fake got from the owner: a prompt's text, or a stop. */
+type FakeInput = { readonly chat: ChatId } & ({ readonly text: string } | { readonly stop: true })
+
 /** The fake's transcript of its working chat "bridge themes": a prompt, a tool call that runs and a reply. */
 export function fakeTranscript(): TranscriptRead {
   return {
@@ -93,6 +96,8 @@ export type FakeAgents = AgentPort & {
   readonly changeList: () => void
   /** Ends each subscription with `error`, as a host that stops answering. */
   readonly endAll: (error: AgentPortError) => void
+  /** Each prompt and stop that a chat got, in order. */
+  readonly inputs: () => FakeInput[]
 }
 
 /** The fake's layout of a workspace: one tab with its chats side by side, the first focused; null with no chat. */
@@ -152,6 +157,8 @@ export function createFakeAgents(
   }
   const data = 'error' in answer ? undefined : structuredClone(answer.workspaces)
   const listeners = new Set<Listener>()
+  const inputs: FakeInput[] = []
+  const chatOf = (chat: ChatId) => (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
   }
@@ -227,6 +234,25 @@ export function createFakeAgents(
     },
     changeList() {
       tell({ type: 'workspacesChanged' })
+    },
+    inputs: () => [...inputs],
+    sendPrompt(chat, text) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      inputs.push({ chat, text })
+      return Promise.resolve(ok('sent'))
+    },
+    cancel(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.status !== 'working') return Promise.resolve(ok('notWorking'))
+      inputs.push({ chat, stop: true })
+      return Promise.resolve(ok('sent'))
     },
     endAll(error) {
       const ended = [...listeners]

@@ -4,7 +4,7 @@
 // the tests set, and an idle shell pane. It gives the tests the socket, the Claude projects folder
 // and both chats, and stops and deletes the session after them.
 import { type ChildProcess, execFileSync, spawn } from 'node:child_process'
-import { mkdtempSync, realpathSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, realpathSync, symlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { basename, join } from 'node:path'
 import type { TestProject } from 'vitest/node'
@@ -64,13 +64,18 @@ export default async function setup(project: TestProject) {
   )
   const pane = created.result.root_pane.pane_id
   const fakeAgent = join(import.meta.dirname, 'fakeAgent.ts')
-  herdr('pane', 'run', pane, ['node', fakeAgent, claudeProjects, 'fake-e2e-session', title].map(shellWord).join(' '))
+  // herdr sends input only to an agent that is the pane's foreground process, by its name: node runs the fake agent
+  // under the name "claude" through a link.
+  const node = join(dir, 'bin', 'claude')
+  mkdirSync(join(dir, 'bin'))
+  symlinkSync(process.execPath, node)
+  herdr('pane', 'run', pane, [node, fakeAgent, claudeProjects, 'fake-e2e-session', title].map(shellWord).join(' '))
   await until('the fake agent show in herdr', () => herdr('agent', 'list').includes('fake-e2e-session'))
   // The second fake chat has no session, so herdr takes its status from pane.report_agent.
   const statusTitle = 'fake status chat'
   const statusPane = Split.parse(JSON.parse(herdr('pane', 'split', pane, '--direction', 'right', '--no-focus'))).result
     .pane.pane_id
-  herdr('pane', 'run', statusPane, ['node', fakeAgent, claudeProjects, '-', statusTitle].map(shellWord).join(' '))
+  herdr('pane', 'run', statusPane, [node, fakeAgent, claudeProjects, '-', statusTitle].map(shellWord).join(' '))
   await until('the status chat show in herdr', () => herdr('agent', 'list').includes(statusTitle))
   // A shell pane with no job, which the adapter lists as a shell chat named by its shell.
   Split.parse(JSON.parse(herdr('pane', 'split', statusPane, '--direction', 'down', '--no-focus')))

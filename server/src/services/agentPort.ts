@@ -1,8 +1,9 @@
 // The AgentPort: the only way the server reaches agents (d-110), in the
 // app's terms. Slice 1 reads; slice 2 adds subscribe, the live events;
-// slice 3a adds readLayout, the tabs and panes of a workspace;
-// later slices add startChat, sendPrompt, cancel and answerApproval, each
-// with the contract suite in adapters/agentPortContract.ts.
+// slice 3a adds readLayout, the tabs and panes of a workspace; slice W1
+// adds sendPrompt and cancel; later slices add startChat and
+// answerApproval, each with the contract suite in
+// adapters/agentPortContract.ts.
 import type {
   ChatId,
   ChatStatus,
@@ -25,6 +26,15 @@ export type AgentEvent =
   | { readonly type: 'chatStatus'; readonly chat: ChatId; readonly status: ChatStatus }
   | { readonly type: 'layoutChanged'; readonly workspace: WorkspaceId }
   | { readonly type: 'workspacesChanged' }
+
+/**
+ * What a send or a stop did: `sent`; `notFound` when this machine has no such chat; `shell` when the chat is a
+ * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question.
+ */
+type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou'
+
+/** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
+type CancelOutcome = Exclude<SendOutcome, 'needsYou'> | 'notWorking'
 
 /** The last entries of a chat's transcript, and whether older entries exist. */
 export type TranscriptRead = { readonly entries: TranscriptEntry[]; readonly earlier: boolean }
@@ -64,4 +74,11 @@ export type AgentPort = {
    * `onEnd` gets why, once, and the subscription is over. It holds the host open only until then (d-112).
    */
   subscribe(onEvent: (event: AgentEvent) => void, onEnd: (error: AgentPortError) => void): AgentSubscription
+  /**
+   * Sends `text` to one Claude or Codex chat as the owner's next prompt, as if typed and sent. It sends to that chat
+   * only, and keeps no copy of the text.
+   */
+  sendPrompt(chat: ChatId, text: string): Promise<Result<SendOutcome, AgentPortError>>
+  /** Stops the work of one chat that is working, as one press of Escape in it; a chat that does not work gets nothing. */
+  cancel(chat: ChatId): Promise<Result<CancelOutcome, AgentPortError>>
 }

@@ -8,9 +8,12 @@
 // herdr then takes the agent's status from pane.report_agent, so a test
 // can change it (reportAgent.ts). With a session from "herdr:claude", herdr
 // reads a Claude pane's status from its screen and ignores those reports
-// (tried with herdr protocol 22).
+// (tried with herdr protocol 22). It takes its input as typed keys and
+// adds each prompt (the text before Enter) and each Escape to
+// <projects>/received/<title>.jsonl, so a test can read what the chat got
+// (receivedBy.ts).
 //   node e2e/fakeAgent.ts <claude projects folder> <session id | -> <title>
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
 import { join } from 'node:path'
 
@@ -89,4 +92,30 @@ const send = (index: number): void => {
   })
 }
 send(0)
+
+// Each key as typed: Enter ends a prompt, a lone Escape is a stop, and other escape sequences are skipped.
+const receivedFolder = join(projects, 'received')
+mkdirSync(receivedFolder, { recursive: true })
+const receivedFile = join(receivedFolder, `${encodeURIComponent(title)}.jsonl`)
+const record = (item: { readonly text: string } | { readonly stop: true }) => {
+  appendFileSync(receivedFile, `${JSON.stringify(item)}\n`)
+}
+let typed = ''
+let sequence = false
+if (process.stdin.isTTY) process.stdin.setRawMode(true)
+process.stdin.setEncoding('utf8')
+process.stdin.on('data', (chunk: string) => {
+  for (let at = 0; at < chunk.length; at += 1) {
+    const key = chunk.charAt(at)
+    if (sequence) {
+      if (/[@-~]/.test(key) && key !== '[') sequence = false
+    } else if (key === '\x1b') {
+      if (chunk.charAt(at + 1) === '[') sequence = true
+      else record({ stop: true })
+    } else if (key === '\r' || key === '\n') {
+      if (typed !== '') record({ text: typed })
+      typed = ''
+    } else typed += key
+  }
+})
 setInterval(() => undefined, 60_000)
