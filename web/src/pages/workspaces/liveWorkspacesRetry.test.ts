@@ -48,16 +48,39 @@ afterEach(() => {
 
 it('tries a live read that the server answers 503 again, and shows live data when the next try works', async () => {
   vi.spyOn(console, 'error').mockImplementation(() => undefined)
-  const fetchMock = vi
-    .fn()
-    .mockResolvedValueOnce(new Response('<html><body>Service Unavailable</body></html>', { status: 503 }))
-    .mockResolvedValue(
-      new Response(JSON.stringify(response), { status: 200, headers: { 'content-type': 'application/json' } }),
+  const json = (body: unknown) =>
+    new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
+  // The list read answers 503 once, then the list; the workspace's layout read (since #284) answers its one pane.
+  const listReads = vi
+    .fn<() => Response>()
+    .mockReturnValueOnce(new Response('<html><body>Service Unavailable</body></html>', { status: 503 }))
+    .mockImplementation(() => json(response))
+  vi.stubGlobal('fetch', (input: RequestInfo | URL) => {
+    const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+    const path = new URL(url, window.location.origin).pathname
+    if (path === '/api/workspaces') return Promise.resolve(listReads())
+    const chat = 'mac-mini/bridge-themes'
+    const chats = response.workspaces[0]?.chats ?? []
+    return Promise.resolve(
+      json({
+        workspace: 'mac-mini/omni-brain',
+        tabs: [
+          {
+            id: 'mac-mini/omni-brain:t1',
+            label: 'main',
+            active: true,
+            root: { kind: 'pane', chat },
+            focusedChat: chat,
+            chats,
+          },
+        ],
+      }),
     )
-  vi.stubGlobal('fetch', fetchMock)
+  })
   const state = await withLiveWorkspaces(workspacesHome)
-  expect(fetchMock).toHaveBeenCalledTimes(2)
-  // The home's own status bar, with no "Live data is not available" alert.
-  expect(state.data.status).toBe(workspacesHome.data.status)
+  expect(listReads).toHaveBeenCalledTimes(2)
+  // Live data: no "Live data is not available" alert and no live-unavailable notice.
+  expect(state.data.status.alert).toBeUndefined()
+  expect(state.data.liveNotice).toBeUndefined()
   expect(state.data.workspaces).toEqual(toWorkspaces(response))
 })
