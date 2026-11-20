@@ -171,6 +171,21 @@ const readTranscript = (chat: ChatId, signal: AbortSignal) =>
     AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]),
   )
 
+/**
+ * The part of an event that came before the read answered which still applies to the read's entries. An event names
+ * no position, so an ID the read does not hold is new only when the read cut nothing (`earlier` false). When it cut
+ * older entries, such an ID may be one of them, and adding it would put an old entry last and push a newer one out:
+ * it is left out, and the next read (a reconnect or a reopen) shows it. A known ID always applies, in its place.
+ */
+export function bufferedAfterRead(
+  read: { readonly entries: readonly TranscriptEntry[]; readonly earlier: boolean },
+  entries: readonly TranscriptEntry[],
+): readonly TranscriptEntry[] {
+  if (!read.earlier) return entries
+  const held = new Set(read.entries.map((e) => e.id))
+  return entries.filter((e) => held.has(e.id))
+}
+
 /** One watched chat: how many panes show it, Retry and stop. */
 type Session = { watchers: number; readonly retry: () => void; readonly stop: () => void }
 
@@ -312,7 +327,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     const read = await load(signal)
     if (read) {
       loaded = true
-      for (const entries of waiting) apply(entries)
+      const shown = views.get(chat) ?? emptyView
+      for (const entries of waiting) apply(bufferedAfterRead(shown, entries))
     } else connection.abort()
     await streamed
     if (closed()) return 'wait'

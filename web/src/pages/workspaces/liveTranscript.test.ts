@@ -119,6 +119,23 @@ describe('watchTranscript', () => {
     expect(view()?.problem).toBeUndefined()
   })
 
+  it('drops an event entry from before the read that the read cut off, so no old entry goes last', async () => {
+    const server = fakeTranscriptServer()
+    const all = Array.from({ length: 501 }, (_, i) => user(`u${String(i)}`, 'x'))
+    server.set(chat, all)
+    watch(server, 60)
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    // While the read runs, an old entry (cut from the read's last 500) and a kept one change.
+    server.push(chat, [user('u0', 'old, changed'), user('u400', 'kept, changed')])
+    await expect.poll(() => view()?.loaded).toBe(true)
+    await expect.poll(() => view()?.entries.find((e) => e.id === 'u400')).toEqual(user('u400', 'kept, changed'))
+    expect(ids()).toHaveLength(500)
+    expect(ids()?.[0]).toBe('u1')
+    expect(ids()?.at(-1)).toBe('u500')
+    expect(ids()).not.toContain('u0')
+    expect(view()?.earlier).toBe(true)
+  })
+
   it('applies an event that came before the read answered after the read', async () => {
     const server = fakeTranscriptServer()
     server.set(chat, [user('u1', 'go')])
