@@ -39,7 +39,7 @@ const sizes = [
 const shellRoutes = [
   '/inbox',
   '/inbox?state=chat',
-  '/workspaces',
+  '/workspaces?source=fixtures',
   '/workspaces?state=phoneChatFull',
   '/artifacts',
   '/artifacts?state=artifactOpen',

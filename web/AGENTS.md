@@ -32,7 +32,9 @@ Run these in `web/`; the root `package.json` has neither.
 - `pnpm dev`: the app on http://localhost:5173. It sends `/api` to the
   server at `BRIDGE_SERVER_URL` (default `http://127.0.0.1:5181`). In
   development `?state=<key>` picks a page state and `?source=` a data
-  source (`src/lib/dataSource.ts`); fixtures are the default.
+  source (`src/lib/dataSource.ts`); fixtures are the default, except the
+  Workspaces home, which reads live (d-117; `?source=fixtures` shows its
+  sample data).
 - `pnpm storybook`: Storybook on http://localhost:6007. Each story is
   also a Vitest browser test.
 

@@ -1,5 +1,5 @@
-// The notice that the live source (`?source=live`) could not be read and the
-// page shows its sample data (audit W-2, P-2). Each layout draws it at the
+// The notice that the live source could not be read and the page shows no
+// workspaces (audit W-2, P-2, d-117), with Retry, which reads the server again. Each layout draws it at the
 // top of its own content: under the phone's and tablet's list header, over
 // a chat's header on the phone and tablet, at the top of the desktop
 // sidebar and over the workbench's panes. So the owner sees it in every
@@ -7,7 +7,7 @@
 // control, and the shell keeps the window's height. The library has no
 // banner (LIBRARY_GAPS.md "Page notice"): the closest part is ErrorState's
 // `inline` row, an alert. Dismiss hides it until the
-// page loads again. Props only.
+// page loads again. Retry shows only with `onRetry`. Props only.
 import { Button } from '@eshelton328/component-library-1701'
 import { ErrorState } from '../../../errors/ErrorState.tsx'
 import { css } from '../../../../styled-system/css/index.js'
@@ -19,9 +19,11 @@ export type LiveNoticeProps = {
   title: string
   description: string
   onDismiss: () => void
+  /** Reads the live source again; no Retry when not set. */
+  onRetry?: (() => void) | undefined
 }
 
-export function LiveNotice({ title, description, onDismiss }: LiveNoticeProps) {
+export function LiveNotice({ title, description, onDismiss, onRetry }: LiveNoticeProps) {
   return (
     <div className={card}>
       <ErrorState
@@ -30,9 +32,16 @@ export function LiveNotice({ title, description, onDismiss }: LiveNoticeProps) {
         title={title}
         description={description}
         actions={
-          <Button size="sm" onClick={onDismiss}>
-            Dismiss
-          </Button>
+          <>
+            {onRetry === undefined ? null : (
+              <Button size="sm" variant="primary" onClick={onRetry}>
+                Retry
+              </Button>
+            )}
+            <Button size="sm" onClick={onDismiss}>
+              Dismiss
+            </Button>
+          </>
         }
       />
     </div>

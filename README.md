@@ -53,9 +53,10 @@ with Ctrl-C. Open that address in a browser; `/` goes to the Inbox.
   Each page has its screens under `Pages/<Page>/Screens` and one story per
   state under `Pages/<Page>/States`.
 - To see live workspaces, start the server as
-  [server/AGENTS.md](server/AGENTS.md) says, then open
-  `/workspaces?source=live`. The dev server sends `/api` to
-  `BRIDGE_SERVER_URL`, or to http://127.0.0.1:5181 when it is not set.
+  [server/AGENTS.md](server/AGENTS.md) says, then open `/workspaces`:
+  in development its home reads the server, and `?source=fixtures` shows
+  the sample data. The dev server sends `/api` to `BRIDGE_SERVER_URL`, or
+  to http://127.0.0.1:5181 when it is not set.
 
 ## Help
 

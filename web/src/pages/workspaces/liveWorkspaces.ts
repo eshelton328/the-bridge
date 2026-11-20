@@ -1,15 +1,18 @@
-// The live source of the Workspaces page (`?source=live`, development
-// only): the workspaces and chats from the-bridge server, through the Hono
-// RPC client and the query client, mapped to the page's view model and put
-// on its home state. The other parts of the page stay the home's in slice 1.
-// When the read misses in a way the page expects (the server cannot be
-// reached, refuses this viewer or answers an error status), the page keeps
-// the home's mock data and says so in a notice over every layout, in the
-// status bar and in the dev ErrorTray. A reply the contract refuses or a bug
-// in the mapper is not a miss: it throws, and the route shows RouteError.
+// The live source of the Workspaces page: its home in development (d-117)
+// and `?source=live`: the workspaces and chats from the-bridge server,
+// through the Hono RPC client and the query client, mapped to the page's
+// view model and put on its home state. Each chat is a pane with no sample
+// text: a chat's transcript and a shell's terminal say they are not live yet
+// until the slice that brings them lands. When the read misses in a way the
+// page expects (the server cannot be reached, refuses this viewer or answers
+// an error status), the page shows no workspaces, never the sample ones, and
+// says why in a notice with Retry over every layout, in the status bar and in
+// the dev ErrorTray. A reply the contract refuses or a bug in the mapper is
+// not a miss: it throws, and the route shows RouteError.
 // Slice 2: while the page shows, watchLiveWorkspaces keeps the query cache
 // current from the server's events (`GET /api/events`, SSE) and tells the
-// page to load again, at most once each `settleMs`.
+// page to load again, at most once each `settleMs`; once the stream opens
+// again after an outage, the page loads again and the notice goes.
 import {
   type ChatSummary,
   ErrorBody,
@@ -25,7 +28,7 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
-import type { SidebarChat, Workspace, WorkspacesData, WorkspacesUi } from './types.ts'
+import type { SidebarChat, WorkbenchPane, Workspace, WorkspacesData, WorkspacesUi } from './types.ts'
 
 type WorkspacesScreenState = ScreenState<WorkspacesData, WorkspacesUi>
 
@@ -105,6 +108,72 @@ export function toWorkspaces(response: WorkspacesResponse): Workspace[] {
   return response.workspaces.map(workspaceOf)
 }
 
+/** What a live chat's transcript and a live shell's terminal show until the slice that brings them lands (d-117). */
+const notLiveText = { transcript: 'Transcript not live yet', terminal: 'Terminal not live yet' } as const
+
+/**
+ * A pane for each live chat, with its header from the sidebar row and no sample text: a chat's transcript and a
+ * shell's terminal say they are not live yet, and its composer starts empty.
+ */
+export function livePanes(workspaces: readonly Workspace[]): WorkbenchPane[] {
+  return workspaces.flatMap((w) =>
+    (w.chats ?? []).map((chat): WorkbenchPane => {
+      const head = {
+        kind: chat.kind,
+        title: chat.title,
+        model: chat.model,
+        ...(chat.context === undefined ? {} : { context: chat.context }),
+        status: chat.status,
+      }
+      if (chat.kind === 'shell')
+        return { type: 'shell', id: chat.id, head, lines: [], prompt: '', notLive: notLiveText.terminal }
+      return {
+        type: 'chat',
+        id: chat.id,
+        head,
+        entries: [],
+        composer: {
+          placeholder: chat.kind === 'codex' ? 'Reply to Codex' : 'Message, or / for a skill',
+          text: '',
+          attachments: [],
+          running: false,
+        },
+        notLive: notLiveText.transcript,
+      }
+    }),
+  )
+}
+
+/**
+ * `state` with only what the live source gives: `workspaces` and a pane for each of their chats, the first chat
+ * focused, and none of the home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast).
+ * With no workspaces (an empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
+ */
+function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): WorkspacesScreenState {
+  const panes = livePanes(workspaces)
+  const data = state.data
+  const first = panes.find((p) => p.type === 'chat') ?? panes[0]
+  return {
+    ...state,
+    data: {
+      ...data,
+      workspaces,
+      current: workspaces[0]?.id ?? null,
+      panes,
+      sideChat: undefined,
+      subagents: undefined,
+      folders: undefined,
+      folderPicker: undefined,
+      lastChats: undefined,
+      toast: undefined,
+      ...(data.chatMenu === undefined
+        ? {}
+        : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
+    },
+    ui: { ...state.ui, focusedPane: first?.id ?? state.ui.focusedPane, sideChatOpen: false, subagentsOpen: false },
+  }
+}
+
 /**
  * How long the live read waits for the server, in ms: the owner's decision under d-101, 8 s, as a read over the
  * tailnet takes under 1 s.
@@ -113,12 +182,15 @@ export const liveReadTimeoutMs = 8000
 
 /**
  * A live read that missed in a way the page expects; `message` says what happened, for the status bar and the
- * ErrorTray, with the error body's message when there is one.
+ * ErrorTray, with the error body's message when there is one. Each kind has its own notice (`noticeOf`).
  * - `unreachable`: the server gave no answer. The request failed (`status` undefined: the server or the tailnet is
- *   down), or the Vite proxy or `tailscale serve` answered 502 or 503 with a body that is not an error body.
+ *   down), or a 5xx came with a body that is not an error body: the Vite proxy or `tailscale serve` answered for a
+ *   server that is down, as the server answers every error with one (d-115).
  * - `timeout`: no answer came within `liveReadTimeoutMs`.
- * - `herdr-unavailable`: the server answered that herdr is not available (503).
- * - `refused`: the server refused this viewer (401 or 403).
+ * - `herdr-unavailable` (503) and `herdr-bad-reply` (502): the server could not reach herdr, or could not read its
+ *   reply.
+ * - `forbidden`: the server refused this viewer (403, or a 401 or 403 with no error body).
+ * - `internal`: the server failed (500).
  * - `status`: any other error status; `errorKind` is the error body's kind when it has one.
  * `requestId` is the error body's, else the answer's `X-Request-Id` header.
  */
@@ -130,9 +202,13 @@ export type LiveMiss =
       readonly message: string
     }
   | { readonly kind: 'timeout'; readonly requestId: undefined; readonly message: string }
-  | { readonly kind: 'herdr-unavailable'; readonly requestId: string; readonly message: string }
   | {
-      readonly kind: 'refused'
+      readonly kind: 'herdr-unavailable' | 'herdr-bad-reply' | 'internal'
+      readonly requestId: string
+      readonly message: string
+    }
+  | {
+      readonly kind: 'forbidden'
       readonly status: number
       readonly requestId: string | undefined
       readonly message: string
@@ -157,10 +233,11 @@ function missOf(status: number, body: string, headerRequestId: string | undefine
         : ` (request ${requestId})`
       : `: ${error.message} (${error.kind}, request ${error.requestId})`
   const message = `the server answered ${String(status)}${detail}`
-  if (error?.kind === 'herdr-unavailable') return { kind: 'herdr-unavailable', requestId: error.requestId, message }
-  if (status === 401 || status === 403) return { kind: 'refused', status, requestId, message }
-  if (error === undefined && (status === 502 || status === 503))
-    return { kind: 'unreachable', status, requestId, message }
+  if (error?.kind === 'herdr-unavailable' || error?.kind === 'herdr-bad-reply' || error?.kind === 'internal')
+    return { kind: error.kind, requestId: error.requestId, message }
+  if (error?.kind === 'forbidden' || (error === undefined && (status === 401 || status === 403)))
+    return { kind: 'forbidden', status, requestId, message }
+  if (error === undefined && status >= 500) return { kind: 'unreachable', status, requestId, message }
   return { kind: 'status', status, errorKind: error?.kind, requestId, message }
 }
 
@@ -235,39 +312,46 @@ class LiveMissError extends Error {
   }
 }
 
-/** The notice over every layout when the live read missed: the same title for each miss, and what happened. */
+/** The parts that are set, in brackets after a space, such as " (502, request r-1)"; nothing when none is. */
+const inBrackets = (...parts: (string | undefined)[]) => {
+  const set = parts.filter((part) => part !== undefined)
+  return set.length === 0 ? '' : ` (${set.join(', ')})`
+}
+
+/**
+ * The notice over every layout when the live read missed: the same title for each miss, which says what the page
+ * shows, and what happened, one text for each kind. The notice's Retry reads the server again.
+ */
 function noticeOf(miss: LiveMiss): { title: string; description: string } {
-  const title = 'Live data unavailable — showing sample data'
-  const request = miss.requestId === undefined ? '' : `, request ${miss.requestId}`
+  const title = 'Live data unavailable — no workspaces shown'
+  const request = miss.requestId === undefined ? undefined : `request ${miss.requestId}`
   switch (miss.kind) {
     case 'unreachable':
       return {
         title,
-        description:
-          miss.status === undefined
-            ? 'The-bridge server did not answer. Start it or check the tailnet, then reload.'
-            : `The-bridge server did not answer (${String(miss.status)}${request}). Start it or check the tailnet, then reload.`,
+        description: `The-bridge server did not answer${miss.status === undefined ? '' : inBrackets(String(miss.status), request)}. Start it or check the tailnet, then retry.`,
       }
     case 'timeout':
       return {
         title,
-        description: `The-bridge server took more than ${String(liveReadTimeoutMs / 1000)} seconds to answer. Check that it is not stuck, then reload.`,
+        description: `The-bridge server took more than ${String(liveReadTimeoutMs / 1000)} seconds to answer. Check that it is not stuck, then retry.`,
       }
     case 'herdr-unavailable':
+      return { title, description: `Herdr is not available on the server${inBrackets(request)}. Start it, then retry.` }
+    case 'herdr-bad-reply':
       return {
         title,
-        description: `Herdr is not available on the server (request ${miss.requestId}). Start it, then reload.`,
+        description: `The server could not read herdr's reply${inBrackets(request)}. Check the server's log, then retry.`,
       }
-    case 'refused':
-      return { title, description: `The server refused this device (${String(miss.status)}${request}).` }
+    case 'forbidden':
+      return { title, description: `The server refused this device${inBrackets(String(miss.status), request)}.` }
+    case 'internal':
+      return {
+        title,
+        description: `The server failed while it read the workspaces${inBrackets(request)}. Check its log, then retry.`,
+      }
     case 'status':
-      return {
-        title,
-        description:
-          miss.errorKind === undefined
-            ? `The server answered ${String(miss.status)}${miss.requestId === undefined ? '' : ` (request ${miss.requestId})`}.`
-            : `The server answered ${String(miss.status)} (${miss.errorKind}${request}).`,
-      }
+      return { title, description: `The server answered ${String(miss.status)}${inBrackets(miss.errorKind, request)}.` }
   }
 }
 
@@ -365,9 +449,9 @@ const openEvents: OpenStream = (signal) =>
  * opens (the first time and after it connects again) mark the cache invalid, so the next load reads the
  * server. A burst of events gives one `onChange`. When the stream ends or the network drops, it connects
  * again after the server's retry time (5 s), as EventSource does, and shows the error in the status bar and the
- * dev ErrorTray once for each outage; when the server refuses the stream (403,
- * 502), it stops and shows a notice in the status bar and the dev ErrorTray, as a failed read does. The
- * result stops it.
+ * dev ErrorTray once for each outage; a 5xx is an outage too, as the Vite proxy answers 5xx while the server is down.
+ * When the server refuses the stream (such as 403), it stops and shows a notice in the status bar and the dev
+ * ErrorTray, as a failed read does. The result stops it.
  */
 export function watchLiveWorkspaces({
   onChange,
@@ -431,6 +515,9 @@ export function watchLiveWorkspaces({
     while (!closed()) {
       try {
         const res = await open(abort.signal)
+        // A 5xx is the server or its proxy with no answer for now, such as the Vite proxy while the server is down:
+        // connect again, so the page loads again, and the notice goes, once the server answers.
+        if (res.status >= 500) throw new Error(`the server answered ${String(res.status)} for the event stream`)
         if (!res.ok || res.body === null) {
           stopped = `Live updates stopped (the server answered ${String(res.status)} for the event stream); reload the page to start them again.`
           report(new Error(stopped), 'handler')
@@ -474,12 +561,12 @@ export type LiveDeps = {
 }
 
 /**
- * `state` with the server's workspaces, or with its own data and a notice when the read missed (`LiveMiss`). The
- * notice shows over every layout (`liveNotice`), in the status bar, which only the workbench layout shows, and in
- * the dev ErrorTray; the live source is development only. Anything else that throws, such as a reply the contract
- * refuses or a bug in the mapper, rejects, so the route shows RouteError and not mock data. The read ends after
- * `liveReadTimeoutMs` (a `timeout` miss) or when `signal` aborts (it rejects with the abort). With no live
- * workspaces, `current` is null.
+ * `state` with the server's workspaces and a pane for each chat (`liveOnly`), or with no workspaces and a notice
+ * when the read missed (`LiveMiss`), never the sample ones. The notice shows over every layout (`liveNotice`), in
+ * the status bar, which only the workbench layout shows, and in the dev ErrorTray; the live source is development
+ * only. Anything else that throws, such as a reply the contract refuses or a bug in the mapper, rejects, so the
+ * route shows RouteError and not mock data. The read ends after `liveReadTimeoutMs` (a `timeout` miss) or when
+ * `signal` aborts (it rejects with the abort). With no live workspaces, `current` is null.
  */
 export async function withLiveWorkspaces(
   state: WorkspacesScreenState,
@@ -510,16 +597,15 @@ export async function withLiveWorkspaces(
     )
   } catch (thrown) {
     if (!(thrown instanceof LiveMissError)) throw thrown
-    const alert = `Live data is not available (${thrown.miss.message}); the page shows mock data.`
+    const alert = `Live data is not available (${thrown.miss.message}); the page shows no workspaces.`
     report(new Error(alert, { cause: thrown }), 'handler')
+    const empty = liveOnly(state, [])
     return {
-      ...state,
-      data: { ...state.data, status: { ...state.data.status, alert }, liveNotice: noticeOf(thrown.miss) },
+      ...empty,
+      data: { ...empty.data, status: { ...empty.data.status, alert }, liveNotice: noticeOf(thrown.miss) },
     }
   }
-  const workspaces = toWorkspaces(response)
+  const live = liveOnly(state, toWorkspaces(response))
   const alert = stopped ?? lost
-  const status = alert === undefined ? state.data.status : { ...state.data.status, alert }
-  // The first live workspace is shown; with none (an empty list) no workspace is, never one of the sample's (P-3).
-  return { ...state, data: { ...state.data, status, workspaces, current: workspaces[0]?.id ?? null } }
+  return alert === undefined ? live : { ...live, data: { ...live.data, status: { ...live.data.status, alert } } }
 }

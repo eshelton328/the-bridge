@@ -2,13 +2,16 @@
 // reads the router and stores. It merges the loaded state with what the owner
 // changed in it (the page store), passes everything to the screen as props,
 // and goes to the page the owner picks in the rail, the phone's tab bar or its
-// More drawer. With `?source=live` in development it watches the server's
-// events while it shows (liveWorkspaces.ts) and loads its state again when
-// they change it; a build has no live code. A chat's Send goes to the page
+// More drawer. When it reads the live source in development (its home, or
+// `?source=live`, d-117) it watches the server's events while it shows
+// (liveWorkspaces.ts) and loads its state again when they change it, and the
+// live-unavailable notice's Retry loads it again; a build has no live code. A chat's Send goes to the page
 // store's `send`; a failed send is reported and the composer keeps the draft.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useMemo } from 'react'
 import { report } from '../../errors/reporter.ts'
+import { readsLive } from '../../lib/dataSource.ts'
+import { workspacesSources } from './loadWorkspacesState.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
 
@@ -24,10 +27,11 @@ export function WorkspacesPage() {
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
+  const live = readsLive({ state: search.state, source: search.source }, workspacesSources)
   useEffect(() => {
     let stop: (() => void) | undefined
     let gone = false
-    if (import.meta.env.DEV && search.source === 'live') {
+    if (import.meta.env.DEV && live) {
       void import('./liveWorkspaces.ts').then((live) => {
         if (!gone) stop = live.watchLiveWorkspaces({ onChange: () => void router.invalidate() })
       })
@@ -36,7 +40,7 @@ export function WorkspacesPage() {
       gone = true
       stop?.()
     }
-  }, [router, search.source])
+  }, [router, live])
   // One object per change, so the screen starts again from the merged ui only when the store changes.
   const ui = useMemo(() => ({ ...state.ui, ...changed }), [state.ui, changed])
   return (
@@ -47,6 +51,7 @@ export function WorkspacesPage() {
       onUiChange={(change) => {
         setUi(search.state, change)
       }}
+      onRetry={() => void router.invalidate()}
       onSend={(chat, text) =>
         send(chat, text).then(
           () => true,

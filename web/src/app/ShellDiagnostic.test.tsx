@@ -14,7 +14,8 @@ import { routeTree } from './routeTree.gen.ts'
 // Audit L-8 (library beta.91 `onDiagnostic`): every AppShell sends its diagnostics to report(). On the owner's path,
 // /workspaces > a chat on the phone, the test moves the chat's ScrollFrame into a wrapper, so its field cannot dock on
 // the keyboard as a page mistake would leave it, and the reporter gets one `undocked-field`. A normal open of each
-// page reports nothing. The app's styles and fonts load as in main.ts.
+// page reports nothing. The app's styles and fonts load as in main.ts. The chat is one of the home's sample chats
+// (?source=fixtures), as the home reads the live source in development (d-117).
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -110,7 +111,7 @@ describe('AppShell reports an undocked field to the app (audit L-8)', () => {
   it('sends one undocked-field report on the owner path: /workspaces > a chat, on the phone', async () => {
     await setViewport(390, 844)
     const viewport = fakeKeyboard()
-    await renderAt('/workspaces')
+    await renderAt('/workspaces?source=fixtures')
     const frame = await openChat()
     undock(frame)
     await userEvent.click(field(frame))
@@ -127,9 +128,9 @@ describe('AppShell reports an undocked field to the app (audit L-8)', () => {
   it('sends exactly one report when the page renders twice and re-renders as the owner types', async () => {
     await setViewport(390, 844)
     const viewport = fakeKeyboard()
-    await renderAt('/workspaces')
+    await renderAt('/workspaces?source=fixtures')
     await openChat()
-    await renderAt('/workspaces')
+    await renderAt('/workspaces?source=fixtures')
     const frame = await openChat()
     undock(frame)
     await userEvent.click(field(frame))
@@ -146,7 +147,7 @@ describe('AppShell reports an undocked field to the app (audit L-8)', () => {
   it('reports nothing for a docked chat with the keyboard open', async () => {
     await setViewport(390, 844)
     const viewport = fakeKeyboard()
-    await renderAt('/workspaces')
+    await renderAt('/workspaces?source=fixtures')
     const frame = await openChat()
     await userEvent.click(field(frame))
     viewport.move({ height: keyboardTop })
@@ -156,7 +157,8 @@ describe('AppShell reports an undocked field to the app (audit L-8)', () => {
     expect(getReports()).toEqual([])
   })
 
-  for (const path of ['/inbox', '/workspaces', '/artifacts', '/toolkit'])
+  // The Workspaces home reads the live source in development (d-117); its sample data needs no server.
+  for (const path of ['/inbox', '/workspaces?source=fixtures', '/artifacts', '/toolkit'])
     for (const [width, height] of [
       [390, 844],
       [1512, 982],

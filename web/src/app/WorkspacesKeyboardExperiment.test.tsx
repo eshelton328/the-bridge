@@ -32,9 +32,13 @@ function tap(el: Element) {
   return end
 }
 
+/** A sample chat of the home (?source=fixtures), as the home reads the live source in development (d-117). */
 async function openChatComposer(): Promise<HTMLTextAreaElement> {
   await setViewport(390, 844)
-  const router = createRouter({ routeTree, history: createMemoryHistory({ initialEntries: ['/workspaces'] }) })
+  const router = createRouter({
+    routeTree,
+    history: createMemoryHistory({ initialEntries: ['/workspaces?source=fixtures'] }),
+  })
   const view = await testRender(<RouterProvider router={router} />)
   onTestFinished(view.unmount)
   const chat = page.getByText('bridge themes', { exact: true })

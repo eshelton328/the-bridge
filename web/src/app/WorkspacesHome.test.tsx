@@ -11,7 +11,9 @@ import { routeTree } from './routeTree.gen.ts'
 
 // /workspaces with no ?state= opens the page's home (pages/workspaces/home.ts):
 // every overlay closed, laid out for the window's width. A ?state= still
-// draws its own frame's layout.
+// draws its own frame's layout. In development the home reads the live
+// source (d-117, WorkspacesLiveDefault.test.tsx); these tests draw its
+// sample data with ?source=fixtures.
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -45,7 +47,7 @@ afterEach(async () => {
 describe('the Workspaces home', () => {
   it('draws the phone layout at 390 with nothing open', async () => {
     await setViewport(390, 844)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     await expect.element(page.getByText('release notes')).toBeVisible()
@@ -56,7 +58,7 @@ describe('the Workspaces home', () => {
 
   it('draws the desktop layout at 1512 with nothing open', async () => {
     await setViewport(1512, 982)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     expect(tabBar()).toBeNull()
     expect(visibleOverlays()).toHaveLength(0)
@@ -64,7 +66,7 @@ describe('the Workspaces home', () => {
 
   it('draws the tablet list at 756 with nothing open', async () => {
     await setViewport(756, 1024)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     expect(rail()).toBeNull()
     expect(visibleOverlays()).toHaveLength(0)
@@ -72,7 +74,7 @@ describe('the Workspaces home', () => {
 
   it('goes to Toolkit from More in the tablet tab bar, as the tablet has no rail', async () => {
     await setViewport(756, 1024)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(tabBar).not.toBeNull()
     await userEvent.click(page.getByRole('button', { name: 'More' }))
     await expect.poll(() => router?.state.location.pathname).toBe('/toolkit')
@@ -80,7 +82,7 @@ describe('the Workspaces home', () => {
 
   it('changes from the desktop to the phone layout and back as the window narrows and widens', async () => {
     await setViewport(1512, 982)
-    view = await renderAt('/workspaces')
+    view = await renderAt('/workspaces?source=fixtures')
     await expect.poll(rail).not.toBeNull()
     await setViewport(390, 844)
     await expect.poll(tabBar).not.toBeNull()

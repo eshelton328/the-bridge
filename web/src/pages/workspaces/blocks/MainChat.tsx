@@ -83,6 +83,7 @@ export function MainChat(props: MainChatProps) {
           entries: layers?.entries ?? ['105:869', undefined, '105:874'],
         }}
         entries={pane.entries}
+        notLive={pane.notLive}
         composer={withDraft(pane.composer, draft)}
         onTextChange={onTextChange}
         onSend={onSend}

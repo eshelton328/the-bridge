@@ -122,8 +122,18 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
     head: PaneHead,
     entries: z.array(ChatEntry),
     composer: ComposerState,
+    /** A live chat (d-117): the text in place of its transcript, such as "Transcript not live yet"; none when not set. */
+    notLive: z.string().optional(),
   }),
-  z.object({ type: z.literal('shell'), id: z.string(), head: PaneHead, lines: z.array(ShellLine), prompt: z.string() }),
+  z.object({
+    type: z.literal('shell'),
+    id: z.string(),
+    head: PaneHead,
+    lines: z.array(ShellLine),
+    prompt: z.string(),
+    /** A live shell (d-117): the text in place of its terminal, such as "Terminal not live yet"; none when not set. */
+    notLive: z.string().optional(),
+  }),
   z.object({
     type: z.literal('empty'),
     id: z.string(),
@@ -718,8 +728,8 @@ const WorkspacesDataFields = z.object({
   panes: z.array(WorkbenchPane),
   status: z.object({ summary: z.string(), hints: z.array(z.string()), alert: z.string() }),
   /**
-   * The notice over every layout when the live source (`?source=live`) could not be read and the page shows its
-   * sample data instead (liveWorkspaces.ts); a state without it shows none.
+   * The notice over every layout when the live source could not be read and the page shows no workspaces
+   * (liveWorkspaces.ts), with Retry; a state without it shows none.
    */
   liveNotice: z.object({ title: z.string(), description: z.string() }).optional(),
   /** A pane menu's actions, with a separator before `move`. */

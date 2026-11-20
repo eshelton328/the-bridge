@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { readState } from './dataSource.ts'
+import { readState, readsLive } from './dataSource.ts'
 
 const states = { first: { n: 1 }, second: { n: 2 } }
 
@@ -66,5 +66,36 @@ describe('readState', () => {
       ok: false,
       error: { reason: 'notBuilt', source: 'mock-api' },
     })
+  })
+
+  it("reads a page's default source for its home, and the fixtures for a ?state= or ?source=fixtures (d-117)", () => {
+    const home = { key: 'home', state: { n: 0 } }
+    const options = { built: ['live'], default: 'live' } as const
+    expect(readState(states, { state: undefined, source: undefined }, home, options)).toEqual({
+      ok: true,
+      value: { key: 'home', state: home.state, live: true },
+    })
+    expect(readState(states, { state: 'second', source: undefined }, home, options)).toEqual({
+      ok: true,
+      value: { key: 'second', state: states.second },
+    })
+    expect(readState(states, { state: undefined, source: 'fixtures' }, home, options)).toEqual({
+      ok: true,
+      value: home,
+    })
+    expect(readState(states, { state: 'second', source: 'live' }, home, options)).toEqual({
+      ok: true,
+      value: { key: 'second', state: states.second, live: true },
+    })
+  })
+
+  it('says when a request reads live: the default with no ?state=, or ?source=live', () => {
+    const options = { built: ['live'], default: 'live' } as const
+    expect(readsLive({ state: undefined, source: undefined }, options)).toBe(true)
+    expect(readsLive({ state: 'second', source: undefined }, options)).toBe(false)
+    expect(readsLive({ state: undefined, source: 'fixtures' }, options)).toBe(false)
+    expect(readsLive({ state: 'second', source: 'live' }, options)).toBe(true)
+    expect(readsLive({ state: undefined, source: undefined }, { built: ['live'] })).toBe(false)
+    expect(readsLive({ state: undefined, source: 'live' })).toBe(false)
   })
 })

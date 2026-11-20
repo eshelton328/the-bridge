@@ -25,6 +25,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import { ChatEntryView } from './ChatEntryView.tsx'
+import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 
@@ -102,6 +103,8 @@ type ChatPaneBase = {
     skills?: string | undefined
   }
   entries: readonly ChatEntry[]
+  /** A live chat's text in place of its transcript, such as "Transcript not live yet" (d-117); `entries` when not set. */
+  notLive?: string | undefined
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
   skills?:
@@ -165,6 +168,7 @@ export function ChatPane(props: ChatPaneProps) {
   const {
     figma,
     entries,
+    notLive,
     composer,
     skills,
     onSkillsOpenChange,
@@ -349,9 +353,14 @@ export function ChatPane(props: ChatPaneProps) {
         </div>
       </SkillPicker>
     )
-  const entryViews = entries.map((entry, i) => (
-    <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
-  ))
+  const entryViews =
+    notLive === undefined ? (
+      entries.map((entry, i) => (
+        <ChatEntryView key={`${entry.type}-${String(i)}`} entry={entry} figma={figma.entries?.[i]} />
+      ))
+    ) : (
+      <NotLive text={notLive} />
+    )
   if (props.label !== undefined) {
     const parts = framed[props.size]
     return (
