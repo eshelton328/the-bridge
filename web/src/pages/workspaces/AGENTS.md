@@ -17,6 +17,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A composer's text lives in `ui.drafts` by chat id (`blocks/chatDraft.ts`),
   so a pane that unmounts keeps its draft. Key each `ChatPane` by its
   pane's id, so a switch mounts that chat's own draft.
+- A chat's Send goes to the store's `send` through the library's
+  `onSend`; a failed send keeps the draft (`WorkspacesSendDraft.test.tsx`).
 - The screen lays out by its width (`ViewportFrame`): `data.phone` draws
   `WorkspacesPhone` at a phone's width, and at a tablet's width too with
   `data.tabletList`; every other case draws the desktop layout.

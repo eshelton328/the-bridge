@@ -17,7 +17,8 @@
 // `size="sheet"` the side chat's body in the phone's sheet (M5 105:3106).
 // With `header` the ScrollFrame is the root, so the phone's chat puts it
 // straight in the AppShell detail, which docks the composer on the keyboard
-// (library beta.61, screen review R20). Props only.
+// (library beta.61, screen review R20). Send goes through `onSend` (library
+// beta.90): the box keeps the draft until the send succeeds. Props only.
 import { Composer, Inline, ModelChip, PlusIcon, ScrollFrame } from '@eshelton328/component-library-1701'
 import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
@@ -130,6 +131,12 @@ type ChatPaneBase = {
   autoFocus?: boolean | undefined
   /** Called with the message box's text as the owner types, so the caller can keep the draft when the pane unmounts. */
   onTextChange?: ((text: string) => void) | undefined
+  /**
+   * Sends the message: resolves `true` once it is sent and `false` when the send failed, which the caller reports. The
+   * box empties only on `true`, and only when the owner has not typed on meanwhile, so a failed send keeps the draft.
+   * Not set, as in a side chat, the message counts as sent at once.
+   */
+  onSend?: ((text: string) => Promise<boolean>) | undefined
 }
 
 export type ChatPaneProps = ChatPaneBase &
@@ -170,6 +177,7 @@ export function ChatPane(props: ChatPaneProps) {
     above,
     autoFocus = false,
     onTextChange,
+    onSend,
   } = props
   // Set when "/" opens the list, so the list hands the focus back to the box (SkillPicker `onListFocus`).
   const typedRef = useRef(false)
@@ -178,6 +186,9 @@ export function ChatPane(props: ChatPaneProps) {
   const [query, setQuery] = useState(() => skillQuery(composer.text, composer.text.length))
   // The message box's text: a picked skill goes into it.
   const [text, setText] = useState(composer.text)
+  // The text as typed now, for a send that ends after the owner typed on: the box empties only if it still holds what
+  // was sent, as the library's own composer does with its uncontrolled text.
+  const latestRef = useRef(composer.text)
   // The skill the arrow keys moved the highlight to, while the list is open.
   const [moved, setMoved] = useState<string | null>(null)
   // Where the caret goes once a picked skill is in the box.
@@ -201,6 +212,7 @@ export function ChatPane(props: ChatPaneProps) {
     area.setSelectionRange(area.value.length, area.value.length)
   }, [autoFocus])
   const onValueChange = (next: string) => {
+    latestRef.current = next
     setText(next)
     onTextChange?.(next)
     const caret = textArea()?.selectionStart ?? next.length
@@ -225,6 +237,7 @@ export function ChatPane(props: ChatPaneProps) {
     // In the tap's own handler, so the phone keeps its keyboard up; the caret moves once the box holds the skill.
     area?.focus()
     caretRef.current = next.caret
+    latestRef.current = next.text
     setText(next.text)
     onTextChange?.(next.text)
     setQuery(null)
@@ -245,6 +258,13 @@ export function ChatPane(props: ChatPaneProps) {
     if (step === 0) pick(highlighted)
     else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
   }
+  // The box is controlled, so the composer never empties it: a sent message empties it here.
+  const sent = (submitted: string) => (ok: boolean) => {
+    if (ok && latestRef.current === submitted) onValueChange('')
+    return ok
+  }
+  const send = (submitted: string): boolean | Promise<boolean> =>
+    onSend === undefined ? sent(submitted)(true) : onSend(submitted).then(sent(submitted))
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -259,10 +279,7 @@ export function ChatPane(props: ChatPaneProps) {
       placeholder={composer.placeholder}
       value={text}
       onValueChange={onValueChange}
-      // The box is controlled, so a sent message empties it here, as the composer does with its own text.
-      onSubmit={() => {
-        onValueChange('')
-      }}
+      onSend={send}
       running={composer.running}
       attachments={composer.attachments.map((name) => ({ id: name, name }))}
       onRemoveAttachment={() => undefined}

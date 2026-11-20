@@ -78,9 +78,22 @@ export type WorkspacesPhoneProps = {
   ui: WorkspacesUi
   onNavigate?: ((page: string) => void) | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
+  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
+  onDraftChange: (chat: string, text: string) => void
+  /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
+  onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
 }
 
-export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange }: WorkspacesPhoneProps) {
+export function WorkspacesPhone({
+  device,
+  data,
+  text,
+  ui,
+  onNavigate,
+  onUiChange,
+  onDraftChange,
+  onSend,
+}: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
   const focused = data.panes.find((p) => p.id === ui.focusedPane)
@@ -265,8 +278,9 @@ export function WorkspacesPhone({ device, data, text, ui, onNavigate, onUiChange
               focusMessage={ui.messageFocus}
               draft={ui.drafts?.[chat.id]}
               onTextChange={(draft) => {
-                onUiChange({ drafts: { ...ui.drafts, [chat.id]: draft } })
+                onDraftChange(chat.id, draft)
               }}
+              onSend={onSend && ((message) => onSend(chat.id, message))}
               rename={
                 ui.renaming === true ? (
                   <ChatNameField

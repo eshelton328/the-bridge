@@ -42,6 +42,8 @@ export type MainChatProps = {
   draft?: string | undefined
   /** Called with the composer's text as the owner types. */
   onTextChange?: ((text: string) => void) | undefined
+  /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
+  onSend?: ((text: string) => Promise<boolean>) | undefined
 }
 
 export function MainChat(props: MainChatProps) {
@@ -59,6 +61,7 @@ export function MainChat(props: MainChatProps) {
     overlay,
     draft,
     onTextChange,
+    onSend,
   } = props
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
@@ -82,6 +85,7 @@ export function MainChat(props: MainChatProps) {
         entries={pane.entries}
         composer={withDraft(pane.composer, draft)}
         onTextChange={onTextChange}
+        onSend={onSend}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         folders={folders}

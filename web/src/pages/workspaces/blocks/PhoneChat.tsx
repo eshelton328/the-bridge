@@ -76,6 +76,8 @@ export type PhoneChatProps = {
   draft?: string | undefined
   /** Called with the composer's text as the owner types. */
   onTextChange?: ((text: string) => void) | undefined
+  /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
+  onSend?: ((text: string) => Promise<boolean>) | undefined
 }
 
 export function PhoneChat(props: PhoneChatProps) {
@@ -98,6 +100,7 @@ export function PhoneChat(props: PhoneChatProps) {
     layers,
     draft,
     onTextChange,
+    onSend,
   } = props
   const more = (
     <Button variant="text" size="xs" iconOnly className={moreButton} aria-label={`${pane.head.title} actions`}>
@@ -145,6 +148,7 @@ export function PhoneChat(props: PhoneChatProps) {
       entries={pane.entries}
       composer={withDraft(pane.composer, draft)}
       onTextChange={onTextChange}
+      onSend={onSend}
       skills={skills}
       onSkillsOpenChange={onSkillsOpenChange}
       autoFocus={skills.open || focusMessage}
