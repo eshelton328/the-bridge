@@ -111,6 +111,7 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
           nodeTone={graph.nodeTone}
           edgeEnd={graph.edgeEnd}
           orientation={graph.orientation}
+          nodeIconSize={layout === 'phone' ? '12' : undefined}
           nodes={graph.nodes.map((n) => ({
             id: n.id,
             label: n.label,
@@ -119,6 +120,7 @@ export function ToolkitLinksGraph({ links, item, layout = 'desktop', onOpenItem 
             y: n.y,
             size: n.size,
             labelStyle: n.labelStyle,
+            iconSize: n.labelStyle === 'label' ? '16' : undefined,
           }))}
           edges={graph.edges}
           columns={graph.columns}
