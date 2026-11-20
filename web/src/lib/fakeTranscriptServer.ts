@@ -13,6 +13,10 @@
 // contract refuses, and JSON that does not parse, answer 400
 // invalid-input, as the server's routes do (backend #297), and every error
 // answer is checked against the contract's `ErrorBody`.
+//
+// W1-3: a chat whose terminal input holds text (`typeInTerminal`) refuses a
+// send with 409 chat-not-ready `inputNotEmpty`, as the server does, until
+// the test clears it (`clearTerminal`). A stop never sees this state.
 import {
   ErrorBody,
   maxTranscriptEntries,
@@ -79,6 +83,8 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   const paths: string[] = []
   let promptAnswer: ActionAnswer | undefined
   let stopAnswer: ActionAnswer | undefined
+  /** The chats whose terminal input holds text now. */
+  const typed = new Set<string>()
 
   /** A send or a stop: the contract's checks, then the test's answer or 204. */
   const act = (chat: string, route: 'prompt' | 'stop', init: RequestInit | undefined) => {
@@ -93,6 +99,11 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
       )
     const answer = route === 'prompt' ? promptAnswer : stopAnswer
     if (answer !== undefined) return answer()
+    if (route === 'prompt' && typed.has(chat))
+      return errorAnswer(
+        { kind: 'chat-not-ready', state: 'inputNotEmpty', message: 'Input not empty', requestId: 'r-409' },
+        409,
+      )
     if (route === 'prompt') {
       const text = SendPromptRequest.parse(body).text
       prompts.push({ chat, text })
@@ -148,6 +159,14 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     /** Answers each stop with `answer` until it is set to undefined; the stop is not recorded in `stops`. */
     answerStops: (answer: ActionAnswer | undefined) => {
       stopAnswer = answer
+    },
+    /** Puts text in the terminal input of `chat`, as a stopped prompt does: each send then answers 409 inputNotEmpty. */
+    typeInTerminal: (chat: string) => {
+      typed.add(chat)
+    },
+    /** Empties the terminal input of `chat`, as the owner does there: sends go through again. */
+    clearTerminal: (chat: string) => {
+      typed.delete(chat)
     },
     /** The chats whose stream is open now, one item for each stream. */
     openStreams: () => open.map((s) => s.chat),

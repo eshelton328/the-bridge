@@ -49,7 +49,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   over `maxPromptChars` is not sent, and a miss keeps the text and shows
   one quiet line under the composer by kind ("Not sent — herdr-unavailable",
   with Retry for a 5xx, no answer or a 429); a Stop that finds the chat not
-  working is quiet (`blocks/useComposerActions.ts`). report() gets only a
+  working is quiet (`blocks/useComposerActions.ts`). A send to a chat whose
+  terminal input holds text, or one the server cannot read (409
+  inputNotEmpty, W1-3: a Stop puts the stopped prompt back there),
+  keeps the draft and says "Not sent — clear the text in the chat's
+  terminal input, then send", with no Retry and no report. report() gets only a
   5xx or an answer the page does not expect, with the action, kind and
   status, never the message text (`app/WorkspacesLiveSend.test.tsx`). The
   requests go through the typed RPC client with the chat ID URL-encoded
