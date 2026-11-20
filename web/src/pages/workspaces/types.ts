@@ -717,6 +717,11 @@ export const WorkspacesData = z.object({
   /** The current workspace's panes, clockwise from the top left. */
   panes: z.array(WorkbenchPane),
   status: z.object({ summary: z.string(), hints: z.array(z.string()), alert: z.string() }),
+  /**
+   * The notice over every layout when the live source (`?source=live`) could not be read and the page shows its
+   * sample data instead (liveWorkspaces.ts); a state without it shows none.
+   */
+  liveNotice: z.object({ title: z.string(), description: z.string() }).optional(),
   /** A pane menu's actions, with a separator before `move`. */
   paneMenu: z.array(PaneAction),
   /** The last row of Move to workspace. */

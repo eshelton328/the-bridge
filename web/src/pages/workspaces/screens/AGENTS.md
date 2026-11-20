@@ -13,6 +13,9 @@ views, one at a time, also drawn at a tablet's width for T frames).
   plays the tablet and phone ones at their frame size.
 - `WorkspacesScreens.stories.tsx` (`Pages/Workspaces/Screens`) draws each
   screen of `states/screens.ts` with its devices side by side (review R10).
+- `WorkspacesLiveUnavailable.stories.tsx` (`Pages/Workspaces/Live
+  unavailable`) draws the live-unavailable notice on desktop and phone;
+  it is not a Figma state (`LiveNotice.test.tsx`).
 - The phone's views with no tab bar (the chat, New chat, the subagents)
   keep their footers in `ScrollFrame` footers, which the library lifts
   above the bar.

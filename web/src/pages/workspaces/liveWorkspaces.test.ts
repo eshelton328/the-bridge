@@ -2,6 +2,7 @@
 // with the page's state files, so the mocks are the backend's expected output.
 import { WorkspacesResponse } from '@bridge/contract'
 import { QueryClient } from '@tanstack/react-query'
+import { err, ok } from '@bridge/shared'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { clearReports, getReports } from '../../errors/reporter.ts'
 import { workspacesHome } from './home.ts'
@@ -156,29 +157,67 @@ describe('withLiveWorkspaces', () => {
   const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
 
   it("puts the server's workspaces on the home state and shows the first one", async () => {
-    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: () => Promise.resolve(response) })
+    const state = await withLiveWorkspaces(workspacesHome, {
+      client: client(),
+      fetch: () => Promise.resolve(ok(response)),
+    })
     expect(state.data.workspaces).toEqual(toWorkspaces(response))
     expect(state.data.current).toBe('omni-brain')
     expect(state.data.panes).toBe(workspacesHome.data.panes)
     expect(state.ui).toBe(workspacesHome.ui)
   })
 
-  it('keeps the mock data and gives the notice in the status bar and the error tray when the server is down', async () => {
-    const down = () => Promise.reject(new Error('the server answered 502: herdr socket: ENOENT'))
+  it('keeps the mock data and gives the notice in the page, the status bar and the error tray when the server is down', async () => {
+    const down = () =>
+      Promise.resolve(
+        err({
+          kind: 'status' as const,
+          status: 502,
+          errorKind: undefined,
+          requestId: undefined,
+          message: 'the server answered 502: herdr socket: ENOENT',
+        }),
+      )
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: down })
     expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
     expect(state.data.status.alert).toBe(
       'Live data is not available (the server answered 502: herdr socket: ENOENT); the page shows mock data.',
     )
+    expect(state.data.liveNotice).toEqual({
+      title: 'Live data unavailable — showing sample data',
+      description: 'The server answered 502.',
+    })
     expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
   })
 
-  it('keeps the mock data when the server sends a reply the contract refuses', async () => {
-    const odd = () => Promise.resolve(WorkspacesResponse.parse({ machine: 'x', workspaces: 'none' }))
-    const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: odd })
-    expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
-    expect(state.data.status.alert).toMatch(/^Live data is not available/)
-    expect(getReports().map((r) => r.error.message)).toEqual([state.data.status.alert])
+  it('has no notice when the read succeeds', async () => {
+    const state = await withLiveWorkspaces(workspacesHome, {
+      client: client(),
+      fetch: () => Promise.resolve(ok(response)),
+    })
+    expect(state.data.liveNotice).toBeUndefined()
+  })
+
+  it('does not take a reply the contract refuses for an outage: it rejects, for RouteError', async () => {
+    const odd = () => Promise.resolve(ok(WorkspacesResponse.parse({ machine: 'x', workspaces: 'none' })))
+    await expect(withLiveWorkspaces(workspacesHome, { client: client(), fetch: odd })).rejects.toThrow()
+    expect(getReports()).toEqual([])
+  })
+
+  it('does not take a bug in the mapper for an outage: it rejects, for RouteError', async () => {
+    // A reply the contract took, with workspaces the mapper cannot read: its throw must not become mock data.
+    const broken: WorkspacesResponse = { ...response, workspaces: [] }
+    Object.defineProperty(broken, 'workspaces', {
+      get: () => {
+        throw new Error('a bug in the mapper')
+      },
+    })
+    const state = withLiveWorkspaces(workspacesHome, {
+      client: new QueryClient({ defaultOptions: { queries: { retry: false, structuralSharing: false } } }),
+      fetch: () => Promise.resolve(ok(broken)),
+    })
+    await expect(state).rejects.toThrow('a bug in the mapper')
+    expect(getReports()).toEqual([])
   })
 })
 
@@ -292,7 +331,7 @@ describe('watchLiveWorkspaces', () => {
     const slow = () =>
       new Promise<WorkspacesResponse>((resolve) => {
         answer = resolve
-      })
+      }).then(ok)
     const loading = withLiveWorkspaces(workspacesHome, { client: queries, fetch: slow })
     await settle(5)
     server.opened[0]?.send(server.frame('chat.status', status('mac-mini/drift-check', 'idle')))
@@ -309,7 +348,7 @@ describe('watchLiveWorkspaces', () => {
   it('reads the cache while it watches, and the server again once the cache is invalid', async () => {
     const queries = client()
     const server = fakeServer()
-    const fetch = vi.fn(() => Promise.resolve(response))
+    const fetch = vi.fn(() => Promise.resolve(ok(response)))
     const stop = watchLiveWorkspaces({ onChange: () => undefined, client: queries, settleMs: 10, open: server.open })
     await withLiveWorkspaces(workspacesHome, { client: queries, fetch })
     await settle(5)
@@ -357,7 +396,7 @@ describe('watchLiveWorkspaces', () => {
       ])
       const state = await withLiveWorkspaces(workspacesHome, {
         client: queries,
-        fetch: () => Promise.resolve(response),
+        fetch: () => Promise.resolve(ok(response)),
       })
       expect(state.data.status.alert).toBe('Live updates lost the event stream (Failed to fetch 3); connecting again.')
       stop()
@@ -389,13 +428,16 @@ describe('watchLiveWorkspaces', () => {
       'Live updates stopped (the server answered 403 for the event stream); reload the page to start them again.'
     expect(getReports().map((r) => r.error.message)).toEqual([notice])
     expect(onChange).toHaveBeenCalledTimes(1)
-    const state = await withLiveWorkspaces(workspacesHome, { client: queries, fetch: () => Promise.resolve(response) })
+    const state = await withLiveWorkspaces(workspacesHome, {
+      client: queries,
+      fetch: () => Promise.resolve(ok(response)),
+    })
     expect(state.data.status.alert).toBe(notice)
     stop()
   })
 })
 
-describe('fetchWorkspaces with an error answer (W-1)', () => {
+describe('fetchWorkspaces with an error answer (W-1, W-2)', () => {
   const client = () => new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const answer = (body: string, status: number, requestId?: string) => {
     const headers: Record<string, string> = requestId === undefined ? {} : { 'X-Request-Id': requestId }
@@ -404,8 +446,10 @@ describe('fetchWorkspaces with an error answer (W-1)', () => {
       vi.fn(() => Promise.resolve(new Response(body, { status, headers }))),
     )
   }
+  const errorBody = (kind: string, more: Record<string, unknown> = {}) =>
+    JSON.stringify({ error: { kind, message: 'herdr is not running', requestId: 'r-42', ...more } })
 
-  it('names the status of a 502 that is not JSON, as the Vite proxy or tailscale serve sends', async () => {
+  it('gives unreachable for a 502 that is not JSON, as the Vite proxy or tailscale serve sends', async () => {
     answer('', 502)
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: fetchWorkspaces })
     expect(state.data.workspaces).toBe(workspacesHome.data.workspaces)
@@ -413,69 +457,123 @@ describe('fetchWorkspaces with an error answer (W-1)', () => {
       'Live data is not available (the server answered 502); the page shows mock data.',
     )
     expect(state.data.status.alert).not.toMatch(/JSON/)
+    expect(state.data.liveNotice?.description).toBe(
+      'The-bridge server did not answer (502). Start it or check the tailnet, then reload.',
+    )
   })
 
-  it('names the status of an HTML error page, with the X-Request-Id header when it has one', async () => {
+  it('gives unreachable for an HTML 502 or 503, with the X-Request-Id header when it has one', async () => {
     answer('<html><body>Bad Gateway</body></html>', 502)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({
-      message: 'the server answered 502',
-      status: 502,
-      kind: undefined,
-      requestId: undefined,
-    })
-    answer('<html><body>Bad Gateway</body></html>', 503, 'r-7')
-    await expect(fetchWorkspaces()).rejects.toMatchObject({
-      message: 'the server answered 503 (request r-7)',
-      status: 503,
-      kind: undefined,
-      requestId: 'r-7',
-    })
+    expect(await fetchWorkspaces()).toEqual(
+      err({ kind: 'unreachable', status: 502, requestId: undefined, message: 'the server answered 502' }),
+    )
+    answer('<html><body>Service Unavailable</body></html>', 503, 'r-7')
+    expect(await fetchWorkspaces()).toEqual(
+      err({ kind: 'unreachable', status: 503, requestId: 'r-7', message: 'the server answered 503 (request r-7)' }),
+    )
   })
 
-  it("gives an error body's message, kind and request ID, not [object Object]", async () => {
-    const error = { kind: 'herdr-unavailable', message: 'herdr is not running', requestId: 'r-42' }
-    answer(JSON.stringify({ error }), 503, 'r-header')
+  it("gives herdr-unavailable with the body's message, kind and request ID, not [object Object]", async () => {
+    answer(errorBody('herdr-unavailable'), 503, 'r-header')
     const state = await withLiveWorkspaces(workspacesHome, { client: client(), fetch: fetchWorkspaces })
     expect(state.data.status.alert).toBe(
       'Live data is not available (the server answered 503: herdr is not running (herdr-unavailable, request r-42)); the page shows mock data.',
     )
     expect(state.data.status.alert).not.toMatch(/object Object/)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({ status: 503, kind: 'herdr-unavailable', requestId: 'r-42' })
+    expect(state.data.liveNotice?.description).toBe(
+      'Herdr is not available on the server (request r-42). Start it, then reload.',
+    )
+    expect(await fetchWorkspaces()).toMatchObject({ error: { kind: 'herdr-unavailable', requestId: 'r-42' } })
   })
 
-  it('reads each kind of the contract, with its own fields', async () => {
+  it('gives status with the kind for each other kind of the contract', async () => {
     const bodies = [
-      { status: 403, error: { kind: 'forbidden' } },
-      { status: 404, error: { kind: 'not-found', path: '/api/workspaces' } },
-      { status: 400, error: { kind: 'invalid-input', issues: ['id: Required'] } },
-      { status: 502, error: { kind: 'herdr-bad-reply' } },
-      { status: 500, error: { kind: 'internal' } },
+      { status: 404, kind: 'not-found', more: { path: '/api/workspaces' } },
+      { status: 400, kind: 'invalid-input', more: { issues: ['id: Required'] } },
+      { status: 502, kind: 'herdr-bad-reply', more: {} },
+      { status: 500, kind: 'internal', more: {} },
     ]
-    for (const { status, error } of bodies) {
-      answer(JSON.stringify({ error: { ...error, message: 'no', requestId: 'r-1' } }), status)
-      await expect(fetchWorkspaces()).rejects.toMatchObject({ status, kind: error.kind, requestId: 'r-1' })
+    for (const { status, kind, more } of bodies) {
+      answer(errorBody(kind, more), status)
+      expect(await fetchWorkspaces()).toMatchObject({
+        error: { kind: 'status', status, errorKind: kind, requestId: 'r-42' },
+      })
     }
   })
 
   it("drops an error body's reason", async () => {
-    const error = { kind: 'herdr-unavailable', message: 'herdr is not running', requestId: 'r-3' }
-    answer(JSON.stringify({ error: { ...error, reason: 'connect ENOENT herdr.sock' } }), 503)
-    const thrown: unknown = await fetchWorkspaces().catch((e: unknown) => e)
-    expect(thrown).toMatchObject({
-      message: 'the server answered 503: herdr is not running (herdr-unavailable, request r-3)',
+    answer(errorBody('herdr-unavailable', { reason: 'connect ENOENT herdr.sock' }), 503)
+    const answered = await fetchWorkspaces()
+    expect(answered).toMatchObject({
+      error: { message: 'the server answered 503: herdr is not running (herdr-unavailable, request r-42)' },
     })
-    expect(String(thrown)).not.toMatch(/herdr\.sock/)
+    expect(JSON.stringify(answered)).not.toMatch(/herdr\.sock/)
   })
 
   it('names only the status and request ID of a JSON body that is not an error body', async () => {
     answer(JSON.stringify({ error: 'herdr is not running' }), 500, 'r-9')
-    await expect(fetchWorkspaces()).rejects.toMatchObject({
-      message: 'the server answered 500 (request r-9)',
-      status: 500,
-      kind: undefined,
-      requestId: 'r-9',
-    })
+    expect(await fetchWorkspaces()).toEqual(
+      err({
+        kind: 'status',
+        status: 500,
+        errorKind: undefined,
+        requestId: 'r-9',
+        message: 'the server answered 500 (request r-9)',
+      }),
+    )
     answer(JSON.stringify({ error: { kind: 'unknown-kind', message: 'x', requestId: 'r-10' } }), 500)
-    await expect(fetchWorkspaces()).rejects.toMatchObject({ message: 'the server answered 500', kind: undefined })
+    expect(await fetchWorkspaces()).toMatchObject({
+      error: { kind: 'status', errorKind: undefined, message: 'the server answered 500' },
+    })
+  })
+
+  it('gives refused for a 403, as the owner check sends', async () => {
+    answer(errorBody('forbidden', { message: 'not the owner' }), 403)
+    expect(await fetchWorkspaces()).toEqual(
+      err({
+        kind: 'refused',
+        status: 403,
+        requestId: 'r-42',
+        message: 'the server answered 403: not the owner (forbidden, request r-42)',
+      }),
+    )
+  })
+
+  it('gives unreachable when no answer comes', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new TypeError('Failed to fetch'))),
+    )
+    expect(await fetchWorkspaces()).toEqual(
+      err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' }),
+    )
+  })
+
+  it('gives unreachable when the connection drops while the body is read', async () => {
+    const dropped = () =>
+      new ReadableStream<Uint8Array>({
+        start: (control) => {
+          control.error(new TypeError('network error'))
+        },
+      })
+    for (const status of [200, 502]) {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.resolve(new Response(dropped(), { status }))),
+      )
+      expect(await fetchWorkspaces()).toEqual(
+        err({ kind: 'unreachable', status: undefined, requestId: undefined, message: 'the server did not answer' }),
+      )
+    }
+  })
+
+  it('throws, not a miss, when a 200 reply is not JSON', async () => {
+    answer('<html>ok</html>', 200)
+    await expect(fetchWorkspaces()).rejects.toThrow(SyntaxError)
+  })
+
+  it('throws, not a miss, when a 200 reply does not match the contract', async () => {
+    answer(JSON.stringify({ machine: 'mac-mini', workspaces: 'none' }), 200)
+    await expect(fetchWorkspaces()).rejects.toThrow()
   })
 })

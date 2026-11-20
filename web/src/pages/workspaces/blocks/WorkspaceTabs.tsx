@@ -6,6 +6,8 @@
 // it, or its last chat alone in one pane (R6); each workspace keeps its own
 // layout in `ui.layouts` (blocks/workspaceLayout.ts). Props only.
 import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
+import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
@@ -20,9 +22,18 @@ export type WorkspaceTabsProps = {
   onDraftChange: (chat: string, text: string) => void
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<boolean>) | undefined
+  /**
+   * The live-unavailable notice (LiveNotice), drawn over the shown workspace's panes; none when not set. Beside the
+   * sidebar the sidebar draws it, so the page passes none.
+   */
+  notice?: ReactNode
 }
 
-export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onSend }: WorkspaceTabsProps) {
+// With a notice: the notice over the panes, which take the height left.
+const withNotice = css({ display: 'flex', flexDirection: 'column', gap: '8', flex: '1', minH: '[0]' })
+const panesSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
+
+export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onSend, notice }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
   const view = shownView(data, ui)
@@ -31,6 +42,16 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
     const { splitSizes, ...rest } = change
     onUiChange?.(splitSizes === undefined ? change : { ...rest, ...resizeShown(data, ui, splitSizes) })
   }
+  const panes = (
+    <WorkbenchPanes
+      data={view.data}
+      ui={view.ui}
+      onUiChange={report}
+      onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
+      onDraftChange={onDraftChange}
+      onSend={onSend}
+    />
+  )
   return (
     <Workbench
       value={shown}
@@ -45,14 +66,14 @@ export function WorkspaceTabs({ data, ui, onUiChange, onDraftChange, toggle, onS
         draggable: true,
         content:
           w.id === shown ? (
-            <WorkbenchPanes
-              data={view.data}
-              ui={view.ui}
-              onUiChange={report}
-              onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
-              onDraftChange={onDraftChange}
-              onSend={onSend}
-            />
+            notice === undefined ? (
+              panes
+            ) : (
+              <div className={withNotice}>
+                {notice}
+                <div className={panesSlot}>{panes}</div>
+              </div>
+            )
           ) : null,
       }))}
       size="compact"

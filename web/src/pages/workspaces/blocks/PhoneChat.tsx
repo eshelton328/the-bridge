@@ -32,6 +32,8 @@ const icon = css({ display: 'flex' })
 // Figma's back chevron is 20 wide at the header's start (105:2750, x 16) and the kind mark 8 after it (105:2752). The
 // 24 px button reaches 2 out on each side, so the chevron is centred where Figma's is and the mark starts at x 44.
 const backButton = css({ mx: '-2' })
+// The live-unavailable notice over the chat's header, inset as the header is.
+const noticeSlot = css({ display: 'flex', px: '12', pt: '8' })
 
 export type PhoneChatProps = {
   pane: Extract<WorkbenchPane, { type: 'chat' }>
@@ -78,6 +80,8 @@ export type PhoneChatProps = {
   onTextChange?: ((text: string) => void) | undefined
   /** Sends the composer's message; resolves `false` when the send failed (ChatPane `onSend`). */
   onSend?: ((text: string) => Promise<boolean>) | undefined
+  /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
+  notice?: ReactNode
 }
 
 export function PhoneChat(props: PhoneChatProps) {
@@ -101,6 +105,7 @@ export function PhoneChat(props: PhoneChatProps) {
     draft,
     onTextChange,
     onSend,
+    notice,
   } = props
   const more = (
     <Button variant="text" size="xs" iconOnly className={moreButton} aria-label={`${pane.head.title} actions`}>
@@ -142,7 +147,16 @@ export function PhoneChat(props: PhoneChatProps) {
       // Each chat its own composer, whose text is its state, so a typed message never carries to another chat.
       key={pane.id}
       size={device}
-      header={head}
+      header={
+        notice === undefined ? (
+          head
+        ) : (
+          <>
+            <div className={noticeSlot}>{notice}</div>
+            {head}
+          </>
+        )
+      }
       label={pane.head.title}
       figma={{ composer: layers?.composer, entries: layers?.entries, skills: layers?.skills }}
       entries={pane.entries}

@@ -4,6 +4,7 @@
 // says which groups are closed, which header the pointer rests on and which
 // chat the owner drags onto which workspace.
 import { Button, Panel, PanelIcon, PlusIcon, Stack } from '@eshelton328/component-library-1701'
+import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, SidebarText, Workspace, WorkspacesUi } from '../types.ts'
 import { SidebarGroup } from './SidebarGroup.tsx'
@@ -22,6 +23,8 @@ export type WorkspaceSidebarProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** The frame's Figma layers; D2's when not set. */
   layers?: SidebarLayers | undefined
+  /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
+  notice?: ReactNode
 }
 
 const fill = (template: string, values: Record<string, string>) =>
@@ -35,9 +38,37 @@ export function WorkspaceSidebar({
   ui,
   onUiChange,
   layers,
+  notice,
 }: WorkspaceSidebarProps) {
   const collapsed = ui.collapsed ?? []
   const dragged = workspaces.flatMap((w) => w.chats ?? []).find((c) => c.id === ui.drag?.chat)
+  const groups = (
+    <Stack gap="4">
+      {workspaces.map((w) => (
+        <SidebarGroup
+          key={w.id}
+          workspace={w}
+          open={!collapsed.includes(w.id)}
+          onOpenChange={(open) =>
+            onUiChange?.({ collapsed: open ? collapsed.filter((id) => id !== w.id) : [...collapsed, w.id] })
+          }
+          hovered={ui.hovered === w.id}
+          selected={selected}
+          openable={openable}
+          layers={layers}
+          counts={text.counts}
+          grip={text.grip}
+          moving={ui.paneDrag?.chat}
+          onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
+          drop={
+            dragged !== undefined && ui.drag?.over === w.id
+              ? { chat: dragged, hint: fill(text.dropHint, { chat: dragged.title, workspace: w.label }) }
+              : undefined
+          }
+        />
+      ))}
+    </Stack>
+  )
   return (
     <div data-figma={layers?.sidebar ?? '105:611'} className={slot}>
       <Panel
@@ -64,31 +95,14 @@ export function WorkspaceSidebar({
           </Button>
         }
       >
-        <Stack gap="4">
-          {workspaces.map((w) => (
-            <SidebarGroup
-              key={w.id}
-              workspace={w}
-              open={!collapsed.includes(w.id)}
-              onOpenChange={(open) =>
-                onUiChange?.({ collapsed: open ? collapsed.filter((id) => id !== w.id) : [...collapsed, w.id] })
-              }
-              hovered={ui.hovered === w.id}
-              selected={selected}
-              openable={openable}
-              layers={layers}
-              counts={text.counts}
-              grip={text.grip}
-              moving={ui.paneDrag?.chat}
-              onSelect={(chat) => onUiChange?.({ focusedPane: chat })}
-              drop={
-                dragged !== undefined && ui.drag?.over === w.id
-                  ? { chat: dragged, hint: fill(text.dropHint, { chat: dragged.title, workspace: w.label }) }
-                  : undefined
-              }
-            />
-          ))}
-        </Stack>
+        {notice === undefined ? (
+          groups
+        ) : (
+          <Stack gap="8">
+            {notice}
+            {groups}
+          </Stack>
+        )}
       </Panel>
     </div>
   )

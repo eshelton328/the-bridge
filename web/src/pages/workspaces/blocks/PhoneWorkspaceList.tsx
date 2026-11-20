@@ -18,7 +18,7 @@
 // Move to workspace's list open. At a tablet's width (T1, `device`) the list
 // takes the tablet's inset. Props only.
 import { Button, Container, MoreIcon, PageHeader } from '@eshelton328/component-library-1701'
-import type { MouseEvent, Ref } from 'react'
+import type { MouseEvent, ReactNode, Ref } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { PhoneText, SidebarChat, SidebarLayers, Workspace, WorkspacesUi } from '../types.ts'
 import { CloseWorkspaceDialog } from './CloseWorkspaceDialog.tsx'
@@ -61,6 +61,8 @@ export type PhoneWorkspaceListProps = {
   layers?: SidebarLayers | undefined
   /** The ref the held chat's row takes (M9): the anchor that WorkspacesPhone's actions sheet lifts over its scrim. */
   heldRow?: Ref<HTMLDivElement> | undefined
+  /** The live-unavailable notice (LiveNotice), drawn at the top of the content; none when not set. */
+  notice?: ReactNode
 }
 
 /** A chat row's ⋯ (M1 146:3), on the row and on its lifted copy (M9 146:268). */
@@ -99,6 +101,7 @@ export function PhoneWorkspaceList({
   onAdd,
   layers,
   heldRow,
+  notice,
 }: PhoneWorkspaceListProps) {
   const collapsed = ui.collapsed ?? []
   const editing = ui.editing === true && text.done !== undefined
@@ -168,6 +171,7 @@ export function PhoneWorkspaceList({
           />
         </PageHeader>
       </div>
+      {notice}
       {workspaces.map((w) =>
         editing ? (
           <PhoneEditGroup
