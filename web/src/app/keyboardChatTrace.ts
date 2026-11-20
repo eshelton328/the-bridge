@@ -58,11 +58,21 @@ export function traceRoute(current: { pathname: string; search: string }): Trace
 const COMPOSER_FOOTER =
   ':is(.app-shell__root--size_phone, .app-shell__root--size_tablet) > .app-shell__detail > .scroll-frame__root > .scroll-frame__footer'
 
-/** The layout of the chat whose composer `target` is, or undefined when it is not a phone or tablet chat's composer. */
+/** The proxy field of the `proxy` keyboard experiment (keyboardExperiment.ts), which takes the focus for the composer. */
+const PROXY = '[data-keyboard-experiment-proxy]'
+
+/**
+ * The layout of the chat whose composer `target` is, or undefined when it is not a phone or tablet chat's composer.
+ * The keyboard experiment's proxy field counts as the composer of the chat on the page, so a session starts at the
+ * focus that opens the keyboard.
+ */
 export function chatComposerDevice(target: EventTarget | null): TraceChat['device'] | undefined {
   if (!(target instanceof HTMLTextAreaElement)) return undefined
-  const footer = target.closest(COMPOSER_FOOTER)
-  const keep = target.closest('[data-keyboard-keep]')
+  const proxied = target.matches(PROXY)
+  const footer = proxied ? target.ownerDocument.querySelector(COMPOSER_FOOTER) : target.closest(COMPOSER_FOOTER)
+  const keep = proxied
+    ? (footer?.querySelector('[data-keyboard-keep]') ?? null)
+    : target.closest('[data-keyboard-keep]')
   if (footer === null || keep === null || !footer.contains(keep)) return undefined
   const root = footer.closest('.app-shell__root')
   return root?.classList.contains('app-shell__root--size_phone') === true ? 'phone' : 'tablet'

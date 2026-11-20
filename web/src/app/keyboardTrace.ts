@@ -3,7 +3,8 @@
 // has `?keyboard-trace` or the dev server's switch is on
 // (keyboardTraceSwitch.ts), so a build leaves it out. It only reads: one
 // sample on each animation frame and on the focus, pointer, resize and scroll
-// events, a small overlay with the live values (the param only), and a POST of
+// events (each with the document's scroll and the tops of `#root` and the
+// composer, so a page that iOS moves shows), a small overlay with the live values (the param only), and a POST of
 // the whole trace every 2 s to the dev server's endpoint
 // (scripts/keyboardTracePlugin.ts), which writes it to disk. With the param
 // it traces the whole page; from the switch keyboardChatTrace.ts runs one
@@ -20,6 +21,12 @@ export type KeyboardTraceSample = {
   vvOffsetTop: number | null
   vvPageTop: number | null
   scrollY: number
+  /** `document.scrollingElement.scrollTop`: the document's scroll as the layout has it; null with no scrolling element. */
+  scrollTop: number | null
+  /** The top of `#root`'s box in the layout viewport; the app's root is fixed there, so anything but 0 is a moved page. Null with no `#root`. */
+  rootTop: number | null
+  /** The top of the composer's box (the `data-keyboard-keep` wrapper in a ScrollFrame footer) in the layout viewport; null with none. */
+  composerTop: number | null
   /** The computed `--app-shell-keyboard` of `.app-shell__root`; empty when there is none. */
   keyboard: string
   /** Focus events only: the target's tag name and role, never its text, value, name or id. */
@@ -48,7 +55,7 @@ export type KeyboardTraceHeader = {
   safeArea: SafeArea
   /** Whether `prefers-reduced-motion: reduce` matches. */
   reducedMotion: boolean
-  /** The `kb-experiment` search param when it is a short key (`KB_EXPERIMENT`), else null; no other search param is read. */
+  /** The `kb-experiment` search param when it is a short key (`KB_EXPERIMENT`), or the switch's experiment in force, else null; no other search param is read. */
   kbExperiment: string | null
   /** True when `navigator.webdriver` is: a trace from Playwright or other automation. */
   automated: boolean
@@ -85,7 +92,9 @@ const round = (n: number) => Math.round(n * 10) / 10
 /** Reads one sample from `win`. For a focus event, `target` gives only its tag name and role. */
 export function readSample(type: string, target: EventTarget | null, win: Window = window): KeyboardTraceSample {
   const vv = win.visualViewport
-  const root = win.document.querySelector('.app-shell__root')
+  const doc = win.document
+  const root = doc.querySelector('.app-shell__root')
+  const top = (element: Element | null) => (element === null ? null : round(element.getBoundingClientRect().top))
   const sample: KeyboardTraceSample = {
     t: round(win.performance.now()),
     type,
@@ -94,6 +103,9 @@ export function readSample(type: string, target: EventTarget | null, win: Window
     vvOffsetTop: vv === null ? null : round(vv.offsetTop),
     vvPageTop: vv === null ? null : round(vv.pageTop),
     scrollY: round(win.scrollY),
+    scrollTop: doc.scrollingElement === null ? null : round(doc.scrollingElement.scrollTop),
+    rootTop: top(doc.getElementById('root')),
+    composerTop: top(doc.querySelector('.scroll-frame__footer [data-keyboard-keep]')),
     keyboard: root === null ? '' : win.getComputedStyle(root).getPropertyValue('--app-shell-keyboard').trim(),
   }
   if (type === 'focusin' || type === 'focusout') {
@@ -112,10 +124,14 @@ export function readDisplayMode(win: Window = window): KeyboardTraceHeader['disp
 /** A `kb-experiment` key: letters, digits, `_` and `-`, at most 32, so no free text gets in. */
 const KB_EXPERIMENT = /^[A-Za-z0-9_-]{1,32}$/
 
-/** The `kb-experiment` search param when it is a short key, else null. */
+/**
+ * The `kb-experiment` search param when it is a short key; with no param, the experiment in force from the dev
+ * server's switch, which keyboardExperiment.ts writes on the root element as `data-kb-experiment`; else null.
+ */
 export function readKbExperiment(win: Window = window): string | null {
-  const value = new URLSearchParams(win.location.search).get('kb-experiment')
-  return value !== null && KB_EXPERIMENT.test(value) ? value : null
+  const value =
+    new URLSearchParams(win.location.search).get('kb-experiment') ?? win.document.documentElement.dataset.kbExperiment
+  return value !== undefined && KB_EXPERIMENT.test(value) ? value : null
 }
 
 /** Whether the user asks for reduced motion. */
