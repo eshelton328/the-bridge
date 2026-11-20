@@ -2,8 +2,8 @@
 // agent's reply with Copy, progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). A live message or reply whose text the server cut
-// shows a quiet line under it (`cut`, slice 3b). The caller names the entry's
-// Figma layer. Props only.
+// shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
+// is Markdown (`EntryText`). The caller names the entry's Figma layer. Props only.
 import {
   Button,
   CopyIcon,
@@ -15,6 +15,7 @@ import {
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
 import type { ChatEntry } from '../types.ts'
+import { EntryText } from './EntryText.tsx'
 
 // The progress lines keep their leading spaces, as a terminal does.
 const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
@@ -39,7 +40,9 @@ export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProp
     case 'user':
       return (
         <div data-figma={figma}>
-          <Message from="user">{entry.text}</Message>
+          <Message from="user">
+            <EntryText text={entry.text} />
+          </Message>
           {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
         </div>
       )
@@ -78,7 +81,7 @@ export function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProp
               )
             }
           >
-            {entry.text}
+            <EntryText text={entry.text} />
           </Message>
           {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
         </div>

@@ -21,9 +21,11 @@
 // beta.90): the box keeps the draft until the send succeeds. A live chat
 // (`liveChat`, slice 3b) asks `transcripts` to read its transcript while it
 // shows, draws the earlier line over the entries, the empty line when it has
-// none and the problem line with Retry under them. Props only.
+// none and the problem line with Retry under them; it opens at the newest entry
+// and stays there as entries come in, unless the reader scrolled up
+// (`usePinnedEnd`). Props only.
 import { Composer, Inline, ModelChip, PlusIcon, ScrollFrame } from '@eshelton328/component-library-1701'
-import { type KeyboardEvent, type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
@@ -33,6 +35,7 @@ import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
 import { SkillPicker } from './SkillPicker.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
+import { usePinnedEnd } from './usePinnedEnd.ts'
 
 /** Reads a live chat's transcript while its pane shows (the page's liveTranscript.ts). */
 export type TranscriptWatch = {
@@ -237,6 +240,16 @@ export function ChatPane(props: ChatPaneProps) {
     () => (liveChat === undefined || transcripts === undefined ? undefined : transcripts.watch(liveChat)),
     [liveChat, transcripts],
   )
+  // A live chat opens at its newest entry and follows new ones while the reader is at the end.
+  const pinRef = usePinnedEnd(liveChat !== undefined, chatId)
+  const label = props.label
+  const footerRef = useCallback(
+    (el: HTMLDivElement | null) => {
+      if (label !== undefined) frameRegion(label)(el)
+      pinRef(el)
+    },
+    [label, pinRef],
+  )
   useLayoutEffect(() => {
     const caret = caretRef.current
     const area = textArea()
@@ -438,7 +451,7 @@ export function ChatPane(props: ChatPaneProps) {
         bodyClassName={cx(gaps[size].body, parts.body)}
         header={props.header}
         footer={
-          <div ref={frameRegion(props.label)} className={cx(footer, gaps[size].footer, parts.footer)}>
+          <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer)}>
             {above}
             {composerBox}
           </div>
@@ -456,7 +469,7 @@ export function ChatPane(props: ChatPaneProps) {
         bodyClassName={gaps[size].body}
         footer={
           // The part of a pane a stacked split keeps in view (paneFloors.ts).
-          <div className={cx(footer, gaps[size].footer)} data-pane-floor>
+          <div ref={footerRef} className={cx(footer, gaps[size].footer)} data-pane-floor>
             {above}
             {composerBox}
           </div>
