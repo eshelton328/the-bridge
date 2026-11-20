@@ -24,7 +24,8 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 const notice = 'Live data unavailable — no workspaces shown'
 /** Rows and texts of the sample data, which a live page never shows. */
-const sample = ['bridge themes', 'release notes', 'omni-brain', 'hono server']
+// The home's sample rows, and its status bar alert, which names a sample chat.
+const sample = ['bridge themes', 'release notes', 'omni-brain', 'hono server', 'the-bridge › hono server needs you']
 
 type Chat = { local: string; kind: 'claude' | 'codex' | 'shell'; title: string; model: string | null }
 

@@ -153,8 +153,8 @@ const focusOf = (ids: readonly string[], panes: readonly WorkbenchPane[]) =>
 /**
  * `state` with only what the live source gives: `workspaces`, a pane for each of their chats, and each workspace's
  * own layout of its first `maxPanes` chats, its first chat focused, so a tab shows only its own chats; none of the
- * home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast). With no workspaces (an
- * empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
+ * home's sample parts (side chat, subagents, folders, a workspace's last chat, the toast, the status bar's alert).
+ * With no workspaces (an empty live list or a missed read) no workspace is shown, never one of the sample's (P-3).
  */
 function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): WorkspacesScreenState {
   const panes = livePanes(workspaces)
@@ -181,6 +181,8 @@ function liveOnly(state: WorkspacesScreenState, workspaces: Workspace[]): Worksp
       folderPicker: undefined,
       lastChats: undefined,
       toast: undefined,
+      // The sample's alert names a sample chat; the live alerts are set by the caller.
+      status: { ...data.status, alert: undefined },
       ...(data.chatMenu === undefined
         ? {}
         : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
