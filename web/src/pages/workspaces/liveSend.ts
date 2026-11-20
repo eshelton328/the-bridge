@@ -86,6 +86,12 @@ async function missOf(action: Action, res: Response): Promise<ComposerAnswer> {
     case 'invalid-input':
       // The composer sends only a body the contract takes, so the server's refusal is a bug.
       return unexpected(action, error.kind, res.status)
+    case 'too-large':
+    case 'unsupported-media':
+    case 'upload-conflict':
+    case 'storage-full':
+      // Only an upload gets these kinds, never a send or a stop.
+      return unexpected(action, error.kind, res.status)
   }
 }
 

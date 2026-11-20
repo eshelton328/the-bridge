@@ -28,5 +28,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A prompt request holds only its text (a strict object), and a stop
   request is an empty object; the text goes to the chat and nowhere else
   (`prompts.test.ts`).
+- An upload request holds the file's name, size and type only (a strict
+  object), never a path; the file goes up in chunks of the size the
+  server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
+  never goes into a log line or an error body (`uploads.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
