@@ -104,8 +104,10 @@ Both modes record the same way:
   footer; null with none) and `keyboard`, the computed
   `--app-shell-keyboard` of `.app-shell__root` (empty when AppShell has
   not set it). `pnpm keyboard:slide <trace.json>` lists the samples that
-  show a moved page (screen review R27). A focus sample adds the target's `targetTag` and
-  `targetRole`, never its text, value, name or id.
+  show a moved page (screen review R27). A focus or pointer sample (`focusin`, `focusout`,
+  `pointerdown`, `pointerup`) adds the target's `targetTag` and
+  `targetRole`, never its text, value, name or id. The pointer target
+  shows whether a tap landed on the composer's field or its box.
 - The last 20000 samples stay in a ring buffer.
 - The trace's header, read at its start (each session's own start), has `startedAt`,
   `userAgent`, `displayMode` (`standalone` when
@@ -138,10 +140,15 @@ Both modes record the same way:
 `keyboardExperiment.ts` (dev only) tries two ways to give the composer the
 focus with no iOS scroll into view (screen reviews R26 and R27):
 
-- `prevent`: a touch tap on a composer field that has no focus cancels
-  its `touchend` and calls `focus({ preventScroll: true })` in that same
-  handler. A tap in a focused composer keeps its default, so the caret
-  and the selection still work.
+- `prevent`: a touch tap on a composer that has no focus cancels its
+  `touchend`, calls `focus({ preventScroll: true })` in that same handler
+  and puts the caret at the end. The tap may land on the field or on the
+  composer box around it (the `data-keyboard-keep` wrapper), but not on a
+  control in it: the field is one line in a box about 112 px tall, and
+  iOS moves a tap near the field to the field and scrolls it into view
+  itself. A tap in a focused composer and a long press (over 450 ms) keep
+  their default, so the caret, the selection and the paste menu still
+  work.
 - `proxy`: the same tap focuses a transparent field at the place where
   the composer docks above the keyboard, then moves the focus and any
   typed text to the composer when the keyboard is up. An IME composition

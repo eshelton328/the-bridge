@@ -14,20 +14,22 @@ import {
 // no document scroll, by 'prevent' or 'proxy'. Desktop Chromium draws no iOS keyboard and has no iOS scroll into
 // view, so these tests prove the focus, the cancelled default, the move and the text; only the phone shows the slide.
 
-function mountComposer(): { field: HTMLTextAreaElement; send: Element } {
+function mountComposer(): { field: HTMLTextAreaElement; send: Element; box: Element; chip: Element } {
   const footer = document.createElement('div')
   footer.className = 'scroll-frame__footer'
   // As ChatPane draws it: the field and Send share one data-keyboard-keep wrapper.
   footer.innerHTML =
-    '<div data-keyboard-keep=""><textarea aria-label="Message" enterkeyhint="send"></textarea><button type="button"><span>Send</span></button></div>'
+    '<div data-keyboard-keep="" class="box"><div class="chips"><span class="chip">a.png<button type="button" class="remove">x</button></span></div><textarea aria-label="Message" enterkeyhint="send"></textarea><div role="button" class="chip-model">Model</div><button type="button"><span>Send</span></button></div>'
   document.body.append(footer)
   onTestFinished(() => {
     footer.remove()
   })
   const field = footer.querySelector('textarea')
   const send = footer.querySelector('button span')
-  if (field === null || send === null) throw new Error('no composer')
-  return { field, send }
+  const box = footer.querySelector('.chips')
+  const chip = footer.querySelector('.remove')
+  if (field === null || send === null || box === null || chip === null) throw new Error('no composer')
+  return { field, send, box, chip }
 }
 
 function run(experiment: KeyboardExperiment | null, proxyWaitMs = 30) {
@@ -38,6 +40,15 @@ function run(experiment: KeyboardExperiment | null, proxyWaitMs = 30) {
 /** A finger's tap as iOS sends it: the pointer press, then the touchend whose default is the focus. */
 function tap(target: Element, pointerType = 'touch') {
   target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType }))
+  const end = new Event('touchend', { bubbles: true, cancelable: true })
+  target.dispatchEvent(end)
+  return end
+}
+
+/** A finger held down 'ms' before its release: past 500 ms iOS shows its magnifier and paste menu. */
+async function hold(target: Element, ms: number) {
+  target.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+  await new Promise((done) => setTimeout(done, ms))
   const end = new Event('touchend', { bubbles: true, cancelable: true })
   target.dispatchEvent(end)
   return end
@@ -58,6 +69,7 @@ describe('keyboard experiment', () => {
     const { field, send } = mountComposer()
     expect(pressedField(field)).toBe(field)
     expect(pressedField(send)).toBeNull()
+    expect(pressedField(document.querySelector('.chip-model'))).toBeNull()
     const outside = document.createElement('textarea')
     document.body.append(outside)
     onTestFinished(() => {
@@ -75,6 +87,54 @@ describe('keyboard experiment', () => {
     // Synchronous: right after dispatchEvent returns, inside the gesture iOS needs to open the keyboard.
     expect(document.activeElement).toBe(field)
     expect(focus).toHaveBeenCalledWith({ preventScroll: true })
+  })
+
+  it('prevent: a tap on the composer box beside the field takes the field, with the caret at the end of the draft', () => {
+    const { field, box } = mountComposer()
+    run('prevent')
+    field.value = 'line one\nline two'
+    expect(pressedField(box)).toBe(field)
+    const end = tap(box)
+    expect(end.defaultPrevented).toBe(true)
+    expect(document.activeElement).toBe(field)
+    expect(field.selectionStart).toBe(field.value.length)
+    expect(field.selectionEnd).toBe(field.value.length)
+  })
+
+  it('prevent: a tap on a control in the box (a chip remove, the model chip) keeps its default and focuses nothing', () => {
+    const { field, chip } = mountComposer()
+    run('prevent')
+    for (const control of [chip, document.querySelector('.chip-model')]) {
+      if (control === null) throw new Error('no control')
+      expect(tap(control).defaultPrevented).toBe(false)
+      expect(document.activeElement).not.toBe(field)
+    }
+  })
+
+  it('prevent: a tap on the box of a focused composer keeps its default, so the caret and selection stay', () => {
+    const { field, box } = mountComposer()
+    run('prevent')
+    field.value = 'some text'
+    field.focus()
+    field.setSelectionRange(2, 6)
+    expect(tap(box).defaultPrevented).toBe(false)
+    expect([field.selectionStart, field.selectionEnd]).toEqual([2, 6])
+  })
+
+  it('a long press on the field or its box keeps its default, so iOS shows its magnifier and paste menu', async () => {
+    const { field, box } = mountComposer()
+    run('prevent')
+    expect((await hold(field, 520)).defaultPrevented).toBe(false)
+    expect((await hold(box, 520)).defaultPrevented).toBe(false)
+    expect(document.activeElement).not.toBe(field)
+  })
+
+  it('proxy: a tap on the composer box goes through the proxy to the field too', async () => {
+    const { field, box } = mountComposer()
+    run('proxy')
+    expect(tap(box).defaultPrevented).toBe(true)
+    expect(proxyOf()).not.toBeNull()
+    await expect.poll(() => document.activeElement).toBe(field)
   })
 
   it('prevent: a tap in a composer that already has the focus keeps its default, so the caret and selection work', () => {

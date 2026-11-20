@@ -29,7 +29,7 @@ export type KeyboardTraceSample = {
   composerTop: number | null
   /** The computed `--app-shell-keyboard` of `.app-shell__root`; empty when there is none. */
   keyboard: string
-  /** Focus events only: the target's tag name and role, never its text, value, name or id. */
+  /** Focus and pointer events only: the target's tag name and role, never its text, value, name or id. */
   targetTag?: string
   targetRole?: string | null
 }
@@ -108,7 +108,7 @@ export function readSample(type: string, target: EventTarget | null, win: Window
     composerTop: top(doc.querySelector('.scroll-frame__footer [data-keyboard-keep]')),
     keyboard: root === null ? '' : win.getComputedStyle(root).getPropertyValue('--app-shell-keyboard').trim(),
   }
-  if (type === 'focusin' || type === 'focusout') {
+  if (type === 'focusin' || type === 'focusout' || type === 'pointerdown' || type === 'pointerup') {
     sample.targetTag = target instanceof Element ? target.tagName.toLowerCase() : target === null ? 'none' : 'window'
     sample.targetRole = target instanceof Element ? target.getAttribute('role') : null
   }

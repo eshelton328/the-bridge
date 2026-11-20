@@ -68,3 +68,19 @@ describe('the keyboard experiments on the Workspaces chat, from the list', () =>
       expect(field.value).toContain('ok')
     })
 })
+
+describe('the keyboard experiments on a tap beside the composer line, from the list', () => {
+  for (const experiment of ['prevent', 'proxy'] as const)
+    it(`${experiment}: a tap on the composer box, not on its one-line field, focuses the field with no document scroll`, async () => {
+      const field = await openChatComposer()
+      const box = field.closest('[data-keyboard-keep]')
+      if (box === null) throw new Error('no composer box')
+      // The box the owner sees is far taller than the field's one line: most of a tap's area is the box.
+      expect(box.getBoundingClientRect().height).toBeGreaterThan(field.getBoundingClientRect().height * 2)
+      onTestFinished(installKeyboardExperiment({ current: () => experiment, proxyWaitMs: 30 }))
+      const end = tap(box)
+      expect(end.defaultPrevented).toBe(true)
+      await expect.poll(() => document.activeElement).toBe(field)
+      expect(readSample('raf', null)).toMatchObject({ scrollY: 0, scrollTop: 0 })
+    })
+})
