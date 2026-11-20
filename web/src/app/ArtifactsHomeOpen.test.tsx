@@ -139,6 +139,8 @@ describe('Add a link on the Artifacts home', () => {
   it('picks a project in the dialog\u2019s Project select at 1512', async () => {
     await page.viewport(1512, 982)
     view = await renderAt('/artifacts')
+    // The route renders after a first await; wait for its button, so the case also runs alone.
+    await expect.element(page.getByRole('button', { name: 'Add a link' })).toBeVisible()
     await press(page.getByRole('button', { name: 'Add a link' }).element())
     const dialog = page.getByRole('dialog', { name: 'Add a link' })
     await expect.element(dialog).toBeVisible()
@@ -156,6 +158,8 @@ describe('Add a link on the Artifacts home', () => {
   it('draws the dialog\u2019s Source switch as wide as its Link field at 1512', async () => {
     await page.viewport(1512, 982)
     view = await renderAt('/artifacts')
+    // The route renders after a first await; wait for its button, so the case also runs alone.
+    await expect.element(page.getByRole('button', { name: 'Add a link' })).toBeVisible()
     await press(page.getByRole('button', { name: 'Add a link' }).element())
     await expect.element(page.getByRole('dialog', { name: 'Add a link' })).toBeVisible()
     const width = (selector: string) => query(selector)?.getBoundingClientRect().width ?? 0
