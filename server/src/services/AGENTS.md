@@ -11,6 +11,10 @@ from the outside world.
   pass the adapter in.
 - A failure the caller expects returns a `Result` from `@bridge/shared`
   (d-084); it does not throw.
+- `transcriptEvents.ts` watches one chat for each open transcript
+  stream, through the port, and reads it again on each change; it reads
+  once when the stream opens, after the watch is ready, so no change is
+  lost (`transcriptEvents.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open no herdr stream

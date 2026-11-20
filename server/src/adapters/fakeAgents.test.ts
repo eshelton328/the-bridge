@@ -4,6 +4,7 @@ import { describeAgentPort } from './agentPortContract.ts'
 import { createFakeAgents } from './fakeAgents.ts'
 
 const machine = MachineId.parse('test-mac')
+let appended = 0
 
 describeAgentPort('fake', () => {
   const port = createFakeAgents(machine)
@@ -13,6 +14,19 @@ describeAgentPort('fake', () => {
     setStatus: (status) => {
       port.setStatus(ChatId.parse('test-mac/drift-check'), status)
       return Promise.resolve()
+    },
+    transcript: {
+      chat: 'bridge themes',
+      append: () => {
+        appended += 1
+        port.changeTranscript(ChatId.parse('test-mac/bridge-themes'), {
+          type: 'user',
+          id: `appended-${String(appended)}`,
+          text: 'Go on.',
+          cut: false,
+        })
+        return Promise.resolve()
+      },
     },
     changeLayout: () => {
       port.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))

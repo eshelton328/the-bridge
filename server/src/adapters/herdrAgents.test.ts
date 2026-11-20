@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { appendFileSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
@@ -133,6 +133,17 @@ const results = {
   },
 }
 
+let appended = 0
+/** Adds a prompt to session-a's file, as Claude Code would. */
+const appendToSessionA = () => {
+  appended += 1
+  appendFileSync(
+    join(projects, '-home-dev-ncc-1701', 'session-a.jsonl'),
+    `\n${JSON.stringify({ type: 'user', uuid: `appended-${String(appended)}`, message: { content: 'Go on.' } })}`,
+  )
+  return Promise.resolve()
+}
+
 let socket: FakeHerdrSocket
 beforeAll(async () => {
   socket = await startFakeHerdrSocket(results)
@@ -158,6 +169,7 @@ describeAgentPort('herdr (recorded socket)', () =>
       socket.push(statusLine('w17:p1', status))
       return Promise.resolve()
     },
+    transcript: { chat: 'bridge-coord', append: appendToSessionA },
     changeLayout: () => {
       socket.push({
         event: 'tab.renamed',
@@ -221,6 +233,7 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
       resumed.push(statusLine('w17:p2', status))
       return Promise.resolve()
     },
+    transcript: { chat: 'bridge-coord 2', append: appendToSessionA },
     changeLayout: () => {
       resumed.push({
         event: 'tab.renamed',

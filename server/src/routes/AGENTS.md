@@ -27,5 +27,9 @@ Thin Hono sub-apps, one file for each area, named after the area
   ID with no machine is 400 `invalid-input` and an unknown chat 404
   `not-found`. Transcript text goes only into the 200 body, never into
   a log line or an `ErrorBody` (`app.test.ts`).
+- `GET /api/chats/:chat/transcript/events` answers 400 or 404 as the
+  read does, before it streams. Then it streams as `/api/events` does:
+  each `transcript.changed` event holds only the entries that are new
+  or changed since the stream opened (`chats.test.ts`).
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

@@ -53,6 +53,12 @@ export type AgentPort = {
    */
   readTranscript(chat: ChatId): Promise<Result<TranscriptRead | null, AgentPortError>>
   /**
+   * Watches one chat's transcript: `onChange` gets a call each time it may have changed (read it again with
+   * `readTranscript`), until `close()`. It watches only that chat's session, with no timer (d-112). When the
+   * agents stop answering, `onEnd` gets why, once, and the watch is over.
+   */
+  watchTranscript(chat: ChatId, onChange: () => void, onEnd: (error: AgentPortError) => void): AgentSubscription
+  /**
    * Starts one subscription: `onEvent` gets each change until `close()`. An adapter whose subscription starts
    * after the call returns tells `workspacesChanged` when it starts, as the list may have changed in between. When the host stops answering,
    * `onEnd` gets why, once, and the subscription is over. It holds the host open only until then (d-112).

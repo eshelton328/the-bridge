@@ -5,6 +5,7 @@ import { describe, expect, inject, it } from 'vitest'
 import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
 import { memoryLogger } from '../server/src/logger.ts'
+import { appendTranscript } from './appendTranscript.ts'
 import { renameTab } from './renameTab.ts'
 import { reportAgent } from './reportAgent.ts'
 
@@ -29,6 +30,7 @@ describeAgentPort('herdr (real session)', () =>
     },
     setStatus: reportAgent,
     changeLayout: renameTab,
+    transcript: { chat: inject('fakeChat').title, append: appendTranscript },
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,
       machine,
@@ -54,16 +56,13 @@ describe('herdr adapter on a real session', () => {
 
   it("reads the fake chat's transcript from its session file", async () => {
     const read = await port().readTranscript(ChatId.parse('e2e-mac/fake-e2e-session'))
-    expect(read).toEqual({
-      ok: true,
-      value: {
-        entries: [
-          { type: 'user', id: 'e2e-u1', text: 'Say hello.', cut: false },
-          { type: 'tool', id: 'e2e-t1', name: 'Bash', target: 'git', running: false },
-          { type: 'assistant', id: 'e2e-a2:0', text: 'Hello.', cut: false },
-        ],
-        earlier: false,
-      },
-    })
+    if (!read.ok || read.value === null) throw new Error('no transcript')
+    // The contract suite's watch case can add prompts to this file first (appendTranscript.ts).
+    expect(read.value.earlier).toBe(false)
+    expect(read.value.entries.slice(0, 3)).toEqual([
+      { type: 'user', id: 'e2e-u1', text: 'Say hello.', cut: false },
+      { type: 'tool', id: 'e2e-t1', name: 'Bash', target: 'git', running: false },
+      { type: 'assistant', id: 'e2e-a2:0', text: 'Hello.', cut: false },
+    ])
   })
 })

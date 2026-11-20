@@ -1,0 +1,103 @@
+// The transcript events of one chat, for GET /api/chats/:chat/transcript/events.
+// Each stream watches its chat through the port, and reads the transcript
+// once when it opens, after the watch is ready, so a change made while it
+// opens is not lost. On each change it reads the transcript again and
+// sends the entries that are new or changed since its last read, in
+// transcript order. It sends nothing for a read with no change. With no
+// stream open for a chat, nothing watches it (d-112).
+import { type ChatId, EventSource, type TranscriptChangedEvent, type TranscriptEntry } from '@bridge/contract'
+import { err, ok, type Result } from '@bridge/shared'
+import type { AgentPort, AgentPortError } from './agentPort.ts'
+
+export type TranscriptClient = {
+  /** Sends one event to the client. */
+  readonly send: (event: TranscriptChangedEvent) => void
+  /** Ends the client's stream: the agents stopped answering. */
+  readonly end: (error: AgentPortError) => void
+}
+
+/**
+ * Starts the transcript events of `chat` for one client: the result stops them, or is `null` when the machine has
+ * no such chat. Nothing is sent to the client before this resolves.
+ */
+export async function connectTranscript(
+  agents: AgentPort,
+  chat: ChatId,
+  client: TranscriptClient,
+): Promise<Result<(() => void) | null, AgentPortError>> {
+  const source = EventSource.parse(`${agents.machine}/transcript`)
+  const known = new Map<string, string>()
+  let seq = 0
+  let over = false
+  let reading = false
+  let again = false
+  // Read through functions: a callback can change them while a read is awaited.
+  const isOver = () => over
+  const isAgain = () => again
+
+  const remember = (entries: readonly TranscriptEntry[]) => {
+    for (const entry of entries) known.set(entry.id, JSON.stringify(entry))
+  }
+
+  const stop = () => {
+    over = true
+    watch.close()
+  }
+
+  const refresh = async (): Promise<void> => {
+    if (reading) {
+      again = true
+      return
+    }
+    reading = true
+    const read = await agents.readTranscript(chat)
+    reading = false
+    if (over) return
+    if (!read.ok) {
+      stop()
+      client.end(read.error)
+      return
+    }
+    const entries = read.value?.entries ?? []
+    const changed = entries.filter((e) => known.get(e.id) !== JSON.stringify(e))
+    remember(changed)
+    if (changed.length > 0)
+      client.send({ source, seq: seq++, type: 'transcript.changed', data: { chat, entries: changed } })
+    if (again) {
+      again = false
+      await refresh()
+    }
+  }
+
+  const watch = agents.watchTranscript(
+    chat,
+    () => {
+      if (!opening) void refresh()
+      else again = true
+    },
+    (error) => {
+      if (over) return
+      stop()
+      client.end(error)
+    },
+  )
+  let opening = true
+  await watch.ready
+  const first = await agents.readTranscript(chat)
+  opening = false
+  if (isOver()) return first.ok ? ok(() => undefined) : first
+  if (!first.ok) {
+    stop()
+    return err(first.error)
+  }
+  if (first.value === null) {
+    stop()
+    return ok(null)
+  }
+  remember(first.value.entries)
+  if (isAgain()) {
+    again = false
+    void refresh()
+  }
+  return ok(stop)
+}

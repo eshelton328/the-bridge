@@ -5,6 +5,7 @@ import {
   ChatId,
   type ChatStatus,
   type LayoutNode,
+  type TranscriptEntry,
   type MachineId,
   TabId,
   type WorkspaceLayout,
@@ -76,6 +77,10 @@ export function fakeWorkspaces(machine: MachineId): WorkspaceSummary[] {
 export type FakeAgents = AgentPort & {
   /** How many times a caller read the workspaces. */
   readonly reads: () => number
+  /** How many transcript watches are open now. */
+  readonly watchers: () => number
+  /** Adds an entry to a chat's transcript, or replaces the entry with its ID, and tells each watch of that chat. */
+  readonly changeTranscript: (chat: ChatId, entry: TranscriptEntry) => void
   /** The chats whose transcript a caller read, in order. */
   readonly transcriptReads: () => ChatId[]
   /** How many subscriptions are open now. */
@@ -133,6 +138,18 @@ export function createFakeAgents(
 ): FakeAgents {
   let reads = 0
   const transcriptReads: ChatId[] = []
+  const transcripts = new Map<ChatId, { entries: TranscriptEntry[]; earlier: boolean }>()
+  const watchers = new Set<{ readonly chat: ChatId; readonly onChange: () => void }>()
+  /** The fake's transcript of `chat`, made the first time it is asked for; undefined for no such chat. */
+  const transcriptOf = (chat: ChatId) => {
+    const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
+    if (found === undefined) return undefined
+    const made =
+      transcripts.get(chat) ?? (found.title === 'bridge themes' ? fakeTranscript() : { entries: [], earlier: false })
+    const copy = { entries: [...made.entries], earlier: made.earlier }
+    if (!transcripts.has(chat)) transcripts.set(chat, copy)
+    return transcripts.get(chat)
+  }
   const data = 'error' in answer ? undefined : structuredClone(answer.workspaces)
   const listeners = new Set<Listener>()
   const tell = (event: AgentEvent) => {
@@ -150,9 +167,33 @@ export function createFakeAgents(
     readTranscript(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       transcriptReads.push(chat)
-      const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
-      if (found === undefined) return Promise.resolve(ok(null))
-      return Promise.resolve(ok(found.title === 'bridge themes' ? fakeTranscript() : { entries: [], earlier: false }))
+      const found = transcriptOf(chat)
+      return Promise.resolve(ok(found === undefined ? null : structuredClone(found)))
+    },
+    watchTranscript(chat, onChange, onEnd) {
+      if ('error' in answer) {
+        queueMicrotask(() => {
+          onEnd(answer.error)
+        })
+        return { ready: Promise.resolve(), close: () => undefined }
+      }
+      const watch = { chat, onChange }
+      watchers.add(watch)
+      return {
+        ready: Promise.resolve(),
+        close: () => {
+          watchers.delete(watch)
+        },
+      }
+    },
+    watchers: () => watchers.size,
+    changeTranscript(chat, entry) {
+      const found = transcriptOf(chat)
+      if (found === undefined) throw new Error(`the fake has no chat ${chat}`)
+      const at = found.entries.findIndex((e) => e.id === entry.id)
+      if (at === -1) found.entries.push(entry)
+      else found.entries[at] = entry
+      for (const w of [...watchers]) if (w.chat === chat) w.onChange()
     },
     readLayout(workspace) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

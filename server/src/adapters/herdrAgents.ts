@@ -14,7 +14,8 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
-import { basename, isAbsolute, join, relative, resolve } from 'node:path'
+import { type FSWatcher, watch } from 'node:fs'
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import {
   ChatId,
   type ChatStatus,
@@ -410,25 +411,72 @@ export function createHerdrAgents({ socket, machine, claudeProjects, home, log }
       : err(badReply(`herdr layout: ${layout.error.issues[0]?.message ?? 'unknown shape'}`))
   }
 
+  /** Where a chat's transcript is: its session file (none for a shell or a Codex chat); null for no such chat. */
+  const locate = async (
+    chat: ChatId,
+  ): Promise<
+    Result<{ path: string | undefined; working: boolean; cwd: string | undefined } | null, AgentPortError>
+  > => {
+    const { machine: on } = splitId(chat)
+    if (on !== machine) return ok(null)
+    const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+    if (!agents.ok) return agents
+    if (!panes.ok) return panes
+    const shared = sharedSessions(agents.value.agents)
+    const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
+    if (agent === undefined) {
+      const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
+      return ok(shell ? { path: undefined, working: false, cwd: undefined } : null)
+    }
+    // Only this chat's session is read. A Codex transcript is not read yet.
+    return ok({
+      path: agent.agent === 'claude' ? sessionPath(agent) : undefined,
+      working: statusOf(agent.agent_status) === 'working',
+      cwd: agent.cwd ?? undefined,
+    })
+  }
+
   return {
     machine,
     async readTranscript(chat) {
-      const { machine: on } = splitId(chat)
-      if (on !== machine) return ok(null)
-      const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
-      if (!agents.ok) return agents
-      if (!panes.ok) return panes
-      const shared = sharedSessions(agents.value.agents)
-      const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
-      if (agent === undefined) {
-        const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
-        return ok(shell ? { entries: [], earlier: false } : null)
-      }
-      // Only this chat's session is read. A Codex transcript is not read yet.
-      const path = agent.agent === 'claude' ? sessionPath(agent) : undefined
+      const located = await locate(chat)
+      if (!located.ok) return located
+      if (located.value === null) return ok(null)
+      const { path, working, cwd } = located.value
       if (path === undefined) return ok({ entries: [], earlier: false })
-      const working = statusOf(agent.agent_status) === 'working'
-      return ok(await readClaudeTranscript(path, { working, cwd: agent.cwd ?? undefined, home }))
+      return ok(await readClaudeTranscript(path, { working, cwd, home }))
+    },
+    watchTranscript(chat, onChange, onEnd) {
+      let over = false
+      let watcher: FSWatcher | undefined
+      const close = () => {
+        over = true
+        watcher?.close()
+        watcher = undefined
+      }
+      const ready = locate(chat).then((located) => {
+        if (over) return
+        if (!located.ok) {
+          close()
+          onEnd(located.error)
+          return
+        }
+        const path = located.value?.path
+        if (path === undefined) return
+        // The folder, not the file: the file can come later, for a chat that has not written yet.
+        try {
+          watcher = watch(dirname(path), (_, name) => {
+            if (!over && name === basename(path)) onChange()
+          })
+          watcher.on('error', () => {
+            watcher?.close()
+            watcher = undefined
+          })
+        } catch {
+          // No folder yet: no change to tell.
+        }
+      })
+      return { ready, close }
     },
     async readLayout(workspace) {
       const first = await readLayoutOnce(workspace)
