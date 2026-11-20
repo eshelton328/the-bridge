@@ -4,8 +4,8 @@
 // keeps proxies from closing a quiet stream. When the agents stop
 // answering, the stream sends one `error` event with an ErrorBody and
 // ends, and the browser connects again after `retry` ms. A throw inside
-// the stream does the same with `internal`; Hono's own handler would send
-// the raw message (d-115).
+// the stream does the same with `internal`; the route catches it itself,
+// as Hono's own handler would send the raw message (d-115).
 import { ErrorBody, LiveEvent } from '@bridge/contract'
 import { Hono } from 'hono'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
@@ -22,25 +22,25 @@ const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
 export function eventsRoutes(live: LiveEvents, log: Logger) {
   return new Hono<AppEnv>().get('/', (c) => {
     const requestId = c.get('requestId')
-    return streamSSE(
-      c,
-      async (stream) => {
-        let disconnect: (() => void) | undefined
-        let finish: () => void = () => undefined
-        const closed = new Promise<void>((resolve) => {
-          finish = resolve
-        })
-        const done = () => {
-          clearInterval(ping)
-          disconnect?.()
-          disconnect = undefined
-          finish()
-        }
-        const ping = setInterval(() => {
-          void stream.write(': ping\n\n')
-        }, pingMs)
-        // The cleanup is in place before the first write, so a client that goes during it leaves nothing open.
-        stream.onAbort(done)
+    return streamSSE(c, async (stream) => {
+      let disconnect: (() => void) | undefined
+      let finish: () => void = () => undefined
+      const closed = new Promise<void>((resolve) => {
+        finish = resolve
+      })
+      const done = () => {
+        clearInterval(ping)
+        disconnect?.()
+        disconnect = undefined
+        finish()
+      }
+      const ping = setInterval(() => {
+        void stream.write(': ping\n\n')
+      }, pingMs)
+      // The cleanup is in place before the first write, so a client that goes during it leaves nothing open.
+      stream.onAbort(done)
+      // A throw is caught here, not by streamSSE's onError: Hono writes the raw message after onError returns.
+      try {
         await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
         if (stream.aborted || stream.closed) {
           done()
@@ -56,12 +56,13 @@ export function eventsRoutes(live: LiveEvents, log: Logger) {
             void sendError(stream, agentErrorBody(error, requestId)).finally(done)
           },
         })
-        await closed
-      },
-      async (err, stream) => {
+      } catch (err) {
         log.error('event stream error', { requestId, err })
         await sendError(stream, { error: { kind: 'internal', message: internalMessage, requestId } })
-      },
-    )
+        done()
+        return
+      }
+      await closed
+    })
   })
 }

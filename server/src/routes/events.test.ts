@@ -119,12 +119,17 @@ describe('GET /api/events', () => {
       },
     }
     const res = await createApp({ agents, owner, log: logger.log }).request('/api/events', { headers: local })
-    if (!res.body) throw new Error('no body')
-    const read = await frames(res.body, 2)
-    const text = JSON.stringify(read)
+    // The whole stream to its end: Hono's own handler would add a frame with the raw message after ours.
+    const text = await res.text()
     expect(text).not.toContain('/home/dev/secret')
-    expect(read[1]?.event).toBe('error')
-    expect(ErrorBody.parse(JSON.parse(read[1]?.data ?? '')).error.kind).toBe('internal')
+    const errors = text.split('\n\n').filter((block) => block.startsWith('event: error'))
+    expect(errors).toHaveLength(1)
+    const data =
+      errors[0]
+        ?.split('\n')
+        .find((line) => line.startsWith('data:'))
+        ?.slice('data:'.length) ?? ''
+    expect(ErrorBody.parse(JSON.parse(data)).error.kind).toBe('internal')
     expect(logger.lines().filter((e) => e.msg === 'event stream error')).toHaveLength(1)
   })
 
