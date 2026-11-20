@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { copyText } from './copyText.ts'
 
 // copyText says what happened (audit W-6): ok, 'unavailable' without a
@@ -64,6 +64,17 @@ describe('copyText', () => {
     const denied = new DOMException('Write permission denied.', 'NotAllowedError')
     const result = await copyText('c', { report, clipboard: { writeText: () => Promise.reject(denied) } })
     expect(result).toEqual({ ok: false, error: 'refused' })
+    expect(reported).toEqual([])
+  })
+  afterEach(() => {
+    Reflect.deleteProperty(navigator, 'clipboard') // back to the browser's own getter
+  })
+
+  it('gives unavailable when the page clipboard key has no value, as on an insecure origin', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+    const { report, reported } = spyReport()
+    const result = await copyText('toolkit/rules/skills.md', { report })
+    expect(result).toEqual({ ok: false, error: 'unavailable' })
     expect(reported).toEqual([])
   })
 })

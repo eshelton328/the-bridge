@@ -17,8 +17,11 @@ export type CopyTextOptions = {
   readonly clipboard?: ClipboardWriter
 }
 
-function pageClipboard(): ClipboardWriter {
-  return 'clipboard' in navigator ? navigator.clipboard : null
+/** What a browser can give: some keep the key with no value on an insecure origin, which the DOM type does not show. */
+type PageNavigator = { readonly clipboard?: Clipboard | undefined }
+
+function pageClipboard(page: PageNavigator = navigator): ClipboardWriter {
+  return page.clipboard ?? null
 }
 
 /** The browser refused the write (no permission or no user gesture): expected, not a fault. */
