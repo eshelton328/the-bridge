@@ -3,7 +3,7 @@ import '@fontsource-variable/geist-mono'
 import '../index.css'
 import type { TranscriptEntry } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { createClientErrorSender, type PostReport } from '../errors/clientErrorSender.ts'
 import { ErrorTray } from '../errors/ErrorTray.tsx'
@@ -18,6 +18,7 @@ import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 
 // W1: a live Claude chat's Send and Stop. Each test takes the owner's path:
@@ -153,9 +154,13 @@ afterEach(async () => {
   await setViewport(1512, 982)
 })
 
-/** Opens the app at `size` and taps Workspaces in the rail or the tab bar; the URL has no parameters. */
-async function tapWorkspaces(size: readonly [number, number]) {
+/**
+ * Opens the app at `size` and taps Workspaces in the rail or the tab bar; the URL has no parameters. `asApp` lays the
+ * page out as the running app does: its root fixed to the window (`#root` under `html[data-app]`, main.ts).
+ */
+async function tapWorkspaces(size: readonly [number, number], asApp = false) {
   await setViewport(size[0], size[1])
+  const before = new Set(document.body.children)
   router = createRouter({
     routeTree,
     history: createMemoryHistory({ initialEntries: ['/'] }),
@@ -168,6 +173,15 @@ async function tapWorkspaces(size: readonly [number, number]) {
     </>,
     rootErrorOptions,
   )
+  if (asApp) {
+    const container = [...document.body.children].find((child) => !before.has(child))
+    if (container === undefined) throw new Error('no view container')
+    container.id = 'root'
+    onTestFinished(markApp())
+    onTestFinished(() => {
+      container.removeAttribute('id')
+    })
+  }
   await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
   await expect.poll(() => router?.state.location.pathname).toBe('/workspaces')
   expect(router.state.location.searchStr).toBe('')
@@ -192,8 +206,8 @@ const sendButton = (title: string) => chatRegion(title).getByRole('button', { na
 const stopButton = (title: string) => chatRegion(title).getByRole('button', { name: 'Stop' })
 
 /** Taps Workspaces and `title`, and types the message in its box. */
-async function openAndType(size: readonly [number, number], title: string, text = secret) {
-  await tapWorkspaces(size)
+async function openAndType(size: readonly [number, number], title: string, text = secret, asApp = false) {
+  await tapWorkspaces(size, asApp)
   await tapChat(title)
   await userEvent.fill(box(title), text)
 }
@@ -421,6 +435,55 @@ describe("a live Claude chat's Send (W1)", () => {
     await new Promise((resolve) => setTimeout(resolve, 200))
     expect(fake.posts).toEqual([])
   })
+})
+
+/** `a` and `b` share some area. */
+const overlaps = (a: DOMRect, b: DOMRect) =>
+  a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+
+/** The dev ErrorTray's box. */
+const trayBox = () => {
+  const tray = document.querySelector('aside[aria-label="Error reports"]')
+  if (tray === null) throw new Error('no ErrorTray')
+  return tray.getBoundingClientRect()
+}
+
+/** `button` gets a real tap: the element at its centre is the button or inside it. */
+const tappable = (button: Element) => {
+  const box = button.getBoundingClientRect()
+  const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)
+  return hit !== null && button.contains(hit)
+}
+
+describe('the dev ErrorTray beside a send error line (W1)', () => {
+  for (const device of [
+    { name: 'the phone', size: phone },
+    { name: 'the tablet', size: tablet },
+  ])
+    it(`covers neither the composer nor the error line, and Retry takes a tap, on ${device.name}`, async () => {
+      const fake = withChats()
+      fake.answerPrompts(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-2' }, 503))
+      await openAndType(device.size, 'plan the slice', secret, true)
+      await userEvent.click(sendButton('plan the slice'))
+      const chat = chatRegion('plan the slice')
+      const line = chat.getByRole('alert').filter({ hasText: 'Not sent — herdr-unavailable' })
+      await expect.element(line).toBeVisible()
+      await expect.element(page.getByRole('button', { name: '1 error' })).toBeVisible()
+      const composer = () => {
+        const area = box('plan the slice').element().closest('[data-keyboard-keep]')
+        if (area === null) throw new Error('no composer')
+        return area.getBoundingClientRect()
+      }
+      const retry = () => chat.getByRole('button', { name: 'Retry' }).element()
+      await expect.poll(() => overlaps(trayBox(), composer())).toBe(false)
+      await expect.poll(() => overlaps(trayBox(), line.element().getBoundingClientRect())).toBe(false)
+      expect(tappable(retry())).toBe(true)
+      expect(tappable(sendButton('plan the slice').element())).toBe(true)
+      // The tap goes through: Retry sends again.
+      fake.answerPrompts(undefined)
+      await userEvent.click(chat.getByRole('button', { name: 'Retry' }))
+      await expect.poll(() => fake.prompts.length).toBe(1)
+    })
 })
 
 describe("a live Claude chat's Stop (W1)", () => {

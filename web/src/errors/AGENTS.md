@@ -24,6 +24,10 @@ Every error path of the app (d-084).
 - Only this folder imports react-error-boundary, listens for `error` or
   `unhandledrejection`, or logs; the lint enforces it.
 - Each boundary has a Vitest test and a crash story.
+- The dev `ErrorTray` sits at the window's bottom right unless that covers
+  a library composer or an alert (an error line with Retry); then it moves
+  up above them, measured each frame while it shows (`trayPlace.ts`,
+  `app/WorkspacesLiveSend.test.tsx`).
 - `report()` keeps an error once: it drops the same object, and an
   equal one (source, name, message, first stack frame) within 2 s, and
   skips `redirect`, `notFound` and `AbortError` (`reporter.test.ts`,
