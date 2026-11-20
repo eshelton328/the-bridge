@@ -35,6 +35,10 @@ export type ContractSetup = {
    * and `stop` for each Escape.
    */
   readonly received: () => Promise<string[]>
+  /** Puts `text` in the expected chat's input box without sending it, as the owner typing in its terminal. */
+  readonly typeInput: (text: string) => Promise<void>
+  /** Empties the expected chat's input box, as the owner would. */
+  readonly clearInput: () => Promise<void>
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
   readonly unreachable: AgentPort
 }
@@ -106,6 +110,38 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.cancel(chat)).toEqual({ ok: true, value: 'sent' })
       await untilAsync('the Escape to arrive', async () => (await stops()) === before + 1)
       await setStatus('idle')
+    })
+
+    it("sends no prompt while the chat's input box holds text, and sends it once the box is empty", async () => {
+      const { port, expected, setStatus, received, typeInput, clearInput } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      await typeInput('half a thought')
+      try {
+        expect(await port.sendPrompt(chat, 'Check the build.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      } finally {
+        await clearInput()
+      }
+      expect(await port.sendPrompt(chat, 'Check the build.')).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Check the build.'))
+      expect((await received()).filter((r) => r.startsWith('text:') && r.includes('half a thought'))).toEqual([])
+    })
+
+    it('clears the prompt that a chat puts back after its stop, so the next prompt goes alone', async () => {
+      const { port, expected, setStatus, received } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      expect(await port.sendPrompt(chat, 'Write a long essay.')).toEqual({ ok: true, value: 'sent' })
+      await setStatus('working')
+      await statusShown(port, expected, 'working')
+      expect(await port.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      expect(await port.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Reply OK.'))
+      expect((await received()).filter((r) => r.startsWith('text:')).at(-1)).toBe('text:Reply OK.')
     })
 
     it('says the agents are unreachable to a prompt and a stop when they do not answer', async () => {

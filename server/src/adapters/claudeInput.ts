@@ -1,0 +1,32 @@
+// Claude Code's input box, read from its pane's screen (slice W1-3). The
+// box is the lines between the last two rules (lines of "─"), and its first
+// line starts with "❯". An empty box shows "❯" alone or a dim placeholder
+// (SGR 2); a long line wraps onto lines that start with two spaces. Screen
+// text never leaves the adapters (d-110), and none of it goes to a log.
+
+const esc = String.fromCharCode(27)
+const sgr = new RegExp(`${esc}\\[[0-9;]*m`, 'g')
+/** A dim run up to the next escape: the placeholder of an empty box. */
+const dimRun = new RegExp(`${esc}\\[2m[^${esc}]*`, 'g')
+const rule = /^─{8,}$/
+
+/** The text in the box, '' when it is empty, and how many screen lines the box has. */
+export type InputBox = { readonly text: string; readonly lines: number }
+
+/** The input box of a Claude Code screen read with its colours (format "ansi"); null when the screen shows none. */
+export function inputBoxOf(screen: string): InputBox | null {
+  const lines = screen.split(/\r?\n/)
+  const rules = lines.flatMap((line, at) => (rule.test(line.replace(sgr, '').trim()) ? [at] : []))
+  const top = rules.at(-2)
+  const bottom = rules.at(-1)
+  if (top === undefined || bottom === undefined) return null
+  const box = lines.slice(top + 1, bottom)
+  const first = box[0]?.replace(dimRun, '').replace(sgr, '')
+  if (first?.startsWith('❯') !== true) return null
+  const rest = box.slice(1).map((line) => line.replace(sgr, '').replace(/^ {2}/, ''))
+  const text = [first.slice(1).replace(/^ /, ''), ...rest].join('\n')
+  return { text: text.trim() === '' ? '' : text.trimEnd(), lines: box.length }
+}
+
+/** `text` with no white space, so a prompt matches the box that shows it wrapped onto more lines. */
+export const bareText = (text: string): string => text.replace(/\s+/g, '')

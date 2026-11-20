@@ -19,9 +19,14 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('herdr-unavailable'), ...common }),
   /**
    * The chat cannot take the request now (409): it is a shell, it waits for the owner's answer to a question
-   * (`needsYou`), or it has no work to stop (`notWorking`).
+   * (`needsYou`), it has no work to stop (`notWorking`), or its input box holds text that a prompt would join
+   * (`inputNotEmpty`, for a prompt only).
    */
-  z.object({ kind: z.literal('chat-not-ready'), state: z.enum(['shell', 'needsYou', 'notWorking']), ...common }),
+  z.object({
+    kind: z.literal('chat-not-ready'),
+    state: z.enum(['shell', 'needsYou', 'notWorking', 'inputNotEmpty']),
+    ...common,
+  }),
   /** The client sent more requests of this kind than the server takes in a minute (429). */
   z.object({ kind: z.literal('too-many-requests'), ...common }),
   /** A bug in the server (500); the server's log has the cause under the request ID. */

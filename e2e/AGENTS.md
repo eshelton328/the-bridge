@@ -31,7 +31,11 @@ not in CI or `pnpm verify`.
   puts one, prints a fixed script and reports itself
   to herdr as a Claude agent with that session. It records each prompt
   and each Escape that it gets as typed keys, which `receivedBy.ts`
-  reads for the contract suite's input cases.
+  reads for the contract suite's input cases. It draws an input box as
+  Claude Code does: an Escape puts the last prompt back, ctrl+u deletes
+  one line, and the status chat reports itself idle after an Escape.
+- `paneInput.ts`: types into the status chat's input box or empties it
+  (`pane.send_text`, `pane.send_keys`), as the owner would.
 - `herdrAgents.e2e.test.ts`: the `AgentPort` contract suite on the herdr
   adapter and the real session.
 - `live.e2e.test.ts`: the live flows: `/workspaces?source=live` lists

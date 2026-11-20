@@ -11,7 +11,10 @@
 // (tried with herdr protocol 22). It takes its input as typed keys and
 // adds each prompt (the text before Enter) and each Escape to
 // <projects>/received/<title>.jsonl, so a test can read what the chat got
-// (receivedBy.ts).
+// (receivedBy.ts). It draws an input box as Claude Code does (a rule, "❯"
+// and the text, a rule): an Escape puts the last prompt back in an empty
+// box, and ctrl+u deletes one line, or the line break before it. With no
+// session it reports itself idle after an Escape, as a stopped turn ends.
 //   node e2e/fakeAgent.ts <claude projects folder> <session id | -> <title>
 import { appendFileSync, mkdirSync, writeFileSync } from 'node:fs'
 import { createConnection } from 'node:net'
@@ -93,6 +96,27 @@ const send = (index: number): void => {
 }
 send(0)
 
+/** Reports the chat's state under the suite's own source; herdr uses it only for a chat with no session. */
+const reportState = (state: 'idle') => {
+  const conn = createConnection(socket, () =>
+    conn.write(
+      `${JSON.stringify({ id: 'fake-agent:stopped', method: 'pane.report_agent', params: { pane_id: pane, source: 'bridge-e2e', agent: 'claude', state } })}\n`,
+    ),
+  )
+  conn.setEncoding('utf8')
+  conn.on('error', (error) => {
+    console.error(`fake agent: herdr did not take pane.report_agent: ${error.message}`)
+  })
+  conn.on('data', () => conn.end())
+}
+
+// The input box. Raw mode turns off the terminal's own line ends, so each line ends in \r\n.
+const rule = '─'.repeat(40)
+const drawBox = (text: string) => {
+  process.stdout.write(`${rule}\r\n❯ ${text.split('\n').join('\r\n  ')}\r\n${rule}\r\n`)
+}
+drawBox('')
+
 // Each key as typed: Enter ends a prompt, a lone Escape is a stop, and other escape sequences are skipped.
 const receivedFolder = join(projects, 'received')
 mkdirSync(receivedFolder, { recursive: true })
@@ -101,6 +125,7 @@ const record = (item: { readonly text: string } | { readonly stop: true }) => {
   appendFileSync(receivedFile, `${JSON.stringify(item)}\n`)
 }
 let typed = ''
+let last = ''
 let sequence = false
 if (process.stdin.isTTY) process.stdin.setRawMode(true)
 process.stdin.setEncoding('utf8')
@@ -111,11 +136,19 @@ process.stdin.on('data', (chunk: string) => {
       if (/[@-~]/.test(key) && key !== '[') sequence = false
     } else if (key === '\x1b') {
       if (chunk.charAt(at + 1) === '[') sequence = true
-      else record({ stop: true })
+      else {
+        record({ stop: true })
+        if (typed === '') typed = last
+        if (!withSession) reportState('idle')
+      }
+    } else if (key === '\x15') {
+      typed = typed.endsWith('\n') ? typed.slice(0, -1) : typed.slice(0, typed.lastIndexOf('\n') + 1)
     } else if (key === '\r' || key === '\n') {
       if (typed !== '') record({ text: typed })
+      last = typed
       typed = ''
     } else typed += key
   }
+  drawBox(typed)
 })
 setInterval(() => undefined, 60_000)

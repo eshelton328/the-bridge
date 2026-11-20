@@ -49,6 +49,13 @@ client of a socket or a file sits beside them.
   one). A
   herdr error on an input keeps only its code, never its message, which
   could quote the prompt (`herdrAgents.test.ts`).
+- A prompt never joins other text: before it sends to a Claude chat, the
+  adapter reads the input box from the pane's screen
+  (`claudeInput.ts`), and a box with text is `inputNotEmpty`. After
+  its own stop, Claude Code puts the stopped prompt back in the box; the
+  adapter clears it with ctrl+u only when the box holds the last prompt
+  it sent, which it keeps as a SHA-256 hash, never as text. Other text
+  stays (`agentPortContract.ts`, `herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once

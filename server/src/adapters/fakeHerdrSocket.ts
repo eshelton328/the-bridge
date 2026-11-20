@@ -42,6 +42,8 @@ export type FakeHerdrSocket = {
   readonly once: (method: string, result: unknown) => void
   /** Sends one event line to each open stream. */
   readonly push: (event: unknown) => void
+  /** Calls `react` with each later request before the socket answers it, as a pane would act on its input. */
+  readonly onRequest: (react: ((method: unknown, params: unknown) => void) | undefined) => void
   /** Closes each open stream from herdr's side. */
   readonly dropStreams: () => void
   readonly close: () => Promise<void>
@@ -62,6 +64,7 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
   const lasting = new Map<string, unknown>()
   const failures = new Map<string, { readonly code: string; readonly message: string }>()
   const requests: { readonly method: unknown; readonly params: unknown }[] = []
+  let reactTo: ((method: unknown, params: unknown) => void) | undefined
   const server = createServer((conn) => {
     connections += 1
     conn.setEncoding('utf8')
@@ -86,6 +89,7 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       const id = field(request, 'id') ?? ''
       const method = field(request, 'method')
       requests.push({ method, params: field(request, 'params') })
+      reactTo?.(method, field(request, 'params'))
       switch (mode) {
         case 'silent':
           return
@@ -157,6 +161,9 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       else lasting.set(method, result)
     },
     streams: () => [...streams.values()],
+    onRequest: (react) => {
+      reactTo = react
+    },
     push: (event) => {
       for (const conn of streams.keys()) conn.write(`${JSON.stringify(event)}\n`)
     },
@@ -172,3 +179,24 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       }),
   }
 }
+
+const esc = String.fromCharCode(27)
+const rule = `${esc}[0m${esc}[38;2;136;136;136m${'─'.repeat(60)}${esc}[0m`
+
+/**
+ * A Claude Code screen whose input box holds `text` (one line for each line of it), as herdr's pane.read gives
+ * it with format "ansi"; an empty box shows the dim placeholder.
+ */
+export function claudeScreen(text: string): string {
+  const box =
+    text === ''
+      ? [`❯ ${esc}[0m${esc}[2mTry "fix lint errors"${esc}[0m`]
+      : text.split('\n').map((line, at) => `${at === 0 ? '❯ ' : '  '}${line}`)
+  return ['Claude Code v2.1', '', rule, ...box, rule, '  ⏵⏵ auto mode on'].join('\r\n')
+}
+
+/** herdr's pane.read reply for a pane that shows `screen`. */
+export const paneRead = (pane: string, screen: string) => ({
+  type: 'pane_read',
+  read: { pane_id: pane, source: 'visible', format: 'ansi', text: screen, revision: 0, truncated: false },
+})

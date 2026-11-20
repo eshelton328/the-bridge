@@ -29,12 +29,13 @@ export type AgentEvent =
 
 /**
  * What a send or a stop did: `sent`; `notFound` when this machine has no such chat; `shell` when the chat is a
- * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question.
+ * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question;
+ * `inputNotEmpty` when the chat's input box holds text, which the prompt would join, so nothing was sent.
  */
-export type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou'
+export type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou' | 'inputNotEmpty'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
-export type CancelOutcome = Exclude<SendOutcome, 'needsYou'> | 'notWorking'
+export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
 
 /** The last entries of a chat's transcript, and whether older entries exist. */
 export type TranscriptRead = { readonly entries: TranscriptEntry[]; readonly earlier: boolean }
@@ -76,9 +77,14 @@ export type AgentPort = {
   subscribe(onEvent: (event: AgentEvent) => void, onEnd: (error: AgentPortError) => void): AgentSubscription
   /**
    * Sends `text` to one Claude or Codex chat as the owner's next prompt, as if typed and sent. It sends to that chat
-   * only, and keeps no copy of the text.
+   * only, and keeps no copy of the text. It sends nothing to a chat whose input box holds text, so two prompts never
+   * join.
    */
   sendPrompt(chat: ChatId, text: string): Promise<Result<SendOutcome, AgentPortError>>
-  /** Stops the work of one chat that is working, as one press of Escape in it; a chat that does not work gets nothing. */
+  /**
+   * Stops the work of one chat that is working, as one press of Escape in it; a chat that does not work gets nothing.
+   * When the chat then puts the stopped prompt back in its input box, and that prompt is the last one this port sent
+   * it, the port clears it; other text in the box stays.
+   */
   cancel(chat: ChatId): Promise<Result<CancelOutcome, AgentPortError>>
 }

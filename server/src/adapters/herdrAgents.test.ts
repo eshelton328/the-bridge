@@ -5,7 +5,7 @@ import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
-import { type FakeHerdrSocket, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
+import { claudeScreen, type FakeHerdrSocket, paneRead, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
 import { createHerdrAgents } from './herdrAgents.ts'
 import { memoryLogger } from '../logger.ts'
 
@@ -123,6 +123,8 @@ const results = {
   },
   // agent.prompt answers with the agent; the adapter reads no field of either input reply.
   'agent.prompt': { type: 'agent_prompted', agent: { agent: 'claude', pane_id: 'w17:p1', agent_status: 'working' } },
+  'agent.wait': { type: 'agent_info', agent: {} },
+  'pane.read': paneRead('w17:p1', claudeScreen('')),
   'agent.send_keys': { type: 'ok' },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
@@ -170,7 +172,32 @@ const field = (value: unknown, name: string): unknown =>
  * it after a change, and `received` reads each agent.prompt text and each Escape that the pane got.
  */
 function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: string) {
+  // The pane's input box, as Claude Code keeps it: a stop puts the last prompt back, and ctrl+u empties it.
+  let box = ''
+  let last = ''
+  const show = (text: string) => {
+    box = text
+    sock().set('pane.read', paneRead(pane, claudeScreen(text)))
+  }
+  sock().onRequest((method, params) => {
+    if (field(params, 'target') !== pane) return
+    const keys = field(params, 'keys')
+    if (method === 'agent.prompt') last = String(field(params, 'text'))
+    else if (method === 'agent.send_keys' && Array.isArray(keys)) {
+      if (keys.includes('esc') && box === '') show(last)
+      if (keys.includes('ctrl+u')) show('')
+    }
+  })
+  show('')
   return {
+    typeInput: (text: string) => {
+      show(text)
+      return Promise.resolve()
+    },
+    clearInput: () => {
+      show('')
+      return Promise.resolve()
+    },
     setStatus: (status: 'working' | 'idle') => {
       sock().set('agent.list', {
         ...list,
@@ -199,6 +226,8 @@ describe('herdr (recorded socket)', () => {
   // Each status that the suite sets stays in the agent list until the suite ends.
   afterAll(() => {
     socket.set('agent.list', undefined)
+    socket.set('pane.read', undefined)
+    socket.onRequest(undefined)
   })
   describeAgentPort('herdr (recorded socket)', () => {
     socket.set('agent.list', undefined)
@@ -228,6 +257,8 @@ const resumedTwice = {
   'workspace.list': results['workspace.list'],
   'agent.prompt': results['agent.prompt'],
   'agent.send_keys': results['agent.send_keys'],
+  'agent.wait': results['agent.wait'],
+  'pane.read': paneRead('w17:p2', claudeScreen('')),
   'pane.list': {
     type: 'pane_list',
     panes: [
@@ -304,6 +335,37 @@ describe('herdr agents: input to a chat', () => {
       socket.failOnce('agent.prompt', 'agent_blocked', 'agent is blocked')
       expect(await port().sendPrompt(chat, 'Run the tests.')).toEqual({ ok: true, value: 'needsYou' })
     } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('after a stop, keeps text in the box that is not the last prompt it sent, and the next prompt is refused', async () => {
+    const list = (status: string) => ({
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: status } : a)),
+    })
+    const ours = port()
+    socket.set('agent.list', list('idle'))
+    try {
+      expect(await ours.sendPrompt(chat, 'Write a long essay.')).toEqual({ ok: true, value: 'sent' })
+      socket.set('agent.list', list('working'))
+      // The owner typed other words in the terminal, which the box shows after the stop.
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('my own words')))
+      })
+      const before = socket.requests().length
+      expect(await ours.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      const keys = socket
+        .requests()
+        .slice(before)
+        .filter((r) => r.method === 'agent.send_keys')
+        .map((r) => field(r.params, 'keys'))
+      expect(keys).toEqual([['esc']])
+      socket.set('agent.list', list('idle'))
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+    } finally {
+      socket.onRequest(undefined)
+      socket.set('pane.read', undefined)
       socket.set('agent.list', undefined)
     }
   })

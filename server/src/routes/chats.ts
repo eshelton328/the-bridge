@@ -92,6 +92,11 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
         return errorJson(c, 'chat-not-ready', { state: 'shell', message: 'a shell chat takes no prompt' })
       case 'needsYou':
         return errorJson(c, 'chat-not-ready', { state: 'needsYou', message: 'the chat waits for your answer' })
+      case 'inputNotEmpty':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'inputNotEmpty',
+          message: "the chat's input box holds text, so the prompt was not sent",
+        })
       case 'notWorking':
         return errorJson(c, 'chat-not-ready', { state: 'notWorking', message: 'the chat has no work to stop' })
     }
