@@ -4,7 +4,7 @@ import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { userEvent } from 'vitest/browser'
-import { testRender } from '../lib/testRender.ts'
+import { testRender, unmountRendered } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { setViewport } from '../lib/rendering.ts'
@@ -120,6 +120,7 @@ async function renderTablet(state: string, tab: string) {
 
 describe('the Links tab on a tablet', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -158,6 +159,7 @@ describe('the Links tab on a tablet', () => {
 
 describe('a rule’s Links tab on a tablet (T28)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -181,6 +183,7 @@ describe('a rule’s Links tab on a tablet (T28)', () => {
 
 describe('an agent’s Links tab on a tablet (T29)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -199,6 +202,7 @@ describe('an agent’s Links tab on a tablet (T29)', () => {
 
 describe('a workflow’s Links tab on a tablet (T30)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -217,6 +221,7 @@ describe('a workflow’s Links tab on a tablet (T30)', () => {
 
 describe('a hook’s Links tab on a tablet (T31)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -253,6 +258,7 @@ async function renderPhone(state: string) {
 
 describe('the Links tab on the phone (M17)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -296,6 +302,7 @@ describe('the Links tab on the phone (M17)', () => {
 
 describe('a rule’s Links tab on the phone (M31)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -319,6 +326,7 @@ describe('a rule’s Links tab on the phone (M31)', () => {
 
 describe('an agent’s Links tab on the phone (M32)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -347,6 +355,7 @@ describe('an agent’s Links tab on the phone (M32)', () => {
 
 describe('a workflow’s Links tab on the phone (M33)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -371,6 +380,7 @@ describe('a workflow’s Links tab on the phone (M33)', () => {
 
 describe('a hook’s Links tab on the phone (M34)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -480,6 +490,7 @@ function onEdge(p: { x: number; y: number }, b: { x: number; y: number; width: n
 
 describe('the phone’s links graph draws its lines (M17)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -538,6 +549,7 @@ async function expectHoverAndFocus(root: HTMLElement) {
 
 describe('the pointer and the focus on the links graph (D19, T15)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 
@@ -616,6 +628,7 @@ function openNode(root: HTMLElement) {
 
 describe('the open item’s name in the links graph (D19, T29, M32)', () => {
   afterEach(async () => {
+    await unmountRendered()
     await setViewport(1512, 982)
   })
 

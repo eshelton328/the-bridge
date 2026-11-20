@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
 import { playwright } from '@vitest/browser-playwright'
 import { defineConfig } from 'vitest/config'
@@ -30,7 +31,13 @@ export default defineConfig({
       },
       {
         extends: './web/vite.config.ts',
-        test: { name: 'web', root: './web', include: ['src/**/*.test.{ts,tsx}'], browser: browser('web') },
+        test: {
+          name: 'web',
+          root: './web',
+          include: ['src/**/*.test.{ts,tsx}'],
+          setupFiles: [fileURLToPath(new URL('./web/src/lib/testSetup.ts', import.meta.url))],
+          browser: browser('web'),
+        },
       },
       {
         extends: './web/vite.config.ts',
