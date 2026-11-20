@@ -32,6 +32,12 @@ export type FakeHerdrSocket = {
   readonly connections: () => number
   /** The subscriptions of each events.subscribe stream that is open now. */
   readonly streams: () => unknown[]
+  /** Each request that the socket got, in order: its method and its params. */
+  readonly requests: () => { readonly method: unknown; readonly params: unknown }[]
+  /** Answers each later request for `method` with `result`, until a call with `undefined` gives the recorded result again. */
+  readonly set: (method: string, result: unknown) => void
+  /** Answers the next request for `method` with herdr's error reply of `code` and `message`, once. */
+  readonly failOnce: (method: string, code: string, message: string) => void
   /** Answers the next request for `method` with `result`, once, then the recorded result again. */
   readonly once: (method: string, result: unknown) => void
   /** Sends one event line to each open stream. */
@@ -53,6 +59,9 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
   let mode: FakeSocketMode = 'normal'
   const streams = new Map<Socket, unknown>()
   const next = new Map<string, unknown>()
+  const lasting = new Map<string, unknown>()
+  const failures = new Map<string, { readonly code: string; readonly message: string }>()
+  const requests: { readonly method: unknown; readonly params: unknown }[] = []
   const server = createServer((conn) => {
     connections += 1
     conn.setEncoding('utf8')
@@ -76,6 +85,7 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
       }
       const id = field(request, 'id') ?? ''
       const method = field(request, 'method')
+      requests.push({ method, params: field(request, 'params') })
       switch (mode) {
         case 'silent':
           return
@@ -110,12 +120,20 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
         send(`${JSON.stringify({ id, result: { type: 'subscription_started' } })}\n`, false)
         return
       }
+      const failure = typeof method === 'string' ? failures.get(method) : undefined
+      if (typeof method === 'string' && failure !== undefined) {
+        failures.delete(method)
+        send(`${JSON.stringify({ id, error: failure })}\n`, true)
+        return
+      }
       const onlyOnce = typeof method === 'string' && next.has(method)
       const reply = onlyOnce
         ? { id, result: next.get(method) }
-        : typeof method === 'string' && Object.hasOwn(results, method)
-          ? { id, result: results[method] }
-          : { id, error: { code: 'unknown_method', message: `no result for ${String(method)}` } }
+        : typeof method === 'string' && lasting.has(method)
+          ? { id, result: lasting.get(method) }
+          : typeof method === 'string' && Object.hasOwn(results, method)
+            ? { id, result: results[method] }
+            : { id, error: { code: 'unknown_method', message: `no result for ${String(method)}` } }
       if (onlyOnce) next.delete(method)
       send(`${JSON.stringify(reply)}\n`, true)
     })
@@ -129,6 +147,14 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
     connections: () => connections,
     once: (method, result) => {
       next.set(method, result)
+    },
+    requests: () => [...requests],
+    failOnce: (method, code, message) => {
+      failures.set(method, { code, message })
+    },
+    set: (method, result) => {
+      if (result === undefined) lasting.delete(method)
+      else lasting.set(method, result)
     },
     streams: () => [...streams.values()],
     push: (event) => {

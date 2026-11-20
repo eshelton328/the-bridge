@@ -30,6 +30,11 @@ export type ContractSetup = {
   readonly changeLayout: () => Promise<void>
   /** A chat that has a transcript (its title), and a function that adds an entry to it, as its agent would. */
   readonly transcript: { readonly chat: string; readonly append: () => Promise<void> }
+  /**
+   * What the expected chat got from the owner, in order: `text:<prompt>` for each prompt it got as typed and sent,
+   * and `stop` for each Escape.
+   */
+  readonly received: () => Promise<string[]>
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
   readonly unreachable: AgentPort
 }
@@ -40,8 +45,76 @@ async function until(what: string, check: () => boolean, ms = 5000): Promise<voi
   throw new Error(`${what} did not happen in ${String(ms)} ms`)
 }
 
+/** Waits up to `ms` for an async `check` to pass. */
+async function untilAsync(what: string, check: () => Promise<boolean>, ms = 5000): Promise<void> {
+  for (const end = Date.now() + ms; Date.now() < end; await new Promise((r) => setTimeout(r, 20)))
+    if (await check()) return
+  throw new Error(`${what} did not happen in ${String(ms)} ms`)
+}
+
+/** The listed IDs of the expected chat and of a shell chat. */
+async function chatsToUse(port: AgentPort, expected: ContractSetup['expected']) {
+  const read = await port.listWorkspaces()
+  if (!read.ok) throw new Error(read.error.message)
+  const chats = read.value.flatMap((w) => w.chats)
+  const chat = chats.find((c) => c.title === expected.chat)
+  const shell = read.value.find((w) => w.label === expected.shell.workspace)?.chats.find((c) => c.kind === 'shell')
+  if (chat === undefined || shell === undefined) throw new Error('the expected chat or shell is not listed')
+  return { chat: chat.id, shell: shell.id }
+}
+
+/** Waits until the list shows the expected chat with `status`, as the adapter reads it before an input. */
+async function statusShown(port: AgentPort, expected: ContractSetup['expected'], status: ChatStatus) {
+  await untilAsync(`the chat's status ${status}`, async () => {
+    const read = await port.listWorkspaces()
+    return read.ok && read.value.some((w) => w.chats.some((c) => c.title === expected.chat && c.status === status))
+  })
+}
+
 export function describeAgentPort(name: string, setup: () => Promise<ContractSetup>): void {
   describe(`AgentPort contract: ${name}`, () => {
+    it('sends a prompt to a chat, which gets its text as typed and sent', async () => {
+      const { port, expected, setStatus, received } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      const sent = await port.sendPrompt(chat, 'Run the tests.')
+      expect(sent).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Run the tests.'))
+    })
+
+    it('sends nothing to a shell chat or to a chat that the machine does not have', async () => {
+      const { port, expected } = await setup()
+      const { shell } = await chatsToUse(port, expected)
+      const none = ChatId.parse(`${port.machine}/no-such-chat`)
+      expect(await port.sendPrompt(shell, 'ls')).toEqual({ ok: true, value: 'shell' })
+      expect(await port.cancel(shell)).toEqual({ ok: true, value: 'shell' })
+      expect(await port.sendPrompt(none, 'Go on.')).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.cancel(none)).toEqual({ ok: true, value: 'notFound' })
+    })
+
+    it('stops a chat that works with one Escape, and sends no Escape to a chat that does not work', async () => {
+      const { port, expected, setStatus, received } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      const stops = async () => (await received()).filter((r) => r === 'stop').length
+      const before = await stops()
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      expect(await port.cancel(chat)).toEqual({ ok: true, value: 'notWorking' })
+      await setStatus('working')
+      await statusShown(port, expected, 'working')
+      expect(await port.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the Escape to arrive', async () => (await stops()) === before + 1)
+      await setStatus('idle')
+    })
+
+    it('says the agents are unreachable to a prompt and a stop when they do not answer', async () => {
+      const { unreachable } = await setup()
+      const chat = ChatId.parse(`${unreachable.machine}/any-chat`)
+      for (const answer of [await unreachable.sendPrompt(chat, 'Go on.'), await unreachable.cancel(chat)])
+        expect(answer).toMatchObject({ ok: false, error: { reason: 'unreachable' } })
+    })
+
     it('lists workspaces that match the contract schema', async () => {
       const { port } = await setup()
       const read = await port.listWorkspaces()

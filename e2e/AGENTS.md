@@ -29,7 +29,9 @@ not in CI or `pnpm verify`.
 - `fakeAgent.ts`: the fake agent. It writes a Claude Code session file
   (a prompt, a tool call with its result and a reply) where Claude Code
   puts one, prints a fixed script and reports itself
-  to herdr as a Claude agent with that session.
+  to herdr as a Claude agent with that session. It records each prompt
+  and each Escape that it gets as typed keys, which `receivedBy.ts`
+  reads for the contract suite's input cases.
 - `herdrAgents.e2e.test.ts`: the `AgentPort` contract suite on the herdr
   adapter and the real session.
 - `live.e2e.test.ts`: the live flows: `/workspaces?source=live` lists

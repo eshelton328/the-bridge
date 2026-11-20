@@ -6,6 +6,7 @@ import { describeAgentPort } from '../server/src/adapters/agentPortContract.ts'
 import { createHerdrAgents } from '../server/src/adapters/herdrAgents.ts'
 import { memoryLogger } from '../server/src/logger.ts'
 import { appendTranscript } from './appendTranscript.ts'
+import { receivedBy } from './receivedBy.ts'
 import { renameTab } from './renameTab.ts'
 import { reportAgent } from './reportAgent.ts'
 
@@ -31,6 +32,7 @@ describeAgentPort('herdr (real session)', () =>
     setStatus: reportAgent,
     changeLayout: renameTab,
     transcript: { chat: inject('fakeChat').title, append: appendTranscript },
+    received: () => receivedBy(inject('statusChat').title),
     unreachable: createHerdrAgents({
       socket: `${inject('herdrSocket')}.none`,
       machine,

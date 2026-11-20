@@ -32,11 +32,25 @@ describeAgentPort('fake', () => {
       port.changeLayout(WorkspaceId.parse('test-mac/omni-brain'))
       return Promise.resolve()
     },
+    received: () =>
+      Promise.resolve(
+        port
+          .inputs()
+          .filter((i) => i.chat === ChatId.parse('test-mac/drift-check'))
+          .map((i) => ('text' in i ? `text:${i.text}` : 'stop')),
+      ),
     unreachable: createFakeAgents(machine, { error: { reason: 'unreachable', message: 'herdr socket: ENOENT' } }),
   })
 })
 
 describe('fake agents', () => {
+  it('sends no prompt to a chat that waits for the owner', async () => {
+    const port = createFakeAgents(machine)
+    const chat = ChatId.parse('test-mac/drift-check')
+    expect(await port.sendPrompt(chat, 'Go on.')).toEqual({ ok: true, value: 'needsYou' })
+    expect(port.inputs()).toEqual([])
+  })
+
   it('fails with the error it was given', async () => {
     const port = createFakeAgents(machine, { error: { reason: 'unreachable', message: 'no socket' } })
     expect(await port.listWorkspaces()).toEqual({ ok: false, error: { reason: 'unreachable', message: 'no socket' } })

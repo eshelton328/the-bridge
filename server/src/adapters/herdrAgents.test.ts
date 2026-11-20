@@ -121,6 +121,9 @@ const results = {
       },
     },
   },
+  // agent.prompt answers with the agent; the adapter reads no field of either input reply.
+  'agent.prompt': { type: 'agent_prompted', agent: { agent: 'claude', pane_id: 'w17:p1', agent_status: 'working' } },
+  'agent.send_keys': { type: 'ok' },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
     type: 'pane_process_info',
@@ -157,33 +160,74 @@ const statusLine = (pane: string, status: string) => ({
   event: 'pane.agent_status_changed',
 })
 
-describeAgentPort('herdr (recorded socket)', () =>
-  Promise.resolve({
-    port: port(),
-    expected: {
-      workspace: 'the-bridge loops',
-      chat: 'bridge-coord',
-      shell: { workspace: 'phone · shell', program: 'pnpm' },
-    },
-    setStatus: (status) => {
-      socket.push(statusLine('w17:p1', status))
-      return Promise.resolve()
-    },
-    transcript: { chat: 'bridge-coord', append: appendToSessionA },
-    changeLayout: () => {
-      socket.push({
-        event: 'tab.renamed',
-        data: { type: 'tab_renamed', tab_id: 'w17:t1', workspace_id: 'w17', label: 'renamed' },
+type AgentListReply = { readonly agents: readonly { readonly pane_id: string }[] }
+
+const field = (value: unknown, name: string): unknown =>
+  typeof value === 'object' && value !== null ? Object.getOwnPropertyDescriptor(value, name)?.value : undefined
+
+/**
+ * The suite's status and input hooks for the chat in `pane`: a status stays in the agent list, as herdr lists
+ * it after a change, and `received` reads each agent.prompt text and each Escape that the pane got.
+ */
+function chatInPane(sock: () => FakeHerdrSocket, list: AgentListReply, pane: string) {
+  return {
+    setStatus: (status: 'working' | 'idle') => {
+      sock().set('agent.list', {
+        ...list,
+        agents: list.agents.map((a) => (a.pane_id === pane ? { ...a, agent_status: status } : a)),
       })
+      sock().push(statusLine(pane, status))
       return Promise.resolve()
     },
-    unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, log, claudeProjects: projects, home }),
-  }),
-)
+    received: () =>
+      Promise.resolve(
+        sock()
+          .requests()
+          .filter((r) => field(r.params, 'target') === pane)
+          .flatMap((r) => {
+            if (r.method === 'agent.prompt') return [`text:${String(field(r.params, 'text'))}`]
+            const keys = field(r.params, 'keys')
+            return r.method === 'agent.send_keys' && Array.isArray(keys)
+              ? keys.map((k) => (k === 'esc' ? 'stop' : String(k)))
+              : []
+          }),
+      ),
+  }
+}
+
+describe('herdr (recorded socket)', () => {
+  // Each status that the suite sets stays in the agent list until the suite ends.
+  afterAll(() => {
+    socket.set('agent.list', undefined)
+  })
+  describeAgentPort('herdr (recorded socket)', () => {
+    socket.set('agent.list', undefined)
+    return Promise.resolve({
+      port: port(),
+      expected: {
+        workspace: 'the-bridge loops',
+        chat: 'bridge-coord',
+        shell: { workspace: 'phone · shell', program: 'pnpm' },
+      },
+      ...chatInPane(() => socket, results['agent.list'], 'w17:p1'),
+      transcript: { chat: 'bridge-coord', append: appendToSessionA },
+      changeLayout: () => {
+        socket.push({
+          event: 'tab.renamed',
+          data: { type: 'tab_renamed', tab_id: 'w17:t1', workspace_id: 'w17', label: 'renamed' },
+        })
+        return Promise.resolve()
+      },
+      unreachable: createHerdrAgents({ socket: `${socket.path}.none`, machine, log, claudeProjects: projects, home }),
+    })
+  })
+})
 
 // Two panes that resumed the same Claude session, as `claude --resume` in a second pane gives.
 const resumedTwice = {
   'workspace.list': results['workspace.list'],
+  'agent.prompt': results['agent.prompt'],
+  'agent.send_keys': results['agent.send_keys'],
   'pane.list': {
     type: 'pane_list',
     panes: [
@@ -221,18 +265,16 @@ beforeAll(async () => {
 })
 afterAll(() => resumed.close())
 
-describeAgentPort('herdr (one session resumed in two panes)', () =>
-  Promise.resolve({
+describeAgentPort('herdr (one session resumed in two panes)', () => {
+  resumed.set('agent.list', undefined)
+  return Promise.resolve({
     port: createHerdrAgents({ socket: resumed.path, machine, log, claudeProjects: projects, home }),
     expected: {
       workspace: 'the-bridge loops',
       chat: 'bridge-coord 2',
       shell: { workspace: 'phone · shell', program: 'pnpm' },
     },
-    setStatus: (status) => {
-      resumed.push(statusLine('w17:p2', status))
-      return Promise.resolve()
-    },
+    ...chatInPane(() => resumed, resumedTwice['agent.list'], 'w17:p2'),
     transcript: { chat: 'bridge-coord 2', append: appendToSessionA },
     changeLayout: () => {
       resumed.push({
@@ -242,8 +284,76 @@ describeAgentPort('herdr (one session resumed in two panes)', () =>
       return Promise.resolve()
     },
     unreachable: createHerdrAgents({ socket: `${resumed.path}.none`, machine, log, claudeProjects: projects, home }),
-  }),
-)
+  })
+})
+
+describe('herdr agents: input to a chat', () => {
+  const chat = ChatId.parse('test-mac/session-a')
+  const sentTo = (method: string) => socket.requests().filter((r) => r.method === method).length
+
+  it('sends no prompt to a chat that waits for the owner, and none when herdr says it is blocked', async () => {
+    const before = sentTo('agent.prompt')
+    // The recorded list gives bridge-coord herdr's "blocked".
+    expect(await port().sendPrompt(chat, 'Run the tests.')).toEqual({ ok: true, value: 'needsYou' })
+    expect(sentTo('agent.prompt')).toBe(before)
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    try {
+      socket.failOnce('agent.prompt', 'agent_blocked', 'agent is blocked')
+      expect(await port().sendPrompt(chat, 'Run the tests.')).toEqual({ ok: true, value: 'needsYou' })
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('sends one Escape for two stops that come together or within 2 s, and one again after that', async () => {
+    let time = 1_000_000
+    const timed = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      now: () => time,
+    })
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'working' } : a)),
+    })
+    try {
+      const before = sentTo('agent.send_keys')
+      const both = await Promise.all([timed.cancel(chat), timed.cancel(chat)])
+      expect(both).toEqual([
+        { ok: true, value: 'sent' },
+        { ok: true, value: 'sent' },
+      ])
+      time += 1999
+      expect(await timed.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(before + 1)
+      time += 1
+      expect(await timed.cancel(chat)).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(before + 2)
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it("gives herdr's error code without its message, which could quote the prompt", async () => {
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    try {
+      socket.failOnce('agent.prompt', 'pane_busy', 'cannot paste "Deploy with token marker-1234"')
+      const sent = await port().sendPrompt(chat, 'Deploy with token marker-1234')
+      expect(sent).toEqual({ ok: false, error: { reason: 'badReply', message: 'herdr agent.prompt: pane_busy' } })
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+})
 
 describe('herdr agents: a reply the adapter does not read', () => {
   let broken: FakeHerdrSocket

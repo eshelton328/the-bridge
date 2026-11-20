@@ -233,7 +233,12 @@ export type HerdrAgentsOptions = {
   readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
   readonly log: Logger
+  /** The time in ms, for the stop hold; a test can move it. */
+  readonly now?: () => number
 }
+
+/** How long after a stop's Escape a pane gets no other Escape. */
+const stopHoldMs = 2000
 
 /** A Claude session ID that is safe in a file name: no slash and no dot. */
 const sessionName = /^[A-Za-z0-9_-]{1,100}$/
@@ -245,6 +250,7 @@ export function createHerdrAgents({
   home,
   log,
   watch: watchFs = (path, listener) => watch(path, listener),
+  now = Date.now,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -422,12 +428,21 @@ export function createHerdrAgents({
       : err(badReply(`herdr layout: ${layout.error.issues[0]?.message ?? 'unknown shape'}`))
   }
 
-  /** Where a chat's transcript is: its session file (none for a shell or a Codex chat); null for no such chat. */
+  /**
+   * Where a chat is: its session file (none for a shell or a Codex chat), its status, and its pane (none for a
+   * shell); null for no such chat.
+   */
   const locate = async (
     chat: ChatId,
   ): Promise<
     Result<
-      { path: string | undefined; working: boolean; cwd: string | undefined; pane: string | undefined } | null,
+      {
+        path: string | undefined
+        working: boolean
+        status: ChatStatus
+        cwd: string | undefined
+        pane: string | undefined
+      } | null,
       AgentPortError
     >
   > => {
@@ -440,19 +455,72 @@ export function createHerdrAgents({
     const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
     if (agent === undefined) {
       const shell = panes.value.panes.some((p) => shellIdOf(p) === chat)
-      return ok(shell ? { path: undefined, working: false, cwd: undefined, pane: undefined } : null)
+      return ok(shell ? { path: undefined, working: false, status: 'idle', cwd: undefined, pane: undefined } : null)
     }
     // Only this chat's session is read. A Codex transcript is not read yet.
+    const status = statusOf(agent.agent_status)
     return ok({
       path: agent.agent === 'claude' ? sessionPath(agent) : undefined,
-      working: statusOf(agent.agent_status) === 'working',
+      working: status === 'working',
+      status,
       cwd: agent.cwd ?? undefined,
       pane: agent.pane_id,
     })
   }
 
+  /**
+   * When each pane last got a stop's Escape. A second Escape soon after opens Claude Code's rewind menu, so a stop
+   * in the next `stopHoldMs` sends none: two taps of Stop, or two clients, give one Escape.
+   */
+  const stoppedAt = new Map<string, number>()
+
+  /** The pane and status of a Claude or Codex chat, or why the chat takes no input: no such chat, or a shell. */
+  const agentPane = async (
+    chat: ChatId,
+  ): Promise<Result<{ pane: string; status: ChatStatus } | 'notFound' | 'shell', AgentPortError>> => {
+    const located = await locate(chat)
+    if (!located.ok) return located
+    if (located.value === null) return ok('notFound')
+    const { pane, status } = located.value
+    return ok(pane === undefined ? 'shell' : { pane, status })
+  }
+
+  /**
+   * Sends one input request to a chat's pane. A herdr error gives only its method and code, never its message,
+   * which could quote the input; herdr's `agent_blocked` is the chat's `needsYou`.
+   */
+  const input = async (method: string, params: Readonly<Record<string, unknown>>) => {
+    const reply = await herdrRequest(socket, method, params)
+    if (reply.ok) return ok('sent' as const)
+    if (reply.error.kind !== 'herdrError') return err(portErrorOf(reply.error))
+    if (reply.error.code === 'agent_blocked') return ok('needsYou' as const)
+    return err(badReply(`herdr ${method}: ${reply.error.code}`))
+  }
+
   return {
     machine,
+    async sendPrompt(chat, text) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      if (target.value.status === 'needsYou') return ok('needsYou')
+      return input('agent.prompt', { target: target.value.pane, text })
+    },
+    async cancel(chat) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      // A second Escape in Claude Code opens the rewind menu, so a chat that does not work gets none.
+      if (target.value.status !== 'working') return ok('notWorking')
+      const { pane } = target.value
+      const last = stoppedAt.get(pane)
+      if (last !== undefined && now() - last < stopHoldMs) return ok('sent')
+      // Set before the send, so a stop that comes while this one waits for herdr sends nothing.
+      stoppedAt.set(pane, now())
+      const sent = await input('agent.send_keys', { target: pane, keys: ['esc'] })
+      if (!sent.ok) return sent
+      return ok(sent.value === 'needsYou' ? 'notWorking' : 'sent')
+    },
     async readTranscript(chat) {
       const located = await locate(chat)
       if (!located.ok) return located

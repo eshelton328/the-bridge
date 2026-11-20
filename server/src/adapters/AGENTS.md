@@ -41,6 +41,14 @@ client of a socket or a file sits beside them.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's context window; a model that `sessionFile.ts`
   has no window for gets `null` (`sessionFile.test.ts`).
+- A prompt or a stop goes only to its own chat's pane, with herdr
+  `agent.prompt` or one `esc` of `agent.send_keys`. A shell, a chat that
+  waits for the owner (`blocked`) and, for a stop, a chat that does not
+  work get nothing: a second Escape opens Claude Code's rewind menu, so
+  a pane gets no other Escape for 2 s after one (two taps of Stop send
+  one). A
+  herdr error on an input keeps only its code, never its message, which
+  could quote the prompt (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
