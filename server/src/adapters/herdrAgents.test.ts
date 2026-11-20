@@ -527,6 +527,26 @@ describe('herdr agents: subscribe', () => {
     expect(JSON.stringify([read, events, logger.lines()])).not.toContain(marker)
   })
 
+  it('uses the process name when a program writes its arguments into argv0', async () => {
+    const marker = 'argument-that-must-stay-here'
+    const retitled = await startFakeHerdrSocket({
+      ...results,
+      'pane.process_info': {
+        process_info: {
+          shell_pid: 10,
+          foreground_process_group_id: 11,
+          foreground_processes: [{ pid: 11, name: 'node', argv0: `npm run dev -- --token ${marker}` }],
+        },
+      },
+    })
+    const read = await createHerdrAgents({ socket: retitled.path, machine, log, claudeProjects: projects })
+      .listWorkspaces()
+      .finally(() => retitled.close())
+    const shell = read.ok ? read.value[1]?.chats.find((c) => c.id === 'test-mac/term_3') : undefined
+    expect(shell).toMatchObject({ title: 'node', model: 'node' })
+    expect(JSON.stringify(read)).not.toContain(marker)
+  })
+
   it('ends the subscription once, with the reason, when herdr closes the stream', async () => {
     const { ends, subscription } = collect()
     await subscription.ready

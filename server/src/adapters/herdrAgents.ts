@@ -67,10 +67,15 @@ const ProcessInfo = z.object({
   }),
 })
 
-/** A process's name with no path and no login-shell dash: the base name of argv0, else herdr's name. */
+/**
+ * A process's name with no path, no login-shell dash and no argument: the base name of argv0, else herdr's name
+ * when argv0 is empty or holds a space (a program such as Node can write its arguments into argv0), and only
+ * the first word of what remains.
+ */
 const processName = (p: { readonly name: string; readonly argv0?: string | null | undefined }): string => {
   const argv0 = p.argv0 ?? ''
-  return basename(argv0 === '' ? p.name : argv0).replace(/^-/, '')
+  const name = basename(argv0 === '' || /\s/.test(argv0) ? p.name : argv0).replace(/^-/, '')
+  return name.split(/\s/)[0] ?? name
 }
 
 /**
