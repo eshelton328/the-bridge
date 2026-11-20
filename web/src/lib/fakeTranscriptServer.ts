@@ -14,8 +14,8 @@ import {
 
 type Stream = { readonly chat: string; readonly control: ReadableStreamDefaultController<Uint8Array> }
 
-const notFound = () =>
-  new Response(JSON.stringify({ error: { kind: 'not-found', message: 'Not found', requestId: 'r-404' } }), {
+const notFound = (path: string) =>
+  new Response(JSON.stringify({ error: { kind: 'not-found', path, message: 'Not found', requestId: 'r-404' } }), {
     status: 404,
     headers: { 'content-type': 'application/json', 'X-Request-Id': 'r-404' },
   })
@@ -125,7 +125,7 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
       }
       opens.push(chat)
       if (streamAnswer !== undefined) return streamAnswer()
-      return mode === 'missing' ? notFound() : stream(chat, init?.signal)
+      return mode === 'missing' ? notFound(path) : stream(chat, init?.signal)
     },
   }
 }

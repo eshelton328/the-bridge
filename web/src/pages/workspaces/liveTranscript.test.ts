@@ -186,6 +186,26 @@ describe('watchTranscript', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('shows the line and reports once for a 404 stream when the read says the chat is unknown (404)', async () => {
+    // Both 404s are ErrorBody `not-found`: the read decides whether the chat exists, never the message.
+    const server = fakeTranscriptServer({ streams: 'missing' })
+    server.answerReads(
+      () =>
+        new Response(
+          JSON.stringify({ error: { kind: 'not-found', path: '/api/chats/x', message: 'no chat', requestId: 'r-4' } }),
+          { status: 404 },
+        ),
+    )
+    watch(server)
+    await expect.poll(() => view()?.problem).toBe('Transcript not live — status 404')
+    await settle(200)
+    expect(server.opens).toEqual([chat])
+    expect(server.reads).toEqual([chat])
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript read missed: status 404 not-found (chat mac-mini/c1)',
+    ])
+  })
+
   it('reads again when the chat opens again after a 404 stream', async () => {
     const server = fakeTranscriptServer({ streams: 'missing' })
     server.set(chat, [user('u1', 'go')])

@@ -11,9 +11,14 @@
 // drops, the page connects again after the server's retry time (5 s) and
 // reads the transcript again.
 //
-// Misses (d-115). A stream route that answers 404 is a server with no stream
-// yet (backend 3b-3): the page reads the transcript once, shows it, and says
-// nothing; it reads again when the chat opens again. Any other miss shows a
+// Misses (d-115). A stream that answers 404 waits for the read, which decides
+// whether the chat exists: both 404s are ErrorBody `not-found`, and the
+// message is not contract. A read 404 is an unknown chat: the quiet line. A
+// read 200 is a server with no stream route yet (before backend 3b-3), or a
+// chat that went away between the two answers, which the live list drops
+// soon: the page shows the read's entries with no line and no report, and
+// does not connect again; it reads again when the chat opens again. Any other
+// miss shows a
 // quiet line in the pane with Retry: a read that missed ("Transcript not live
 // — <kind>"), a stream that dropped or answered 5xx ("connecting again") or
 // that the server refused ("stopped"). report() gets one TranscriptMissError
@@ -240,8 +245,9 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       return 'again'
     }
     if (res.status === 404) {
-      // The server has no transcript stream yet (backend 3b-3): one read shows the transcript, with no line, no
-      // report and no connecting again. The page reads again when the chat opens again.
+      // The read decides: a 404 read shows its line (an unknown chat); a 200 read shows the transcript with no line,
+      // no report and no connecting again, as the server has no stream route yet (before backend 3b-3) or the chat
+      // went away between the two answers. The page reads again when the chat opens again.
       connection.abort()
       await load(abort.signal)
       return 'wait'

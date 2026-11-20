@@ -271,6 +271,25 @@ describe("a live chat's transcript (slice 3b)", () => {
     expect(getReports()).toEqual([])
   })
 
+  it('shows the quiet line for an unknown chat: a 404 read with a 404 stream, reported once', async () => {
+    const server = withPlan({ streams: 'missing' })
+    server.answerReads(
+      () =>
+        new Response(
+          JSON.stringify({ error: { kind: 'not-found', path: '/api/chats/x', message: 'no chat', requestId: 'r-4' } }),
+          { status: 404 },
+        ),
+    )
+    await tapWorkspaces([390, 844])
+    await tapChat('plan the slice')
+    const chat = chatRegion('plan the slice')
+    await expect.element(chat.getByText('Transcript not live — status 404')).toBeVisible()
+    await expect.element(chat.getByRole('button', { name: 'Retry' })).toBeVisible()
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript read missed: status 404 not-found (chat mac-mini/c1)',
+    ])
+  })
+
   it('shows a missed read in the pane with Retry, reports it once, and Retry reads the transcript', async () => {
     const server = withPlan()
     server.answerReads(
