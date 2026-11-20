@@ -22,7 +22,8 @@ client of a socket or a file sits beside them.
   pane leaf's folder from `layout.export` stays here, and a tree that
   the contract cannot hold is `badReply` (`herdrAgents.test.ts`).
 - A tab, focus or split event that names its workspace is `layoutChanged`
-  for that workspace, once for each burst (100 ms); one that names no
+  for that workspace, once for each burst (100 ms quiet, at most 500 ms
+  from its first event); one that names no
   workspace reads the list again (`herdrAgents.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a

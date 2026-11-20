@@ -631,6 +631,34 @@ describe('herdr agents: subscribe', () => {
     expect(socket.connections()).toBe(before)
   })
 
+  it('reads the workspace from the focus lines that herdr sends when the owner switches a tab', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    events.length = 0
+    // Captured from herdr 0.x (protocol 22) on tab.focus in a session of its own.
+    socket.push({ event: 'tab_focused', data: { tab_id: 'w17:t2', type: 'tab_focused', workspace_id: 'w17' } })
+    socket.push({ event: 'pane_focused', data: { pane_id: 'w17:p2', type: 'pane_focused', workspace_id: 'w17' } })
+    await wait(400)
+    subscription.close()
+    expect(events).toEqual([{ type: 'layoutChanged', workspace: 'test-mac/w17' }])
+  })
+
+  it('tells layoutChanged within 500 ms during a long burst, such as a split drag', async () => {
+    const { events, subscription } = collect()
+    await subscription.ready
+    events.length = 0
+    const drag = { event: 'layout.updated', data: { type: 'layout_updated', layout: { workspace_id: 'w17' } } }
+    let first = -1
+    for (let at = 0; at < 1000; at += 50) {
+      socket.push(drag)
+      await wait(50)
+      if (first < 0 && events.length > 0) first = at
+    }
+    subscription.close()
+    expect(first).toBeGreaterThanOrEqual(0)
+    expect(first).toBeLessThan(700)
+  })
+
   it('treats a layout event that names no workspace as a list change', async () => {
     const { events, subscription } = collect()
     await subscription.ready

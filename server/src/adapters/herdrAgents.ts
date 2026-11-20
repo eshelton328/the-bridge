@@ -210,6 +210,9 @@ function portErrorOf(failure: SocketFailure): AgentPortError {
   }
 }
 
+/** The longest the adapter holds a workspace's layout change while layout events keep coming. */
+const maxLayoutWaitMs = 500
+
 /** How long the adapter waits for more list events before it opens the stream again. */
 const settleMs = 100
 
@@ -437,6 +440,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
         over = true
         clearTimeout(settle)
         clearTimeout(layoutSettle)
+        clearTimeout(layoutMax)
         stream?.close()
         listening()
         onEnd(error)
@@ -457,17 +461,26 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
         return isLayoutEvent.has(name) && local !== undefined && id.success ? id.data : undefined
       }
 
-      /** Layout events come in bursts (a focus and a split change): tell each workspace once when it settles. */
+      /**
+       * Layout events come in bursts (a focus and a split change): tell each workspace once when the burst
+       * settles, or at most `maxLayoutWaitMs` after its first event, so the app follows a long split drag.
+       */
       const changedLayouts = new Set<WorkspaceId>()
       let layoutSettle: ReturnType<typeof setTimeout> | undefined
+      let layoutMax: ReturnType<typeof setTimeout> | undefined
+      const flushLayouts = () => {
+        clearTimeout(layoutSettle)
+        clearTimeout(layoutMax)
+        layoutMax = undefined
+        const changed = [...changedLayouts]
+        changedLayouts.clear()
+        for (const w of changed) tell({ type: 'layoutChanged', workspace: w })
+      }
       const changedLayout = (workspace: WorkspaceId) => {
         changedLayouts.add(workspace)
         clearTimeout(layoutSettle)
-        layoutSettle = setTimeout(() => {
-          const changed = [...changedLayouts]
-          changedLayouts.clear()
-          for (const w of changed) tell({ type: 'layoutChanged', workspace: w })
-        }, settleMs)
+        layoutSettle = setTimeout(flushLayouts, settleMs)
+        layoutMax ??= setTimeout(flushLayouts, maxLayoutWaitMs)
       }
 
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
@@ -528,6 +541,7 @@ export function createHerdrAgents({ socket, machine, claudeProjects, log }: Herd
           listening()
           clearTimeout(settle)
           clearTimeout(layoutSettle)
+          clearTimeout(layoutMax)
           stream?.close()
         },
       }
