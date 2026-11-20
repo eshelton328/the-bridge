@@ -518,6 +518,63 @@ const tappable = (button: Element) => {
   return hit !== null && button.contains(hit)
 }
 
+// W1-3: after a Stop, Claude Code puts the stopped prompt back in its input,
+// and the server refuses a send while that input holds text (409
+// chat-not-ready inputNotEmpty), so the next send does not join the two.
+describe("a live Claude chat's Send when its terminal input holds text (W1-3)", () => {
+  const clearLine = "Not sent — clear the text in the chat's terminal input, then send"
+
+  for (const device of [
+    { name: 'the phone', size: phone },
+    { name: 'the tablet', size: tablet },
+  ])
+    it(`keeps the draft and asks the owner to clear the terminal, with no Retry and no report, on ${device.name}`, async () => {
+      const fake = withChats()
+      const reports = watchReports()
+      fake.typeInTerminal(plan)
+      await openAndType(device.size, 'plan the slice')
+      await userEvent.click(sendButton('plan the slice'))
+      const chat = chatRegion('plan the slice')
+      await expect.element(chat.getByText(clearLine, { exact: true })).toBeVisible()
+      expect(fake.posts).toEqual([{ chat: plan, route: 'prompt' }])
+      expect(fake.prompts).toEqual([])
+      await expect.element(box('plan the slice')).toHaveValue(secret)
+      await expect.element(sendButton('plan the slice')).toBeEnabled()
+      expect(page.getByText(/^Not sent/).elements()).toHaveLength(1)
+      expect(chat.getByText(clearLine).element().textContent).not.toContain('private branch')
+      await expect.element(chat.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+      await new Promise((resolve) => setTimeout(resolve, 200))
+      expect(getReports()).toEqual([])
+      expect(reports.sunk).toEqual([])
+      expect(reports.posted).toEqual([])
+      reports.expectNoText()
+    })
+
+  it('sends once the owner cleared the terminal, and the box and the line clear, on the phone', async () => {
+    const fake = withChats()
+    const reports = watchReports()
+    fake.typeInTerminal(plan)
+    await openAndType(phone, 'plan the slice')
+    await userEvent.click(sendButton('plan the slice'))
+    const chat = chatRegion('plan the slice')
+    await expect.element(chat.getByText(clearLine, { exact: true })).toBeVisible()
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    // The owner empties the terminal's input; the server then takes the send.
+    fake.clearTerminal(plan)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+    await expect.element(box('plan the slice')).toHaveValue('')
+    await expect.element(chat.getByText(clearLine)).not.toBeInTheDocument()
+    expect(fake.posts).toEqual([
+      { chat: plan, route: 'prompt' },
+      { chat: plan, route: 'prompt' },
+    ])
+    expect(getReports()).toEqual([])
+    expect(reports.posted).toEqual([])
+    reports.expectNoText()
+  })
+})
+
 describe('the dev ErrorTray beside a send error line (W1)', () => {
   for (const device of [
     { name: 'the phone', size: phone },

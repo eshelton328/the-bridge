@@ -9,8 +9,11 @@
 // "Not stopped — <kind>", with Retry when the same request may work later (a
 // 5xx, no answer, a timeout, a 429). A chat that waits for an answer in its
 // terminal (409 `chat-not-ready` needsYou) and a chat that is gone (404)
-// say so. A Stop that finds the chat not working (409 notWorking) is quiet:
-// the chat stopped already. report() gets a ChatSendMissError for a 5xx and
+// say so. A send to a chat whose terminal input holds text, or one the
+// server cannot read (409 inputNotEmpty, W1-3: after a Stop, Claude Code
+// puts the stopped prompt back there), asks the owner to clear it, with no
+// Retry and no report. A Stop that finds the chat not working (409
+// notWorking) is quiet: the chat stopped already. report() gets a ChatSendMissError for a 5xx and
 // for an answer the page does not expect, with the action, the miss's kind
 // and the HTTP status only: never the message text, the chat ID or the
 // server's message. The requests go through the typed RPC client (backend
@@ -64,6 +67,8 @@ async function missOf(action: Action, res: Response): Promise<ComposerAnswer> {
   switch (error.kind) {
     case 'chat-not-ready':
       if (error.state === 'needsYou') return line(action, 'chat waits for an answer in the terminal', false)
+      if (action === 'send' && error.state === 'inputNotEmpty')
+        return line(action, "clear the text in the chat's terminal input, then send", false)
       // A Stop of a chat that is not working: it stopped already.
       if (action === 'stop' && error.state === 'notWorking') return false
       return line(action, 'chat not ready', false)
