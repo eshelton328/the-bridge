@@ -19,7 +19,7 @@ import {
   TruncatedText,
 } from '@eshelton328/component-library-1701'
 import { css } from '../../../../styled-system/css/index.js'
-import { compactChatPadding } from '../../../lib/compactPadding.ts'
+import { compactChatFoot, compactChatPadding } from '../../../lib/compactPadding.ts'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { ChatEntry } from '../blocks/ChatEntry.tsx'
 import { InboxStatus } from '../blocks/InboxStatus.tsx'
@@ -141,6 +141,7 @@ export function RunningDetail({ detail, layout = 'desktop', onBack, drafts, onVi
   const chat = (
     <ScrollFrame
       className={layout === 'desktop' ? undefined : compactChatPadding[layout]}
+      foot={layout === 'desktop' ? undefined : compactChatFoot[layout]}
       // T5 and M8: the started task 8 under the nav (346:6366 to 346:6378, 346:10836 to 346:10848).
       gap={layout === 'desktop' ? '16' : '8'}
       bodyClassName={bodyGap}

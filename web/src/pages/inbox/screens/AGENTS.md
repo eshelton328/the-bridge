@@ -21,3 +21,6 @@ and picks the list pane, the detail by kind and the discussion page.
 - A `ScrollFrame` on a tablet or phone is the shell detail's own child, so
   AppShell docks the reply box on the keyboard (R21), and its body is
   `position: relative` (R22) (`app/InboxKeyboardDock.test.tsx`).
+- The space under a chat's reply box is the frame's `foot`
+  (`compactChatFoot`), never its bottom padding, so on the keyboard the
+  box sits on the keyboard's top (`app/InboxReplyDock.test.tsx`).
