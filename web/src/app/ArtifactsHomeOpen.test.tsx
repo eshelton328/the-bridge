@@ -136,6 +136,35 @@ describe('Add a link on the Artifacts home', () => {
     expect(fieldValues(dialog.element())).toEqual(['', ''])
   })
 
+  it('picks a project in the dialog\u2019s Project select at 1512', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/artifacts')
+    await press(page.getByRole('button', { name: 'Add a link' }).element())
+    const dialog = page.getByRole('dialog', { name: 'Add a link' })
+    await expect.element(dialog).toBeVisible()
+    const project = dialog.getByRole('button', { name: /^Project/ })
+    await expect.element(project).toHaveAccessibleName('Project ncc-1701')
+    await userEvent.click(project)
+    await expect.element(page.getByRole('menuitemradio', { name: 'omni', exact: true })).toBeInTheDocument()
+    // By keyboard: the menu opens under the dialog that holds it (LIBRARY_GAPS.md "Menu inside a dialog").
+    // The first ArrowDown highlights ncc-1701, the second omni.
+    await userEvent.keyboard('{ArrowDown}{ArrowDown}{Enter}')
+    await expect.element(project).toHaveAccessibleName('Project omni')
+    await expect.element(dialog).toBeVisible()
+  })
+
+  it('draws the dialog\u2019s Source switch as wide as its Link field at 1512', async () => {
+    await page.viewport(1512, 982)
+    view = await renderAt('/artifacts')
+    await press(page.getByRole('button', { name: 'Add a link' }).element())
+    await expect.element(page.getByRole('dialog', { name: 'Add a link' })).toBeVisible()
+    const width = (selector: string) => query(selector)?.getBoundingClientRect().width ?? 0
+    const field = width('[data-figma="field · Link"]')
+    expect(field).toBeGreaterThan(400)
+    // ViewSwitch fullWidth: the switch spans the field (D5 403:7557), not only its two items.
+    expect(width('[data-figma="segmented · Source"] > [role="radiogroup"]')).toBeCloseTo(field, 0)
+  })
+
   it('opens the sheet at 390 with no link and no title, in M6\u2019s words', async () => {
     await page.viewport(390, 844)
     view = await renderAt('/artifacts')

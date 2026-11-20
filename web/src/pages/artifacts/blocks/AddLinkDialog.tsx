@@ -1,6 +1,7 @@
 // The Add a link dialog (D5 403:7541), for an artifact the library did not
 // find, such as a Codex site on its own domain: the form's fields
-// (`AddLinkFields`), then Cancel and Add artifact. The link field has the
+// (`AddLinkFields`), then Cancel and Add artifact. It pads 24 and draws a
+// 20 px close × (`padding="form"`, `closeSize="20"`, Figma 18). The link field has the
 // focus when it opens. On a phone the same form is a sheet (`AddLinkSheet`,
 // M6). Props only.
 import { Button, Dialog, DialogClose, PlusIcon } from '@eshelton328/component-library-1701'
@@ -15,15 +16,29 @@ export type AddLinkDialogProps = {
   source: AddLinkSource
   onOpenChange?: ((open: boolean) => void) | undefined
   onSourceChange?: ((source: AddLinkSource) => void) | undefined
+  /** The picked project; the form's `project.value` when not set. */
+  project?: string | undefined
+  onProjectChange?: ((project: string) => void) | undefined
   /** Add artifact was pressed. */
   onSubmit?: (() => void) | undefined
 }
 
-export function AddLinkDialog({ form, open, source, onOpenChange, onSourceChange, onSubmit }: AddLinkDialogProps) {
+export function AddLinkDialog({
+  form,
+  open,
+  source,
+  onOpenChange,
+  onSourceChange,
+  project,
+  onProjectChange,
+  onSubmit,
+}: AddLinkDialogProps) {
   const linkRef = useRef<HTMLDivElement>(null)
   return (
     <Dialog
       size="lg"
+      padding="form"
+      closeSize="20"
       title={form.title}
       description={form.description}
       closeButton
@@ -43,7 +58,15 @@ export function AddLinkDialog({ form, open, source, onOpenChange, onSourceChange
         </>
       }
     >
-      <AddLinkFields form={form} source={source} onSourceChange={onSourceChange} linkRef={linkRef} />
+      <AddLinkFields
+        form={form}
+        layout="dialog"
+        source={source}
+        onSourceChange={onSourceChange}
+        project={project}
+        onProjectChange={onProjectChange}
+        linkRef={linkRef}
+      />
     </Dialog>
   )
 }
