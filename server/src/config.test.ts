@@ -9,6 +9,7 @@ const env = {
   BRIDGE_BRAIN_DIR: '/tmp/brain',
   BRIDGE_DB_FILE: '/tmp/bridge.db',
   BRIDGE_CLAUDE_PROJECTS: '/tmp/claude',
+  BRIDGE_LOG_DIR: '/tmp/bridge-logs',
 }
 
 describe('config', () => {
@@ -23,8 +24,16 @@ describe('config', () => {
         brainDir: '/tmp/brain',
         dbFile: '/tmp/bridge.db',
         claudeProjects: '/tmp/claude',
+        logDir: '/tmp/bridge-logs',
+        logLevel: 'info',
       },
     })
+  })
+
+  it('takes the log level from BRIDGE_LOG_LEVEL and refuses an unknown one', () => {
+    const debug = readConfig({ ...env, BRIDGE_LOG_LEVEL: 'debug' })
+    expect(debug.ok ? debug.value.logLevel : undefined).toBe('debug')
+    expect(readConfig({ ...env, BRIDGE_LOG_LEVEL: 'loud' }).ok).toBe(false)
   })
 
   it('names each variable that is missing or wrong', () => {

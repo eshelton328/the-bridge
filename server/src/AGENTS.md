@@ -4,10 +4,16 @@ The server's source in three layers: `routes/` call `services/`, and
 `services/` reach the outside world only through ports that
 `adapters/` fill (d-110). The files at this level wire them together.
 
-- `app.ts` builds the app: the auth check first, then one sub-app for
-  each area, and exports `AppType`. A new route is mounted here.
+- `app.ts` builds the app: the request ID and the request log, then the
+  auth check, then one sub-app for each area, and exports `AppType`. A new route is mounted here.
 - `main.ts` is the only file that reads `process.env` (through
-  `config.ts`) and the only one that picks the real adapters.
+  `config.ts`) and the only one that picks the real adapters;
+  `logsCli.ts`, the `pnpm logs` command, reads only `BRIDGE_LOG_DIR`.
+- `logger.ts`: the one logger (d-115). A message is a constant
+  `LogMessage` and the data goes in fields; redaction reads only fields
+  (`logger.test.ts`). No `console` in the server.
+- `processErrors.ts`: an uncaught error logs at fatal and exits with
+  code 1 (`processErrors.test.ts`).
 - `config.ts`: every path and port comes from an environment variable,
   and the server does not start when one is missing.
 - `auth.ts`: a request through Tailscale Serve must carry the owner's

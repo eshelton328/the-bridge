@@ -4,6 +4,7 @@
 import { MachineId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
+import { type LogLevel, logLevels } from './logger.ts'
 
 const path = z.string().startsWith('/', 'must be an absolute path')
 
@@ -15,6 +16,8 @@ const Env = z.object({
   BRIDGE_BRAIN_DIR: path,
   BRIDGE_DB_FILE: path,
   BRIDGE_CLAUDE_PROJECTS: path,
+  BRIDGE_LOG_DIR: path,
+  BRIDGE_LOG_LEVEL: z.enum(logLevels).default('info'),
 })
 
 export type Config = {
@@ -29,6 +32,9 @@ export type Config = {
   readonly dbFile: string
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** The folder of the log files, one for each day (d-115). */
+  readonly logDir: string
+  readonly logLevel: LogLevel
 }
 
 /** The config from the environment, or one line for each variable that is missing or wrong. */
@@ -44,5 +50,7 @@ export function readConfig(env: Readonly<Record<string, string | undefined>>): R
     brainDir: e.BRIDGE_BRAIN_DIR,
     dbFile: e.BRIDGE_DB_FILE,
     claudeProjects: e.BRIDGE_CLAUDE_PROJECTS,
+    logDir: e.BRIDGE_LOG_DIR,
+    logLevel: e.BRIDGE_LOG_LEVEL,
   })
 }
