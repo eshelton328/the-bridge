@@ -16,6 +16,7 @@ import type { CopyReply } from './ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import type { LayoutWrites } from './layoutActions.ts'
+import type { SkillLists } from './skillLists.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
@@ -39,6 +40,8 @@ export type WorkspaceTabsProps = {
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
+  /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
+  skillLists?: SkillLists | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
   /**
@@ -67,6 +70,7 @@ export function WorkspaceTabs({
   filesOf,
   pendingOf,
   transcripts,
+  skillLists,
   onCopy,
   notice,
   layout,
@@ -95,6 +99,7 @@ export function WorkspaceTabs({
         filesOf={filesOf}
         pendingOf={pendingOf}
         transcripts={transcripts}
+        skillLists={skillLists}
         onCopy={onCopy}
         layout={layout}
       />

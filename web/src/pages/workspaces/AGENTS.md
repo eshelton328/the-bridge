@@ -153,6 +153,23 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`blocks/useCommandRun.ts`). report() gets only a 5xx or an answer the
   page does not expect, with the kind and status, never the instructions
   (`app/WorkspacesLiveCommands.test.tsx`).
+- A live Claude chat's "/" list (review R34, backend #352) is read from
+  `GET /api/chats/:chat/skills` each time it opens, for the chat the pane
+  shows then (`liveSkills.ts`, `useLiveSkills.ts`,
+  `blocks/skillLists.ts`); the list shows that chat's last list at once
+  while the read runs, and a read that answers after the list closed or
+  for another chat changes nothing. It starts with /compact and /clear
+  (off unless the chat is idle or done), whose pick opens the W5 dialog
+  and takes the "/" word out of the box; /model and /effort never show,
+  as their pickers are on hold and sending them changes the owner's
+  Claude Code settings. A picked skill goes in the box as "/<name> ". The
+  filter, case aside: names that start with the typed text, then names
+  that hold it, then descriptions that hold it, in the server's order;
+  none says "No match". A project's or a plugin's skill has a badge. An
+  empty list, a 404, a 400 or any other miss lists the commands alone,
+  never the sample; report() gets only a 5xx or a reply the contract
+  refuses, with the kind only, never a name or a description
+  (`app/WorkspacesLiveSkills.test.tsx`).
 - A live chat's pane layout writes (W2, backend #333,
   `blocks/layoutActions.ts`, `useLayoutWrites.ts`, `liveLayoutWrites.ts`):
   `POST /api/chats/:chat/focus`, `/zoom`, `/swap` and `/close` with the

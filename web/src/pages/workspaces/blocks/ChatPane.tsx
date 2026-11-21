@@ -6,7 +6,10 @@
 // with that word, under `matching`. A skill the owner picks (a click or tap on its
 // row, or Enter on the highlighted row, which the arrow keys move) takes the
 // place of that word with a space after it, closes the list and leaves the
-// focus and caret in the box after it. `size="pane"` is a pane of the
+// focus and caret in the box after it. A live Claude chat's list is its own
+// (review R34, `useSkillRows`): /compact and /clear, whose pick opens the
+// command's dialog and takes the "/" word out of the box, then the chat's
+// skills from the server. `size="pane"` is a pane of the
 // split, `size="full"` the chat alone beside the sidebar (D2 105:868) and
 // `size="side"` the side chat's body (D2 105:933 to 105:948). An overlay,
 // such as the side chat in a pane (D5 158:518), sits over the body's right
@@ -60,8 +63,8 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
-import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
-import type { ChatEntry, ComposerState, Skill } from '../types.ts'
+import { dropSkillWord, pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
+import type { ChatEntry, ComposerState } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ComposerLine } from './ComposerLine.tsx'
 import { type DraftBook, restoredDraft, useDraft } from './draftBook.ts'
@@ -76,6 +79,7 @@ import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts
 import { useKeyboardFirst } from './useKeyboardFirst.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
 import { useSendKeepsFocus } from './useSendKeepsFocus.ts'
+import { type ChatSkills, useSkillRows } from './useSkillRows.ts'
 
 /** What a live chat's composer shows of its files now. */
 export type ChatFilesView = {
@@ -238,16 +242,7 @@ type ChatPaneBase = {
   problem?: string | undefined
   composer: ComposerState
   /** The skills that "/" lists; a chat without them lists none. */
-  skills?:
-    | {
-        label: string
-        /** The label once the owner has typed more than the "/", with {query} for what he typed (M10); `label` when not set. */
-        matching?: string | undefined
-        items: readonly Skill[]
-        value: string | null
-        open: boolean
-      }
-    | undefined
+  skills?: ChatSkills | undefined
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The folders control, before the model in the composer's bottom row (D4 137:9). */
   folders?: ReactNode
@@ -408,14 +403,20 @@ export function ChatPane(props: ChatPaneProps) {
     setMoved(null)
     onSkillsOpenChange?.(open)
   }
-  const shown =
-    skills === undefined ? [] : query === null ? skills.items : skills.items.filter((s) => s.name.startsWith(query))
-  // The highlighted row: the one the arrow keys moved to, else the state's, else the first one listed.
+  const shown = useSkillRows(skills, liveChat, query)
+  // The rows the owner can pick: a command the chat does not take now is off.
+  const enabled = shown.filter((s) => s.disabled !== true)
+  // The highlighted row: the one the arrow keys moved to, else the state's, else the first one on.
   const highlighted =
-    [moved, skills?.value].find((name) => name != null && shown.some((s) => s.name === name)) ?? shown[0]?.name ?? null
+    [moved, skills?.value].find((name) => name != null && enabled.some((s) => s.name === name)) ??
+    enabled[0]?.name ??
+    null
   const pick = (name: string) => {
     const area = textArea()
-    const next = pickSkill(text, area?.selectionStart ?? text.length, name)
+    const row = enabled.find((s) => s.name === name)
+    if (row === undefined) return
+    const caretNow = area?.selectionStart ?? text.length
+    const next = row.command === undefined ? pickSkill(text, caretNow, name) : dropSkillWord(text, caretNow)
     // In the tap's own handler, so the phone keeps its keyboard up; the caret moves once the box holds the skill.
     area?.focus()
     caretRef.current = next.caret
@@ -425,20 +426,22 @@ export function ChatPane(props: ChatPaneProps) {
     setQuery(null)
     setMoved(null)
     typedRef.current = false
-    onSkillsOpenChange?.(false)
+    // A command opens its dialog, which closes the list.
+    if (row.command !== undefined && skills?.live !== undefined) skills.live.onCommand(row.command)
+    else onSkillsOpenChange?.(false)
   }
   // While the list is open, the arrow keys move its highlight and Enter picks the highlighted skill, before the
   // composer sends the message.
   const onKeyDownCapture = (event: KeyboardEvent<HTMLDivElement>) => {
     if (skills?.open !== true || highlighted === null || event.shiftKey || event.nativeEvent.isComposing) return
     if (!(event.target instanceof HTMLTextAreaElement)) return
-    const at = shown.findIndex((s) => s.name === highlighted)
+    const at = enabled.findIndex((s) => s.name === highlighted)
     const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
     if (event.key !== 'Enter' && step === 0) return
     event.preventDefault()
     event.stopPropagation()
     if (step === 0) pick(highlighted)
-    else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
+    else setMoved(enabled[(at + step + enabled.length) % enabled.length]?.name ?? highlighted)
   }
   const filesView = useFilesView(files)
   // With the folders control the attach button is Figma's add button; every other composer draws the paperclip.
@@ -555,6 +558,7 @@ export function ChatPane(props: ChatPaneProps) {
           ? { label: skills.matching.replace('{query}', '').trim(), query }
           : { label: skills.label })}
         skills={shown}
+        empty={query !== null && query.length > 1 ? 'No match' : 'No skills'}
         value={highlighted}
         open={skills.open}
         layout={size === 'phone' || size === 'tablet' ? size : 'pane'}

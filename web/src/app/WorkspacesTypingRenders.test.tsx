@@ -75,6 +75,29 @@ describe('a keystroke in a long live chat renders only its composer (review R28)
     expect(getReports()).toEqual([])
   })
 
+  it('renders no transcript entry while the owner filters the "/" list on the phone (review R34)', async () => {
+    const server = stubLongChats(500)
+    server.setSkills('mac-mini/c1', [
+      { name: 'writer', description: 'Draft a doc', source: 'user' },
+      { name: 'wrap-up', description: 'End the session', source: 'project' },
+    ])
+    view = await openWorkspaces([390, 844])
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await markdownShown(500)
+    // The "/" opens the list, and the server's answer fills it, renders only the composer; then the filter.
+    const counted = await rendersWhileTyping(chat('plan the slice'), '/wr')
+    expect(counted.markdown).toBe(0)
+    await expect.poll(() => server.skillReads).toEqual(['mac-mini/c1'])
+    await expect.element(page.getByRole('radio', { name: '/wrap-up' })).toBeVisible()
+    vi.mocked(Markdown).mockClear()
+    await userEvent.keyboard('i')
+    await expect.element(page.getByRole('radio', { name: '/wrap-up' })).not.toBeInTheDocument()
+    await new Promise((resolve) => setTimeout(resolve, 100))
+    expect(vi.mocked(Markdown).mock.calls.length).toBe(0)
+    expect(renders.header).toBe(counted.header)
+    expect(getReports()).toEqual([])
+  })
+
   it('renders no transcript entry on the tablet', async () => {
     stubLongChats(40)
     view = await openWorkspaces([756, 1129])

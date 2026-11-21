@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { pickSkill, skillQuery } from './skillQuery.ts'
+import { dropSkillWord, pickSkill, skillQuery } from './skillQuery.ts'
 
 // The words the skill list reads, as the `/\S*$/` search found them. Its speed after a long paste is tested in Node
 // (scripts/skillQuery.test.ts): Chromium's regex engine falls back to a linear one where Safari's backtracks.
@@ -47,5 +47,17 @@ describe('pickSkill', () => {
 
   it('puts the skill in at the caret when no "/" word is there', () => {
     expect(pickSkill('notes', 0, '/writer')).toEqual({ text: '/writer notes', caret: 8 })
+  })
+})
+
+describe('dropSkillWord', () => {
+  it('takes the "/" word and one space after it out of the text, with the caret where it stood', () => {
+    expect(dropSkillWord('/comp', 5)).toEqual({ text: '', caret: 0 })
+    expect(dropSkillWord('a /comp notes', 7)).toEqual({ text: 'a notes', caret: 2 })
+    expect(dropSkillWord('a /cl', 5)).toEqual({ text: 'a ', caret: 2 })
+  })
+
+  it('keeps a line break after the word', () => {
+    expect(dropSkillWord('/cl\nnotes', 3)).toEqual({ text: '\nnotes', caret: 0 })
   })
 })

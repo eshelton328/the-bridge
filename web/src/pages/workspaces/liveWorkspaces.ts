@@ -26,6 +26,8 @@
 // and report() gets one LayoutReadMissError for each outage, not one for
 // each read again. A layout the contract refuses throws, as a list it
 // refuses does.
+// Review R34: the home's sample skills never reach the live page; each live
+// Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
   type ChatSummary,
   ErrorBody,
@@ -263,6 +265,8 @@ function liveOnly(
       folderPicker: undefined,
       lastChats: undefined,
       toast: undefined,
+      // The sample's "/" list names sample skills: a live Claude chat's list is its own (review R34, skillLists.ts).
+      skills: [],
       // The sample's summary and alert name a sample workspace and chat. The summary counts the first workspace's
       // panes, and none shows with no workspace; the live alerts are set by the caller.
       status: { ...data.status, summary: summaryOf(workspaces[0], layouts), alert: undefined },

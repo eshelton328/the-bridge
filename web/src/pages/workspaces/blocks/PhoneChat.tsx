@@ -17,7 +17,8 @@
 import { Button, ChevronLeftIcon, MoreIcon } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
-import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
+import type { SidebarLayers, WorkbenchPane } from '../types.ts'
+import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
@@ -44,13 +45,7 @@ export type PhoneChatProps = {
   /** The accessible name of the back button. */
   backLabel: string
   onBack?: (() => void) | undefined
-  skills: {
-    label: string
-    matching?: string | undefined
-    items: readonly Skill[]
-    value: string | null
-    open: boolean
-  }
+  skills: ChatSkills
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The chat actions, such as the sheet of M4, given the ⋯ as their trigger; the bare ⋯ when not set. */
   renderMenu?: ((trigger: ReactElement) => ReactNode) | undefined

@@ -17,5 +17,10 @@ PascalCase after the component, and the page's pure helpers in camelCase
 - The skill list is 40% of the composer, from 240 to 400 wide (review R8,
   `SkillListWidth.test.tsx`), and as high as Figma draws it
   (`SkillListHeight.test.tsx`).
+- A live Claude chat's "/" list is its own (review R34,
+  `skillLists.ts`, `useSkillRows.ts`): /compact and /clear, then the
+  chat's skills, read each time the list opens; a long list scrolls
+  inside the popover, and the highlighted row stays in view. A sample
+  chat keeps the state's Figma list and its prefix filter.
 - A composer stops a long draft at 30% of its pane, as each `PaneFrame`
   is a size container, and scrolls inside (d-107).
