@@ -57,8 +57,11 @@ export type RowsSplitProps = {
   panes: readonly SplitterPanel[]
   /** The sizes of each handle's panels, in percent; equal shares when not set. */
   sizes?: Partial<Record<ResizePart, readonly number[]>> | undefined
-  /** Called with the part and its new sizes while the owner drags a handle. */
-  onSizeChange?: ((part: ResizePart, size: number[]) => void) | undefined
+  /**
+   * Called with the part and its new sizes while the owner drags a handle; a stack gives the sizes it drew before too,
+   * as its floors may have moved them from `sizes`.
+   */
+  onSizeChange?: ((part: ResizePart, size: number[], drawn?: readonly number[]) => void) | undefined
   /** Each pane a row of its own, in order from the top, with the `rows` handle's sizes. */
   stack?: boolean | undefined
 }
@@ -86,7 +89,7 @@ export function RowsSplit({ panes, sizes, onSizeChange, stack }: RowsSplitProps)
           size={shown}
           // The splitter tells back the sizes it was given; only a drag's sizes are the owner's.
           onSizeChange={(size: number[]) => {
-            if (size.some((v, i) => Math.abs(v - (shown[i] ?? 0)) >= 0.01)) onSizeChange?.('rows', size)
+            if (size.some((v, i) => Math.abs(v - (shown[i] ?? 0)) >= 0.01)) onSizeChange?.('rows', size, shown)
           }}
         />
       </div>

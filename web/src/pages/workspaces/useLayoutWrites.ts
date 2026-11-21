@@ -1,21 +1,24 @@
-// The page's layout writes of live chats (slice W2): focus, zoom, swap and
-// close, through liveLayoutWrites.ts, loaded when first used so a build has
-// no live code. There is no optimistic layout: after a 204 the write stays
-// pending, and its control shows it, until the next layout read changes that
-// workspace's tabs (the server's `layout.changed`), or for 2.5 s, after
-// which the page reads the layout again itself, and the list after a close. One write at a time for a
-// chat. A focus goes only to a chat herdr does not focus already. A stale
-// view (409 singlePane, otherTab) reads the layout again quietly, a gone
-// chat (404) the list; any other miss but a close's shows one line in the
-// status bar ("Not zoomed — herdr-unavailable"), and a close's shows in its
-// dialog.
-import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
+// The page's layout writes of live chats (slice W2): focus, zoom, swap,
+// close and split, and a split's ratio, through liveLayoutWrites.ts, loaded
+// when first used so a build has no live code. There is no optimistic
+// layout: after a 204 (a split's 201) the write stays pending, and its
+// control shows it, until the next layout read changes that workspace's tabs
+// (the server's `layout.changed`), or for 2.5 s, after which the page reads
+// the layout again itself, and the list after a close or a split. One write at a time
+// for a chat; a workspace's newer ratio takes the place of one that waits. A
+// focus goes only to a chat herdr does not focus already. A stale view (409
+// singlePane, otherTab) reads the layout again quietly, a 404 the list (a
+// split's the layout too, a ratio's the layout only); any other miss but a close's shows one line in
+// the status bar ("Not zoomed — herdr-unavailable"), and a close's shows in
+// its dialog.
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import {
   type CloseAnswer,
   herdrFocuses,
   type LayoutWriteAction,
   type LayoutWrites,
+  ratioKey,
   tabOf,
 } from './blocks/layoutActions.ts'
 import type { WriteAnswer } from './liveLayoutWrites.ts'
@@ -56,12 +59,23 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
   const [line, setLine] = useState<string>()
   const dataRef = useRef(data)
   const pendingRef = useRef(new Map<string, Pending>())
-  const done = useCallback((chat: string) => {
-    const was = pendingRef.current.get(chat)
-    if (was === undefined) return
+  // Ends the wait of `key`: of the write `entry` only, when given, as a newer ratio may have taken its place.
+  const done = useCallback((key: string, entry?: Pending) => {
+    const was = pendingRef.current.get(key)
+    if (was === undefined || (entry !== undefined && was !== entry)) return
     clearTimeout(was.timer)
-    pendingRef.current.delete(chat)
+    pendingRef.current.delete(key)
     setPending(new Map([...pendingRef.current].map(([id, p]) => [id, p.action])))
+  }, [])
+  // A page that leaves waits for nothing: no write that answers later reads the layout again.
+  const aliveRef = useRef(true)
+  useEffect(() => {
+    aliveRef.current = true
+    const waits = pendingRef.current
+    return () => {
+      aliveRef.current = false
+      for (const p of waits.values()) clearTimeout(p.timer)
+    }
   }, [])
   // A new layout read of a pending write's workspace ends the wait of each write the server took.
   useLayoutEffect(() => {
@@ -70,37 +84,67 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
       if (p.timer !== undefined && tabsJson(data, p.workspace) !== p.seen) done(chat)
   })
 
+  /**
+   * Sends one write, pending under `key` (a chat's ID, or a workspace's `ratioKey`) for the page's workspace
+   * `workspace`; `run` gets the live module and the machine. None while `key` waits, unless `replace` is set.
+   */
   const start = useCallback(
-    (chat: string, action: LayoutWriteAction, run: (live: Live, id: string) => Promise<WriteAnswer>) => {
-      const found = tabOf(dataRef.current, chat)
+    (
+      key: string,
+      workspace: string,
+      action: LayoutWriteAction,
+      run: (live: Live, machine: string) => Promise<WriteAnswer>,
+      replace = false,
+    ) => {
       const machine = dataRef.current.liveMachine
-      if (found === undefined || machine === undefined || pendingRef.current.has(chat)) return undefined
-      const workspace = `${machine}/${found.workspace}`
-      const entry: Pending = { action, workspace: found.workspace, seen: tabsJson(dataRef.current, found.workspace) }
-      pendingRef.current.set(chat, entry)
+      const waiting = pendingRef.current.get(key)
+      if (machine === undefined || (waiting !== undefined && !replace)) return undefined
+      clearTimeout(waiting?.timer)
+      const server = `${machine}/${workspace}`
+      const entry: Pending = { action, workspace, seen: tabsJson(dataRef.current, workspace) }
+      pendingRef.current.set(key, entry)
       setPending(new Map([...pendingRef.current].map(([id, p]) => [id, p.action])))
       setLine(undefined)
-      return viaLive((m) => run(m, `${machine}/${chat}`)).then((answer) => {
+      return viaLive((m) => run(m, machine)).then((answer) => {
+        if (!aliveRef.current || pendingRef.current.get(key) !== entry) return answer
         if (answer.kind === 'done') {
           // The event may have come before the 204: a layout that changed since the write started is its answer.
-          if (tabsJson(dataRef.current, found.workspace) !== entry.seen) done(chat)
+          if (tabsJson(dataRef.current, workspace) !== entry.seen) done(key, entry)
           else
             entry.timer = setTimeout(() => {
-              readAgain(workspace)
-              // A close also drops the chat from the list (`workspaces.changed`), which the sidebar and the phone draw.
-              if (action === 'close') readAgain(workspace, true)
-              done(chat)
+              readAgain(server)
+              // A close drops the chat from the list and a split adds its shell (`workspaces.changed`): the panes and the
+              // sidebar draw the list's chats.
+              if (action === 'close' || action === 'split') readAgain(server, true)
+              done(key, entry)
             }, layoutEventWaitMs)
           return answer
         }
-        done(chat)
-        if (answer.kind === 'stale') readAgain(workspace)
-        if (answer.kind === 'gone') readAgain(workspace, true)
+        done(key, entry)
+        if (answer.kind === 'stale') readAgain(server)
+        if (answer.kind === 'gone') {
+          // A ratio's tab or split is gone from the layout; a chat's write finds the chat gone from the list too.
+          if (action === 'ratio' || action === 'split') readAgain(server)
+          if (action !== 'ratio') readAgain(server, true)
+        }
         if (answer.kind === 'miss' && action !== 'close') setLine(answer.line)
         return answer
       })
     },
     [done],
+  )
+  /** Sends a write of `chat`, pending under its ID, when the page read the herdr tab that holds it. */
+  const startChat = useCallback(
+    (
+      chat: string,
+      action: LayoutWriteAction,
+      run: (live: Live, id: string, machine: string) => Promise<WriteAnswer>,
+    ) => {
+      const found = tabOf(dataRef.current, chat)
+      if (found === undefined) return undefined
+      return start(chat, found.workspace, action, (m, machine) => run(m, `${machine}/${chat}`, machine))
+    },
+    [start],
   )
 
   // A new object only when what the screen draws changes: `pending` or `line`. The writes read the data through a ref.
@@ -110,26 +154,35 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
       line,
       focus: (chat: string) => {
         if (herdrFocuses(dataRef.current, chat)) return
-        void start(chat, 'focus', (m, id) => m.focusChat(id))
+        void startChat(chat, 'focus', (m, id) => m.focusChat(id))
       },
       zoom: (chat: string, zoomed: boolean) => {
-        void start(chat, 'zoom', (m, id) => m.zoomChat(id, zoomed))
+        void startChat(chat, 'zoom', (m, id) => m.zoomChat(id, zoomed))
       },
       swap: (chat: string, other: string) => {
-        const machine = dataRef.current.liveMachine
-        if (machine === undefined) return
-        void start(chat, 'swap', (m, id) => m.swapChats(id, `${machine}/${other}`))
+        void startChat(chat, 'swap', (m, id, machine) => m.swapChats(id, `${machine}/${other}`))
       },
       close: async (chat: string): Promise<CloseAnswer> => {
-        const answer = await start(chat, 'close', (m, id) => m.closeChat(id))
+        const answer = await startChat(chat, 'close', (m, id) => m.closeChat(id))
         if (answer === undefined) return { line: 'Not closed — wait for the last change to this pane', stop: false }
         if (answer.kind === 'working') return { line: closeLines.working, stop: true }
         if (answer.kind === 'needsYou') return { line: closeLines.needsYou, stop: false }
         if (answer.kind === 'miss') return { line: answer.line, stop: false }
         return true
       },
+      split: (chat, direction) => {
+        void startChat(chat, 'split', (m, id) => m.splitChat(id, direction))
+      },
+      ratio: (workspace, write) =>
+        start(
+          ratioKey(workspace),
+          workspace,
+          'ratio',
+          (m, machine) => m.setSplitRatio(`${machine}/${workspace}`, write),
+          true,
+        ) !== undefined,
     }),
-    [pending, line, start],
+    [pending, line, start, startChat],
   )
   return live ? writes : undefined
 }

@@ -184,12 +184,14 @@ export function layoutOfTab(tabs: readonly TabLayout[]): WorkspaceLayout {
 }
 
 /**
- * Each of the workspace's tabs as the layout writes see it (slice W2): its panes' chats in tree order, by local chat ID,
- * the focused chat and whether herdr zooms it. The page draws only the active tab, and only its focused pane while it
+ * Each of the workspace's tabs as the layout writes see it (slice W2): its ID and split tree, its panes' chats in tree
+ * order, by local chat ID, the focused chat and whether herdr zooms it. The page draws only the active tab, and only its focused pane while it
  * is zoomed (`blocks/workspaceLayout.ts`, `shownView`).
  */
 export const liveTabsOf = (tabs: readonly TabLayout[]): LiveTab[] =>
   tabs.map((tab) => ({
+    id: tab.id,
+    root: tab.root,
     active: tab.active,
     chats: chatsOf(tab.root).map((id) => splitId(id).local),
     focused: splitId(tab.focusedChat).local,

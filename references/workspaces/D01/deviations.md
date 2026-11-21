@@ -116,3 +116,13 @@ What still differs from Figma after moving the Workbench onto the library's
   pane and none of these rows; the icons are `MaximizeIcon`, `GridIcon`
   and `SplitIcon` until the library has unzoom and swap icons. This
   frame's fixture chats are not live, so its render does not change.
+- **Live split and ratio (W2c, Split and ratio; not drawn in this frame).**
+  A live chat's pane menu adds Split right and Split down after Swap
+  with… and before Close pane…, both off while herdr zooms the tab. A
+  split adds a shell pane only when the server's events bring it. A
+  dragged handle of a live split sends its ratio to herdr when the drag
+  ends; the arrow keys move it by 1 %, the library `Splitter`'s step, not
+  5 %. Figma draws no split rows; the frame's note gives Cmd+D for a
+  split. The icons are `ArrowRightIcon` and `ArrowDownIcon` until the
+  library has split icons. This frame's fixture chats are not live, so
+  its render does not change.

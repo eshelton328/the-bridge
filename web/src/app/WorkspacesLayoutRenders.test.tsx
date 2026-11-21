@@ -15,7 +15,7 @@ import { fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { type FakeWorkspacesServer, fakeWorkspacesServer } from '../lib/fakeWorkspacesServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
@@ -29,7 +29,8 @@ import { routeTree } from './routeTree.gen.ts'
 // transcript entry's Markdown again (as a keystroke does not, review R28,
 // WorkspacesTypingRenders.test.tsx). The test takes the owner's path with
 // two live chats of 40 Markdown entries each and counts react-markdown's
-// renders (one per message or reply).
+// renders (one per message or reply). A drag of the handle between them
+// (W2c) moves the panes and sends a ratio, and renders no entry either.
 vi.mock('react-markdown', { spy: true })
 
 const live = 'mac-mini/w-live'
@@ -157,5 +158,29 @@ describe('a layout change of another workspace renders no transcript entry (W2)'
     await expect.poll(() => fakes.layoutReads.slice(before)).toContain(other)
     await new Promise((resolve) => setTimeout(resolve, 400))
     expect(vi.mocked(Markdown).mock.calls.length).toBe(0)
+  })
+
+  it('in a drag of the handle between the panes, and in the ratio it sends', async () => {
+    const fakes = withChats()
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await markdownShown(80)
+    vi.mocked(Markdown).mockClear()
+    const handle = page.getByRole('separator', { name: 'Resize columns' }).element()
+    const box = handle.getBoundingClientRect()
+    const [x, y] = [box.left + box.width / 2, box.top + box.height / 2]
+    const at = (type: string, dx: number) =>
+      new PointerEvent(type, { bubbles: true, clientX: x + dx, clientY: y, pointerId: 1, isPrimary: true, button: 0 })
+    handle.dispatchEvent(at('pointerdown', 0))
+    for (const dx of [40, 80, 120, 160, 200]) {
+      document.dispatchEvent(at('pointermove', dx))
+      await afterRendering()
+    }
+    document.dispatchEvent(at('pointerup', 200))
+    await expect.poll(() => fakes.list.writes.map((w) => w.action)).toEqual(['ratio'])
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    expect(Number(handle.getAttribute('aria-valuenow'))).toBeGreaterThan(55)
+    expect(vi.mocked(Markdown).mock.calls.length).toBe(0)
+    expect(getReports()).toEqual([])
   })
 })

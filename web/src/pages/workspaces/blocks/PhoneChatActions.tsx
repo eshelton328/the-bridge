@@ -11,6 +11,8 @@
 // 208:235). A live Claude chat's /compact and /clear come last, on only while
 // it is idle or done (W5). Props only.
 import {
+  ArrowDownIcon,
+  ArrowRightIcon,
   BottomSheet,
   type BottomSheetLifted,
   BranchIcon,
@@ -67,6 +69,9 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   zoom: <MaximizeIcon size="20" />,
   unzoom: <GridIcon size="20" />,
   swap: <SplitIcon size="20" />,
+  // W2c: the phone has no split either (LIBRARY_GAPS.md: Split and ratio).
+  splitRight: <ArrowRightIcon size="20" />,
+  splitDown: <ArrowDownIcon size="20" />,
 }
 const toneOf: Partial<Record<PaneAction['value'], keyof typeof tones>> = {
   folders: 'accent',

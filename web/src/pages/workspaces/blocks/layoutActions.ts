@@ -1,15 +1,20 @@
-// The layout writes of a live chat's pane (slice W2): focus, zoom, swap and
-// close, which the server sends to herdr (`POST /api/chats/:chat/focus`,
-// `/zoom`, `/swap`, `/close`). Only a chat in a herdr tab the page read
+// The layout writes of a live chat's pane (slice W2): focus, zoom, swap,
+// close and split, which the server sends to herdr (`POST
+// /api/chats/:chat/focus`, `/zoom`, `/swap`, `/close`, `/split`), and the
+// ratio of a split (`POST /api/workspaces/:workspace/layout/ratio`). Only a chat in a herdr tab the page read
 // (`data.liveTabs`) has them; a fixture's pane and a workspace whose layout
 // read missed have none, so no control shows that could not work. No Figma
-// frame draws Zoom pane, Swap with… or the close dialog (deviations in
-// D01 and D13). The page never moves a pane itself: it waits for the
+// frame draws Zoom pane, Swap with…, Split right, Split down or the close
+// dialog (deviations in D01 and D13). The page never moves a pane itself: it waits for the
 // server's `layout.changed` and reads the layout again.
+import type { SetSplitRatioRequest, SplitDirection } from '@bridge/contract'
 import type { LiveTab, PaneAction, WorkspacesData } from '../types.ts'
 
-/** A layout write the page sends for a chat. */
-export type LayoutWriteAction = 'focus' | 'zoom' | 'swap' | 'close'
+/** A layout write the page sends for a chat, or for a split of a workspace's tab (`ratio`). */
+export type LayoutWriteAction = 'focus' | 'zoom' | 'swap' | 'close' | 'split' | 'ratio'
+
+/** The key of a workspace's ratio write in `LayoutWrites.pending`: it differs from every chat ID. */
+export const ratioKey = (workspace: string) => `ratio:${workspace}`
 
 /** The answer of a close: `true` when the server closed the pane, else the dialog's line, with Stop for a working chat. */
 export type CloseAnswer = true | { readonly line: string; readonly stop: boolean }
@@ -28,6 +33,13 @@ export type LayoutWrites = {
   readonly zoom: (chat: string, zoomed: boolean) => void
   readonly swap: (chat: string, other: string) => void
   readonly close: (chat: string) => Promise<CloseAnswer>
+  /** Puts a new shell pane beside the chat's (`row`) or below it (`column`); herdr does not focus it. */
+  readonly split: (chat: string, direction: SplitDirection) => void
+  /**
+   * Sets a split's ratio in a tab of `workspace` (the page's ID); a newer ratio of the workspace takes the place of one
+   * that waits. `false` when it sent nothing.
+   */
+  readonly ratio: (workspace: string, write: SetSplitRatioRequest) => boolean
 }
 
 /** The live tab that holds `chat`, with its workspace, or none. */
@@ -65,7 +77,7 @@ const closeLabel = 'Close pane…'
 /**
  * `actions` with a live chat's layout actions (W2). In the workbench (`pane`): Focus in terminal while herdr focuses
  * another pane, Zoom pane or Unzoom pane when its tab has more than one pane, Swap with… when the tab holds another
- * chat, then Close pane…, in the place of the sample's Close pane. The chat beside the desktop's sidebar (`desktopChat`):
+ * chat, Split right and Split down (W2c, off while herdr zooms the tab), then Close pane…, in the place of the sample's Close pane. The chat beside the desktop's sidebar (`desktopChat`):
  * Focus in terminal, then Close pane… last. The tablet's menu and the phone's sheet (`chat`): Close pane… last, as they
  * never move herdr's focus. Focus in terminal is the keyboard's way to what a tap on the pane's header does. Any other
  * pane keeps `actions` as they are.
@@ -90,5 +102,9 @@ export function withLayoutActions(
       ? [zoomed ? { value: 'unzoom', label: 'Unzoom pane' } : { value: 'zoom', label: 'Zoom pane' }]
       : []
   const swap: PaneAction[] = tab.chats.length > 1 ? [{ value: 'swap', label: 'Swap with…' }] : []
-  return [...rest, ...focus, ...zoom, ...swap, close]
+  const split: PaneAction[] = [
+    { value: 'splitRight', label: 'Split right', ...(tab.zoomed ? { disabled: true } : {}) },
+    { value: 'splitDown', label: 'Split down', ...(tab.zoomed ? { disabled: true } : {}) },
+  ]
+  return [...rest, ...focus, ...zoom, ...swap, ...split, close]
 }
