@@ -30,6 +30,7 @@ const logMessages = [
   'push store failed',
   'push failed',
   'push watch ended',
+  'chat restarted',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

@@ -26,9 +26,12 @@ import {
   chatsOf,
   type KeyEffort,
   type LayoutNode,
+  type ModelAlias,
   LocalIdPart,
   type MachineId,
   PaneId,
+  type RestartModelResponse,
+  SessionId,
   splitId,
   type StartState,
   WorkspaceId,
@@ -59,6 +62,7 @@ import { readClaudeTranscript } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
 import { readCompactWindows } from './claudeSettings.ts'
 import { claudeProjectFolder, modelAliasOf, readClaudeSession } from './sessionFile.ts'
+import { launchArgsOf, restartArgs } from './claudeArgs.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
 
@@ -188,7 +192,14 @@ const ProcessInfo = z.object({
     shell_pid: z.number().nullable().optional(),
     foreground_process_group_id: z.number().nullable().optional(),
     foreground_processes: z.array(
-      z.object({ pid: z.number(), name: z.string(), argv0: z.string().nullable().optional() }),
+      z.object({
+        pid: z.number(),
+        name: z.string(),
+        argv0: z.string().nullable().optional(),
+        // Read only for a model restart, never for the list: an argument can hold a token or a path.
+        argv: z.array(z.string()).nullable().optional(),
+        cwd: z.string().nullable().optional(),
+      }),
     ),
   }),
 })
@@ -320,6 +331,10 @@ export type HerdrAgentsOptions = {
   readonly now?: () => number
 }
 
+/** How long a restart waits for the chat to end after its ctrl+c, and the time between two reads. */
+const restartExitMs = 5000
+const restartExitGapMs = 200
+
 /**
  * herdr sends no event when a pane's Claude session changes (a /clear typed in the terminal), so the list stream
  * watches the folders of the listed Claude sessions: a new session file there reads the list again, now and once
@@ -430,6 +445,16 @@ export function createHerdrAgents({
    */
   const setEfforts = new Map<string, { readonly effort: KeyEffort; readonly mtimeMs: number }>()
   const effortKey = (pane: string, path: string) => JSON.stringify([pane, path])
+  /** The model of each pane and session file that `restartModel` started, kept as an effort is: the restart writes no turn. */
+  const setModels = new Map<string, { readonly model: ModelAlias; readonly mtimeMs: number }>()
+  /** The model kept for a pane's session file, while the file has not changed since. */
+  const keptModel = async (pane: string, path: string): Promise<ModelAlias | undefined> => {
+    const set = setModels.get(effortKey(pane, path))
+    if (set === undefined) return undefined
+    if ((await mtimeOf(path)) === set.mtimeMs) return set.model
+    setModels.delete(effortKey(pane, path))
+    return undefined
+  }
   const mtimeOf = (path: string) =>
     stat(path).then(
       (s) => s.mtimeMs,
@@ -454,12 +479,13 @@ export function createHerdrAgents({
     if (path !== undefined && key !== undefined && set !== undefined && (await mtimeOf(path)) !== set.mtimeMs)
       setEfforts.delete(key)
     const kept = key === undefined ? undefined : setEfforts.get(key)?.effort
+    const model = path === undefined ? undefined : await keptModel(agent.pane_id, path)
     return {
       id: chatIdOf(agent, shared),
       kind,
       title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
-      model: session.model,
-      modelId: modelAliasOf(session.model),
+      model: model ?? session.model,
+      modelId: model ?? modelAliasOf(session.model),
       effort: kept ?? session.effort,
       contextUsed: session.contextUsed,
       status: statusOf(agent.agent_status),
@@ -894,6 +920,58 @@ export function createHerdrAgents({
     return agent.interactive_ready === true && (status === 'idle' || status === 'done') ? 'ready' : 'starting'
   }
 
+  /** The Claude agent of a pane when it is idle or done with an empty input box, else why a restart waits. */
+  const restartReady = async (
+    pane: string,
+  ): Promise<
+    Result<HerdrAgent | 'notFound' | 'needsYou' | 'working' | 'inputNotEmpty' | 'inputUnreadable', AgentPortError>
+  > => {
+    const agents = await call('agent.list', AgentList)
+    if (!agents.ok) return agents
+    const agent = agents.value.agents.find((a) => a.pane_id === pane && a.agent === 'claude')
+    if (agent === undefined) return ok('notFound')
+    const status = statusOf(agent.agent_status)
+    if (status === 'needsYou') return ok('needsYou')
+    if (status !== 'idle' && status !== 'done') return ok('working')
+    const box = await inputBox(pane)
+    if (!box.ok) return box
+    if (box.value === null) return ok('inputUnreadable')
+    return box.value.text === '' ? ok(agent) : ok('inputNotEmpty')
+  }
+
+  /** The Claude process in a pane's foreground, with its arguments and folder as herdr gives them, if any. */
+  const claudeProcess = async (pane: string) => {
+    const info = await call('pane.process_info', ProcessInfo, { pane_id: pane })
+    if (!info.ok) return info
+    return ok(info.value.process_info.foreground_processes.find((p) => processName(p) === 'claude'))
+  }
+
+  /**
+   * Whether the pane's Claude process ended within `restartExitMs`, and herdr let go of its agent: herdr keeps the
+   * agent's name for a moment after the process ends, and refuses a start with it (`agent_name_taken`).
+   */
+  const claudeEnded = async (pane: string): Promise<boolean> => {
+    for (let waited = 0; waited < restartExitMs; waited += restartExitGapMs) {
+      await new Promise((resolve) => setTimeout(resolve, restartExitGapMs))
+      const [running, agents] = await Promise.all([claudeProcess(pane), call('agent.list', AgentList)])
+      if (
+        running.ok &&
+        running.value === undefined &&
+        agents.ok &&
+        !agents.value.agents.some((x) => x.pane_id === pane)
+      )
+        return true
+    }
+    return false
+  }
+
+  /** Whether two folders are the same once both are real paths. */
+  const sameFolder = async (a: string, b: string): Promise<boolean> => {
+    // A folder that is gone compares by its path.
+    const [ra, rb] = await Promise.all([realpath(a).catch(() => resolve(a)), realpath(b).catch(() => resolve(b))])
+    return ra === rb
+  }
+
   /** Keeps the effort set for the pane's session file, and tells each open list stream that the list changed. */
   const keepEffort = async (pane: string, effort: KeyEffort) => {
     const agents = await call('agent.list', AgentList)
@@ -1092,6 +1170,67 @@ export function createHerdrAgents({
       if (sent.value === 'needsYou') return ok('notWorking')
       if (target.value.claude) await clearPutBack(pane)
       return ok('sent')
+    },
+    async restartModel(chat, model) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      const { pane, claude } = target.value
+      if (!claude) return ok('noCommands')
+      const ready = await restartReady(pane)
+      if (!ready.ok) return ready
+      if (typeof ready.value === 'string') return ok(ready.value)
+      const agent = ready.value
+      // A /clear between the reads gives the pane another session, and so another chat.
+      if (chatIdOf(agent, new Set()) !== chat && `${machine}/${agent.terminal_id}` !== chat) return ok('notFound')
+      const session = sessionOf(agent)
+      const path = sessionPath(agent)
+      const old = SessionId.safeParse(session)
+      if (path === undefined || !old.success) return ok('launchArgsUnknown')
+      const shown = (await keptModel(pane, path)) ?? modelAliasOf((await readClaudeSession(path)).model)
+      if (shown === model) return ok('sameModel')
+      // The chat's own command line, read from its process: only known flags pass, and none that skips a permission.
+      const running = await claudeProcess(pane)
+      if (!running.ok) return running
+      if (running.value?.argv == null) return ok('launchArgsUnknown')
+      const launch = launchArgsOf(running.value.argv)
+      if (typeof launch === 'string') return ok(launch)
+      const folder = running.value.cwd
+      if (folder == null || agent.cwd == null || !(await sameFolder(folder, agent.cwd))) return ok('folderChanged')
+      // The owner can type between the checks and the exit: read the status and the box once more, right before it.
+      const again = await restartReady(pane)
+      if (!again.ok) return again
+      if (typeof again.value === 'string') return ok(again.value)
+      if (sessionOf(again.value) !== session) return ok('working')
+      const sent = await input('agent.send_keys', { target: pane, keys: ['ctrl+c', 'ctrl+c'] })
+      if (!sent.ok) return sent
+      if (sent.value === 'needsYou') return ok('needsYou')
+      forgetPlaces()
+      if (!(await claudeEnded(pane))) return err(badReply('the chat did not end after ctrl+c'))
+      // From here the old chat has ended: a failure answers `failed` with the session, and nothing starts again.
+      const failed = { state: 'failed', session: old.data } satisfies RestartModelResponse
+      const herdrName = agent.name ?? undefined
+      const name = launch.name ?? herdrName ?? `chat-${randomBytes(3).toString('hex')}`
+      const launched = await launchClaude(pane, name, restartArgs(launch, herdrName, old.data, model))
+      log.info('chat restarted', {
+        flags: launch.kept.filter((token) => token.startsWith('-')),
+        started: launched.started && launched.waitFailed === undefined,
+        failure: launched.started
+          ? launched.waitFailed
+          : launched.error.kind === 'herdrError'
+            ? launched.error.code
+            : launched.error.kind,
+      })
+      if (!launched.started || launched.waitFailed !== undefined) return ok(failed)
+      const resumed = launched.agent === undefined ? undefined : sessionOf(launched.agent)
+      if (resumed !== undefined && resumed !== session) return ok(failed)
+      // Also when the start is still `starting`: the chat runs with this model once it is up. The new process takes its
+      // effort from its flags, so a level the effort keys set is gone.
+      setEfforts.delete(effortKey(pane, path))
+      setModels.set(effortKey(pane, path), { model, mtimeMs: await mtimeOf(path) })
+      for (const tellList of listTellers) tellList()
+      if (launched.agent === undefined) return ok({ state: 'starting', chat })
+      return ok({ state: resumed === undefined ? 'starting' : startStateOf(launched.agent), chat })
     },
     async focusChat(chat) {
       const found = await paneOf(chat)

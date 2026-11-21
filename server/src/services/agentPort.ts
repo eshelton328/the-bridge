@@ -19,6 +19,8 @@ import type {
   WorkspaceSummary,
   StartChatRequest,
   StartChatResponse,
+  ModelAlias,
+  RestartModelResponse,
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
@@ -63,6 +65,19 @@ export type CommandOutcome = PromptOutcome | 'working' | 'noCommands'
  * when it does not after the keys; else why no key was sent, as a command.
  */
 export type EffortOutcome = Exclude<CommandOutcome, 'sent' | 'notSubmitted'> | 'set' | 'effortNotConfirmed'
+
+/**
+ * What a model restart did (slice W10): the chat and its state once it started again with the same session; `failed`
+ * with the session when the old chat ended and no new one resumed it; else why nothing was sent, as an effort
+ * change, or `launchArgsUnknown`, `skipsPermissions`, `folderChanged` or `sameModel`.
+ */
+type RestartOutcome =
+  | Exclude<EffortOutcome, 'set' | 'effortNotConfirmed'>
+  | 'launchArgsUnknown'
+  | 'skipsPermissions'
+  | 'folderChanged'
+  | 'sameModel'
+  | RestartModelResponse
 
 /** A Claude Code command: `/compact` with the owner's instructions if any, or `/clear`. */
 export type ChatCommand =
@@ -166,6 +181,12 @@ export type AgentPort = {
    * keys; never with `/effort`, which saves the owner's default.
    */
   setEffort(chat: ChatId, effort: KeyEffort): Promise<Result<EffortOutcome, AgentPortError>>
+  /**
+   * Restarts an idle Claude chat with an empty input box in its own pane, with the same session and `model`: it reads
+   * the chat's command line and keeps only the flags it knows, ends the chat with ctrl+c and starts Claude again
+   * with `--resume`. It never passes a flag that skips a permission and answers no prompt of the new chat.
+   */
+  restartModel(chat: ChatId, model: ModelAlias): Promise<Result<RestartOutcome, AgentPortError>>
   /** Makes the pane of one chat, a shell too, the focused pane of its tab. */
   focusChat(chat: ChatId): Promise<Result<PaneWriteOutcome, AgentPortError>>
   /** Shows only the pane of one chat in its tab, at full size (`zoomed` true), or ends the zoom of its tab. */
