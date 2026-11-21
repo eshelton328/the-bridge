@@ -18,9 +18,11 @@ BRIDGE_LOG_DIR=$HOME/.local/share/the-bridge/logs pnpm --filter @bridge/server s
 `pnpm logs --request <id> --level warn --since 2h` prints the matching
 log lines (d-115).
 
-Then `pnpm dev` in `web/` and open `/workspaces`, whose home reads live
-in development (d-117); Vite sends
-`/api` to `BRIDGE_SERVER_URL` (`http://127.0.0.1:5181` when not set).
+Then `BRIDGE_SERVER_URL=http://127.0.0.1:<BRIDGE_PORT> pnpm dev` in
+`web/` and open `/workspaces`, whose home reads live in development
+(d-117); Vite sends `/api` to `BRIDGE_SERVER_URL` and stops when it is
+not set. The served app uses port 5181; a test or a probe starts its own
+server on another port.
 
 ## Rules
 

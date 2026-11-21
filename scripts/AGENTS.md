@@ -16,6 +16,9 @@ camelCase (the lint's file-name rule).
 - Change a template in `templates/` and its use in `new.ts` together, and
   run each `pnpm new` kind once in a scratch copy to prove the result
   passes `tsc` and the lint.
+- `viteConfig.test.ts` holds web/vite.config.ts's `/api` proxy rule: no
+  default target, so `vite` and `vite preview` stop without
+  `BRIDGE_SERVER_URL`, and the build, Vitest and Storybook start without it.
 - `keyboardTracePlugin.ts` is a dev-server plugin (`apply: 'serve'`); a
   build must never include it. No client text may reach a trace file's
   path (`keyboardTracePlugin.test.ts`).

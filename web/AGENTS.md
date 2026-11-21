@@ -30,7 +30,12 @@ The library comes from GitHub Packages, pinned in the catalog of
 Run these in `web/`; the root `package.json` has neither.
 
 - `pnpm dev`: the app on http://localhost:5173. It sends `/api` to the
-  server at `BRIDGE_SERVER_URL` (default `http://127.0.0.1:5181`). In
+  server at `BRIDGE_SERVER_URL`, which is required: `vite` and `vite
+  preview` stop with an error when it is not set, and there is no
+  default. The served app sets `BRIDGE_SERVER_URL=http://127.0.0.1:5181`,
+  the server with the owner's real herdr session; a test or a probe sets
+  the URL of its own server. Vitest, Storybook and `vite build` start
+  without it and get no `/api` proxy (`scripts/viteConfig.test.ts`). In
   development `?state=<key>` picks a page state and `?source=` a data
   source (`src/lib/dataSource.ts`); fixtures are the default, except the
   Workspaces home, which reads live (d-117; `?source=fixtures` shows its
