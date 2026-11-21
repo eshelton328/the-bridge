@@ -28,6 +28,13 @@ function box(el: Element | null | undefined) {
   return el.getBoundingClientRect()
 }
 
+/** Whether zag has placed the popover of `el`: its positioner has the `--y` that zag sets once it computed it. */
+function placed(el: Element | null): boolean {
+  const positioner = el?.closest('[data-part="positioner"]')
+  if (!(positioner instanceof HTMLElement)) throw new Error('no positioner')
+  return positioner.style.getPropertyValue('--y') !== ''
+}
+
 describe('the skill list in a pane (D1)', () => {
   it("is Figma's 173 high at 1512 px and leaves the transcript line over it clear", async () => {
     await page.viewport(1512, 982)
@@ -37,6 +44,10 @@ describe('the skill list in a pane (D1)', () => {
     await Workbench.run({ canvasElement, canvas: within(canvasElement) })
     await expect.element(page.getByRole('radiogroup', { name: 'SKILLS' })).toBeVisible()
     const list = () => document.querySelector('[data-figma="105:406"]')
+    // Ark's positioner draws the list at translate(var(--x, 0), var(--y, -100vh)) until zag has computed its place a
+    // frame or more after the open, so a list measured before that has its top 100vh above the window (-982 on a busy
+    // runner). The test waits for the place before it measures.
+    await expect.poll(() => placed(list())).toBe(true)
     // The popover opens with a scale animation, so its box is polled until it settles.
     await expect.poll(() => Math.abs(box(list()).height - figmaHeight)).toBeLessThanOrEqual(tolerance)
     const line = page.getByText('Read f-005-the-bridge/requirements.md').element()
