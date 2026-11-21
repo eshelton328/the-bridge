@@ -414,7 +414,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - The phone's chat and New chat are each one `ScrollFrame` straight in
   the AppShell detail, as the library docks only that frame's footer on
   the keyboard (review R20, `app/WorkspacesChatDock.test.tsx`). Name it
-  a region with `blocks/frameRegion.ts`.
+  a region with `blocks/frameRegion.ts`. On the keyboard the chat's
+  composer ends 8 over it on the phone (M10) and 16 on the tablet (T4):
+  `ChatPane` pads its footer by the dock, up to that space, so with the
+  keyboard closed the safe area stays under the composer (review R36,
+  `app/WorkspacesKeyboardGap.test.tsx`).
 - The app does not size the screen to the area above the keyboard; that
   is the "Phone keyboard" row of `LIBRARY_GAPS.md`.
 
