@@ -2,6 +2,7 @@
 // error. API tests and web's mock-api source use it; the contract suite in
 // agentPortContract.ts keeps it true to the herdr adapter.
 import {
+  type SplitDirection,
   ChatId,
   type ChatStatus,
   type LayoutNode,
@@ -125,26 +126,70 @@ export type FakeAgents = AgentPort & {
   readonly dropNextEnter: (chat: ChatId) => void
 }
 
+/** The fake's split tree of one tab, by pane: a pane keeps its place when its chat gets a new ID (`/clear`). */
+type PaneTree =
+  | { readonly kind: 'pane'; readonly pane: PaneId }
+  | {
+      readonly kind: 'split'
+      readonly direction: SplitDirection
+      readonly ratio: number
+      readonly first: PaneTree
+      readonly second: PaneTree
+    }
+
+/** Panes side by side in list order; each split gives its first pane an equal share of what is left. */
+function chainOf(panes: readonly PaneId[]): PaneTree | undefined {
+  const [first, ...rest] = panes
+  if (first === undefined) return undefined
+  const second = chainOf(rest)
+  return second === undefined
+    ? { kind: 'pane', pane: first }
+    : { kind: 'split', direction: 'row', ratio: 1 / panes.length, first: { kind: 'pane', pane: first }, second }
+}
+
+/** The tree without the panes that `keep` lacks; a split with one part left becomes that part. */
+function pruned(tree: PaneTree, keep: ReadonlySet<PaneId>): PaneTree | undefined {
+  if (tree.kind === 'pane') return keep.has(tree.pane) ? tree : undefined
+  const first = pruned(tree.first, keep)
+  const second = pruned(tree.second, keep)
+  if (first === undefined || second === undefined) return first ?? second
+  return { ...tree, first, second }
+}
+
+/** The tree with each pane leaf replaced by what `change` gives for it. */
+function mapPanes(tree: PaneTree, change: (pane: PaneId) => PaneTree): PaneTree {
+  if (tree.kind === 'pane') return change(tree.pane)
+  return { ...tree, first: mapPanes(tree.first, change), second: mapPanes(tree.second, change) }
+}
+
+function panesOf(tree: PaneTree): PaneId[] {
+  return tree.kind === 'pane' ? [tree.pane] : [...panesOf(tree.first), ...panesOf(tree.second)]
+}
+
 /**
- * The fake's layout of a workspace: one tab with its chats side by side, in list order, with `focused` (else the
- * first) focused; null with no chat.
+ * The fake's layout of a workspace: one tab with the tree of its chats' panes (side by side in list order until a
+ * write changes it), with `focused` (else the first) focused; null with no chat.
  */
-function layoutOf(workspace: WorkspaceSummary, focused?: ChatId, zoomed = false): WorkspaceLayout | null {
-  const [first, ...rest] = workspace.chats
-  if (first === undefined) return null
-  // Each split gives its first pane an equal share of what is left, so n panes get 1/n each.
-  const root = (at: number): LayoutNode => {
-    const chat = workspace.chats[at] ?? first
-    return at === workspace.chats.length - 1
-      ? { kind: 'pane', chat: chat.id }
-      : {
-          kind: 'split',
-          direction: 'row',
-          ratio: 1 / (workspace.chats.length - at),
-          first: { kind: 'pane', chat: chat.id },
-          second: root(at + 1),
-        }
+function layoutOf(
+  workspace: WorkspaceSummary,
+  tree: PaneTree | undefined,
+  focused?: ChatId,
+  zoomed = false,
+): WorkspaceLayout | null {
+  const byPane = new Map(workspace.chats.map((c) => [c.pane, c]))
+  const kept = tree === undefined ? undefined : pruned(tree, new Set(byPane.keys()))
+  // A tree that lacks a listed chat's pane is not this list's: the chain stands in for it.
+  const root = kept !== undefined && panesOf(kept).length === byPane.size ? kept : chainOf([...byPane.keys()])
+  if (root === undefined) return null
+  const node = (t: PaneTree): LayoutNode => {
+    if (t.kind === 'split') return { ...t, first: node(t.first), second: node(t.second) }
+    const chat = byPane.get(t.pane)
+    if (chat === undefined) throw new Error('the fake tree holds a pane with no chat')
+    return { kind: 'pane', chat: chat.id }
   }
+  const chats = panesOf(root).flatMap((p) => byPane.get(p) ?? [])
+  const first = chats[0]
+  if (first === undefined) return null
   return {
     workspace: workspace.id,
     tabs: [
@@ -152,10 +197,10 @@ function layoutOf(workspace: WorkspaceSummary, focused?: ChatId, zoomed = false)
         id: TabId.parse(`${workspace.id}:t1`),
         label: '1',
         active: true,
-        root: rest.length === 0 ? { kind: 'pane', chat: first.id } : root(0),
-        focusedChat: workspace.chats.some((c) => c.id === focused) && focused !== undefined ? focused : first.id,
+        root: node(root),
+        focusedChat: chats.some((c) => c.id === focused) && focused !== undefined ? focused : first.id,
         zoomed,
-        chats: structuredClone(workspace.chats),
+        chats: structuredClone(chats),
       },
     ],
   }
@@ -196,6 +241,9 @@ export function createFakeAgents(
   /** The focused chat of each workspace whose focus a caller changed, and the workspaces that are zoomed. */
   const focus = new Map<WorkspaceId, ChatId>()
   const zooms = new Set<WorkspaceId>()
+  /** The split tree of each workspace's tab, from its first layout write on. */
+  const trees = new Map<WorkspaceId, PaneTree>()
+  const treeOf = (workspace: WorkspaceSummary) => trees.get(workspace.id) ?? chainOf(workspace.chats.map((c) => c.pane))
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
   }
@@ -251,7 +299,9 @@ export function createFakeAgents(
     readLayout(workspace) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = (data ?? []).find((w) => w.id === workspace)
-      return Promise.resolve(ok(found === undefined ? null : layoutOf(found, focus.get(found.id), zooms.has(found.id))))
+      return Promise.resolve(
+        ok(found === undefined ? null : layoutOf(found, trees.get(found.id), focus.get(found.id), zooms.has(found.id))),
+      )
     },
     subscribe(onEvent, onEnd) {
       const listener = { onEvent, onEnd }
@@ -347,8 +397,17 @@ export function createFakeAgents(
       const to = workspace.chats.findIndex((c) => c.id === other)
       const [one, two] = [workspace.chats[at], workspace.chats[to]]
       if (one === undefined || two === undefined) return Promise.resolve(ok('notFound'))
+      const tree = treeOf(workspace)
       workspace.chats[at] = two
       workspace.chats[to] = one
+      if (tree !== undefined)
+        trees.set(
+          workspace.id,
+          mapPanes(tree, (pane) => ({
+            kind: 'pane',
+            pane: pane === one.pane ? two.pane : pane === two.pane ? one.pane : pane,
+          })),
+        )
       tell({ type: 'layoutChanged', workspace: workspace.id })
       return Promise.resolve(ok('done'))
     },
