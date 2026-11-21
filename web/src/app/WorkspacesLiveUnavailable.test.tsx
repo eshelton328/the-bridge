@@ -12,6 +12,7 @@ import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // /workspaces?source=live on the phone (audit W-2, d-117): when the live read
 // misses, the page shows no workspaces, with a notice and Retry in the page;
@@ -20,6 +21,9 @@ document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
 let view: { unmount: () => Promise<void> } | undefined
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   await view?.unmount()

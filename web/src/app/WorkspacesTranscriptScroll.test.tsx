@@ -18,6 +18,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // A live chat's transcript opens at its newest entry and stays there as
 // entries come in, unless the reader scrolled up (usePinnedEnd); its messages
@@ -123,6 +124,9 @@ let view: { unmount: () => Promise<void> } | undefined
 // Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
 // server, never the one on this machine (liveServerStub.ts).
 stubLiveServer()
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   await view?.unmount()

@@ -17,6 +17,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // Slice 3a: the Workspaces page draws each live workspace's herdr layout,
 // its active tab (`GET /api/workspaces/:workspace/layout`). Each test takes
@@ -211,6 +212,9 @@ beforeAll(() => {
 afterAll(() => {
   queryClient.setDefaultOptions(queryDefaults)
 })
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   await view?.unmount()

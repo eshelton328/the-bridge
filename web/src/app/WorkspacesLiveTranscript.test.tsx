@@ -17,6 +17,7 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // Slice 3b: a live chat's pane shows its transcript. Each test takes the
 // owner's path: it opens the app with no URL parameters, taps Workspaces and
@@ -130,6 +131,9 @@ let router: ReturnType<typeof createRouter> | undefined
 // Each test stubs fetch itself; between tests, a read that a page started after its test ended gets the stubbed
 // server, never the one on this machine (liveServerStub.ts).
 stubLiveServer()
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   await view?.unmount()
