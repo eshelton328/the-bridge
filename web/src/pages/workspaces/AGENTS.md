@@ -95,7 +95,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   A sample chat keeps its drawn chips and a paperclip that does nothing; a
   live Codex chat and a shell have no paperclip. The calls go through
   the typed RPC client with each ID URL-encoded once, and the bodies are
-  the contract's (backend #307 to #309).
+  the contract's (backend #307 to #309). An upload's change renders only
+  its chat's composers, never the page, a header or a transcript: each
+  `ChatPane` reads its own chat's files through `ChatFiles` (`subscribe`,
+  `view`), `liveUploads.ts` tells only the chats whose view changed, and
+  a chunk's progress goes out at most once an animation frame (the #329
+  flake, `app/WorkspacesUploadRenders.test.tsx`).
 - A live Claude chat's model and effort are read-only (d-101, W5): the
   pane header and the chat header show "Opus 5.5 · high effort" as text
   (`PaneHead.effort`, `readOnlyModel`), the model alone when the effort is

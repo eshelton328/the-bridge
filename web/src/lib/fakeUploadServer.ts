@@ -197,7 +197,7 @@ export function fakeUploadServer({ chunkSize = 8_388_608 }: FakeUploadOptions = 
         await new Promise<void>((resolve) => {
           held.push(resolve)
         })
-      await new Promise((resolve) => setTimeout(resolve, 10))
+      await new Promise((resolve) => setTimeout(resolve, 0))
       if (this.ended()) return
       const answer = chunkAnswers.shift()
       const res: Response | 'network' =
