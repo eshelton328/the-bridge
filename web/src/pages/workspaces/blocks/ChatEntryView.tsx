@@ -1,4 +1,5 @@
-// One entry of a chat pane's transcript: the owner's message, a tool line, an
+// One entry of a chat pane's transcript: the owner's message, a tool line (a live
+// call with its kind as a `ToolRow`, R32), an
 // agent's reply with Copy (`ReplyCopyButton`), progress lines or a command waiting for approval
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). A live message or reply whose text the server cut
@@ -16,6 +17,7 @@ import type { ChatEntry } from '../types.ts'
 import { EntryText } from './EntryText.tsx'
 import { ReplyCopyButton } from './ReplyCopyButton.tsx'
 import { SentFileChip } from './SentFileChip.tsx'
+import { ToolRow } from './ToolRow.tsx'
 
 // The progress lines keep their leading spaces, as a terminal does.
 const progress = css({ textStyle: 'mono', color: 'fg.muted', whiteSpace: 'pre' })
@@ -70,7 +72,18 @@ export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, 
       )
     }
     case 'tool':
-      return <ToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
+      // A live call with its kind draws its icon, title and label (R32); one without draws as Figma's tool line.
+      return entry.kind === undefined ? (
+        <ToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
+      ) : (
+        <ToolRow
+          kind={entry.kind}
+          title={entry.title ?? entry.name}
+          label={entry.label ?? ''}
+          name={entry.name}
+          running={entry.running}
+        />
+      )
     case 'event':
       // Figma draws the event as a tool line: the done dot and the text in mono (D16 417:718).
       return (

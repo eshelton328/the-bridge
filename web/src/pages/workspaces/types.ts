@@ -1,7 +1,7 @@
 // The Workspaces page's view models, display-ready, each from its Zod schema.
 // The Workbench (Figma page 89:2): workspace tabs over one to four split
 // panes, each a chat, a shell or an empty pane, and a status bar.
-import { LayoutNode, TabId } from '@bridge/contract'
+import { LayoutNode, TabId, ToolKind } from '@bridge/contract'
 import { z } from 'zod'
 
 export const AgentKind = z.enum(['claude', 'codex', 'shell'])
@@ -85,8 +85,22 @@ export const ChatEntry = z.discriminatedUnion('type', [
     cut: z.string().optional(),
     files: z.array(z.string()).optional(),
   }),
-  /** A tool call; `running` draws its dot in the running colour, as the call still runs (M12 147:383). */
-  z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), running: z.boolean().optional() }),
+  /**
+   * A tool call; `running` draws its dot in the running colour, as the call still runs (M12 147:383). A live call
+   * has its `kind`, a readable `title` and the call's own one-line `label` (R32, backend #371): it draws its kind's
+   * icon, the title and the label, and a run of them draws as one group row. Without `kind` it draws as before.
+   */
+  z.object({
+    type: z.literal('tool'),
+    /** A live call's entry ID from the server, which keys its group while older entries drop off the front. */
+    id: z.string().optional(),
+    name: z.string(),
+    target: z.string(),
+    running: z.boolean().optional(),
+    kind: ToolKind.optional(),
+    title: z.string().optional(),
+    label: z.string().optional(),
+  }),
   /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). `cut` as for `user`. */
   z.object({
     type: z.literal('assistant'),

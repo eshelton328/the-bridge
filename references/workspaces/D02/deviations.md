@@ -96,6 +96,19 @@ in `web/src/pages/workspaces/LIBRARY_GAPS.md`.
   came in; a tap scrolls to the end and hides it (`blocks/NewestButton.tsx`,
   LIBRARY_GAPS.md: Scroll to newest). This frame's fixture chats are not
   live and sit at their own scroll, so its render does not change.
+- **Live tool calls (review R32, a frame exception the app owns).** Erik
+  wrote: "these tool messages aren't great like send message bash macro
+  etc. how can we improve that". Figma draws a tool call as a tool line:
+  a status dot and the tool's name and target in mono, `fg.muted`
+  (105:873). A live call from a server with backend #371 keeps that line's
+  mono, colour and 6 px gaps, but draws its kind's icon in the dot's place
+  and state colour, a readable title in place of the raw name and its own
+  one-line label in `fg.subtle` in place of the target; a run of two or
+  more calls draws as one `ToolLine` with a summary of its kinds and
+  counts, which a tap opens (`blocks/ToolRow.tsx`, `blocks/ToolGroup.tsx`;
+  LIBRARY_GAPS.md: Tool row icon and label, Tool group row). Figma draws no
+  icon, title, label or group. This frame's fixture calls have no kind, so
+  they draw as before and its render does not change.
 
 ## Notifications switch (d-118)
 

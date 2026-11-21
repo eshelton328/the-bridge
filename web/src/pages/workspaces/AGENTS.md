@@ -74,6 +74,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (LIBRARY_GAPS.md: Sent file chips).
   A slash command's error output (`ErrorEntry`) shows as an `event`
   entry labelled "Error" with its text.
+- A live tool call (review R32, backend #371) carries its `kind`, a
+  readable `title` and its own one-line `label`: it draws its kind's
+  icon, the title and the label in a quieter colour on one line
+  (`blocks/ToolRow.tsx`); the raw tool name is only the icon's title. A
+  run of two or more such calls between other entries is one row with a
+  summary of its kinds and counts in order, "Ran 3 commands, read 2
+  files" (`blocks/toolGroups.ts`), whose tap opens the run's rows
+  (`blocks/ToolGroup.tsx`); the open state is the group's own, so a tap
+  renders no other entry, and its first call's entry ID keys it, so it
+  stays open while older entries drop off the 500 cap. The newest run of a working chat stays open
+  until an entry follows it. A call without a kind (the fixtures, an
+  older server) draws as Figma's tool line and is never grouped
+  (`app/WorkspacesToolRows.test.tsx`; LIBRARY_GAPS.md: Tool row icon and
+  label, Tool group row).
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
   to the chat whose composer sent it, read at send time. The box empties
