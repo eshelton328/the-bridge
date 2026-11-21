@@ -315,6 +315,14 @@ describe('watchTranscript', () => {
   })
 
   it('shows a cut message or reply with the cut line, and the agent name and Copy from the chat', () => {
+    expect(chatEntryOf({ ...user('u2', 'Look.'), files: ['plan.pdf', 'a_b.png'] }, 'claude')).toEqual({
+      type: 'user',
+      text: 'Look.\n\nFiles: `plan.pdf`, `a_b.png`',
+    })
+    expect(chatEntryOf({ ...user('u3', ''), files: ['notes.md'] }, 'claude')).toEqual({
+      type: 'user',
+      text: 'Files: `notes.md`',
+    })
     expect(chatEntryOf({ ...user('u1', 'long'), cut: true }, 'claude')).toEqual({
       type: 'user',
       text: 'long',

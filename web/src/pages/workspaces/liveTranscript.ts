@@ -50,6 +50,8 @@ export const transcriptText = {
   cut: 'Cut — full text not live yet',
   /** In place of the entries when the read transcript has none. */
   empty: 'No messages yet',
+  /** Before the names of the files sent with a prompt, until the page shows them as chips. */
+  files: 'Files:',
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
 } as const
@@ -434,8 +436,13 @@ const agentNames: Record<AgentKind, string> = { claude: 'Claude', codex: 'Codex'
 export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry {
   const cut = 'cut' in entry && entry.cut ? { cut: transcriptText.cut } : {}
   switch (entry.type) {
-    case 'user':
-      return { type: 'user', text: entry.text, ...cut }
+    case 'user': {
+      // Each name as inline code, so Markdown in a file name stays text.
+      const files = entry.files?.map((name) => `\`${name.replaceAll('`', '')}\``).join(', ')
+      const line = files === undefined ? '' : `${transcriptText.files} ${files}`
+      const text = line === '' ? entry.text : entry.text === '' ? line : `${entry.text}\n\n${line}`
+      return { type: 'user', text, ...cut }
+    }
     case 'assistant':
       return { type: 'assistant', kind, name: agentNames[kind], text: entry.text, copy: 'Copy', ...cut }
     case 'tool':
