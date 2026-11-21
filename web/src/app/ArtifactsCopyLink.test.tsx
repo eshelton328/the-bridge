@@ -5,7 +5,8 @@ import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/rea
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
-import { holdTimers } from '../lib/holdTimers.ts'
+import { clickNow, holdTimers } from '../lib/holdTimers.ts'
+import { afterRendering, renderedUntil } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -42,6 +43,11 @@ function fakeClipboard(): string[] {
 /** The button whose accessible name is `name` now, or null. */
 function buttonNamed(name: string): Element | null {
   return page.getByRole('button', { name, exact: true }).query()
+}
+
+/** Whether a status region says `text`. */
+function statusSays(text: string): boolean {
+  return page.getByRole('status').filter({ hasText: text }).query() !== null
 }
 
 /** Swaps the clipboard's writeText for one that rejects with `error` for this test. */
@@ -140,21 +146,27 @@ describe('Copy link says whether it copied', () => {
     const control = page.getByRole('button', { name: 'Copy link' })
     const button = control.element()
     const before = button.getBoundingClientRect()
-    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts). Until the test moves that clock, no
+    // step is a Vitest action or poll, which would move it too: the press is a DOM click and each wait counts
+    // rendering steps (lib/rendering.ts).
     const release = holdTimers()
-    await control.click()
-    await expect.poll(() => copied).toEqual(['https://claude.ai/artifact/8f3c2a91-skill-evals'])
+    clickNow(button)
+    await renderedUntil(() => copied.length > 0)
+    expect(copied).toEqual(['https://claude.ai/artifact/8f3c2a91-skill-evals'])
     // The same control now reads Copied.
-    await expect.poll(() => buttonNamed('Copied')).toBe(button)
-    await expect.element(page.getByRole('status').filter({ hasText: 'Copied' })).toBeInTheDocument()
+    await renderedUntil(() => buttonNamed('Copied') === button)
+    await renderedUntil(() => statusSays('Copied'))
     // The label changes inside the button's own box, so the bar does not jump.
     const during = button.getBoundingClientRect()
     expect([during.width, during.height]).toEqual([before.width, before.height])
+    // The label's 2 s starts in an effect after the render that shows it: wait for that timer before the clock moves.
+    await renderedUntil(() => vi.getTimerCount() > 0)
     // It still reads Copied 1.5 s after the press, and Copy link again at 2 s.
     vi.advanceTimersByTime(1500)
-    await expect.poll(() => buttonNamed('Copied')).toBe(button)
+    await afterRendering()
+    expect(buttonNamed('Copied')).toBe(button)
     vi.advanceTimersByTime(500)
-    await expect.poll(() => buttonNamed('Copy link')).toBe(button)
+    await renderedUntil(() => buttonNamed('Copy link') === button)
     release()
   })
 
@@ -167,18 +179,21 @@ describe('Copy link says whether it copied', () => {
     const control = page.getByRole('button', { name: 'Copy link' })
     const button = control.element()
     const before = button.getBoundingClientRect()
-    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    // "Copy failed" waits for the test's clock, as "Copied" does above.
     const release = holdTimers()
-    await control.click()
-    await expect.poll(() => buttonNamed('Copy failed')).toBe(button)
-    await expect.element(page.getByRole('status').filter({ hasText: 'Copy failed' })).toBeInTheDocument()
+    clickNow(button)
+    await renderedUntil(() => buttonNamed('Copy failed') === button)
+    await renderedUntil(() => statusSays('Copy failed'))
     const during = button.getBoundingClientRect()
     expect([during.width, during.height]).toEqual([before.width, before.height])
     expect(getReports().map((r) => r.error)).toContain(broken)
+    // The label's 2 s starts in an effect after the render that shows it: wait for that timer before the clock moves.
+    await renderedUntil(() => vi.getTimerCount() > 0)
     vi.advanceTimersByTime(1500)
-    await expect.poll(() => buttonNamed('Copy failed')).toBe(button)
+    await afterRendering()
+    expect(buttonNamed('Copy failed')).toBe(button)
     vi.advanceTimersByTime(500)
-    await expect.poll(() => buttonNamed('Copy link')).toBe(button)
+    await renderedUntil(() => buttonNamed('Copy link') === button)
     release()
   })
 })

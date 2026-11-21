@@ -9,9 +9,9 @@ import { clearReports, getReports } from '../errors/reporter.ts'
 import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
-import { holdTimers } from '../lib/holdTimers.ts'
+import { clickNow, holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { afterRendering, renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { stubLiveServer } from './liveServerStub.ts'
@@ -95,8 +95,13 @@ async function tapChat(title: string) {
 
 /** The Copy button of the sample reply, in the chat that shows it. */
 async function replyCopy(name = 'Copy') {
+  await expect.element(page.getByText(reply).first()).toBeVisible()
+  return replyButton(name)
+}
+
+/** The reply's button named `name`, with no wait: a step that moves no held clock (lib/holdTimers.ts). */
+function replyButton(name: string) {
   const text = page.getByText(reply).first()
-  await expect.element(text).toBeVisible()
   // The reply's message: the nearest box around its text that holds a button, its Copy.
   let entry: Element | null = text.element()
   while (entry !== null && entry.querySelector('button') === null) entry = entry.parentElement
@@ -125,17 +130,27 @@ describe("a sample reply's Copy on the Workspaces home", () => {
       const copied = fakeClipboard()
       await openHome(layout.size[0], layout.size[1])
       await layout.open()
-      const button = await replyCopy()
-      // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+      const button = (await replyCopy()).element()
+      // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts). Until the test moves that clock, no
+      // step is a Vitest action or poll, which would move it too: the press is a DOM click and each wait counts
+      // rendering steps (lib/rendering.ts).
       const release = holdTimers()
-      await button.click()
-      await expect.poll(() => copied).toEqual([reply])
-      await expect.element(await replyCopy('Copied')).toBeVisible()
+      clickNow(button)
+      await renderedUntil(() => copied.length > 0)
+      expect(copied).toEqual([reply])
+      await renderedUntil(() => replyButton('Copied').query() !== null)
+      expect(replyButton('Copied').element()).toBeVisible()
       // The polite live region beside the button says it too.
-      await expect.poll(liveText).toContain('Copied')
-      // It reads Copy again 2 s after the press.
-      vi.advanceTimersByTime(2000)
-      await expect.element(await replyCopy('Copy')).toBeVisible()
+      await renderedUntil(() => liveText().includes('Copied'))
+      // The label's 2 s starts in an effect after the render that shows it: wait for that timer before the clock moves.
+      await renderedUntil(() => vi.getTimerCount() > 0)
+      // It reads Copy again 2 s after the press, and not before.
+      vi.advanceTimersByTime(1999)
+      await afterRendering()
+      expect(replyButton('Copied').query()).not.toBeNull()
+      vi.advanceTimersByTime(1)
+      await renderedUntil(() => replyButton('Copy').query() !== null)
+      expect(replyButton('Copy').element()).toBeVisible()
       release()
       expect(getReports()).toEqual([])
     })
@@ -146,11 +161,14 @@ describe("a sample reply's Copy on the Workspaces home", () => {
       rejectingClipboard(broken)
       await openHome(layout.size[0], layout.size[1])
       await layout.open()
+      const button = (await replyCopy()).element()
+      // "Copy failed" waits for the test's clock, as "Copied" does above.
       const release = holdTimers()
-      await (await replyCopy()).click()
-      await expect.element(await replyCopy('Copy failed')).toBeVisible()
+      clickNow(button)
+      await renderedUntil(() => replyButton('Copy failed').query() !== null)
+      expect(replyButton('Copy failed').element()).toBeVisible()
       // The polite live region beside the button says it too.
-      await expect.poll(liveText).toContain('Copy failed')
+      await renderedUntil(() => liveText().includes('Copy failed'))
       release()
       expect(getReports().map((r) => r.error)).toEqual([broken])
       // Neither the report nor the ErrorTray holds the reply's text.
@@ -182,9 +200,12 @@ describe("a sample reply's Copy on the Workspaces home", () => {
     })
     await openHome(390, 844)
     await tapChat('bridge themes')
+    const button = (await replyCopy()).element()
+    // "Copy failed" waits for the test's clock, as "Copied" does above.
     const release = holdTimers()
-    await (await replyCopy()).click()
-    await expect.element(await replyCopy('Copy failed')).toBeVisible()
+    clickNow(button)
+    await renderedUntil(() => replyButton('Copy failed').query() !== null)
+    expect(replyButton('Copy failed').element()).toBeVisible()
     release()
     expect(getReports()).toEqual([])
   })

@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
-import { holdTimers } from '../lib/holdTimers.ts'
-import { afterRendering } from '../lib/rendering.ts'
+import { clickNow, holdTimers } from '../lib/holdTimers.ts'
+import { renderedUntil } from '../lib/rendering.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, showState, dialog, searchbox, box } from './inboxRouteHelpers.ts'
 import { stubLiveServer } from './liveServerStub.ts'
@@ -86,10 +86,8 @@ describe('the Inbox on the phone', () => {
     // rendering steps.
     const release = holdTimers()
     row('Pick the header logo').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
-    const workspaces = page.getByRole('button', { name: 'Workspaces', exact: true }).first().element()
-    if (!(workspaces instanceof HTMLElement)) throw new Error('no Workspaces button')
-    workspaces.click()
-    while (page.getByText('Pick the header logo', { exact: true }).query() !== null) await afterRendering()
+    clickNow(page.getByRole('button', { name: 'Workspaces', exact: true }).first().element())
+    await renderedUntil(() => page.getByText('Pick the header logo', { exact: true }).query() === null)
     // Past the hold: a timer the row left would open its sheet now.
     vi.advanceTimersByTime(700)
     release()

@@ -26,6 +26,15 @@ export function afterRendering(): Promise<void> {
   })
 }
 
+/**
+ * Waits, a rendering step at a time, until `check` returns true. It counts no clock, so it never moves the clock that
+ * `holdTimers()` holds, as a Vitest page action or a failed expect.poll try does; only the test's own time limit
+ * bounds it.
+ */
+export async function renderedUntil(check: () => boolean): Promise<void> {
+  while (!check()) await afterRendering()
+}
+
 /** Sets the test iframe's size, then waits until the page's size observers have seen it (`afterRendering`). */
 export async function setViewport(width: number, height: number): Promise<void> {
   await page.viewport(width, height)
