@@ -1176,9 +1176,12 @@ export function createHerdrAgents({
       let settle: ReturnType<typeof setTimeout> | undefined
       let lateSession: ReturnType<typeof setTimeout> | undefined
       let folderWatches: FSWatcher[] = []
+      /** The session folders that this stream watches now; a Claude chat in another folder is not cached. */
+      const watchedFolders = new Set<string>()
       const unwatchFolders = () => {
         for (const w of folderWatches) w.close()
         folderWatches = []
+        watchedFolders.clear()
       }
       /** Whether this subscription counts as an open stream for the place cache. */
       let counted = false
@@ -1278,6 +1281,9 @@ export function createHerdrAgents({
             if (age === placesAge) {
               const shared = sharedSessions(agents.value.agents)
               for (const a of agents.value.agents.filter(isChat)) {
+                // A /clear shows only through the session folder's watch: with none, the chat may have a new session.
+                const path = a.agent === 'claude' ? sessionPath(a) : undefined
+                if (a.agent === 'claude' && (path === undefined || !watchedFolders.has(dirname(path)))) continue
                 const id = chatIdOf(a, shared)
                 // A status that a stream's event gave after this read began is newer than the read's own.
                 const had = places.get(id)
@@ -1332,11 +1338,14 @@ export function createHerdrAgents({
               clearTimeout(lateSession)
               lateSession = setTimeout(reopen, lateSessionMs)
             })
-            // A folder that goes away ends its watch; the list stream still runs.
+            // A folder that goes away ends its watch; the list stream still runs, and no cached place trusts it.
             watcher.on('error', () => {
               watcher.close()
+              watchedFolders.delete(folder)
+              forgetPlaces()
             })
             folderWatches.push(watcher)
+            watchedFolders.add(folder)
           } catch (error) {
             // A folder that is not there yet gets a watch when the list is read again. The log keeps no path.
             const code = error instanceof Error && 'code' in error ? String(error.code) : 'unknown'

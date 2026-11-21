@@ -1768,6 +1768,30 @@ describe('herdr agents: the place of a chat while a list stream is open', () => 
     }
   })
 
+  it('caches no Claude chat whose session folder the stream cannot watch, so a /clear there is not missed', async () => {
+    const unwatched = {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) =>
+        a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle', cwd: '/home/dev/no-such-folder' } : a,
+      ),
+    }
+    socket.set('agent.list', unwatched)
+    const ours = port()
+    const stream = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await stream.ready
+      const before = listReads()
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      expect(listReads()).toBe(before + 1)
+    } finally {
+      stream.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+
   it('keeps a status that an event gave when a second stream reads an older list', async () => {
     const blocked = {
       ...results['agent.list'],
