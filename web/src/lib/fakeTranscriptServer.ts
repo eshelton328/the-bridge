@@ -21,7 +21,14 @@
 // #313: `gone` ends a chat's streams as the server does when the chat leaves
 // the list: one `error` event of kind `not-found`, checked against
 // `ErrorBody`, then the end.
+//
+// R28 part B: it takes `POST /api/chats/:chat/input/clear` with `{}`
+// (`ClearInputRequest`), which empties the chat's terminal input and answers
+// 204, or the test's answer (`answerClears`). A chat the test marks with
+// `dropSubmits` refuses each send with 409 chat-not-ready `notSubmitted`, as
+// the server does when Claude Code did not take the typed text.
 import {
+  ClearInputRequest,
   ErrorBody,
   maxTranscriptEntries,
   SendPromptRequest,
@@ -31,6 +38,8 @@ import {
   TranscriptResponse,
 } from '@bridge/contract'
 
+type Route = 'prompt' | 'stop' | 'clear'
+
 type Stream = { readonly chat: string; readonly control: ReadableStreamDefaultController<Uint8Array> }
 
 const notFound = (path: string) =>
@@ -39,10 +48,10 @@ const notFound = (path: string) =>
     headers: { 'content-type': 'application/json', 'X-Request-Id': 'r-404' },
   })
 
-/** An answer the test picks for a send or a stop: such as a 503, or one that waits until the test ends it. */
+/** An answer the test picks for a send, a stop or a clear: such as a 503, or one that waits until the test ends it. */
 type ActionAnswer = () => Response | Promise<Response>
 
-/** An error answer of a send or a stop, its body checked against the contract. */
+/** An error answer of a send, a stop or a clear, its body checked against the contract. */
 export function errorAnswer(error: ErrorBody['error'], status: number): Response {
   return new Response(JSON.stringify(ErrorBody.parse({ error })), {
     status,
@@ -81,31 +90,51 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
   const prompts: { chat: string; text: string }[] = []
   /** The chat of each stop the server took, in order. */
   const stops: string[] = []
-  /** Each send or stop the page posted, taken or not: its chat and route. */
-  const posts: { chat: string; route: 'prompt' | 'stop' }[] = []
-  /** The path of each send or stop as the page wrote it, before any decoding. */
+  /** The chat of each clear of the terminal input the server took, in order. */
+  const clears: string[] = []
+  /** Each send, stop or clear the page posted, taken or not: its chat and route. */
+  const posts: { chat: string; route: Route }[] = []
+  /** The path of each send, stop or clear as the page wrote it, before any decoding. */
   const paths: string[] = []
   let promptAnswer: ActionAnswer | undefined
   let stopAnswer: ActionAnswer | undefined
+  let clearAnswer: ActionAnswer | undefined
   /** The chats whose terminal input holds text now. */
   const typed = new Set<string>()
+  /** The chats that do not take a typed prompt now: each send answers 409 notSubmitted. */
+  const dropping = new Set<string>()
 
-  /** A send or a stop: the contract's checks, then the test's answer or 204. */
-  const act = (chat: string, route: 'prompt' | 'stop', init: RequestInit | undefined) => {
+  /** A send, a stop or a clear: the contract's checks, then the test's answer or 204. */
+  const act = (chat: string, route: Route, init: RequestInit | undefined) => {
     posts.push({ chat, route })
     const json = new Headers(init?.headers).get('content-type') === 'application/json'
     const body = readBody(init)
-    const parsed = route === 'prompt' ? SendPromptRequest.safeParse(body) : StopChatRequest.safeParse(body)
+    const parsed =
+      route === 'prompt'
+        ? SendPromptRequest.safeParse(body)
+        : route === 'stop'
+          ? StopChatRequest.safeParse(body)
+          : ClearInputRequest.safeParse(body)
     if (!json || !parsed.success)
       return errorAnswer(
         { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
         400,
       )
-    const answer = route === 'prompt' ? promptAnswer : stopAnswer
+    const answer = route === 'prompt' ? promptAnswer : route === 'stop' ? stopAnswer : clearAnswer
     if (answer !== undefined) return answer()
+    if (route === 'clear') {
+      typed.delete(chat)
+      clears.push(chat)
+      return new Response(null, { status: 204 })
+    }
     if (route === 'prompt' && typed.has(chat))
       return errorAnswer(
         { kind: 'chat-not-ready', state: 'inputNotEmpty', message: 'Input not empty', requestId: 'r-409' },
+        409,
+      )
+    if (route === 'prompt' && dropping.has(chat))
+      return errorAnswer(
+        { kind: 'chat-not-ready', state: 'notSubmitted', message: 'Not submitted', requestId: 'r-409' },
         409,
       )
     if (route === 'prompt') {
@@ -154,6 +183,7 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     opens,
     prompts,
     stops,
+    clears,
     posts,
     paths,
     /** Answers each send with `answer` until it is set to undefined; the send is not recorded in `prompts`. */
@@ -163,6 +193,15 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     /** Answers each stop with `answer` until it is set to undefined; the stop is not recorded in `stops`. */
     answerStops: (answer: ActionAnswer | undefined) => {
       stopAnswer = answer
+    },
+    /** Answers each clear with `answer` until it is set to undefined; the clear is not recorded in `clears`. */
+    answerClears: (answer: ActionAnswer | undefined) => {
+      clearAnswer = answer
+    },
+    /** `true`: each send to `chat` answers 409 notSubmitted, as when Claude Code did not take it; `false`: sends go through. */
+    dropSubmits: (chat: string, drop: boolean) => {
+      if (drop) dropping.add(chat)
+      else dropping.delete(chat)
     },
     /** Puts text in the terminal input of `chat`, as a stopped prompt does: each send then answers 409 inputNotEmpty. */
     typeInTerminal: (chat: string) => {
@@ -242,12 +281,13 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
     answerStreams: (answer: (() => Response) | undefined) => {
       streamAnswer = answer
     },
-    /** The answer to a request for `path`, or undefined when it is not a transcript, send or stop route. */
+    /** The answer to a request for `path`, or undefined when it is not a transcript, send, stop or clear route. */
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
-      const action = /^\/api\/chats\/([^/]+)\/(prompt|stop)$/.exec(path)
+      const action = /^\/api\/chats\/([^/]+)\/(prompt|stop|input\/clear)$/.exec(path)
       if (action !== null && init?.method === 'POST') {
         paths.push(path)
-        return act(decodeURIComponent(action[1] ?? ''), action[2] === 'stop' ? 'stop' : 'prompt', init)
+        const route: Route = action[2] === 'stop' ? 'stop' : action[2] === 'prompt' ? 'prompt' : 'clear'
+        return act(decodeURIComponent(action[1] ?? ''), route, init)
       }
       const route = /^\/api\/chats\/([^/]+)\/transcript(\/events)?$/.exec(path)
       if (!route) return undefined
