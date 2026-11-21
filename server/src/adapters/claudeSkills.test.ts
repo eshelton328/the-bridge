@@ -44,6 +44,53 @@ describe('Claude skills', () => {
     expect(JSON.stringify(skills)).not.toContain('marker-5150')
   })
 
+  it('lists the skills and commands of each plugin that is on and installed for the chat, by "<plugin>:<name>"', async () => {
+    const home = join(root, 'plug')
+    const claude = join(home, '.claude')
+    const repo = join(home, 'repo')
+    put('plug/repo/.git/HEAD', 'ref: refs/heads/main')
+    const cache = (plugin: string) => join(claude, 'plugins', 'cache', 'market', plugin, '1.0.0')
+    put('plug/.claude/plugins/cache/market/tools/1.0.0/skills/audit/SKILL.md', skill('audit', 'Audits the repo'))
+    put('plug/.claude/plugins/cache/market/tools/1.0.0/commands/review.md', '---\ndescription: Review it\n---\nbody')
+    put('plug/.claude/plugins/cache/market/local/1.0.0/skills/here/SKILL.md', skill('here', 'Only in the repo'))
+    put('plug/.claude/plugins/cache/market/off/1.0.0/skills/never/SKILL.md', skill('never', 'Turned off'))
+    put('plug/.claude/plugins/cache/market/other/1.0.0/skills/elsewhere/SKILL.md', skill('elsewhere', 'Another repo'))
+    put(
+      'plug/.claude/plugins/installed_plugins.json',
+      JSON.stringify({
+        version: 2,
+        plugins: {
+          'tools@market': [{ scope: 'user', installPath: cache('tools') }],
+          'local@market': [{ scope: 'local', projectPath: repo, installPath: cache('local') }],
+          'off@market': [{ scope: 'user', installPath: cache('off') }],
+          'other@market': [{ scope: 'project', projectPath: join(home, 'other'), installPath: cache('other') }],
+        },
+      }),
+    )
+    put(
+      'plug/.claude/settings.json',
+      JSON.stringify({ enabledPlugins: { 'tools@market': true, 'off@market': true, 'other@market': true } }),
+    )
+    // The repository's local settings come last, so they turn "off" off again and "local" on.
+    put(
+      'plug/repo/.claude/settings.local.json',
+      JSON.stringify({ enabledPlugins: { 'off@market': false, 'local@market': true } }),
+    )
+    const skills = await readClaudeSkills(repo, claude, home)
+    expect(skills.filter((s) => s.source === 'plugin')).toEqual([
+      { name: 'local:here', description: 'Only in the repo', source: 'plugin' },
+      { name: 'tools:audit', description: 'Audits the repo', source: 'plugin' },
+      { name: 'tools:review', description: 'Review it', source: 'plugin' },
+    ])
+    // With no folder, only the owner's settings and user installs count.
+    const solo = await readClaudeSkills(undefined, claude, home)
+    expect(solo.filter((s) => s.source === 'plugin').map((s) => s.name)).toEqual([
+      'off:never',
+      'tools:audit',
+      'tools:review',
+    ])
+  })
+
   it("gives at most the contract's number of entries", async () => {
     for (let n = 0; n < 510; n += 1) put(`many/.claude/skills/s${String(n)}/SKILL.md`, skill(`s${String(n)}`, 'One'))
     const skills = await readClaudeSkills(undefined, join(root, 'many', '.claude'), join(root, 'many'))

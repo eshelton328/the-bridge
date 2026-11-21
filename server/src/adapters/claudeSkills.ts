@@ -4,6 +4,7 @@
 import { readdir, stat, open } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { ChatSkill, maxSkills, type SkillSource } from '@bridge/contract'
+import { readPluginFolders } from './claudePlugins.ts'
 
 /** The commands that the page sends itself; each one goes through `POST /api/chats/:chat/command` or the chat bar. */
 export const builtinCommands: readonly ChatSkill[] = [
@@ -152,16 +153,21 @@ async function upToRoot(cwd: string, home: string): Promise<string[]> {
 }
 
 /**
- * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name, at most
- * `maxSkills` in all. A name that comes twice keeps the one Claude Code runs: the owner's before the chat's folders.
+ * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name, with those of
+ * each plugin that it loads, at most `maxSkills` in all. A name that comes twice keeps the one Claude Code runs: the
+ * owner's before the chat's folders.
  */
 export async function readClaudeSkills(cwd: string | undefined, claudeDir: string, home: string): Promise<ChatSkill[]> {
   const local = cwd === undefined ? [] : await upToRoot(cwd, home)
+  const plugins = await readPluginFolders(claudeDir, local)
   const groups = await Promise.all([
     skillsIn(join(claudeDir, 'skills'), 'user'),
     commandsIn(join(claudeDir, 'commands'), 'user'),
     ...local.map((folder) => skillsIn(join(folder, '.claude', 'skills'), 'project')),
     ...local.map((folder) => commandsIn(join(folder, '.claude', 'commands'), 'project')),
+    // A plugin's skills and commands go by "<plugin>:<name>".
+    ...plugins.map(({ name, path }) => skillsIn(join(path, 'skills'), 'plugin', `${name}:`)),
+    ...plugins.map(({ name, path }) => commandsIn(join(path, 'commands'), 'plugin', `${name}:`)),
   ])
   const seen = new Set(builtinCommands.map((c) => c.name))
   const skills = groups.flat().filter((s) => !seen.has(s.name) && seen.add(s.name))
