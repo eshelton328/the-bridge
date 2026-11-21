@@ -1571,6 +1571,7 @@ export function createHerdrAgents({
         ready,
         close: () => {
           over = true
+          listTellers.delete(tellList)
           uncount()
           listening()
           clearTimeout(settle)

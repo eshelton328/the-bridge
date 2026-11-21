@@ -455,6 +455,11 @@ describe('herdr agents: input to a chat', () => {
         // The next turn writes the session file; from then on the file names the effort.
         appendFileSync(join(projects, '-home-dev-ncc-1701', 'session-a.jsonl'), 'not json\n')
         expect(await effortIn()).toBe(before)
+        // A closed stream is told nothing, and its adapter keeps no hold on it.
+        watch.close()
+        events.length = 0
+        expect(await agents.setEffort(chat, 'xhigh')).toEqual({ ok: true, value: 'set' })
+        expect(events).toEqual([])
       } finally {
         watch.close()
         socket.onRequest(undefined)
