@@ -49,8 +49,6 @@ export type PhoneWorkspaceListProps = {
   device?: 'phone' | 'tablet' | undefined
   text: PhoneText
   workspaces: readonly Workspace[]
-  /** The chat drawn selected: the one shown last. */
-  selected: string
   /** The chats with a pane to show; the other rows cannot be selected. */
   openable: readonly string[]
   ui: WorkspacesUi
@@ -94,7 +92,6 @@ export function PhoneWorkspaceList({
   device = 'phone',
   text,
   workspaces,
-  selected,
   openable,
   ui,
   onUiChange,
@@ -215,7 +212,6 @@ export function PhoneWorkspaceList({
             open={!collapsed.includes(w.id)}
             onOpenChange={(open) => setOpen(w.id, open)}
             hovered={false}
-            selected={selected}
             openable={openable}
             layers={layers}
             grip={false}

@@ -27,11 +27,21 @@ shorter, below Figma's status bar (d-102), and the position check adds
 
 ## Deviations
 
+- **No row is drawn selected (review R38).** Figma draws bridge themes
+  with the selected fill and border. Erik (review R38, 2026-11-21): "On
+  tablet and mobile this shouldn't stay highlighted (selected )". The
+  phone and tablet list shows no chat beside it, so after a return from a
+  chat the row kept a selected state that marked nothing. The list now
+  passes no selected chat to `SidebarGroup`, so every row draws
+  unselected; the desktop sidebar keeps the shown chat selected
+  (`web/src/app/WorkspacesNoKeptSelect.test.tsx`). The fill has no
+  `data-figma` and no text, so no check measures it.
+
 - **No tap ring over bridge themes.** Figma draws a grey ring, 48 px
   across, over the start of bridge themes' name (`tap`, 402:10747). It
   marks where the finger lands, for the reader of the frame, as the
   note says what the tap does. The app draws no touch marker, so the
-  render shows the row as M1 does: selected, with no ring. The ring has
+  render shows the row as M1 does: unselected (R38), with no ring. The ring has
   no `data-figma` and no text, so no check measures it.
 - **Lower workspaces start higher (Sidebar group header), `402:10630`,
   `402:10644`, `402:10649`, `402:10660`, `402:10665`, `402:10675`,

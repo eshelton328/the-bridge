@@ -73,8 +73,11 @@ export type SidebarGroupProps = {
   onOpenChange?: ((open: boolean) => void) | undefined
   /** The pointer rests on the header. */
   hovered: boolean
-  /** The chat in the middle of the screen. */
-  selected: string
+  /**
+   * The chat in the middle of the screen, drawn selected. The phone and the tablet list leave it unset: their list shows
+   * no chat beside it, so no row keeps a selected state after a return from a chat (R38).
+   */
+  selected?: string | undefined
   /** The chats with a pane to show; the other rows cannot be selected. */
   openable: readonly string[]
   onSelect?: ((chat: string) => void) | undefined
@@ -177,7 +180,7 @@ export function SidebarGroup(props: SidebarGroupProps) {
               key={chat.id}
               chat={chat}
               figma={(layers?.rows ?? rowLayers)[chat.id]}
-              selected={chat.id === selected}
+              selected={selected !== undefined && chat.id === selected}
               moving={chat.id === moving}
               onSelect={openable.includes(chat.id) ? () => onSelect?.(chat.id) : undefined}
               menu={rowMenu?.(chat)}
