@@ -885,9 +885,13 @@ export function createHerdrAgents({
       }
 
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
+      /** The number of the newest open; an older one that ends its reads later opens nothing. */
+      let opens = 0
       const open = async (changed: boolean) => {
+        opens += 1
+        const mine = opens
         const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
-        if (over) return
+        if (over || mine !== opens) return
         if (!agents.ok) {
           end(agents.error)
           return

@@ -997,6 +997,33 @@ describe('herdr agents: subscribe', () => {
     subscription.close()
   })
 
+  it('keeps one stream when a slow list read ends after a newer one', async () => {
+    const listeners = new Map<string, (event: string, name: string | null) => void>()
+    const agents = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      watch: (path, listener) => {
+        listeners.set(path, listener)
+        return watch(path, () => undefined)
+      },
+    })
+    const { subscription } = collect(agents)
+    await subscription.ready
+    await wait(250)
+    // A new session file reads the list at once and again 1.5 s later. The first read waits 2 s, so the
+    // late read starts after it and ends first.
+    socket.delayOnce('agent.list', 2000)
+    listeners.get(join(projects, '-home-dev-ncc-1701'))?.('rename', 'session-new.jsonl')
+    await wait(2600)
+    expect(socket.streams()).toHaveLength(1)
+    subscription.close()
+    await wait(50)
+    expect(socket.streams()).toEqual([])
+  })
+
   it('tells the app to read the list once the first stream starts', async () => {
     const { events, subscription } = collect()
     await subscription.ready
