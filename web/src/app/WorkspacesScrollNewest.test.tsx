@@ -295,6 +295,36 @@ describe('the button to the newest message', () => {
     expect(Math.abs(box.left + box.width / 2 - (frame.left + frame.width / 2))).toBeLessThanOrEqual(1)
   })
 
+  // The pending bubble of a sent message (PendingEntry, #348) is part of the transcript's end: sent while the reader is
+  // away it dots the button, and a tap brings it into view at the end.
+  it('counts a pending sent message as part of the end, on the phone', async () => {
+    stubLongChats(count)
+    view = await openWorkspaces([390, 844])
+    const { root, scroller } = await devices[0].open()
+    await expectAtEnd(scroller)
+    await scrollTo(scroller, 0)
+    await expect.poll(() => buttonIn(root)).not.toBeNull()
+    expect(buttonIn(root)?.hasAttribute('data-unseen')).toBe(false)
+    const field = boxIn(root)
+    await userEvent.click(field)
+    await userEvent.keyboard('A message sent while far up')
+    await userEvent.click(
+      page.getByRole('region', { name: 'plan the slice' }).getByRole('button', { name: 'Send', exact: true }),
+    )
+    await expect.poll(() => root.querySelectorAll('[data-pending-send]').length).toBe(1)
+    await expect.poll(() => buttonIn(root)?.hasAttribute('data-unseen')).toBe(true)
+    const button = buttonIn(root)
+    if (!(button instanceof HTMLElement)) throw new Error('no button')
+    await userEvent.click(button)
+    await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+    await expect.poll(() => buttonIn(root)).toBeNull()
+    const bubble = root.querySelector('[data-pending-send]')?.getBoundingClientRect()
+    const frame = scroller.getBoundingClientRect()
+    if (bubble === undefined) throw new Error('no pending bubble')
+    expect(bubble.top).toBeGreaterThanOrEqual(frame.top)
+    expect(bubble.bottom).toBeLessThanOrEqual(frame.bottom)
+  })
+
   // The Simulator showed the keyboard closing on a tap of the button: AppShell blurs the field on a touch press outside
   // a field and outside `[data-keyboard-keep]` while the keyboard is up (library beta.68, KeyboardKeep.test.tsx).
   it('keeps the message box focused on a touch tap with the keyboard up, on the phone', async () => {
