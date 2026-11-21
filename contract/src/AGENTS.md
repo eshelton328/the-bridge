@@ -28,7 +28,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A prompt request holds only its text and at most `maxAttachments`
   upload IDs (a strict object, never a path), and a stop request and an
   input clear request are empty objects; the text may be empty only with
-  a file, and goes to the chat and nowhere else (`prompts.test.ts`).
+  a file, and goes to the chat and nowhere else. A command request is
+  `compact` with at most one line of instructions, or `clear`; the
+  instructions go to the chat as a prompt's text does (`prompts.test.ts`).
 - An upload request holds the file's name, size and type only (a strict
   object), never a path; the file goes up in chunks of the size the
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name

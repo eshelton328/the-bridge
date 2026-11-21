@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { maxAttachments, maxPromptChars, SendPromptRequest, StopChatRequest } from './prompts.ts'
+import {
+  ChatCommandRequest,
+  maxAttachments,
+  maxCompactChars,
+  maxPromptChars,
+  SendPromptRequest,
+  StopChatRequest,
+} from './prompts.ts'
 
 const upload = 'AAAAAAAAAAAAAAAAAAAAAA'
 
@@ -43,5 +50,27 @@ describe('StopChatRequest', () => {
   it('takes only an empty object', () => {
     expect(StopChatRequest.safeParse({}).success).toBe(true)
     expect(StopChatRequest.safeParse({ text: 'Stop.' }).success).toBe(false)
+  })
+})
+
+describe('command requests', () => {
+  it('reads a /compact with or without one line of instructions, up to the limit, and a /clear', () => {
+    expect(ChatCommandRequest.parse({ command: 'compact' })).toEqual({ command: 'compact' })
+    const most = { command: 'compact', instructions: 'x'.repeat(maxCompactChars) }
+    expect(ChatCommandRequest.parse(most)).toEqual(most)
+    expect(ChatCommandRequest.parse({ command: 'clear' })).toEqual({ command: 'clear' })
+  })
+
+  it('refuses another command, instructions of two lines or over the limit, and other fields', () => {
+    for (const body of [
+      { command: 'model', model: 'opus' },
+      { command: 'compact', instructions: 'one\ntwo' },
+      { command: 'compact', instructions: 'one\rtwo' },
+      { command: 'compact', instructions: 'x'.repeat(maxCompactChars + 1) },
+      { command: 'clear', instructions: 'keep it' },
+      { command: 'clear', chat: 'mac-mini/other' },
+      {},
+    ])
+      expect(ChatCommandRequest.safeParse(body).success).toBe(false)
   })
 })

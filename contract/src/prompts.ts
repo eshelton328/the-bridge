@@ -6,7 +6,9 @@
 // chat only, never into a log line or an error body (d-115). A prompt to
 // a Claude chat can carry the IDs of complete uploads (slice W1b,
 // uploads.ts); the server adds each file's path below the text, and the
-// chat reads the file with its own tools.
+// chat reads the file with its own tools. `POST /api/chats/:chat/command`
+// sends one Claude Code command to a Claude chat (slice W5): `/compact`,
+// with the owner's instructions if any, or `/clear`.
 import { z } from 'zod'
 import { UploadId } from './ids.ts'
 
@@ -43,3 +45,26 @@ export type StopChatRequest = z.infer<typeof StopChatRequest>
  */
 export const ClearInputRequest = z.strictObject({})
 export type ClearInputRequest = z.infer<typeof ClearInputRequest>
+
+/** The most characters in the instructions of a `/compact`. */
+export const maxCompactChars = 1000
+
+/**
+ * The body of `POST /api/chats/:chat/command`: `compact` summarises the chat's context, with the owner's
+ * instructions for the summary if any (one line); `clear` starts the chat over in a new session, so its context is
+ * lost and the chat gets a new chat ID on the same pane, and the page asks the owner first. A chat that works is 409
+ * `chat-not-ready` `working`, a Codex chat `noCommands`. The instructions go to the chat only, never into a log
+ * line or an error body, as a prompt's text.
+ */
+export const ChatCommandRequest = z.discriminatedUnion('command', [
+  z.strictObject({
+    command: z.literal('compact'),
+    instructions: z
+      .string()
+      .max(maxCompactChars)
+      .regex(/^[^\r\n]*$/, 'the instructions are one line')
+      .optional(),
+  }),
+  z.strictObject({ command: z.literal('clear') }),
+])
+export type ChatCommandRequest = z.infer<typeof ChatCommandRequest>

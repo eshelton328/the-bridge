@@ -45,6 +45,13 @@ Thin Hono sub-apps, one file for each area, named after the area
   when text stays, `noCommands` for a Codex chat. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the
   field and the rule (`chats.test.ts`).
+- `POST /api/chats/:chat/command` (slice W5) takes `{ command:
+  'compact', instructions? }` (one line) or `{ command: 'clear' }` as
+  JSON and types `/compact` or `/clear` into an idle Claude chat: 204,
+  or 409 `working` while the chat works, `noCommands` for a Codex
+  chat, and the prompt's answers otherwise. After `/clear` the chat has
+  a new chat ID on the same pane. The instructions go only to the port,
+  as a prompt's text (`chats.test.ts`).
 - `POST /api/chats/:chat/uploads` starts the upload of a file (slice
   W1b): 201 with the upload ID and the chunk size; a shell is 409
   `shell`, a Codex chat 409 `noAttachments`, a file over 1 GiB 413

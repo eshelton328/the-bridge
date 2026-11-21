@@ -1,6 +1,6 @@
 // API tests of GET /api/chats/:chat/transcript/events (d-113): the app in
 // process with the fake adapter, the SSE body read as it streams.
-import { ChatId, ErrorBody, MachineId, maxPromptChars, TranscriptChangedEvent } from '@bridge/contract'
+import { ChatId, ErrorBody, MachineId, maxCompactChars, maxPromptChars, TranscriptChangedEvent } from '@bridge/contract'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -127,6 +127,77 @@ describe('GET /api/chats/:chat/transcript/events', () => {
     })
     expect(res.status).toBe(403)
     expect(agents.watchers()).toBe(0)
+  })
+})
+
+describe('POST /api/chats/:chat/command', () => {
+  const commandPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/command`
+  const json = { ...local, 'Content-Type': 'application/json' }
+  const setup = () => {
+    const agents = createFakeAgents(machine)
+    const logger = memoryLogger()
+    const app = createApp({ agents, owner, log: logger.log })
+    const post = (id: string, body: unknown, raw?: string) =>
+      app.request(commandPath(id), { method: 'POST', headers: json, body: raw ?? JSON.stringify(body) })
+    return { agents, logger, post }
+  }
+  const stateOf = async (res: Response) => {
+    const { error } = ErrorBody.parse(await res.json())
+    return error.kind === 'chat-not-ready' ? error.state : error.kind
+  }
+
+  it('sends /compact with its instructions and /clear to an idle Claude chat with 204, and logs no instructions', async () => {
+    const { agents, logger, post } = setup()
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    const instructions = 'keep the plan, token marker-5150'
+    expect((await post(themes, { command: 'compact', instructions })).status).toBe(204)
+    expect((await post(themes, { command: 'clear' })).status).toBe(204)
+    expect(agents.inputs()).toEqual([
+      { chat: themes, command: { command: 'compact', instructions } },
+      { chat: themes, command: { command: 'clear' } },
+    ])
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+    // The fake, as herdr, gives the pane a new session after /clear: a new chat ID with the same pane.
+    const list = await agents.listWorkspaces()
+    const chats = list.ok ? list.value.flatMap((w) => w.chats) : []
+    expect(chats.map((c) => c.id)).not.toContain(themes)
+    expect(chats.find((c) => c.pane === 'test-mac/pane-bridge-themes')?.id).toBe(`${themes}-c1`)
+  })
+
+  it('answers 409 working to a chat that works, noCommands to a Codex chat, shell, and 404 for no chat', async () => {
+    const { agents, post } = setup()
+    expect(await stateOf(await post(themes, { command: 'clear' }))).toBe('working')
+    expect(await stateOf(await post('test-mac/drift-check', { command: 'clear' }))).toBe('noCommands')
+    expect(await stateOf(await post('test-mac/brain-git', { command: 'compact' }))).toBe('shell')
+    const none = await post('test-mac/no-such-chat', { command: 'clear' })
+    expect(none.status).toBe(404)
+    expect(agents.inputs()).toEqual([])
+  })
+
+  it('answers 400 to another command, an extra field, instructions of two lines or over the limit, with no text', async () => {
+    const { agents, post } = setup()
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    for (const body of [
+      { command: 'model', model: 'opus' },
+      { command: 'clear', instructions: 'marker-5150' },
+      { command: 'compact', instructions: 'line one\nmarker-5150' },
+      { command: 'compact', instructions: 'x'.repeat(maxCompactChars + 1) },
+      {},
+    ]) {
+      const res = await post(themes, body)
+      expect(res.status).toBe(400)
+      expect(await res.text()).not.toContain('marker-5150')
+    }
+    expect(agents.inputs()).toEqual([])
+  })
+
+  it('takes the longest instructions when JSON writes each character as an escape', async () => {
+    const { agents, post } = setup()
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    const instructions = 'é'.repeat(maxCompactChars)
+    const escaped = JSON.stringify({ command: 'compact', instructions }).replaceAll('é', '\\u00e9')
+    expect((await post(themes, undefined, escaped)).status).toBe(204)
+    expect(agents.inputs()).toEqual([{ chat: themes, command: { command: 'compact', instructions } }])
   })
 })
 
