@@ -670,6 +670,10 @@ export function fakeWorkspacesServer(
     answerEffort: (answer: (() => Response) | undefined) => {
       effortAnswer = answer
     },
+    /** Puts `next` in the list in place of `chat`, as herdr lists another occupant of its pane (W10: a shell). */
+    putOnPane: (chat: string, next: ChatSummary) => {
+      update((c) => (c.id === chat ? next : c))
+    },
     /** Lists `model` for `chat`, as the server does once a restart started the new chat (W10), and tells the streams. */
     setModel: (chat: string, model: ModelAlias) => {
       update((c) => (c.id === chat ? { ...c, model, modelId: model } : c))

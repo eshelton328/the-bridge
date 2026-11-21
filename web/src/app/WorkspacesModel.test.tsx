@@ -1,6 +1,7 @@
 import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
+import { ChatSummary } from '@bridge/contract'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -61,11 +62,13 @@ function withChats(hold?: Promise<void>) {
   chats.set(plan, [])
   const workspaces = fakeWorkspacesServer(chats, list)
   const prompts: string[] = []
+  let reads = 0
   vi.stubGlobal(
     'fetch',
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (path === '/api/workspaces') reads += 1
       if (path.endsWith('/prompt') || path.endsWith('/command'))
         prompts.push(typeof init?.body === 'string' ? init.body : 'a body')
       if (hold !== undefined && path.endsWith('/model'))
@@ -75,7 +78,7 @@ function withChats(hold?: Promise<void>) {
       return Promise.reject(new TypeError(`no stub for ${url}`))
     }),
   )
-  return { list: workspaces, transcripts: chats, prompts }
+  return { list: workspaces, transcripts: chats, prompts, reads: () => reads }
 }
 
 /** A gate the test opens: the held restarts answer once `release` runs. */
@@ -399,6 +402,41 @@ describe("a live chat's model picker (W10)", () => {
     await expect.poll(() => fakes.transcripts.openStreams()).toContain(plan)
     fakes.transcripts.push(plan, [{ type: 'assistant', id: 'a-after', text: 'a reply after the restart', cut: false }])
     await expect.element(page.getByText('a reply after the restart')).toBeVisible()
+  })
+
+  it('keeps the chat and its files on their pane while the list shows a shell there', async () => {
+    const { hold, release } = gate()
+    const fakes = withChats(hold)
+    vi.stubGlobal('XMLHttpRequest', fakes.transcripts.uploads.XMLHttpRequest)
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    const input = document.querySelector('input[type="file"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('no file input')
+    await userEvent.upload(input, [new File(['abcdefghij'], 'notes.pdf', { type: 'application/pdf' })])
+    await expect.poll(() => fakes.transcripts.uploads.complete()).toHaveLength(1)
+    await pickModel('Opus 5.5 · medium effort', 'Sonnet')
+    await userEvent.click(restart())
+    await expect.element(chip('Restarting…')).toBeVisible()
+    // The old chat has ended: for a moment herdr lists the pane's shell in its place.
+    const listed = fakes.list.chats().find((c) => c.id === plan)
+    if (listed === undefined) throw new Error('no chat')
+    const shell = ChatSummary.parse({
+      ...listed,
+      id: 'mac-mini/c9',
+      kind: 'shell',
+      title: 'zsh',
+      model: 'zsh',
+      modelId: null,
+      effort: null,
+    })
+    const before = fakes.reads()
+    fakes.list.putOnPane(plan, shell)
+    await expect.poll(() => fakes.reads()).toBeGreaterThan(before)
+    fakes.list.putOnPane(shell.id, listed)
+    release()
+    await expect.element(chip('Sonnet · medium effort')).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Remove notes.pdf' })).toBeVisible()
+    expect(fakes.transcripts.uploads.calls.filter((c) => c.method === 'DELETE')).toEqual([])
   })
 
   it('gives a Codex chat no picker', async () => {

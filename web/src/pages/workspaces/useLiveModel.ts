@@ -13,17 +13,23 @@
 // old chat ended and its pane shows a shell from the next list on. Any other
 // miss is a line beside the chip until its menu opens again.
 import type { ModelAlias } from '@bridge/contract'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import type { ModelControl } from './blocks/EffortPicker.tsx'
 import { modelFamilies } from './blocks/modelFamilies.ts'
 import type { ModelAnswer } from './liveModel.ts'
+import { chatPanesOf } from './paneFollow.ts'
 import { modelLines } from './modelLines.ts'
 import type { WorkspacesData } from './types.ts'
 
-/** A chat's restart: while it runs (`waitFor` is the list of a `starting` answer), its line and the model it set. */
+/**
+ * A chat's restart: while it runs (`waitFor` is the list of a `starting` answer), its line and the model it set. `held`
+ * is the chat's pane after an answer that left it running, until a list read lists the chat again: a list read
+ * meanwhile may still show the shell of the restart on that pane.
+ */
 type ChatModel = {
-  readonly restarting?: { readonly waitFor?: WorkspacesData } | undefined
+  readonly restarting?: { readonly pane?: string | undefined; readonly waitFor?: WorkspacesData } | undefined
+  readonly held?: string | undefined
   readonly said?: string | undefined
   readonly set?: { readonly model: ModelAlias; readonly list: WorkspacesData } | undefined
 }
@@ -46,7 +52,13 @@ function endOf(data: WorkspacesData, chat: string): { said: string | undefined }
 /** The chats whose `starting` restart the list `data` ends: idle, done or needing the owner, or gone. */
 function settled(chats: ReadonlyMap<string, ChatModel>, data: WorkspacesData): ReadonlyMap<string, ChatModel> {
   let next: Map<string, ChatModel> | undefined
+  const listed = chatPanesOf(data)
   for (const [chat, entry] of chats) {
+    if (entry.held !== undefined && listed.has(chat)) {
+      next ??= new Map(chats)
+      next.set(chat, { ...entry, held: undefined })
+      continue
+    }
     const waitFor = entry.restarting?.waitFor
     if (waitFor === undefined || waitFor === data) continue
     const end = endOf(data, chat)
@@ -80,6 +92,25 @@ export function withRestarting(data: WorkspacesData, restarting: (chat: string) 
 }
 
 /**
+ * The chat panes to follow (`paneFollow.ts`) with each chat whose restart runs kept on its pane (`restarting`, chat to
+ * pane): while the old chat has ended, the list may show another chat (a shell) on that pane, and following it would
+ * move the open view and drop the chat's files before the same chat comes back.
+ */
+export function keptOnPane(
+  now: ReadonlyMap<string, string>,
+  restarting: ReadonlyMap<string, string>,
+): ReadonlyMap<string, string> {
+  let kept: Map<string, string> | undefined
+  for (const [chat, pane] of restarting) {
+    if (now.get(chat) === pane) continue
+    kept ??= new Map(now)
+    for (const [other, at] of kept) if (at === pane) kept.delete(other)
+    kept.set(chat, pane)
+  }
+  return kept ?? now
+}
+
+/**
  * The model control of each live Claude chat: `of(chat, liveChat, listed)` for the pane `chat`, whose server ID is
  * `liveChat` and whose list gives the family `listed`. `data` is the loaded list. `onRestarted` gets the server ID of
  * each chat that restarted, so the page reads its transcript again.
@@ -109,8 +140,9 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
     (chat: string, liveChat: string, model: ModelAlias) => {
       if (inFlightRef.current.has(chat)) return
       inFlightRef.current.add(chat)
-      change(chat, { restarting: {} })
       const before = dataRef.current
+      const pane = chatPanesOf(before).get(chat)
+      change(chat, { restarting: { pane } })
       void import('./liveModel.ts')
         .then(
           (m) => m.restartModel(liveChat, model),
@@ -122,6 +154,8 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
         .then((answer) => {
           inFlightRef.current.delete(chat)
           const list = dataRef.current
+          // The pane stays the chat's until a list read lists the chat again, unless this one does already.
+          const held = chatPanesOf(list).has(chat) ? undefined : pane
           switch (answer.kind) {
             case 'restarted': {
               // The chat's transcript stream may have ended while the chat was gone from the list: read it again.
@@ -132,7 +166,7 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
               const said = answer.state === 'needsYou' ? modelLines.needsYou : shown?.said
               change(chat, {
                 set: { model, list },
-                ...(waits ? { restarting: { waitFor: list } } : {}),
+                ...(waits ? { restarting: { pane, waitFor: list } } : { held }),
                 ...(said === undefined ? {} : { said }),
               })
               return
@@ -142,15 +176,24 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
               setFailed(answer.session)
               return
             case 'same':
-              change(chat, {})
+              change(chat, { held })
               return
             case 'miss':
-              change(chat, { said: answer.line })
+              change(chat, { said: answer.line, held })
           }
         })
     },
     [change],
   )
+  // Each chat whose restart runs, with the pane it had when the restart began.
+  const restarting = useMemo(() => {
+    const panes = new Map<string, string>()
+    for (const [chat, entry] of shown) {
+      const pane = entry.restarting?.pane ?? entry.held
+      if (pane !== undefined) panes.set(chat, pane)
+    }
+    return panes
+  }, [shown])
   const isRestarting = (chat: string) => shown.get(chat)?.restarting !== undefined
   const of = (chat: string, liveChat: string | undefined, listed: ModelAlias | undefined): ModelControl | undefined => {
     if (!on || liveChat === undefined) return undefined
@@ -176,6 +219,8 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
   return {
     of,
     isRestarting,
+    /** Each chat whose restart runs or just ended, with its pane, for pane follow (`keptOnPane`). */
+    restarting,
     /** The session of a restart that ended the chat and started none, for the page's dialog. */
     failed,
     dismissFailed: () => {

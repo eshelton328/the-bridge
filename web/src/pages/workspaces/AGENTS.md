@@ -236,7 +236,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
     on the chip until the next list read; `needsYou` adds "The chat needs
     you on the Mac"; `starting` keeps "Restarting…" until a list read
     after `workspaces.changed` shows the chat idle, done or needing the
-    owner (no read loop). A 502 `failed` ended the chat (its pane is a
+    owner (no read loop), or at once when a list read during the
+    request lists the new family and that status. A restart that
+    answered reads the chat's transcript again, as its stream may have
+    ended while the chat was gone. Pane follow keeps the chat on its
+    pane while the restart runs and until a list read lists the chat
+    again, so a list that shows the pane's shell meanwhile moves no view
+    and drops no file (`keptOnPane`). A 502 `failed` ended the chat (its pane is a
     shell from the next list on): a library dialog says "The chat stopped
     and did not restart. On the Mac, run this in its pane:" over a
     read-only field with `claude --resume <session>` and Copy

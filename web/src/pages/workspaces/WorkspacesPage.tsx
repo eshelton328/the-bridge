@@ -48,7 +48,7 @@ import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import type { WorkspacesUi } from './types.ts'
 import { ModelRestartFailed } from './blocks/ModelRestartFailed.tsx'
 import { useLiveEffort } from './useLiveEffort.ts'
-import { useLiveModel, withRestarting } from './useLiveModel.ts'
+import { keptOnPane, useLiveModel, withRestarting } from './useLiveModel.ts'
 import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
@@ -119,7 +119,14 @@ export function WorkspacesPage() {
   }, [router, live])
   // Pane follow (W5): a chat whose ID changed on its pane since the last list takes the changes of its old ID, in this
   // render already, and in the store before the browser paints.
-  const panes = useMemo(() => chatPanesOf(state.data), [state.data])
+  // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
+  // A restarted chat reads its transcript again, as its stream may have ended (not-found) while the chat restarted.
+  const retryTranscriptRef = useRef<(liveChat: string) => void>(() => undefined)
+  const models = useLiveModel(import.meta.env.DEV && live, state.data, (liveChat) => {
+    retryTranscriptRef.current(liveChat)
+  })
+  // A chat whose restart runs stays on its pane for pane follow, even while the list shows a shell there.
+  const panes = useMemo(() => keptOnPane(chatPanesOf(state.data), models.restarting), [state.data, models.restarting])
   const moves = useMemo(() => paneMoves(seen, panes), [seen, panes])
   const changed = useMemo(() => withMovedChats(edits, moves), [edits, moves])
   useLayoutEffect(() => {
@@ -150,6 +157,11 @@ export function WorkspacesPage() {
     })
   }
   const { data: liveData, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  useLayoutEffect(() => {
+    retryTranscriptRef.current = (liveChat) => {
+      transcripts?.retry(liveChat)
+    }
+  })
   // A tab the workbench follows a moved chat to (W2d) shows in place of herdr's active tab, drawn from each layout read.
   const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
   const files = useLiveUploads(import.meta.env.DEV && live)
@@ -158,11 +170,6 @@ export function WorkspacesPage() {
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
-  // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
-  // A restarted chat reads its transcript again, as its stream may have ended (not-found) while the chat restarted.
-  const models = useLiveModel(import.meta.env.DEV && live, state.data, (liveChat) => {
-    transcripts?.retry(liveChat)
-  })
   const screenData = withRestarting(data, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
