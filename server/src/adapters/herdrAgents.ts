@@ -541,7 +541,10 @@ export function createHerdrAgents({
     if (!panes.ok) return panes
     const shared = sharedSessions(agents.value.agents)
     const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
-    const pane = agent?.pane_id ?? panes.value.panes.find((p) => shellIdOf(p) === chat)?.pane_id
+    // A pane that runs an agent now is no shell, so an old shell ID of it finds nothing.
+    const agentPanes = new Set(agents.value.agents.map((a) => a.pane_id))
+    const pane =
+      agent?.pane_id ?? panes.value.panes.find((p) => !agentPanes.has(p.pane_id) && shellIdOf(p) === chat)?.pane_id
     if (pane === undefined) return ok(null)
     const tab = panes.value.panes.find((p) => p.pane_id === pane)?.tab_id
     return ok({ pane, tab, status: agent === undefined ? 'idle' : statusOf(agent.agent_status) })

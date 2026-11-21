@@ -459,6 +459,28 @@ describe('herdr agents: input to a chat', () => {
       expect(sent('pane.close')).toHaveLength(closes)
     })
 
+    it('closes nothing by the old shell ID of a pane that now runs an agent', async () => {
+      // The shell of w18:p2 (term_5) started Claude, which works now.
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: [
+          ...results['agent.list'].agents,
+          {
+            ...results['agent.list'].agents[0],
+            agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-b' },
+            agent_status: 'working',
+            name: 'started-in-shell',
+            pane_id: 'w18:p2',
+            terminal_id: 'term_5',
+            workspace_id: 'w18',
+          },
+        ],
+      })
+      const closes = sent('pane.close').length
+      expect(await port().closeChat(shell)).toEqual({ ok: true, value: 'notFound' })
+      expect(sent('pane.close')).toHaveLength(closes)
+    })
+
     it('reads whether a tab is zoomed', async () => {
       socket.set('layout.export', {
         ...results['layout.export'],
