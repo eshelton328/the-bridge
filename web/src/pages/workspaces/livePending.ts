@@ -34,8 +34,13 @@ export const quietMs = 10_000
 type Pending = {
   /** The text as the transcript shows it, and the file names as the server stores them. */
   readonly match: { readonly text: string; readonly files: readonly string[] }
-  /** The IDs of the user entries the chat's transcript held when the send started, and those earlier sends took. */
+  /**
+   * The IDs of the user entries the chat's transcript held when the send started (or at its first read, for a send
+   * that started before it), and those earlier sends took.
+   */
   readonly before: Set<string>
+  /** `before` holds a read transcript: until then no entry can be the prompt, as an older one may have its text. */
+  based: boolean
   /** The transcript was shown when the send started, or since: its end drops the send. */
   watched: boolean
   /** The read count once `quietMs` passed after the 204: a later read ends the send. */
@@ -83,6 +88,7 @@ const isPrompt = (pending: Pending, entry: TranscriptEntry): boolean =>
 function shown(chat: string, sends: readonly Pending[], view: TranscriptView | undefined, taken = new Set<string>()) {
   return sends.filter((pending) => {
     if (view === undefined) return !pending.watched
+    if (!pending.based) return true
     const entry = view.entries.find((e) => !taken.has(e.id) && isPrompt(pending, e))
     if (entry !== undefined) {
       taken.add(entry.id)
@@ -109,6 +115,13 @@ subscribeTranscripts(() => {
   for (const [chat, sends] of [...pendings]) {
     const view = views.get(chat)
     if (view !== undefined) for (const pending of sends) pending.watched = true
+    // A send that started before the transcript's first read takes that read as what came before it.
+    if (view?.loaded === true)
+      for (const pending of sends)
+        if (!pending.based) {
+          for (const id of userIds(view)) pending.before.add(id)
+          pending.based = true
+        }
     const taken = new Set<string>()
     const still = shown(chat, sends, view, taken)
     // An entry an ended send took stays taken for the sends that wait on.
@@ -134,6 +147,7 @@ export function startPending(chat: string, text: string, files: readonly string[
   const pending: Pending = {
     match: { text: promptText(text), files: files.map(sentFileName) },
     before: userIds(view),
+    based: view?.loaded === true,
     watched: view !== undefined,
     quietAt: undefined,
     timer: undefined,

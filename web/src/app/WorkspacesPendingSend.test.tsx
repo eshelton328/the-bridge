@@ -100,6 +100,9 @@ function held() {
 
 const noContent = () => new Response(null, { status: 204 })
 
+/** While set, each transcript read waits for it before the fake answers: a slow first read. */
+let readsWait: Promise<void> | undefined
+
 function fakeServer(fake: FakeTranscriptServer) {
   vi.stubGlobal('XMLHttpRequest', fake.uploads.XMLHttpRequest)
   vi.stubGlobal(
@@ -107,6 +110,10 @@ function fakeServer(fake: FakeTranscriptServer) {
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (readsWait !== undefined && path.endsWith('/transcript')) {
+        const wait = readsWait
+        return wait.then(() => fake.handle(path, init) ?? Promise.reject(new TypeError('no read')))
+      }
       const answer = fake.handle(path, init)
       if (answer !== undefined) return Promise.resolve(answer)
       if (path === '/api/workspaces')
@@ -157,6 +164,7 @@ afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) cleanup()
   await view?.unmount()
   view = undefined
+  readsWait = undefined
   resetAllStores()
   vi.unstubAllGlobals()
   vi.restoreAllMocks()
@@ -199,6 +207,7 @@ async function openChat(size: readonly [number, number], title: string) {
     await expect.element(page.getByRole('heading', { name: title })).toBeVisible()
   }
   // The transcript is read: its messages show.
+  if (readsWait !== undefined) return
   await expect.poll(() => chatOf(title).element().querySelectorAll('article').length).toBeGreaterThan(0)
 }
 
@@ -406,6 +415,31 @@ describe('a live Claude chat shows a sent message at once (pending send)', () =>
     await expect.poll(() => pendingOf('plan the slice').length).toBe(0)
     expect(shownCount('plan the slice', secret)).toBe(2)
     expect(doubles()).toBe(0)
+  })
+
+  it('waits for its own entry when it was sent before the transcript was read, though an older one has its text', async () => {
+    const fake = withChats()
+    // The chat already holds a message with the same text.
+    fake.set(plan, [user('u0', secret), reply('a0', 'done')])
+    let release: () => void = () => undefined
+    readsWait = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await openChat(phone, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.prompts.length).toBe(1)
+    await expect.poll(() => pendingOf('plan the slice').length).toBe(1)
+    // The first read comes: the older message is not the new one's entry.
+    readsWait = undefined
+    release()
+    await expect.element(chatOf('plan the slice').getByText('done')).toBeVisible()
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(pendingOf('plan the slice')).toHaveLength(1)
+    expect(shownCount('plan the slice', secret)).toBe(2)
+    fake.push(plan, [user('u9', secret)])
+    await expect.poll(() => pendingOf('plan the slice').length).toBe(0)
+    expect(shownCount('plan the slice', secret)).toBe(2)
   })
 
   it('removes a bubble with no entry on the first read of the transcript from 10 s after the 204, and keeps it on an earlier read', async () => {
