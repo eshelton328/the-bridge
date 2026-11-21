@@ -45,7 +45,9 @@
 // M18's sheet, and T10 the actions' Subtask as D17's dialog (SubtaskDialog)
 // in place of M20's sheet.
 // A live Claude chat's ⋯ offers /compact and /clear after any other actions
-// (W5); the screen draws their dialog. // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
+// (W5); the screen draws their dialog. A live chat's ⋯ ends with Close
+// pane… (W2), whose dialog the screen draws too; the phone and the tablet's
+// chat have no zoom, swap or focus, as one chat fills the screen. // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useRef, useState } from 'react'
@@ -74,6 +76,7 @@ import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { DraftBook } from '../blocks/draftBook.ts'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
+import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { modelText } from '../blocks/modelText.ts'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
@@ -102,6 +105,8 @@ export type WorkspacesPhoneProps = {
   onCopy?: CopyReply | undefined
   /** The live-unavailable notice (LiveNotice), drawn at the top of the list and of a chat; none when not set. */
   notice?: ReactNode
+  /** The live chats' layout writes (W2): only Close pane… here; none on a fixture. */
+  layoutWrites?: LayoutWrites | undefined
 }
 
 export function WorkspacesPhone({
@@ -118,6 +123,7 @@ export function WorkspacesPhone({
   transcripts,
   onCopy,
   notice,
+  layoutWrites,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
@@ -317,10 +323,21 @@ export function WorkspacesPhone({
     // W5: a live Claude chat's /compact or /clear opens its dialog over the chat.
     if (isChatCommand(action))
       onUiChange({ chatDialog: action, commandFor: ui.focusedPane, menuFor: null, moveOpen: false })
+    // W2: a live chat's Close pane… asks first, in the screen's dialog.
+    if (action === 'close' && layoutWrites !== undefined && tabOf(data, ui.focusedPane) !== undefined)
+      onUiChange({ chatDialog: 'close', commandFor: ui.focusedPane, menuFor: null, moveOpen: false })
   }
   // The chat's actions with a live Claude chat's commands after them (W5): the tablet's menu and the phone's sheet.
-  const tabletActions = data.chatMenu === undefined ? undefined : withCommands(data.chatMenu, chat, data.chatCommands)
-  const phoneActions = withCommands(text.chatMenu ?? [], chat, data.chatCommands)
+  const liveChat = layoutWrites === undefined ? undefined : chat?.id
+  const tabletActions =
+    data.chatMenu === undefined
+      ? undefined
+      : withCommands(withLayoutActions(data.chatMenu, data, liveChat, 'chat'), chat, data.chatCommands)
+  const phoneActions = withCommands(
+    withLayoutActions(text.chatMenu ?? [], data, liveChat, 'chat'),
+    chat,
+    data.chatCommands,
+  )
   if (chat !== undefined)
     return (
       <Backdrop size={device}>

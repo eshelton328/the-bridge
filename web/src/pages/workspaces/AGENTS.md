@@ -128,6 +128,33 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`blocks/useCommandRun.ts`). report() gets only a 5xx or an answer the
   page does not expect, with the kind and status, never the instructions
   (`app/WorkspacesLiveCommands.test.tsx`).
+- A live chat's pane layout writes (W2, backend #333,
+  `blocks/layoutActions.ts`, `useLayoutWrites.ts`, `liveLayoutWrites.ts`):
+  `POST /api/chats/:chat/focus`, `/zoom`, `/swap` and `/close` with the
+  contract's bodies, through the typed RPC client with the chat ID
+  URL-encoded once. Only a chat in a herdr tab the page read
+  (`data.liveTabs`) has them. The desktop workbench's pane menu adds
+  Zoom pane or Unzoom pane and Swap with… (the other chats of the
+  pane's tab), both hidden for a tab's only pane, and Maximise zooms;
+  while herdr zooms the active tab only its focused pane draws
+  (`shownView`). Every layout's chat actions end with Close pane…, a
+  library `alertdialog` that names the chat and sends its ID as
+  `confirm` (`blocks/CloseChatDialog.tsx`); a working chat gets Stop
+  there. A focus moves the focus in the owner's real terminal, so it
+  goes only for a tap on a desktop pane's or desktop chat's header
+  (`blocks/headerTap.ts`) or a Send there, never for a click in the
+  transcript or the composer, a scroll, a selection, or anything on
+  the phone or the tablet's chat, and never to the chat herdr focuses
+  already. No layout moves before `layout.changed` brings the new one:
+  a write stays pending on its control until the next layout read
+  changes that workspace's tabs, or for 2.5 s, after which the page reads
+  the layout itself. 409 singlePane and otherTab read the layout again
+  quietly, a 404 the list; any other miss says "Not zoomed — <kind>" in
+  the status bar (a close's in its dialog), and report() gets only a
+  5xx or an answer the page does not expect, with the action, kind and
+  status (`app/WorkspacesLayoutWrites.test.tsx`; a layout change of
+  another workspace renders no transcript entry,
+  `app/WorkspacesLayoutRenders.test.tsx`).
 - Pane follow (W5, `paneFollow.ts`): after a /clear, from the page or the
   terminal, the list drops the chat's ID and lists a new one on the same
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw
@@ -139,7 +166,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   The server sends no event when herdr gives the chat its new ID, so after
   a /clear it sent the page reads the server's list, one read after
   another, until the cleared chat has left it (`readAfterClear`).
-  The route tests' list fake is `lib/fakeWorkspacesServer.ts`.
+  The route tests' list fake is `lib/fakeWorkspacesServer.ts`; it takes
+  the W2 layout writes too.
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).

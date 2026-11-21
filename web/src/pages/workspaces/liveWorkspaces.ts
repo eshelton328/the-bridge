@@ -44,8 +44,9 @@ import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
-import { layoutOfTab } from './liveLayout.ts'
+import { layoutOfTab, liveTabsOf } from './liveLayout.ts'
 import type {
+  LiveTab,
   PaneAction,
   SidebarChat,
   WorkbenchPane,
@@ -234,6 +235,7 @@ function liveOnly(
   workspaces: Workspace[],
   machine = '',
   herdr: ReadonlyMap<string, WorkspaceLayout> = new Map(),
+  tabs: ReadonlyMap<string, LiveTab[]> = new Map(),
 ): WorkspacesScreenState {
   const panes = livePanes(workspaces, machine)
   const data = state.data
@@ -268,6 +270,8 @@ function liveOnly(
         ? {}
         : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
       chatCommands,
+      liveTabs: Object.fromEntries(tabs),
+      liveMachine: machine,
     },
     ui: {
       ...state.ui,
@@ -620,6 +624,15 @@ export async function readAfterClear(
   return false
 }
 
+/**
+ * Reads the layout of `workspace` (its server ID) again, and the list with it when `list` is set, through the open
+ * watcher: after a layout write the page's view was stale (409 singlePane or otherTab, a 404) or no `layout.changed`
+ * came in time (slice W2). With no watcher (a build, a fixture) it does nothing.
+ */
+export function readLayoutAgain(workspace: string, list = false): void {
+  reload?.(list ? queryKey : layoutKey(workspace))
+}
+
 /** Opens the event stream; `signal` aborts it. */
 type OpenStream = (signal: AbortSignal) => Promise<Response>
 
@@ -879,7 +892,7 @@ export async function withLiveWorkspaces(
   const workspaces = toWorkspaces(response)
   const herdr = await untilAborted(layoutsOf(response, workspaces, client, readLayout), signal)
   noteLayoutMiss(herdr.missed)
-  const live = liveOnly(state, workspaces, response.machine, herdr.layouts)
+  const live = liveOnly(state, workspaces, response.machine, herdr.layouts, herdr.tabs)
   const alert = stopped ?? lost
   const hints = herdr.missed === undefined ? live.data.status.hints : [layoutMissLine, ...live.data.status.hints]
   return {
@@ -899,7 +912,7 @@ async function layoutsOf(
   workspaces: readonly Workspace[],
   client: QueryClient,
   fetch: NonNullable<LiveDeps['fetchLayout']>,
-): Promise<{ layouts: Map<string, WorkspaceLayout>; missed: LiveMiss | undefined }> {
+): Promise<{ layouts: Map<string, WorkspaceLayout>; tabs: Map<string, LiveTab[]>; missed: LiveMiss | undefined }> {
   const read =
     (id: WorkspaceId) =>
     async ({ signal: cancel }: { signal: AbortSignal }) => {
@@ -916,28 +929,33 @@ async function layoutsOf(
   shownWorkspaces.clear()
   for (const summary of response.workspaces) shownWorkspaces.add(summary.id)
   const pairs = await Promise.all(
-    response.workspaces.map(async (summary, at): Promise<[string, WorkspaceLayout] | LiveMiss | undefined> => {
-      const workspace = workspaces[at]
-      if (workspace === undefined) return undefined
-      try {
-        const layout = await client.query({
-          queryKey: layoutKey(summary.id),
-          queryFn: read(summary.id),
-          staleTime: watching > 0 ? Infinity : 0,
-          meta: expectedMiss,
-        })
-        return [workspace.id, layoutOfTab(layout.tabs)]
-      } catch (thrown) {
-        if (thrown instanceof LiveMissError) return thrown.miss
-        throw thrown
-      }
-    }),
+    response.workspaces.map(
+      async (summary, at): Promise<[string, WorkspaceLayout, LiveTab[]] | LiveMiss | undefined> => {
+        const workspace = workspaces[at]
+        if (workspace === undefined) return undefined
+        try {
+          const layout = await client.query({
+            queryKey: layoutKey(summary.id),
+            queryFn: read(summary.id),
+            staleTime: watching > 0 ? Infinity : 0,
+            meta: expectedMiss,
+          })
+          return [workspace.id, layoutOfTab(layout.tabs), liveTabsOf(layout.tabs)]
+        } catch (thrown) {
+          if (thrown instanceof LiveMissError) return thrown.miss
+          throw thrown
+        }
+      },
+    ),
   )
   const layouts = new Map<string, WorkspaceLayout>()
+  const tabs = new Map<string, LiveTab[]>()
   let missed: LiveMiss | undefined
   for (const pair of pairs) {
-    if (Array.isArray(pair)) layouts.set(pair[0], pair[1])
-    else missed ??= pair
+    if (Array.isArray(pair)) {
+      layouts.set(pair[0], pair[1])
+      tabs.set(pair[0], pair[2])
+    } else missed ??= pair
   }
-  return { layouts, missed }
+  return { layouts, tabs, missed }
 }

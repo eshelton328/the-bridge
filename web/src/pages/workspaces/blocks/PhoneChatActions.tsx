@@ -21,6 +21,7 @@ import {
   CloseIcon,
   EditIcon,
   GridIcon,
+  MaximizeIcon,
   MoveIcon,
   OptionList,
   type OptionListItem,
@@ -28,6 +29,7 @@ import {
   ProjectsIcon,
   SortIcon,
   SparkleIcon,
+  SplitIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -58,6 +60,11 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   // W5: the library has no icon for compacting or clearing a context (LIBRARY_GAPS.md: Chat commands).
   compact: <SortIcon size="20" />,
   clear: <CloseCircleIcon size="20" />,
+  // W2: the phone has no zoom or swap (one chat fills its screen); the record names every action. The library has no
+  // unzoom or swap icon (LIBRARY_GAPS.md: Layout writes).
+  zoom: <MaximizeIcon size="20" />,
+  unzoom: <GridIcon size="20" />,
+  swap: <SplitIcon size="20" />,
 }
 const toneOf: Partial<Record<PaneAction['value'], keyof typeof tones>> = {
   folders: 'accent',

@@ -102,3 +102,15 @@ What still differs from Figma after moving the Workbench onto the library's
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **Live layout writes (W2, Layout writes; not drawn in this frame).**
+  A live chat's pane menu adds Zoom pane (Unzoom pane on the pane herdr
+  zooms) and Swap with… before Close pane, after their own separator,
+  and its Close pane reads "Close pane…", as it asks first. Swap with…
+  opens the other chats of the pane's herdr tab as the row's `submenu`,
+  as Move to workspace opens its list. Maximise zooms a live pane of a
+  tab with more than one; while herdr zooms it, only that pane draws, at
+  full size, the button is a pressed `secondary` "Unzoom" and the status
+  bar reads "<workspace> · zoomed · 1 of N panes". Figma draws no zoomed
+  pane and none of these rows; the icons are `MaximizeIcon`, `GridIcon`
+  and `SplitIcon` until the library has unzoom and swap icons. This
+  frame's fixture chats are not live, so its render does not change.

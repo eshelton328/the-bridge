@@ -4,7 +4,8 @@
 // Beside the sidebar (D7 402:422) the toggle sits in the sidebar, so the tab
 // bar has New chat alone. A click on a tab shows that workspace as the owner left
 // it, or its last chat alone in one pane (R6); each workspace keeps its own
-// layout in `ui.layouts` (blocks/workspaceLayout.ts). Props only.
+// layout in `ui.layouts` (blocks/workspaceLayout.ts). A live chat's layout
+// write that missed says so in the status bar's alert (W2). Props only.
 import { Button, PanelIcon, PlusIcon, Workbench } from '@eshelton328/component-library-1701'
 import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -12,6 +13,7 @@ import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import type { ChatFiles, TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
+import type { LayoutWrites } from './layoutActions.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
@@ -39,6 +41,8 @@ export type WorkspaceTabsProps = {
    * sidebar the sidebar draws it, so the page passes none.
    */
   notice?: ReactNode
+  /** The live chats' layout writes (W2); none on a fixture. */
+  layout?: LayoutWrites | undefined
 }
 
 // With a notice: the notice over the panes, which take the height left.
@@ -57,6 +61,7 @@ export function WorkspaceTabs({
   transcripts,
   onCopy,
   notice,
+  layout,
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
@@ -78,6 +83,7 @@ export function WorkspaceTabs({
       filesOf={filesOf}
       transcripts={transcripts}
       onCopy={onCopy}
+      layout={layout}
     />
   )
   const workbench = (
@@ -131,7 +137,7 @@ export function WorkspaceTabs({
       }
       summary={view.data.status.summary}
       hints={data.status.hints}
-      alert={data.status.alert}
+      alert={layout?.line ?? data.status.alert}
     />
   )
   // No workspace (an empty or failed live read, d-117): no tab can hold the notice, so it sits over the workbench.

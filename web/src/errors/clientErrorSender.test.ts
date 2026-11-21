@@ -131,6 +131,11 @@ describe('toClientErrorReport', () => {
       new NamedError('TranscriptMissError', `A chat transcript read missed: status 404 (chat ${secret})`, 'status'),
       new NamedError('LayoutReadMissError', `A workspace layout read missed: ${secret}`, 'internal'),
       new NamedError('ChatUploadMissError', `A chat upload missed: chunk internal 500 (${secret}.png)`, 'internal'),
+      new NamedError(
+        'LayoutWriteMissError',
+        `A layout close missed: herdr-unavailable 503 (${secret})`,
+        'herdr-unavailable',
+      ),
     ]
     for (const error of misses) {
       const body = toClientErrorReport(entry(error, 'live'))

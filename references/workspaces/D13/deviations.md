@@ -92,6 +92,15 @@ under it, the shortcut Cmd+W (`emptiedPane`, the empty pane's `close`).
   `rail · More` sits 108 px lower (y +108). The design predates d-105,
   which adds the Toolkit (and Artifacts) item; the app draws the
   six-item navigation.
+- **Close pane… of a live chat (W2, Layout writes; not drawn in this
+  frame).** D13's note has Close pane in a chat pane's ⋯ menu remove
+  the pane while the chat keeps running. Herdr's close ends the pane's
+  agent or shell, so for a live chat the row reads "Close pane…" and
+  opens the library's `alertdialog` that names the chat, says it cannot
+  be undone and offers Cancel and Close; a chat that works gets Stop
+  there. The pane goes when the server's next layout drops it. Figma
+  draws no such dialog. The empty pane's Close pane in this frame is
+  unchanged.
 
 ## Value picks (d-100)
 

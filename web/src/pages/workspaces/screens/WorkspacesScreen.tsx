@@ -27,7 +27,12 @@
 // when the page passes `onRetry` (LiveNotice). A live Claude chat's actions
 // end with /compact and /clear (W5, chatCommands.ts), each of which opens its
 // dialog over every layout for that chat (`ui.chatDialog`, ChatCommandDialog)
-// and posts through `onCommand`.
+// and posts through `onCommand`. A live chat's layout writes (W2, `layout`):
+// the workbench's panes zoom, swap and focus, and every layout's chat
+// actions end with Close pane…, whose dialog (CloseChatDialog) shows over
+// every layout for the chat in `ui.commandFor`; the chat beside the sidebar
+// focuses on a tap on its header or a Send. The phone and the tablet's chat
+// send no focus.
 import type { ChatCommandRequest } from '@bridge/contract'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
@@ -45,6 +50,8 @@ import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
 import { ChatCommandDialog } from '../blocks/ChatCommandDialog.tsx'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
+import { CloseChatDialog } from '../blocks/CloseChatDialog.tsx'
+import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
@@ -90,6 +97,8 @@ export type WorkspacesScreenProps = {
    * its own, starting from `ui.drafts`. A keystroke changes only its chat's composer, never the `ui`.
    */
   drafts?: DraftBook | undefined
+  /** The live chats' layout writes (W2): focus, zoom, swap and close; none on a fixture. */
+  layoutWrites?: LayoutWrites | undefined
 }
 
 export function WorkspacesScreen({
@@ -106,6 +115,7 @@ export function WorkspacesScreen({
   transcripts,
   onCopy,
   drafts: pageDrafts,
+  layoutWrites,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -150,6 +160,25 @@ export function WorkspacesScreen({
       onRun={commandChat === undefined || onCommand === undefined ? undefined : (r) => onCommand(commandChat.id, r)}
     />
   )
+  // Close pane… of a live chat (W2): its dialog, for the chat in `ui.commandFor`, while that chat is still listed.
+  const closing = ui.chatDialog === 'close' ? data.panes.find((p) => p.id === ui.commandFor) : undefined
+  const closeDialog =
+    layoutWrites === undefined || closing === undefined || closing.type === 'empty' ? null : (
+      <CloseChatDialog
+        key={closing.id}
+        chat={ui.names?.[closing.id] ?? closing.head.title}
+        closing={layoutWrites.pending.get(closing.id) === 'close'}
+        onOpenChange={(open) => {
+          if (!open) change({ chatDialog: null, commandFor: null })
+        }}
+        onClose={() => layoutWrites.close(closing.id)}
+        onStop={
+          closing.type === 'chat' && closing.liveChat !== undefined && onStop !== undefined
+            ? () => onStop(closing.id)
+            : undefined
+        }
+      />
+    )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
@@ -169,8 +198,10 @@ export function WorkspacesScreen({
             change={change}
             drafts={drafts}
             notice={notice}
+            layoutWrites={layoutWrites}
           />
           {commandDialog}
+          {closeDialog}
         </>
       )}
     </ViewportFrame>
@@ -200,6 +231,7 @@ function WorkspacesLayout({
   change,
   drafts,
   notice,
+  layoutWrites,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
@@ -242,6 +274,7 @@ function WorkspacesLayout({
         transcripts={transcripts}
         onCopy={onCopy}
         notice={notice}
+        layoutWrites={layoutWrites}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
@@ -265,7 +298,11 @@ function WorkspacesLayout({
       data.chatMenu === undefined || chat === undefined ? undefined : (
         <ChatActionsMenu
           title={chat.head.title}
-          actions={withCommands(data.chatMenu, chat, data.chatCommands)}
+          actions={withCommands(
+            withLayoutActions(data.chatMenu, data, layoutWrites === undefined ? undefined : chat.id, 'chat'),
+            chat,
+            data.chatCommands,
+          )}
           targets={workspaces.filter((w) => w.id !== shown.current)}
           newWorkspace={data.newWorkspace}
           open={menuOpen}
@@ -284,6 +321,8 @@ function WorkspacesLayout({
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
             if (isChatCommand(action))
               change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })
+            if (action === 'close' && layoutWrites !== undefined && tabOf(data, chat.id) !== undefined)
+              change({ menuFor: null, moveOpen: false, chatDialog: 'close', commandFor: chat.id })
           }}
           moveTarget={ui.moveTarget}
           onMoveTargetChange={(moveTarget) => {
@@ -406,6 +445,7 @@ function WorkspacesLayout({
                   filesOf={filesOf}
                   transcripts={transcripts}
                   onCopy={onCopy}
+                  layout={layoutWrites}
                 />
               </SlotBoundary>
             ) : (
@@ -441,11 +481,25 @@ function WorkspacesLayout({
                   }
                   layers={data.layers}
                   drafts={drafts}
-                  onSend={onSend && ((text) => onSend(chat.id, text))}
+                  onSend={
+                    onSend &&
+                    ((text) => {
+                      // A Send focuses the live chat in herdr first, as a tap on its header does (W2).
+                      layoutWrites?.focus(chat.id)
+                      return onSend(chat.id, text)
+                    })
+                  }
                   onStop={onStop && (() => onStop(chat.id))}
                   files={filesOf?.(chat.id)}
                   transcripts={transcripts}
                   onCopy={onCopy}
+                  onHeaderTap={
+                    layoutWrites === undefined
+                      ? undefined
+                      : () => {
+                          layoutWrites.focus(chat.id)
+                        }
+                  }
                   rename={rename}
                   above={toast}
                   overlay={dropZone}
@@ -509,6 +563,7 @@ function WorkspacesLayout({
               transcripts={transcripts}
               onCopy={onCopy}
               notice={notice}
+              layout={layoutWrites}
             />
           </SlotBoundary>
         }

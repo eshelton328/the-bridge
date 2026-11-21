@@ -3,13 +3,15 @@
 // actions menu (D2b) comes from the caller, and so does a drop zone over
 // the chat while a chat is dragged onto it (D6), and so does a toast over the
 // composer (D20), and so does the name field while the owner renames the chat (D21).
-import type { ReactNode } from 'react'
+// A tap on its header sends a live chat's focus to herdr (`onHeaderTap`, W2).
+import type { MouseEvent, ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
+import { isHeaderTap } from './headerTap.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
 // The detail slot is a flex column; the chat fills it.
@@ -52,6 +54,8 @@ export type MainChatProps = {
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
+  /** A tap or click on the header itself, not on a button in it (W2): the page focuses the chat in herdr. */
+  onHeaderTap?: (() => void) | undefined
 }
 
 export function MainChat(props: MainChatProps) {
@@ -73,9 +77,17 @@ export function MainChat(props: MainChatProps) {
     files,
     transcripts,
     onCopy,
+    onHeaderTap,
   } = props
+  // The header is the section's first child.
+  const tap =
+    onHeaderTap === undefined
+      ? undefined
+      : (event: MouseEvent<HTMLElement>) => {
+          if (isHeaderTap(event.target, event.currentTarget.firstElementChild)) onHeaderTap()
+        }
   return (
-    <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column}>
+    <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column} onClick={tap}>
       <ChatHead
         head={pane.head}
         workspace={workspace}
