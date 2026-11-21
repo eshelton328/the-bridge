@@ -126,3 +126,34 @@ describe('a keystroke in a long live chat renders only its composer (review R28)
     expect(await rendersWhileTyping(boxIn(pane), 'quick note')).toEqual(none)
   })
 })
+
+/** Whether the composer around `box` draws its one row (review R31, library beta.96 `collapsed`). */
+const isCollapsed = (box: HTMLTextAreaElement) => box.closest('[data-collapsed]') !== null
+
+/** The renders while the owner focuses `box` (the composer expands), then blurs it (it collapses again). */
+async function rendersWhileFocusing(box: HTMLTextAreaElement) {
+  vi.mocked(Markdown).mockClear()
+  renders.screen = 0
+  renders.header = 0
+  box.focus()
+  await expect.poll(() => isCollapsed(box)).toBe(false)
+  box.blur()
+  await expect.poll(() => isCollapsed(box)).toBe(true)
+  await new Promise((resolve) => setTimeout(resolve, 100))
+  return { screen: renders.screen, header: renders.header, markdown: vi.mocked(Markdown).mock.calls.length }
+}
+
+describe('a focus change that expands or collapses the composer renders only the composer (review R31)', () => {
+  it.each([
+    ['phone', [390, 844]],
+    ['tablet', [756, 1129]],
+  ] as const)('renders no transcript entry on the %s', async (_, size) => {
+    stubLongChats(40)
+    view = await openWorkspaces(size)
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await markdownShown(40)
+    const box = chat('plan the slice')
+    expect(isCollapsed(box)).toBe(true)
+    expect(await rendersWhileFocusing(box)).toEqual(none)
+  })
+})

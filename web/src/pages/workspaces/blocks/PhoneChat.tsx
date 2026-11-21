@@ -186,6 +186,8 @@ export function PhoneChat(props: PhoneChatProps) {
       skills={skills}
       onSkillsOpenChange={onSkillsOpenChange}
       autoFocus={skills.open || focusMessage}
+      // The phone's and the tablet's chat: one row while the box is empty and the keyboard closed (review R31).
+      collapsible
       above={above}
     />
   )

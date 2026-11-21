@@ -141,6 +141,20 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `view`), `liveUploads.ts` tells only the chats whose view changed, and
   a chunk's progress goes out at most once an animation frame (the #329
   flake, `app/WorkspacesUploadRenders.test.tsx`).
+- The phone's and the tablet's chat (`PhoneChat`, `ChatPane collapsible`)
+  draw the composer as one row (paperclip, text, Send; about 50 px) while
+  the box is not focused and holds no text and no files: library beta.96
+  `collapsed`, as the Claude iOS app does with its keyboard closed (review
+  R31). Focus expands it (`onFocusChange`), and a blur with the box empty
+  collapses it again. A draft, a file, a running chat (so Stop shows) and
+  a disabled box keep it expanded; the desktop never collapses. Send keeps
+  the focus, so the box stays expanded under the pending send. A focus
+  change renders only the composer (`app/WorkspacesComposerCollapsed.test.tsx`,
+  `app/WorkspacesTypingRenders.test.tsx`). The height change only resizes
+  the transcript's scroller: the pin (`usePinnedEnd`) keeps a chat at its
+  end, a reader above the end keeps his place and stays unpinned, and the
+  button to the newest message keeps its gap above the composer
+  (`app/WorkspacesComposerCollapsedScroll.test.tsx`).
 - A live Claude chat's model and effort are read-only (d-101, W5): the
   pane header and the chat header show "Opus 5.5 · high effort" as text
   (`PaneHead.effort`, `readOnlyModel`), the model alone when the effort is

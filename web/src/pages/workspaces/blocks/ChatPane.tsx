@@ -42,7 +42,12 @@
 // live Codex chat's composer has no paperclip. The box empties as a send
 // starts, and a miss puts the text back; meanwhile a live Claude chat draws
 // its pending send after the entries (`pending`, `PendingEntry`), until the
-// entry the stream brings takes its place. Props only.
+// entry the stream brings takes its place. With `collapsible` (the phone's
+// and the tablet's chat, review R31) the composer draws one row while the
+// box is not focused and holds no text and no files (library beta.97):
+// focus expands it, and a blur with the box empty collapses it again. A
+// draft, a file, a running chat (so Stop shows) or a disabled box keeps it
+// expanded. Props only.
 import {
   Composer,
   type ComposerAttachment,
@@ -261,6 +266,12 @@ type ChatPaneBase = {
   /** Put the focus in the message box when the chat shows, as the phone's chat does with the skills open (M3). */
   autoFocus?: boolean | undefined
   /**
+   * The composer draws one row (paperclip, text, Send) while the box is not focused and holds no text and no files, as
+   * the phone's and the tablet's chat do with the keyboard closed (review R31). A running chat keeps it expanded, so
+   * Stop shows, and so does a disabled box. Not set, as on the desktop, it never collapses.
+   */
+  collapsible?: boolean | undefined
+  /**
    * The page's drafts by chat (review R28): the box starts from this chat's draft (`composer.text` when it has none),
    * sets it as the owner types and follows a change made elsewhere, such as a send that went through after the pane
    * opened again. A keystroke tells only this chat's composers, so the page, the header and the transcript do not
@@ -325,6 +336,7 @@ export function ChatPane(props: ChatPaneProps) {
     lead,
     above,
     autoFocus = false,
+    collapsible = false,
     drafts,
     onSend,
     onStop,
@@ -355,6 +367,8 @@ export function ChatPane(props: ChatPaneProps) {
   const textArea = () => areaRef.current?.querySelector('textarea') ?? null
   // A press on Send keeps the focus in the box, so the phone's keyboard stays up through the send (useSendKeepsFocus.ts).
   useSendKeepsFocus(areaRef, skills === undefined)
+  // Whether the composer has the focus (its `onFocusChange`): a collapsible composer expands while it does (R31).
+  const [focused, setFocused] = useState(autoFocus)
   const fileRef = useRef<HTMLInputElement>(null)
   // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
   useEffect(
@@ -497,6 +511,14 @@ export function ChatPane(props: ChatPaneProps) {
           onRemoveAttachment: () => undefined,
           onAttach: composer.notLive === undefined ? () => undefined : undefined,
         }
+  // R31: one row while nothing is in or on the box; the library draws it expanded anyway with chips.
+  const collapsed =
+    collapsible &&
+    !focused &&
+    text === '' &&
+    (files === undefined ? composer.attachments.length : (filesView?.chips.length ?? 0)) === 0 &&
+    composer.notLive === undefined &&
+    !composer.running
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -529,6 +551,8 @@ export function ChatPane(props: ChatPaneProps) {
       stopIconSize="12"
       stopTextSize="xs"
       layout={layout}
+      collapsed={collapsed}
+      onFocusChange={setFocused}
       model={
         folders === undefined ? (
           chip
