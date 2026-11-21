@@ -28,18 +28,20 @@ document.documentElement.dataset.pandaTheme = 'viewscreen'
 const workspace = 'mac-mini/w-live'
 const plan = 'mac-mini/c1'
 const title = 'plan the slice'
-/** The live chat, idle or working (a working Claude chat's composer draws Stop). */
-const chatsOf = (status: 'idle' | 'working') => [
+/** The chat's state: a working Claude chat's composer draws Stop, and a Codex chat's box is disabled. */
+type Status = 'idle' | 'working' | 'codex'
+/** The live chat, idle, working or a Codex chat. */
+const chatsOf = (status: Status) => [
   {
     id: plan,
-    kind: 'claude',
+    kind: status === 'codex' ? 'codex' : 'claude',
     title,
     model: 'claude-opus-5-5',
     contextUsed: null,
     modelId: null,
     effort: null,
     pane: `${plan}-pane`,
-    status,
+    status: status === 'working' ? 'working' : 'idle',
     parent: null,
   },
 ]
@@ -64,7 +66,7 @@ const tablet = [756, 1129] as const
 const desktop = [1512, 982] as const
 
 /** The stubbed server: the workspace, its layout, the event stream and the fake's chat and upload routes. */
-function fakeServer(status: 'idle' | 'working') {
+function fakeServer(status: Status) {
   const chats = chatsOf(status)
   const layout = layoutOf(chats)
   const fake = fakeTranscriptServer({ uploads: { chunkSize: 4 } })
@@ -149,7 +151,7 @@ function fileInput(): HTMLInputElement {
 }
 
 /** Opens the app at `size` with no URL parameters, taps Workspaces and the live chat (on the desktop its pane shows). */
-async function openChat(size: readonly [number, number], status: 'idle' | 'working' = 'idle') {
+async function openChat(size: readonly [number, number], status: Status = 'idle') {
   const fake = fakeServer(status)
   await setViewport(size[0], size[1])
   const router = createRouter({
@@ -229,6 +231,7 @@ describe.each([
 
   it("opens expanded with the chat's draft from the draft book", async () => {
     await openChat(size)
+    await expect.poll(collapsed).toBe(true)
     await userEvent.click(box())
     await userEvent.type(box(), 'keep this draft')
     await blurBox()
@@ -259,17 +262,31 @@ describe.each([
 
   it('sends from the expanded composer', async () => {
     const fake = await openChat(size)
+    await expect.poll(collapsed).toBe(true)
     tap(composer())
     await expect.poll(collapsed).toBe(false)
     await userEvent.type(box(), 'run the tests')
     await userEvent.click(sendButton())
     await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: 'run the tests' }])
     await expect.element(box()).toHaveValue('')
+    // Send keeps the focus in the box (the keyboard stays up), so the empty box stays expanded under the pending send.
+    expect(document.activeElement).toBe(box().element())
+    await expect.element(chatOf().getByText('run the tests')).toBeVisible()
+    expect(collapsed()).toBe(false)
+    expect(height()).toBeGreaterThan(70)
   })
 
   it('stays expanded while the chat works, so Stop shows', async () => {
     await openChat(size, 'working')
     await expect.element(chatOf().getByRole('button', { name: 'Stop' })).toBeVisible()
+    expect(collapsed()).toBe(false)
+    expect(height()).toBeGreaterThan(70)
+  })
+
+  it("stays expanded while the box is disabled, as a Codex chat's is", async () => {
+    await openChat(size, 'codex')
+    await expect.element(box()).toBeDisabled()
+    await blurBox()
     expect(collapsed()).toBe(false)
     expect(height()).toBeGreaterThan(70)
   })

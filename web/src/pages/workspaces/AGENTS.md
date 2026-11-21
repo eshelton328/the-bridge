@@ -147,9 +147,14 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `collapsed`, as the Claude iOS app does with its keyboard closed (review
   R31). Focus expands it (`onFocusChange`), and a blur with the box empty
   collapses it again. A draft, a file, a running chat (so Stop shows) and
-  a disabled box keep it expanded; the desktop never collapses. A focus
+  a disabled box keep it expanded; the desktop never collapses. Send keeps
+  the focus, so the box stays expanded under the pending send. A focus
   change renders only the composer (`app/WorkspacesComposerCollapsed.test.tsx`,
-  `app/WorkspacesTypingRenders.test.tsx`).
+  `app/WorkspacesTypingRenders.test.tsx`). The height change only resizes
+  the transcript's scroller: the pin (`usePinnedEnd`) keeps a chat at its
+  end, a reader above the end keeps his place and stays unpinned, and the
+  button to the newest message keeps its gap above the composer
+  (`app/WorkspacesComposerCollapsedScroll.test.tsx`).
 - A live Claude chat's model and effort are read-only (d-101, W5): the
   pane header and the chat header show "Opus 5.5 · high effort" as text
   (`PaneHead.effort`, `readOnlyModel`), the model alone when the effort is
