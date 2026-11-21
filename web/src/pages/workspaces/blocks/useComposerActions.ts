@@ -58,6 +58,11 @@ export type ComposerActionsOptions = {
   readonly draftNow?: (() => string) | undefined
   /** The composer has files ready to send (W1b): a send with no text goes. */
   readonly withFiles?: boolean | undefined
+  /**
+   * A file of the composer is uploading or failed (W1b): every send waits, a Retry and the send after a clear too, so
+   * none goes without it.
+   */
+  readonly filesHeld?: boolean | undefined
 }
 
 export function useComposerActions({
@@ -67,6 +72,7 @@ export function useComposerActions({
   clear,
   draftNow,
   withFiles = false,
+  filesHeld = false,
 }: ComposerActionsOptions) {
   const [problem, setProblem] = useState<Problem>()
   // Shown as state too, so Send is off while a send of files with no text is pending (the library's own pending
@@ -87,6 +93,7 @@ export function useComposerActions({
     // While a clear of the terminal input is pending, its answer sends the draft: a Send meanwhile keeps it.
     if (submitted.length > maxPromptChars || sendingRef.current || clearingRef.current) return false
     if (!/\S/.test(submitted) && !withFiles) return false
+    if (filesHeld) return false
     if (onSend === undefined) {
       clear(submitted)
       return true

@@ -393,6 +393,7 @@ export function ChatPane(props: ChatPaneProps) {
       else if (latestRef.current === submitted) onValueChange('')
     },
     withFiles: files !== undefined && files.ready > 0,
+    filesHeld: files?.blocked === true,
   })
   // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.
   const send = (submitted: string): boolean | Promise<boolean> =>

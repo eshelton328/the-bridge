@@ -81,6 +81,21 @@ const file = (name = fileName, text = 'abcdefghij', type = 'application/pdf') =>
 // expect's default second, or a slow runner misses it.
 const pastRetries = { timeout: 5_000 }
 
+/** An answer the test ends: `end` gives the page `answer`. */
+function held() {
+  let end: (answer: Response) => void = () => undefined
+  const answer = () =>
+    new Promise<Response>((resolve) => {
+      end = resolve
+    })
+  return {
+    answer,
+    end: (res: Response) => {
+      end(res)
+    },
+  }
+}
+
 const phone = [390, 844] as const
 const tablet = [756, 1129] as const
 const desktop = [1512, 982] as const
@@ -512,6 +527,32 @@ describe("a live Claude chat's files (W1b)", () => {
     expect(getReports()).toEqual([])
     expect(reports.posted).toEqual([])
     reports.expectNoText()
+  })
+
+  it("sends nothing on a failed send's Retry while a file uploads, and names the file once it is ready, on the phone", async () => {
+    const fake = withChats()
+    await openChat(phone, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    fake.answerPrompts(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-1' }, 503))
+    await userEvent.click(sendButton('plan the slice'))
+    const chat = chatOf('plan the slice')
+    const retry = chat.getByRole('button', { name: 'Retry', exact: true })
+    await expect.element(retry).toBeVisible()
+    fake.answerPrompts(undefined)
+    // A file added after the miss is still uploading: Retry must not send the text without it.
+    fake.uploads.holdChunks()
+    await pick('plan the slice', [file()])
+    await expect.poll(() => fake.uploads.held().length).toBe(1)
+    await userEvent.click(retry)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(fake.prompts).toEqual([])
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    fake.uploads.releaseChunks()
+    await expect.poll(() => fake.uploads.complete().length).toBe(1)
+    const ids = fake.uploads.complete()
+    await userEvent.click(retry)
+    await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret, attachments: ids }])
+    await expect.element(box('plan the slice')).toHaveValue('')
   })
 
   it('keeps the files through a clear of the terminal input, and the send after the clear names them, on the phone', async () => {
