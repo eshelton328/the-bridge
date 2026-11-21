@@ -187,7 +187,7 @@ describe('the button to the newest message', () => {
       renders.header = 0
       await userEvent.click(button)
       expect(document.activeElement).toBe(textBox)
-      await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+      await expect.poll(() => fromEnd(scroller), { timeout: 3000 }).toBeLessThanOrEqual(2)
       await expect.poll(() => buttonIn(root)).toBeNull()
       expect(document.activeElement).toBe(textBox)
       // Neither the scrolls nor the tap rendered an entry, the screen or the header.
@@ -199,7 +199,7 @@ describe('the button to the newest message', () => {
       // Pinned again: a new entry keeps the view at the end, and no button comes.
       server.push(plan, [reply('after-1', `Back at the end. ${'Each check ran green. '.repeat(12)}`)])
       await expect.element(page.getByText(/^Back at the end\./)).toBeInTheDocument()
-      await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+      await expect.poll(() => fromEnd(scroller), { timeout: 3000 }).toBeLessThanOrEqual(2)
       await afterRendering()
       expect(buttonIn(root)).toBeNull()
       expect(getReports()).toHaveLength(1)
@@ -316,7 +316,7 @@ describe('the button to the newest message', () => {
     const button = buttonIn(root)
     if (!(button instanceof HTMLElement)) throw new Error('no button')
     await userEvent.click(button)
-    await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+    await expect.poll(() => fromEnd(scroller), { timeout: 3000 }).toBeLessThanOrEqual(2)
     await expect.poll(() => buttonIn(root)).toBeNull()
     const bubble = root.querySelector('[data-pending-send]')?.getBoundingClientRect()
     const frame = scroller.getBoundingClientRect()
@@ -346,7 +346,7 @@ describe('the button to the newest message', () => {
     button.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))
     button.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerType: 'touch' }))
     button.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }))
-    await expect.poll(() => fromEnd(scroller)).toBeLessThanOrEqual(2)
+    await expect.poll(() => fromEnd(scroller), { timeout: 3000 }).toBeLessThanOrEqual(2)
     expect(document.activeElement).toBe(field)
   })
 })

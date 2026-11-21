@@ -27,7 +27,8 @@
 // new entries came in since he left it, as a small store that only the button
 // (`NewestButton`) reads, so a scroll renders neither the pane nor its
 // entries. Its `jump` pins the transcript and scrolls to the end smoothly (at
-// once with prefers-reduced-motion); that scroll is not the reader's, and the
+// once with prefers-reduced-motion): from far up it jumps to a screen above
+// the end and glides the rest. That scroll is not the reader's, and the
 // pin does not snap it to the end while it runs, so it glides there unless
 // the reader takes over. A press on the button is not reader input. The
 // button's own slot sits in the scroller (`newestSlot`); its coming and going
@@ -217,6 +218,9 @@ export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLEle
       } else {
         seeking = true
         clearTimeout(seekTimer)
+        // From far up, the view first jumps to one screen above the end, so the glide is the last screen only.
+        if (fromEnd(scroller) > scroller.clientHeight)
+          scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight * 2
         // A smooth scroll that has not ended by then jumps to the end.
         seekTimer = setTimeout(() => {
           if (!seeking) return
