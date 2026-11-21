@@ -263,6 +263,35 @@ describe('Move to tab… (W2d)', () => {
     expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[review], [notes, draft, plan], [spare]])
   })
 
+  it('waits for another choice when the chosen pane leaves the tab while the dialog is open', async () => {
+    const fakes = withChats()
+    await showPanes()
+    await pickTab('plan the slice', 'tab 2')
+    await userEvent.click(page.getByRole('button', { name: /Place/ }))
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Beside draft chat' }))
+    const before = fakes.layoutReads.length
+    // draft chat goes to tab 3 from another client while the dialog is open.
+    const moved = fakes.list.handle(`/api/chats/${encodeURIComponent(draft)}/move`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tab: `${live}:t3`, direction: 'row' }),
+    })
+    expect(moved?.status).toBe(204)
+    await expect.poll(() => fakes.layoutReads.slice(before)).toContain(live)
+    const move = page.getByRole('button', { name: 'Move', exact: true })
+    await expect.element(move).toBeDisabled()
+    await userEvent.click(move, { force: true })
+    await quiet()
+    expect(writesOf(fakes).filter((w) => w.chat === plan)).toEqual([])
+    await userEvent.click(page.getByRole('button', { name: /Place/ }))
+    await userEvent.click(page.getByRole('menuitemradio', { name: 'Beside notes chat' }))
+    await expect.element(move).toBeEnabled()
+    await userEvent.click(move)
+    await expect
+      .poll(() => writesOf(fakes).filter((w) => w.chat === plan))
+      .toEqual([{ chat: plan, action: 'move', body: { tab: tab2, direction: 'row', beside: notes } }])
+  })
+
   it('drops a tab whose last pane moved out from the list on the event, and draws the tab it went to', async () => {
     const fakes = withChats({ [live]: [[plan], [review, notes], [draft, spare]] })
     await showPanes(['plan the slice'])

@@ -36,6 +36,8 @@ export function MoveChatDialog({ chat, tab, panes, onOpenChange, onMove }: MoveC
   const [place, setPlace] = useState(focusedPlace)
   const [direction, setDirection] = useState<SplitDirection>('row')
   const beside = panes.find((p) => paneValue(p.id) === place)?.id
+  // A chosen pane that left the tab while the dialog is open: Move waits for another choice, never the focused pane.
+  const lost = place !== focusedPlace && beside === undefined
   return (
     <Dialog
       title={`Move ${chat} to ${tab}`}
@@ -53,6 +55,7 @@ export function MoveChatDialog({ chat, tab, panes, onOpenChange, onMove }: MoveC
             size="sm"
             textSize="smStrong"
             variant="primary"
+            disabled={lost}
             onClick={() => {
               onMove({ beside, direction })
             }}
