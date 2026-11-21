@@ -122,16 +122,20 @@ describe('the Claude artifact scanner', () => {
     expect([third.partial, third.found.map((a) => a.link)]).toEqual([false, [link(3)]])
   })
 
-  it('stops at its time cap and reads the rest on the next scan', async () => {
+  it('stops at its time cap after its first read, and reads the rest on the next scan', async () => {
     const { root, file } = projects()
     writeFileSync(file, publish(1))
+    writeFileSync(
+      join(root, '-home-dev-projects-example-project', 'a1b2c3d4-0000-4000-8000-000000000002.jsonl'),
+      publish(2),
+    )
     let time = 0
     const scanner = createArtifactScanner(root, { maxMs: 100, now: () => (time += 60) })
     const first = await scanner.scan()
-    expect([first.partial, first.found]).toEqual([true, []])
-    time = 0
-    const scannerTwo = createArtifactScanner(root, { maxMs: 100, now: () => time })
-    expect((await scannerTwo.scan()).found.map((a) => a.link)).toEqual([link(1)])
+    expect([first.partial, first.found.length]).toEqual([true, 1])
+    const second = await scanner.scan()
+    expect([second.partial, second.found.length]).toEqual([false, 1])
+    expect([...first.found, ...second.found].map((f) => f.link).sort()).toEqual([link(1), link(2)])
   })
 
   it('reads a file again from the start when it became shorter, and finds nothing in a missing folder', async () => {
@@ -142,5 +146,32 @@ describe('the Claude artifact scanner', () => {
     writeFileSync(file, publish(3))
     expect((await scanner.scan()).found.map((a) => a.link)).toEqual([link(3)])
     expect(await createArtifactScanner(join(root, 'none')).scan()).toEqual({ found: [], partial: false })
+  })
+
+  it('finds an artifact whose line is longer than one scan reads, over several scans', async () => {
+    const { root, file } = projects()
+    writeFileSync(file, publish(1, { title: 'Long report '.repeat(40) }))
+    const scanner = createArtifactScanner(root, { maxBytes: 200 })
+    const found = []
+    for (let i = 0; i < 40 && found.length === 0; i += 1) found.push(...(await scanner.scan()).found)
+    expect(found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('reads on when each scan is past its time cap at once, as after a long folder listing', async () => {
+    const { root, file } = projects()
+    writeFileSync(file, publish(1))
+    let time = 0
+    const scanner = createArtifactScanner(root, { maxMs: 100, now: () => (time += 1000) })
+    const found = []
+    for (let i = 0; i < 5 && found.length === 0; i += 1) found.push(...(await scanner.scan()).found)
+    expect(found.map((a) => a.link)).toEqual([link(1)])
+  })
+
+  it('gives each artifact once when two scans run at the same time', async () => {
+    const { root, file } = projects()
+    writeFileSync(file, publish(1) + publish(2))
+    const scanner = createArtifactScanner(root)
+    const [a, b] = await Promise.all([scanner.scan(), scanner.scan()])
+    expect([...a.found, ...b.found].map((f) => f.link)).toEqual([link(1), link(2)])
   })
 })

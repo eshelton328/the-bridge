@@ -70,7 +70,8 @@ const User = z.object({
 })
 
 type Pending = { readonly title: string | undefined; readonly description: string }
-type FileState = { offset: number; skipLine: boolean; readonly pending: Map<string, Pending> }
+/** Where the next read of a file starts: `offset` is a line's start, and `carry` the bytes read after it. */
+type FileState = { offset: number; carry: Buffer; skipLine: boolean; readonly pending: Map<string, Pending> }
 
 /** The artifacts of one line, and the calls it starts or ends in `pending`. */
 function readLine(line: string, pending: Map<string, Pending>, found: FoundArtifact[]) {
@@ -134,60 +135,71 @@ export function createArtifactScanner(
   { maxMs = 1500, maxBytes = 32 * 1024 * 1024, now = Date.now }: Limits = {},
 ): ArtifactScanner {
   const states = new Map<string, FileState>()
-  return {
-    async scan() {
-      const start = now()
-      const found: FoundArtifact[] = []
-      let budget = maxBytes
-      let partial = false
-      for (const { path, size } of await sessionFiles(projects)) {
-        let state = states.get(path)
-        // A file that became shorter was written again: read it from the start.
-        if (state === undefined || size < state.offset) {
-          state = { offset: 0, skipLine: false, pending: new Map() }
-          states.set(path, state)
-        }
-        if (state.offset >= size) continue
-        if (budget <= 0 || now() - start > maxMs) {
-          partial = true
-          break
-        }
-        const handle = await open(path, 'r').catch(() => undefined)
-        if (handle === undefined) continue
-        try {
-          // Lines split on the byte 0x0a, which no UTF-8 character holds, so an offset is always a line's start.
-          let carry = Buffer.alloc(0)
-          while (state.offset + carry.length < size && budget > 0 && now() - start <= maxMs) {
-            const at = state.offset + carry.length
-            const length = Math.min(chunkBytes, size - at, budget)
-            const buffer = Buffer.alloc(length)
-            const { bytesRead } = await handle.read(buffer, 0, length, at)
-            if (bytesRead === 0) break
-            budget -= bytesRead
-            let bytes = Buffer.concat([carry, buffer.subarray(0, bytesRead)])
-            let end = bytes.indexOf(10)
-            while (end !== -1) {
-              const line = bytes.subarray(0, end)
-              state.offset += end + 1
-              if (state.skipLine) state.skipLine = false
-              else readLine(line.toString('utf8'), state.pending, found)
-              bytes = bytes.subarray(end + 1)
-              end = bytes.indexOf(10)
-            }
-            carry = bytes
-            if (carry.length > maxLineBytes) {
-              state.offset += carry.length
-              state.skipLine = true
-              carry = Buffer.alloc(0)
-            }
-          }
-          if (state.offset + carry.length < size) partial = true
-        } finally {
-          await handle.close()
-        }
-        if (partial) break
+  // One scan at a time: two at once would read the same bytes from the same offset.
+  let queue: Promise<unknown> = Promise.resolve()
+  const scanOnce = async (): Promise<ArtifactScan> => {
+    const start = now()
+    const found: FoundArtifact[] = []
+    let budget = maxBytes
+    let partial = false
+    // Each scan reads at least one chunk, also past its time cap, so a slow disk or a long listing still moves on.
+    let progressed = false
+    const allowed = () => budget > 0 && (!progressed || now() - start <= maxMs)
+    for (const { path, size } of await sessionFiles(projects)) {
+      let state = states.get(path)
+      // A file that became shorter was written again: read it from the start.
+      if (state === undefined || size < state.offset) {
+        state = { offset: 0, carry: Buffer.alloc(0), skipLine: false, pending: new Map() }
+        states.set(path, state)
       }
-      return { found, partial }
+      if (state.offset + state.carry.length >= size) continue
+      if (!allowed()) {
+        partial = true
+        break
+      }
+      const handle = await open(path, 'r').catch(() => undefined)
+      if (handle === undefined) continue
+      try {
+        // Lines split on the byte 0x0a, which no UTF-8 character holds, so an offset is always a line's start. A line
+        // that a scan does not finish stays in `carry`, and the next scan reads on after it.
+        while (state.offset + state.carry.length < size && allowed()) {
+          const at = state.offset + state.carry.length
+          const length = Math.min(chunkBytes, size - at, budget)
+          const buffer = Buffer.alloc(length)
+          const { bytesRead } = await handle.read(buffer, 0, length, at)
+          if (bytesRead === 0) break
+          progressed = true
+          budget -= bytesRead
+          let bytes = Buffer.concat([state.carry, buffer.subarray(0, bytesRead)])
+          let end = bytes.indexOf(10)
+          while (end !== -1) {
+            const line = bytes.subarray(0, end)
+            state.offset += end + 1
+            if (state.skipLine) state.skipLine = false
+            else readLine(line.toString('utf8'), state.pending, found)
+            bytes = bytes.subarray(end + 1)
+            end = bytes.indexOf(10)
+          }
+          state.carry = bytes
+          if (state.carry.length > maxLineBytes) {
+            state.offset += state.carry.length
+            state.skipLine = true
+            state.carry = Buffer.alloc(0)
+          }
+        }
+        if (state.offset + state.carry.length < size) partial = true
+      } finally {
+        await handle.close()
+      }
+      if (partial) break
+    }
+    return { found, partial }
+  }
+  return {
+    scan() {
+      const next = queue.then(scanOnce, scanOnce)
+      queue = next.catch(() => undefined)
+      return next
     },
   }
 }
