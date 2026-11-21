@@ -521,6 +521,28 @@ describe('a send that a reload cut off (send ID, backend #369)', () => {
       expect(fake.posts).toHaveLength(1)
     })
 
+  it('applies no late result to a restored send that the owner sent again while it was read', async () => {
+    const fake = withChats()
+    const sendId = await sendThenAbortedReload(fake)
+    fake.setSendResult(plan, sendId, 'pending')
+    await openChat(phone, 'plan the slice')
+    await expect.poll(() => fake.resultReads.length).toBeGreaterThanOrEqual(1)
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    // The owner sends the text put back while its read waits; the server takes it.
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+    await expect.element(box('plan the slice')).toHaveValue('')
+    // The first send's result comes late.
+    const reads = fake.resultReads.length
+    fake.setSendResult(plan, sendId, 'notSubmitted')
+    await expect.poll(() => fake.resultReads.length, { timeout: 5000 }).toBeGreaterThan(reads)
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await expect.element(box('plan the slice')).toHaveValue('')
+    expect(chatOf('plan the slice').getByText('Not sent — the chat did not take the message').elements()).toHaveLength(
+      0,
+    )
+  })
+
   it('forgets a send whose request got no answer once the owner clears its text, with no read', async () => {
     const fake = withChats()
     const answer = held()

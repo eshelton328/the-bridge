@@ -88,6 +88,8 @@ async function settle(state: string | undefined, drafts: DraftBook, send: KeptSe
         if (started !== generation) return
         continue
       }
+      // The owner sent the chat again meanwhile, which settles a restored send, or another read settled it.
+      if (!stillKept(state, send.sendId)) return
       if (result === 'failed') {
         const forChat = failed.get(send.liveChat) ?? new Set()
         forChat.add(send)
@@ -106,6 +108,9 @@ async function settle(state: string | undefined, drafts: DraftBook, send: KeptSe
     reading.delete(send.sendId)
   }
 }
+
+/** Whether `sendId` is still kept for `state`. */
+const stillKept = (state: string | undefined, sendId: string) => loadSends(state).some((send) => send.sendId === sendId)
 
 let stopWatch: (() => void) | undefined
 
