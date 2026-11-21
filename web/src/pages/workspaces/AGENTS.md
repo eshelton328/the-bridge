@@ -36,7 +36,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   or within 5 s after it showed again is iOS closing it in the
   background (`pageResume.ts`): no line and no report, and it reads
   again once the page shows, at once if it does; one such miss for each
-  trip. An answer from the server, a 5xx too, is reported as before.
+  trip. An answer from the server, a 5xx too, is reported as before. The
+  list read (`GET /api/workspaces`) takes the same rule: such a miss
+  shows no notice and reads the list again once the page shows; a second
+  one in the same trip, or any answer from the server, shows the notice
+  (`app/WorkspacesLiveListResume.test.tsx`).
 - A live Claude chat's pane shows its transcript (slice 3b):
   `liveTranscript.ts` opens `GET /api/chats/:chat/transcript/events`,
   then reads `GET /api/chats/:chat/transcript`, and applies each
