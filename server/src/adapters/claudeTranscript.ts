@@ -42,6 +42,26 @@ const Line = z.object({
   message: z.object({ content: z.union([z.string(), z.array(z.unknown())]) }),
 })
 
+/**
+ * A prompt that the owner sent while the chat worked: Claude Code stores it as a `queued_command` attachment at its
+ * place in the file, with no user line, and marks it `origin.kind` "human", `commandMode` "prompt" and
+ * `humanTurn`. A peer's message and a background task's report come the same way, with other marks.
+ */
+const QueuedLine = z.object({
+  type: z.literal('attachment'),
+  uuid: Id,
+  isSidechain: z.boolean().optional(),
+  attachment: z.object({
+    type: z.literal('queued_command'),
+    // Text, or text and image blocks when the owner pasted an image.
+    prompt: z.union([z.string(), z.array(z.unknown())]),
+    commandMode: z.string().optional(),
+    humanTurn: z.boolean().optional(),
+    isMeta: z.boolean().optional(),
+    origin: z.object({ kind: z.string() }).optional(),
+  }),
+})
+
 /** The text, cut at the limit; a cut never splits a character's surrogate pair. */
 const textOf = (text: string) => {
   if (text.length <= maxEntryText) return { text, cut: false }
@@ -110,8 +130,41 @@ function promptOf(raw: string, uploads: string | undefined): { text: string; fil
   return { text: text.slice(0, at).trimEnd(), files }
 }
 
+/** The entry of an owner's prompt: a slash command as typed, its error output, or the prompt with its files. */
+function promptEntries(uuid: string, raw: string, options: TranscriptOptions): TranscriptEntry[] {
+  const command = commandOf(raw)
+  if (command === null) return []
+  if (command !== undefined && 'error' in command) {
+    const cut = command.error.length > maxErrorText
+    return [{ type: 'error', id: uuid, text: command.error.slice(0, maxErrorText), cut }]
+  }
+  if (command !== undefined) return [{ type: 'user', id: uuid, ...textOf(command.command) }]
+  const prompt = promptOf(raw, options.uploads)
+  if (prompt.text === '' && prompt.files === undefined) return []
+  return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]
+}
+
 /** The entries of one session line, in order; `results` gets the IDs of the tool calls it answers. */
 function entriesOf(value: unknown, options: TranscriptOptions, results: Set<string>): TranscriptEntry[] {
+  const queued = QueuedLine.safeParse(value)
+  if (queued.success) {
+    const { uuid, isSidechain, attachment } = queued.data
+    const owners =
+      attachment.origin?.kind === 'human' &&
+      attachment.commandMode === 'prompt' &&
+      attachment.humanTurn === true &&
+      attachment.isMeta !== true
+    if (isSidechain === true || !owners) return []
+    const { prompt } = attachment
+    const raw =
+      typeof prompt === 'string'
+        ? prompt
+        : prompt
+            .map((b) => Block.safeParse(b))
+            .flatMap((b) => (b.success && b.data.type === 'text' ? [b.data.text] : []))
+            .join('\n\n')
+    return promptEntries(uuid, raw, options)
+  }
   const line = Line.safeParse(value)
   const { data } = line
   // A compact summary is Claude Code's own text for the model, not a prompt.
@@ -123,16 +176,7 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
   if (type === 'user') {
     for (const b of blocks) if (b.type === 'tool_result') results.add(b.tool_use_id)
     const raw = blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n')
-    const command = commandOf(raw)
-    if (command === null) return []
-    if (command !== undefined && 'error' in command) {
-      const cut = command.error.length > maxErrorText
-      return [{ type: 'error', id: uuid, text: command.error.slice(0, maxErrorText), cut }]
-    }
-    if (command !== undefined) return [{ type: 'user', id: uuid, ...textOf(command.command) }]
-    const prompt = promptOf(raw, options.uploads)
-    if (prompt.text === '' && prompt.files === undefined) return []
-    return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]
+    return promptEntries(uuid, raw, options)
   }
   return blocks.flatMap((b, i): TranscriptEntry[] => {
     if (b.type === 'text')

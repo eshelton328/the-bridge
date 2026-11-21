@@ -41,7 +41,11 @@ client of a socket or a file sits beside them.
   `pasted_content` tags that Claude Code puts around a paste are
   removed, and the file lines that `uploads.ts` adds below a prompt
   with files become the entry's `files`, the name of each file only
-  (`claudeTranscript.test.ts`). A slash command's own line shows as
+  (`claudeTranscript.test.ts`). A prompt sent while the chat works is
+  a `queued_command` attachment line, with no user line; it is the
+  owner's prompt, at its place, only with `origin.kind` "human",
+  `commandMode` "prompt" and `humanTurn`, and no `isMeta` (a peer's
+  message and a task report come the same way). A slash command's own line shows as
   the owner typed it (`/compact keep the plan`), its
   `<local-command-stderr>` line is an `error` entry with the text only
   (no tags, no colour codes, at most 500 characters), and its
