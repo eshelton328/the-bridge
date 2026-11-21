@@ -71,7 +71,7 @@ export type EffortOutcome = Exclude<CommandOutcome, 'sent' | 'notSubmitted'> | '
  * with the session when the old chat ended and no new one resumed it; else why nothing was sent, as an effort
  * change, or `launchArgsUnknown`, `skipsPermissions`, `folderChanged` or `sameModel`.
  */
-type RestartOutcome =
+export type RestartOutcome =
   | Exclude<EffortOutcome, 'set' | 'effortNotConfirmed'>
   | 'launchArgsUnknown'
   | 'skipsPermissions'
