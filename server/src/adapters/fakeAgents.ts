@@ -105,6 +105,8 @@ export type FakeAgents = AgentPort & {
   readonly changeLayout: (workspace: WorkspaceId) => void
   /** Tells each subscription that the list changed. */
   readonly changeList: () => void
+  /** Gives a chat a new session, as /clear does: the chat takes the ID `next`, and each subscription is told. */
+  readonly renewSession: (chat: ChatId, next: ChatId) => void
   /** Ends each subscription with `error`, as a host that stops answering. */
   readonly endAll: (error: AgentPortError) => void
   /** Each prompt and stop that a chat got, in order. */
@@ -255,6 +257,13 @@ export function createFakeAgents(
       tell({ type: 'layoutChanged', workspace })
     },
     changeList() {
+      tell({ type: 'workspacesChanged' })
+    },
+    renewSession(chat, next) {
+      const found = chatOf(chat)
+      if (found === undefined) throw new Error(`the fake has no chat ${chat}`)
+      found.id = next
+      transcripts.delete(chat)
       tell({ type: 'workspacesChanged' })
     },
     inputs: () => [...inputs],

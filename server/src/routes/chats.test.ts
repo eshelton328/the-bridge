@@ -68,6 +68,32 @@ describe('GET /api/chats/:chat/transcript/events', () => {
     expect(JSON.stringify(logger.lines())).not.toContain(text)
   })
 
+  it('sends one not-found error and ends when the chat leaves the list (after /clear), with no transcript text', async () => {
+    const logger = memoryLogger()
+    const agents = createFakeAgents(machine)
+    const res = await createApp({ agents, owner, log: logger.log }).request(eventsPath(themes), { headers: local })
+    if (!res.body) throw new Error('no body')
+    const reader: ReadableStreamDefaultReader<Uint8Array> = res.body.getReader()
+    const decoder = new TextDecoder()
+    let text = ''
+    agents.renewSession(ChatId.parse(themes), ChatId.parse('test-mac/bridge-themes-2'))
+    for (;;) {
+      const read = await reader.read()
+      if (read.done) break
+      text += decoder.decode(read.value)
+    }
+    const error = /event: error\ndata: (.*)\n/.exec(text)?.[1]
+    expect(ErrorBody.parse(JSON.parse(error ?? '')).error).toMatchObject({
+      kind: 'not-found',
+      message: 'no chat has this ID',
+    })
+    expect(text.match(/event: error/g)).toHaveLength(1)
+    expect(text).not.toContain('transcript.changed')
+    expect(agents.watchers()).toBe(0)
+    expect(agents.subscriptions()).toBe(0)
+    expect(logger.lines().some((l) => JSON.stringify(l).includes('notFound'))).toBe(true)
+  })
+
   it('answers 404 for a chat that the machine does not have and 400 for an ID with no machine, and watches nothing', async () => {
     const agents = createFakeAgents(machine)
     const app = createApp({ agents, owner, log: memoryLogger().log })

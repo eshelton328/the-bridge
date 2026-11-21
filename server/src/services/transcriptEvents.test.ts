@@ -15,6 +15,7 @@ const client = () => {
     ends,
     send: (e: TranscriptChangedEvent) => events.push(e),
     end: (e: { reason: string }) => ends.push(e.reason),
+    gone: () => ends.push('gone'),
   }
 }
 
@@ -65,6 +66,25 @@ describe('transcript events', () => {
     agents.changeTranscript(themes, { type: 'user', id: 'u10', text: 'after', cut: false })
     await tick()
     expect(c.events).toEqual([])
+  })
+
+  it('ends with gone, once, when a list change leaves the chat out (after /clear), and then watches nothing', async () => {
+    const agents = createFakeAgents(machine)
+    const c = client()
+    const connected = await connectTranscript(agents, themes, c)
+    if (!connected.ok || connected.value === null) throw new Error('not connected')
+    expect(agents.subscriptions()).toBe(1)
+    agents.changeList()
+    await tick()
+    expect(c.ends).toEqual([])
+    agents.renewSession(themes, ChatId.parse('test-mac/bridge-themes-2'))
+    await tick()
+    agents.changeList()
+    await tick()
+    expect(c.ends).toEqual(['gone'])
+    expect(c.events).toEqual([])
+    expect(agents.watchers()).toBe(0)
+    expect(agents.subscriptions()).toBe(0)
   })
 
   it('gives null and watches nothing for a chat that the machine does not have', async () => {

@@ -4,7 +4,10 @@
 // opens is not lost. On each change it reads the transcript again and
 // sends the entries that are new or changed since its last read, in
 // transcript order. It sends nothing for a read with no change. With no
-// stream open for a chat, nothing watches it (d-112).
+// stream open for a chat, nothing watches it (d-112). Each stream also
+// takes the list's changes: when a read then finds no such chat (after
+// /clear the pane has a new session, so a new chat ID), the stream ends
+// with `gone`, so the client stops waiting on a chat that has left.
 import { type ChatId, EventSource, type TranscriptChangedEvent, type TranscriptEntry } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import type { AgentPort, AgentPortError } from './agentPort.ts'
@@ -14,6 +17,8 @@ export type TranscriptClient = {
   readonly send: (event: TranscriptChangedEvent) => void
   /** Ends the client's stream: the agents stopped answering. */
   readonly end: (error: AgentPortError) => void
+  /** Ends the client's stream: the machine no longer has the chat. */
+  readonly gone: () => void
 }
 
 /**
@@ -42,6 +47,7 @@ export async function connectTranscript(
   const stop = () => {
     over = true
     watch.close()
+    list.close()
   }
 
   const refresh = async (): Promise<void> => {
@@ -58,7 +64,12 @@ export async function connectTranscript(
       client.end(read.error)
       return
     }
-    const entries = read.value?.entries ?? []
+    if (read.value === null) {
+      stop()
+      client.gone()
+      return
+    }
+    const entries = read.value.entries
     const changed = entries.filter((e) => known.get(e.id) !== JSON.stringify(e))
     remember(changed)
     if (changed.length > 0)
@@ -76,13 +87,22 @@ export async function connectTranscript(
       else again = true
     },
     (error) => {
-      if (over) return
-      stop()
-      client.end(error)
+      ended(error)
     },
   )
+  const ended = (error: AgentPortError) => {
+    if (over) return
+    stop()
+    client.end(error)
+  }
+  // A changed list can mean that the chat has left; the read after it tells.
+  const list = agents.subscribe((event) => {
+    if (event.type !== 'workspacesChanged') return
+    if (!opening) void refresh()
+    else again = true
+  }, ended)
   let opening = true
-  await watch.ready
+  await Promise.all([watch.ready, list.ready])
   const first = await agents.readTranscript(chat)
   opening = false
   if (isOver()) return first.ok ? ok(() => undefined) : first
