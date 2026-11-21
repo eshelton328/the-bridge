@@ -134,3 +134,14 @@ The blind second review of round 3 (`reports/fidelity/inbox/D19.sideBySide.png`,
 - Read the whole prompt, Undo, SOURCES links, MY NOTES text and placeholder, RUN IN title at 14 px: fixed with the Figma sizes. Read the whole prompt and Undo are Geist Medium 12 (`small` at the `label` weight), the source links Regular 12 (`small`; rows now 24 px apart, as Figma's y 776 and 800), the note and its placeholder Regular 13 (`bodySm`, `TextArea textSize="sm"`), and the RUN IN title Medium 13 (`labelSm`).
 - Change larger: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Since beta.7 Change is `textSize="xs"`, Figma's (see Button labels).
 - RUN IN card 58 against 52 px: in part. Its title is now 13 px; the card keeps the `Panel` padding and the `sm` button height.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

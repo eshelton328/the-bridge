@@ -144,3 +144,14 @@ For D04 it also found:
   h +62 becomes h +2, and only its y +6 stays. It no longer covers
   "ncc-1701 · infra" (346:1618) and "Snoozed until tomorrow 9:00"
   (346:1624), which the covered-text check (the-bridge #34) found.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

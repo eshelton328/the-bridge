@@ -2,7 +2,9 @@
 // the needs-you count on Inbox (d-047: More comes last). Artifacts and
 // Toolkit come before More, as the Toolkit page's D1 draws them (d-105).
 // Each item carries its Figma layer name (`rail · Inbox`) for the fidelity
-// check. Props only; the page entry does the navigation.
+// check. With `push`, the Notifications switch sits at the rail's end
+// (d-118; Figma has none, so each desktop frame records it as a deviation).
+// Props only; the page entry does the navigation.
 import {
   ArtifactsIcon,
   InboxIcon,
@@ -13,6 +15,8 @@ import {
   ToolkitIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
+import type { PushSwitch } from '../lib/pushSwitch.ts'
+import { NotificationsSwitch } from './NotificationsSwitch.tsx'
 
 type AppRailPage = 'inbox' | 'workspaces' | 'projects' | 'artifacts' | 'toolkit' | 'more'
 
@@ -21,9 +25,11 @@ export type AppRailProps = {
   /** The number of Inbox items that need the owner. */
   inboxBadge: number
   onSelect?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118); the rail has none when not set, as in the Figma states. */
+  push?: PushSwitch | undefined
 }
 
-export function AppRail({ selected, inboxBadge, onSelect }: AppRailProps) {
+export function AppRail({ selected, inboxBadge, onSelect, push }: AppRailProps) {
   return (
     <NavRail
       selected={selected}
@@ -41,6 +47,7 @@ export function AppRail({ selected, inboxBadge, onSelect }: AppRailProps) {
         { value: 'toolkit', label: 'Toolkit', figma: 'rail · Toolkit', icon: <ToolkitIcon /> },
         { value: 'more', label: 'More', figma: 'rail · More', icon: <MoreIcon /> },
       ]}
+      footer={push === undefined ? undefined : <NotificationsSwitch push={push} layout="stacked" />}
     />
   )
 }

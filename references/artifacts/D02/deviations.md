@@ -99,3 +99,14 @@ block, preview and "Made in", 8 under "MADE IN", 10 in the bar. The link
 mark in the preview's footer (403:500) is the library's `LinkMarkIcon
 size="12"` (`LinkMark`), which fills its box: 12 px against Figma's 13,
 as 12 is on the 4 px icon scale. As T2's.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

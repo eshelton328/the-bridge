@@ -16,6 +16,7 @@ import {
   useInboxUi,
 } from './inboxStore.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
+import { usePushSwitch } from '../../state/pushStore.ts'
 
 const reportCopy = (error: unknown) => {
   report(error, 'handler')
@@ -25,6 +26,7 @@ const route = getRouteApi('/inbox')
 
 export function InboxPage() {
   const state = route.useLoaderData()
+  const push = usePushSwitch()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const groupsOpen = useInboxGroupsOpen()
@@ -63,6 +65,7 @@ export function InboxPage() {
   }
   return (
     <InboxScreen
+      push={push}
       data={state.data}
       drafts={{
         values: draftValues,

@@ -134,3 +134,14 @@ For D08 it also found:
 - The body is 14 px against Figma's 15 and the title larger: library
   type styles (`body`, `subtitle`). Since beta.7 the prompt is
   `bodyLg` (Regular 15/24), Figma's 15 px.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

@@ -98,3 +98,14 @@ title, one line, no icon and no hint, and the dragged chat in
 - The zone's 4 px inset from the pane: spacing `4`, Figma's value.
 - The zone's title: `labelLg` (16/500), Figma's size; no text style is
   16/600 (`paneTitle` is 15/600, `subtitle` 17/600).
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

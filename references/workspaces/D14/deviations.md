@@ -95,3 +95,14 @@ between the top row's panes to 60 : 40 (`ui.resize`), and the readout
   which the spacing scale does not have), centred on the pane's height.
 - The top row's split: `[60, 40]` percent, Figma's 652 and 436 of the
   row's 1088 px less the gap.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

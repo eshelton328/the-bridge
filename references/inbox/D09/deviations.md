@@ -142,3 +142,14 @@ For D09 it also found:
   as Figma's: `menu · Sort` h +24 is gone, and only x -12 stays. It no
   longer covers "Try the tablet layout on the iPad mini" (346:3816), "3h"
   (346:3819) and "Read the whole prompt" (346:3949).
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

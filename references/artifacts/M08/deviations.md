@@ -90,3 +90,14 @@ shorter, below Figma's status bar (d-102), and the position check adds
   entry; Artifacts is the page on screen. The drawer opens at any width
   when a state sets `moreOpen`, so the story shows it at the width
   Storybook gives it, as Toolkit M4's does.
+
+## Notifications switch (d-118)
+
+In the app, the More drawer has a Notifications switch below its pages, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/MoreDrawer.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

@@ -76,3 +76,14 @@ it (`forkDialog`, `ui.chatDialog: 'fork'`).
   `fg.subtle` (#7986a6), the faintest dark text token, as on T08.
   The hint keeps `fg.subtle`: #4a5675 on the dark surface is under
   4.5:1 and fails WCAG 1.4.3 (coordinator, d-100).
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

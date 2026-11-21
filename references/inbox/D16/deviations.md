@@ -154,3 +154,14 @@ The blind second review of round 3 (`reports/fidelity/inbox/D16.sideBySide.png`,
 - Change button larger and 25 px high: recorded. Figma sets these labels in Geist Medium 12 (Start in SemiBold 13). `Button` draws its label in `label` (14) at every size, so `size="sm"` changes only the height. LIBRARY_GAPS.md, row "Button label size". Since beta.7 Change is `textSize="xs"` and Start `textSize="smStrong"`, Figma's (see Button labels).
 - SOURCES links larger, 24 px apart: fixed with `small`; the rows are now 24 px apart, as Figma's 403:1901 and 403:1909 (y 776 and 800).
 - Undo on the change line larger: fixed. It is Geist Medium 12 (403:1980), `small` at the `label` weight.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

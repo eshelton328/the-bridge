@@ -9,6 +9,7 @@ import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { ToolkitScreen } from './screens/ToolkitScreen.tsx'
 import type { ToolkitUi } from './types.ts'
+import { usePushSwitch } from '../../state/pushStore.ts'
 
 const route = getRouteApi('/toolkit')
 
@@ -20,11 +21,13 @@ type Changed = { of: ToolkitUi; ui: Partial<ToolkitUi> }
 
 export function ToolkitPage() {
   const state = route.useLoaderData()
+  const push = usePushSwitch()
   const navigate = route.useNavigate()
   const [changed, setChanged] = useState<Changed>({ of: state.ui, ui: {} })
   const own = changed.of === state.ui ? changed.ui : {}
   return (
     <ToolkitScreen
+      push={push}
       data={state.data}
       ui={{ ...state.ui, ...own }}
       viewport="desktop"

@@ -74,6 +74,7 @@ import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 // The rail's slot is a flex column; the rail fills it.
 const railSlot = css({ display: 'flex', flexDirection: 'column', flex: '1', minH: '[0]' })
@@ -83,6 +84,8 @@ export type WorkspacesScreenProps = {
   ui: WorkspacesUi
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
+  push?: PushSwitch | undefined
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
@@ -116,6 +119,7 @@ export function WorkspacesScreen({
   ui: stateUi,
   viewport,
   onNavigate,
+  push,
   onUiChange,
   onSend,
   onStop,
@@ -231,6 +235,7 @@ export function WorkspacesScreen({
             ui={ui}
             viewport={viewport}
             onNavigate={onNavigate}
+            push={push}
             onSend={onSend}
             onStop={onStop}
             filesOf={filesOf}
@@ -267,6 +272,7 @@ function WorkspacesLayout({
   ui,
   viewport,
   onNavigate,
+  push,
   onSend,
   onStop,
   filesOf,
@@ -312,6 +318,7 @@ function WorkspacesLayout({
         text={data.phone}
         ui={ui}
         onNavigate={onNavigate}
+        push={push}
         onUiChange={change}
         drafts={drafts}
         onSend={onSend}
@@ -331,7 +338,7 @@ function WorkspacesLayout({
   const current = workspaces.find((w) => w.id === shown.current)
   const rail = (
     <div data-figma="nav rail" className={railSlot}>
-      <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} />
+      <AppRail selected="workspaces" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
     </div>
   )
   // The focused pane when it is a chat: only a chat can show alone. Beside the workbench any pane can be focused.

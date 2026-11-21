@@ -10,6 +10,7 @@ import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { ArtifactsScreen } from './screens/ArtifactsScreen.tsx'
 import type { ArtifactsUi, CopiedLink } from './types.ts'
+import { usePushSwitch } from '../../state/pushStore.ts'
 
 const route = getRouteApi('/artifacts')
 
@@ -24,6 +25,7 @@ const reportCopy = (error: unknown) => {
 
 export function ArtifactsPage() {
   const state = route.useLoaderData()
+  const push = usePushSwitch()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   // Another ?state= starts from its own ui.
@@ -42,6 +44,7 @@ export function ArtifactsPage() {
   }, [copiedLink])
   return (
     <ArtifactsScreen
+      push={push}
       data={state.data}
       ui={ui}
       viewport="desktop"
