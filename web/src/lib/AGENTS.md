@@ -29,6 +29,10 @@ state file and a page are in `screenState.ts` (d-082).
   starts `holdTimers()` (`holdTimers.ts`) before the click and moves the
   clock itself: a busy runner can spend the 2 s in one click
   (`ArtifactsCopyLink.test.tsx`).
+- A Vitest page action or a failed `expect.element` try moves the held
+  clock by the real time it takes. While a held timer must not fire, use
+  a DOM event or `element.click()` and wait with `afterRendering()`
+  (`InboxPhone.test.tsx`, the long touch that leaves the Inbox).
 - Before a check of where an Ark popover or menu sits, wait until its
   positioner has the `--y` zag sets: until zag places it, the positioner
   draws it 100vh above the window (`SkillListHeight.test.tsx`).
