@@ -82,7 +82,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   summary of its kinds and counts in order, "Ran 3 commands, read 2
   files" (`blocks/toolGroups.ts`), whose tap opens the run's rows
   (`blocks/ToolGroup.tsx`); the open state is the group's own, so a tap
-  renders no other entry. The newest run of a working chat stays open
+  renders no other entry, and its first call's entry ID keys it, so it
+  stays open while older entries drop off the 500 cap. The newest run of a working chat stays open
   until an entry follows it. A call without a kind (the fixtures, an
   older server) draws as Figma's tool line and is never grouped
   (`app/WorkspacesToolRows.test.tsx`; LIBRARY_GAPS.md: Tool row icon and

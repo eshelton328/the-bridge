@@ -92,6 +92,8 @@ export const ChatEntry = z.discriminatedUnion('type', [
    */
   z.object({
     type: z.literal('tool'),
+    /** A live call's entry ID from the server, which keys its group while older entries drop off the front. */
+    id: z.string().optional(),
     name: z.string(),
     target: z.string(),
     running: z.boolean().optional(),

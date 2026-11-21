@@ -352,6 +352,7 @@ describe('watchTranscript', () => {
     })
     expect(chatEntryOf(tool('t1', true), 'claude')).toEqual({
       type: 'tool',
+      id: 't1',
       name: 'Bash',
       target: 'pnpm',
       running: true,

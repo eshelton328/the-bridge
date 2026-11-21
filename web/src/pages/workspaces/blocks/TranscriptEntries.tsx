@@ -38,7 +38,9 @@ export const TranscriptEntries = memo(function TranscriptEntries({
       {items.map((item, i) =>
         item.type === 'tools' ? (
           <ToolGroup
-            key={`tools-${String(item.index)}`}
+            // The first call's ID keys the group, so an older entry that drops off the front (the 500 cap) keeps an open
+            // group open; its place is the key only when the call has no ID.
+            key={`tools-${item.calls[0]?.id ?? String(item.index)}`}
             calls={item.calls}
             live={working === true && i === items.length - 1}
           />

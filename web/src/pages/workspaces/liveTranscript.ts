@@ -521,6 +521,7 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
       // R32: the kind, title and label when the server sends them (backend #371); an older server's entry has none.
       return {
         type: 'tool',
+        id: entry.id,
         name: entry.name,
         target: entry.target,
         running: entry.running,

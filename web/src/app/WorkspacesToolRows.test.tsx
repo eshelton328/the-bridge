@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from '@bridge/contract'
+import { maxTranscriptEntries, type TranscriptEntry } from '@bridge/contract'
 import Markdown from 'react-markdown'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
@@ -174,6 +174,29 @@ for (const device of devices)
       await expect.element(summary).toHaveAttribute('aria-expanded', 'true')
       await userEvent.keyboard(' ')
       await expect.element(summary).toHaveAttribute('aria-expanded', 'false')
+      expect(getReports()).toEqual([])
+    })
+
+    it('keeps an opened run open when older entries drop off the front of a full transcript (the 500 cap)', async () => {
+      const filler = Array.from({ length: maxTranscriptEntries - 4 }, (_, i) =>
+        user(`f${String(i)}`, `note ${String(i)}`),
+      )
+      const server = stubChat('idle', [
+        user('u1', 'Fix the build'),
+        bash('t1'),
+        read('t2'),
+        reply('a1', 'All green.'),
+        ...filler,
+      ])
+      await openChat(device.size, 'Fix the build')
+      const summary = group('Ran 1 command, read 1 file')
+      await userEvent.click(summary)
+      await expect.element(summary).toHaveAttribute('aria-expanded', 'true')
+      // One more entry: the first one drops, and every entry after it moves up one place.
+      server.push(plan, [user('n1', 'one more')])
+      await expect.element(page.getByText('one more', { exact: true })).toBeInTheDocument()
+      await expect.element(page.getByText('Fix the build', { exact: true })).not.toBeInTheDocument()
+      await expect.element(summary).toHaveAttribute('aria-expanded', 'true')
       expect(getReports()).toEqual([])
     })
 
