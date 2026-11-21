@@ -109,12 +109,14 @@ export type FakeWorkspacesOptions = {
   readonly eventOnClear?: boolean
   /** The tabs of a workspace, by its ID: each tab's chats in tree order, the first tab active. One tab when not set. */
   readonly tabs?: Readonly<Record<string, readonly (readonly string[])[]>>
+  /** The split tree of each tab of a workspace, by its ID, in place of `tabs`' rows. */
+  readonly roots?: Readonly<Record<string, readonly LayoutNode[]>>
 }
 
 export function fakeWorkspacesServer(
   transcripts: FakeTranscriptServer,
   list: unknown,
-  { eventOnClear = true, tabs: firstTabs = {} }: FakeWorkspacesOptions = {},
+  { eventOnClear = true, tabs: firstTabs = {}, roots = {} }: FakeWorkspacesOptions = {},
 ) {
   const encoder = new TextEncoder()
   let response = WorkspacesResponse.parse(list)
@@ -136,6 +138,7 @@ export function fakeWorkspacesServer(
     const listed = (response.workspaces.find((w) => w.id === workspace)?.chats ?? []).map((c) => c.id)
     const tabs =
       tabsBy.get(workspace) ??
+      roots[workspace]?.map((root) => ({ root, focused: undefined, zoomed: false })) ??
       (firstTabs[workspace] ?? [listed]).map((chats) => ({
         root: rowOf(chats.map((c) => ChatId.parse(c))),
         focused: undefined,
