@@ -67,6 +67,16 @@ Thin Hono sub-apps, one file for each area, named after the area
   one path a line below the text. A chunk of 8 MiB passes the Vite proxy
   and Tailscale Serve. The file name and
   bytes never go into a log line or an `ErrorBody` (`uploads.test.ts`).
+- `POST /api/chats/:chat/focus`, `/zoom` (`{ zoomed }`), `/swap`
+  (`{ with: <chat ID> }`) and `/close` (`{ confirm: <chat ID> }`)
+  change the chat's pane in its tab (slice W2): 204, or 404 for an
+  unknown chat. A zoom of a tab's only pane is 409 `singlePane`, a swap
+  with a chat of another tab 409 `otherTab` and with itself 400. A close
+  cannot be undone: its `confirm` must be this chat's ID (400
+  otherwise, with no call to the port), and a chat that works or whose
+  state herdr cannot tell is 409 `working`, one that waits for the
+  owner 409 `needsYou` (`chats.test.ts`). The page reads the layout
+  again on the `layout.changed` event.
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

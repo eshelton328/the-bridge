@@ -21,7 +21,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   does, never by a herdr pane ID; `TabLayout` checks that its chats are
   its panes in tree order and that the focused chat is in the tree
   (`layout.test.ts`). `zoomed` says that the tab shows only its
-  focused pane (slice W2).
+  focused pane (slice W2). A layout write request is a strict object:
+  focus is empty, zoom has `zoomed`, swap the other chat's ID, and close
+  a `confirm` that must be the closed chat's ID (`layout.test.ts`).
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its

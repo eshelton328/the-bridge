@@ -61,9 +61,9 @@ export type ChatCommand =
  * waits for the owner `needsYou`. Nothing changed unless it is `done`.
  */
 export type PaneWriteOutcome = 'done' | 'notFound'
-type ZoomOutcome = PaneWriteOutcome | 'singlePane'
-type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
-type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
+export type ZoomOutcome = PaneWriteOutcome | 'singlePane'
+export type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
+export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'

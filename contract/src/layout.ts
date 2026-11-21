@@ -108,3 +108,31 @@ export const WorkspaceLayout = z.object({ workspace: WorkspaceId, tabs: z.array(
     ctx.issues.push({ code: 'custom', message: 'two tabs have one ID', input: ctx.value, path: ['tabs'] })
 })
 export type WorkspaceLayout = z.infer<typeof WorkspaceLayout>
+
+/** The body of `POST /api/chats/:chat/focus`, which focuses the chat's pane in its tab (204): an empty object. */
+export const FocusChatRequest = z.strictObject({})
+export type FocusChatRequest = z.infer<typeof FocusChatRequest>
+
+/**
+ * The body of `POST /api/chats/:chat/zoom`: `zoomed` true shows only the chat's pane in its tab, at full size;
+ * false ends the zoom of its tab (204). A tab of one pane is 409 `chat-not-ready` `singlePane`.
+ */
+export const ZoomChatRequest = z.strictObject({ zoomed: z.boolean() })
+export type ZoomChatRequest = z.infer<typeof ZoomChatRequest>
+
+/**
+ * The body of `POST /api/chats/:chat/swap`: the chat whose pane takes this chat's place, and this chat's pane
+ * takes its place (204). Each chat keeps its ID. A chat of another tab is 409 `chat-not-ready` `otherTab`; the
+ * chat itself is 400.
+ */
+export const SwapChatsRequest = z.strictObject({ with: ChatId })
+export type SwapChatsRequest = z.infer<typeof SwapChatsRequest>
+
+/**
+ * The body of `POST /api/chats/:chat/close`, which closes the chat's pane and so ends its agent or its shell,
+ * with each command that runs in it (204). It cannot be undone, so the page asks the owner first, with the chat's
+ * name, and `confirm` must be this chat's ID (400 otherwise). A chat that works is 409 `chat-not-ready`
+ * `working`, one that waits for the owner `needsYou`.
+ */
+export const CloseChatRequest = z.strictObject({ confirm: ChatId })
+export type CloseChatRequest = z.infer<typeof CloseChatRequest>

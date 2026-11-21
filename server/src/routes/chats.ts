@@ -13,20 +13,27 @@
 // POST /:chat/uploads starts the upload of a file for that chat (slice
 // W1b, routes/uploads.ts). POST /:chat/command types /compact or /clear
 // into an idle Claude chat (slice W5, 204); the compact instructions go to
-// the port only, as a prompt's text.
+// the port only, as a prompt's text. POST /:chat/focus, /:chat/zoom,
+// /:chat/swap and /:chat/close change the chat's pane in its tab (slice W2,
+// 204); a close must name the chat in its confirm, and never ends a chat
+// that works or waits for the owner.
 import {
   ChatCommandRequest,
   ChatId,
   ClearInputRequest,
+  CloseChatRequest,
   ErrorBody,
+  FocusChatRequest,
   maxCompactChars,
   maxPromptChars,
   SendPromptRequest,
   StartUploadRequest,
   StartUploadResponse,
   StopChatRequest,
+  SwapChatsRequest,
   TranscriptChangedEvent,
   TranscriptResponse,
+  ZoomChatRequest,
 } from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
@@ -34,13 +41,23 @@ import { bodyLimit } from 'hono/body-limit'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
-import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, CommandOutcome } from '../services/agentPort.ts'
+import type {
+  AgentPort,
+  AgentPortError,
+  CancelOutcome,
+  ClearOutcome,
+  CloseOutcome,
+  CommandOutcome,
+  SwapOutcome,
+  ZoomOutcome,
+} from '../services/agentPort.ts'
 import { clearInput, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
+import { closeChat, focusChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
 
 const pingMs = 25_000
 const retryMs = 5_000
@@ -69,6 +86,36 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
   }
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
+  /** The answer to a layout write: 204 when done; the chat's state when it cannot take it. */
+  const wrote = (c: Context<AppEnv>, outcome: ZoomOutcome | SwapOutcome | CloseOutcome | 'notConfirmed') => {
+    switch (outcome) {
+      case 'done':
+        return c.body(null, 204)
+      case 'notFound':
+        return notFound(c)
+      case 'singlePane':
+        return errorJson(c, 'chat-not-ready', { state: 'singlePane', message: 'the tab has only this pane' })
+      case 'otherTab':
+        return errorJson(c, 'chat-not-ready', { state: 'otherTab', message: 'the other chat is in another tab' })
+      case 'samePane':
+        return errorJson(c, 'invalid-input', {
+          message: 'a chat cannot swap with itself',
+          issues: ['with: another chat of the same tab'],
+        })
+      case 'notConfirmed':
+        return errorJson(c, 'invalid-input', {
+          message: 'the confirm does not name this chat, so nothing closed',
+          issues: ['confirm: the ID of the chat to close'],
+        })
+      case 'working':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'working',
+          message: 'the chat works now; close it when it is idle',
+        })
+      case 'needsYou':
+        return errorJson(c, 'chat-not-ready', { state: 'needsYou', message: 'the chat waits for your answer' })
+    }
+  }
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
   const answer = (c: Context<AppEnv>, outcome: FilePromptOutcome | CancelOutcome | ClearOutcome | CommandOutcome) => {
     switch (outcome) {
@@ -174,6 +221,30 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
         return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
       },
     )
+    .post('/:chat/focus', smallJson, jsonOnly, jsonBody(FocusChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await focusChat(agents, id.data)
+      return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/zoom', smallJson, jsonOnly, jsonBody(ZoomChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await zoomChat(agents, id.data, c.req.valid('json').zoomed)
+      return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/swap', smallJson, jsonOnly, jsonBody(SwapChatsRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await swapChats(agents, id.data, c.req.valid('json').with)
+      return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/close', smallJson, jsonOnly, jsonBody(CloseChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await closeChat(agents, id.data, c.req.valid('json').confirm)
+      return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
     .post('/:chat/input/clear', smallJson, jsonOnly, jsonBody(ClearInputRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
