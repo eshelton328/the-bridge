@@ -50,8 +50,6 @@ export const transcriptText = {
   cut: 'Cut — full text not live yet',
   /** In place of the entries when the read transcript has none. */
   empty: 'No messages yet',
-  /** Before the names of the files sent with a prompt, until the page shows them as chips. */
-  files: 'Files:',
   /** The label of a slash command's error output, such as a /compact that failed. */
   error: 'Error',
   /** Under the entries while the stream is down and the page connects again. */
@@ -438,13 +436,9 @@ const agentNames: Record<AgentKind, string> = { claude: 'Claude', codex: 'Codex'
 export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry {
   const cut = 'cut' in entry && entry.cut ? { cut: transcriptText.cut } : {}
   switch (entry.type) {
-    case 'user': {
-      // Each name as inline code, so Markdown in a file name stays text.
-      const files = entry.files?.map((name) => `\`${name.replaceAll('`', '')}\``).join(', ')
-      const line = files === undefined ? '' : `${transcriptText.files} ${files}`
-      const text = line === '' ? entry.text : entry.text === '' ? line : `${entry.text}\n\n${line}`
-      return { type: 'user', text, ...cut }
-    }
+    case 'user':
+      // The file names stay data for the chips: never Markdown, so a name is shown as sent.
+      return { type: 'user', text: entry.text, ...(entry.files === undefined ? {} : { files: entry.files }), ...cut }
     case 'assistant':
       return { type: 'assistant', kind, name: agentNames[kind], text: entry.text, copy: 'Copy', ...cut }
     case 'tool':
