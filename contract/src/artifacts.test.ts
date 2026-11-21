@@ -30,6 +30,10 @@ describe('the artifacts contract', () => {
     expect(Artifact.safeParse({ ...found, path: '/home/dev/x.html' }).success).toBe(false)
   })
 
+  it('takes a found artifact only with the chat that published it', () => {
+    expect(Artifact.safeParse({ ...found, chat: null }).success).toBe(false)
+  })
+
   it('takes an owner link on any https host, and no http link', () => {
     const owned = { ...found, link: 'https://example.com/site', source: 'codex', chat: null, foundBy: 'owner' }
     expect(Artifact.safeParse(owned).success).toBe(true)

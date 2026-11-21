@@ -49,6 +49,10 @@ export const Artifact = z
     message: 'a found artifact is a Claude artifact with a claude.ai link',
     path: ['link'],
   })
+  .refine((a) => a.foundBy === 'owner' || a.chat !== null, {
+    message: 'a found artifact names the chat that published it',
+    path: ['chat'],
+  })
 export type Artifact = z.infer<typeof Artifact>
 
 /** The response of `GET /api/artifacts`: every artifact not removed, newest first. */
