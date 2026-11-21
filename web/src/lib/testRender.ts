@@ -1,10 +1,28 @@
 // Renders React into the page for a browser-mode Vitest test and returns
 // its unmount. Query the result with `page` from 'vitest/browser'. Tests
-// only; React's act() wants IS_REACT_ACT_ENVIRONMENT set.
+// only.
+//
+// React's act() wants IS_REACT_ACT_ENVIRONMENT set, and while it is set React
+// writes a warning with a component stack for each state update outside act().
+// A browser test clicks and types with real events, outside act(), so with it
+// always set one CI shard wrote 36 872 such warnings and every click paid for
+// the stacks and for sending them to the runner: a click took 5 to 8 s and three
+// files timed out (the-bridge #322, CI run 44877302138). So it is set only
+// inside inAct().
 import { act, type ReactElement } from 'react'
 import { createRoot, type RootOptions } from 'react-dom/client'
 
-Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', false)
+
+/** Runs `work` inside React's act(), with IS_REACT_ACT_ENVIRONMENT set only while it runs. */
+export async function inAct(work: () => Promise<void>): Promise<void> {
+  Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
+  try {
+    await act(work)
+  } finally {
+    Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', false)
+  }
+}
 
 const mounted = new Set<() => Promise<void>>()
 
@@ -26,13 +44,13 @@ export async function testRender(ui: ReactElement, options?: RootOptions): Promi
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container, options)
-  await act(async () => {
+  await inAct(async () => {
     root.render(ui)
     await Promise.resolve()
   })
   const unmount = async () => {
     if (!mounted.delete(unmount)) return
-    await act(async () => {
+    await inAct(async () => {
       root.unmount()
       await Promise.resolve()
     })

@@ -1,8 +1,8 @@
-import { act } from 'react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, removeDialog, searchbox, box } from './inboxRouteHelpers.ts'
+import { inAct } from '../lib/testRender.ts'
 
 // The Inbox list tools (search, Sort, Filter) and the task bar, through the
 // real route, loader and page store (see InboxRoute.test.tsx).
@@ -188,7 +188,7 @@ describe('the Inbox list tools and task bar', () => {
     await page.getByRole('button', { name: 'Done' }).click()
     await page.getByRole('button', { name: 'Toolkit' }).click()
     await expect.element(page.getByRole('heading', { name: 'Toolkit' })).toBeVisible()
-    await act(async () => {
+    await inAct(async () => {
       router.history.back()
       await router.invalidate()
     })

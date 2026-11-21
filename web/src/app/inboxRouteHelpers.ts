@@ -2,9 +2,9 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { act, createElement } from 'react'
+import { createElement } from 'react'
 import { page } from 'vitest/browser'
-import { testRender } from '../lib/testRender.ts'
+import { inAct, testRender } from '../lib/testRender.ts'
 import { routeTree } from './routeTree.gen.ts'
 
 // The helpers of the Inbox route tests (InboxRoute, InboxListTools and
@@ -24,7 +24,7 @@ export function renderInbox(state: string) {
 }
 
 export async function showState(router: ReturnType<typeof renderInbox>['router'], state: string) {
-  await act(async () => {
+  await inAct(async () => {
     await router.navigate({ to: '/inbox', search: { state } })
   })
 }

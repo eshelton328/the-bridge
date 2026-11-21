@@ -2,7 +2,6 @@ import '@fontsource-variable/geist'
 import '@fontsource-variable/geist-mono'
 import '../index.css'
 import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/react-router'
-import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFinished } from 'vitest'
 import { page } from 'vitest/browser'
@@ -13,6 +12,7 @@ import { resetAllStores } from '../state/resetStores.ts'
 import { markApp } from './appMarker.ts'
 import { stubLiveServer } from './liveServerStub.ts'
 import { routeTree } from './routeTree.gen.ts'
+import { inAct } from '../lib/testRender.ts'
 
 // iOS scrolled the installed app's document by the keyboard's height (403 px, the trace of 2026-11-19 in the brain's
 // phone-review traces) each time the composer took the focus, so the screen flashed. index.css fixes `#root` to the
@@ -20,7 +20,6 @@ import { routeTree } from './routeTree.gen.ts'
 // into a real `#root`, as main.ts does, at the phone, tablet and desktop sizes, with 3000 px of content added to every
 // scroll area in it (each ScrollFrame body, and the shell's panes where a page's list has no ScrollFrame): the document
 // stays within the window, and a scroll area in view scrolls instead.
-Reflect.set(globalThis, 'IS_REACT_ACT_ENVIRONMENT', true)
 document.documentElement.classList.add('dark')
 document.documentElement.dataset.pandaTheme = 'viewscreen'
 
@@ -84,12 +83,12 @@ async function renderRoute(path: string): Promise<HTMLElement> {
     defaultErrorComponent: RouteError,
     defaultNotFoundComponent: NotFound,
   })
-  await act(async () => {
+  await inAct(async () => {
     root.render(<RouterProvider router={router} />)
     await Promise.resolve()
   })
   onTestFinished(async () => {
-    await act(async () => {
+    await inAct(async () => {
       root.unmount()
       await Promise.resolve()
     })
