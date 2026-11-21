@@ -1354,6 +1354,18 @@ describe('herdr agents: subscribe', () => {
     expect(JSON.stringify(read)).not.toContain(marker)
   })
 
+  it('subscribes again to the chats that are left when a pane closed after the list read, and ends nothing', async () => {
+    socket.failOnce('events.subscribe', 'pane_not_found', 'pane w17:p9 not found')
+    const before = socket.requests().filter((r) => r.method === 'events.subscribe').length
+    const { ends, events, subscription } = collect()
+    await subscription.ready
+    await wait(50)
+    expect(ends).toEqual([])
+    expect(socket.requests().filter((r) => r.method === 'events.subscribe').length).toBe(before + 2)
+    expect(events).toContainEqual({ type: 'workspacesChanged' })
+    subscription.close()
+  })
+
   it('ends the subscription once, with the reason, when herdr closes the stream', async () => {
     const { ends, subscription } = collect()
     await subscription.ready
@@ -1442,6 +1454,28 @@ describe('herdr adapter transcripts', () => {
     watch.close()
     await fake.close()
     expect(changes).toBeGreaterThan(0)
+  })
+
+  it("keeps a transcript watch open, with no end, when the chat's pane closed before its status stream", async () => {
+    const fake = await startFakeHerdrSocket(
+      withAgent({
+        agent_status: 'working',
+        agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-t' },
+      }),
+    )
+    fake.failOnce('events.subscribe', 'pane_not_found', 'pane w17:p1 not found')
+    const adapter = createHerdrAgents({ socket: fake.path, machine, log, claudeProjects: projects, home })
+    const ends: string[] = []
+    const watch = adapter.watchTranscript(
+      ChatId.parse('test-mac/session-t'),
+      () => undefined,
+      (e) => ends.push(e.reason),
+    )
+    await watch.ready
+    await new Promise((r) => setTimeout(r, 50))
+    watch.close()
+    await fake.close()
+    expect(ends).toEqual([])
   })
 
   it('reads no file for a session ID that could leave the projects folder', async () => {

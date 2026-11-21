@@ -132,6 +132,13 @@ export async function startFakeHerdrSocket(results: Readonly<Record<string, unkn
         } else if (last) conn.end(line)
         else conn.write(line)
       }
+      // herdr refuses a subscription that names a pane it does not have (a pane that closed after the list read).
+      const refused = method === 'events.subscribe' ? failures.get(method) : undefined
+      if (refused !== undefined) {
+        failures.delete('events.subscribe')
+        send(`${JSON.stringify({ id, error: refused })}\n`, true)
+        return
+      }
       if (method === 'events.subscribe') {
         streams.set(conn, field(field(request, 'params'), 'subscriptions'))
         send(`${JSON.stringify({ id, result: { type: 'subscription_started' } })}\n`, false)

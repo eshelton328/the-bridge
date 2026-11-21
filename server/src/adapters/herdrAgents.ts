@@ -244,6 +244,13 @@ function portErrorOf(failure: SocketFailure): AgentPortError {
 /** The longest the adapter holds a workspace's layout change while layout events keep coming. */
 const maxLayoutWaitMs = 500
 
+/**
+ * herdr refuses a subscription that names a pane that closed after the list read (the owner closes panes). The
+ * adapter then reads the list again and subscribes to the panes that are left, this many times in a row at most.
+ */
+const maxGoneRetries = 5
+const paneGone = (failure: SocketFailure) => failure.kind === 'herdrError' && failure.code === 'pane_not_found'
+
 /** How long the adapter waits for more list events before it opens the stream again. */
 const settleMs = 100
 
@@ -982,7 +989,9 @@ export function createHerdrAgents({
             },
             onEnd: (failure) => {
               started()
-              end(portErrorOf(failure))
+              // The pane closed: its chat leaves the list, and the transcript stream ends there as gone.
+              if (paneGone(failure)) stream = undefined
+              else end(portErrorOf(failure))
             },
           })
         })
@@ -1081,6 +1090,8 @@ export function createHerdrAgents({
       /** Reads the agents, then opens the stream for their panes; `changed` tells the app to read the list once it is open. */
       /** The number of the newest open; an older one that ends its reads later opens nothing. */
       let opens = 0
+      /** The subscriptions in a row that herdr refused for a pane that closed. */
+      let goneRetries = 0
       const open = async (changed: boolean) => {
         opens += 1
         const mine = opens
@@ -1103,6 +1114,7 @@ export function createHerdrAgents({
         ]
         stream = herdrSubscribe(socket, subscriptions, {
           onStart: () => {
+            goneRetries = 0
             listening()
             if (changed) tell({ type: 'workspacesChanged' })
           },
@@ -1121,6 +1133,12 @@ export function createHerdrAgents({
             else changedLayout(workspace)
           },
           onEnd: (failure) => {
+            // A pane closed after the list read: subscribe again to the chats that are left, and end no stream.
+            if (paneGone(failure) && goneRetries < maxGoneRetries) {
+              goneRetries += 1
+              void open(true)
+              return
+            }
             end(portErrorOf(failure))
           },
         })
