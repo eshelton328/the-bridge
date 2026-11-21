@@ -32,6 +32,18 @@ const chat = (local: string, rest: Record<string, unknown>) => ({
   ...rest,
 })
 
+// A list that still has the cleared chat `mac-mini/a`.
+const stillListed = WorkspacesResponse.parse({
+  machine: 'mac-mini',
+  workspaces: [
+    {
+      id: 'mac-mini/w1',
+      label: 'w1',
+      chats: [chat('a', { kind: 'claude', title: 'a', model: 'claude-opus-5-5', status: 'idle' })],
+    },
+  ],
+})
+
 // The workspaces of D1 and D2 as the server would send them.
 const response = WorkspacesResponse.parse({
   machine: 'mac-mini',
@@ -282,9 +294,74 @@ describe('the live mapper', () => {
       reads += 1
       return ok(answer)
     }
-    const left = await readAfterClear('mac-mini/a', { read, wait: () => Promise.resolve() })
+    const left = await readAfterClear('mac-mini/a', {
+      read,
+      wait: () => Promise.resolve(),
+      signal: new AbortController().signal,
+    })
     expect(left).toBe(true)
     expect(reads).toBe(3)
+  })
+
+  it('reads no more after a /clear once the page closes the open watcher', async () => {
+    const stop = watchLiveWorkspaces({ onChange: () => undefined, open: () => new Promise<Response>(() => undefined) })
+    let reads = 0
+    let waits = 0
+    const left = await readAfterClear('mac-mini/a', {
+      read: () => {
+        reads += 1
+        return Promise.resolve(ok(stillListed))
+      },
+      wait: () => {
+        waits += 1
+        // The page unmounts during the second wait.
+        if (waits === 2) stop()
+        return Promise.resolve()
+      },
+    })
+    expect(left).toBe(false)
+    expect(reads).toBe(1)
+  })
+
+  it('ends quietly when the page closes the watcher during a read, and makes no further read', async () => {
+    const page = new AbortController()
+    let reads = 0
+    const left = await readAfterClear('mac-mini/a', {
+      signal: page.signal,
+      wait: () => Promise.resolve(),
+      read: (signal) => {
+        reads += 1
+        page.abort()
+        signal.throwIfAborted()
+        return Promise.resolve(ok(stillListed))
+      },
+    })
+    expect(left).toBe(false)
+    expect(reads).toBe(1)
+  })
+
+  it('throws a read error that is not its own abort', async () => {
+    const broken = new SyntaxError('not JSON')
+    await expect(
+      readAfterClear('mac-mini/a', {
+        signal: new AbortController().signal,
+        wait: () => Promise.resolve(),
+        read: () => Promise.reject(broken),
+      }),
+    ).rejects.toBe(broken)
+  })
+
+  it('reads nothing after a /clear with no open watcher, as there is no page to load again', async () => {
+    let reads = 0
+    const left = await readAfterClear('mac-mini/a', {
+      wait: () => Promise.resolve(),
+      read: () => {
+        reads += 1
+        return Promise.resolve(ok(stillListed))
+      },
+    })
+    expect(left).toBe(false)
+    expect(reads).toBe(0)
   })
 
   it('writes model IDs as the app does', () => {

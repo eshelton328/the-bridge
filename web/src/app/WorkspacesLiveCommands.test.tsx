@@ -447,6 +447,34 @@ describe('/clear and the pane follow (W5)', () => {
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
   })
 
+  it('reads the list no more after Clear once the page has gone', async () => {
+    // The reads after a /clear went on for 5 s after the page unmounted and reached the real server in the next test
+    // file (the-bridge #342, CI run 44884326755).
+    withChats({ eventOnClear: false })
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    await pick('plan the slice', 'Clear context…')
+    await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
+    const paths = () =>
+      vi
+        .mocked(fetch)
+        .mock.calls.map(
+          ([input]) =>
+            new URL(
+              typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
+              window.location.origin,
+            ).pathname,
+        )
+    const listReads = () => paths().filter((path) => path === '/api/workspaces').length
+    await expect.poll(() => paths().some((path) => path.endsWith('/command'))).toBe(true)
+    await view?.unmount()
+    view = undefined
+    const before = listReads()
+    // The reads come 0.3 s and 1 s after the /clear's answer: past both, none came.
+    await new Promise((resolve) => setTimeout(resolve, 1100))
+    expect(listReads()).toBe(before)
+  })
+
   it('sends Clear to the chat whose actions opened it, though the focus moves to another pane meanwhile', async () => {
     const { chats, list: workspaces } = withChats()
     await tapWorkspaces(desktop)
