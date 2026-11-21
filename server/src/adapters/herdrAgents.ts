@@ -1222,13 +1222,14 @@ export function createHerdrAgents({
             : launched.error.kind,
       })
       if (!launched.started || launched.waitFailed !== undefined) return ok(failed)
-      if (launched.agent === undefined) return ok({ state: 'starting', chat })
-      const resumed = sessionOf(launched.agent)
+      const resumed = launched.agent === undefined ? undefined : sessionOf(launched.agent)
       if (resumed !== undefined && resumed !== session) return ok(failed)
-      // The new process takes its effort from its flags, so a level the effort keys set is gone.
+      // Also when the start is still `starting`: the chat runs with this model once it is up. The new process takes its
+      // effort from its flags, so a level the effort keys set is gone.
       setEfforts.delete(effortKey(pane, path))
       setModels.set(effortKey(pane, path), { model, mtimeMs: await mtimeOf(path) })
       for (const tellList of listTellers) tellList()
+      if (launched.agent === undefined) return ok({ state: 'starting', chat })
       return ok({ state: resumed === undefined ? 'starting' : startStateOf(launched.agent), chat })
     },
     async focusChat(chat) {

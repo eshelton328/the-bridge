@@ -2346,6 +2346,16 @@ describe('herdr agents: a model restart', () => {
     expect(sent('agent.send_keys')).toEqual([])
   })
 
+  it('lists the new model when the new chat is still starting after the wait', async () => {
+    const { socket, adapter } = await setup('claude')
+    socket.failOnce('agent.wait', 'timeout', 'the agent did not settle')
+    const restarted = await adapter.restartModel(chat, 'opus')
+    const listed = await adapter.listWorkspaces()
+    await socket.close()
+    expect(restarted).toEqual({ ok: true, value: { state: 'starting', chat } })
+    expect(listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.modelId : null).toBe('opus')
+  })
+
   it('answers failed with the session when the new chat has another session, and starts no second chat', async () => {
     const other = '1c8a3d2f-5e4b-4a7c-8b9d-2f3e4d5c6b7a'
     const { socket, adapter, sent } = await setup('claude', cwd, other)
