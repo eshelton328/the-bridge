@@ -2,13 +2,15 @@
 // pane, through the agent port. A close ends the pane's agent or shell and
 // cannot be undone, so it goes to the port only when the request's confirm
 // names this chat.
-import type { ChatId } from '@bridge/contract'
+import type { ChatId, SplitDirection, SplitSide, TabId, WorkspaceId } from '@bridge/contract'
+import { splitId } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
   AgentPort,
   AgentPortError,
   CloseOutcome,
   PaneWriteOutcome,
+  SplitOutcome,
   SwapOutcome,
   ZoomOutcome,
 } from './agentPort.ts'
@@ -25,6 +27,35 @@ export function zoomChat(
   zoomed: boolean,
 ): Promise<Result<ZoomOutcome, AgentPortError>> {
   return agents.zoomChat(chat, zoomed)
+}
+
+/** Splits the pane of `chat` in two; the new pane is a shell. */
+export function splitChat(
+  agents: AgentPort,
+  chat: ChatId,
+  direction: SplitDirection,
+): Promise<Result<SplitOutcome, AgentPortError>> {
+  return agents.splitChat(chat, direction)
+}
+
+/**
+ * Sets the ratio of the split at `path` in `tab`, a tab of `workspace`: `notFound` for a tab of another workspace,
+ * with no call to the port.
+ */
+export async function setSplitRatio(
+  agents: AgentPort,
+  workspace: WorkspaceId,
+  tab: TabId,
+  path: readonly SplitSide[],
+  ratio: number,
+): Promise<Result<PaneWriteOutcome, AgentPortError>> {
+  // A tab ID is its workspace's local ID, a colon and the tab's.
+  if (
+    !splitId(tab).local.startsWith(`${splitId(workspace).local}:`) ||
+    splitId(tab).machine !== splitId(workspace).machine
+  )
+    return ok('notFound')
+  return agents.setSplitRatio(tab, path, ratio)
 }
 
 /** Swaps the places of the panes of `chat` and `other`, two chats of one tab. */

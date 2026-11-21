@@ -3,6 +3,8 @@
 // agentPortContract.ts keeps it true to the herdr adapter.
 import {
   type SplitDirection,
+  type SplitSide,
+  type ChatSummary,
   ChatId,
   type ChatStatus,
   type LayoutNode,
@@ -162,6 +164,15 @@ function mapPanes(tree: PaneTree, change: (pane: PaneId) => PaneTree): PaneTree 
   return { ...tree, first: mapPanes(tree.first, change), second: mapPanes(tree.second, change) }
 }
 
+/** The tree with the split at `path` given `ratio`; undefined when no split is there. */
+function withRatio(tree: PaneTree, path: readonly SplitSide[], ratio: number): PaneTree | undefined {
+  if (tree.kind === 'pane') return undefined
+  const [side, ...rest] = path
+  if (side === undefined) return { ...tree, ratio }
+  const part = withRatio(tree[side], rest, ratio)
+  return part === undefined ? undefined : { ...tree, [side]: part }
+}
+
 function panesOf(tree: PaneTree): PaneId[] {
   return tree.kind === 'pane' ? [tree.pane] : [...panesOf(tree.first), ...panesOf(tree.second)]
 }
@@ -244,6 +255,7 @@ export function createFakeAgents(
   /** The split tree of each workspace's tab, from its first layout write on. */
   const trees = new Map<WorkspaceId, PaneTree>()
   const treeOf = (workspace: WorkspaceSummary) => trees.get(workspace.id) ?? chainOf(workspace.chats.map((c) => c.pane))
+  let splits = 0
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
   }
@@ -423,6 +435,56 @@ export function createFakeAgents(
       transcripts.delete(chat)
       if (focus.get(workspace.id) === chat) focus.delete(workspace.id)
       tell({ type: 'workspacesChanged' })
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok('done'))
+    },
+    splitChat(chat, direction) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      const target = chatOf(chat)
+      const tree = workspace === undefined ? undefined : treeOf(workspace)
+      if (workspace === undefined || target === undefined || tree === undefined) return Promise.resolve(ok('notFound'))
+      splits += 1
+      const local = `split-${String(splits)}`
+      const shell: ChatSummary = {
+        id: ChatId.parse(`${machine}/${local}`),
+        kind: 'shell',
+        title: 'zsh',
+        model: 'zsh',
+        modelId: null,
+        effort: null,
+        contextUsed: null,
+        status: 'idle',
+        parent: null,
+        pane: PaneId.parse(`${machine}/pane-${local}`),
+      }
+      // As herdr does: the chat's pane becomes a split of it and the new pane, half each.
+      trees.set(
+        workspace.id,
+        mapPanes(tree, (pane) =>
+          pane === target.pane
+            ? {
+                kind: 'split',
+                direction,
+                ratio: 0.5,
+                first: { kind: 'pane', pane },
+                second: { kind: 'pane', pane: shell.pane },
+              }
+            : { kind: 'pane', pane },
+        ),
+      )
+      workspace.chats.splice(workspace.chats.findIndex((c) => c.id === chat) + 1, 0, shell)
+      tell({ type: 'workspacesChanged' })
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok({ chat: shell.id }))
+    },
+    setSplitRatio(tab, path, ratio) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = (data ?? []).find((w) => `${w.id}:t1` === tab)
+      const tree = workspace === undefined ? undefined : treeOf(workspace)
+      const changed = tree === undefined ? undefined : withRatio(tree, path, ratio)
+      if (workspace === undefined || changed === undefined) return Promise.resolve(ok('notFound'))
+      trees.set(workspace.id, changed)
       tell({ type: 'layoutChanged', workspace: workspace.id })
       return Promise.resolve(ok('done'))
     },

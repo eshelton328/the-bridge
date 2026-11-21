@@ -22,7 +22,8 @@ from the outside world.
   sends a prompt with the path of each file below its text; the
   transcript reads those lines back as the entry's file names.
 - `layoutWrites.ts` sends the layout writes of slice W2 to the port;
-  a close goes to the port only when its confirm names the chat.
+  a close goes to the port only when its confirm names the chat, and a
+  ratio only for a tab of the workspace in the path.
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open no herdr stream

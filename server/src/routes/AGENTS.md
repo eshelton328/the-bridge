@@ -75,8 +75,12 @@ Thin Hono sub-apps, one file for each area, named after the area
   cannot be undone: its `confirm` must be this chat's ID (400
   otherwise, with no call to the port), and a chat that works or whose
   state herdr cannot tell is 409 `working`, one that waits for the
-  owner 409 `needsYou` (`chats.test.ts`). The page reads the layout
-  again on the `layout.changed` event.
+  owner 409 `needsYou` (`chats.test.ts`). `POST /api/chats/:chat/split`
+  (`{ direction }`) puts a new shell pane beside the chat: 201 with its
+  chat ID. `POST /api/workspaces/:workspace/layout/ratio` (`{ tab, path,
+  ratio }`) sets one split's ratio: 204, or 404 for a tab of another
+  workspace or a path with no split. The page reads the layout again on
+  the `layout.changed` event.
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.
