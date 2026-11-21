@@ -27,7 +27,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), the
    * other chat of a swap is in another tab (`otherTab`), a move goes to the chat's own tab (`sameTab`), or a move
    * goes to a tab that shows only one pane (`zoomedTab`), or a prompt's `sendId` was used for this chat before
-   * (`duplicateSend`; read its result instead).
+   * (`duplicateSend`; read its result instead), a new chat's folder is not under the server's chat root
+   * (`folderNotAllowed`), or another chat has the new chat's name (`nameTaken`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -46,6 +47,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'sameTab',
       'zoomedTab',
       'duplicateSend',
+      'folderNotAllowed',
+      'nameTaken',
     ]),
     ...common,
   }),

@@ -47,6 +47,11 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   instructions go to the chat as a prompt's text does (`prompts.test.ts`).
   A prompt may carry the page's `sendId`; its `SendResult` (`pending`,
   `sent`, `notSubmitted`, `notSent` or `unknown`) holds no text.
+- A start request (slice W3, `newChats.ts`) is a strict object: kind
+  `claude`, a name of herdr's form, a `ModelAlias` and a place (beside
+  a chat, or a workspace's new tab), never a path or a flag; the answer
+  gives the pane, the chat once it has a session, and the state
+  (`newChats.test.ts`).
 - An upload request holds the file's name, size and type only (a strict
   object), never a path; the file goes up in chunks of the size the
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
