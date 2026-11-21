@@ -5,7 +5,10 @@
 // header (D2b 402:5486), with New chat, Subagents and Folders, and no Close
 // pane. Both use the compact row pitch, and a state can set the highlighted
 // row and workspace. A live Claude chat's /compact and /clear come last,
-// after a separator, on only while it is idle or done (W5). Props only.
+// after a separator, on only while it is idle or done (W5). A live chat's
+// pane adds Focus in terminal, Zoom pane or Unzoom pane and Swap with…, whose list of the other
+// chats of its herdr tab is the row's submenu, before Close pane… (W2,
+// layoutActions.ts). Props only.
 import {
   BranchIcon,
   Button,
@@ -14,6 +17,7 @@ import {
   CloseIcon,
   EditIcon,
   GridIcon,
+  MaximizeIcon,
   Menu,
   type MenuEntry,
   MoreIcon,
@@ -22,6 +26,8 @@ import {
   ProjectsIcon,
   SortIcon,
   SparkleIcon,
+  SplitIcon,
+  TerminalIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
 import type { ReactElement, ReactNode } from 'react'
@@ -48,7 +54,15 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   // W5: the library has no icon for compacting or clearing a context (LIBRARY_GAPS.md: Chat commands).
   compact: <SortIcon size="16" />,
   clear: <CloseCircleIcon size="16" />,
+  // W2: the library has no unzoom (restore) or swap icon (LIBRARY_GAPS.md: Layout writes).
+  focus: <TerminalIcon size="16" />,
+  zoom: <MaximizeIcon size="16" />,
+  unzoom: <GridIcon size="16" />,
+  swap: <SplitIcon size="16" />,
 }
+
+/** The value of a chat in Swap with…'s list: it must differ from the menu's own values. */
+const swapValue = (chat: string) => `swap:${chat}`
 
 export type PaneMenuProps = {
   title: string
@@ -74,6 +88,10 @@ export type PaneMenuProps = {
   trigger?: ReactElement | undefined
   /** The Figma layer of the open menu, for the fidelity checks; D1's when not set. */
   figma?: { menu?: string | undefined } | undefined
+  /** The chats Swap with… lists (W2): the other chats of the pane's herdr tab, by id, with their names. */
+  swapTargets?: readonly { readonly id: string; readonly title: string }[] | undefined
+  /** Called with the chat picked in Swap with…'s list. */
+  onSwap?: ((chat: string) => void) | undefined
 }
 
 export function PaneMenu(props: PaneMenuProps) {
@@ -86,10 +104,19 @@ export function PaneMenu(props: PaneMenuProps) {
   ]
   // A pick in the list reaches the menu's onSelect: a workspace (or New workspace) moves the chat.
   const moveValues = new Set([...targets.map((w) => w.id), 'new'])
+  const swapItems: MenuEntry[] = (props.swapTargets ?? []).map((c) => ({ value: swapValue(c.id), label: c.title }))
+  const swapChats = new Map((props.swapTargets ?? []).map((c) => [swapValue(c.id), c.id]))
   const select = (value: string) => {
-    if (moveValues.has(value)) props.onMove?.(value)
+    const swapWith = swapChats.get(value)
+    if (swapWith !== undefined) props.onSwap?.(swapWith)
+    else if (moveValues.has(value)) props.onMove?.(value)
     else props.onSelect?.(value)
   }
+  // A live chat's layout actions (W2) start their own group after a separator: Focus in terminal, Zoom or Unzoom, Swap
+  // with…, Close pane….
+  const layoutStart = actions.find(
+    (a) => a.value === 'focus' || a.value === 'zoom' || a.value === 'unzoom' || a.value === 'swap',
+  )?.value
   const items: MenuEntry[] = actions.flatMap((a): MenuEntry[] => {
     const entry = {
       value: a.value,
@@ -97,18 +124,22 @@ export function PaneMenu(props: PaneMenuProps) {
       icon: icons[a.value],
       disabled: a.disabled,
       submenu:
-        a.value === 'move'
-          ? {
-              items: moveItems,
-              open: moveOpen,
-              onOpenChange: onMoveOpenChange,
-              highlightedValue: props.moveTarget,
-              onHighlightChange: props.onMoveTargetChange,
-            }
-          : undefined,
+        a.value === 'swap'
+          ? { items: swapItems }
+          : a.value === 'move'
+            ? {
+                items: moveItems,
+                open: moveOpen,
+                onOpenChange: onMoveOpenChange,
+                highlightedValue: props.moveTarget,
+                onHighlightChange: props.onMoveTargetChange,
+              }
+            : undefined,
     }
     // A live Claude chat's commands follow the other actions after their own separator (W5, chatCommands.ts).
-    return a.value === separatorBefore || a.value === 'compact' ? [{ type: 'separator' }, entry] : [entry]
+    return a.value === separatorBefore || a.value === 'compact' || a.value === layoutStart
+      ? [{ type: 'separator' }, entry]
+      : [entry]
   })
   return (
     <Menu

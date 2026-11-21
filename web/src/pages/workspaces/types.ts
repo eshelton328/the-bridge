@@ -196,6 +196,19 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
 ])
 export type WorkbenchPane = z.infer<typeof WorkbenchPane>
 
+/**
+ * One herdr tab of a live workspace (slice W2), from its layout read: whether it is the tab the workspace shows, its
+ * panes' chats by local id in tree order, the chat herdr focuses and whether herdr zooms that pane. The page draws only
+ * the active tab; a zoomed tab draws only its focused pane.
+ */
+export const LiveTab = z.object({
+  active: z.boolean(),
+  chats: z.array(z.string()),
+  focused: z.string(),
+  zoomed: z.boolean(),
+})
+export type LiveTab = z.infer<typeof LiveTab>
+
 /** An action of a pane's or a chat's menu; `move` opens the list of workspaces. */
 export const PaneAction = z.object({
   value: z.enum([
@@ -210,6 +223,10 @@ export const PaneAction = z.object({
     'close',
     'compact',
     'clear',
+    'focus',
+    'zoom',
+    'unzoom',
+    'swap',
   ]),
   label: z.string(),
   /** `true`: the row shows and cannot be picked, such as /compact while the chat works (W5). */
@@ -829,6 +846,14 @@ const WorkspacesDataFields = z.object({
    * `compact` and `clear`, each of which opens its dialog. On only while the chat is idle or done (`takesCommands`); a Codex chat and a shell have none.
    */
   chatCommands: z.array(PaneAction).optional(),
+  /**
+   * The herdr tabs of each live workspace whose layout the page read (slice W2), by workspace id: what the layout writes
+   * act on (`blocks/layoutActions.ts`). A fixture and a workspace whose layout read missed have none, so their panes offer
+   * no zoom, swap or close.
+   */
+  liveTabs: z.record(z.string(), z.array(LiveTab)).optional(),
+  /** The machine of the live chats: a chat's server ID is `<liveMachine>/<id>`. */
+  liveMachine: z.string().optional(),
   /** The Figma layers of the sidebar frame's parts; D2's when not set. */
   layers: SidebarLayers.optional(),
   /** The subagents and subtasks of the chat shown alone (D3). */

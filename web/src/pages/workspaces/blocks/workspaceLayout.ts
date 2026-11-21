@@ -6,6 +6,7 @@
 // another. These helpers give the shown workspace's layout and the ui
 // change that a tab switch, a resize or a closed pane makes.
 import type { SplitSizes, WorkbenchPane, WorkspaceLayout, WorkspacesData, WorkspacesUi } from '../types.ts'
+import { zoomedTab } from './layoutActions.ts'
 
 /** The workspace whose tab is selected: the one the owner picked, else the state's; null when there are none. */
 export const shownWorkspace = (data: WorkspacesData, ui: WorkspacesUi): string | null => ui.workspace ?? data.current
@@ -44,26 +45,39 @@ const paneById = (data: WorkspacesData, id: string): WorkbenchPane | undefined =
 /**
  * The data and ui the shown workspace's panes draw from: its panes, its split (its layout's, else the state's for the
  * state's own workspace) and its sizes, and the status bar's summary counted again when the panes are not the state's.
+ * With `zoom` (the workbench only), a tab herdr zooms gives only its focused pane: the sidebar's chat, the chats a row
+ * can open and the chat actions' targets keep every pane of the tab, so a row of a zoomed tab still opens its chat.
  */
-export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: WorkspacesData; ui: WorkspacesUi } {
+export function shownView(
+  data: WorkspacesData,
+  ui: WorkspacesUi,
+  zoom = false,
+): { data: WorkspacesData; ui: WorkspacesUi } {
   const shown = shownWorkspace(data, ui)
   const layout = layoutOf(data, ui, shown)
-  const panes = layout.panes.flatMap((id) => {
+  const all = layout.panes.flatMap((id) => {
     const pane = paneById(data, id)
     return pane === undefined ? [] : [pane]
   })
+  // A tab herdr zooms (slice W2) draws only its focused pane, at full size, until the zoom ends.
+  const zoomed = zoom ? zoomedTab(data, shown) : undefined
+  const zoomedPane = zoomed === undefined ? undefined : all.find((p) => p.id === zoomed.focused)
+  const panes = zoomedPane === undefined ? all : [zoomedPane]
   const own = shown === data.current && panes.length === data.panes.length
   const label = data.workspaces.find((w) => w.id === shown)?.label ?? shown
   const summary =
-    own || label === null
-      ? data.status.summary
-      : `${label} · ${String(panes.length)} ${panes.length === 1 ? 'pane' : 'panes'}`
+    zoomed !== undefined && zoomedPane !== undefined && label !== null
+      ? `${label} · zoomed · 1 of ${String(zoomed.chats.length)} panes`
+      : own || label === null
+        ? data.status.summary
+        : `${label} · ${String(panes.length)} ${panes.length === 1 ? 'pane' : 'panes'}`
   const { split: stateSplit, ...rest } = data
-  const split = layout.split ?? (shown === data.current ? stateSplit : undefined)
+  const split =
+    zoomedPane === undefined ? (layout.split ?? (shown === data.current ? stateSplit : undefined)) : undefined
   const viewData = { ...rest, current: shown, panes, status: { ...data.status, summary } }
   return {
     data: split === undefined ? viewData : { ...viewData, split },
-    ui: { ...ui, splitSizes: layout.splitSizes },
+    ui: { ...ui, splitSizes: zoomedPane === undefined ? layout.splitSizes : undefined },
   }
 }
 

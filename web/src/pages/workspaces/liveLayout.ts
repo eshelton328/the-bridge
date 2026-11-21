@@ -32,7 +32,7 @@
 // high as its header and composer (`blocks/paneFloors.ts`).
 import { chatsOf, type ChatId, type LayoutNode, splitId, type TabLayout } from '@bridge/contract'
 import { maxPanes } from './blocks/workspaceLayout.ts'
-import type { SplitSizes, WorkspaceLayout } from './types.ts'
+import type { LiveTab, SplitSizes, WorkspaceLayout } from './types.ts'
 
 /** The tree with only the panes of `kept`; a split that loses a part becomes its other part. */
 function prune(node: LayoutNode, kept: ReadonlySet<ChatId>): LayoutNode | undefined {
@@ -182,3 +182,16 @@ export function layoutOfTab(tabs: readonly TabLayout[]): WorkspaceLayout {
     focusedPane: focused,
   }
 }
+
+/**
+ * Each of the workspace's tabs as the layout writes see it (slice W2): its panes' chats in tree order, by local chat ID,
+ * the focused chat and whether herdr zooms it. The page draws only the active tab, and only its focused pane while it
+ * is zoomed (`blocks/workspaceLayout.ts`, `shownView`).
+ */
+export const liveTabsOf = (tabs: readonly TabLayout[]): LiveTab[] =>
+  tabs.map((tab) => ({
+    active: tab.active,
+    chats: chatsOf(tab.root).map((id) => splitId(id).local),
+    focused: splitId(tab.focusedChat).local,
+    zoomed: tab.zoomed,
+  }))
