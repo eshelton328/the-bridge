@@ -168,9 +168,13 @@ jobs:
           packages-token: ${{ secrets.GITHUB_TOKEN }}
           browser: "true"
       - run: pnpm codegen
+      # Two test files at a time, not three: the runner has 4 vCPU, and with
+      # three Chromium pages a slow host held single clicks for 5 to 7 s
+      # (the-bridge #322). Local runs keep Vitest's default.
       - run: pnpm test:unit
         env:
           VITEST_SHARD: ${{ matrix.shard }}/2
+          VITEST_MAX_WORKERS: "2"
 
   # The required check: it passes only when every test:unit shard passed.
   # It reads one result, so ubuntu-slim (1 vCPU container) is enough.
