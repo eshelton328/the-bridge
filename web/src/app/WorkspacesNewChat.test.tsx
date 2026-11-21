@@ -51,7 +51,8 @@ const list = {
 
 type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
-function withChats(): Fakes {
+/** The fakes; with `hold`, each start's answer waits for it. */
+function withChats(hold?: Promise<void>): Fakes {
   const chats = fakeTranscriptServer()
   for (const c of [plan, review]) chats.set(c, [])
   const workspaces = fakeWorkspacesServer(chats, list)
@@ -60,6 +61,8 @@ function withChats(): Fakes {
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (hold !== undefined && path === '/api/chats')
+        return hold.then(() => workspaces.handle(path, init) ?? Promise.reject(new TypeError('no start answer')))
       const answer = chats.handle(path, init) ?? workspaces.handle(path, init)
       if (answer !== undefined) return Promise.resolve(answer)
       return Promise.reject(new TypeError(`no stub for ${url}`))
@@ -169,6 +172,27 @@ describe('New chat on the live page (W3)', () => {
     await expect.element(page.getByRole('button', { name: 'Maximise tab-two' })).toBeVisible()
     expect(page.getByRole('button', { name: 'Maximise plan the slice' }).elements()).toHaveLength(0)
     expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[plan, review], ['mac-mini/new1']])
+    expect(fakes.chats.prompts).toEqual([])
+  })
+
+  it('opens nothing and sends nothing for a start cancelled before it answered, in a form opened again', async () => {
+    let answer = (): void => undefined
+    const fakes = withChats(
+      new Promise<void>((resolve) => {
+        answer = resolve
+      }),
+    )
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await fill('given-up', 'never send')
+    await expect.element(page.getByRole('button', { name: 'Starting…' })).toBeDisabled()
+    await userEvent.click(page.getByRole('button', { name: 'Cancel' }))
+    await openPhoneForm()
+    answer()
+    await expect.poll(() => fakes.list.starts).toHaveLength(1)
+    await quiet()
+    expect(page.getByRole('heading', { name: 'given-up' }).elements()).toHaveLength(0)
+    await expect.element(page.getByRole('button', { name: 'Start chat' })).toBeEnabled()
     expect(fakes.chats.prompts).toEqual([])
   })
 

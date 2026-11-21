@@ -50,7 +50,10 @@ const listed = (data: WorkspacesData) =>
   data.workspaces.flatMap((w) => (w.chats ?? []).map((chat) => ({ chat, workspace: w.id })))
 
 export type NewChatDeps = {
+  /** The data the screen draws: a tab the workbench follows is `active` in it (shownTabs.ts). */
   readonly data: WorkspacesData
+  /** Whether the form is open: closing it ends the start (Cancel). */
+  readonly open: boolean
   readonly ui: () => WorkspacesUi
   readonly change: (change: Partial<WorkspacesUi>) => void
   /** The composer's send of a chat, by its pane id. */
@@ -130,6 +133,13 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
   useEffect(() => {
     resolve()
   }, [deps.data, resolve])
+
+  // Cancel ends the start: an answer that comes later opens nothing and sends nothing, even in a form opened again.
+  useEffect(() => {
+    if (deps.open) return
+    attemptRef.current = undefined
+    followRef.current = undefined
+  }, [deps.open])
 
   const run = useCallback(
     (attempt: Attempt) => {

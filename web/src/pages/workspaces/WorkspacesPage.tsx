@@ -261,6 +261,7 @@ export function WorkspacesPage() {
   // New chat (W3): Start chat starts a live Claude chat and opens it when the list shows it (useNewChat.ts).
   const newChat = useNewChat(import.meta.env.DEV && live, {
     data,
+    open: ui.newChatOpen === true,
     ui: currentUi,
     change: changeUi,
     send: onSend,
