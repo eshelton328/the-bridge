@@ -521,6 +521,28 @@ describe('a send that a reload cut off (send ID, backend #369)', () => {
       expect(fake.posts).toHaveLength(1)
     })
 
+  it('reads no send whose request is still pending when the owner leaves Workspaces and comes back', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openChat(desktop, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    // Away to the Inbox and back while the send waits: Workspaces mounts again, and the request goes on.
+    const rail = page.getByRole('navigation', { name: 'Main' })
+    await userEvent.click(rail.getByRole('button', { name: /^Inbox/ }))
+    await expect.element(chatOf('plan the slice')).not.toBeInTheDocument()
+    await userEvent.click(rail.getByRole('button', { name: /^Workspaces/ }))
+    await expect.element(box('plan the slice')).toBeVisible()
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    expect(fake.resultReads).toEqual([])
+    await expect.element(box('plan the slice')).toHaveValue('')
+    answer.end(new Response(null, { status: 204 }))
+    await expect.poll(keptIds).toEqual([])
+    await expect.element(box('plan the slice')).toHaveValue('')
+  })
+
   it('applies no late result to a restored send that the owner sent again while it was read', async () => {
     const fake = withChats()
     const sendId = await sendThenAbortedReload(fake)

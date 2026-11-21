@@ -50,6 +50,11 @@ const Saved = z.object({
 })
 type Saved = z.infer<typeof Saved>
 const none: Readonly<Record<string, string>> = {}
+/**
+ * The kept sends whose request this page still waits for: the page that left Workspaces and came back reads none of
+ * them. A reload empties it, as it ends the requests.
+ */
+const inFlight = new Set<string>()
 const noSends: readonly KeptSend[] = []
 
 /** What this tab saved for `state`; undefined when it saved nothing for it. */
@@ -101,14 +106,21 @@ export function loadSends(state: string | undefined): readonly KeptSend[] {
   return savedFor(state)?.sends ?? noSends
 }
 
+/** The kept sends of `state` whose result the page reads on load: none whose request this page still waits for. */
+export function sendsToRead(state: string | undefined): readonly KeptSend[] {
+  return loadSends(state).filter((send) => !inFlight.has(send.sendId))
+}
+
 /** Keeps `send` until its answer or its entry comes (`dropSend`). */
 export function keepSend(state: string | undefined, send: KeptSend): void {
+  inFlight.add(send.sendId)
   const saved = savedFor(state)
   write(state, saved?.drafts ?? none, [...(saved?.sends ?? noSends), send])
 }
 
 /** Marks the kept send `sendId` as put back in its chat's draft after its request got no answer. */
 export function markRestored(state: string | undefined, sendId: string): void {
+  inFlight.delete(sendId)
   const saved = savedFor(state)
   if (saved?.sends?.some((send) => send.sendId === sendId) !== true) return
   write(
@@ -131,6 +143,7 @@ export function dropRestored(state: string | undefined, chat: string): void {
 
 /** Forgets the kept send `sendId`; nothing when it is not kept. */
 export function dropSend(state: string | undefined, sendId: string): void {
+  inFlight.delete(sendId)
   const saved = savedFor(state)
   if (saved?.sends?.some((send) => send.sendId === sendId) !== true) return
   write(
@@ -141,6 +154,7 @@ export function dropSend(state: string | undefined, sendId: string): void {
 }
 
 registerReset(() => {
+  inFlight.clear()
   try {
     window.sessionStorage.removeItem(storageKey)
   } catch (error) {

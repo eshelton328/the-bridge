@@ -27,7 +27,7 @@ import { sendResultMs } from '@bridge/contract'
 import { registerReset } from '../../state/resetStores.ts'
 import type { ComposerNotice } from './blocks/ChatPane.tsx'
 import { type DraftBook, holdsSent } from './blocks/draftBook.ts'
-import { dropSend, type KeptSend, loadSends } from './draftStorage.ts'
+import { dropSend, type KeptSend, loadSends, sendsToRead } from './draftStorage.ts'
 import { showNotice } from './livePending.ts'
 import { readSendResult } from './liveSend.ts'
 import { subscribeTranscripts, transcriptViews } from './liveTranscript.ts'
@@ -120,7 +120,7 @@ let stopWatch: (() => void) | undefined
  */
 export function recoverSends(state: string | undefined, drafts: DraftBook): void {
   const now = Date.now()
-  for (const send of loadSends(state)) void settle(state, drafts, send, now)
+  for (const send of sendsToRead(state)) void settle(state, drafts, send, now)
   stopWatch?.()
   shownChats = new Set(transcriptViews().keys())
   stopWatch = subscribeTranscripts(() => {
