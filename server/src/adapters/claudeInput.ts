@@ -1,5 +1,6 @@
 // Claude Code's input box, read from its pane's screen (slice W1-3). The
-// box is the lines between the last two rules (lines of "─"), and its first
+// box is the lines between the last two rules (lines of "─", the top one with
+// the chat's name at its end when the chat has a name), and its first
 // line starts with "❯". An empty box shows "❯" alone or a dim placeholder
 // (SGR 2); a long line wraps onto lines that start with two spaces. Screen
 // text never leaves the adapters (d-110), and none of it goes to a log.
@@ -8,7 +9,8 @@ const esc = String.fromCharCode(27)
 const sgr = new RegExp(`${esc}\\[[0-9;]*m`, 'g')
 /** A dim run up to the next escape: the placeholder of an empty box. */
 const dimRun = new RegExp(`${esc}\\[2m[^${esc}]*`, 'g')
-const rule = /^─{8,}$/
+/** A rule of "─"; a named chat (`claude -n`) draws its name near the end of the top rule: "──── name ─". */
+const rule = /^─{8,}(?: [^─]+ ─+)?$/
 
 /** The text in the box, '' when it is empty, and how many screen lines the box has. */
 export type InputBox = { readonly text: string; readonly lines: number }

@@ -135,6 +135,11 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
           state: 'inputNotEmpty',
           message: "the chat's input box holds text, so the prompt was not sent",
         })
+      case 'inputUnreadable':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'inputUnreadable',
+          message: "the server cannot read the chat's input box, so the prompt was not sent; look at the chat",
+        })
       case 'noAttachments':
         return errorJson(c, 'chat-not-ready', { state: 'noAttachments', message: 'this chat takes no file yet' })
       case 'badAttachment':

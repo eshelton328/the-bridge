@@ -641,7 +641,7 @@ describe('herdr agents: input to a chat', () => {
     socket.set('pane.read', paneRead('w17:p1', claudeScreen(`notes\n${'─'.repeat(20)}\nmore notes`)))
     try {
       const before = socket.requests().filter((r) => r.method === 'agent.prompt').length
-      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputUnreadable' })
       expect(socket.requests().filter((r) => r.method === 'agent.prompt').length).toBe(before)
     } finally {
       socket.set('pane.read', undefined)

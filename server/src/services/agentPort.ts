@@ -33,9 +33,11 @@ export type AgentEvent =
 /**
  * What a send or a stop did: `sent`; `notFound` when this machine has no such chat; `shell` when the chat is a
  * shell, which takes no prompt; `needsYou` when the chat waits for the owner's answer to a question;
- * `inputNotEmpty` when the chat's input box holds text, which the prompt would join, so nothing was sent.
+ * `inputNotEmpty` when the chat's input box holds text, which the prompt would join, so nothing was sent;
+ * `inputUnreadable` when the port cannot find the box on the chat's screen (a dialog, or a box it does not know), so
+ * nothing was sent.
  */
-type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou' | 'inputNotEmpty'
+type SendOutcome = 'sent' | 'notFound' | 'shell' | 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'
 
 /** As a send, or `notSubmitted` when the chat did not take the typed prompt, so the port removed the text again. */
 export type PromptOutcome = SendOutcome | 'notSubmitted'
@@ -71,7 +73,7 @@ export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 export type SplitOutcome = { readonly chat: ChatId } | 'notFound'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
-export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
+export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
 
 /** The last entries of a chat's transcript, and whether older entries exist. */
 export type TranscriptRead = { readonly entries: TranscriptEntry[]; readonly earlier: boolean }

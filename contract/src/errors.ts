@@ -20,7 +20,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
   /**
    * The chat cannot take the request now (409): it is a shell, it waits for the owner's answer to a question
    * (`needsYou`), it has no work to stop (`notWorking`), its input box holds text that a prompt would join
-   * (`inputNotEmpty`, for a prompt, or text that stayed after an input clear), it takes no file (`noAttachments`, a
+   * (`inputNotEmpty`, for a prompt, or text that stayed after an input clear), the server cannot find its input box
+   * on its screen, so it sent nothing (`inputUnreadable`: a dialog, or a box it does not know), it takes no file (`noAttachments`, a
    * Codex chat, for an upload), its input box cannot be cleared (`noCommands`, a Codex chat), or it did not take a
    * prompt that the server typed, so the server removed the text again (`notSubmitted`), it works or a state herdr
    * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), or the
@@ -33,6 +34,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'needsYou',
       'notWorking',
       'inputNotEmpty',
+      'inputUnreadable',
       'noAttachments',
       'noCommands',
       'notSubmitted',
