@@ -143,6 +143,28 @@ describe('session file', () => {
     expect(await readClaudeSession(effortOnly)).toEqual({ model: null, contextUsed: null, effort: 'max' })
   })
 
+  it('measures the context against the auto-compact window that the settings set, so the bar is full at the compact point', async () => {
+    const reply = (used: number) =>
+      JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-5-5', usage: { input_tokens: used } } })
+    const windows = { 'claude-opus-5-5': 400_000 }
+    // With no setting the whole is the model's 1M window; with one it is the compact window.
+    expect((await readClaudeSession(file('w1.jsonl', reply(200_000)))).contextUsed).toBe(0.2)
+    expect((await readClaudeSession(file('w2.jsonl', reply(200_000)), undefined, windows)).contextUsed).toBe(0.5)
+    // At the compact point (and past it, before the compact ends) the bar is full.
+    expect((await readClaudeSession(file('w3.jsonl', reply(410_000)), undefined, windows)).contextUsed).toBe(1)
+    // A window past the model's own window is capped there, as Claude Code does: Haiku 4.5 has 200K.
+    const haiku = JSON.stringify({
+      type: 'assistant',
+      message: { model: 'claude-haiku-4-5', usage: { input_tokens: 100_000 } },
+    })
+    expect(
+      (await readClaudeSession(file('w5.jsonl', haiku), undefined, { 'claude-haiku-4-5': 400_000 })).contextUsed,
+    ).toBe(0.5)
+    // A setting for another model leaves this one on its own window.
+    const other = { 'claude-sonnet-5-5': 100_000 }
+    expect((await readClaudeSession(file('w4.jsonl', reply(200_000)), undefined, other)).contextUsed).toBe(0.2)
+  })
+
   it('names the family of a Claude model ID, and none for another model', () => {
     expect(modelAliasOf('claude-opus-5-5')).toBe('opus')
     expect(modelAliasOf('claude-haiku-4-5-20251001')).toBe('haiku')

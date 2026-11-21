@@ -24,10 +24,16 @@ describe('config', () => {
         brainDir: '/tmp/brain',
         dbFile: '/tmp/bridge.db',
         claudeProjects: '/tmp/claude',
+        claudeSettings: '/tmp/settings.json',
         logDir: '/tmp/bridge-logs',
         logLevel: 'info',
       },
     })
+  })
+
+  it('takes the Claude settings file from BRIDGE_CLAUDE_SETTINGS when it is set', () => {
+    const read = readConfig({ ...env, BRIDGE_CLAUDE_SETTINGS: '/home/dev/.claude/settings.json' })
+    expect(read.ok ? read.value.claudeSettings : undefined).toBe('/home/dev/.claude/settings.json')
   })
 
   it('takes the log level from BRIDGE_LOG_LEVEL and refuses an unknown one', () => {

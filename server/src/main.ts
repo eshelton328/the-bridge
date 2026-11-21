@@ -19,7 +19,7 @@ if (!config.ok) {
   process.stderr.write(`the-bridge server: set these environment variables:\n${config.error.join('\n')}\n`)
   process.exit(1)
 }
-const { port, machine, owner, herdrSocket, claudeProjects, logDir, logLevel, dbFile } = config.value
+const { port, machine, owner, herdrSocket, claudeProjects, claudeSettings, logDir, logLevel, dbFile } = config.value
 const terminal: LogSink = {
   write: (line) => {
     const entry = process.stdout.isTTY ? parseLine(line) : undefined
@@ -35,6 +35,7 @@ const agents = createHerdrAgents({
   machine,
   log,
   claudeProjects,
+  claudeSettings,
   home: homedir(),
   uploads: uploadsRoot,
 })
