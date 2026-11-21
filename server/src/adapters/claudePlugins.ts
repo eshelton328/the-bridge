@@ -13,6 +13,8 @@ const Install = z.object({
 })
 const Installed = z.object({ plugins: z.record(z.string(), z.array(z.unknown())) })
 const Settings = z.object({ enabledPlugins: z.record(z.string(), z.unknown()).optional() })
+/** A plugin's optional `.claude-plugin/plugin.json`; its `name` is what its skills and commands go by. */
+const Manifest = z.object({ name: z.string().min(1).optional() })
 
 /** A plugin that the chat loads: the name its skills go by ("name:skill") and its folder. */
 export type PluginFolder = { readonly name: string; readonly path: string }
@@ -92,8 +94,11 @@ export async function readPluginFolders(claudeDir: string, folders: readonly str
         return parsed.success ? [parsed.data] : []
       })
       .find(({ scope, projectPath }) => scope === 'user' || (projectPath !== undefined && places.includes(projectPath)))
-    const name = key.split('@')[0] ?? ''
-    if (install !== undefined && name !== '') found.push({ name, path: install.installPath })
+    if (install === undefined) continue
+    // The settings name the marketplace entry ("<entry>@<marketplace>"); the components go by the manifest's name.
+    const manifest = Manifest.safeParse(await jsonOf(join(install.installPath, '.claude-plugin', 'plugin.json')))
+    const name = (manifest.success ? manifest.data.name : undefined) ?? key.split('@')[0] ?? ''
+    if (name !== '') found.push({ name, path: install.installPath })
   }
   return found
 }

@@ -112,6 +112,24 @@ describe('Claude skills', () => {
     expect(skills.filter((s) => s.source === 'plugin').map((s) => s.name)).toEqual(['tools:audit'])
   })
 
+  it("names a plugin's skills by its manifest name, and turns it on by its entry name", async () => {
+    const home = join(root, 'named')
+    const claude = join(home, '.claude')
+    const path = join(claude, 'plugins', 'cache', 'market', 'entry', '1.0.0')
+    put('named/.claude/plugins/cache/market/entry/1.0.0/skills/audit/SKILL.md', skill('audit', 'Audits the repo'))
+    put(
+      'named/.claude/plugins/cache/market/entry/1.0.0/.claude-plugin/plugin.json',
+      JSON.stringify({ name: 'deploy-tools' }),
+    )
+    put(
+      'named/.claude/plugins/installed_plugins.json',
+      JSON.stringify({ version: 2, plugins: { 'entry@market': [{ scope: 'user', installPath: path }] } }),
+    )
+    put('named/.claude/settings.json', JSON.stringify({ enabledPlugins: { 'entry@market': true } }))
+    const skills = await readClaudeSkills(undefined, claude, home)
+    expect(skills.filter((s) => s.source === 'plugin').map((s) => s.name)).toEqual(['deploy-tools:audit'])
+  })
+
   it("gives at most the contract's number of entries", async () => {
     for (let n = 0; n < 510; n += 1) put(`many/.claude/skills/s${String(n)}/SKILL.md`, skill(`s${String(n)}`, 'One'))
     const skills = await readClaudeSkills(undefined, join(root, 'many', '.claude'), join(root, 'many'))
