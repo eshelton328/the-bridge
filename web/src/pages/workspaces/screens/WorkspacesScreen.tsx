@@ -67,6 +67,7 @@ import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { EffortControl } from '../blocks/EffortPicker.tsx'
 import type { SkillLists } from '../blocks/skillLists.ts'
 import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import { liveSkillList } from '../blocks/useSkillRows.ts'
@@ -96,6 +97,8 @@ export type WorkspacesScreenProps = {
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
+  /** A live Claude chat's effort picker (W10), by chat id; none for a sample chat, a Codex chat or a shell. */
+  effortOf?: ((chat: string) => EffortControl | undefined) | undefined
   /** Sends a live Claude chat's /compact or /clear from its dialog (W5); answers as `onSend` does. */
   onCommand?: ((chat: string, request: ChatCommandRequest) => Promise<ComposerAnswer>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
@@ -128,6 +131,7 @@ export function WorkspacesScreen({
   onStop,
   filesOf,
   pendingOf,
+  effortOf,
   onCommand,
   onRetry,
   transcripts,
@@ -244,6 +248,7 @@ export function WorkspacesScreen({
             onStop={onStop}
             filesOf={filesOf}
             pendingOf={pendingOf}
+            effortOf={effortOf}
             transcripts={transcripts}
             skillLists={skillLists}
             onCopy={onCopy}
@@ -317,6 +322,7 @@ function WorkspacesLayout({
   onStop,
   filesOf,
   pendingOf,
+  effortOf,
   transcripts,
   skillLists,
   onCopy,
@@ -365,6 +371,7 @@ function WorkspacesLayout({
         onStop={onStop}
         filesOf={filesOf}
         pendingOf={pendingOf}
+        effortOf={effortOf}
         transcripts={transcripts}
         skillLists={skillLists}
         onCopy={onCopy}
@@ -605,6 +612,7 @@ function WorkspacesLayout({
                   onStop={onStop && (() => onStop(chat.id))}
                   files={filesOf?.(chat.id)}
                   pending={pendingOf?.(chat.id)}
+                  effort={effortOf?.(chat.id)}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   onHeaderTap={

@@ -120,3 +120,20 @@ frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
 `web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
 only when the page entry passes `push`; this frame's state and story pass
 none, so the checks above are unchanged.
+
+## Effort picker (W10)
+
+Erik asked on 2026-11-21, through bridge-coord: "can't i switch models?
+im pretty sure claude code lets you do this mid turn". The server sets a
+live Claude chat's effort for its session only (backend #382, #384), so
+the model chip (105:804, "Opus 5.5" with a chevron) of a live Claude chat
+opens an effort menu: low, medium, high and xhigh, the current one
+checked, with the effort after the model on the chip ("Opus 5.5 · high
+effort", as D03 105:1418 writes it). Figma's chevron suggests a model
+choice, and no frame draws the chip's menu. The model stays text, with no
+model choice, until the server has a model route that restarts the chat
+(W10 slice 2); a Codex chat's chip stays text (W8). A miss or the working
+hint shows one line beside the chip, which Figma does not draw
+(`blocks/EffortPicker.tsx`; LIBRARY_GAPS.md: Effort menu). It is a frame
+exception that bridge-workbench owns. This frame's fixture chat is a
+sample chat, so its chip and render do not change.

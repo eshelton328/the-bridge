@@ -144,7 +144,7 @@ function sidebarChat(chat: ChatSummary, titles: ReadonlyMap<string, string>): Si
       ? { mark: { kind: 'fork' as const, label: `Fork of ${titles.get(parent.id) ?? 'a chat'}` } }
       : {}),
     // W5: the effort as Claude Code's `/effort` names it, as Figma writes "high effort"; none when not known.
-    ...(chat.effort === null ? {} : { effort: `${chat.effort} effort` }),
+    ...(chat.effort === null ? {} : { effort: `${chat.effort} effort`, effortLevel: chat.effort }),
     pane: chat.pane,
   }
 }
@@ -189,7 +189,8 @@ const notLiveText = {
 export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
     (w.chats ?? []).map((chat): WorkbenchPane => {
-      // The model and effort are read-only (d-101, W5): the header shows them as text, with no picker.
+      // The model is read-only (d-101, W5): the header shows it as text. A live Claude chat's header picks its effort
+      // (W10, ChatHead), from the level the list gives.
       const head = {
         kind: chat.kind,
         title: chat.title,
@@ -197,6 +198,7 @@ export function livePanes(workspaces: readonly Workspace[], machine: string): Wo
         ...(chat.context === undefined ? {} : { context: chat.context }),
         status: chat.status,
         ...(chat.effort === undefined ? {} : { effort: chat.effort }),
+        ...(chat.effortLevel === undefined ? {} : { effortLevel: chat.effortLevel }),
         readOnlyModel: true,
       }
       if (chat.kind === 'shell')

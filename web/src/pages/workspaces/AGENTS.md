@@ -202,10 +202,26 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   end, a reader above the end keeps his place and stays unpinned, and the
   button to the newest message keeps its gap above the composer
   (`app/WorkspacesComposerCollapsedScroll.test.tsx`).
-- A live Claude chat's model and effort are read-only (d-101, W5): the
-  pane header and the chat header show "Opus 5.5 · high effort" as text
-  (`PaneHead.effort`, `readOnlyModel`), the model alone when the effort is
-  not known; the page has no model or effort picker.
+- A live chat's model is read-only (d-101, W5): the pane header shows
+  "Opus 5.5 · high effort" as text (`PaneHead.effort`, `readOnlyModel`),
+  the model alone when the effort is not known.
+- A live Claude chat's model chip in the chat header picks its effort (W10,
+  backend #382 and #384, `blocks/EffortPicker.tsx`, `useLiveEffort.ts`,
+  `liveEffort.ts`): it shows the list's model and level (`effortLevel`)
+  and opens a menu with low, medium, high and xhigh, the current one
+  checked. `max` shows on the chip but is not offered. A pick posts `POST
+  /api/chats/:chat/effort` with the contract's `SetEffortRequest`, for the
+  session only, never `/effort` or `/model` as a prompt; the menu stays
+  open with the pick "Setting…" until the answer. A 204 closes it and the
+  chip shows the level until the next list read, which gives the set
+  level. A miss closes it and shows one line beside the chip by reason
+  (working, needsYou, inputNotEmpty, a 404, else "Could not change the
+  effort"); every choice is off while the chat works, with "Wait until the
+  chat is idle". report() gets only a 5xx or an answer the page does not
+  expect, by kind and status. The model stays text until the restart route,
+  a Codex chat has no picker (W8), and the pane header keeps its text
+  (`app/WorkspacesEffort.test.tsx`; references D02 and M03
+  `deviations.md`; LIBRARY_GAPS.md: Effort menu).
 - A live Claude chat's actions end with Compact context… and Clear
   context… (W5, `blocks/chatCommands.ts`): in the pane menu, the chat
   actions, the tablet's menu and the phone's sheet, on only while the
@@ -230,8 +246,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   for another chat changes nothing. It starts with /compact and /clear
   (off unless the chat is idle or done), whose pick opens the W5 dialog
   and takes the "/" word out of the box; /model and /effort never show,
-  as their pickers are on hold and sending them changes the owner's
-  Claude Code settings. A picked skill goes in the box as "/<name> ". The
+  as sending them changes the owner's Claude Code settings (the model
+  chip sets the effort through its route, W10). A picked skill goes in the box as "/<name> ". The
   filter, case aside: names that start with the typed text, then names
   that hold it, then descriptions that hold it, in the server's order;
   none says "No match". A project's or a plugin's skill has a badge. An

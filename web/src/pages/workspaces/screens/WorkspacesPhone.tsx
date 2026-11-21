@@ -74,6 +74,7 @@ import { LiftedChatRow } from '../blocks/SidebarChatRow.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { EffortControl } from '../blocks/EffortPicker.tsx'
 import type { DraftBook } from '../blocks/draftBook.ts'
 import type { SkillLists } from '../blocks/skillLists.ts'
 import { liveSkillList } from '../blocks/useSkillRows.ts'
@@ -107,6 +108,8 @@ export type WorkspacesPhoneProps = {
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
   pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
+  /** A live Claude chat's effort picker (W10), by chat id; none for a sample chat, a Codex chat or a shell. */
+  effortOf?: ((chat: string) => EffortControl | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** Reads each live Claude chat's "/" list each time it opens (review R34); fixtures have none. */
@@ -134,6 +137,7 @@ export function WorkspacesPhone({
   onStop,
   filesOf,
   pendingOf,
+  effortOf,
   transcripts,
   skillLists,
   onCopy,
@@ -407,6 +411,7 @@ export function WorkspacesPhone({
                 onStop={onStop && (() => onStop(chat.id))}
                 files={filesOf?.(chat.id)}
                 pending={pendingOf?.(chat.id)}
+                effort={effortOf?.(chat.id)}
                 transcripts={transcripts}
                 onCopy={onCopy}
                 rename={

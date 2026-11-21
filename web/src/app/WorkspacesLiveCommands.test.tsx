@@ -192,12 +192,12 @@ function watchReports() {
 }
 
 describe("a live chat's model and effort (W5)", () => {
-  it('shows the effort beside the model as text, with no picker, on the phone', async () => {
+  // W10 made the chip of a live Claude chat its effort picker (app/WorkspacesEffort.test.tsx); the model stays text.
+  it('shows the effort beside the model, on the phone', async () => {
     withChats()
     await tapWorkspaces(phone)
     await tapChat('plan the slice')
     await expect.element(chatRegion('plan the slice').getByText('Opus 5.5 · high effort')).toBeVisible()
-    expect(page.getByRole('button', { name: /^Model:/ }).elements()).toHaveLength(0)
     // A chat whose effort is not known shows the model alone.
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('review notes')

@@ -61,6 +61,13 @@
 // the answer lost after herdr made it. Then the same create ID is 409
 // duplicateCreate, as the server keeps it pending. `starts` records each
 // body.
+//
+// W10 (backend #382, #384): `POST /api/chats/:chat/effort` takes the
+// contract's `SetEffortRequest` (`max` and any other body are 400). An
+// unknown chat is 404, a working one 409 working and one that needs the owner
+// 409 needsYou; else the list gives the chat the set level, sends
+// `workspaces.changed` and answers 204. `answerEffort` answers each next
+// effort change with a test's error, and `efforts` records each body.
 import {
   ChatId,
   type ChatSummary,
@@ -71,6 +78,7 @@ import {
   LayoutChangedEvent,
   type LayoutNode,
   MoveChatRequest,
+  SetEffortRequest,
   SetSplitRatioRequest,
   StartChatRequest,
   type StartState,
@@ -170,6 +178,9 @@ export function fakeWorkspacesServer(
   let started = 0
   const created = new Map<string, unknown>()
   let nextStart: { readonly answer: () => Response; readonly made: boolean } | undefined
+  /** W10: each effort change's chat and body, and an answer in place of the next ones'. */
+  const efforts: { chat: string; body: unknown }[] = []
+  let effortAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -517,6 +528,29 @@ export function fakeWorkspacesServer(
     return new Response(JSON.stringify(reply), { status: 201, headers: { 'content-type': 'application/json' } })
   }
 
+  /** An effort change (W10): the contract's checks, the test's answer, then the chat's status, the list, 204. */
+  const effort = (chat: string, init: RequestInit | undefined): Response => {
+    const body = bodyOf(init)
+    efforts.push({ chat, body })
+    const parsed = SetEffortRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    if (effortAnswer !== undefined) return effortAnswer()
+    const summary = response.workspaces.flatMap((w) => w.chats).find((c) => c.id === chat)
+    if (summary === undefined)
+      return errorAnswer(
+        { kind: 'not-found', path: `/api/chats/${chat}`, message: 'Not found', requestId: 'r-404' },
+        404,
+      )
+    if (summary.status === 'working') return notReady('working')
+    if (summary.status === 'needsYou') return notReady('needsYou')
+    update((c) => (c.id === chat ? { ...c, effort: parsed.data.effort } : c))
+    return new Response(null, { status: 204 })
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -584,6 +618,12 @@ export function fakeWorkspacesServer(
     answerNextStart: (answer: () => Response, made = false) => {
       nextStart = { answer, made }
     },
+    /** Each effort change the page posted (W10), with its chat as the server read it. */
+    efforts,
+    /** Answers each next effort change with `answer` until it is set to undefined. */
+    answerEffort: (answer: (() => Response) | undefined) => {
+      effortAnswer = answer
+    },
     /** The chats of the list now. */
     chats: () => response.workspaces.flatMap((w) => w.chats),
     /** The answer to a request for `path`, or undefined when it is not a workspace route. */
@@ -596,6 +636,8 @@ export function fakeWorkspacesServer(
       }
       if (path === '/api/events') return events(init?.signal)
       if (path === '/api/chats' && init?.method === 'POST') return start(init)
+      const effortPath = /^\/api\/chats\/([^/]+)\/effort$/.exec(path)
+      if (effortPath !== null && init?.method === 'POST') return effort(decodeURIComponent(effortPath[1] ?? ''), init)
       const ratioPath = /^\/api\/workspaces\/([^/]+)\/layout\/ratio$/.exec(path)
       if (ratioPath !== null && init?.method === 'POST') return ratio(decodeURIComponent(ratioPath[1] ?? ''), init)
       const posted = /^\/api\/chats\/([^/]+)\/(focus|zoom|swap|close|split|move)$/.exec(path)
