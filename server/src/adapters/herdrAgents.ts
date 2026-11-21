@@ -288,9 +288,18 @@ const putBackWaitMs = 3000
 /** How many times a stop reads the box for the prompt that comes back, and the time between two reads. */
 const putBackReads = 5
 const putBackReadGapMs = 100
-/** How many times, and how far apart, a send reads the box to see that the chat took its prompt. */
-const submitReads = 8
-const submitReadGapMs = 150
+/**
+ * The waits before each read of the box after a send, to see that the chat took its prompt. The first reads come
+ * soon, as an idle chat takes its Enter in tens of ms; the waits add up to 1.3 s, so a lost Enter is still found.
+ */
+const submitReadGapsMs = [30, 50, 70, 100, 150, 150, 150, 150, 150, 150, 150]
+
+/** The time of each step of one send, in ms, for the log; never its text. */
+/** How long after a send an empty box, with no read that showed the prompt, counts as the prompt taken. */
+const emptyProofMs = 150
+
+type SendSteps = { boxMs?: number; promptMs?: number; checkMs?: number; checkReads?: number }
+const msSince = (start: number) => Date.now() - start
 
 const PaneRead = z.object({ read: z.object({ text: z.string() }) })
 
@@ -670,12 +679,25 @@ export function createHerdrAgents({
    * box at the last read, and whether it holds the prompt this port sent (`sent`, its hash): a box too long to
    * match, or with other text, is not `ours`.
    */
-  const leftInBox = async (pane: string, sent: string): Promise<{ box: InputBox; ours: boolean } | null> => {
+  const leftInBox = async (
+    pane: string,
+    sent: string,
+    steps: SendSteps,
+  ): Promise<{ box: InputBox; ours: boolean } | null> => {
     let left: { box: InputBox; ours: boolean } | null = null
-    for (let read = 0; read < submitReads; read += 1) {
-      await new Promise((resolve) => setTimeout(resolve, submitReadGapMs))
+    let waited = 0
+    for (const gap of submitReadGapsMs) {
+      await new Promise((resolve) => setTimeout(resolve, gap))
+      waited += gap
       const now = await inputBox(pane)
-      if (!now.ok || now.value === null || now.value.text === '') return null
+      steps.checkReads = (steps.checkReads ?? 0) + 1
+      if (!now.ok || now.value === null) return null
+      // An empty box shows that the chat took the prompt only once the prompt showed there, or after
+      // `emptyProofMs`: an earlier read can come before the prompt shows at all.
+      if (now.value.text === '') {
+        if (left !== null || waited >= emptyProofMs) return null
+        continue
+      }
       left = { box: now.value, ours: boxKeys(now.value).some((key) => hashOf(key) === sent) }
     }
     return left
@@ -701,23 +723,30 @@ export function createHerdrAgents({
     pane: string,
     claude: boolean,
     text: string,
+    steps: SendSteps = {},
   ): Promise<Result<PromptOutcome, AgentPortError>> => {
     // The prompt would join text in the box: text the owner typed, or a prompt that a stop put back.
     if (claude) {
+      const boxAt = Date.now()
       const box = await inputBox(pane)
+      steps.boxMs = msSince(boxAt)
       if (!box.ok) return box
       // A screen whose box the adapter cannot read (a dialog, or a draft with a line of "─" in it) may hold text too,
       // so nothing is sent; its own state tells the owner that the box was not read, not that it holds text.
       if (box.value === null) return ok('inputUnreadable')
       if (box.value.text !== '') return ok('inputNotEmpty')
     }
+    const promptAt = Date.now()
     const sent = await input('agent.prompt', { target: pane, text })
+    steps.promptMs = msSince(promptAt)
     if (!sent.ok || sent.value !== 'sent') return sent
     const key = hashOf(promptKey(text))
     lastSent.set(pane, key)
     if (!claude) return sent
     // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
-    const left = await leftInBox(pane, key)
+    const checkAt = Date.now()
+    const left = await leftInBox(pane, key, steps)
+    steps.checkMs = msSince(checkAt)
     if (left === null) return sent
     lastSent.delete(pane)
     // Text the adapter cannot match to the prompt stays; the owner's input clear removes it.
@@ -739,12 +768,19 @@ export function createHerdrAgents({
   return {
     machine,
     async sendPrompt(chat, text) {
+      const start = Date.now()
       const target = await agentPane(chat)
       if (!target.ok) return target
       if (typeof target.value === 'string') return ok(target.value)
       const { pane, status, claude } = target.value
       if (status === 'needsYou') return ok('needsYou')
-      return submit(pane, claude, text)
+      const steps: SendSteps = {}
+      const locateMs = msSince(start)
+      const sent = await submit(pane, claude, text, steps)
+      // The time of each step, so a slow send shows where its time went; no text, no pane ID.
+      const outcome = sent.ok ? sent.value : sent.error.reason
+      log.info('prompt sent', { outcome, totalMs: msSince(start), locateMs, ...steps })
+      return sent
     },
     async sendCommand(chat, command) {
       const target = await agentPane(chat)

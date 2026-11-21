@@ -100,7 +100,12 @@ client of a socket or a file sits beside them.
   space or with nothing. Other text
   stays (`agentPortContract.ts`, `herdrAgents.test.ts`).
 - After a prompt to a Claude chat, the adapter reads the box again, up
-  to 8 times 150 ms apart. When each read still shows that prompt, the
+  to 11 times, the first after 30 ms and the waits adding up to 1.3 s.
+  An empty box counts as the prompt taken only after a read showed the
+  prompt there, or from 150 ms on, as an earlier read can come before
+  the prompt shows.
+  Each send logs `prompt sent` with the ms of each step (list read,
+  box read, `agent.prompt`, the check) and its outcome, never text. When each read still shows that prompt, the
   chat did not take its Enter: the adapter empties the box with ctrl+u
   and answers `notSubmitted` once a read shows it empty. Text it cannot
   match to the prompt (a box of more lines than it joins) or cannot

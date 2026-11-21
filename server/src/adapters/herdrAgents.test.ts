@@ -653,6 +653,18 @@ describe('herdr agents: input to a chat', () => {
       expect(sentTo('agent.send_keys')).toBe(keys)
     })
 
+    it('does not take an empty box before the prompt shows as sent: a prompt that shows 80 ms late and stays is notSubmitted', async () => {
+      idle()
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt')
+          setTimeout(() => {
+            socket.set('pane.read', paneRead('w17:p1', claudeScreen('Check the lint.')))
+          }, 80)
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      })
+      expect(await port().sendPrompt(chat, 'Check the lint.')).toEqual({ ok: true, value: 'notSubmitted' })
+    })
+
     it('answers inputNotEmpty when its ctrl+u leaves the prompt in the box', async () => {
       idle()
       socket.onRequest((method) => {
@@ -707,6 +719,27 @@ describe('herdr agents: input to a chat', () => {
       time += 1
       expect(await timed.cancel(chat)).toEqual({ ok: true, value: 'sent' })
       expect(sentTo('agent.send_keys')).toBe(before + 2)
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
+  it('logs the time of each step of a send, with no prompt text, and takes an empty box as sent after 150 ms', async () => {
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    const logger = memoryLogger()
+    const timed = createHerdrAgents({ socket: socket.path, machine, log: logger.log, claudeProjects: projects, home })
+    try {
+      expect(await timed.sendPrompt(chat, 'Deploy with marker-5150')).toEqual({ ok: true, value: 'sent' })
+      const [line] = logger.lines().filter((e) => e.msg === 'prompt sent')
+      // Reads at 30, 80 and 150 ms: the box of the fake is empty at once and never shows the prompt.
+      expect(line).toMatchObject({ outcome: 'sent', checkReads: 3 })
+      for (const step of ['totalMs', 'locateMs', 'boxMs', 'promptMs', 'checkMs'])
+        expect(typeof line?.[step]).toBe('number')
+      expect(Number(line?.checkMs)).toBeGreaterThanOrEqual(150)
+      expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
     } finally {
       socket.set('agent.list', undefined)
     }
