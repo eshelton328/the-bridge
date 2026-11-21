@@ -40,6 +40,8 @@ import {
   TranscriptChangedEvent,
   TranscriptResponse,
   ZoomChatRequest,
+  SendId,
+  SendResultResponse,
 } from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
@@ -60,6 +62,7 @@ import type {
 } from '../services/agentPort.ts'
 import { clearInput, readSkills, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
+import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
@@ -80,7 +83,12 @@ const maxCommandBytes = maxCompactChars * 6 + 1024
 const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
   stream.writeSSE({ event: 'error', data: JSON.stringify(ErrorBody.parse(body)) })
 
-export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore) {
+export function chatsRoutes(
+  agents: AgentPort,
+  log: Logger,
+  uploads: UploadStore,
+  sends: SendResults = createSendResults(),
+) {
   const chatOf = (c: Context<AppEnv>) => ChatId.safeParse(c.req.param('chat'))
   const invalid = (c: Context<AppEnv>) =>
     errorJson(c, 'invalid-input', {
@@ -194,7 +202,15 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       async (c) => {
         const id = chatOf(c)
         if (!id.success) return invalid(c)
-        const sent = await sendPromptWithFiles(agents, uploads, id.data, c.req.valid('json'))
+        const body = c.req.valid('json')
+        const { sendId } = body
+        if (sendId !== undefined && sends.begin(id.data, sendId) === 'duplicate')
+          return errorJson(c, 'chat-not-ready', {
+            state: 'duplicateSend',
+            message: 'this send ID was used for this chat; read its result',
+          })
+        const sent = await sendPromptWithFiles(agents, uploads, id.data, body)
+        if (sendId !== undefined) sends.finish(id.data, sendId, sent.ok ? resultOf(sent.value) : 'unknown')
         if (!sent.ok)
           return sent.error.from === 'agents' ? failed(c, sent.error.error) : storeFailed(c, log, sent.error.error)
         return answer(c, sent.value)
@@ -294,6 +310,15 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       if (!read.ok) return failed(c, read.error)
       if (read.value === null) return notFound(c)
       return c.json(TranscriptResponse.parse(read.value), 200)
+    })
+    .get('/:chat/sends/:send', (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const send = SendId.safeParse(c.req.param('send'))
+      const result = send.success ? sends.get(id.data, send.data) : undefined
+      if (result === undefined)
+        return errorJson(c, 'not-found', { path: c.req.path, message: 'the server keeps no result of this send' })
+      return c.json(SendResultResponse.parse({ result }), 200)
     })
     .get('/:chat/skills', async (c) => {
       const id = chatOf(c)

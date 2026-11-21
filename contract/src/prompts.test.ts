@@ -74,3 +74,13 @@ describe('command requests', () => {
       expect(ChatCommandRequest.safeParse(body).success).toBe(false)
   })
 })
+
+describe('the send ID of a prompt', () => {
+  it('takes a UUID from the page, and refuses an ID with other characters', () => {
+    expect(
+      SendPromptRequest.safeParse({ text: 'Reply OK.', sendId: 'b9a7c1e2-0d4f-4f5e-9a3b-5150c0ffee00' }).success,
+    ).toBe(true)
+    expect(SendPromptRequest.safeParse({ text: 'Reply OK.', sendId: '../etc' }).success).toBe(false)
+    expect(SendPromptRequest.safeParse({ text: 'Reply OK.', sendId: 'short' }).success).toBe(false)
+  })
+})

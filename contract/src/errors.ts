@@ -26,7 +26,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * prompt that the server typed, so the server removed the text again (`notSubmitted`), it works or a state herdr
    * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), the
    * other chat of a swap is in another tab (`otherTab`), a move goes to the chat's own tab (`sameTab`), or a move
-   * goes to a tab that shows only one pane (`zoomedTab`).
+   * goes to a tab that shows only one pane (`zoomedTab`), or a prompt's `sendId` was used for this chat before
+   * (`duplicateSend`; read its result instead).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -44,6 +45,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'otherTab',
       'sameTab',
       'zoomedTab',
+      'duplicateSend',
     ]),
     ...common,
   }),

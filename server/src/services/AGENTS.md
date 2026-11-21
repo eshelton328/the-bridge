@@ -34,6 +34,12 @@ from the outside world.
   dropped. It watches the agents only while a subscription is stored,
   and opens the watch again 5 s after the agents stop answering
   (`pushNotifier.test.ts`).
+- `sendResults.ts` keeps the result of each prompt send that carries
+  the page's send ID: pending, then sent, notSubmitted, notSent (refused
+  before any text was typed) or unknown (the chat may hold the text:
+  a herdr failure, `inputNotEmpty` or `inputUnreadable`), for 10
+  minutes and at most 500,
+  with no text (`sendResults.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
