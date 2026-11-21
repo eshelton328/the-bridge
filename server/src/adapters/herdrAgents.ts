@@ -1277,12 +1277,13 @@ export function createHerdrAgents({
             // The places of this read, unless the cache was emptied while it ran.
             if (age === placesAge) {
               const shared = sharedSessions(agents.value.agents)
-              for (const a of agents.value.agents.filter(isChat))
-                places.set(chatIdOf(a, shared), {
-                  pane: a.pane_id,
-                  status: statusOf(a.agent_status),
-                  claude: a.agent === 'claude',
-                })
+              for (const a of agents.value.agents.filter(isChat)) {
+                const id = chatIdOf(a, shared)
+                // A status that a stream's event gave after this read began is newer than the read's own.
+                const had = places.get(id)
+                const status = had?.pane === a.pane_id ? had.status : statusOf(a.agent_status)
+                places.set(id, { pane: a.pane_id, status, claude: a.agent === 'claude' })
+              }
             }
             listening()
             if (changed) tell({ type: 'workspacesChanged' })

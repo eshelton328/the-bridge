@@ -1768,6 +1768,35 @@ describe('herdr agents: the place of a chat while a list stream is open', () => 
     }
   })
 
+  it('keeps a status that an event gave when a second stream reads an older list', async () => {
+    const blocked = {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'blocked' } : a)),
+    }
+    socket.set('agent.list', blocked)
+    const ours = port()
+    const first = ours.subscribe(
+      () => undefined,
+      () => undefined,
+    )
+    try {
+      await first.ready
+      socket.push(statusLine('w17:p1', 'idle'))
+      await settle()
+      // The second stream's read still gives the old "blocked".
+      const second = ours.subscribe(
+        () => undefined,
+        () => undefined,
+      )
+      await second.ready
+      expect(await ours.sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'sent' })
+      second.close()
+    } finally {
+      first.close()
+      socket.set('agent.list', undefined)
+    }
+  })
+
   it('reads the list again after a layout event, and once more when herdr no longer knows the cached pane', async () => {
     socket.set('agent.list', idle)
     const ours = port()
