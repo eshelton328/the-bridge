@@ -139,7 +139,12 @@ describe('the live mapper', () => {
     for (const workspace of sideChat.data.workspaces) {
       // Figma draws skill-evals closed, so D2 does not know its chats.
       if (workspace.id === 'skill-evals') continue
-      expect(mapped.find((w) => w.id === workspace.id)?.chats).toEqual(workspace.chats)
+      // Each live row names its pane (W5, pane follow), which a Figma state has no need of.
+      const chats = mapped.find((w) => w.id === workspace.id)?.chats
+      expect(chats?.map((c) => c.pane)).toEqual(workspace.chats.map((c) => `mac-mini/pane-${c.id}`))
+      expect(chats?.map((c) => Object.fromEntries(Object.entries(c).filter(([key]) => key !== 'pane')))).toEqual(
+        workspace.chats,
+      )
     }
   })
 
@@ -171,6 +176,7 @@ describe('the live mapper', () => {
       status: { label: 'Unknown', tone: 'idle' },
       level: 1,
       mark: { kind: 'fork', label: 'Fork of bridge themes' },
+      pane: 'mac-mini/pane-b',
     })
     expect(toWorkspaces(fork)[0]?.count).toBe(1)
   })
@@ -197,15 +203,57 @@ describe('the live mapper', () => {
         title: 'dev server',
         model: 'shell · pnpm dev',
         status: { label: 'Running', tone: 'running' },
+        pane: 'mac-mini/pane-dev',
       },
-      { id: 'sh', kind: 'shell', title: 'a shell', model: 'shell', status: { label: 'Idle', tone: 'idle' } },
+      {
+        id: 'sh',
+        kind: 'shell',
+        title: 'a shell',
+        model: 'shell',
+        status: { label: 'Idle', tone: 'idle' },
+        pane: 'mac-mini/pane-sh',
+      },
       {
         id: 'pipe',
         kind: 'shell',
         title: 'logs',
         model: 'shell · tail -f a.log | grep err',
         status: { label: 'Idle', tone: 'idle' },
+        pane: 'mac-mini/pane-pipe',
       },
+    ])
+  })
+
+  it("gives a live Claude chat's effort to its pane header, read-only, and takes commands only when idle or done", () => {
+    const live = WorkspacesResponse.parse({
+      machine: 'mac-mini',
+      workspaces: [
+        {
+          id: 'mac-mini/w1',
+          label: 'w1',
+          chats: [
+            chat('a', { kind: 'claude', title: 'a', model: 'claude-opus-5-5', effort: 'xhigh', status: 'idle' }),
+            chat('b', { kind: 'claude', title: 'b', model: 'claude-opus-5-5', status: 'done' }),
+            chat('c', { kind: 'claude', title: 'c', model: 'claude-opus-5-5', status: 'unknown' }),
+            chat('d', { kind: 'claude', title: 'd', model: 'claude-opus-5-5', status: 'needsYou' }),
+            chat('e', { kind: 'codex', title: 'e', model: 'gpt-5.5', status: 'idle' }),
+          ],
+        },
+      ],
+    })
+    const panes = livePanes(toWorkspaces(live), 'mac-mini')
+    const first = panes[0]
+    expect(first?.type === 'chat' ? first.head : undefined).toMatchObject({
+      model: 'Opus 5.5',
+      effort: 'xhigh effort',
+      readOnlyModel: true,
+    })
+    expect(panes.map((p) => (p.type === 'chat' ? p.takesCommands : 'none'))).toEqual([
+      true,
+      true,
+      false,
+      false,
+      undefined,
     ])
   })
 

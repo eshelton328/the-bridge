@@ -45,7 +45,15 @@ import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
 import { layoutOfTab } from './liveLayout.ts'
-import type { SidebarChat, WorkbenchPane, Workspace, WorkspaceLayout, WorkspacesData, WorkspacesUi } from './types.ts'
+import type {
+  PaneAction,
+  SidebarChat,
+  WorkbenchPane,
+  Workspace,
+  WorkspaceLayout,
+  WorkspacesData,
+  WorkspacesUi,
+} from './types.ts'
 
 type WorkspacesScreenState = ScreenState<WorkspacesData, WorkspacesUi>
 
@@ -64,6 +72,16 @@ export function modelLabel(model: string): string {
 
 const kindLabels = { claude: 'Claude Code', codex: 'Codex', shell: 'shell' } as const
 
+/** The label of an idle chat; an `unknown` one has the idle tone too, with its own label. */
+const idleLabel = 'Idle'
+
+/**
+ * The server sends /compact and /clear only to a Claude chat that is idle or done (backend #317, W5); every other
+ * status, `unknown` too, is refused, so the commands are off.
+ */
+const takesCommands = (status: SidebarChat['status']) =>
+  status.tone === 'done' || (status.tone === 'idle' && status.label === idleLabel)
+
 function statusOf(chat: ChatSummary): SidebarChat['status'] {
   switch (chat.status) {
     case 'working':
@@ -74,7 +92,7 @@ function statusOf(chat: ChatSummary): SidebarChat['status'] {
     case 'needsYou':
       return { label: 'Needs you', tone: 'needsYou' }
     case 'idle':
-      return { label: 'Idle', tone: 'idle' }
+      return { label: idleLabel, tone: 'idle' }
     case 'done':
       return { label: 'Done', tone: 'done' }
     case 'unknown':
@@ -104,6 +122,9 @@ function sidebarChat(chat: ChatSummary, titles: ReadonlyMap<string, string>): Si
     ...(parent?.relation === 'fork'
       ? { mark: { kind: 'fork' as const, label: `Fork of ${titles.get(parent.id) ?? 'a chat'}` } }
       : {}),
+    // W5: the effort as Claude Code's `/effort` names it, as Figma writes "high effort"; none when not known.
+    ...(chat.effort === null ? {} : { effort: `${chat.effort} effort` }),
+    pane: chat.pane,
   }
 }
 
@@ -147,12 +168,15 @@ const notLiveText = {
 export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
     (w.chats ?? []).map((chat): WorkbenchPane => {
+      // The model and effort are read-only (d-101, W5): the header shows them as text, with no picker.
       const head = {
         kind: chat.kind,
         title: chat.title,
         model: chat.model,
         ...(chat.context === undefined ? {} : { context: chat.context }),
         status: chat.status,
+        ...(chat.effort === undefined ? {} : { effort: chat.effort }),
+        readOnlyModel: true,
       }
       if (chat.kind === 'shell')
         return { type: 'shell', id: chat.id, head, lines: [], prompt: '', notLive: notLiveText.terminal }
@@ -170,11 +194,22 @@ export function livePanes(workspaces: readonly Workspace[], machine: string): Wo
           running: claude && (chat.status.tone === 'working' || chat.status.tone === 'running'),
           ...(claude ? {} : { notLive: notLiveText.sending }),
         },
-        ...(claude ? { liveChat: `${machine}/${chat.id}` } : { notLive: notLiveText.transcript }),
+        ...(claude
+          ? { liveChat: `${machine}/${chat.id}`, takesCommands: takesCommands(chat.status) }
+          : { notLive: notLiveText.transcript }),
       }
     }),
   )
 }
+
+/**
+ * The commands a live Claude chat's actions offer (W5): `POST /api/chats/:chat/command` sends `/compact` or `/clear`.
+ * No Figma frame draws them; each opens its dialog (blocks/ChatCommandDialog.tsx).
+ */
+const chatCommands: PaneAction[] = [
+  { value: 'compact', label: 'Compact context…' },
+  { value: 'clear', label: 'Clear context…' },
+]
 
 /** The status bar's summary of `workspace` and its layout's panes, as `shownView` counts them; none with no workspace. */
 const summaryOf = (workspace: Workspace | undefined, layouts: Record<string, { panes: string[] }>) => {
@@ -232,6 +267,7 @@ function liveOnly(
       ...(data.chatMenu === undefined
         ? {}
         : { chatMenu: data.chatMenu.filter((a) => a.value !== 'subagents' && a.value !== 'folders') }),
+      chatCommands,
     },
     ui: {
       ...state.ui,

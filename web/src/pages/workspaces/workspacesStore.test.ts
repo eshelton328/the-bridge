@@ -41,4 +41,21 @@ describe('workspacesStore', () => {
       ui: { drafts: { 'drift-check': 'ship it' } },
     })
   })
+
+  it('moves the edits of a chat whose ID changed on its pane, and only after it saw the old ID there', () => {
+    const { setUi, followPanes } = workspacesStore.getState().actions
+    setUi(undefined, { focusedPane: 'c1', phoneView: 'chat', drafts: { c1: 'old' } })
+    followPanes(undefined, new Map([['c1', 'p1']]))
+    followPanes(undefined, new Map([['c1-c1', 'p1']]))
+    expect(workspacesStore.getState().uiEdits.ui).toEqual({
+      focusedPane: 'c1-c1',
+      phoneView: 'chat',
+      drafts: { c1: 'old' },
+    })
+    // Another state starts with no panes seen: its first list moves nothing.
+    workspacesStore.getState().actions.showState('twoPanes')
+    setUi('twoPanes', { focusedPane: 'c1-c1' })
+    followPanes('twoPanes', new Map([['c2', 'p1']]))
+    expect(workspacesStore.getState().uiEdits.ui).toEqual({ focusedPane: 'c1-c1' })
+  })
 })

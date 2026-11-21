@@ -24,7 +24,11 @@
 // width, and a state without them, draws the desktop layout. With
 // `liveNotice` (the live source could not be read) each layout draws the
 // notice at the top of its content until the owner dismisses it, with Retry
-// when the page passes `onRetry` (LiveNotice).
+// when the page passes `onRetry` (LiveNotice). A live Claude chat's actions
+// end with /compact and /clear (W5, chatCommands.ts), each of which opens its
+// dialog over every layout for that chat (`ui.chatDialog`, ChatCommandDialog)
+// and posts through `onCommand`.
+import type { ChatCommandRequest } from '@bridge/contract'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
 import { reportShellDiagnostic } from '../../../errors/shellDiagnostic.ts'
@@ -39,6 +43,8 @@ import { NewChatDialog } from '../blocks/NewChatDialog.tsx'
 import { SubagentsPane } from '../blocks/SubagentsPane.tsx'
 import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import { ChatActionsMenu } from '../blocks/ChatActionsMenu.tsx'
+import { ChatCommandDialog } from '../blocks/ChatCommandDialog.tsx'
+import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
@@ -71,6 +77,8 @@ export type WorkspacesScreenProps = {
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
+  /** Sends a live Claude chat's /compact or /clear from its dialog (W5); answers as `onSend` does. */
+  onCommand?: ((chat: string, request: ChatCommandRequest) => Promise<ComposerAnswer>) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
@@ -93,6 +101,7 @@ export function WorkspacesScreen({
   onSend,
   onStop,
   filesOf,
+  onCommand,
   onRetry,
   transcripts,
   onCopy,
@@ -128,25 +137,41 @@ export function WorkspacesScreen({
         onRetry={onRetry}
       />
     )
+  // The chat a command's dialog acts on (W5): the focused chat, which the actions that opened it focused.
+  const focused = data.panes.find((p) => p.id === ui.focusedPane)
+  const commandChat = focused?.type === 'chat' ? focused : undefined
+  const commandDialog = (
+    <ChatCommandDialog
+      dialog={ui.chatDialog}
+      chat={commandChat === undefined ? undefined : (ui.names?.[commandChat.id] ?? commandChat.head.title)}
+      onOpenChange={(open) => {
+        if (!open) change({ chatDialog: null })
+      }}
+      onRun={commandChat === undefined || onCommand === undefined ? undefined : (r) => onCommand(commandChat.id, r)}
+    />
+  )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
       {(layout) => (
-        <WorkspacesLayout
-          layout={layout}
-          data={data}
-          ui={ui}
-          viewport={viewport}
-          onNavigate={onNavigate}
-          onSend={onSend}
-          onStop={onStop}
-          filesOf={filesOf}
-          transcripts={transcripts}
-          onCopy={onCopy}
-          change={change}
-          drafts={drafts}
-          notice={notice}
-        />
+        <>
+          <WorkspacesLayout
+            layout={layout}
+            data={data}
+            ui={ui}
+            viewport={viewport}
+            onNavigate={onNavigate}
+            onSend={onSend}
+            onStop={onStop}
+            filesOf={filesOf}
+            transcripts={transcripts}
+            onCopy={onCopy}
+            change={change}
+            drafts={drafts}
+            notice={notice}
+          />
+          {commandDialog}
+        </>
       )}
     </ViewportFrame>
   )
@@ -240,7 +265,7 @@ function WorkspacesLayout({
       data.chatMenu === undefined || chat === undefined ? undefined : (
         <ChatActionsMenu
           title={chat.head.title}
-          actions={data.chatMenu}
+          actions={withCommands(data.chatMenu, chat, data.chatCommands)}
           targets={workspaces.filter((w) => w.id !== shown.current)}
           newWorkspace={data.newWorkspace}
           open={menuOpen}
@@ -257,6 +282,7 @@ function WorkspacesLayout({
           }}
           onSelect={(action) => {
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
+            if (isChatCommand(action)) change({ menuFor: null, moveOpen: false, chatDialog: action })
           }}
           moveTarget={ui.moveTarget}
           onMoveTargetChange={(moveTarget) => {

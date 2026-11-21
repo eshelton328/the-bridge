@@ -8,7 +8,8 @@
 // list opens the same sheet with no trigger, Rename first and highlighted
 // (M9 146:273). A workspace's ⋯ in the list opens it too, titled with the
 // workspace's name, with its three actions and no Move to workspace (M14
-// 208:235). Props only.
+// 208:235). A live Claude chat's /compact and /clear come last, on only while
+// it is idle or done (W5). Props only.
 import {
   BottomSheet,
   type BottomSheetLifted,
@@ -16,6 +17,7 @@ import {
   BubbleIcon,
   ChevronDownIcon,
   ChevronRightIcon,
+  CloseCircleIcon,
   CloseIcon,
   EditIcon,
   GridIcon,
@@ -24,6 +26,7 @@ import {
   type OptionListItem,
   PlusIcon,
   ProjectsIcon,
+  SortIcon,
   SparkleIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
@@ -52,6 +55,9 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   move: <MoveIcon size="20" />,
   rename: <EditIcon size="20" />,
   close: <CloseIcon size="20" />,
+  // W5: the library has no icon for compacting or clearing a context (LIBRARY_GAPS.md: Chat commands).
+  compact: <SortIcon size="20" />,
+  clear: <CloseCircleIcon size="20" />,
 }
 const toneOf: Partial<Record<PaneAction['value'], keyof typeof tones>> = {
   folders: 'accent',
@@ -118,13 +124,14 @@ export function PhoneChatActions(props: PhoneChatActionsProps) {
       ) : a.value === 'move' ? (
         <ChevronDownIcon size="16" />
       ) : undefined,
+    disabled: a.disabled,
   })
   const split = actions.findIndex((a) => a.value === 'move') + 1
   const before = split === 0 ? actions : actions.slice(0, split)
   const after = split === 0 ? [] : actions.slice(split)
   const pick = (value: string) => {
     const action = actions.find((a) => a.value === value)
-    if (action === undefined) return
+    if (action === undefined || action.disabled === true) return
     if (action.value === 'move') {
       props.onMoveOpenChange?.(!moveOpen)
       return
