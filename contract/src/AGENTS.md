@@ -48,5 +48,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   object), never a path; the file goes up in chunks of the size the
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
   never goes into a log line or an error body (`uploads.test.ts`).
+- Web Push (d-118, `push.ts`): a subscription is the browser's
+  `toJSON()` (a strict object, an https endpoint, base64url keys); a
+  push payload holds the chat ID, its name and the event (`needsYou`
+  or `done`), never message text (`push.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).
