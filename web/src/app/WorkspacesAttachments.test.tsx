@@ -77,6 +77,10 @@ const secret = 'deploy the private branch now'
 const fileName = 'private-plan.pdf'
 const file = (name = fileName, text = 'abcdefghij', type = 'application/pdf') => new File([text], name, { type })
 
+// liveUploads.ts waits 250 ms, then 500 ms, before a chunk's two retries of its own: a wait across them has more than
+// expect's default second, or a slow runner misses it.
+const pastRetries = { timeout: 5_000 }
+
 const phone = [390, 844] as const
 const tablet = [756, 1129] as const
 const desktop = [1512, 982] as const
@@ -385,7 +389,7 @@ describe("a live Claude chat's files (W1b)", () => {
     )
     await openChat(tablet, 'plan the slice')
     await pick('plan the slice', [file()])
-    await expect.poll(() => fake.uploads.complete().length).toBe(1)
+    await expect.poll(() => fake.uploads.complete().length, pastRetries).toBe(1)
     await expect.element(chatOf('plan the slice').getByRole('progressbar')).not.toBeInTheDocument()
     await expect.element(chatOf('plan the slice').getByText(/^Not attached/)).not.toBeInTheDocument()
     expect(fake.uploads.chunks.map((c) => c.n)).toEqual([0, 1, 2])
@@ -405,7 +409,7 @@ describe("a live Claude chat's files (W1b)", () => {
     )
     await pick('plan the slice', [file()])
     const chat = chatOf('plan the slice')
-    await expect.element(chat.getByText('Not attached — unreachable', { exact: true })).toBeVisible()
+    await expect.element(chat.getByText('Not attached — unreachable', { exact: true }), pastRetries).toBeVisible()
     await expect.element(chat.getByRole('img', { name: 'Upload failed' })).toBeVisible()
     await expect.element(sendButton('plan the slice')).toBeDisabled()
     expect(fake.uploads.starts).toHaveLength(1)
