@@ -78,7 +78,9 @@ export function SkillPicker({
 }: SkillPickerProps) {
   const { width, keepFocus } = layouts[layout]
   // The phone's popover does not take the focus when it opens (M3), so nothing has to hand it back to the box.
-  const autoFocus = !keepFocus
+  // A list with no row to take the focus (no match, or only rows that are off) leaves it in the box too: the popover
+  // would focus its own box, which hands nothing back to the message box, so the owner's typing would go nowhere.
+  const autoFocus = !keepFocus && skills.some((s) => s.disabled !== true)
   const rowsRef = useRef<HTMLDivElement>(null)
   // The highlighted row stays in view as the arrow keys move it through a list that scrolls.
   useEffect(() => {

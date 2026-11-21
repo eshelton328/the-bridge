@@ -460,6 +460,23 @@ describe('the "/" list of a live Claude chat (review R34)', () => {
     await expect.poll(shownNames).toEqual(commands)
   })
 
+  it('keeps the focus in the box when a paste opens the list with no row, before the skills come, on the desktop', async () => {
+    const chats = withChats()
+    // The skills have not come yet: the read waits.
+    chats.answerSkills(() => new Promise<Response>(() => undefined))
+    await tapWorkspaces(desktop)
+    await expect.poll(() => boxOf('plan the slice')).toBeInstanceOf(HTMLTextAreaElement)
+    const box = boxOf('plan the slice')
+    // One change puts the whole "/" word in the box, as a paste does: no command matches it.
+    await userEvent.fill(box, '/unknown-skill')
+    await expect.poll(() => chats.skillReads).toEqual([plan])
+    await expect.element(page.getByText('No match', { exact: true })).toBeVisible()
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    expect(document.activeElement).toBe(box)
+    await userEvent.keyboard('x')
+    await expect.poll(() => box.value).toBe('/unknown-skillx')
+  })
+
   it('moves the highlight with the arrow keys and picks with Enter on the desktop; Escape closes and keeps the focus', async () => {
     withChats()
     await tapWorkspaces(desktop)
