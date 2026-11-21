@@ -21,6 +21,10 @@ state file and a page are in `screenState.ts` (d-082).
   that stubs `fetch` in each test and removes it in `afterEach` calls
   `answerLateServerReads()` at its top (`lateServerReads.ts`): a page's
   router can read after its test ended (WorkspacesLiveUnavailable).
+- `testSetup.ts` loads every font face a test file's CSS declares before
+  its tests (`loadFonts.ts`, `loadFonts.test.ts`): a browser loads a face
+  only on first use, and a cold CI browser measured text in a fallback
+  font (DiscussionCompactText).
 - A check of a label that shows for a few seconds ("Copied" for 2 s)
   starts `holdTimers()` (`holdTimers.ts`) before the click and moves the
   clock itself: a busy runner can spend the 2 s in one click
