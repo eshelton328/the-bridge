@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createFakeUploads } from '../adapters/fakeUploads.ts'
 import { createApp } from '../app.ts'
+import { maxSmallJsonBytes } from './jsonBody.ts'
 import { memoryLogger } from '../logger.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 
@@ -50,6 +51,23 @@ describe('the upload routes', () => {
     expect(new TextDecoder().decode(store.file(upload)?.bytes)).toBe('abcdef')
     expect((await remove(upload)).status).toBe(204)
     expect((await remove(upload)).status).toBe(404)
+  })
+
+  it('answers 400 to a start, a complete, a stop or an input clear whose JSON body is over 4 KiB', async () => {
+    const { app, start } = setup()
+    const res = await start('test-mac/bridge-themes', { name: 'a.txt', size: 2, type: '' })
+    const { upload } = StartUploadResponse.parse(await res.json())
+    const padded = (body: string) => `${body}${' '.repeat(maxSmallJsonBytes)}`
+    const post = (path: string, body: string) => app.request(path, { method: 'POST', headers: json, body })
+    for (const [path, body] of [
+      [startPath('test-mac/bridge-themes'), JSON.stringify({ name: 'a.txt', size: 2, type: '' })],
+      [`/api/uploads/${upload}/complete`, '{}'],
+      ['/api/chats/test-mac%2Fbridge-themes/stop', '{}'],
+      ['/api/chats/test-mac%2Fbridge-themes/input/clear', '{}'],
+    ] as const) {
+      const big = await post(path, padded(body))
+      expect([path, big.status, (await kindOf(big)).kind]).toEqual([path, 400, 'invalid-input'])
+    }
   })
 
   it('answers a shell 409 shell, a Codex chat 409 noAttachments, an unknown chat 404 and a large file 413', async () => {

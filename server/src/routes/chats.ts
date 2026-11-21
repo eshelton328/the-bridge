@@ -33,7 +33,7 @@ import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, PromptOutc
 import { clearInput, readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { startUpload } from '../services/uploads.ts'
-import { jsonBody, jsonOnly } from './jsonBody.ts'
+import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
 
@@ -111,7 +111,7 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
         return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
       },
     )
-    .post('/:chat/uploads', jsonOnly, jsonBody(StartUploadRequest), async (c) => {
+    .post('/:chat/uploads', smallJson, jsonOnly, jsonBody(StartUploadRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const started = await startUpload(agents, uploads, id.data, c.req.valid('json'))
@@ -132,13 +132,13 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
           return c.json(StartUploadResponse.parse(started.value), 201)
       }
     })
-    .post('/:chat/stop', jsonOnly, jsonBody(StopChatRequest), async (c) => {
+    .post('/:chat/stop', smallJson, jsonOnly, jsonBody(StopChatRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const stopped = await stopChat(agents, id.data)
       return stopped.ok ? answer(c, stopped.value) : failed(c, stopped.error)
     })
-    .post('/:chat/input/clear', jsonOnly, jsonBody(ClearInputRequest), async (c) => {
+    .post('/:chat/input/clear', smallJson, jsonOnly, jsonBody(ClearInputRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const cleared = await clearInput(agents, id.data)

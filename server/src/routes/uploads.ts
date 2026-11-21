@@ -11,7 +11,7 @@ import { Hono } from 'hono'
 import { type AppEnv, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { UploadStore, UploadStoreError } from '../services/uploadStore.ts'
-import { jsonBody, jsonOnly } from './jsonBody.ts'
+import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 
 /** The answer to a store fault: 507 when the disk is full, else 500; the log gets the reason and the errno code. */
 export function storeFailed(c: Context<AppEnv>, log: Logger, error: UploadStoreError) {
@@ -53,7 +53,7 @@ export function uploadsRoutes(uploads: UploadStore, log: Logger) {
       if (!written.ok) return storeFailed(c, log, written.error)
       return written.value === 'written' ? c.body(null, 204) : missed(c, written.value)
     })
-    .post('/:upload/complete', jsonOnly, jsonBody(CompleteUploadRequest), async (c) => {
+    .post('/:upload/complete', smallJson, jsonOnly, jsonBody(CompleteUploadRequest), async (c) => {
       const id = uploadOf(c)
       if (!id.success) return invalid(c)
       const done = await uploads.complete(id.data)
