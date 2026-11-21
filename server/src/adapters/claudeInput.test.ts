@@ -22,6 +22,17 @@ describe('inputBoxOf', () => {
     expect(inputBoxOf(screen('❯ First line.', '  '))).toEqual({ text: 'First line.', lines: 2 })
   })
 
+  it('reads the box of a named chat, whose top rule ends with its name', () => {
+    // The top rule of a chat started with `claude -n bridge-coord`, as herdr gave it (2026-11-21); the count of "─"
+    // follows the pane's width.
+    for (const width of [145, 30]) {
+      const named = `${esc}[0m${esc}[38;2;136;136;136m${'─'.repeat(width)} bridge-coord ─${esc}[0m\r`
+      const shown = ['Claude Code', '', named, '❯ ', line, '  ? for shortcuts'].join('\n')
+      expect(inputBoxOf(shown)).toEqual({ text: '', lines: 1 })
+      expect(inputBoxOf(shown.replace('❯ ', '❯ Run the tests.'))).toEqual({ text: 'Run the tests.', lines: 1 })
+    }
+  })
+
   it('reads the last box when the screen shows earlier rules above it', () => {
     expect(inputBoxOf(`${line}\r\nold output\r\n${screen('❯ draft')}`)).toEqual({ text: 'draft', lines: 1 })
   })

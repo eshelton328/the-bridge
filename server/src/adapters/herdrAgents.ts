@@ -688,8 +688,10 @@ export function createHerdrAgents({
     if (claude) {
       const box = await inputBox(pane)
       if (!box.ok) return box
-      // A screen whose box the adapter cannot read, such as a draft with a line of "─" in it, may hold text too.
-      if (box.value?.text !== '') return ok('inputNotEmpty')
+      // A screen whose box the adapter cannot read (a dialog, or a draft with a line of "─" in it) may hold text too,
+      // so nothing is sent; its own state tells the owner that the box was not read, not that it holds text.
+      if (box.value === null) return ok('inputUnreadable')
+      if (box.value.text !== '') return ok('inputNotEmpty')
     }
     const sent = await input('agent.prompt', { target: pane, text })
     if (!sent.ok || sent.value !== 'sent') return sent
@@ -706,7 +708,8 @@ export function createHerdrAgents({
     if (!keys.ok) return keys
     const after = await inputBox(pane)
     if (!after.ok) return after
-    return ok(after.value?.text === '' ? 'notSubmitted' : 'inputNotEmpty')
+    if (after.value === null) return ok('inputUnreadable')
+    return ok(after.value.text === '' ? 'notSubmitted' : 'inputNotEmpty')
   }
 
   /** The text of a command as the owner would type it; one line, so one Enter sends it. */
@@ -746,14 +749,15 @@ export function createHerdrAgents({
       if (status === 'needsYou') return ok('needsYou')
       const box = await inputBox(pane)
       if (!box.ok) return box
-      if (box.value === null) return ok('inputNotEmpty')
+      if (box.value === null) return ok('inputUnreadable')
       if (box.value.text === '') return ok('cleared')
       const keys = await emptyBox(pane, box.value)
       if (!keys.ok) return keys
       if (keys.value === 'needsYou') return ok('needsYou')
       const after = await inputBox(pane)
       if (!after.ok) return after
-      return ok(after.value?.text === '' ? 'cleared' : 'inputNotEmpty')
+      if (after.value === null) return ok('inputUnreadable')
+      return ok(after.value.text === '' ? 'cleared' : 'inputNotEmpty')
     },
     async cancel(chat) {
       const target = await agentPane(chat)

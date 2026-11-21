@@ -78,8 +78,10 @@ client of a socket or a file sits beside them.
   could quote the prompt (`herdrAgents.test.ts`).
 - A prompt never joins other text: before it sends to a Claude chat, the
   adapter reads the input box from the pane's screen
-  (`claudeInput.ts`), and a box with text, or one it cannot read, is
-  `inputNotEmpty`. After
+  (`claudeInput.ts`): a box with text is `inputNotEmpty`, and a screen
+  where it finds no box (a dialog, or a draft with a line of "─") is
+  `inputUnreadable`, with nothing sent. The top rule of a named chat
+  ends with its name ("──── bridge-coord ─"). After
   its own stop, Claude Code puts the stopped prompt back in the box; the
   adapter clears it with ctrl+u only when the box holds the last prompt
   it sent, which it keeps as a SHA-256 hash of its words with one space
