@@ -57,6 +57,7 @@ const layout = JSON.stringify({
       active: true,
       root: { kind: 'pane', chat: plan },
       focusedChat: plan,
+      zoomed: false,
       chats,
     },
   ],
