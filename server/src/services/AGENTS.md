@@ -40,6 +40,12 @@ from the outside world.
   a herdr failure, `inputNotEmpty` or `inputUnreadable`), for 10
   minutes and at most 500,
   with no text (`sendResults.test.ts`).
+- `newChats.ts` starts a chat for the page (slice W3) and keeps the
+  answer of each start with a `createId` for 10 minutes, at most 500:
+  the same ID again gets that answer, or `duplicateCreate` while the
+  first start runs or after it failed in herdr (it may have made a
+  pane). A refusal (`notFound`, `folderNotAllowed`, `nameTaken`)
+  made nothing, so it frees the ID (`newChats.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push

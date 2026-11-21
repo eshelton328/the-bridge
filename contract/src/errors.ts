@@ -28,7 +28,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * other chat of a swap is in another tab (`otherTab`), a move goes to the chat's own tab (`sameTab`), or a move
    * goes to a tab that shows only one pane (`zoomedTab`), or a prompt's `sendId` was used for this chat before
    * (`duplicateSend`; read its result instead), a new chat's folder is not under the server's chat root
-   * (`folderNotAllowed`), or another chat has the new chat's name (`nameTaken`).
+   * (`folderNotAllowed`), another chat has the new chat's name (`nameTaken`), or a start with the same `createId`
+   * is in progress or failed part way (`duplicateCreate`; read the chat list instead).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -49,6 +50,7 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'duplicateSend',
       'folderNotAllowed',
       'nameTaken',
+      'duplicateCreate',
     ]),
     ...common,
   }),

@@ -11,6 +11,7 @@ import {
   TranscriptChangedEvent,
   ChatSkillsResponse,
   SendResultResponse,
+  StartChatResponse,
 } from '@bridge/contract'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
@@ -553,5 +554,41 @@ describe('GET /api/chats/:chat/skills', () => {
     const app = createApp({ agents: createFakeAgents(machine), owner, log: memoryLogger().log })
     expect((await app.request(skillsPath('test-mac/nobody'), { headers: local })).status).toBe(404)
     expect((await app.request(skillsPath('nobody'), { headers: local })).status).toBe(400)
+  })
+})
+
+describe('POST /api/chats (slice W3)', () => {
+  const start = (app: ReturnType<typeof createApp>, body: unknown) =>
+    app.request('/api/chats', {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  const beside = { in: 'split', beside: themes, direction: 'row' }
+
+  it('starts a Claude chat with 201, and answers the same create ID again with 200 and no second chat', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const res = await start(app, { kind: 'claude', name: 'w3-route', place: beside, createId: 'create-0001' })
+    expect(res.status).toBe(201)
+    const first = StartChatResponse.parse(await res.json())
+    expect(first.state).toBe('ready')
+    const again = await start(app, { kind: 'claude', name: 'w3-route', place: beside, createId: 'create-0001' })
+    expect([again.status, StartChatResponse.parse(await again.json())]).toEqual([200, first])
+    const listed = await agents.listWorkspaces()
+    const named = listed.ok ? listed.value.flatMap((w) => w.chats).filter((c) => c.title === 'w3-route') : []
+    expect(named.map((c) => c.id)).toEqual([first.chat])
+  })
+
+  it('answers 409 for a name in use, 404 for an unknown chat, and 400 for a flag or an extra field', async () => {
+    const app = createApp({ agents: createFakeAgents(machine), owner, log: memoryLogger().log })
+    const twice = { kind: 'claude', name: 'w3-twice', place: beside }
+    expect([(await start(app, twice)).status, (await start(app, twice)).status]).toEqual([201, 409])
+    const gone = { in: 'split', beside: 'test-mac/no-such-chat', direction: 'row' }
+    expect((await start(app, { kind: 'claude', place: gone })).status).toBe(404)
+    expect((await start(app, { kind: 'claude', name: '--dangerously-skip-permissions', place: beside })).status).toBe(
+      400,
+    )
+    expect((await start(app, { kind: 'claude', place: beside, args: ['--model', 'opus'] })).status).toBe(400)
   })
 })

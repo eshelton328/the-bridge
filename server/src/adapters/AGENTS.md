@@ -182,7 +182,11 @@ client of a socket or a file sits beside them.
   ".." cannot leave it (`folderNotAllowed`, nothing made); a name in
   use is `nameTaken`. Then `agent.start` with an argument list of
   `-n <name>` and `--model <alias>` only, never a flag that skips a
-  permission, and `agent.wait` (30 s) for idle, done or blocked. A
+  permission (again every 200 ms, at most 10 times, while herdr says
+  the new shell is busy: `agent_pane_busy`), and `agent.wait` (30 s)
+  for idle, done or blocked; herdr's `timeout` is `starting`, and any
+  other wait failure (the agent ended) an error. A root of "/" holds
+  every folder. A
   blocked start is `needsYou` and stays so: the adapter sends no key
   and answers no prompt of it, such as Claude's folder trust question
   (`herdrAgents.test.ts`).
