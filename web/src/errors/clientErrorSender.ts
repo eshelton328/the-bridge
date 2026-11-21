@@ -75,6 +75,8 @@ const kindOnly: Readonly<Record<string, (error: Error) => string>> = {
   LayoutReadMissError: (error) => stringAt(error, 'miss') ?? '',
   // A live chat's Send or Stop that missed (W1): its kind only, never the message text or the chat ID.
   ChatSendMissError: (error) => stringAt(error, 'miss') ?? '',
+  // A live chat's file upload that missed (W1b): its kind only, never the file's name or the chat ID.
+  ChatUploadMissError: (error) => stringAt(error, 'miss') ?? '',
   LiveMissError: (error) => stringAt(Reflect.get(error, 'miss'), 'kind') ?? '',
   ZodError: (error) => {
     const issues: unknown = Reflect.get(error, 'issues')

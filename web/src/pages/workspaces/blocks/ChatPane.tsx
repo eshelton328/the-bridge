@@ -29,9 +29,31 @@
 // shows, draws the earlier line over the entries, the empty line when it has
 // none and the problem line with Retry under them; it opens at the newest entry
 // and stays there as entries come in, unless the reader scrolled up
-// (`usePinnedEnd`). Props only.
-import { Composer, Inline, ModelChip, PlusIcon, ScrollFrame } from '@eshelton328/component-library-1701'
-import { type KeyboardEvent, type ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+// (`usePinnedEnd`). A live Claude chat's files (W1b, `files`): the
+// paperclip opens the device's file picker (a hidden input with no type
+// filter and no capture, so a phone offers Photos, Camera and Files), and a
+// drop on the composer or a paste of files adds them too; Send is off while
+// a file uploads or failed, and with every file ready the composer sends
+// with no text (library beta.95). A
+// live Codex chat's composer has no paperclip. Props only.
+import {
+  Composer,
+  type ComposerAttachment,
+  Inline,
+  ModelChip,
+  PlusIcon,
+  ScrollFrame,
+} from '@eshelton328/component-library-1701'
+import {
+  type ChangeEvent,
+  type KeyboardEvent,
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react'
 import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
@@ -45,6 +67,20 @@ import { TranscriptEntries } from './TranscriptEntries.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
+
+/** A live chat's attached files (W1b): the page uploads them, and the composer shows them as chips. */
+export type ChatFiles = {
+  readonly chips: readonly ComposerAttachment[]
+  /** A file uploads or failed: Send is off. */
+  readonly blocked: boolean
+  /** How many files are ready to send. */
+  readonly ready: number
+  /** The line under the composer about the files, such as "Not attached — too large"; none when not set. */
+  readonly line: string | undefined
+  readonly add: (files: File[]) => void
+  readonly remove: (id: string) => void
+  readonly retry: (id: string) => void
+}
 
 /** Reads a live chat's transcript while its pane shows (the page's liveTranscript.ts). */
 export type TranscriptWatch = {
@@ -160,8 +196,8 @@ type ChatPaneBase = {
   onSkillsOpenChange?: ((open: boolean) => void) | undefined
   /** The folders control, before the model in the composer's bottom row (D4 137:9). */
   folders?: ReactNode
-  /** `false`: the composer has no attach button, as the side chat in a pane draws it (D5 158:545). */
-  attach?: boolean | undefined
+  /** A live Claude chat's files (W1b); a sample chat shows the composer's own chips and a paperclip that does nothing. */
+  files?: ChatFiles | undefined
   /** The size of Send's arrow: `12` in the side chat in a pane (D5 158:549); the library's 16 when not set. */
   sendIconSize?: '12' | '16' | undefined
   /** The composer's layout: `inline` is one row, as the side chat in a pane draws it (D5 158:545); `stacked` when not set. */
@@ -230,7 +266,7 @@ export function ChatPane(props: ChatPaneProps) {
     onSkillsOpenChange,
     size = 'pane',
     folders,
-    attach = true,
+    files,
     sendIconSize,
     layout,
     lead,
@@ -264,6 +300,7 @@ export function ChatPane(props: ChatPaneProps) {
   // Where the caret goes once a picked skill is in the box.
   const caretRef = useRef<number | null>(null)
   const textArea = () => areaRef.current?.querySelector('textarea') ?? null
+  const fileRef = useRef<HTMLInputElement>(null)
   // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
   useEffect(
     () => (liveChat === undefined || transcripts === undefined ? undefined : transcripts.watch(liveChat)),
@@ -355,10 +392,37 @@ export function ChatPane(props: ChatPaneProps) {
       if (drafts !== undefined) drafts.clear(chatId, submitted)
       else if (latestRef.current === submitted) onValueChange('')
     },
+    withFiles: files !== undefined && files.ready > 0,
+    filesHeld: files?.blocked === true,
   })
   // A chat that cannot send yet (d-117, a Codex chat until W8): its disabled composer sends nothing.
   const send = (submitted: string): boolean | Promise<boolean> =>
     composer.notLive !== undefined ? false : actions.send(submitted)
+  // With every file ready and no text, the composer submits '' (library beta.95).
+  const sendDisabled = actions.tooLong || actions.sending || files?.blocked === true
+  const onPicked = (event: ChangeEvent<HTMLInputElement>) => {
+    const picked = Array.from(event.currentTarget.files ?? [])
+    // Emptied, so the same file can be picked again.
+    event.currentTarget.value = ''
+    if (picked.length > 0) files?.add(picked)
+  }
+  // A live chat's files; a sample chat's chips come from its state, and a live Codex chat has no paperclip.
+  const attachProps =
+    files !== undefined
+      ? {
+          attachments: files.chips,
+          onRemoveAttachment: files.remove,
+          onRetryAttachment: files.retry,
+          onAttach: () => {
+            fileRef.current?.click()
+          },
+          onAddFiles: files.add,
+        }
+      : {
+          attachments: composer.attachments.map((name) => ({ id: name, name })),
+          onRemoveAttachment: () => undefined,
+          onAttach: composer.notLive === undefined ? () => undefined : undefined,
+        }
   const chip =
     composer.model === undefined ? undefined : (
       <ModelChip
@@ -377,9 +441,8 @@ export function ChatPane(props: ChatPaneProps) {
       onSend={send}
       running={composer.running}
       onStop={actions.stop}
-      attachments={composer.attachments.map((name) => ({ id: name, name }))}
-      onRemoveAttachment={() => undefined}
-      onAttach={attach ? () => undefined : undefined}
+      sendDisabled={sendDisabled}
+      {...attachProps}
       // With the folders control (D4 137:2) the attach button is Figma's add button (137:5), a + that offers Add folder
       // and attachments. Figma's plus (137:6) is 13 px and no icon size is 13, so it is 12 (d-050, d-100). Every other
       // composer of the page draws the paperclip.
@@ -446,7 +509,18 @@ export function ChatPane(props: ChatPaneProps) {
       </SkillPicker>
     )
   // The quiet line under the composer when a send or a stop missed, or the text is over the limit.
-  const sendLine = <ComposerLine text={actions.line} onRetry={actions.retry} onClearInput={actions.clearInput} />
+  const sendLine =
+    actions.line !== undefined ? (
+      <ComposerLine text={actions.line} onRetry={actions.retry} onClearInput={actions.clearInput} />
+    ) : files?.line !== undefined ? (
+      <ComposerLine text={files.line} />
+    ) : null
+  // The device's file picker, which the paperclip opens: any type, and no capture, so a phone offers Photos, Camera and
+  // Files.
+  const picker =
+    files === undefined ? null : (
+      <input ref={fileRef} type="file" multiple hidden tabIndex={-1} aria-label="Files to attach" onChange={onPicked} />
+    )
   // One bad entry shows an inline fallback in the transcript, and the header and the composer keep working (audit P-1).
   const entryViews =
     notLive === undefined ? (
@@ -481,6 +555,7 @@ export function ChatPane(props: ChatPaneProps) {
           <div ref={footerRef} className={cx(footer, gaps[size].footer, parts.footer)}>
             {above}
             {composerBox}
+            {picker}
             {sendLine}
           </div>
         }
@@ -500,6 +575,7 @@ export function ChatPane(props: ChatPaneProps) {
           <div ref={footerRef} className={cx(footer, gaps[size].footer)} data-pane-floor>
             {above}
             {composerBox}
+            {picker}
             {sendLine}
           </div>
         }

@@ -49,7 +49,7 @@ import { SideChatPanel } from '../blocks/SideChatPanel.tsx'
 import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
-import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
+import type { ChatFiles, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
@@ -69,6 +69,8 @@ export type WorkspacesScreenProps = {
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
+  /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
+  filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
   /** Reads the live source again: the live-unavailable notice's Retry. */
   onRetry?: (() => void) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
@@ -90,6 +92,7 @@ export function WorkspacesScreen({
   onUiChange,
   onSend,
   onStop,
+  filesOf,
   onRetry,
   transcripts,
   onCopy,
@@ -137,6 +140,7 @@ export function WorkspacesScreen({
           onNavigate={onNavigate}
           onSend={onSend}
           onStop={onStop}
+          filesOf={filesOf}
           transcripts={transcripts}
           onCopy={onCopy}
           change={change}
@@ -165,6 +169,7 @@ function WorkspacesLayout({
   onNavigate,
   onSend,
   onStop,
+  filesOf,
   transcripts,
   onCopy,
   change,
@@ -208,6 +213,7 @@ function WorkspacesLayout({
         drafts={drafts}
         onSend={onSend}
         onStop={onStop}
+        filesOf={filesOf}
         transcripts={transcripts}
         onCopy={onCopy}
         notice={notice}
@@ -370,6 +376,7 @@ function WorkspacesLayout({
                   toggle={false}
                   onSend={onSend}
                   onStop={onStop}
+                  filesOf={filesOf}
                   transcripts={transcripts}
                   onCopy={onCopy}
                 />
@@ -409,6 +416,7 @@ function WorkspacesLayout({
                   drafts={drafts}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
                   onStop={onStop && (() => onStop(chat.id))}
+                  files={filesOf?.(chat.id)}
                   transcripts={transcripts}
                   onCopy={onCopy}
                   rename={rename}
@@ -470,6 +478,7 @@ function WorkspacesLayout({
               toggle
               onSend={onSend}
               onStop={onStop}
+              filesOf={filesOf}
               transcripts={transcripts}
               onCopy={onCopy}
               notice={notice}

@@ -8,7 +8,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
-import { ChatPane, type TranscriptWatch } from './ChatPane.tsx'
+import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
@@ -46,6 +46,8 @@ export type MainChatProps = {
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
   onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The chat's files (W1b), when it is a live Claude chat (ChatPane `files`). */
+  files?: ChatFiles | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -68,6 +70,7 @@ export function MainChat(props: MainChatProps) {
     drafts,
     onSend,
     onStop,
+    files,
     transcripts,
     onCopy,
   } = props
@@ -103,6 +106,7 @@ export function MainChat(props: MainChatProps) {
         drafts={drafts}
         onSend={onSend}
         onStop={onStop}
+        files={files}
         skills={skills}
         onSkillsOpenChange={onSkillsOpenChange}
         folders={folders}

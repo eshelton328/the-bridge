@@ -1,6 +1,7 @@
 // Setup for each web browser test file (vitest.config.ts). It wraps page.viewport() with the guard in
 // viewportGuard.ts, so an afterEach that resizes before it unmounts the test's views fails the test. It wraps fetch
-// with the guard in serverGuard.ts, so a test that reads the real server with no stub fails. Before a file's tests it
+// with the guard in serverGuard.ts, so a test that reads the real server with no stub fails, and XMLHttpRequest's
+// open too, so a chunk upload (W1b) with no stub fails the same way, before it sends a byte. Before a file's tests it
 // loads every font face the file's CSS declares (loadFonts.ts), so no test measures text in a fallback font.
 import { afterEach, beforeAll, beforeEach } from 'vitest'
 import { page } from 'vitest/browser'
@@ -35,6 +36,21 @@ globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   serverReads.push(error.message)
   return Promise.reject(error)
 }
+
+// A test's vi.stubGlobal('XMLHttpRequest') replaces the class, so its requests never reach this open.
+const xhrOpen: unknown = Reflect.get(XMLHttpRequest.prototype, 'open')
+Object.defineProperty(XMLHttpRequest.prototype, 'open', {
+  configurable: true,
+  writable: true,
+  value: function open(this: XMLHttpRequest, method: string, url: string | URL) {
+    const error = serverReadError(String(url), window.location.origin)
+    if (error !== undefined) {
+      serverReads.push(error.message)
+      throw error
+    }
+    if (typeof xhrOpen === 'function') Reflect.apply(xhrOpen, this, [method, url])
+  },
+})
 
 afterEach(() => {
   const reads = serverReads.splice(0)

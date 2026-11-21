@@ -2,7 +2,9 @@
 // note, the question and the answer, and its own composer. `placement="side"`
 // sits beside the main chat (D2 105:920); `placement="pane"` sits inside its
 // pane of the split, over the chat's right side, with "Open as its own
-// pane" over a one-row composer (D5 158:518); `placement="sheet"` fills the
+// pane" over a one-row composer (D5 158:518), which draws the paperclip as
+// every composer of the page does, though Figma draws none (W1b, D05
+// deviations.md); `placement="sheet"` fills the
 // phone's side chat sheet under its grabber (M5 105:3106), with a larger title. In
 // the tablet's sheet (T2 105:1914, `device="tablet"`) its parts sit 23 in from the
 // sheet's edges and the note is 13 px. Props only.
@@ -154,7 +156,6 @@ export function SideChatPanel({
         }}
         entries={chat.entries}
         composer={chat.composer}
-        attach={placement !== 'pane'}
         // D5 158:549: the one-row composer's Send draws a 12 px arrow; the other side chats' arrows are 14 (16 here).
         sendIconSize={placement === 'pane' ? '12' : undefined}
         layout={placement === 'pane' ? 'inline' : undefined}

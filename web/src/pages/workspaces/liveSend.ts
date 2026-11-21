@@ -23,7 +23,13 @@
 // server's message. The requests go through the typed RPC client (backend
 // #297), which puts the chat ID in the path as it is, so it is URL-encoded
 // here, once.
-import { ClearInputRequest, ErrorBody, SendPromptRequest, StopChatRequest } from '@bridge/contract'
+//
+// W1b: a send names the chat's complete uploads, in the order of its chips,
+// and may have no text when it has a file. A 409 upload-conflict (a file the
+// server no longer has as complete for this chat) sends nothing, says so
+// and is not reported; the page fails those chips, and their Retry starts
+// each file again (backend #309).
+import { ClearInputRequest, ErrorBody, SendPromptRequest, StopChatRequest, type UploadId } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
@@ -85,6 +91,7 @@ async function missOf(
         return line(action, 'the chat did not take the message', true)
       // A Stop of a chat that is not working: it stopped already.
       if (action === 'stop' && error.state === 'notWorking') return false
+      if (error.state === 'noAttachments') return line(action, 'this chat takes no files', false)
       return line(action, 'chat not ready', false)
     case 'not-found':
       return line(action, 'chat gone', false)
@@ -100,9 +107,13 @@ async function missOf(
     case 'invalid-input':
       // The composer sends, and the line clears, only a body the contract takes, so the server's refusal is a bug.
       return unexpected(action, error.kind, res.status)
+    case 'upload-conflict':
+      // A send names a file that is not a complete upload of this chat: the page fails its chips.
+      if (action === 'send')
+        return { line: `${lead.send} — retry the files that failed`, retry: false, uploadConflict: true }
+      return unexpected(action, error.kind, res.status)
     case 'too-large':
     case 'unsupported-media':
-    case 'upload-conflict':
     case 'storage-full':
       // Only an upload gets these kinds, never a send, a stop or a clear.
       return unexpected(action, error.kind, res.status)
@@ -133,11 +144,11 @@ async function post(
 }
 
 /**
- * Sends `text` to the live chat `chat` (its server ID). A text the contract refuses is not sent: the composer stops
- * it first, so this answers `false` with no line.
+ * Sends `text` with the complete uploads `attachments` to the live chat `chat` (its server ID). A body the contract
+ * refuses is not sent: the composer stops it first, so this answers `false` with no line.
  */
-export function sendPrompt(chat: string, text: string): Promise<ComposerAnswer> {
-  const body = SendPromptRequest.safeParse({ text })
+export function sendPrompt(chat: string, text: string, attachments: readonly UploadId[] = []): Promise<ComposerAnswer> {
+  const body = SendPromptRequest.safeParse(attachments.length === 0 ? { text } : { text, attachments })
   if (!body.success) return Promise.resolve(false)
   return post(
     'send',

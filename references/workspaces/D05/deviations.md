@@ -71,8 +71,18 @@ chat of bridge themes drawn inside that pane, over the chat's right side
 - **Side chat composer (Side chat in a pane).** `158:545` x +12.5, w -14:
   `Composer layout="inline"` (1.0.0-beta.25) draws one row with the
   placeholder and Send, 42 px high (Figma 40, h +2, y -4, inside the
-  tolerance), with no attach button and no model, as Figma's has none.
-  It fails on x and w only, because the panel is 320 wide and padded 16.
+  tolerance), and no model, as Figma's has none. It fails on x and w
+  only, because the panel is 320 wide and padded 16.
+- **Attach button in the side chat (Side chat in a pane, W1b).** Figma
+  draws no attach button in this composer (158:545). The app draws the
+  library's 24 px paperclip at the row's start, before the text, because
+  the owner wants the same attach flow in every composer on every layout
+  (W1b decision of bridge-coord, 2026-11-20: "same on every layout"
+  overrides the frame). The placeholder starts about 30 px further
+  right. `pnpm fidelity workspaces` gives the same result for this frame
+  as before the change (text pass, 11 of 27 layers, rules pass), as the
+  composer's box (158:545) keeps its place and size; only the render's
+  composer row changes.
 - **Shell pane.** `TerminalLines` draws the block cursor after the
   prompt "$", as Figma does; the terminal ends 5 px higher (`158:347`
   h -5), as on D01.
