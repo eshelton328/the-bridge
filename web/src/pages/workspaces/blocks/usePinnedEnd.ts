@@ -188,7 +188,11 @@ export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLEle
     const onShow = () => {
       if (scroller.ownerDocument.visibilityState === 'visible') follow()
     }
-    const resize = new ResizeObserver(follow)
+    // A size change, such as the keyboard opening or a shrunk pane, can carry the reader past a screen from the end.
+    const resize = new ResizeObserver(() => {
+      follow()
+      show()
+    })
     const observeAll = () => {
       resize.observe(scroller)
       for (const child of scroller.children) resize.observe(child)

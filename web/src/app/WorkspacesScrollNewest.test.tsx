@@ -295,6 +295,19 @@ describe('the button to the newest message', () => {
     expect(Math.abs(box.left + box.width / 2 - (frame.left + frame.width / 2))).toBeLessThanOrEqual(1)
   })
 
+  // Codex review of #354: a pane that shrinks while the reader is up can carry him past a screen from the end.
+  it('shows the button when the transcript shrinks past a screen from the end, on the phone', async () => {
+    stubLongChats(count)
+    view = await openWorkspaces([390, 844])
+    const { root, scroller } = await devices[0].open()
+    await expectAtEnd(scroller)
+    await scrollTo(scroller, scroller.scrollHeight - scroller.clientHeight * 1.8)
+    expect(buttonIn(root)).toBeNull()
+    await setViewport(390, 500)
+    await expect.poll(() => fromEnd(scroller) > scroller.clientHeight).toBe(true)
+    await expect.poll(() => buttonIn(root)).not.toBeNull()
+  })
+
   // The pending bubble of a sent message (PendingEntry, #348) is part of the transcript's end: sent while the reader is
   // away it dots the button, and a tap brings it into view at the end.
   it('counts a pending sent message as part of the end, on the phone', async () => {
