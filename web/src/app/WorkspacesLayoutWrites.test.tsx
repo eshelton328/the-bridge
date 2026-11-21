@@ -306,6 +306,24 @@ describe('focus (W2)', () => {
     await expect.poll(() => writesOf(fakes)).toEqual([{ chat: review, action: 'focus', body: {} }])
   })
 
+  it("opens a sidebar row's chat of a zoomed tab beside the sidebar, as of any tab", async () => {
+    const fakes = withChats()
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByText('review notes', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'review notes' })).toBeVisible()
+    // herdr zooms review notes (from the terminal, or the workbench before the sidebar came back).
+    const zoomed = await fetch(`/api/chats/${encodeURIComponent(review)}/zoom`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ zoomed: true }),
+    })
+    expect(zoomed.status).toBe(204)
+    await quiet()
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await expect.element(page.getByRole('heading', { name: 'plan the slice' })).toBeVisible()
+    await expect.element(page.getByRole('button', { name: 'Show the workspace sidebar' })).not.toBeInTheDocument()
+  })
+
   it('sends no focus on the phone: opening a chat, a tap on its header and a Send', async () => {
     const fakes = withChats()
     await tapWorkspaces(phone)

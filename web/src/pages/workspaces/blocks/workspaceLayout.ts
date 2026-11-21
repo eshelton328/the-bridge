@@ -45,8 +45,14 @@ const paneById = (data: WorkspacesData, id: string): WorkbenchPane | undefined =
 /**
  * The data and ui the shown workspace's panes draw from: its panes, its split (its layout's, else the state's for the
  * state's own workspace) and its sizes, and the status bar's summary counted again when the panes are not the state's.
+ * With `zoom` (the workbench only), a tab herdr zooms gives only its focused pane: the sidebar's chat, the chats a row
+ * can open and the chat actions' targets keep every pane of the tab, so a row of a zoomed tab still opens its chat.
  */
-export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: WorkspacesData; ui: WorkspacesUi } {
+export function shownView(
+  data: WorkspacesData,
+  ui: WorkspacesUi,
+  zoom = false,
+): { data: WorkspacesData; ui: WorkspacesUi } {
   const shown = shownWorkspace(data, ui)
   const layout = layoutOf(data, ui, shown)
   const all = layout.panes.flatMap((id) => {
@@ -54,7 +60,7 @@ export function shownView(data: WorkspacesData, ui: WorkspacesUi): { data: Works
     return pane === undefined ? [] : [pane]
   })
   // A tab herdr zooms (slice W2) draws only its focused pane, at full size, until the zoom ends.
-  const zoomed = zoomedTab(data, shown)
+  const zoomed = zoom ? zoomedTab(data, shown) : undefined
   const zoomedPane = zoomed === undefined ? undefined : all.find((p) => p.id === zoomed.focused)
   const panes = zoomedPane === undefined ? all : [zoomedPane]
   const own = shown === data.current && panes.length === data.panes.length

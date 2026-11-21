@@ -65,7 +65,8 @@ export function WorkspaceTabs({
 }: WorkspaceTabsProps) {
   const shown = shownWorkspace(data, ui)
   const current = data.workspaces.find((w) => w.id === shown)
-  const view = shownView(data, ui)
+  // The workbench draws a zoomed tab's focused pane alone (W2).
+  const view = shownView(data, ui, true)
   // A resize of the shown split goes to the shown workspace's layout; the rest of the change goes as it is.
   const report = (change: Partial<WorkspacesUi>) => {
     const { splitSizes, ...rest } = change
