@@ -103,7 +103,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   any newer draft with the miss's line; `unknown`, a 404, 5 pending reads
   or a send older than 10 min (no read) put it back with "This message may
   have been sent". A read with no answer keeps it for the next time its
-  chat opens or the next load. The line is the chat's notice in
+  chat opens or the next load. A send whose request got no answer (a
+  reload ends it so in WebKit, after `beforeunload`) stays kept, marked
+  `restored`, as the composer put its text back: on load, `sent` takes
+  the text back out of the draft (`DraftBook.withdraw`), and another
+  result shows its line without putting it back twice. A restored send
+  whose text the owner changed or cleared, or whose chat sends again, is
+  forgotten. The line is the chat's notice in
   `livePending.ts` until its next send. The page never sends it again
   itself, and the read reports nothing (`app/WorkspacesSendReload.test.tsx`).
   The status shows when the workspace events bring it. The composer shows Stop only while
