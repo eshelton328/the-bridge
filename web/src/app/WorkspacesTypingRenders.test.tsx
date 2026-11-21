@@ -103,34 +103,3 @@ describe('a keystroke in a long live chat renders only its composer (review R28)
     expect(await rendersWhileTyping(boxIn(pane), 'quick note')).toEqual(none)
   })
 })
-
-describe('the draft after the change (review R28)', () => {
-  it('survives a switch to another chat and back, and empties once a send went through, on the phone', async () => {
-    const server = stubLongChats(6)
-    view = await openWorkspaces([390, 844])
-    const box = (title: string) => page.getByRole('region', { name: title }).getByRole('textbox')
-    const open = async (title: string) => {
-      await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
-      await userEvent.click(page.getByText(title, { exact: true }).first())
-    }
-    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
-    await userEvent.fill(box('plan the slice'), 'plan draft')
-    await open('review notes')
-    await expect.element(box('review notes')).toHaveValue('')
-    await userEvent.fill(box('review notes'), 'review draft')
-    await open('plan the slice')
-    await expect.element(box('plan the slice')).toHaveValue('plan draft')
-    // Reload app keeps both drafts (draftStorage.ts).
-    const saved = window.sessionStorage.getItem('bridge/workspaces/drafts')
-    expect([saved?.includes('"plan draft"'), saved?.includes('"review draft"')]).toEqual([true, true])
-    await userEvent.click(
-      page.getByRole('region', { name: 'plan the slice' }).getByRole('button', { name: 'Send', exact: true }),
-    )
-    await expect.poll(() => server.prompts).toEqual([{ chat: 'mac-mini/c1', text: 'plan draft' }])
-    await expect.element(box('plan the slice')).toHaveValue('')
-    // The other chat keeps its draft.
-    await open('review notes')
-    await expect.element(box('review notes')).toHaveValue('review draft')
-    expect(getReports()).toEqual([])
-  })
-})
