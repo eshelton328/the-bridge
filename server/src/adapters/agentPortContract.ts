@@ -1,6 +1,7 @@
 // The one contract test suite of the AgentPort (d-113). Every adapter runs
 // it, the fake and herdr's, so the fake cannot drift from what it stands for.
 import {
+  ChatSkill,
   ChatId,
   type ChatStatus,
   chatsOf,
@@ -300,6 +301,23 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       const shell = shellWorkspace?.chats.find((c) => c.kind === 'shell')
       if (!shell) throw new Error('no shell chat')
       expect(await port.readTranscript(shell.id)).toEqual({ ok: true, value: { entries: [], earlier: false } })
+    })
+
+    it('gives a Claude chat\'s "/" list in the contract\'s shape, the built-in commands first, and none for a shell', async () => {
+      const { port, expected, transcript } = await setup()
+      const list = await port.listWorkspaces()
+      if (!list.ok) throw new Error(list.error.message)
+      // The chat with a transcript is a Claude chat.
+      const chat = list.value.flatMap((w) => w.chats).find((c) => c.title === transcript.chat)
+      if (!chat) throw new Error(`no chat ${transcript.chat}`)
+      const read = await port.readSkills(chat.id)
+      if (!read.ok || read.value === null) throw new Error('no skills')
+      for (const skill of read.value) expect(ChatSkill.parse(skill)).toEqual(skill)
+      expect(read.value.slice(0, 4).map((s) => s.name)).toEqual(['compact', 'clear', 'model', 'effort'])
+      expect(new Set(read.value.map((s) => s.name)).size).toBe(read.value.length)
+      const shell = list.value.find((w) => w.label === expected.shell.workspace)?.chats.find((c) => c.kind === 'shell')
+      if (!shell) throw new Error('no shell chat')
+      expect(await port.readSkills(shell.id)).toEqual({ ok: true, value: [] })
     })
 
     it("tells a watcher when a chat's transcript changes, with the new entry in the next read, and nothing after close", async () => {

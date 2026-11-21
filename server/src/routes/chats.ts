@@ -4,6 +4,8 @@
 // after it opens as server-sent events, as /api/events does. Both read
 // only that chat's session. Transcript text goes only into a 200 body or
 // an event, never into a log line or an ErrorBody (d-115).
+// GET /:chat/skills returns the chat's "/" list: the built-in commands,
+// then its skills by name and one-line description, never a path.
 // POST /:chat/prompt sends the owner's prompt to that chat, with the path
 // of each attached file below it, and POST
 // /:chat/stop stops its work (slice W1); each answers 204. Both take only
@@ -20,6 +22,7 @@
 import {
   ChatCommandRequest,
   ChatId,
+  ChatSkillsResponse,
   ClearInputRequest,
   CloseChatRequest,
   ErrorBody,
@@ -55,7 +58,7 @@ import type {
   SwapOutcome,
   ZoomOutcome,
 } from '../services/agentPort.ts'
-import { clearInput, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
+import { clearInput, readSkills, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
@@ -291,6 +294,14 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       if (!read.ok) return failed(c, read.error)
       if (read.value === null) return notFound(c)
       return c.json(TranscriptResponse.parse(read.value), 200)
+    })
+    .get('/:chat/skills', async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const read = await readSkills(agents, id.data)
+      if (!read.ok) return failed(c, read.error)
+      if (read.value === null) return notFound(c)
+      return c.json(ChatSkillsResponse.parse(read.value), 200)
     })
     .get('/:chat/transcript/events', async (c) => {
       const id = chatOf(c)

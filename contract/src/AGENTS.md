@@ -35,6 +35,9 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   file names, never a path. An error entry is a slash command's error
   output, text only, at most `maxErrorText` (500) characters
   (`transcripts.test.ts`).
+- A chat's "/" list (`ChatSkillsResponse`) names each skill as typed
+  after "/", never a path, with a one-line description and its source
+  (`skills.test.ts`).
 - A prompt request holds only its text and at most `maxAttachments`
   upload IDs (a strict object, never a path), and a stop request and an
   input clear request are empty objects; the text may be empty only with

@@ -17,6 +17,7 @@ import {
   WorkspaceId,
 } from '@bridge/contract'
 import { err, ok } from '@bridge/shared'
+import { builtinCommands } from './claudeSkills.ts'
 import type { ChatCommand, AgentEvent, AgentPort, AgentPortError, TranscriptRead } from '../services/agentPort.ts'
 
 /** What a chat of the fake got from the owner: a prompt's text, or a stop. */
@@ -282,6 +283,14 @@ export function createFakeAgents(
       transcriptReads.push(chat)
       const found = transcriptOf(chat)
       return Promise.resolve(ok(found === undefined ? null : structuredClone(found)))
+    },
+    readSkills(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
+      if (found === undefined) return Promise.resolve(ok(null))
+      // A Claude chat has the built-in commands and one skill of the owner's; a Codex chat and a shell have none.
+      const writer = { name: 'writer', description: 'Use before writing any doc', source: 'user' } as const
+      return Promise.resolve(ok(found.kind === 'claude' ? [...builtinCommands, writer] : []))
     },
     watchTranscript(chat, onChange, onEnd) {
       if ('error' in answer) {
