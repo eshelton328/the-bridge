@@ -1,6 +1,8 @@
-import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
+import { holdTimers } from '../lib/holdTimers.ts'
+import { afterRendering } from '../lib/rendering.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, showState, dialog, searchbox, box } from './inboxRouteHelpers.ts'
 import { stubLiveServer } from './liveServerStub.ts'
@@ -78,9 +80,19 @@ describe('the Inbox on the phone', () => {
     const { router, rendered } = renderInbox('list')
     view = await rendered
     await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
+    // The 500 ms hold waits for the test's clock (lib/holdTimers.ts): on the real clock a busy runner can spend it in
+    // a click, and the sheet then opens over the Workspaces button. A Vitest page action or expect.element moves the
+    // held clock by the real time it takes, so until the row has gone the tap is a DOM click and the wait counts
+    // rendering steps.
+    const release = holdTimers()
     row('Pick the header logo').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
-    await page.getByRole('button', { name: 'Workspaces', exact: true }).first().click()
-    await new Promise((resolve) => setTimeout(resolve, 700))
+    const workspaces = page.getByRole('button', { name: 'Workspaces', exact: true }).first().element()
+    if (!(workspaces instanceof HTMLElement)) throw new Error('no Workspaces button')
+    workspaces.click()
+    while (page.getByText('Pick the header logo', { exact: true }).query() !== null) await afterRendering()
+    // Past the hold: a timer the row left would open its sheet now.
+    vi.advanceTimersByTime(700)
+    release()
     await showState(router, 'list')
     await expect.element(searchbox()).toBeVisible()
     expect(sheet('Pick the header logo').query()).toBeNull()
