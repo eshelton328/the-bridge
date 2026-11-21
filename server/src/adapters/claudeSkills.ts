@@ -4,6 +4,7 @@
 import { readdir, stat, open } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { ChatSkill, maxSkills, type SkillSource } from '@bridge/contract'
+import { type CommandPlace, readPluginFolders } from './claudePlugins.ts'
 
 /** The commands that the page sends itself; each one goes through `POST /api/chats/:chat/command` or the chat bar. */
 export const builtinCommands: readonly ChatSkill[] = [
@@ -141,6 +142,34 @@ async function commandsIn(folder: string, source: SkillSource, prefix = '', dept
   return found.flat()
 }
 
+/** One entry from a file's front matter (or a map's inline text), named `name`; none when hidden or unreadable. */
+function entryOf(head: Head | null, name: string, source: SkillSource): ChatSkill[] {
+  if (head === null || head.hidden) return []
+  const skill = ChatSkill.safeParse({ name, description: head.description, source })
+  return skill.success ? [skill.data] : []
+}
+
+/** A plugin skill folder: a folder of `<skill>/SKILL.md`, or one skill when `SKILL.md` is in the folder itself. */
+async function pluginSkillsIn(folder: string, prefix: string): Promise<ChatSkill[]> {
+  const head = await headOf(join(folder, 'SKILL.md'))
+  if (head === null) return skillsIn(folder, 'plugin', prefix)
+  return entryOf(head, `${prefix}${head.name ?? basename(folder)}`, 'plugin')
+}
+
+/** The commands of one place of a plugin: a `.md` file, a folder, or one command of the manifest's map. */
+async function pluginCommandsAt(place: CommandPlace, prefix: string): Promise<ChatSkill[]> {
+  if ('name' in place) {
+    const head =
+      place.path !== undefined
+        ? await headOf(place.path)
+        : (frontMatterOf(place.content ?? '') ?? { description: '', hidden: false })
+    return entryOf(head, `${prefix}${place.name}`, 'plugin')
+  }
+  if (place.path.endsWith('.md'))
+    return entryOf(await headOf(place.path), `${prefix}${basename(place.path, '.md')}`, 'plugin')
+  return commandsIn(place.path, 'plugin', prefix)
+}
+
 /** The folders from `cwd` up to its repository root (the first with `.git`), never `home` or above it. */
 async function upToRoot(cwd: string, home: string): Promise<string[]> {
   const folders: string[] = []
@@ -152,16 +181,21 @@ async function upToRoot(cwd: string, home: string): Promise<string[]> {
 }
 
 /**
- * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name, at most
- * `maxSkills` in all. A name that comes twice keeps the one Claude Code runs: the owner's before the chat's folders.
+ * The "/" list of a Claude chat in `cwd`: the built-in commands, then each skill and command by name, with those of
+ * each plugin that it loads, at most `maxSkills` in all. A name that comes twice keeps the one Claude Code runs: the
+ * owner's before the chat's folders.
  */
 export async function readClaudeSkills(cwd: string | undefined, claudeDir: string, home: string): Promise<ChatSkill[]> {
   const local = cwd === undefined ? [] : await upToRoot(cwd, home)
+  const plugins = await readPluginFolders(claudeDir, local)
   const groups = await Promise.all([
     skillsIn(join(claudeDir, 'skills'), 'user'),
     commandsIn(join(claudeDir, 'commands'), 'user'),
     ...local.map((folder) => skillsIn(join(folder, '.claude', 'skills'), 'project')),
     ...local.map((folder) => commandsIn(join(folder, '.claude', 'commands'), 'project')),
+    // A plugin's skills and commands go by "<plugin>:<name>".
+    ...plugins.flatMap(({ name, skills }) => skills.map((folder) => pluginSkillsIn(folder, `${name}:`))),
+    ...plugins.flatMap(({ name, commands }) => commands.map((place) => pluginCommandsAt(place, `${name}:`))),
   ])
   const seen = new Set(builtinCommands.map((c) => c.name))
   const skills = groups.flat().filter((s) => !seen.has(s.name) && seen.add(s.name))
