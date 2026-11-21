@@ -400,6 +400,56 @@ describe("a live chat's transcript (slice 3b)", () => {
     for (const r of getReports()) expect(JSON.stringify([r.error.message, r.error.stack])).not.toMatch(/build|pnpm/)
   })
 
+  // #313: a chat that leaves the list (after /clear, or when its pane closes) ends its stream with one `error` event of
+  // kind not-found. The page ends it quietly; any other kind is still an outage.
+  const sizes = [
+    { name: 'the phone', size: [390, 844] },
+    { name: 'the desktop', size: [1512, 982] },
+  ] as const
+  /** Opens plan's transcript on the owner's path: the phone taps it, the desktop shows the workbench's panes. */
+  async function openPlan(size: readonly [number, number]) {
+    await tapWorkspaces(size)
+    if (size[0] < 700) await tapChat('plan the slice')
+    else await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+  }
+  // A miss's line; a Codex pane's "Transcript not live yet" is not one.
+  const outageLine = /^Transcript (not live —|updates)/
+
+  for (const device of sizes) {
+    it(`ends the stream quietly when the chat leaves the list (not-found), on ${device.name}`, async () => {
+      const server = withPlan()
+      await openPlan(device.size)
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      const reads = server.reads.length
+      const opens = server.opens.length
+      server.gone(plan)
+      await expect.poll(() => server.openStreams()).not.toContain(plan)
+      // Longer than the fake's retry time (100 ms): a page that connects again would have done so by now.
+      await new Promise((resolve) => setTimeout(resolve, 600))
+      expect(server.reads.length).toBe(reads)
+      expect(server.opens.length).toBe(opens)
+      await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
+      await expect.element(page.getByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
+      // The entries read before stay.
+      await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+      expect(getReports()).toEqual([])
+    })
+
+    it(`still shows the outage line and reports once for another error kind, on ${device.name}`, async () => {
+      const server = withPlan()
+      await openPlan(device.size)
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      server.fail(plan, 'herdr-unavailable')
+      await expect.element(page.getByText('Transcript updates lost — connecting again')).toBeVisible()
+      // It connects again and reads the transcript again.
+      await expect.poll(() => server.reads.filter((c) => c === plan).length).toBe(2)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript stream missed: ended herdr-unavailable (chat mac-mini/c1)',
+      ])
+    })
+  }
+
   it('keeps the fixtures: ?source=fixtures reads no transcript', async () => {
     const server = withPlan()
     await setViewport(390, 844)
