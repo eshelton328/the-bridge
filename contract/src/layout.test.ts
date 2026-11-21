@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { chatsOf, LayoutNode, TabLayout, WorkspaceLayout } from './layout.ts'
+import {
+  chatsOf,
+  LayoutNode,
+  TabLayout,
+  WorkspaceLayout,
+  CloseChatRequest,
+  FocusChatRequest,
+  SwapChatsRequest,
+  ZoomChatRequest,
+} from './layout.ts'
 
 const chat = (local: string, kind: 'claude' | 'shell' = 'claude') => ({
   id: `mac-mini/${local}`,
@@ -97,5 +106,19 @@ describe('layout', () => {
     expect(WorkspaceLayout.safeParse({ workspace, tabs: [{ ...tab, active: false }] }).success).toBe(false)
     expect(WorkspaceLayout.safeParse({ workspace, tabs: [tab, { ...tab, id: 'mac-mini/w17:t2' }] }).success).toBe(false)
     expect(WorkspaceLayout.safeParse({ workspace, tabs: [tab, { ...tab, active: false }] }).success).toBe(false)
+  })
+})
+
+describe('the layout write requests (W2)', () => {
+  it('takes only their own fields, and a close only with a chat ID as its confirm', () => {
+    expect(FocusChatRequest.safeParse({}).success).toBe(true)
+    expect(FocusChatRequest.safeParse({ chat: 'mac-mini/c1' }).success).toBe(false)
+    expect(ZoomChatRequest.safeParse({ zoomed: true }).success).toBe(true)
+    expect(ZoomChatRequest.safeParse({}).success).toBe(false)
+    expect(SwapChatsRequest.safeParse({ with: 'mac-mini/c2' }).success).toBe(true)
+    expect(SwapChatsRequest.safeParse({ with: 'c2' }).success).toBe(false)
+    expect(CloseChatRequest.safeParse({ confirm: 'mac-mini/c1' }).success).toBe(true)
+    expect(CloseChatRequest.safeParse({}).success).toBe(false)
+    expect(CloseChatRequest.safeParse({ confirm: 'mac-mini/c1', force: true }).success).toBe(false)
   })
 })

@@ -22,7 +22,9 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * (`needsYou`), it has no work to stop (`notWorking`), its input box holds text that a prompt would join
    * (`inputNotEmpty`, for a prompt, or text that stayed after an input clear), it takes no file (`noAttachments`, a
    * Codex chat, for an upload), its input box cannot be cleared (`noCommands`, a Codex chat), or it did not take a
-   * prompt that the server typed, so the server removed the text again (`notSubmitted`).
+   * prompt that the server typed, so the server removed the text again (`notSubmitted`), it works or a state herdr
+   * cannot tell (`working`, for a command or a close), its tab has one pane, for a zoom (`singlePane`), or the
+   * other chat of a swap is in another tab (`otherTab`).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -35,6 +37,8 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'noCommands',
       'notSubmitted',
       'working',
+      'singlePane',
+      'otherTab',
     ]),
     ...common,
   }),

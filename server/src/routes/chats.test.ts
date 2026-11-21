@@ -1,6 +1,14 @@
 // API tests of GET /api/chats/:chat/transcript/events (d-113): the app in
 // process with the fake adapter, the SSE body read as it streams.
-import { ChatId, ErrorBody, MachineId, maxCompactChars, maxPromptChars, TranscriptChangedEvent } from '@bridge/contract'
+import {
+  ChatId,
+  ErrorBody,
+  MachineId,
+  WorkspaceId,
+  maxCompactChars,
+  maxPromptChars,
+  TranscriptChangedEvent,
+} from '@bridge/contract'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
@@ -332,5 +340,85 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
     expect((await post(promptPath(themes), { text: secret })).status).toBe(503)
     expect((await post(stopPath(themes), {})).status).toBe(503)
     expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+  })
+})
+
+describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
+  const drift = 'test-mac/drift-check'
+  const shell = 'test-mac/brain-git'
+  const brain = WorkspaceId.parse('test-mac/omni-brain')
+  const json = { ...local, 'Content-Type': 'application/json' }
+  const setup = () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const post = (id: string, write: string, body: unknown) =>
+      app.request(`/api/chats/${encodeURIComponent(id)}/${write}`, {
+        method: 'POST',
+        headers: json,
+        body: JSON.stringify(body),
+      })
+    const tab = async () => {
+      const read = await agents.readLayout(brain)
+      return read.ok ? read.value?.tabs[0] : undefined
+    }
+    return { agents, post, tab }
+  }
+  const stateOf = async (res: Response) => {
+    const { error } = ErrorBody.parse(await res.json())
+    return error.kind === 'chat-not-ready' ? error.state : error.kind
+  }
+
+  it('focuses a pane and zooms its tab in and out with 204, and answers 409 singlePane and 404', async () => {
+    const { post, tab } = setup()
+    expect((await post(drift, 'focus', {})).status).toBe(204)
+    expect((await tab())?.focusedChat).toBe(drift)
+    expect((await post(themes, 'zoom', { zoomed: true })).status).toBe(204)
+    expect(await tab()).toMatchObject({ focusedChat: themes, zoomed: true })
+    expect((await post(themes, 'zoom', { zoomed: false })).status).toBe(204)
+    expect((await tab())?.zoomed).toBe(false)
+    expect(await stateOf(await post(shell, 'zoom', { zoomed: true }))).toBe('singlePane')
+    expect((await post('test-mac/no-such-chat', 'focus', {})).status).toBe(404)
+  })
+
+  it('swaps two panes of one tab with 204; another tab is 409 otherTab and the chat itself 400', async () => {
+    const { post, tab } = setup()
+    expect((await post(themes, 'swap', { with: drift })).status).toBe(204)
+    expect((await tab())?.chats.map((c) => c.id)).toEqual([drift, themes])
+    expect(await stateOf(await post(themes, 'swap', { with: shell }))).toBe('otherTab')
+    expect(await stateOf(await post(themes, 'swap', { with: themes }))).toBe('invalid-input')
+    expect((await post(themes, 'swap', { with: 'test-mac/no-such-chat' })).status).toBe(404)
+    expect((await tab())?.chats.map((c) => c.id)).toEqual([drift, themes])
+  })
+
+  it('closes a pane only with a confirm that names its chat, and never one that works or waits', async () => {
+    const { agents, post, tab } = setup()
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    for (const body of [{}, { confirm: drift }, { confirm: 'no-machine' }]) {
+      expect((await post(themes, 'close', body)).status).toBe(400)
+    }
+    expect((await tab())?.chats.map((c) => c.id)).toContain(themes)
+    agents.setStatus(ChatId.parse(themes), 'working')
+    expect(await stateOf(await post(themes, 'close', { confirm: themes }))).toBe('working')
+    expect(await stateOf(await post(drift, 'close', { confirm: drift }))).toBe('needsYou')
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    expect((await post(themes, 'close', { confirm: themes })).status).toBe(204)
+    expect((await tab())?.chats.map((c) => c.id)).toEqual([drift])
+    expect((await post(shell, 'close', { confirm: shell })).status).toBe(204)
+    expect((await post(themes, 'close', { confirm: themes })).status).toBe(404)
+  })
+
+  it('answers 400 to a body that is not the contract', async () => {
+    const { post, tab } = setup()
+    for (const [write, body] of [
+      ['focus', { chat: drift }],
+      ['zoom', {}],
+      ['zoom', { zoomed: 'yes' }],
+      ['swap', {}],
+      ['swap', { with: drift, also: themes }],
+      ['close', { confirm: themes, force: true }],
+    ] as const) {
+      expect((await post(themes, write, body)).status).toBe(400)
+    }
+    expect(await tab()).toMatchObject({ focusedChat: themes, zoomed: false })
   })
 })

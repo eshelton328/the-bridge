@@ -3,7 +3,17 @@ export { LocalIdPart, ChatId, MachineId, PaneId, splitId, TabId, UploadId, Works
 export { ClientErrorReport, ClientErrorSource } from './clientErrors.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
-export { chatsOf, LayoutNode, SplitDirection, TabLayout, WorkspaceLayout } from './layout.ts'
+export {
+  chatsOf,
+  CloseChatRequest,
+  FocusChatRequest,
+  LayoutNode,
+  SplitDirection,
+  SwapChatsRequest,
+  TabLayout,
+  WorkspaceLayout,
+  ZoomChatRequest,
+} from './layout.ts'
 export {
   ChatCommandRequest,
   ClearInputRequest,
