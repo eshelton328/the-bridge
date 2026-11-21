@@ -59,7 +59,8 @@ export type TranscriptOptions = TargetContext & {
 /** The tags of a slash command's own lines: the command, its words and its args, then its output. */
 const commandName = /^<command-name>\/?([^<]{1,100})<\/command-name>/
 const commandArgs = /<command-args>([\s\S]*?)<\/command-args>/
-const commandStderr = /^<local-command-stderr>([\s\S]*?)(?:<\/local-command-stderr>)?$/
+const commandStdout = /^<local-command-stdout>[\s\S]*<\/local-command-stdout>$/
+const commandStderr = /^<local-command-stderr>([\s\S]*)<\/local-command-stderr>$/
 /** Terminal colour codes that a command's output can hold. */
 const colour = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
 
@@ -69,7 +70,8 @@ const colour = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
  */
 function commandOf(text: string): { command: string } | { error: string } | null | undefined {
   const trimmed = text.trim()
-  if (trimmed.startsWith('<local-command-stdout>')) return null
+  // Only a whole output block: a prompt that starts with the tag stays the owner's text.
+  if (commandStdout.test(trimmed)) return null
   const stderr = commandStderr.exec(trimmed)
   if (stderr !== null) {
     const error = (stderr[1] ?? '').replace(colour, '').trim()

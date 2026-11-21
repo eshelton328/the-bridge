@@ -106,12 +106,16 @@ describe('Claude transcript', () => {
       user('k4', command('clear', '')),
       user('k5', '<local-command-stderr>Error: no such command</local-command-stderr>'),
       user('k6', 'Why does <command-name> show up here?'),
+      user('k7', '<local-command-stdout> is showing in my transcript. Why?'),
+      user('k8', '<local-command-stderr> shows too'),
     ])
     expect((await readClaudeTranscript(path, options)).entries).toEqual([
       { type: 'user', id: 'k1', text: '/compact keep the plan', cut: false },
       { type: 'user', id: 'k4', text: '/clear', cut: false },
       { type: 'error', id: 'k5', text: 'Error: no such command', cut: false },
       { type: 'user', id: 'k6', text: 'Why does <command-name> show up here?', cut: false },
+      { type: 'user', id: 'k7', text: '<local-command-stdout> is showing in my transcript. Why?', cut: false },
+      { type: 'user', id: 'k8', text: '<local-command-stderr> shows too', cut: false },
     ])
   })
 
