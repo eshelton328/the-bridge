@@ -3,10 +3,22 @@
 // (D1 105:210 to 105:291), or a line that records an event, such as where a
 // fork starts (D16 417:718). A live message or reply whose text the server cut
 // shows a quiet line under it (`cut`, slice 3b). A message's and a reply's text
-// is Markdown (`EntryText`). The caller names the entry's Figma layer. Memoised by
+// is Markdown (`EntryText`). The files sent with a message show as chips above
+// it, as the composer showed them, and a message of files alone shows only the
+// chips; the library has no sent-file chip, so each is a `MetaChip`
+// (LIBRARY_GAPS.md: Sent file chips). The caller names the entry's Figma layer. Memoised by
 // the entry's identity (review R28), so a keystroke in the composer or another
 // entry's change does not render it again. Props only.
-import { Message, ProposalBlock, ProposalCommand, Stack, ToolLine } from '@eshelton328/component-library-1701'
+import {
+  ClipIcon,
+  Inline,
+  Message,
+  MetaChip,
+  ProposalBlock,
+  ProposalCommand,
+  Stack,
+  ToolLine,
+} from '@eshelton328/component-library-1701'
 import { memo } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { CopyTextResult } from '../../../lib/copyText.ts'
@@ -37,15 +49,35 @@ export type ChatEntryViewProps = {
 
 export const ChatEntryView = memo(function ChatEntryView({ entry, figma, onAct, onCopy }: ChatEntryViewProps) {
   switch (entry.type) {
-    case 'user':
-      return (
-        <div data-figma={figma}>
+    case 'user': {
+      const bubble =
+        entry.text === '' && entry.files !== undefined ? null : (
           <Message from="user">
             <EntryText text={entry.text} />
           </Message>
-          {entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>}
-        </div>
+        )
+      const cut = entry.cut === undefined ? null : <span className={cutLine}>{entry.cut}</span>
+      if (entry.files === undefined)
+        return (
+          <div data-figma={figma}>
+            {bubble}
+            {cut}
+          </div>
+        )
+      // The chips, then the message under them, 6 apart as the composer's chips and its text.
+      return (
+        <Stack gap="6" data-figma={figma}>
+          <Inline gap="6" wrap role="group" aria-label="Files sent">
+            {entry.files.map((name, i) => (
+              // The same name may be sent twice; the order is fixed, so its place keys it.
+              <MetaChip key={`${String(i)}:${name}`} label={name} icon={<ClipIcon size="12" />} />
+            ))}
+          </Inline>
+          {bubble}
+          {cut}
+        </Stack>
       )
+    }
     case 'tool':
       return <ToolLine name={entry.name} target={entry.target} state={entry.running === true ? 'running' : 'done'} />
     case 'event':

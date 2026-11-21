@@ -44,8 +44,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   the chat ID only, never transcript text, a tool target or the server's
   message (`liveTranscript.test.ts`, `app/WorkspacesLiveTranscript.test.tsx`;
   the server fake is `lib/fakeTranscriptServer.ts`). A prompt sent
-  with files (`UserEntry.files`) shows a "Files:" line with each name
-  as inline code below its text, until the page draws them as chips.
+  with files (`UserEntry.files`) shows a chip for each name above its
+  text, and a prompt of files alone the chips with no bubble
+  (`blocks/ChatEntryView.tsx`, `app/WorkspacesEntryFiles.test.tsx`). A
+  long name truncates in its chip. The library has no sent-file chip
+  yet, so the chips are `MetaChip` (LIBRARY_GAPS.md: Sent file chips).
   A slash command's error output (`ErrorEntry`) shows as an `event`
   entry labelled "Error" with its text.
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts

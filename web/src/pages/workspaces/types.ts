@@ -74,8 +74,16 @@ export type PaneHead = z.infer<typeof PaneHead>
 
 /** One entry of a chat's transcript, a union on `type`. */
 export const ChatEntry = z.discriminatedUnion('type', [
-  /** The owner's message; `cut` is the line under text the server cut, such as "Cut — full text not live yet". */
-  z.object({ type: z.literal('user'), text: z.string(), cut: z.string().optional() }),
+  /**
+   * The owner's message; `cut` is the line under text the server cut, such as "Cut — full text not live yet".
+   * `files` names the files sent with it, drawn as chips above the text; a message of files alone has text ''.
+   */
+  z.object({
+    type: z.literal('user'),
+    text: z.string(),
+    cut: z.string().optional(),
+    files: z.array(z.string()).optional(),
+  }),
   /** A tool call; `running` draws its dot in the running colour, as the call still runs (M12 147:383). */
   z.object({ type: z.literal('tool'), name: z.string(), target: z.string(), running: z.boolean().optional() }),
   /** An agent's reply; `copy` labels its Copy button, and a reply without it has none (D3). `cut` as for `user`. */
