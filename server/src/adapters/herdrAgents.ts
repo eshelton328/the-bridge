@@ -1181,6 +1181,8 @@ export function createHerdrAgents({
       if (!ready.ok) return ready
       if (typeof ready.value === 'string') return ok(ready.value)
       const agent = ready.value
+      // A /clear between the reads gives the pane another session, and so another chat.
+      if (chatIdOf(agent, new Set()) !== chat && `${machine}/${agent.terminal_id}` !== chat) return ok('notFound')
       const session = sessionOf(agent)
       const path = sessionPath(agent)
       const old = SessionId.safeParse(session)

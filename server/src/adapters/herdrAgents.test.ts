@@ -2324,6 +2324,28 @@ describe('herdr agents: a model restart', () => {
     }
   })
 
+  it('restarts nothing when the pane has another session at the readiness read (a /clear)', async () => {
+    const { socket, adapter, sent } = await setup('claude')
+    let lists = 0
+    socket.onRequest((method) => {
+      if (method !== 'agent.list') return
+      lists += 1
+      const other = {
+        agent: 'claude',
+        kind: 'id',
+        source: 'herdr:claude',
+        value: '1c8a3d2f-5e4b-4a7c-8b9d-2f3e4d5c6b7a',
+      }
+      // The lookup reads the list first; the readiness read is the second read.
+      if (lists === 2)
+        socket.set('agent.list', { type: 'agent_list', agents: [claudeAgent('idle', { agent_session: other })] })
+    })
+    const restarted = await adapter.restartModel(chat, 'opus')
+    await socket.close()
+    expect(restarted).toEqual({ ok: true, value: 'notFound' })
+    expect(sent('agent.send_keys')).toEqual([])
+  })
+
   it('answers failed with the session when the new chat has another session, and starts no second chat', async () => {
     const other = '1c8a3d2f-5e4b-4a7c-8b9d-2f3e4d5c6b7a'
     const { socket, adapter, sent } = await setup('claude', cwd, other)
