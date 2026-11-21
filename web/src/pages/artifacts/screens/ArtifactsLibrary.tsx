@@ -71,6 +71,10 @@ export function ArtifactsLibrary({ data, ui, layout, onUiChange, onOpenArtifact,
           onSourceChange={(addLinkSource) => {
             onUiChange?.({ addLinkSource })
           }}
+          project={ui.addLinkProject}
+          onProjectChange={(addLinkProject) => {
+            onUiChange?.({ addLinkProject })
+          }}
           onSubmit={() => {
             onUiChange?.({ addLinkOpen: false })
           }}

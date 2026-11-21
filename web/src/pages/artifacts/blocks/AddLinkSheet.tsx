@@ -57,7 +57,7 @@ export function AddLinkSheet({ form, open, source, onOpenChange, onSourceChange,
     >
       <Stack gap="16" className={body}>
         <p className={description}>{form.description}</p>
-        <AddLinkFields form={form} source={source} onSourceChange={onSourceChange} linkRef={linkRef} />
+        <AddLinkFields form={form} layout="sheet" source={source} onSourceChange={onSourceChange} linkRef={linkRef} />
       </Stack>
     </BottomSheet>
   )

@@ -247,7 +247,8 @@ const AddLinkField = z.object({
 /**
  * The Add a link dialog (D5), for an artifact the library did not find, such as a Codex site on its own domain: the
  * link, the source it was read as, the title from the page's `<title>` and the project. Which source is picked and
- * whether the dialog is open are `ArtifactsUi.addLinkSource` and `ArtifactsUi.addLinkOpen`.
+ * whether the dialog is open are `ArtifactsUi.addLinkSource` and `ArtifactsUi.addLinkOpen`; the picked project is
+ * `ArtifactsUi.addLinkProject`.
  */
 export const AddLinkForm = z.object({
   title: z.string(),
@@ -403,6 +404,8 @@ export const ArtifactsUi = z.object({
   addLinkOpen: z.boolean().optional(),
   /** The source the Add a link dialog has picked, read from the link (D5). */
   addLinkSource: ArtifactSource.optional(),
+  /** The project the Add a link dialog has picked (D5); the form's `project.value` when not set. */
+  addLinkProject: z.string().optional(),
   /**
    * The card the owner opened from the library (a card on D1 or T1, a row on M1 or D2's list): it opens as `data.open` does
    * (D2, T2, M2). `data.open`'s artifact when not set.
