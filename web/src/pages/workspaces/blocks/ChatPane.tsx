@@ -67,6 +67,7 @@ import { SkillPicker } from './SkillPicker.tsx'
 import { TranscriptEntries } from './TranscriptEntries.tsx'
 import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
+import { useKeyboardFirst } from './useKeyboardFirst.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
 
 /** What a live chat's composer shows of its files now. */
@@ -401,6 +402,11 @@ export function ChatPane(props: ChatPaneProps) {
     else setMoved(shown[(at + step + shown.length) % shown.length]?.name ?? highlighted)
   }
   const filesView = useFilesView(files)
+  // With the folders control the attach button is Figma's add button; every other composer draws the paperclip.
+  const attachLabel = folders === undefined ? 'Attach a file' : 'Add'
+  // The paperclip's first tap with the phone's keyboard up only closes it, so iOS anchors its file menu at the
+  // paperclip's closed-keyboard place on the next tap (R29, useKeyboardFirst.ts).
+  const keyboardFirst = useKeyboardFirst(attachLabel)
   // The box is controlled, so the composer never empties it: a sent message empties it here.
   const actions = useComposerActions({
     text,
@@ -435,7 +441,7 @@ export function ChatPane(props: ChatPaneProps) {
           onRemoveAttachment: files.remove,
           onRetryAttachment: files.retry,
           onAttach: () => {
-            fileRef.current?.click()
+            if (keyboardFirst.opens()) fileRef.current?.click()
           },
           onAddFiles: files.add,
         }
@@ -467,7 +473,8 @@ export function ChatPane(props: ChatPaneProps) {
       // With the folders control (D4 137:2) the attach button is Figma's add button (137:5), a + that offers Add folder
       // and attachments. Figma's plus (137:6) is 13 px and no icon size is 13, so it is 12 (d-050, d-100). Every other
       // composer of the page draws the paperclip.
-      {...(folders === undefined ? {} : { attachIcon: <PlusIcon size="12" />, attachLabel: 'Add' })}
+      attachLabel={attachLabel}
+      {...(folders === undefined ? {} : { attachIcon: <PlusIcon size="12" /> })}
       sendIconSize={sendIconSize}
       // Every running chat composer of the page draws Stop with a 12 px stop icon and a 25 × 14 Medium label (D01
       // 105:253 and 105:255, M03 105:2839, T04 105:2284, D19 417:1730): the 12 px icon and `labelXs` (12), the
@@ -489,7 +496,12 @@ export function ChatPane(props: ChatPaneProps) {
   )
   const composerBox =
     skills === undefined ? (
-      <div ref={areaRef} data-figma={figma.composer} data-keyboard-keep="">
+      <div
+        ref={areaRef}
+        data-figma={figma.composer}
+        data-keyboard-keep=""
+        onPointerDownCapture={keyboardFirst.onPointerDownCapture}
+      >
         {box}
       </div>
     ) : (
@@ -524,6 +536,7 @@ export function ChatPane(props: ChatPaneProps) {
           role="combobox"
           aria-label={skills.label}
           onKeyDownCapture={onKeyDownCapture}
+          onPointerDownCapture={keyboardFirst.onPointerDownCapture}
         >
           {box}
         </div>

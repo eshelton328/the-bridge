@@ -86,7 +86,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 - A live Claude chat takes files (W1b, `liveUploads.ts`, `useLiveUploads.ts`):
   the paperclip opens a hidden file input with no `accept` and no
   `capture` (a phone offers Photos, Camera and Files), and a drop on the
-  composer or a paste of files adds them too. Each file starts at once:
+  composer or a paste of files adds them too. iOS opens that menu at the
+  last touch and closes the keyboard for it, so a touch on the paperclip
+  while AppShell docks the composer on the keyboard only closes the
+  keyboard; the next tap opens the input (review R29,
+  `blocks/useKeyboardFirst.ts`, `app/WorkspacesAttachKeyboard.test.tsx`). Each file starts at once:
   start, its chunks in order through XMLHttpRequest (60 s each, a miss on
   the network, a 5xx but 507, a 408 or a 429 goes again twice), then
   complete, at most two files at once; the chip shows the bytes sent.
