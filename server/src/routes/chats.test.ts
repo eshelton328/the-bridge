@@ -642,6 +642,36 @@ describe('POST /api/chats/:chat/model (slice W10)', () => {
     ).toBe(404)
   })
 
+  it('restarts nothing while a prompt to the chat is in progress, and restarts after it ends', async () => {
+    const fake = createFakeAgents(machine)
+    fake.setStatus(ChatId.parse(themes), 'idle')
+    let release: () => void = () => undefined
+    let restarted = 0
+    const agents = {
+      ...fake,
+      sendPrompt: (chat: ChatId, text: string) =>
+        new Promise<Awaited<ReturnType<typeof fake.sendPrompt>>>((resolve) => {
+          release = () => {
+            void fake.sendPrompt(chat, text).then(resolve)
+          }
+        }),
+      restartModel: (chat: ChatId, model: Parameters<typeof fake.restartModel>[1]) => {
+        restarted += 1
+        return fake.restartModel(chat, model)
+      },
+    }
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const prompt = post(app, themes, 'prompt', { text: 'marker-5150' })
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    const held = await post(app, themes, 'model', { model: 'haiku', confirm: themes })
+    expect([held.status, ErrorBody.parse(await held.json()).error]).toMatchObject([409, { state: 'working' }])
+    expect(restarted).toBe(0)
+    release()
+    expect((await prompt).status).toBe(204)
+    fake.setStatus(ChatId.parse(themes), 'idle')
+    expect((await post(app, themes, 'model', { model: 'haiku', confirm: themes })).status).toBe(200)
+  })
+
   it('answers 502 with the session when the restart failed, and 409 restarting to any input while one runs', async () => {
     const fake = createFakeAgents(machine)
     const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'

@@ -220,7 +220,7 @@ export function chatsRoutes(
   /** The answer to a model restart's refusal; the chat and its state, or `failed`, come as JSON. */
   const refusedRestart = (
     c: Context<AppEnv>,
-    outcome: Exclude<RestartOutcome | 'notConfirmed' | 'restarting', object>,
+    outcome: Exclude<RestartOutcome | 'notConfirmed' | 'restarting' | 'busy', object>,
   ) => {
     switch (outcome) {
       case 'notConfirmed':
@@ -247,6 +247,11 @@ export function chatsRoutes(
         return errorJson(c, 'chat-not-ready', { state: 'sameModel', message: 'the chat has this model already' })
       case 'restarting':
         return errorJson(c, 'chat-not-ready', { state: 'restarting', message: 'a restart of this chat runs now' })
+      case 'busy':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'working',
+          message: 'another request to this chat is in progress; restart the chat after it ends',
+        })
       case 'notFound':
       case 'shell':
       case 'needsYou':
@@ -258,11 +263,21 @@ export function chatsRoutes(
     }
   }
   /** A restart ends the chat and starts it again: no other input reaches it until the restart ends. */
+  /** A restart waits until no other POST to the chat is in progress, and the gate enters each one before its body. */
   const restartGate = createMiddleware<AppEnv>(async (c, next) => {
     const id = ChatId.safeParse(c.req.param('chat'))
-    if (c.req.method === 'POST' && id.success && restarts.running(id.data))
+    if (c.req.method !== 'POST' || !id.success || c.req.path.endsWith('/model')) {
+      await next()
+      return undefined
+    }
+    const end = restarts.enter(id.data)
+    if (end === undefined)
       return errorJson(c, 'chat-not-ready', { state: 'restarting', message: 'a restart of this chat runs now' })
-    await next()
+    try {
+      await next()
+    } finally {
+      end()
+    }
     return undefined
   })
 
