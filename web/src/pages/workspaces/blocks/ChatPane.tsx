@@ -23,7 +23,8 @@
 // and not the transcript. Send and Stop
 // (W1, `useComposerActions`): one send and one stop in flight, and a miss
 // shows one quiet line under the composer, with Retry when it may work
-// later; a text over the server's limit is not sent and the line says so. A live chat
+// later; a text over the server's limit is not sent and the line says so. A send that found text in the chat's
+// terminal input offers to clear it (`ComposerLine`, R28 part B). A live chat
 // (`liveChat`, slice 3b) asks `transcripts` to read its transcript while it
 // shows, draws the earlier line over the entries, the empty line when it has
 // none and the problem line with Retry under them; it opens at the newest entry
@@ -35,6 +36,7 @@ import { css, cx } from '../../../../styled-system/css/index.js'
 import { pickSkill, skillQuery } from '../../../lib/skillQuery.ts'
 import type { ChatEntry, ComposerState, Skill } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import { ComposerLine } from './ComposerLine.tsx'
 import { type DraftBook, useDraft } from './draftBook.ts'
 import { NotLive } from './NotLive.tsx'
 import { frameRegion } from './frameRegion.ts'
@@ -442,7 +444,7 @@ export function ChatPane(props: ChatPaneProps) {
       </SkillPicker>
     )
   // The quiet line under the composer when a send or a stop missed, or the text is over the limit.
-  const sendLine = actions.line === undefined ? null : <TranscriptProblem text={actions.line} onRetry={actions.retry} />
+  const sendLine = <ComposerLine text={actions.line} onRetry={actions.retry} onClearInput={actions.clearInput} />
   // One bad entry shows an inline fallback in the transcript, and the header and the composer keep working (audit P-1).
   const entryViews =
     notLive === undefined ? (

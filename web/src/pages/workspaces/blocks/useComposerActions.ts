@@ -3,18 +3,38 @@
 // the one quiet line under the composer that says why a send or a stop
 // missed, with Retry when it may work later. A text over the server's
 // `maxPromptChars` is not sent and the line says by how much. The line holds
-// only the page's own words, never the message text. Props only: the caller
-// passes what sends and what stops.
+// only the page's own words, never the message text. A send that found text in
+// the chat's terminal input (409 inputNotEmpty) can carry `clearInput`: the
+// line then offers "Clear the terminal input", and once the owner confirms
+// it, a clear that went through sends the kept draft again; one clear is in
+// flight at a time, and a clear that missed shows its own line, with Retry
+// when it may work later (R28 part B). Props only: the caller passes what
+// sends, stops and clears.
 import { maxPromptChars } from '@bridge/contract'
-import { useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 
 /**
  * What a send or a stop gives the composer: `true` once it went through; `false` when it missed and the caller
  * reported it or there is nothing to say; else the line to show under the composer, with Retry when `retry`.
  */
-export type ComposerAnswer = boolean | { readonly line: string; readonly retry: boolean }
+export type ComposerAnswer =
+  | boolean
+  | {
+      readonly line: string
+      readonly retry: boolean
+      /**
+       * Empties the terminal input of the chat that refused the send, the one the line was made for: `true` once it is
+       * empty, else the line of the miss. Only a send's line has it.
+       */
+      readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
+    }
 
-type Problem = { readonly line: string; readonly retry: boolean; readonly action: 'send' | 'stop' }
+type Problem = {
+  readonly line: string
+  readonly retry: boolean
+  readonly action: 'send' | 'stop' | 'clear'
+  readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
+}
 
 /** The line of a text `over` characters over the limit. */
 const tooLongLine = (over: number) =>
@@ -36,6 +56,12 @@ export function useComposerActions({ text, onSend, onStop, clear }: ComposerActi
   // Refs, not state: a second tap or Enter in the same frame must see the first one's send.
   const sendingRef = useRef(false)
   const stoppingRef = useRef(false)
+  const clearingRef = useRef(false)
+  // The text now, for a clear that ends after the owner typed on: it sends what the box holds then.
+  const textRef = useRef(text)
+  useLayoutEffect(() => {
+    textRef.current = text
+  })
   const over = text.length - maxPromptChars
   /** The library composer's `onSend`: `false` keeps the draft. */
   const send = (submitted: string): boolean | Promise<boolean> => {
@@ -76,14 +102,38 @@ export function useComposerActions({ text, onSend, onStop, clear }: ComposerActi
             },
           )
         }
+  /** Clears the terminal input with `clearInput`, then sends the box's text again; a second tap meanwhile does nothing. */
+  const runClear = (clearInput: () => Promise<ComposerAnswer>) => {
+    if (clearingRef.current) return
+    clearingRef.current = true
+    setProblem(undefined)
+    void clearInput().then(
+      (answer) => {
+        clearingRef.current = false
+        if (answer === true) {
+          const kept = textRef.current
+          if (/\S/.test(kept)) void send(kept)
+        } else if (answer !== false) setProblem({ line: answer.line, retry: answer.retry, action: 'clear', clearInput })
+      },
+      () => {
+        clearingRef.current = false
+      },
+    )
+  }
+  const clearAgain = problem?.action === 'clear' ? problem.clearInput : undefined
   const retry =
     problem?.retry !== true
       ? undefined
       : problem.action === 'stop'
         ? stop
-        : () => {
-            if (/\S/.test(text)) void send(text)
-          }
+        : clearAgain !== undefined
+          ? () => {
+              runClear(clearAgain)
+            }
+          : () => {
+              if (/\S/.test(text)) void send(text)
+            }
+  const offered = problem?.action === 'send' ? problem.clearInput : undefined
   return {
     send,
     stop,
@@ -91,5 +141,12 @@ export function useComposerActions({ text, onSend, onStop, clear }: ComposerActi
     line: over > 0 ? tooLongLine(over) : problem?.line,
     /** Retry of the line; none for the too-long line or a miss that will not work again. */
     retry: over > 0 ? undefined : retry,
+    /** The line's "Clear the terminal input", once the owner confirmed it; none when the line does not offer it. */
+    clearInput:
+      over > 0 || offered === undefined
+        ? undefined
+        : () => {
+            runClear(offered)
+          },
   }
 }

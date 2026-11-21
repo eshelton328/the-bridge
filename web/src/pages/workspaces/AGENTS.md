@@ -57,7 +57,19 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   terminal input holds text, or one the server cannot read (409
   inputNotEmpty, W1-3: a Stop puts the stopped prompt back there),
   keeps the draft and says "Not sent — clear the text in the chat's
-  terminal input, then send", with no Retry and no report. report() gets only a
+  terminal input, then send", with no Retry and no report.
+- That line offers "Clear the terminal input" (R28 part B), which asks
+  first in a library confirm dialog (`blocks/ClearInputDialog.tsx`);
+  Cancel does nothing. Clear posts `POST /api/chats/:chat/input/clear`
+  with `{}` to the chat the line was made for (`liveSend.ts` binds it at
+  send time), one at a time per chat, and a 204 sends the kept draft
+  again through the normal send. A miss keeps the draft and says "Not
+  cleared — …" by kind, with Retry (no second question) for a 5xx or no
+  answer. A send that Claude Code did not take (409 notSubmitted) says
+  "Not sent — the chat did not take the message" with Retry and no
+  report. Until backend-coord's clear-input PR merges, the request and the
+  two new states come from `lib/clearInputContract.ts`
+  (`app/WorkspacesClearInput.test.tsx`). report() gets only a
   5xx or an answer the page does not expect, with the action, kind and
   status, never the message text (`app/WorkspacesLiveSend.test.tsx`). The
   requests go through the typed RPC client with the chat ID URL-encoded

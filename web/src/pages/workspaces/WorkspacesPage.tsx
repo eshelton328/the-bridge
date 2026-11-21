@@ -7,7 +7,8 @@
 // (liveWorkspaces.ts) and loads its state again when they change it, and the
 // live-unavailable notice's Retry loads it again; each live chat pane reads
 // its transcript while it shows (useLiveTranscripts.ts); a build has no live code. A live Claude chat's Send and
-// Stop go to the server (liveSend.ts, W1), to the chat whose composer sent them; any other chat's Send goes to the
+// Stop go to the server (liveSend.ts, W1), to the chat whose composer sent them, as does a clear of its terminal
+// input (R28 part B); any other chat's Send goes to the
 // page store's `send`, and a failed send is reported. A failed send keeps the composer's draft.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
@@ -136,7 +137,13 @@ export function WorkspacesPage() {
       onSend={(chat, text) =>
         once(`send:${chat}`, () => {
           const liveChat = liveChatOf(chat)
-          if (liveChat !== undefined) return viaLive((m) => m.sendPrompt(liveChat, text))
+          if (liveChat !== undefined)
+            return viaLive((m) => m.sendPrompt(liveChat, text)).then((answer) => {
+              // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
+              if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
+              const clearInput = answer.clearInput
+              return { ...answer, clearInput: () => once(`clear:${chat}`, clearInput) }
+            })
           return send(chat, text).then(
             () => true,
             (error: unknown) => {

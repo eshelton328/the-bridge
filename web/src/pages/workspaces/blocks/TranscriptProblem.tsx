@@ -4,7 +4,8 @@
 // transcript again. The composer's line under a send or a stop that missed
 // ("Not sent — herdr-unavailable", W1) is the same line. The library has no quiet inline notice (LIBRARY_GAPS.md
 // "Not live yet"): the closest part is ErrorState's `inline` row in the
-// neutral tone, an alert, as LiveNotice draws. Props only.
+// neutral tone, an alert, as LiveNotice draws. A line can add one action of
+// its own before Retry, such as "Clear the terminal input". Props only.
 import { Button } from '@eshelton328/component-library-1701'
 import { ErrorState } from '../../../errors/ErrorState.tsx'
 
@@ -13,9 +14,11 @@ export type TranscriptProblemProps = {
   text: string
   /** Reads the transcript, or sends or stops, again; no Retry when not set. */
   onRetry?: (() => void) | undefined
+  /** An action of the line before Retry; none when not set. */
+  action?: { readonly label: string; readonly onClick: () => void } | undefined
 }
 
-export function TranscriptProblem({ text, onRetry }: TranscriptProblemProps) {
+export function TranscriptProblem({ text, onRetry, action }: TranscriptProblemProps) {
   return (
     <ErrorState
       size="inline"
@@ -23,10 +26,19 @@ export function TranscriptProblem({ text, onRetry }: TranscriptProblemProps) {
       title={text}
       level={3}
       actions={
-        onRetry === undefined ? undefined : (
-          <Button size="sm" onClick={onRetry}>
-            Retry
-          </Button>
+        onRetry === undefined && action === undefined ? undefined : (
+          <>
+            {action === undefined ? null : (
+              <Button size="sm" onClick={action.onClick}>
+                {action.label}
+              </Button>
+            )}
+            {onRetry === undefined ? null : (
+              <Button size="sm" onClick={onRetry}>
+                Retry
+              </Button>
+            )}
+          </>
         )
       }
     />

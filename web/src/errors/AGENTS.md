@@ -44,7 +44,7 @@ Every error path of the app (d-084).
   frames with no header and the route's path. Only the errors on the
   allowlist (`ownMessage`: the JS built-ins, `ShellDiagnosticError`,
   `FixtureError`) send their own message; the transcript, layout, live,
-  send and stop misses send their kind and a ZodError its issue codes
+  send, stop and clear misses send their kind and a ZodError its issue codes
   (`kindOnly`); every other error sends an empty message. A new error
   class sends no message until it is added to the allowlist, with a
   one-line reason (`clientErrorSender.test.ts`,
