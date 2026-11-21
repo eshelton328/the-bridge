@@ -1403,8 +1403,9 @@ export function createHerdrAgents({
       const tell = (event: AgentEvent) => {
         if (!over) onEvent(event)
       }
+      // Only an open stream is in `listTellers`: its end and its close take it out.
       const tellList = () => {
-        tell({ type: 'workspacesChanged' })
+        onEvent({ type: 'workspacesChanged' })
       }
       listTellers.add(tellList)
 
