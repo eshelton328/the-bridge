@@ -52,6 +52,8 @@ const listed = (data: WorkspacesData) =>
 export type NewChatDeps = {
   /** The data the screen draws: a tab the workbench follows is `active` in it (shownTabs.ts). */
   readonly data: WorkspacesData
+  /** Herdr's own tabs, before the page's shown tabs: herdr's active tab is `active` in them. */
+  readonly herdrTabs: WorkspacesData['liveTabs']
   /** Whether the form is open: closing it ends the start (Cancel). */
   readonly open: boolean
   readonly ui: () => WorkspacesUi
@@ -74,7 +76,7 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
   /** Opens the followed chat once the list shows it ready or needing the owner, and sends its first message. */
   const resolve = useCallback(() => {
     const follow = followRef.current
-    const { data, ui, change, send, drafts } = depsRef.current
+    const { data, herdrTabs, ui, change, send, drafts } = depsRef.current
     if (follow === undefined) return
     if (ui().newChatOpen !== true) {
       followRef.current = undefined
@@ -95,8 +97,9 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
     const needsYou = hit.chat.status.tone === 'needsYou'
     const ready = !needsYou && (follow.ready || (pane?.type === 'chat' && pane.takesCommands === true))
     if (!ready && !needsYou) return
-    // The desktop draws a chat in a herdr tab the layout read has: wait for the read that brings it.
-    const tabs = data.liveTabs?.[hit.workspace]
+    // The desktop draws a chat in a herdr tab the layout read has: wait for the read that brings it. Herdr's own tabs
+    // say which tab is herdr's active one, as the page may show another (shownTabs.ts).
+    const tabs = herdrTabs?.[hit.workspace]
     const tab = tabs?.find((t) => t.chats.includes(hit.chat.id))
     if (tabs !== undefined && tab === undefined) return
     followRef.current = undefined
@@ -109,10 +112,23 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
       newChatStart: null,
       keyboardOpen: false,
     }
+    // A chat in herdr's active tab shows that tab; one in another tab shows it in its place, as a moved chat does.
     const shown =
-      tab?.id === undefined || tab.active
+      tab?.id === undefined
         ? {}
-        : followTab(data, { ...now, ...opened }, hit.workspace, hit.chat.id, tab.id)
+        : tab.active
+          ? {
+              shownTabs: Object.fromEntries(
+                Object.entries(now.shownTabs ?? {}).filter(([workspace]) => workspace !== hit.workspace),
+              ),
+            }
+          : followTab(
+              { liveTabs: herdrTabs, current: data.current },
+              { ...now, ...opened },
+              hit.workspace,
+              hit.chat.id,
+              tab.id,
+            )
     change({ ...opened, ...shown })
     const liveChat = `${data.liveMachine ?? ''}/${hit.chat.id}`
     const message = attempt.message

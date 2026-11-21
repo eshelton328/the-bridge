@@ -175,6 +175,22 @@ describe('New chat on the live page (W3)', () => {
     expect(fakes.chats.prompts).toEqual([])
   })
 
+  it('shows the second new tab alone when a new tab is shown already', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await userEvent.click(page.getByRole('button', { name: 'New chat in live work' }))
+    await fill('tab-two', '')
+    await expect.element(page.getByRole('button', { name: 'Maximise tab-two' })).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'New chat in live work' }))
+    await fill('tab-three', '')
+    await expect.element(page.getByRole('button', { name: 'Maximise tab-three' })).toBeVisible()
+    await quiet()
+    expect(page.getByRole('button', { name: 'Maximise tab-two' }).elements()).toHaveLength(0)
+    expect(page.getByRole('button', { name: 'Maximise plan the slice' }).elements()).toHaveLength(0)
+    expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[plan, review], ['mac-mini/new1'], ['mac-mini/new2']])
+  })
+
   it('opens nothing and sends nothing for a start cancelled before it answered, in a form opened again', async () => {
     let answer = (): void => undefined
     const fakes = withChats(
