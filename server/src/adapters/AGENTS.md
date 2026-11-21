@@ -21,6 +21,13 @@ client of a socket or a file sits beside them.
 - A layout names each pane by the chat ID that the list gives it; a
   pane leaf's folder from `layout.export` stays here, and a tree that
   the contract cannot hold is `badReply` (`herdrAgents.test.ts`).
+- herdr refuses an `events.subscribe` that names a pane that closed
+  after the list read (`pane_not_found`; the owner closes panes, from
+  herdr or the page). The list stream then reads the list again and
+  subscribes to the panes that are left, at most 5 times in a row, and
+  ends no stream; a transcript watch stops its status stream and keeps
+  its file watch, so the chat's transcript stream ends only as `gone`
+  when its chat leaves the list (`herdrAgents.test.ts`).
 - A tab, focus or split event that names its workspace is `layoutChanged`
   for that workspace, once for each burst (100 ms quiet, at most 500 ms
   from its first event); one that names no
