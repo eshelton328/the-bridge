@@ -15,7 +15,7 @@
 // into an idle Claude chat (slice W5, 204); the compact instructions go to
 // the port only, as a prompt's text. POST /:chat/focus, /:chat/zoom,
 // /:chat/swap and /:chat/close change the chat's pane in its tab (slice W2,
-// 204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
+// 204), POST /:chat/move puts it in another tab of its workspace (204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
 // that works or waits for the owner.
 import {
   ChatCommandRequest,
@@ -24,6 +24,7 @@ import {
   CloseChatRequest,
   ErrorBody,
   FocusChatRequest,
+  MoveChatRequest,
   maxCompactChars,
   maxPromptChars,
   SendPromptRequest,
@@ -50,6 +51,7 @@ import type {
   ClearOutcome,
   CloseOutcome,
   CommandOutcome,
+  MoveOutcome,
   SwapOutcome,
   ZoomOutcome,
 } from '../services/agentPort.ts'
@@ -59,7 +61,7 @@ import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../ser
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
-import { closeChat, focusChat, splitChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
+import { closeChat, moveChat, focusChat, splitChat, swapChats, zoomChat } from '../services/layoutWrites.ts'
 
 const pingMs = 25_000
 const retryMs = 5_000
@@ -89,7 +91,10 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
   /** The answer to a layout write: 204 when done; the chat's state when it cannot take it. */
-  const wrote = (c: Context<AppEnv>, outcome: ZoomOutcome | SwapOutcome | CloseOutcome | 'notConfirmed') => {
+  const wrote = (
+    c: Context<AppEnv>,
+    outcome: ZoomOutcome | SwapOutcome | MoveOutcome | CloseOutcome | 'notConfirmed',
+  ) => {
     switch (outcome) {
       case 'done':
         return c.body(null, 204)
@@ -99,6 +104,13 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
         return errorJson(c, 'chat-not-ready', { state: 'singlePane', message: 'the tab has only this pane' })
       case 'otherTab':
         return errorJson(c, 'chat-not-ready', { state: 'otherTab', message: 'the other chat is in another tab' })
+      case 'sameTab':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'sameTab',
+          message: 'the chat is in this tab already; a swap moves it inside its tab',
+        })
+      case 'zoomedTab':
+        return errorJson(c, 'chat-not-ready', { state: 'zoomedTab', message: 'the tab shows only one pane now' })
       case 'samePane':
         return errorJson(c, 'invalid-input', {
           message: 'a chat cannot swap with itself',
@@ -244,6 +256,12 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const done = await swapChats(agents, id.data, c.req.valid('json').with)
+      return done.ok ? wrote(c, done.value) : failed(c, done.error)
+    })
+    .post('/:chat/move', smallJson, jsonOnly, jsonBody(MoveChatRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const done = await moveChat(agents, id.data, c.req.valid('json'))
       return done.ok ? wrote(c, done.value) : failed(c, done.error)
     })
     .post('/:chat/split', smallJson, jsonOnly, jsonBody(SplitChatRequest), async (c) => {

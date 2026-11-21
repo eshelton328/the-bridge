@@ -87,6 +87,10 @@ const ZoomReply = z.object({ zoom: z.object({ reason: Reason }) })
 const SwapReply = z.object({ swap: z.object({ reason: Reason }) })
 /** herdr's reply to a split: the new pane, of which the adapter reads only its terminal. */
 const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
+/** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
+const MoveReply = z.object({
+  move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
+})
 /** herdr's error codes that say the pane, the tab or the split of a layout write is not there. */
 const notFoundCodes = new Set(['pane_not_found', 'tab_not_found', 'split_not_found'])
 
@@ -540,7 +544,13 @@ export function createHerdrAgents({
     chat: ChatId,
   ): Promise<
     Result<
-      { pane: string; tab: string | undefined; cwd: string | undefined; status: ChatStatus } | null,
+      {
+        pane: string
+        tab: string | undefined
+        workspace: string | undefined
+        cwd: string | undefined
+        status: ChatStatus
+      } | null,
       AgentPortError
     >
   > => {
@@ -560,6 +570,7 @@ export function createHerdrAgents({
     return ok({
       pane,
       tab: listed?.tab_id,
+      workspace: listed?.workspace_id,
       cwd: listed?.cwd ?? undefined,
       status: agent === undefined ? 'idle' : statusOf(agent.agent_status),
     })
@@ -819,6 +830,33 @@ export function createHerdrAgents({
       // A chat whose state herdr cannot tell may work, so only an idle or done chat (or a shell) closes.
       if (status !== 'idle' && status !== 'done') return ok('working')
       return doneOf(await paneWrite('pane.close', AnyReply, { pane_id: pane }))
+    },
+    async moveChat(chat, tab, direction, beside) {
+      const { machine: on, local } = splitId(tab)
+      if (on !== machine) return ok('notFound')
+      const [found, near] = await Promise.all([paneOf(chat), beside === undefined ? ok(undefined) : paneOf(beside)])
+      if (!found.ok) return found
+      if (!near.ok) return near
+      if (found.value === null || near.value === null) return ok('notFound')
+      // A herdr tab ID holds its workspace's ID before the colon; a chat moves only to a tab of its own workspace.
+      const { workspace, pane } = found.value
+      if (workspace !== undefined && local.split(':')[0] !== workspace) return ok('notFound')
+      if (found.value.tab === local) return ok('sameTab')
+      if (near.value !== undefined && near.value.tab !== local) return ok('notFound')
+      const written = await paneWrite('pane.move', MoveReply, {
+        pane_id: pane,
+        destination: {
+          type: 'tab',
+          tab_id: local,
+          split: direction === 'row' ? 'right' : 'down',
+          ...(near.value === undefined ? {} : { target_pane_id: near.value.pane }),
+        },
+        focus: false,
+      })
+      if (!written.ok || written.value === 'notFound') return doneOf(written)
+      const { reason } = written.value.move_result
+      if (reason === 'same_tab') return ok('sameTab')
+      return ok(reason === 'zoomed_tab' ? 'zoomedTab' : 'done')
     },
     async splitChat(chat, direction) {
       const found = await paneOf(chat)

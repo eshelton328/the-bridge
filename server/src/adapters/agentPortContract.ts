@@ -201,6 +201,8 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.splitChat(none, 'row')).toEqual({ ok: true, value: 'notFound' })
       const otherMachine = TabId.parse('another-machine/w1:t1')
       expect(await port.setSplitRatio(otherMachine, [], 0.5)).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.moveChat(chat, otherMachine, 'row')).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.moveChat(none, otherMachine, 'row')).toEqual({ ok: true, value: 'notFound' })
     })
 
     it('focuses the pane of a listed chat, and closes no chat whose agent works', async () => {

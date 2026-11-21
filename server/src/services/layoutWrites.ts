@@ -1,14 +1,15 @@
-// The layout writes of slice W2: focus, zoom, swap and close of a chat's
-// pane, through the agent port. A close ends the pane's agent or shell and
+// The layout writes of slice W2: focus, zoom, swap, move and close of a
+// chat's pane, through the agent port. A close ends the pane's agent or shell and
 // cannot be undone, so it goes to the port only when the request's confirm
 // names this chat.
-import type { ChatId, SplitDirection, SplitSide, TabId, WorkspaceId } from '@bridge/contract'
+import type { ChatId, MoveChatRequest, SplitDirection, SplitSide, TabId, WorkspaceId } from '@bridge/contract'
 import { splitId } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
 import type {
   AgentPort,
   AgentPortError,
   CloseOutcome,
+  MoveOutcome,
   PaneWriteOutcome,
   SplitOutcome,
   SwapOutcome,
@@ -56,6 +57,15 @@ export async function setSplitRatio(
   )
     return ok('notFound')
   return agents.setSplitRatio(tab, path, ratio)
+}
+
+/** Moves the pane of `chat` to another tab of its workspace, split in `direction` beside `beside` there. */
+export function moveChat(
+  agents: AgentPort,
+  chat: ChatId,
+  request: MoveChatRequest,
+): Promise<Result<MoveOutcome, AgentPortError>> {
+  return agents.moveChat(chat, request.tab, request.direction, request.beside)
 }
 
 /** Swaps the places of the panes of `chat` and `other`, two chats of one tab. */

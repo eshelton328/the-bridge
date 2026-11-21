@@ -6,6 +6,7 @@ export { EventEnvelope, EventSource, eventOf } from './events.ts'
 export {
   chatsOf,
   CloseChatRequest,
+  MoveChatRequest,
   FocusChatRequest,
   LayoutNode,
   maxSplitRatio,

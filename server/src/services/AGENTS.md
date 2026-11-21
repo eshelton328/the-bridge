@@ -21,7 +21,7 @@ from the outside world.
   to a prompt; `uploads.ts` lets only a Claude chat take one, and
   sends a prompt with the path of each file below its text; the
   transcript reads those lines back as the entry's file names.
-- `layoutWrites.ts` sends the layout writes of slice W2 to the port;
+- `layoutWrites.ts` sends the layout writes of slice W2 (a move too) to the port;
   a close goes to the port only when its confirm names the chat, and a
   ratio only for a tab of the workspace in the path.
 - No polling (d-112): a service reads a port when a request or a

@@ -391,6 +391,19 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
     expect((await tab())?.chats.map((c) => c.id)).toEqual([drift, themes])
   })
 
+  it('moves a pane only to another tab of its workspace: its own tab is 409 sameTab, another tab 404', async () => {
+    const { post } = setup()
+    expect(await stateOf(await post(themes, 'move', { tab: 'test-mac/omni-brain:t1', direction: 'row' }))).toBe(
+      'sameTab',
+    )
+    expect((await post(themes, 'move', { tab: 'test-mac/omni-brain:t9', direction: 'row' })).status).toBe(404)
+    expect(
+      (await post('test-mac/no-such-chat', 'move', { tab: 'test-mac/omni-brain:t1', direction: 'row' })).status,
+    ).toBe(404)
+    for (const body of [{ tab: 'test-mac/omni-brain:t1' }, { tab: 'test-mac/omni-brain:t1', direction: 'row', at: 1 }])
+      expect((await post(themes, 'move', body)).status).toBe(400)
+  })
+
   it('closes a pane only with a confirm that names its chat, and never one that works or waits', async () => {
     const { agents, post, tab } = setup()
     agents.setStatus(ChatId.parse(themes), 'idle')

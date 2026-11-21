@@ -167,3 +167,13 @@ export type SwapChatsRequest = z.infer<typeof SwapChatsRequest>
  */
 export const CloseChatRequest = z.strictObject({ confirm: ChatId })
 export type CloseChatRequest = z.infer<typeof CloseChatRequest>
+
+/**
+ * The body of `POST /api/chats/:chat/move`, which moves the chat's pane to another tab of its workspace (204): the
+ * `beside` chat's pane of that tab, else its focused pane, splits in `direction` and the moved pane takes its
+ * second part. The agent or the shell in the pane runs on, and a tab whose last pane moves out closes. The chat's own tab is 409 `chat-not-ready` `sameTab`
+ * (a swap moves a pane inside its tab), a zoomed tab `zoomedTab`, and a tab of another workspace, or a `beside`
+ * chat of another tab, 404.
+ */
+export const MoveChatRequest = z.strictObject({ tab: TabId, direction: SplitDirection, beside: ChatId.optional() })
+export type MoveChatRequest = z.infer<typeof MoveChatRequest>
