@@ -164,7 +164,8 @@ describe("a live chat's effort picker (W10)", () => {
       release()
       await expect.element(chip('Opus 5.5 · high effort')).toBeVisible()
       expect(posted(fakes.list)).toEqual([[plan, { effort: 'high' }]])
-      expect(page.getByRole('menuitemradio').elements()).toHaveLength(0)
+      // The menu closes after its exit animation.
+      await expect.poll(() => page.getByRole('menuitemradio').elements()).toHaveLength(0)
       // The list gives the set level after workspaces.changed.
       expect(fakes.list.chats().find((c) => c.id === plan)?.effort).toBe('high')
       await userEvent.click(chip('Opus 5.5 · high effort'))
@@ -241,7 +242,8 @@ describe("a live chat's effort picker (W10)", () => {
       expect(page.getByRole('status').getByText(/./).elements()).toHaveLength(0)
       await userEvent.click(choice('high'))
       await expect.element(page.getByRole('status').getByText(line, { exact: true })).toBeVisible()
-      expect(page.getByRole('menuitemradio').elements()).toHaveLength(0)
+      // The menu closes after its exit animation.
+      await expect.poll(() => page.getByRole('menuitemradio').elements()).toHaveLength(0)
       await expect.element(chip('Opus 5.5 · medium effort')).toBeVisible()
     }
     expect(getReports()).toEqual([])
