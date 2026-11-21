@@ -458,6 +458,21 @@ export function createFakeAgents(
         parent: null,
         pane: PaneId.parse(`${machine}/pane-${local}`),
       }
+      // As herdr does: the chat's pane becomes a split of it and the new pane, half each.
+      trees.set(
+        workspace.id,
+        mapPanes(tree, (pane) =>
+          pane === target.pane
+            ? {
+                kind: 'split',
+                direction,
+                ratio: 0.5,
+                first: { kind: 'pane', pane },
+                second: { kind: 'pane', pane: shell.pane },
+              }
+            : { kind: 'pane', pane },
+        ),
+      )
       workspace.chats.splice(workspace.chats.findIndex((c) => c.id === chat) + 1, 0, shell)
       tell({ type: 'workspacesChanged' })
       tell({ type: 'layoutChanged', workspace: workspace.id })

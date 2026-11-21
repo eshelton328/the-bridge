@@ -422,6 +422,43 @@ describe('POST /api/chats/:chat/focus, /zoom, /swap and /close (W2)', () => {
     expect((await post(themes, 'split', { direction: 'right' })).status).toBe(400)
   })
 
+  it("splits only the chat's pane, in the asked direction, and keeps the ratios that were set", async () => {
+    const { agents, post, tab } = setup()
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const ratio = await app.request(`/api/workspaces/${encodeURIComponent(brain)}/layout/ratio`, {
+      method: 'POST',
+      headers: json,
+      body: JSON.stringify({ tab: 'test-mac/omni-brain:t1', path: [], ratio: 0.3 }),
+    })
+    expect(ratio.status).toBe(204)
+    const res = await post(drift, 'split', { direction: 'column' })
+    const { chat } = SplitChatResponse.parse(await res.json())
+    expect((await tab())?.root).toEqual({
+      kind: 'split',
+      direction: 'row',
+      ratio: 0.3,
+      first: { kind: 'pane', chat: themes },
+      second: {
+        kind: 'split',
+        direction: 'column',
+        ratio: 0.5,
+        first: { kind: 'pane', chat: drift },
+        second: { kind: 'pane', chat },
+      },
+    })
+    expect(
+      (
+        await app.request(`/api/workspaces/${encodeURIComponent(brain)}/layout/ratio`, {
+          method: 'POST',
+          headers: json,
+          body: JSON.stringify({ tab: 'test-mac/omni-brain:t1', path: ['second'], ratio: 0.7 }),
+        })
+      ).status,
+    ).toBe(204)
+    const second = (await tab())?.root
+    expect(second?.kind === 'split' && second.second.kind === 'split' ? second.second.ratio : undefined).toBe(0.7)
+  })
+
   it('sets the ratio of a split of a tab of the workspace with 204, and 404 for another tab or no split', async () => {
     const { agents, tab } = setup()
     const app = createApp({ agents, owner, log: memoryLogger().log })
