@@ -467,6 +467,47 @@ describe('the draft that a clear sends again, on the phone (R28 part B, review o
     })
 })
 
+describe('a Send while a clear is pending, on the phone (R28 part B, review of #315)', () => {
+  for (const where of [
+    { name: 'in the same pane', reopen: false },
+    { name: 'in the chat opened again', reopen: true },
+  ])
+    it(`posts no send ${where.name}, and the clear's answer sends the draft once`, async () => {
+      const fake = withChats()
+      const clear = held()
+      fake.answerClears(clear.answer)
+      await sendIntoTypedInput(fake, phone)
+      await askToClear()
+      await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
+      await expect.poll(() => fake.posts.length).toBe(2)
+      if (where.reopen) {
+        await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+        await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+        await expect.element(box('plan the slice')).toHaveValue(secret)
+      }
+      // A Send now would still find the text in the terminal input.
+      const prompt = held()
+      fake.answerPrompts(prompt.answer)
+      await userEvent.click(sendButton('plan the slice'))
+      await settle()
+      fake.answerPrompts(undefined)
+      fake.clearTerminal(plan)
+      clear.end(new Response(null, { status: 204 }))
+      await settle()
+      prompt.end(
+        errorAnswer({ kind: 'chat-not-ready', state: 'inputNotEmpty', message: 'still', requestId: 'r-6' }, 409),
+      )
+      await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+      await settle()
+      expect(fake.posts).toEqual([
+        { chat: plan, route: 'prompt' },
+        { chat: plan, route: 'clear' },
+        { chat: plan, route: 'prompt' },
+      ])
+      await expect.element(box('plan the slice')).toHaveValue('')
+    })
+})
+
 describe('a send that the chat did not take (409 notSubmitted, R28 part B)', () => {
   for (const device of [
     { name: 'the phone', size: phone },

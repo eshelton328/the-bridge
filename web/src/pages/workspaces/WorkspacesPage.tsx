@@ -99,15 +99,18 @@ export function WorkspacesPage() {
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
-  // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile.
-  const pendingRef = useRef(new Set<string>())
+  // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
+  // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
+  // sends the draft itself once it answers, and a clear waits for a send that is pending, so its resend is not refused.
+  const pendingRef = useRef(new Map<string, Promise<ComposerAnswer>>())
   const once = (key: string, run: () => Promise<ComposerAnswer>): Promise<ComposerAnswer> => {
     const pending = pendingRef.current
     if (pending.has(key)) return Promise.resolve(false)
-    pending.add(key)
-    return run().finally(() => {
+    const running = run().finally(() => {
       pending.delete(key)
     })
+    pending.set(key, running)
+    return running
   }
   // The server ID of the live Claude chat whose pane is `chat`, read when its composer sends: none for a sample chat.
   const liveChatOf = (chat: string) => {
@@ -135,23 +138,29 @@ export function WorkspacesPage() {
       transcripts={transcripts}
       onCopy={copyReply}
       onSend={(chat, text) =>
-        once(`send:${chat}`, () => {
-          const liveChat = liveChatOf(chat)
-          if (liveChat !== undefined)
-            return viaLive((m) => m.sendPrompt(liveChat, text)).then((answer) => {
-              // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
-              if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
-              const clearInput = answer.clearInput
-              return { ...answer, clearInput: () => once(`clear:${chat}`, clearInput) }
+        pendingRef.current.has(`clear:${chat}`)
+          ? Promise.resolve(false)
+          : once(`send:${chat}`, () => {
+              const liveChat = liveChatOf(chat)
+              if (liveChat !== undefined)
+                return viaLive((m) => m.sendPrompt(liveChat, text)).then((answer) => {
+                  // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
+                  if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
+                  const clearInput = answer.clearInput
+                  const sending = () => pendingRef.current.get(`send:${chat}`) ?? Promise.resolve(false)
+                  return {
+                    ...answer,
+                    clearInput: () => once(`clear:${chat}`, () => sending().then(clearInput, clearInput)),
+                  }
+                })
+              return send(chat, text).then(
+                () => true,
+                (error: unknown) => {
+                  report(error, 'handler')
+                  return false
+                },
+              )
             })
-          return send(chat, text).then(
-            () => true,
-            (error: unknown) => {
-              report(error, 'handler')
-              return false
-            },
-          )
-        })
       }
       onStop={(chat) => {
         const liveChat = liveChatOf(chat)

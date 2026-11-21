@@ -70,7 +70,8 @@ export function useComposerActions({ text, onSend, onStop, clear, draftNow }: Co
   const over = text.length - maxPromptChars
   /** The library composer's `onSend`: `false` keeps the draft. */
   const send = (submitted: string): boolean | Promise<boolean> => {
-    if (submitted.length > maxPromptChars || sendingRef.current) return false
+    // While a clear of the terminal input is pending, its answer sends the draft: a Send meanwhile keeps it.
+    if (submitted.length > maxPromptChars || sendingRef.current || clearingRef.current) return false
     if (onSend === undefined) {
       clear(submitted)
       return true
