@@ -3,9 +3,12 @@ import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, showState, dialog, searchbox, box } from './inboxRouteHelpers.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // The Inbox on the phone, through the real route, loader and page store
 // (see InboxRoute.test.tsx).
+// A test opens Workspaces, whose home reads the live source (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 afterEach(async () => {
   resetAllStores()
