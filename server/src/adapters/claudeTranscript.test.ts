@@ -84,6 +84,15 @@ describe('Claude transcript', () => {
     expect(JSON.stringify(read)).not.toMatch(/pasted_content|\/home\/dev/)
   })
 
+  it('keeps the indent of a first line in a paste, as a Markdown code block needs', async () => {
+    const path = file([
+      user('c1', '\n\n<pasted_content id="77">\n    pnpm build\n    pnpm test\n</pasted_content id="77">\n'),
+    ])
+    expect((await readClaudeTranscript(path, options)).entries).toEqual([
+      { type: 'user', id: 'c1', text: '    pnpm build\n    pnpm test', cut: false },
+    ])
+  })
+
   it('shows a tool call with no result as running only while the chat is working', async () => {
     const path = file([assistant('a1', [toolUse('t1', 'pnpm test')])])
     expect((await readClaudeTranscript(path, options)).entries[0]).toMatchObject({ running: true })

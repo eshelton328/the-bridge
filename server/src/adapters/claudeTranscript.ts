@@ -60,7 +60,11 @@ const pasted = /<pasted_content id="([^"]{1,100})">\n?([\s\S]*?)\n?<\/pasted_con
  * prompt with files (`uploads.ts`) taken out, with the name of each file.
  */
 function promptOf(raw: string): { text: string; files?: string[] } {
-  const text = raw.replace(pasted, (_all, _id, inner: string) => inner).trim()
+  // Only blank lines go from the start, so a first line indented as code keeps its indent.
+  const text = raw
+    .replace(pasted, (_all, _id, inner: string) => inner)
+    .replace(/^(?:[ \t]*\n)+/, '')
+    .trimEnd()
   const at = text.lastIndexOf(attachedLine)
   if (at < 0 || (at > 0 && !text.slice(0, at).endsWith('\n\n'))) return { text }
   const lines = text
