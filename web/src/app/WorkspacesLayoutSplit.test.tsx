@@ -14,6 +14,7 @@ import { resetRetries } from '../errors/retryGuard.ts'
 import { errorAnswer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
 import { type FakeWorkspacesServer, fakeWorkspacesServer } from '../lib/fakeWorkspacesServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
+import { placed } from '../lib/popoverPlaced.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { afterRendering, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -252,7 +253,10 @@ describe('split (W2c)', () => {
     await userEvent.click(actionsButton('review notes'))
     for (const name of ['Split right', 'Split down'])
       await expect.element(page.getByRole('menuitem', { name })).toHaveAttribute('aria-disabled', 'true')
-    await userEvent.click(page.getByRole('menuitem', { name: 'Split right' }), { force: true })
+    // A forced click skips Playwright's check that the row is in the window, so it waits for zag to place the menu.
+    const splitRight = page.getByRole('menuitem', { name: 'Split right' })
+    await expect.poll(() => placed(splitRight.element())).toBe(true)
+    await userEvent.click(splitRight, { force: true })
     await quiet()
     expect(writesOf(fakes).map((w) => w.action)).toEqual(['zoom'])
   })

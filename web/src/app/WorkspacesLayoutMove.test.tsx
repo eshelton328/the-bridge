@@ -17,6 +17,7 @@ import {
   fakeWorkspacesServer,
 } from '../lib/fakeWorkspacesServer.ts'
 import { answerLateServerReads } from '../lib/lateServerReads.ts'
+import { placed } from '../lib/popoverPlaced.ts'
 import { queryClient } from '../lib/queryClient.ts'
 import { setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
@@ -217,6 +218,9 @@ describe('Move to tab… (W2d)', () => {
     await expect
       .element(page.getByRole('menuitem', { name: 'tab 3', exact: true }))
       .not.toHaveAttribute('aria-disabled', 'true')
+    // The row is off, so the click is forced, which skips Playwright's check that it is in the window: it waits for
+    // zag to place the submenu first, or it finds the row 100vh above the window (lib/popoverPlaced.ts).
+    await expect.poll(() => placed(zoomed.element())).toBe(true)
     await userEvent.click(zoomed, { force: true })
     await quiet()
     expect(moveDialog().elements()).toHaveLength(0)

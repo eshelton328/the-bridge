@@ -3,6 +3,7 @@ import { within } from 'storybook/test'
 import { afterEach, describe, expect, it } from 'vitest'
 import { page } from 'vitest/browser'
 import preview from '../../../.storybook/preview.ts'
+import { placed } from '../../lib/popoverPlaced.ts'
 import * as stories from './screens/WorkspacesScreen.stories.tsx'
 
 // D1's skill list (105:406) is 173 high in Figma: 7 from its edge to the SKILLS row (21), then three 44 px rows 2
@@ -26,13 +27,6 @@ afterEach(() => {
 function box(el: Element | null | undefined) {
   if (!(el instanceof HTMLElement)) throw new Error('no element')
   return el.getBoundingClientRect()
-}
-
-/** Whether zag has placed the popover of `el`: its positioner has the `--y` that zag sets once it computed it. */
-function placed(el: Element | null): boolean {
-  const positioner = el?.closest('[data-part="positioner"]')
-  if (!(positioner instanceof HTMLElement)) throw new Error('no positioner')
-  return positioner.style.getPropertyValue('--y') !== ''
 }
 
 describe('the skill list in a pane (D1)', () => {
