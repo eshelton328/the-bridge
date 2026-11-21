@@ -25,6 +25,7 @@ const logMessages = [
   'herdr status not known',
   'client error',
   'upload failed',
+  'session folder not watched',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

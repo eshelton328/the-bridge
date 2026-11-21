@@ -242,6 +242,13 @@ export type HerdrAgentsOptions = {
   readonly now?: () => number
 }
 
+/**
+ * herdr sends no event when a pane's Claude session changes (a /clear typed in the terminal), so the list stream
+ * watches the folders of the listed Claude sessions: a new session file there reads the list again, now and once
+ * more after this many ms, as herdr can learn the new session after Claude Code writes its file.
+ */
+const lateSessionMs = 1500
+
 /** How long after a stop's Escape a pane gets no other Escape. */
 const stopHoldMs = 2000
 /** How long a stop waits for the chat to go idle, and so put the stopped prompt back, before it reads the box. */
@@ -821,10 +828,18 @@ export function createHerdrAgents({
       let over = false
       let stream: HerdrStream | undefined
       let settle: ReturnType<typeof setTimeout> | undefined
+      let lateSession: ReturnType<typeof setTimeout> | undefined
+      let folderWatches: FSWatcher[] = []
+      const unwatchFolders = () => {
+        for (const w of folderWatches) w.close()
+        folderWatches = []
+      }
       const end = (error: AgentPortError) => {
         if (over) return
         over = true
         clearTimeout(settle)
+        clearTimeout(lateSession)
+        unwatchFolders()
         clearTimeout(layoutSettle)
         clearTimeout(layoutMax)
         stream?.close()
@@ -882,6 +897,7 @@ export function createHerdrAgents({
           return
         }
         const chats = chatIdsOf(agents.value.agents, panes.value.panes)
+        watchSessionFolders(agents.value.agents)
         const subscriptions = [
           ...listEvents.map((type) => ({ type })),
           ...layoutEvents.map((type) => ({ type })),
@@ -912,6 +928,32 @@ export function createHerdrAgents({
         })
       }
 
+      /** Watches the folder of each listed Claude session; a session file that no listed chat has reads the list again. */
+      const watchSessionFolders = (agents: readonly HerdrAgent[]) => {
+        unwatchFolders()
+        const paths = agents.flatMap((a) => (a.agent === 'claude' ? (sessionPath(a) ?? []) : []))
+        const known = new Set(paths.map((p) => basename(p)))
+        for (const folder of new Set(paths.map((p) => dirname(p)))) {
+          try {
+            const watcher = watchFs(folder, (event, name) => {
+              if (event !== 'rename' || name === null || !name.endsWith('.jsonl') || known.has(name)) return
+              reopen()
+              clearTimeout(lateSession)
+              lateSession = setTimeout(reopen, lateSessionMs)
+            })
+            // A folder that goes away ends its watch; the list stream still runs.
+            watcher.on('error', () => {
+              watcher.close()
+            })
+            folderWatches.push(watcher)
+          } catch (error) {
+            // A folder that is not there yet gets a watch when the list is read again. The log keeps no path.
+            const code = error instanceof Error && 'code' in error ? String(error.code) : 'unknown'
+            log.warn('session folder not watched', { code })
+          }
+        }
+      }
+
       /** A pane or workspace came or went: wait for the burst to settle, then open the stream again. */
       const reopen = () => {
         clearTimeout(settle)
@@ -929,6 +971,8 @@ export function createHerdrAgents({
           over = true
           listening()
           clearTimeout(settle)
+          clearTimeout(lateSession)
+          unwatchFolders()
           clearTimeout(layoutSettle)
           clearTimeout(layoutMax)
           stream?.close()
