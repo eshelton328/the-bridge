@@ -25,6 +25,13 @@ client of a socket or a file sits beside them.
   for that workspace, once for each burst (100 ms quiet, at most 500 ms
   from its first event); one that names no
   workspace reads the list again (`herdrAgents.test.ts`).
+- herdr sends no event when a pane's Claude session changes (a `/clear`
+  typed in the terminal; probe in a test herdr session, 2026-11-20). So
+  the list stream also watches the folder of each listed Claude session
+  file: a new `.jsonl` file there that no listed chat has reads the
+  list again (`workspacesChanged`), at once and 1.5 s later, as herdr
+  can learn the new session after the file is there. Writes to a known
+  file read nothing (`herdrAgents.test.ts`).
 - A Claude chat's transcript comes from its own session file only, read
   from the end (`claudeTranscript.ts`): prompts, reply text and each
   tool call's name and target, never thinking, a tool's arguments or

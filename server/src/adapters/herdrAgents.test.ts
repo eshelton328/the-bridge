@@ -960,6 +960,70 @@ describe('herdr agents: subscribe', () => {
     expect(socket.streams()).toEqual([])
   })
 
+  it('reads the list again when a new session file appears beside a listed Claude session, as /clear makes', async () => {
+    const listeners = new Map<string, (event: string, name: string | null) => void>()
+    const folder = join(projects, '-home-dev-ncc-1701')
+    const agents = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      watch: (path, listener) => {
+        listeners.set(path, listener)
+        return watch(path, () => undefined)
+      },
+    })
+    const { events, subscription } = collect(agents)
+    await subscription.ready
+    await wait(250)
+    const told = () => events.filter((e) => e.type === 'workspacesChanged').length
+    const before = told()
+    const tell = listeners.get(folder)
+    expect(tell).toBeDefined()
+    // A write to a listed session, a change event and a file that is not a session read nothing.
+    tell?.('rename', 'session-a.jsonl')
+    tell?.('change', 'session-new.jsonl')
+    tell?.('rename', 'notes.txt')
+    tell?.('rename', 'session-new')
+    tell?.('rename', 'bad name.jsonl')
+    await wait(250)
+    expect(told()).toBe(before)
+    tell?.('rename', 'session-new.jsonl')
+    await wait(400)
+    expect(told()).toBe(before + 1)
+    await wait(1500)
+    expect(told()).toBe(before + 2)
+    subscription.close()
+  })
+
+  it('keeps one stream when a slow list read ends after a newer one', async () => {
+    const listeners = new Map<string, (event: string, name: string | null) => void>()
+    const agents = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log,
+      claudeProjects: projects,
+      home,
+      watch: (path, listener) => {
+        listeners.set(path, listener)
+        return watch(path, () => undefined)
+      },
+    })
+    const { subscription } = collect(agents)
+    await subscription.ready
+    await wait(250)
+    // A new session file reads the list at once and again 1.5 s later. The first read waits 2 s, so the
+    // late read starts after it and ends first.
+    socket.delayOnce('agent.list', 2000)
+    listeners.get(join(projects, '-home-dev-ncc-1701'))?.('rename', 'session-new.jsonl')
+    await wait(2600)
+    expect(socket.streams()).toHaveLength(1)
+    subscription.close()
+    await wait(50)
+    expect(socket.streams()).toEqual([])
+  })
+
   it('tells the app to read the list once the first stream starts', async () => {
     const { events, subscription } = collect()
     await subscription.ready
