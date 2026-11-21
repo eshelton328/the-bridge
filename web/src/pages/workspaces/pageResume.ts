@@ -40,9 +40,14 @@ function onVisibility() {
 
 let listening = false
 
-/** Starts following the page's visibility, once; the transcript module calls it when it loads. */
+/**
+ * Starts following the page's visibility, once; the transcript module calls it when it loads. A page that loads in the
+ * background (a tab opened behind another) is away already, so its first show ends that trip.
+ */
 export function followPageVisibility(): void {
-  if (listening || typeof document === 'undefined') return
+  if (typeof document === 'undefined') return
+  if (isHidden()) onHide()
+  if (listening) return
   listening = true
   document.addEventListener('visibilitychange', onVisibility)
   // Safari sends pagehide and pageshow too, and a page back from its cache may send only those.

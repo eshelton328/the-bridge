@@ -57,6 +57,19 @@ describe('pageResume', () => {
     expect(fromBackground(resumeMark())).toBe(false)
   })
 
+  it('takes a page that starts following while hidden as away, so its first show resolves whenVisible', async () => {
+    // Hidden with no event: as a page that loads in a tab behind another.
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    followPageVisibility()
+    let shown = false
+    const waiting = whenVisible(new AbortController().signal).then(() => {
+      shown = true
+    })
+    setHidden(false)
+    await expect.poll(() => shown, { timeout: 500 }).toBe(true)
+    await waiting
+  })
+
   it('resolves whenVisible when the page shows, or at once when it shows already', async () => {
     const signal = new AbortController().signal
     await whenVisible(signal)
