@@ -50,7 +50,12 @@ Thin Hono sub-apps, one file for each area, named after the area
   it to the store, then `POST /:upload/complete` and
   `DELETE /:upload`. A wrong chunk or an early complete is 409
   `upload-conflict`, a HEIC photo that does not convert 415
-  `unsupported-media`, a full disk 507 `storage-full`. The file name and
+  `unsupported-media`, a full disk 507 `storage-full`. A prompt's
+  `attachments` must be complete uploads of its chat (409
+  `upload-conflict`; a Codex chat 409 `noAttachments`); the server
+  adds the line "Attached files (read each one with your tools):" and
+  one path a line below the text. A chunk of 8 MiB passes the Vite proxy
+  and Tailscale Serve. The file name and
   bytes never go into a log line or an `ErrorBody` (`uploads.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never

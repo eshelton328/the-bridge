@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { maxPromptChars, SendPromptRequest, StopChatRequest } from './prompts.ts'
+import { maxAttachments, maxPromptChars, SendPromptRequest, StopChatRequest } from './prompts.ts'
+
+const upload = 'AAAAAAAAAAAAAAAAAAAAAA'
 
 describe('prompt requests', () => {
   it('reads a prompt with text, up to the limit', () => {
@@ -14,6 +16,24 @@ describe('prompt requests', () => {
       { text: 'x'.repeat(maxPromptChars + 1) },
       { text: 'Go.', chat: 'mac-mini/other' },
       {},
+    ])
+      expect(SendPromptRequest.safeParse(body).success).toBe(false)
+  })
+})
+
+describe('prompt attachments', () => {
+  it('takes up to the limit of upload IDs, and an empty text with a file', () => {
+    expect(SendPromptRequest.parse({ text: '', attachments: [upload] })).toEqual({ text: '', attachments: [upload] })
+    const most = Array.from({ length: maxAttachments }, () => upload)
+    expect(SendPromptRequest.safeParse({ text: 'Look.', attachments: most }).success).toBe(true)
+  })
+
+  it('refuses an empty text with no file, more files than the limit, and a path in place of an ID', () => {
+    for (const body of [
+      { text: '', attachments: [] },
+      { text: ' ', attachments: [] },
+      { text: 'Look.', attachments: Array.from({ length: maxAttachments + 1 }, () => upload) },
+      { text: 'Look.', attachments: ['/home/dev/a.png'] },
     ])
       expect(SendPromptRequest.safeParse(body).success).toBe(false)
   })

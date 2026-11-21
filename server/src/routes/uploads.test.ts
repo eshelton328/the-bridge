@@ -22,7 +22,14 @@ const secretName = 'MARKER-not-a-real-name.png'
 
 function setup(store: UploadStore = createFakeUploads({ chunkSize: 4 })) {
   const logger = memoryLogger()
-  const app = createApp({ agents: createFakeAgents(machine), owner, log: logger.log, uploads: store })
+  const agents = createFakeAgents(machine)
+  const app = createApp({ agents, owner, log: logger.log, uploads: store })
+  const prompt = (chat: string, body: unknown) =>
+    app.request(`/api/chats/${encodeURIComponent(chat)}/prompt`, {
+      method: 'POST',
+      headers: json,
+      body: JSON.stringify(body),
+    })
   const start = (chat: string, body: unknown) =>
     app.request(startPath(chat), { method: 'POST', headers: json, body: JSON.stringify(body) })
   const put = (upload: string, n: number | string, body: string, headers: Record<string, string> = octets) =>
@@ -37,7 +44,7 @@ function setup(store: UploadStore = createFakeUploads({ chunkSize: 4 })) {
     for (let n = 0; n * 4 < content.length; n++) await put(upload, n, content.slice(n * 4, n * 4 + 4))
     return upload
   }
-  return { app, logger, start, put, complete, remove, uploaded }
+  return { app, agents, logger, start, put, complete, remove, prompt, uploaded }
 }
 
 const kindOf = async (res: Response) => ErrorBody.parse(await res.json()).error
@@ -160,5 +167,59 @@ describe('the upload routes', () => {
     const res = await complete(upload)
     expect(res.status).toBe(415)
     expect((await kindOf(res)).kind).toBe('unsupported-media')
+  })
+})
+
+describe('a prompt with files', () => {
+  const themes = 'test-mac/bridge-themes'
+
+  it('sends the text, then a line that tells the chat to read each file, then each path', async () => {
+    const { agents, uploaded, complete, prompt } = setup()
+    const a = await uploaded(themes, 'a.png', 'png!')
+    const b = await uploaded(themes, 'IMG_2.HEIC', 'heic')
+    await complete(a)
+    await complete(b)
+    const res = await prompt(themes, { text: 'What is in these?', attachments: [a, b, a] })
+    expect(res.status).toBe(204)
+    expect(agents.inputs().at(-1)).toEqual({
+      chat: themes,
+      text: [
+        'What is in these?',
+        '',
+        'Attached files (read each one with your tools):',
+        `- /home/dev/.local/share/the-bridge/uploads/${a}/a.png`,
+        `- /home/dev/.local/share/the-bridge/uploads/${b}/IMG_2.jpg`,
+      ].join('\n'),
+    })
+  })
+
+  it('sends files with no text', async () => {
+    const { agents, uploaded, complete, prompt } = setup()
+    const a = await uploaded(themes, 'a.pdf', 'pdf')
+    await complete(a)
+    expect((await prompt(themes, { text: '', attachments: [a] })).status).toBe(204)
+    expect(agents.inputs().at(-1)).toEqual({
+      chat: themes,
+      text: `Attached files (read each one with your tools):\n- /home/dev/.local/share/the-bridge/uploads/${a}/a.pdf`,
+    })
+  })
+
+  it('sends nothing for a file that is not complete, of another chat or unknown: 409 upload-conflict', async () => {
+    const { agents, uploaded, prompt } = setup()
+    const unfinished = await uploaded(themes, 'a.png', 'png!')
+    for (const attachments of [[unfinished], ['AAAAAAAAAAAAAAAAAAAAAA']]) {
+      const res = await prompt(themes, { text: 'Look.', attachments })
+      expect(res.status).toBe(409)
+      expect((await kindOf(res)).kind).toBe('upload-conflict')
+    }
+    expect(agents.inputs()).toEqual([])
+  })
+
+  it('answers files to a Codex chat 409 noAttachments, and sends nothing', async () => {
+    const { agents, prompt } = setup()
+    const res = await prompt('test-mac/drift-check', { text: 'Look.', attachments: ['AAAAAAAAAAAAAAAAAAAAAA'] })
+    expect(res.status).toBe(409)
+    expect(await kindOf(res)).toMatchObject({ kind: 'chat-not-ready', state: 'noAttachments' })
+    expect(agents.inputs()).toEqual([])
   })
 })

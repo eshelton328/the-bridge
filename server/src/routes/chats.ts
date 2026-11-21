@@ -4,7 +4,8 @@
 // after it opens as server-sent events, as /api/events does. Both read
 // only that chat's session. Transcript text goes only into a 200 body or
 // an event, never into a log line or an ErrorBody (d-115).
-// POST /:chat/prompt sends the owner's prompt to that chat, and POST
+// POST /:chat/prompt sends the owner's prompt to that chat, with the path
+// of each attached file below it, and POST
 // /:chat/stop stops its work (slice W1); each answers 204. Both take only
 // JSON, so a cross-site form cannot post. The prompt text goes to the
 // port only, never into a log line or an ErrorBody. POST /:chat/input/clear
@@ -29,10 +30,10 @@ import { bodyLimit } from 'hono/body-limit'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
-import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, PromptOutcome } from '../services/agentPort.ts'
-import { clearInput, readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
+import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome } from '../services/agentPort.ts'
+import { clearInput, readTranscript, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
-import { startUpload } from '../services/uploads.ts'
+import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
@@ -63,7 +64,7 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
-  const answer = (c: Context<AppEnv>, outcome: PromptOutcome | CancelOutcome | ClearOutcome) => {
+  const answer = (c: Context<AppEnv>, outcome: FilePromptOutcome | CancelOutcome | ClearOutcome) => {
     switch (outcome) {
       case 'sent':
       case 'cleared':
@@ -78,6 +79,12 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
         return errorJson(c, 'chat-not-ready', {
           state: 'inputNotEmpty',
           message: "the chat's input box holds text, so the prompt was not sent",
+        })
+      case 'noAttachments':
+        return errorJson(c, 'chat-not-ready', { state: 'noAttachments', message: 'this chat takes no file yet' })
+      case 'badAttachment':
+        return errorJson(c, 'upload-conflict', {
+          message: 'a file is not a complete upload of this chat, so the prompt was not sent',
         })
       case 'notWorking':
         return errorJson(c, 'chat-not-ready', { state: 'notWorking', message: 'the chat has no work to stop' })
@@ -107,8 +114,10 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       async (c) => {
         const id = chatOf(c)
         if (!id.success) return invalid(c)
-        const sent = await sendPrompt(agents, id.data, c.req.valid('json').text)
-        return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
+        const sent = await sendPromptWithFiles(agents, uploads, id.data, c.req.valid('json'))
+        if (!sent.ok)
+          return sent.error.from === 'agents' ? failed(c, sent.error.error) : storeFailed(c, log, sent.error.error)
+        return answer(c, sent.value)
       },
     )
     .post('/:chat/uploads', smallJson, jsonOnly, jsonBody(StartUploadRequest), async (c) => {
