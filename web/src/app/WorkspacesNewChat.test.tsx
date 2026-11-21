@@ -339,4 +339,54 @@ describe('New chat on the live page (W3)', () => {
     await expect.element(page.getByRole('heading', { name: 'slow-one' })).toBeVisible()
     await expect.poll(() => fakes.chats.prompts).toEqual([{ chat: 'mac-mini/new1', text: 'when ready' }])
   })
+
+  // AppShell takes a touch tap outside a field and outside `[data-keyboard-keep]` while the keyboard is up as a tap
+  // that only closes the keyboard, and swallows its click. Start chat sits on the keyboard with the first message
+  // focused (M11), so a finger's first tap there must start the chat (WebKit at 390 x 844: the click never reached
+  // React while the form's first message had the focus).
+  it('starts the chat on the first finger tap of Start chat with the keyboard up, on the phone', async () => {
+    const fakes = withChats()
+    const viewport = new FakeViewport()
+    replaceVisualViewport(viewport)
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await userEvent.fill(messageBox(), 'typed on the phone')
+    await expect.element(messageBox()).toHaveFocus()
+    viewport.move(phone[1] - 346)
+    const shell = document.querySelector<HTMLElement>('.app-shell__root')
+    await expect.poll(() => shell?.style.getPropertyValue('--app-shell-keyboard')).not.toBe('')
+    tap(startButton().element())
+    await expect.poll(() => fakes.list.starts).toHaveLength(1)
+    await expect.poll(() => fakes.chats.prompts).toEqual([{ chat: 'mac-mini/new1', text: 'typed on the phone' }])
+  })
 })
+
+// A stand-in for window.visualViewport that the test moves as iOS Safari does when its keyboard opens: the layout keeps
+// its height, and only the visual viewport shrinks.
+class FakeViewport extends EventTarget {
+  height = document.documentElement.clientHeight
+  width = document.documentElement.clientWidth
+  offsetTop = 0
+  offsetLeft = 0
+  scale = 1
+  move(height: number) {
+    this.height = height
+    this.dispatchEvent(new Event('resize'))
+  }
+}
+
+function replaceVisualViewport(value: FakeViewport) {
+  const own = Object.getOwnPropertyDescriptor(window, 'visualViewport')
+  Object.defineProperty(window, 'visualViewport', { configurable: true, value })
+  onTestFinished(() => {
+    if (own) Object.defineProperty(window, 'visualViewport', own)
+    else Reflect.deleteProperty(window, 'visualViewport')
+  })
+}
+
+/** A finger's tap: a touch press and release, then the click the browser sends after it. */
+function tap(el: Element) {
+  el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+  el.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+  el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }))
+}
