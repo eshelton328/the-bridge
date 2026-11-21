@@ -235,6 +235,20 @@ client of a socket or a file sits beside them.
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text
   is never returned or logged (`agentPortContract.ts`).
+- The Claude artifacts (R27, `claudeArtifacts.ts`) come from the
+  session files: an `Artifact` tool call with action `publish` and its
+  result. A result that is an error, or whose `toolUseResult.url` is not
+  an https claude.ai artifact link, is skipped. A Code Mode chat calls
+  the tool inside a script and writes no such record, so its artifacts
+  are not found. Each scan reads only the bytes written since the last
+  one, splits lines on the byte 0x0a, parses only a line that names
+  `Artifact` or a result it waits for, and stops at 1.5 s or 32 MiB (the
+  next scan goes on, and the scan says `partial`). Each scan reads at
+  least one chunk, a line not finished stays for the next scan, and one
+  scan runs at a time. A line over 8 MiB is skipped, and a file that
+  became shorter is read again. It reads only
+  when asked and logs nothing (`claudeArtifacts.test.ts`, from
+  made-up lines).
 - The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
   `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
   0600 files, under the folder beside the database. Each chunk goes to
