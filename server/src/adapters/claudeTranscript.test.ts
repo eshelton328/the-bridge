@@ -87,6 +87,52 @@ describe('Claude transcript', () => {
     expect(JSON.stringify(read.entries.slice(0, 3))).not.toMatch(/pasted_content|\/home\/dev/)
   })
 
+  it('shows a prompt sent while the chat worked, at its place, and no queued peer message or task report', async () => {
+    // The shape of a queued_command line that Claude Code 2.1 writes (an owner's prompt: origin "human", humanTurn);
+    // the text is an example.
+    const queued = (uuid: string, attachment: object) => ({
+      type: 'attachment',
+      uuid,
+      parentUuid: 'p0',
+      timestamp: '2026-11-21T08:00:00.000Z',
+      attachment: {
+        type: 'queued_command',
+        source_uuid: 's0',
+        delivery_id: 'd0',
+        commandMode: 'prompt',
+        timestamp: '2026-11-21T08:00:00.000Z',
+        ...attachment,
+      },
+    })
+    const uploads = '/home/dev/.local/share/the-bridge/uploads'
+    const path = file(
+      [
+        user('u1', 'Run the tests'),
+        assistant('a1', [text('Running.')]),
+        { type: 'queue-operation', operation: 'enqueue', content: 'Also check the lint' },
+        queued('q1', { prompt: 'Also check the lint', origin: { kind: 'human' }, humanTurn: true }),
+        queued('q2', {
+          prompt: withAttachments('See this screen', [`${uploads}/u-1/screen.png`]),
+          origin: { kind: 'human' },
+          humanTurn: true,
+        }),
+        queued('q3', { prompt: 'a peer message', origin: { kind: 'peer', from: 'uds:/tmp/x.sock' }, isMeta: true }),
+        queued('q4', { prompt: 'a task report', origin: { kind: 'task' }, runId: 'r1' }),
+        queued('q5', { prompt: 'a side chain prompt', origin: { kind: 'human' }, humanTurn: true }),
+        queued('q6', { prompt: 'not a human turn', origin: { kind: 'human' }, humanTurn: false }),
+        assistant('a2', [text('Lint is clean.')]),
+      ].map((l, i) => (i === 7 ? { ...l, isSidechain: true } : l)),
+    )
+    const read = await readClaudeTranscript(path, { ...options, uploads })
+    expect(read.entries).toEqual([
+      { type: 'user', id: 'u1', text: 'Run the tests', cut: false },
+      { type: 'assistant', id: 'a1:0', text: 'Running.', cut: false },
+      { type: 'user', id: 'q1', text: 'Also check the lint', cut: false },
+      { type: 'user', id: 'q2', text: 'See this screen', cut: false, files: ['screen.png'] },
+      { type: 'assistant', id: 'a2:0', text: 'Lint is clean.', cut: false },
+    ])
+  })
+
   it('keeps the indent of a first line in a paste, as a Markdown code block needs', async () => {
     const path = file([
       user('c1', '\n\n<pasted_content id="77">\n    pnpm build\n    pnpm test\n</pasted_content id="77">\n'),
