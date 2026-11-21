@@ -26,6 +26,7 @@ const logMessages = [
   'client error',
   'upload failed',
   'session folder not watched',
+  'prompt sent',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

@@ -712,6 +712,27 @@ describe('herdr agents: input to a chat', () => {
     }
   })
 
+  it('logs the time of each step of a send, with no prompt text, and checks the box first after 30 ms', async () => {
+    socket.set('agent.list', {
+      ...results['agent.list'],
+      agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+    })
+    const logger = memoryLogger()
+    const timed = createHerdrAgents({ socket: socket.path, machine, log: logger.log, claudeProjects: projects, home })
+    try {
+      expect(await timed.sendPrompt(chat, 'Deploy with marker-5150')).toEqual({ ok: true, value: 'sent' })
+      const [line] = logger.lines().filter((e) => e.msg === 'prompt sent')
+      expect(line).toMatchObject({ outcome: 'sent', checkReads: 1 })
+      for (const step of ['totalMs', 'locateMs', 'boxMs', 'promptMs', 'checkMs'])
+        expect(typeof line?.[step]).toBe('number')
+      // The box of the fake is empty at once, so the one check read comes after the first wait, not after 150 ms.
+      expect(Number(line?.checkMs)).toBeLessThan(150)
+      expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+    } finally {
+      socket.set('agent.list', undefined)
+    }
+  })
+
   it("gives herdr's error code without its message, which could quote the prompt", async () => {
     socket.set('agent.list', {
       ...results['agent.list'],
