@@ -1,0 +1,110 @@
+// Sends a Web Push to the owner (d-118) when a chat starts to wait for
+// them (needsYou) or ends its turn (working, then done). It holds one
+// subscription to the agents while at least one push subscription is
+// stored, so the owner hears of a chat with no page open; with none
+// stored, it holds none. No push goes while a page of the owner was
+// visible in the last 30 s. A push names the chat and the event only.
+import { type ChatId, type ChatStatus, maxPushName, type PushEvent, PushPayload } from '@bridge/contract'
+import type { Logger } from '../logger.ts'
+import type { AgentPort, AgentSubscription } from './agentPort.ts'
+import type { PushSeen, PushSender, PushStore } from './push.ts'
+
+export type PushNotifier = {
+  /** Reads the subscriptions again: opens the watch when there are some, closes it when there are none. */
+  refresh(): Promise<void>
+  close(): void
+}
+
+type Deps = {
+  readonly agents: AgentPort
+  readonly store: PushStore
+  readonly sender: PushSender
+  readonly seen: PushSeen
+  readonly log: Logger
+  /** The wait before the watch opens again after the agents stopped answering. */
+  readonly retryMs?: number
+}
+
+/** The event of a status change: needsYou when a chat starts to wait, done when a working chat ends its turn. */
+function eventOf(before: ChatStatus | undefined, now: ChatStatus): PushEvent | null {
+  if (now === 'needsYou' && before !== 'needsYou') return 'needsYou'
+  if (now === 'done' && before === 'working') return 'done'
+  return null
+}
+
+export function createPushNotifier({ agents, store, sender, seen, log, retryMs = 5_000 }: Deps): PushNotifier {
+  const last = new Map<ChatId, ChatStatus>()
+  let watch: AgentSubscription | undefined
+  let opening: Promise<void> | undefined
+  let retry: ReturnType<typeof setTimeout> | undefined
+  let closed = false
+
+  const notify = async (chat: ChatId, event: PushEvent) => {
+    if (seen.visible()) return
+    const [keys, subscriptions, list] = await Promise.all([
+      store.keys(),
+      store.subscriptions(),
+      agents.listWorkspaces(),
+    ])
+    if (!keys.ok || !subscriptions.ok) {
+      log.error('push store failed', {
+        code: keys.ok ? (subscriptions.ok ? '' : subscriptions.error.code) : keys.error.code,
+      })
+      return
+    }
+    const title = list.ok ? (list.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.title ?? '') : ''
+    const payload = PushPayload.parse({ chat, name: title.slice(0, maxPushName), event })
+    await Promise.all(
+      subscriptions.value.map(async (subscription) => {
+        const sent = await sender.send(subscription, payload, keys.value)
+        if (!sent.ok) log.warn('push failed', { event, code: sent.error.code })
+        else if (sent.value === 'gone') await store.remove(subscription.endpoint)
+      }),
+    )
+  }
+
+  const open = async () => {
+    // The statuses now, so the first change of each chat is known as a change.
+    const list = await agents.listWorkspaces()
+    if (list.ok) for (const chat of list.value.flatMap((w) => w.chats)) last.set(chat.id, chat.status)
+    watch = agents.subscribe(
+      (event) => {
+        if (event.type !== 'chatStatus') return
+        const before = last.get(event.chat)
+        last.set(event.chat, event.status)
+        const push = eventOf(before, event.status)
+        if (push !== null) void notify(event.chat, push)
+      },
+      (error) => {
+        watch = undefined
+        log.warn('push watch ended', { reason: error.reason })
+        if (!closed) retry = setTimeout(() => void refresh(), retryMs)
+      },
+    )
+  }
+
+  const refresh = async () => {
+    const subscriptions = await store.subscriptions()
+    const wanted = subscriptions.ok && subscriptions.value.length > 0 && !closed
+    if (wanted && watch === undefined) {
+      opening ??= open().finally(() => {
+        opening = undefined
+      })
+      await opening
+    }
+    if (!wanted) {
+      watch?.close()
+      watch = undefined
+    }
+  }
+
+  return {
+    refresh,
+    close: () => {
+      closed = true
+      clearTimeout(retry)
+      watch?.close()
+      watch = undefined
+    },
+  }
+}

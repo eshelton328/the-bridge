@@ -27,7 +27,14 @@ from the outside world.
 - `push.ts` is the port of the Web Push keys and subscriptions
   (d-118), the hosts a subscription may name, and `PushSeen`, when a
   page of the owner was last visible.
+- `pushNotifier.ts` sends a Web Push (d-118) to each stored
+  subscription when a chat's status changes to `needsYou`, or from
+  `working` to `done`, unless a page was seen in the last 30 s; a
+  subscription the push service no longer knows (404 or 410) is
+  dropped. It watches the agents only while a subscription is stored,
+  and opens the watch again 5 s after the agents stop answering
+  (`pushNotifier.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
-  all clients of `/api/events`, so with no client open no herdr stream
-  is open.
+  all clients of `/api/events`, so with no client open (and no push
+  subscription stored) no herdr stream is open.

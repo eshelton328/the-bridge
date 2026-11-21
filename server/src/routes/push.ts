@@ -15,7 +15,8 @@ import {
 } from '../services/push.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 
-export function pushRoutes(store: PushStore, seen: PushSeen, log: Logger) {
+/** `changed` runs after each save or remove of a subscription, so the sender watches the chats only while one is stored. */
+export function pushRoutes(store: PushStore, seen: PushSeen, log: Logger, changed: () => void = () => undefined) {
   const failed = (c: Context<AppEnv>, error: PushStoreError) => {
     log.error('push store failed', { requestId: c.get('requestId'), code: error.code })
     return errorJson(c, 'internal', { message: internalMessage })
@@ -44,11 +45,15 @@ export function pushRoutes(store: PushStore, seen: PushSeen, log: Logger) {
           issues: ['endpoint: too long as a URL'],
         })
       const saved = await store.save(written.data)
-      return saved.ok ? c.body(null, 204) : failed(c, saved.error)
+      if (!saved.ok) return failed(c, saved.error)
+      changed()
+      return c.body(null, 204)
     })
     .delete('/subscriptions', smallJson, jsonOnly, jsonBody(PushUnsubscribeRequest), async (c) => {
       const removed = await store.remove(canonicalEndpoint(c.req.valid('json').endpoint))
-      return removed.ok ? c.body(null, 204) : failed(c, removed.error)
+      if (!removed.ok) return failed(c, removed.error)
+      changed()
+      return c.body(null, 204)
     })
     .post('/seen', smallJson, jsonOnly, jsonBody(PushSeenRequest), (c) => {
       seen.seen()
