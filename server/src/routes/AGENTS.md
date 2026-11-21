@@ -48,7 +48,11 @@ Thin Hono sub-apps, one file for each area, named after the area
   empty JSON object and empties the box: 204, or 409 `inputNotEmpty`
   when text stays, `noCommands` for a Codex chat. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the
-  field and the rule (`chats.test.ts`).
+  field and the rule (`chats.test.ts`). A prompt with the page's
+  `sendId` keeps its result for 10 minutes, in memory and with no text
+  (`sendResults.ts`): `GET /api/chats/:chat/sends/:send` gives it (404
+  when none is kept), and a second prompt with that ID to that chat
+  types nothing: 409 `duplicateSend` (`chats.test.ts`).
 - `POST /api/chats/:chat/command` (slice W5) takes `{ command:
   'compact', instructions? }` (one line) or `{ command: 'clear' }` as
   JSON and types `/compact` or `/clear` into an idle Claude chat: 204,

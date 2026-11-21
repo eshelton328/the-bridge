@@ -10,6 +10,7 @@ import {
   maxPromptChars,
   TranscriptChangedEvent,
   ChatSkillsResponse,
+  SendResultResponse,
 } from '@bridge/contract'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
@@ -231,6 +232,33 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
     expect(res.status).toBe(204)
     expect(await res.text()).toBe('')
     expect(agents.inputs()).toEqual([{ chat: themes, text: secret }])
+    expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
+  })
+
+  it('keeps the result of a send with a send ID, refuses that ID again, and keeps no text', async () => {
+    const { agents, post, app, logger } = setup()
+    const sendId = 'b9a7c1e2-0d4f-4f5e-9a3b-5150c0ffee00'
+    const resultPath = (chat: string, send: string) =>
+      `/api/chats/${encodeURIComponent(chat)}/sends/${encodeURIComponent(send)}`
+    expect((await app.request(resultPath(themes, sendId), { headers: local })).status).toBe(404)
+    expect((await post(promptPath(themes), { text: secret, sendId })).status).toBe(204)
+    const read = await app.request(resultPath(themes, sendId), { headers: local })
+    expect(read.status).toBe(200)
+    const body = await read.text()
+    expect(SendResultResponse.parse(JSON.parse(body))).toEqual({ result: 'sent' })
+    expect(body).not.toContain('marker-5150')
+    // The page sends again after a lost answer: nothing is typed twice.
+    const again = await post(promptPath(themes), { text: secret, sendId })
+    expect(again.status).toBe(409)
+    const { error } = ErrorBody.parse(await again.json())
+    expect(error.kind === 'chat-not-ready' ? error.state : error.kind).toBe('duplicateSend')
+    expect(agents.inputs()).toEqual([{ chat: themes, text: secret }])
+    // A send to a chat that waits for the owner types nothing: notSent.
+    const waiting = 'b9a7c1e2-0d4f-4f5e-9a3b-5150c0ffee01'
+    agents.setStatus(ChatId.parse(themes), 'needsYou')
+    expect((await post(promptPath(themes), { text: secret, sendId: waiting })).status).toBe(409)
+    const refused = await app.request(resultPath(themes, waiting), { headers: local })
+    expect(SendResultResponse.parse(await refused.json())).toEqual({ result: 'notSent' })
     expect(JSON.stringify(logger.lines())).not.toContain('marker-5150')
   })
 

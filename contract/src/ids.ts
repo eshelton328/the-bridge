@@ -43,6 +43,15 @@ export const UploadId = z
   .brand<'UploadId'>()
 export type UploadId = z.infer<typeof UploadId>
 
+/**
+ * The page's own ID of one prompt send (`crypto.randomUUID()` fits), so it can read the send's result after a reload.
+ */
+export const SendId = z
+  .string()
+  .regex(/^[A-Za-z0-9_-]{8,64}$/)
+  .brand<'SendId'>()
+export type SendId = z.infer<typeof SendId>
+
 /** The machine ID and the local part of a workspace, chat, pane or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | PaneId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')

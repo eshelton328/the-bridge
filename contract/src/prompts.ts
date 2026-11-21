@@ -10,7 +10,7 @@
 // sends one Claude Code command to a Claude chat (slice W5): `/compact`,
 // with the owner's instructions if any, or `/clear`.
 import { z } from 'zod'
-import { UploadId } from './ids.ts'
+import { SendId, UploadId } from './ids.ts'
 
 /** The most characters in one prompt. */
 export const maxPromptChars = 32_768
@@ -27,12 +27,28 @@ export const SendPromptRequest = z
   .strictObject({
     text: z.string().max(maxPromptChars),
     attachments: z.array(UploadId).max(maxAttachments).optional(),
+    /** The page's ID of this send; a second prompt with the same ID to the same chat sends nothing (409 `duplicateSend`). */
+    sendId: SendId.optional(),
   })
   .refine((body) => body.text.trim() !== '' || (body.attachments?.length ?? 0) > 0, {
     message: 'the prompt has no text and no file',
     path: ['text'],
   })
 export type SendPromptRequest = z.infer<typeof SendPromptRequest>
+
+/**
+ * What became of a send, from `GET /api/chats/:chat/sends/:send`: `pending` while the server sends it, `sent`,
+ * `notSubmitted` (the chat did not take it and the server removed the text), `notSent` (refused before any text was
+ * typed, such as a box with text in it), or `unknown` (a herdr failure, after which the chat may hold the text). The
+ * server keeps each result for `sendResultMs`, in memory and with no text; then, or after a restart, the read is 404.
+ */
+export const SendResult = z.enum(['pending', 'sent', 'notSubmitted', 'notSent', 'unknown'])
+export type SendResult = z.infer<typeof SendResult>
+export const SendResultResponse = z.strictObject({ result: SendResult })
+export type SendResultResponse = z.infer<typeof SendResultResponse>
+
+/** How long the server keeps the result of a send. */
+export const sendResultMs = 10 * 60_000
 
 /** The body of a stop: an empty JSON object, so a stop is JSON as a prompt is. */
 export const StopChatRequest = z.strictObject({})

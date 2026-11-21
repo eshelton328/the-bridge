@@ -44,6 +44,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   a file, and goes to the chat and nowhere else. A command request is
   `compact` with at most one line of instructions, or `clear`; the
   instructions go to the chat as a prompt's text does (`prompts.test.ts`).
+  A prompt may carry the page's `sendId`; its `SendResult` (`pending`,
+  `sent`, `notSubmitted`, `notSent` or `unknown`) holds no text.
 - An upload request holds the file's name, size and type only (a strict
   object), never a path; the file goes up in chunks of the size the
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
