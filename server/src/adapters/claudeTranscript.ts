@@ -53,7 +53,8 @@ const QueuedLine = z.object({
   isSidechain: z.boolean().optional(),
   attachment: z.object({
     type: z.literal('queued_command'),
-    prompt: z.string(),
+    // Text, or text and image blocks when the owner pasted an image.
+    prompt: z.union([z.string(), z.array(z.unknown())]),
     commandMode: z.string().optional(),
     humanTurn: z.boolean().optional(),
     isMeta: z.boolean().optional(),
@@ -153,7 +154,16 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
       attachment.commandMode === 'prompt' &&
       attachment.humanTurn === true &&
       attachment.isMeta !== true
-    return isSidechain !== true && owners ? promptEntries(uuid, attachment.prompt, options) : []
+    if (isSidechain === true || !owners) return []
+    const { prompt } = attachment
+    const raw =
+      typeof prompt === 'string'
+        ? prompt
+        : prompt
+            .map((b) => Block.safeParse(b))
+            .flatMap((b) => (b.success && b.data.type === 'text' ? [b.data.text] : []))
+            .join('\n\n')
+    return promptEntries(uuid, raw, options)
   }
   const line = Line.safeParse(value)
   const { data } = line

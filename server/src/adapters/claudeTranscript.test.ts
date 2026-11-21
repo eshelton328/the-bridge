@@ -133,6 +133,27 @@ describe('Claude transcript', () => {
     ])
   })
 
+  it('shows the text of a queued prompt with a pasted image, which Claude Code stores as blocks', async () => {
+    const path = file([
+      {
+        type: 'attachment',
+        uuid: 'q1',
+        attachment: {
+          type: 'queued_command',
+          prompt: [
+            { type: 'text', text: 'Why is this red?' },
+            { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'iVBORw0KGgo=' } },
+          ],
+          commandMode: 'prompt',
+          humanTurn: true,
+          origin: { kind: 'human' },
+        },
+      },
+    ])
+    const read = await readClaudeTranscript(path, options)
+    expect(read.entries).toEqual([{ type: 'user', id: 'q1', text: 'Why is this red?', cut: false }])
+  })
+
   it('keeps the indent of a first line in a paste, as a Markdown code block needs', async () => {
     const path = file([
       user('c1', '\n\n<pasted_content id="77">\n    pnpm build\n    pnpm test\n</pasted_content id="77">\n'),
