@@ -224,7 +224,7 @@ export function ArtifactsScreen({
                     projectMenu={projectMenu}
                     side={
                       discussing && thread !== undefined ? (
-                        <DiscussionPanel {...thread} onClose={closeDiscussion} />
+                        <DiscussionPanel {...thread} artifactId={view.artifact.id} onClose={closeDiscussion} />
                       ) : undefined
                     }
                   />
