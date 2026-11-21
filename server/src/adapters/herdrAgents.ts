@@ -145,8 +145,10 @@ const AgentList = z.object({
   ),
 })
 type HerdrAgent = z.infer<typeof AgentList>['agents'][number]
-/** herdr's reply to `agent.wait`: the agent, as `agent.list` gives it. */
-const AgentInfo = z.object({ agent: AgentList.shape.agents.element })
+/** herdr's reply to `agent.wait`: the agent, as `agent.list` gives it, and whether it takes a prompt yet. */
+const AgentInfo = z.object({
+  agent: AgentList.shape.agents.element.extend({ interactive_ready: z.boolean().optional() }),
+})
 
 const PaneList = z.object({
   panes: z.array(
@@ -1101,7 +1103,9 @@ export function createHerdrAgents({
       const info = waited.ok ? AgentInfo.safeParse(waited.value) : undefined
       if (info?.success !== true) return ok({ pane: paneId, state: 'starting' })
       const status = statusOf(info.data.agent.agent_status)
-      const state = status === 'needsYou' ? 'needsYou' : status === 'idle' || status === 'done' ? 'ready' : 'starting'
+      // An idle agent whose launch herdr has not finished still refuses a prompt, so it is `starting`.
+      const takes = info.data.agent.interactive_ready === true && (status === 'idle' || status === 'done')
+      const state = status === 'needsYou' ? 'needsYou' : takes ? 'ready' : 'starting'
       const chat = sessionOf(info.data.agent) === undefined ? undefined : chatIdOf(info.data.agent, new Set())
       return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
     },

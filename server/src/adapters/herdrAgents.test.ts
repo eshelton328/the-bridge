@@ -1933,12 +1933,13 @@ describe('herdr agents: a new chat (slice W3)', () => {
     panes: results['pane.list'].panes.map((p) => ({ ...p, cwd: folders[p.pane_id] })),
   })
   const newPane = { pane_id: 'w17:p9', terminal_id: 'term_9' }
-  const waited = (status: string) => ({
+  const waited = (status: string, ready = true) => ({
     type: 'agent_info',
     agent: {
       agent: 'claude',
       agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-new' },
       agent_status: status,
+      interactive_ready: ready,
       cwd: repo,
       name: 'w3-test',
       pane_id: 'w17:p9',
@@ -2029,8 +2030,11 @@ describe('herdr agents: a new chat (slice W3)', () => {
     }
   })
 
-  it('says starting when the chat is not ready in time, and notFound for a chat or workspace it does not have', async () => {
+  it('says starting when the chat is not ready in time or takes no prompt yet, and notFound for a chat or workspace it does not have', async () => {
     const { socket, adapter } = await setup()
+    socket.set('agent.wait', waited('idle', false))
+    const tab: StartChatRequest['place'] = { in: 'tab', workspace: WorkspaceId.parse('test-mac/w17') }
+    expect(await adapter.startChat({ kind: 'claude', place: tab })).toMatchObject({ value: { state: 'starting' } })
     socket.failOnce('agent.wait', 'timeout', 'agent did not reach a settled state')
     const started = await adapter.startChat({
       kind: 'claude',
