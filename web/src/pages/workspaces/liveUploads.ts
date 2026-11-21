@@ -458,6 +458,14 @@ export function removeFile(chat: string, key: string) {
   pump()
 }
 
+/**
+ * Drops every file of `chat`, a chat that left the list for a new ID on its pane (W5 pane follow): each goes as Remove
+ * takes it, aborted and deleted on the server, as the server holds each upload for the chat that started it.
+ */
+export function dropFiles(chat: string) {
+  for (const u of uploads.filter((f) => f.chat === chat)) removeFile(chat, u.key)
+}
+
 /** Retry of the failed chip `key`: on from the failed chunk, or from the start after a conflict. */
 export function retryFile(chat: string, key: string) {
   const u = uploads.find((f) => f.chat === chat && f.key === key)

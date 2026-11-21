@@ -97,7 +97,8 @@ export function WorkspacesPage() {
   // Pane follow (W5): a chat whose ID changed on its pane since the last list takes the changes of its old ID, in this
   // render already, and in the store before the browser paints.
   const panes = useMemo(() => chatPanesOf(state.data), [state.data])
-  const changed = useMemo(() => withMovedChats(edits, paneMoves(seen, panes)), [edits, seen, panes])
+  const moves = useMemo(() => paneMoves(seen, panes), [seen, panes])
+  const changed = useMemo(() => withMovedChats(edits, moves), [edits, moves])
   useLayoutEffect(() => {
     followPanes(search.state, panes)
   }, [followPanes, search.state, panes])
@@ -115,6 +116,11 @@ export function WorkspacesPage() {
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   const files = useLiveUploads(import.meta.env.DEV && live)
+  // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
+  // upload for the chat that started it, so the new chat's send could not name them.
+  useEffect(() => {
+    for (const old of moves.keys()) files.drop(old)
+  }, [moves, files])
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
@@ -209,9 +215,7 @@ export function WorkspacesPage() {
               viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
                 // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
                 if (answer === true && request.command === 'clear')
-                  void import('./liveWorkspaces.ts').then((m) => {
-                    m.readAfterClear(liveChat)
-                  })
+                  void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
                 return answer
               }),
             )

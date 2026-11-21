@@ -105,7 +105,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   actions, the tablet's menu and the phone's sheet, on only while the
   chat is idle or done (the server refuses any other status, backend
   #317), none for a Codex chat or a shell. Each opens its page dialog
-  (`ui.chatDialog`, `blocks/ChatCommandDialog.tsx`): /compact with an
+  (`ui.chatDialog`, for the chat in `ui.commandFor`,
+  `blocks/ChatCommandDialog.tsx`): /compact with an
   optional one-line instructions field, /clear an `alertdialog` with Clear
   and Cancel. `liveSend.ts` posts `POST /api/chats/:chat/command` with the
   contract's `ChatCommandRequest`; a miss keeps the dialog with one line
@@ -120,12 +121,12 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw
   and moves the owner's ui changes from the old ID to the new one (open
   chat, phone view, saved panes and focus, names, menus) before the page
-  draws the new list. The draft and the file chips are not moved: the draft
-  was for the old context, and the server holds each upload for the old
-  chat.
+  draws the new list. The draft is not moved: it was for the old context.
+  The old chat's file chips are dropped (aborted and deleted, as Remove
+  does, `dropFiles`): the server holds each upload for the old chat.
   The server sends no event when herdr gives the chat its new ID, so after
-  a /clear it sent the page reads the list again a few times
-  (`readAfterClear`, `clearReadsMs`).
+  a /clear it sent the page reads the server's list, one read after
+  another, until the cleared chat has left it (`readAfterClear`).
   The route tests' list fake is `lib/fakeWorkspacesServer.ts`.
 - A live chat opens at its newest entry and stays there as entries come
   in, unless the reader scrolled up; back at the end, it follows again

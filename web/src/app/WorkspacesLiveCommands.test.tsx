@@ -406,7 +406,7 @@ describe('/clear and the pane follow (W5)', () => {
     await tapWorkspaces(phone)
     await tapChat('plan the slice')
     await userEvent.fill(chatRegion('plan the slice').getByRole('textbox'), secret)
-    // A file of the old chat: its upload belongs to that chat on the server, so it stays with it, as the draft does.
+    // A file of the old chat: the server holds its upload for that chat, so the follow drops it.
     const input = chatRegion('plan the slice').element().querySelector('input[type="file"]')
     if (!(input instanceof HTMLInputElement)) throw new Error('no file input')
     await userEvent.upload(input, [new File(['abc'], 'notes.pdf', { type: 'application/pdf' })])
@@ -424,6 +424,7 @@ describe('/clear and the pane follow (W5)', () => {
     await expect
       .element(chatRegion('plan the slice').getByRole('group', { name: 'Attached files' }))
       .not.toBeInTheDocument()
+    await expect.poll(() => chats.uploads.calls.some((c) => c.method === 'DELETE')).toBe(true)
     await expect.element(page.getByText(/^Transcript not live/)).not.toBeInTheDocument()
     // The new chat takes a send.
     await userEvent.fill(chatRegion('plan the slice').getByRole('textbox'), 'next')
