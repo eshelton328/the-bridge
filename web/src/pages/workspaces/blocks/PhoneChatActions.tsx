@@ -72,6 +72,8 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   // W2c: the phone has no split either (LIBRARY_GAPS.md: Split and ratio).
   splitRight: <ArrowRightIcon size="20" />,
   splitDown: <ArrowDownIcon size="20" />,
+  // W2d: nor Move to tab (LIBRARY_GAPS.md: Move to tab).
+  moveTab: <MoveIcon size="20" />,
 }
 const toneOf: Partial<Record<PaneAction['value'], keyof typeof tones>> = {
   folders: 'accent',

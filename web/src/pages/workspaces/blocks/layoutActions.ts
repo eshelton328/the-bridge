@@ -1,17 +1,17 @@
 // The layout writes of a live chat's pane (slice W2): focus, zoom, swap,
-// close and split, which the server sends to herdr (`POST
-// /api/chats/:chat/focus`, `/zoom`, `/swap`, `/close`, `/split`), and the
+// close, split and move to another tab, which the server sends to herdr (`POST
+// /api/chats/:chat/focus`, `/zoom`, `/swap`, `/close`, `/split`, `/move`), and the
 // ratio of a split (`POST /api/workspaces/:workspace/layout/ratio`). Only a chat in a herdr tab the page read
 // (`data.liveTabs`) has them; a fixture's pane and a workspace whose layout
 // read missed have none, so no control shows that could not work. No Figma
-// frame draws Zoom pane, Swap with…, Split right, Split down or the close
-// dialog (deviations in D01 and D13). The page never moves a pane itself: it waits for the
+// frame draws Zoom pane, Swap with…, Split right, Split down, Move to tab… or
+// the close dialog (deviations in D01 and D13). The page never moves a pane itself: it waits for the
 // server's `layout.changed` and reads the layout again.
-import type { SetSplitRatioRequest, SplitDirection } from '@bridge/contract'
+import type { MoveChatRequest, SetSplitRatioRequest, SplitDirection } from '@bridge/contract'
 import type { LiveTab, PaneAction, WorkspacesData } from '../types.ts'
 
 /** A layout write the page sends for a chat, or for a split of a workspace's tab (`ratio`). */
-export type LayoutWriteAction = 'focus' | 'zoom' | 'swap' | 'close' | 'split' | 'ratio'
+export type LayoutWriteAction = 'focus' | 'zoom' | 'swap' | 'close' | 'split' | 'ratio' | 'move'
 
 /** The key of a workspace's ratio write in `LayoutWrites.pending`: it differs from every chat ID. */
 export const ratioKey = (workspace: string) => `ratio:${workspace}`
@@ -36,6 +36,16 @@ export type LayoutWrites = {
   /** Puts a new shell pane beside the chat's (`row`) or below it (`column`); herdr does not focus it. */
   readonly split: (chat: string, direction: SplitDirection) => void
   /**
+   * Moves the chat's pane to another tab of its workspace (W2d), beside `write.beside`'s pane (a local chat ID) or the
+   * tab's focused pane. With `follow` (the chat is the open pane), the workbench shows that tab once the layout read
+   * after the move has the chat there.
+   */
+  readonly move: (
+    chat: string,
+    write: Omit<MoveChatRequest, 'beside'> & { readonly beside?: string | undefined },
+    follow: boolean,
+  ) => void
+  /**
    * Sets a split's ratio in a tab of `workspace` (the page's ID); a newer ratio of the workspace takes the place of one
    * that waits. `false` when it sent nothing.
    */
@@ -54,10 +64,13 @@ export function tabOf(
   return undefined
 }
 
-/** Herdr focuses `chat` now: its tab is the active one and its pane the focused one. */
+/**
+ * Herdr focuses `chat` now: its tab is herdr's active one (not only the tab the page shows, `herdrActive`) and its
+ * pane the focused one.
+ */
 export function herdrFocuses(data: Pick<WorkspacesData, 'liveTabs'>, chat: string): boolean {
   const found = tabOf(data, chat)
-  return found !== undefined && found.tab.active && found.tab.focused === chat
+  return found !== undefined && (found.tab.herdrActive ?? found.tab.active) && found.tab.focused === chat
 }
 
 /** The active tab of `workspace` when herdr zooms it, else none. */
@@ -71,13 +84,38 @@ export function zoomedTab(data: Pick<WorkspacesData, 'liveTabs'>, workspace: str
 export const swapTargets = (data: Pick<WorkspacesData, 'liveTabs'>, chat: string): string[] =>
   tabOf(data, chat)?.tab.chats.filter((c) => c !== chat) ?? []
 
+/** A tab Move to tab… lists: its server ID, its name, and whether herdr zooms it (a move there is refused). */
+export type MoveTarget = { readonly id: string; readonly label: string; readonly zoomed: boolean }
+
+/**
+ * The other tabs of `chat`'s workspace, which Move to tab… lists, in the workspace's order, each by its herdr label
+ * ("Tab 2" for a tab with none): none for a chat with no live tab or in a workspace of one tab.
+ */
+export function moveTargets(data: Pick<WorkspacesData, 'liveTabs'>, chat: string): MoveTarget[] {
+  const found = tabOf(data, chat)
+  if (found === undefined) return []
+  const tabs = data.liveTabs?.[found.workspace] ?? []
+  return tabs.flatMap((tab, at) =>
+    tab === found.tab || tab.id === undefined
+      ? []
+      : [
+          {
+            id: tab.id,
+            label: tab.label === undefined || tab.label === '' ? `Tab ${String(at + 1)}` : tab.label,
+            zoomed: tab.zoomed,
+          },
+        ],
+  )
+}
+
 /** The label of Close for a live chat: it asks first, as herdr's close ends the chat. */
 const closeLabel = 'Close pane…'
 
 /**
  * `actions` with a live chat's layout actions (W2). In the workbench (`pane`): Focus in terminal while herdr focuses
  * another pane, Zoom pane or Unzoom pane when its tab has more than one pane, Swap with… when the tab holds another
- * chat, Split right and Split down (W2c, off while herdr zooms the tab), then Close pane…, in the place of the sample's Close pane. The chat beside the desktop's sidebar (`desktopChat`):
+ * chat, Move to tab… when its workspace has another tab (W2d), Split right and Split down (W2c, off while herdr zooms
+ * the tab), then Close pane…, in the place of the sample's Close pane. The chat beside the desktop's sidebar (`desktopChat`):
  * Focus in terminal, then Close pane… last. The tablet's menu and the phone's sheet (`chat`): Close pane… last, as they
  * never move herdr's focus. Focus in terminal is the keyboard's way to what a tap on the pane's header does. Any other
  * pane keeps `actions` as they are.
@@ -102,9 +140,10 @@ export function withLayoutActions(
       ? [zoomed ? { value: 'unzoom', label: 'Unzoom pane' } : { value: 'zoom', label: 'Zoom pane' }]
       : []
   const swap: PaneAction[] = tab.chats.length > 1 ? [{ value: 'swap', label: 'Swap with…' }] : []
+  const move: PaneAction[] = moveTargets(data, chat).length > 0 ? [{ value: 'moveTab', label: 'Move to tab…' }] : []
   const split: PaneAction[] = [
     { value: 'splitRight', label: 'Split right', ...(tab.zoomed ? { disabled: true } : {}) },
     { value: 'splitDown', label: 'Split down', ...(tab.zoomed ? { disabled: true } : {}) },
   ]
-  return [...rest, ...focus, ...zoom, ...swap, ...split, close]
+  return [...rest, ...focus, ...zoom, ...swap, ...move, ...split, close]
 }

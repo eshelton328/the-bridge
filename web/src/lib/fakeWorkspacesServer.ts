@@ -36,6 +36,16 @@
 // `POST /api/workspaces/:workspace/layout/ratio` sets the ratio of the split
 // at `path` of the tab (204, `layout.changed`), or answers 404 for a tab of
 // another workspace or a path with no split.
+//
+// W2d (backend #337): each tab keeps its ID and label (`tab N`) for its life.
+// `POST /api/chats/:chat/move` takes `{ tab, direction, beside? }`: the
+// `beside` chat's pane of that tab, else its focused one, splits half and
+// half and the moved pane takes the second part; a tab whose last pane moved
+// out closes, and the first tab left is the active one. It answers 204 and
+// sends `layout.changed` (and `workspaces.changed` when a tab closed). The
+// chat's own tab is 409 sameTab, a zoomed tab 409 zoomedTab, and an unknown
+// chat, a tab of another workspace or a `beside` chat of another tab 404.
+// `zoomTab` zooms a tab as herdr would from the terminal.
 import {
   ChatId,
   type ChatSummary,
@@ -45,6 +55,7 @@ import {
   chatsOf,
   LayoutChangedEvent,
   type LayoutNode,
+  MoveChatRequest,
   SetSplitRatioRequest,
   SplitChatRequest,
   SwapChatsRequest,
@@ -56,10 +67,13 @@ import {
 import { errorAnswer, type FakeTranscriptServer } from './fakeTranscriptServer.ts'
 
 /** A layout write the fake takes. */
-type Write = 'focus' | 'zoom' | 'swap' | 'close' | 'split' | 'ratio'
+type Write = 'focus' | 'zoom' | 'swap' | 'close' | 'split' | 'ratio' | 'move'
 
-/** One herdr tab of a workspace: its split tree (none with no pane), the focused chat, and whether it is zoomed. */
-type Tab = { root: LayoutNode | undefined; focused: string | undefined; zoomed: boolean }
+/**
+ * One herdr tab of a workspace: its ID and label, its split tree (none with no pane: the tab closed), the focused chat,
+ * and whether it is zoomed.
+ */
+type Tab = { id: string; label: string; root: LayoutNode | undefined; focused: string | undefined; zoomed: boolean }
 
 const leaf = (chat: ChatId): LayoutNode => ({ kind: 'pane', chat })
 
@@ -89,6 +103,7 @@ const writeSchemas = {
   swap: SwapChatsRequest,
   close: CloseChatRequest,
   split: SplitChatRequest,
+  move: MoveChatRequest,
 } as const
 
 const bodyOf = (init: RequestInit | undefined): unknown => {
@@ -133,19 +148,24 @@ export function fakeWorkspacesServer(
   /** An answer in place of every write's, while set. */
   let writeAnswer: (() => Response) | undefined
 
+  /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
+  const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
+
   /** The tabs of `workspace` now: its chats that left the list leave them, and a new chat joins the first. */
   const tabsOf = (workspace: string): Tab[] => {
     const listed = (response.workspaces.find((w) => w.id === workspace)?.chats ?? []).map((c) => c.id)
+    const named = (at: number) => ({ id: tabId(workspace, at), label: `tab ${String(at + 1)}` })
     const tabs =
       tabsBy.get(workspace) ??
-      roots[workspace]?.map((root) => ({ root, focused: undefined, zoomed: false })) ??
-      (firstTabs[workspace] ?? [listed]).map((chats) => ({
+      roots[workspace]?.map((root, at) => ({ ...named(at), root, focused: undefined, zoomed: false })) ??
+      (firstTabs[workspace] ?? [listed]).map((chats, at) => ({
+        ...named(at),
         root: rowOf(chats.map((c) => ChatId.parse(c))),
         focused: undefined,
         zoomed: false,
       }))
     for (const tab of tabs) tab.root = tab.root && mapPanes(tab.root, (c) => (listed.includes(c) ? leaf(c) : undefined))
-    const first = tabs[0]
+    const first = tabs.find((t) => t.root !== undefined) ?? tabs[0]
     if (first !== undefined)
       for (const c of listed)
         if (!tabs.some((t) => chatsIn(t).includes(c)))
@@ -156,9 +176,6 @@ export function fakeWorkspacesServer(
     tabsBy.set(workspace, tabs)
     return tabs
   }
-
-  /** The ID of the tab at `at` of `workspace`, counting only the tabs with a pane. */
-  const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
 
   const layoutOf = (workspace: string) => {
     const summaries = response.workspaces.find((w) => w.id === workspace)?.chats ?? []
@@ -172,8 +189,8 @@ export function fakeWorkspacesServer(
         const chats = chatsOf(root)
         const focusedChat = chats.find((c) => c === tab.focused) ?? chats[0]
         return {
-          id: tabId(workspace, at),
-          label: `tab ${String(at + 1)}`,
+          id: tab.id,
+          label: tab.label,
           active: at === 0,
           root,
           focusedChat,
@@ -332,6 +349,27 @@ export function fakeWorkspacesServer(
       transcripts.gone(chat)
       closed = true
     }
+    if (action === 'move') {
+      const { tab: to, direction, beside } = MoveChatRequest.parse(body)
+      const target = tabsOf(workspace).find((t) => t.id === to && t.root !== undefined)
+      if (target === undefined) return gone()
+      if (target === tab) return notReady('sameTab')
+      if (target.zoomed) return notReady('zoomedTab')
+      const targetChats = chatsIn(target)
+      if (beside !== undefined && !targetChats.includes(beside)) return gone()
+      const at = beside ?? targetChats.find((c) => c === target.focused) ?? targetChats[0]
+      tab.root = tab.root && mapPanes(tab.root, (c) => (c === chat ? undefined : leaf(c)))
+      if (tab.focused === chat) tab.focused = undefined
+      target.root =
+        target.root &&
+        mapPanes(target.root, (c) =>
+          c === at
+            ? { kind: 'split', direction, ratio: 0.5, first: leaf(c), second: leaf(ChatId.parse(chat)) }
+            : leaf(c),
+        )
+      // A tab whose last pane moved out closes (herdr), and the workspace's list changes.
+      closed = tab.root === undefined
+    }
     if (!quietWrites) {
       layoutChanged(workspace)
       if (closed || split) changed()
@@ -361,7 +399,7 @@ export function fakeWorkspacesServer(
         404,
       )
     const tabs = tabsOf(workspace).filter((t) => t.root !== undefined)
-    const tab = tabs.find((_, at) => tabId(workspace, at) === parsed.data.tab)
+    const tab = tabs.find((t) => t.id === parsed.data.tab)
     if (tab?.root === undefined) return gone()
     const set = (node: LayoutNode, path: readonly ('first' | 'second')[]): LayoutNode | undefined => {
       if (node.kind === 'pane') return undefined
@@ -419,6 +457,13 @@ export function fakeWorkspacesServer(
     answerWrites: (answer: (() => Response) | undefined) => {
       writeAnswer = answer
     },
+    /** Zooms the tab `tab` (its ID) of `workspace`, as herdr's zoom from the terminal, and sends `layout.changed`. */
+    zoomTab: (workspace: string, tab: string) => {
+      const found = tabsOf(workspace).find((t) => t.id === tab)
+      if (found === undefined) return
+      found.zoomed = true
+      layoutChanged(workspace)
+    },
     /** Sends `layout.changed` for `workspace`, as herdr's own change of a layout. */
     layoutChanged,
     /** Sends `workspaces.changed`, as herdr's own change of the list. */
@@ -440,10 +485,17 @@ export function fakeWorkspacesServer(
       if (path === '/api/events') return events(init?.signal)
       const ratioPath = /^\/api\/workspaces\/([^/]+)\/layout\/ratio$/.exec(path)
       if (ratioPath !== null && init?.method === 'POST') return ratio(decodeURIComponent(ratioPath[1] ?? ''), init)
-      const posted = /^\/api\/chats\/([^/]+)\/(focus|zoom|swap|close|split)$/.exec(path)
+      const posted = /^\/api\/chats\/([^/]+)\/(focus|zoom|swap|close|split|move)$/.exec(path)
       if (posted !== null && init?.method === 'POST') {
         const action = posted[2]
-        if (action === 'focus' || action === 'zoom' || action === 'swap' || action === 'close' || action === 'split')
+        if (
+          action === 'focus' ||
+          action === 'zoom' ||
+          action === 'swap' ||
+          action === 'close' ||
+          action === 'split' ||
+          action === 'move'
+        )
           return write(decodeURIComponent(posted[1] ?? ''), action, init)
       }
       return undefined

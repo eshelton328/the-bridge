@@ -1,18 +1,20 @@
-// A live chat's layout writes (slice W2, backend #333 and #334): `POST
+// A live chat's layout writes (slice W2, backend #333, #334 and #337): `POST
 // /api/chats/:chat/focus` with `{}`, `/zoom` with `{ zoomed }`, `/swap` with
-// `{ with: <chat ID> }` and `/close` with `{ confirm: <chat ID> }`, each
-// answering 204 with no body; `/split` with `{ direction }`, answering 201
+// `{ with: <chat ID> }`, `/close` with `{ confirm: <chat ID> }` and `/move`
+// with `{ tab, direction, beside? }`, each answering 204 with no body; `/split` with `{ direction }`, answering 201
 // with the new shell's chat ID, which the page does not need; and `POST
 // /api/workspaces/:workspace/layout/ratio` with `{ tab, path, ratio }`,
 // answering 204. No answer carries a layout: the server's list
 // stream sends `layout.changed` for the workspace (and `workspaces.changed`
-// after a close), and the page reads the layout again on it
+// after a close, and after a move that closed a tab), and the page reads the layout again on it
 // (liveWorkspaces.ts). The page never moves a pane before that.
 //
 // What a miss means to the page:
 // - 409 `chat-not-ready` `singlePane` (a zoom of a tab's only pane) and
-//   `otherTab` (a swap with a chat of another tab): the page's view was
-//   stale, so it reads the layout again, quietly (`stale`).
+//   `otherTab` (a swap with a chat of another tab), and `sameTab` (a move to
+//   the chat's own tab): the page's view was stale, so it reads the layout
+//   again, quietly (`stale`). `zoomedTab` (a move to a tab herdr zooms) reads
+//   it again too, with the line "Not moved — that tab is zoomed".
 // - 404: the chat (or a swap's other chat) is gone, or a ratio's tab or
 //   split; the page reads the layout again (`gone`).
 // - 409 `working` (a close of a chat that works, or whose state herdr cannot
@@ -28,6 +30,7 @@ import {
   CloseChatRequest,
   ErrorBody,
   FocusChatRequest,
+  MoveChatRequest,
   SetSplitRatioRequest,
   type SplitDirection,
   SplitChatRequest,
@@ -39,12 +42,12 @@ import { api } from '../../lib/api.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
 /** A write the page sends; `unzoom` is a zoom with `zoomed: false`. */
-type LayoutWrite = 'focus' | 'zoom' | 'unzoom' | 'swap' | 'close' | 'split' | 'ratio'
+type LayoutWrite = 'focus' | 'zoom' | 'unzoom' | 'swap' | 'close' | 'split' | 'ratio' | 'move'
 
 /** What the page does after a write answered. */
 export type WriteAnswer =
   | { readonly kind: 'done' }
-  | { readonly kind: 'stale' }
+  | { readonly kind: 'stale'; readonly line?: string }
   | { readonly kind: 'gone' }
   | { readonly kind: 'working' }
   | { readonly kind: 'needsYou' }
@@ -69,6 +72,7 @@ const lead: Record<LayoutWrite, string> = {
   close: 'Not closed',
   split: 'Not split',
   ratio: 'Not resized',
+  move: 'Not moved',
 }
 
 const missLine = (action: LayoutWrite, text: string): WriteAnswer => ({
@@ -93,7 +97,9 @@ async function missOf(action: LayoutWrite, res: Response): Promise<WriteAnswer> 
   const error = parsed.data.error
   switch (error.kind) {
     case 'chat-not-ready':
-      if (error.state === 'singlePane' || error.state === 'otherTab') return { kind: 'stale' }
+      if (error.state === 'singlePane' || error.state === 'otherTab' || error.state === 'sameTab')
+        return { kind: 'stale' }
+      if (error.state === 'zoomedTab') return { kind: 'stale', line: `${lead[action]} — that tab is zoomed` }
       if (error.state === 'working') return { kind: 'working' }
       if (error.state === 'needsYou') return { kind: 'needsYou' }
       return reported(action, `${error.kind} ${error.state}`, res.status)
@@ -173,6 +179,18 @@ export function splitChat(chat: string, direction: SplitDirection): Promise<Writ
   return post('split', (signal) =>
     api.api.chats[':chat'].split.$post({ param: param(chat), json }, { init: { signal } }),
   )
+}
+
+/**
+ * Moves the pane of `chat` (its server ID) to the tab `body.tab` of its workspace, beside the `beside` chat's pane or
+ * the tab's focused pane; its chat ID and terminal stay.
+ */
+export function moveChat(
+  chat: string,
+  body: { readonly tab: string; readonly direction: SplitDirection; readonly beside?: string },
+): Promise<WriteAnswer> {
+  const json = MoveChatRequest.parse(body)
+  return post('move', (signal) => api.api.chats[':chat'].move.$post({ param: param(chat), json }, { init: { signal } }))
 }
 
 /** Gives the split at `path` of tab `tab` of `workspace` (server IDs) the share `ratio`. */

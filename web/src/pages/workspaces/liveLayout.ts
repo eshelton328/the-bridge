@@ -168,13 +168,27 @@ function drawnChats(order: readonly ChatId[], focused: ChatId): ChatId[] {
  */
 export function layoutOfTab(tabs: readonly TabLayout[]): WorkspaceLayout {
   const tab = tabs.find((t) => t.active) ?? tabs[0]
-  if (tab === undefined) return { panes: [] }
-  const kept = new Set(drawnChats(chatsOf(tab.root), tab.focusedChat))
-  const tree = prune(tab.root, kept)
+  return tab === undefined ? { panes: [] } : layoutOfTree(tab.root, tab.focusedChat)
+}
+
+/**
+ * The page's layout of a tab that the workbench follows a moved chat to (W2d, `useLayoutWrites.ts`): its tree drawn as
+ * the active tab's is, with `chat` (a local chat ID) as the focused pane, so the focused-pane rule draws it. None when
+ * the tab has no tree or does not hold the chat.
+ */
+export function layoutOfLiveTab(tab: LiveTab, chat: string): WorkspaceLayout | undefined {
+  const focused = tab.root === undefined ? undefined : chatsOf(tab.root).find((id) => splitId(id).local === chat)
+  return tab.root === undefined || focused === undefined ? undefined : layoutOfTree(tab.root, focused)
+}
+
+/** The page's layout of the split tree `root`, with `focusedChat` focused. */
+function layoutOfTree(root: LayoutNode, focusedChat: ChatId): WorkspaceLayout {
+  const kept = new Set(drawnChats(chatsOf(root), focusedChat))
+  const tree = prune(root, kept)
   if (tree === undefined) return { panes: [] }
-  const placed = place(tree, tab.root)
+  const placed = place(tree, root)
   const panes = placed.panes.map((id) => splitId(id).local)
-  const focused = splitId(tab.focusedChat).local
+  const focused = splitId(focusedChat).local
   return {
     panes,
     ...(placed.split === undefined ? {} : { split: placed.split }),
@@ -184,13 +198,14 @@ export function layoutOfTab(tabs: readonly TabLayout[]): WorkspaceLayout {
 }
 
 /**
- * Each of the workspace's tabs as the layout writes see it (slice W2): its ID and split tree, its panes' chats in tree
+ * Each of the workspace's tabs as the layout writes see it (slice W2): its ID, herdr label and split tree, its panes' chats in tree
  * order, by local chat ID, the focused chat and whether herdr zooms it. The page draws only the active tab, and only its focused pane while it
  * is zoomed (`blocks/workspaceLayout.ts`, `shownView`).
  */
 export const liveTabsOf = (tabs: readonly TabLayout[]): LiveTab[] =>
   tabs.map((tab) => ({
     id: tab.id,
+    label: tab.label,
     root: tab.root,
     active: tab.active,
     chats: chatsOf(tab.root).map((id) => splitId(id).local),

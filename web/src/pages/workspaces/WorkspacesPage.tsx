@@ -23,8 +23,9 @@
 // A live Claude chat's /compact and /clear go to the server from their dialog (liveSend.ts, W5). When a live chat's ID
 // changes on its pane (/clear, from the page or the terminal), the owner's changes move to the new ID before the page
 // draws the new list (paneFollow.ts): the open chat stays open, now the new one, with an empty composer.
-// A live chat's focus, zoom, swap and close go to the server (useLayoutWrites.ts, W2), and the page waits for the
-// layout read after `layout.changed` to move a pane.
+// A live chat's focus, zoom, swap, close, split and move go to the server (useLayoutWrites.ts, W2), and the page waits
+// for the layout read after `layout.changed` to move a pane. A move of the open pane to another tab shows that tab
+// once the layout read has the chat there (W2d, `shownTabs.ts`).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -33,10 +34,12 @@ import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
+import { followTab, withShownTabs } from './shownTabs.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
+import type { WorkspacesUi } from './types.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
 import { useLivePending } from './useLivePending.ts'
@@ -117,13 +120,29 @@ export function WorkspacesPage() {
   // The ui now, also for a change that comes after a later render: a send that ends after the owner opened another
   // chat clears its draft, and must keep the layouts and focus he sees then, not the ones of the render that sent it.
   const uiRef = useRef(ui)
+  const loadedRef = useRef(state.ui.layouts)
   useLayoutEffect(() => {
     uiRef.current = ui
+    loadedRef.current = state.ui.layouts
   })
-  const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one replaces
+  // only what he changed before it came.
+  const changeUi = (change: Partial<WorkspacesUi>) => {
+    const now = uiRef.current
+    setUi(search.state, {
+      ...(now.layouts === undefined ? {} : { layouts: now.layouts, focusedPane: now.focusedPane }),
+      ...change,
+      layoutsSeen: layoutsSeenOf(loadedRef.current),
+    })
+  }
+  const { data: liveData, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
+  // A tab the workbench follows a moved chat to (W2d) shows in place of herdr's active tab, drawn from each layout read.
+  const { data, ui: shownUi } = useMemo(() => withShownTabs(liveData, ui), [liveData, ui])
   const files = useLiveUploads(import.meta.env.DEV && live)
   const pendings = useLivePending(import.meta.env.DEV && live)
-  const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data)
+  const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
+    changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
+  })
   // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
   // upload for the chat that started it, so the new chat's send could not name them.
   // Its pending send goes as its pane stops reading its transcript (livePending.ts).
@@ -153,20 +172,11 @@ export function WorkspacesPage() {
   return (
     <WorkspacesScreen
       data={data}
-      ui={ui}
+      ui={shownUi}
       viewport="desktop"
       drafts={drafts}
       layoutWrites={layoutWrites}
-      onUiChange={(change) => {
-        // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
-        // replaces only what he changed before it came.
-        const now = uiRef.current
-        setUi(search.state, {
-          ...(now.layouts === undefined ? {} : { layouts: now.layouts, focusedPane: now.focusedPane }),
-          ...change,
-          layoutsSeen: layoutsSeenOf(state.ui.layouts),
-        })
-      }}
+      onUiChange={changeUi}
       onRetry={() => void router.invalidate()}
       transcripts={transcripts}
       onCopy={copyReply}
