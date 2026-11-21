@@ -347,6 +347,57 @@ describe('herdr agents: input to a chat', () => {
     expect(sentTo('agent.send_keys')).toBe(keys)
   })
 
+  describe('a Claude Code command', () => {
+    const withStatus = (status: string) => {
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: status } : a)),
+      })
+    }
+    const prompts = () =>
+      socket
+        .requests()
+        .filter((r) => r.method === 'agent.prompt')
+        .map((r) => r.params)
+
+    it('types /compact with its instructions on one line, and /clear, into an idle Claude chat', async () => {
+      withStatus('idle')
+      try {
+        const compact = { command: 'compact', instructions: '  keep the plan  ' } as const
+        expect(await port().sendCommand(chat, compact)).toEqual({ ok: true, value: 'sent' })
+        expect(prompts().at(-1)).toEqual({ target: 'w17:p1', text: '/compact keep the plan' })
+        expect(await port().sendCommand(chat, { command: 'compact' })).toEqual({ ok: true, value: 'sent' })
+        expect(prompts().at(-1)).toEqual({ target: 'w17:p1', text: '/compact' })
+        expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'sent' })
+        expect(prompts().at(-1)).toEqual({ target: 'w17:p1', text: '/clear' })
+      } finally {
+        socket.set('agent.list', undefined)
+      }
+    })
+
+    it('types nothing into a chat that works, waits for the owner, is a Codex chat or holds text', async () => {
+      const before = prompts().length
+      // The recorded list gives bridge-coord herdr's "blocked".
+      expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'needsYou' })
+      const codex = ChatId.parse('test-mac/term_2')
+      expect(await port().sendCommand(codex, { command: 'clear' })).toEqual({ ok: true, value: 'noCommands' })
+      withStatus('working')
+      try {
+        expect(await port().sendCommand(chat, { command: 'compact' })).toEqual({ ok: true, value: 'working' })
+        // A state herdr does not name could be work, so it gets no command either.
+        withStatus('thinking-hard')
+        expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'working' })
+        withStatus('idle')
+        socket.set('pane.read', paneRead('w17:p1', claudeScreen('half a thought')))
+        expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'inputNotEmpty' })
+      } finally {
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+      }
+      expect(prompts().length).toBe(before)
+    })
+  })
+
   it('sends no prompt to a chat that waits for the owner, and none when herdr says it is blocked', async () => {
     const before = sentTo('agent.prompt')
     // The recorded list gives bridge-coord herdr's "blocked".

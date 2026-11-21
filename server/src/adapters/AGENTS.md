@@ -73,6 +73,11 @@ client of a socket or a file sits beside them.
   match to the prompt (a box of more lines than it joins) or cannot
   remove is `inputNotEmpty`, so the page offers the input clear. A
   prompt that a working chat queues leaves the box, so it is `sent`.
+- A command (`/compact` with its instructions on one line, or
+  `/clear`) goes to an idle Claude chat only, as a prompt does, with
+  the same box checks; a chat that is not idle or done (working, or a
+  state herdr does not name) gets `working` and a Codex chat
+  `noCommands`, with nothing typed (`herdrAgents.test.ts`).
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text
