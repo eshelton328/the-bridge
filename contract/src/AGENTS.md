@@ -64,5 +64,12 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `toJSON()` (a strict object, an https endpoint, base64url keys); a
   push payload holds the chat ID, its name and the event (`needsYou`
   or `done`), never message text (`push.test.ts`).
+- The Artifacts library (R26, R27, `artifacts.ts`): an artifact is
+  named by its `ArtifactId` (16 hex characters of its link's sha256),
+  so a link never goes in a URL. A found artifact (`foundBy:
+  'session'`) is a Claude artifact with an https claude.ai link and the
+  chat that published it; an owner link is any https link. Strict
+  objects, no path. An add of a link the library has answers 200 with
+  that entry, not an error (`artifacts.test.ts`).
 - A `ClientErrorReport` holds only its listed fields (a strict object),
   so a report carries no page text or app state (`clientErrors.test.ts`).

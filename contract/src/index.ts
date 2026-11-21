@@ -1,5 +1,32 @@
 // The package entry. Name each export; no `export *`.
-export { LocalIdPart, ChatId, MachineId, PaneId, SendId, splitId, TabId, UploadId, WorkspaceId } from './ids.ts'
+export {
+  ArtifactId,
+  LocalIdPart,
+  ChatId,
+  MachineId,
+  PaneId,
+  SendId,
+  splitId,
+  TabId,
+  UploadId,
+  WorkspaceId,
+} from './ids.ts'
+export {
+  AddArtifactRequest,
+  AddArtifactResponse,
+  Artifact,
+  ArtifactDetailResponse,
+  ArtifactFoundBy,
+  ArtifactMadeIn,
+  ArtifactProject,
+  ArtifactSource,
+  ArtifactsResponse,
+  ArtifactsSeenRequest,
+  FileArtifactRequest,
+  maxArtifactDescription,
+  maxArtifactLink,
+  maxArtifactTitle,
+} from './artifacts.ts'
 export { ClientErrorReport, ClientErrorSource } from './clientErrors.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
