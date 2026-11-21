@@ -7,7 +7,8 @@
 // owner sees. A list that missed, or a chat with no skills, lists the
 // commands alone. The server's built-ins other than compact and clear
 // (model, effort) never show: sending them changes the owner's own Claude
-// Code settings; the model chip sets the effort through its route (W10). The owner filters the list
+// Code settings; the model chip sets the model and the effort through
+// their routes (W10). The owner filters the list
 // by what he types after "/": the names that start with it, then the names
 // that hold it, then the descriptions that hold it, each group in the
 // server's order. The reads are the page's (useLiveSkills.ts); this file

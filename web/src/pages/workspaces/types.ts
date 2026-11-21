@@ -1,7 +1,7 @@
 // The Workspaces page's view models, display-ready, each from its Zod schema.
 // The Workbench (Figma page 89:2): workspace tabs over one to four split
 // panes, each a chat, a shell or an empty pane, and a status bar.
-import { ChatEffort, LayoutNode, TabId, ToolKind } from '@bridge/contract'
+import { ChatEffort, LayoutNode, ModelAlias, TabId, ToolKind } from '@bridge/contract'
 import { z } from 'zod'
 
 export const AgentKind = z.enum(['claude', 'codex', 'shell'])
@@ -35,6 +35,8 @@ export const SidebarChat = z.object({
   effort: z.string().optional(),
   /** A live Claude chat's effort as the server lists it (W10): its header's effort picker checks it. */
   effortLevel: ChatEffort.optional(),
+  /** A live Claude chat's model family as the server lists it (W10, `modelId`): its header's model picker checks it. */
+  modelId: ModelAlias.optional(),
   /**
    * A live chat's pane (W5): opaque, and stable for the pane's life. When the chat's ID leaves the list and a chat on
    * the same pane comes, as after /clear, the page moves what it keeps by chat ID to the new one (`paneFollow.ts`).
@@ -69,9 +71,11 @@ export const PaneHead = z.object({
   effort: z.string().optional(),
   /** A live Claude chat's effort level as the server lists it (W10), for the header's effort picker; none when unknown. */
   effortLevel: ChatEffort.optional(),
+  /** A live Claude chat's model family as the server lists it (W10), for the header's model picker; none when unknown. */
+  modelId: ModelAlias.optional(),
   /**
    * `true`: the model chip is text and opens no menu, as a live chat's model is (d-101, W5). A live Claude chat's
-   * effort has its own picker (W10, `ChatHead.effortPicker`); its model stays text until the restart route.
+   * header chip has its own menu instead (W10, `ChatHead.effortPicker`): its model by restart, its effort by key.
    */
   readOnlyModel: z.boolean().optional(),
 })

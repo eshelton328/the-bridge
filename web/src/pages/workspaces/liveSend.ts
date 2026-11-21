@@ -134,6 +134,8 @@ async function missOf(
       // A Stop of a chat that is not working: it stopped already.
       if (action === 'stop' && error.state === 'notWorking') return false
       if (error.state === 'noAttachments') return line(action, 'this chat takes no files', false)
+      // A model restart of the chat runs (W10): the server takes no other input meanwhile.
+      if (error.state === 'restarting') return line(action, 'the chat is restarting', false)
       return line(action, 'chat not ready', false)
     case 'not-found':
       return line(action, 'chat gone', false)

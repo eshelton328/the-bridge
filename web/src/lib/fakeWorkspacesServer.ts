@@ -68,6 +68,16 @@
 // 409 needsYou; else the list gives the chat the set level, sends
 // `workspaces.changed` and answers 204. `answerEffort` answers each next
 // effort change with a test's error, and `efforts` records each body.
+//
+// W10 (backend #386, #391): `POST /api/chats/:chat/model` takes the
+// contract's `RestartModelRequest`; a body it refuses, or a `confirm` that
+// is not the chat, is 400. An unknown chat is 404, a working one 409 working,
+// one that needs the owner 409 needsYou and one with that family already 409
+// sameModel; else the list gives the chat the family as its model and its
+// `modelId`, as the server does until the next turn, sends
+// `workspaces.changed` and answers 200 `ready` with the same chat ID.
+// `answerModel` answers each next restart with a test's answer, and `models`
+// records each body.
 import {
   ChatId,
   type ChatSummary,
@@ -77,7 +87,9 @@ import {
   chatsOf,
   LayoutChangedEvent,
   type LayoutNode,
+  type ModelAlias,
   MoveChatRequest,
+  RestartModelRequest,
   SetEffortRequest,
   SetSplitRatioRequest,
   StartChatRequest,
@@ -181,6 +193,9 @@ export function fakeWorkspacesServer(
   /** W10: each effort change's chat and body, and an answer in place of the next ones'. */
   const efforts: { chat: string; body: unknown }[] = []
   let effortAnswer: (() => Response) | undefined
+  /** W10: each model restart's chat and body, and an answer in place of the next ones'. */
+  const models: { chat: string; body: unknown }[] = []
+  let modelAnswer: (() => Response) | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -551,6 +566,37 @@ export function fakeWorkspacesServer(
     return new Response(null, { status: 204 })
   }
 
+  /** A model restart (W10): the contract's checks, the test's answer, then the chat's status and model, the list, 200. */
+  const model = (chat: string, init: RequestInit | undefined): Response => {
+    const body = bodyOf(init)
+    models.push({ chat, body })
+    const parsed = RestartModelRequest.safeParse(body)
+    if (
+      new Headers(init?.headers).get('content-type') !== 'application/json' ||
+      !parsed.success ||
+      parsed.data.confirm !== chat
+    )
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    if (modelAnswer !== undefined) return modelAnswer()
+    const summary = response.workspaces.flatMap((w) => w.chats).find((c) => c.id === chat)
+    if (summary === undefined)
+      return errorAnswer(
+        { kind: 'not-found', path: `/api/chats/${chat}`, message: 'Not found', requestId: 'r-404' },
+        404,
+      )
+    if (summary.status === 'working') return notReady('working')
+    if (summary.status === 'needsYou') return notReady('needsYou')
+    if (summary.modelId === parsed.data.model) return notReady('sameModel')
+    update((c) => (c.id === chat ? { ...c, model: parsed.data.model, modelId: parsed.data.model } : c))
+    return new Response(JSON.stringify({ state: 'ready', chat }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -624,6 +670,20 @@ export function fakeWorkspacesServer(
     answerEffort: (answer: (() => Response) | undefined) => {
       effortAnswer = answer
     },
+    /** Puts `next` in the list in place of `chat`, as herdr lists another occupant of its pane (W10: a shell). */
+    putOnPane: (chat: string, next: ChatSummary) => {
+      update((c) => (c.id === chat ? next : c))
+    },
+    /** Lists `model` for `chat`, as the server does once a restart started the new chat (W10), and tells the streams. */
+    setModel: (chat: string, model: ModelAlias) => {
+      update((c) => (c.id === chat ? { ...c, model, modelId: model } : c))
+    },
+    /** Each model restart the page posted (W10), with its chat as the server read it. */
+    models,
+    /** Answers each next model restart with `answer` until it is set to undefined. */
+    answerModel: (answer: (() => Response) | undefined) => {
+      modelAnswer = answer
+    },
     /** The chats of the list now. */
     chats: () => response.workspaces.flatMap((w) => w.chats),
     /** The answer to a request for `path`, or undefined when it is not a workspace route. */
@@ -638,6 +698,8 @@ export function fakeWorkspacesServer(
       if (path === '/api/chats' && init?.method === 'POST') return start(init)
       const effortPath = /^\/api\/chats\/([^/]+)\/effort$/.exec(path)
       if (effortPath !== null && init?.method === 'POST') return effort(decodeURIComponent(effortPath[1] ?? ''), init)
+      const modelPath = /^\/api\/chats\/([^/]+)\/model$/.exec(path)
+      if (modelPath !== null && init?.method === 'POST') return model(decodeURIComponent(modelPath[1] ?? ''), init)
       const ratioPath = /^\/api\/workspaces\/([^/]+)\/layout\/ratio$/.exec(path)
       if (ratioPath !== null && init?.method === 'POST') return ratio(decodeURIComponent(ratioPath[1] ?? ''), init)
       const posted = /^\/api\/chats\/([^/]+)\/(focus|zoom|swap|close|split|move)$/.exec(path)

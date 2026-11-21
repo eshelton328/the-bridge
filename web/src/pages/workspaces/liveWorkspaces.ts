@@ -53,6 +53,7 @@ import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { queryClient } from '../../lib/queryClient.ts'
 import type { ScreenState } from '../../lib/screenState.ts'
+import { modelFamilies } from './blocks/modelFamilies.ts'
 import { maxPanes } from './blocks/workspaceLayout.ts'
 import { layoutOfTab, liveTabsOf } from './liveLayout.ts'
 import { liveNewChatForm } from './liveNewChatForm.ts'
@@ -78,11 +79,15 @@ import type {
 
 type WorkspacesScreenState = ScreenState<WorkspacesData, WorkspacesUi>
 
-const modelFamilies = { opus: 'Opus', sonnet: 'Sonnet', haiku: 'Haiku', fable: 'Fable' } as const
 const isFamily = (name: string): name is keyof typeof modelFamilies => Object.hasOwn(modelFamilies, name)
 
-/** A model ID as the app writes it: "claude-opus-5-5" is "Opus 5.5", "gpt-5.5" is "GPT-5.5". */
+/**
+ * A model ID as the app writes it: "claude-opus-5-5" is "Opus 5.5", "gpt-5.5" is "GPT-5.5". A family alone, as the
+ * list gives a chat restarted with a new model until its next turn (W10, backend #390), is the family: "sonnet" is
+ * "Sonnet".
+ */
 export function modelLabel(model: string): string {
+  if (isFamily(model)) return modelFamilies[model]
   const claude = /^claude-([a-z]+)-(\d+)-(\d+)/.exec(model)
   const family = claude?.[1]
   if (claude && family !== undefined && isFamily(family))
@@ -145,6 +150,7 @@ function sidebarChat(chat: ChatSummary, titles: ReadonlyMap<string, string>): Si
       : {}),
     // W5: the effort as Claude Code's `/effort` names it, as Figma writes "high effort"; none when not known.
     ...(chat.effort === null ? {} : { effort: `${chat.effort} effort`, effortLevel: chat.effort }),
+    ...(chat.kind !== 'claude' || chat.modelId === null ? {} : { modelId: chat.modelId }),
     pane: chat.pane,
   }
 }
@@ -189,8 +195,8 @@ const notLiveText = {
 export function livePanes(workspaces: readonly Workspace[], machine: string): WorkbenchPane[] {
   return workspaces.flatMap((w) =>
     (w.chats ?? []).map((chat): WorkbenchPane => {
-      // The model is read-only (d-101, W5): the header shows it as text. A live Claude chat's header picks its effort
-      // (W10, ChatHead), from the level the list gives.
+      // The pane header shows the model as text (d-101, W5). A live Claude chat's chat header picks its model and its
+      // effort (W10, ChatHead), from the family and the level the list gives.
       const head = {
         kind: chat.kind,
         title: chat.title,
@@ -199,6 +205,7 @@ export function livePanes(workspaces: readonly Workspace[], machine: string): Wo
         status: chat.status,
         ...(chat.effort === undefined ? {} : { effort: chat.effort }),
         ...(chat.effortLevel === undefined ? {} : { effortLevel: chat.effortLevel }),
+        ...(chat.modelId === undefined ? {} : { modelId: chat.modelId }),
         readOnlyModel: true,
       }
       if (chat.kind === 'shell')

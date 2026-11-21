@@ -131,12 +131,20 @@ async function tapChat(title: string) {
 }
 
 const chip = (text: string) => page.getByRole('button', { name: `Model: ${text}`, exact: true })
-const choice = (level: string) => page.getByRole('menuitemradio', { name: new RegExp(`^${level}`) })
-const choices = () => page.getByRole('menuitemradio').elements()
+const choice = (level: string) => page.getByRole('menuitemradio', { name: new RegExp(`^${level} effort`) })
+// W10's model half puts the model families first in the same menu; these are the effort rows, by label.
+const efforts = ['low', 'medium', 'high', 'xhigh'] as const
+const choices = () =>
+  page
+    .getByRole('menuitemradio')
+    .elements()
+    .filter((c) => /^(low|medium|high|xhigh) effort/.test(c.textContent))
+// The menu checks the model, so the list's level says "Current" in its description.
 const checked = () =>
   choices()
-    .filter((c) => c.getAttribute('aria-checked') === 'true')
-    .map((c) => c.textContent)
+    .filter((c) => c.textContent.endsWith('Current'))
+    .map((c) => c.textContent.replace(/ effortCurrent$/, ''))
+const labels = () => choices().map((c) => c.textContent.replace(/ effort(Current|Setting…)?$/, ''))
 
 /** The bodies of the effort changes the page posted. */
 const posted = (fake: FakeWorkspacesServer) => fake.efforts.map((e) => [e.chat, e.body])
@@ -155,12 +163,12 @@ describe("a live chat's effort picker (W10)", () => {
       await tapWorkspaces(size)
       await tapChat('plan the slice')
       await userEvent.click(chip('Opus 5.5 · medium effort'))
-      expect(choices().map((c) => c.textContent)).toEqual(['low', 'medium', 'high', 'xhigh'])
+      expect(labels()).toEqual([...efforts])
       expect(checked()).toEqual(['medium'])
       await userEvent.click(choice('high'))
       // The pick waits for its answer: the menu stays open, the picked choice is busy and every choice is off.
       await expect.element(choice('high').getByText('Setting…')).toBeVisible()
-      for (const c of ['low', 'medium', 'high', 'xhigh']) await expect.element(choice(c)).toBeDisabled()
+      for (const c of efforts) await expect.element(choice(c)).toBeDisabled()
       release()
       await expect.element(chip('Opus 5.5 · high effort')).toBeVisible()
       expect(posted(fakes.list)).toEqual([[plan, { effort: 'high' }]])
@@ -180,7 +188,7 @@ describe("a live chat's effort picker (W10)", () => {
     await tapWorkspaces(phone)
     await tapChat('deep dive')
     await userEvent.click(chip('Opus 5.5 · max effort'))
-    expect(choices().map((c) => c.textContent)).toEqual(['low', 'medium', 'high', 'xhigh'])
+    expect(labels()).toEqual([...efforts])
     expect(checked()).toEqual([])
     await userEvent.click(choice('xhigh'))
     await expect.element(chip('Opus 5.5 · xhigh effort')).toBeVisible()
@@ -205,7 +213,7 @@ describe("a live chat's effort picker (W10)", () => {
     fakes.list.setStatus(plan, 'working')
     await expect.element(page.getByText('Working', { exact: true }).first()).toBeVisible()
     await userEvent.click(chip('Opus 5.5 · medium effort'))
-    for (const c of ['low', 'medium', 'high', 'xhigh']) await expect.element(choice(c)).toBeDisabled()
+    for (const c of efforts) await expect.element(choice(c)).toBeDisabled()
     await expect.element(page.getByRole('status').getByText('Wait until the chat is idle')).toBeVisible()
     await userEvent.click(choice('high'), { force: true })
     expect(fakes.list.efforts).toEqual([])
