@@ -44,6 +44,16 @@ function titleOf(name: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+/** The longest start of `text` of at most `units` UTF-16 units that splits no character, such as an emoji. */
+function cut(text: string, units: number): string {
+  let kept = ''
+  for (const char of text) {
+    if (kept.length + char.length > units) break
+    kept += char
+  }
+  return kept
+}
+
 /** The kind, title and label of a call to `name` with `input`. */
 export function toolLabel(name: string, input: unknown): { kind: ToolKind; title: string; label: string } {
   const known = kinds[name]
@@ -57,6 +67,6 @@ export function toolLabel(name: string, input: unknown): { kind: ToolKind; title
   return {
     kind,
     title: title === '' ? 'Used a tool' : title,
-    label: label.length > maxLabel ? `${label.slice(0, maxLabel - 1)}…` : label,
+    label: label.length > maxLabel ? `${cut(label, maxLabel - 1)}…` : label,
   }
 }

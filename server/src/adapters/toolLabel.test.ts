@@ -36,4 +36,15 @@ describe('tool label', () => {
     expect(toolLabel('Bash', { description: 5, command: 'echo marker-5150' }).label).toBe('')
     expect(toolLabel('Bash', 'not an object').label).toBe('')
   })
+
+  it('cuts a long label between two characters, never inside an emoji', () => {
+    const rocket = String.fromCodePoint(0x1f680)
+    // 118 units, then an emoji of 2 that would end at 120: the cut keeps 118 and adds the 1 of "…".
+    const { label } = toolLabel('Agent', { description: `${'x'.repeat(118)}${rocket} and more` })
+    expect(label).toBe(`${'x'.repeat(118)}…`)
+    // An emoji that fits stays whole.
+    expect(toolLabel('Agent', { description: `${'x'.repeat(117)}${rocket} and more` }).label).toBe(
+      `${'x'.repeat(117)}${rocket}…`,
+    )
+  })
 })
