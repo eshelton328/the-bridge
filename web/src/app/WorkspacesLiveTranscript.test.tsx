@@ -11,9 +11,9 @@ import { rootErrorOptions } from '../errors/rootErrorOptions.ts'
 import { RouteError } from '../errors/RouteError.tsx'
 import { resetRetries } from '../errors/retryGuard.ts'
 import { type FakeTranscriptServer, fakeTranscriptServer } from '../lib/fakeTranscriptServer.ts'
-import { holdTimers } from '../lib/holdTimers.ts'
+import { clickNow, holdTimers } from '../lib/holdTimers.ts'
 import { queryClient } from '../lib/queryClient.ts'
-import { setViewport } from '../lib/rendering.ts'
+import { renderedUntil, setViewport } from '../lib/rendering.ts'
 import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
@@ -259,12 +259,16 @@ describe("a live chat's transcript (slice 3b)", () => {
     await tapWorkspaces([390, 844])
     await tapChat('plan the slice')
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
-    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts).
+    // "Copied" waits for the test's clock, not the runner's (lib/holdTimers.ts). Until the test lets it go, no step is a
+    // Vitest action or poll, which would move it too: the press is a DOM click and each wait counts rendering steps.
+    const copied = chatRegion('plan the slice').getByRole('button', { name: 'Copied' })
     const release = holdTimers()
-    await userEvent.click(chatRegion('plan the slice').getByRole('button', { name: 'Copy' }))
-    await expect.poll(() => written).toEqual(['Looking at the build now.'])
+    clickNow(chatRegion('plan the slice').getByRole('button', { name: 'Copy' }).element())
+    await renderedUntil(() => written.length > 0)
+    expect(written).toEqual(['Looking at the build now.'])
     // The button says it copied, as a sample reply's does (audit P-4).
-    await expect.element(chatRegion('plan the slice').getByRole('button', { name: 'Copied' })).toBeVisible()
+    await renderedUntil(() => copied.query() !== null)
+    expect(copied.element()).toBeVisible()
     release()
     expect(getReports()).toEqual([])
   })
@@ -277,9 +281,12 @@ describe("a live chat's transcript (slice 3b)", () => {
     await tapChat('plan the slice')
     const chat = chatRegion('plan the slice')
     await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
+    // "Copy failed" waits for the test's clock, as "Copied" does above.
+    const failed = chat.getByRole('button', { name: 'Copy failed' })
     const release = holdTimers()
-    await userEvent.click(chat.getByRole('button', { name: 'Copy' }))
-    await expect.element(chat.getByRole('button', { name: 'Copy failed' })).toBeVisible()
+    clickNow(chat.getByRole('button', { name: 'Copy' }).element())
+    await renderedUntil(() => failed.query() !== null)
+    expect(failed.element()).toBeVisible()
     release()
     expect(getReports().map((r) => r.error)).toEqual([broken])
     expect(JSON.stringify(getReports().map((r) => [r.error.message, r.error.stack]))).not.toContain('Looking at')
@@ -501,15 +508,20 @@ describe("a live chat's transcript (slice 3b)", () => {
         await openPlan(device.size)
         await expect.poll(() => server.openStreams()).toContain(plan)
         const reads = server.reads.length
-        // The page's clock moves only when the test moves it (lib/holdTimers.ts).
+        // The page's clock moves only when the test moves it (lib/holdTimers.ts). A Vitest poll would move it too, so
+        // each wait until the release counts rendering steps.
         const release = holdTimers()
         setHidden(true)
         server.close(plan)
-        await expect.poll(() => server.openStreams()).not.toContain(plan)
-        // Hidden, it connects again after the retry time (100 ms in the fake), as a desktop tab in the background does.
+        await renderedUntil(() => !server.openStreams().includes(plan))
+        // Hidden, it connects again after the retry time (100 ms in the fake), as a desktop tab in the background does,
+        // and not before. The wait for that time starts after the stream has ended: wait for its timer first.
+        await renderedUntil(() => vi.getTimerCount() > 0)
+        expect(server.openStreams()).not.toContain(plan)
         vi.advanceTimersByTime(200)
-        await expect.poll(() => server.openStreams()).toContain(plan)
-        await expect.poll(() => server.reads.length).toBe(reads + 1)
+        await renderedUntil(() => server.openStreams().includes(plan))
+        await renderedUntil(() => server.reads.length > reads)
+        expect(server.reads.length).toBe(reads + 1)
         release()
         await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()
         setHidden(false)
@@ -532,10 +544,12 @@ describe("a live chat's transcript (slice 3b)", () => {
         setHidden(true)
         setHidden(false)
         // The clock stands still: a connection on the retry time (100 ms in the fake) would never come.
+        // A Vitest poll would move it, so each wait until the release counts rendering steps.
         const release = holdTimers()
         server.close(plan)
-        await expect.poll(() => server.openStreams()).toContain(plan)
-        await expect.poll(() => server.reads.length).toBe(reads + 1)
+        await renderedUntil(() => server.openStreams().includes(plan))
+        await renderedUntil(() => server.reads.length > reads)
+        expect(server.reads.length).toBe(reads + 1)
         release()
         await expect.element(page.getByText('Looking at the build now.')).toBeVisible()
         await expect.element(page.getByText(outageLine)).not.toBeInTheDocument()

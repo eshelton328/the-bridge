@@ -29,10 +29,13 @@ state file and a page are in `screenState.ts` (d-082).
   starts `holdTimers()` (`holdTimers.ts`) before the click and moves the
   clock itself: a busy runner can spend the 2 s in one click
   (`ArtifactsCopyLink.test.tsx`).
-- A Vitest page action or a failed `expect.element` try moves the held
-  clock by the real time it takes. While a held timer must not fire, use
-  a DOM event or `element.click()` and wait with `afterRendering()`
-  (`InboxPhone.test.tsx`, the long touch that leaves the Inbox).
+- A Vitest page action or a failed `expect.element` or `expect.poll`
+  try moves the held clock by the real time it takes. Until the test
+  moves that clock, press with `clickNow()` (`holdTimers.ts`) and wait
+  with `renderedUntil()` (`rendering.ts`): a poll there can let a timer
+  fire early, or pass a check that the clock stands still
+  (`InboxPhone`, `ArtifactsCopyLink`, `WorkspacesReplyCopy`,
+  `WorkspacesLiveTranscript`).
 - Before a check of where an Ark popover or menu sits, and before a
   `{ force: true }` click into one just opened, wait with
   `expect.poll(() => placed(el)).toBe(true)` (`popoverPlaced.ts`): until

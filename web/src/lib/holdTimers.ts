@@ -7,8 +7,8 @@ import { onTestFinished, vi } from 'vitest'
  * Fakes the page's setTimeout and clearTimeout from now, so a timer the app starts waits until the test moves the
  * clock (`vi.advanceTimersByTime`). Vitest moves it too: each page action (click, fill, keyboard) advances it by
  * 50 ms every 50 ms while the action runs, and each failed expect.element or expect.poll try by its interval. A step
- * that must not let a timer fire uses neither: a DOM event or `element.click()`, and a wait on rendering steps
- * (`afterRendering`). Call the returned release once the test no longer needs it, before any step that waits on the
+ * that must not let a timer fire uses neither: `clickNow()` or another DOM event, and `renderedUntil()`
+ * (`rendering.ts`), which waits by rendering steps. Call the returned release once the test no longer needs it, before any step that waits on the
  * app's own timers; the test's end releases it too.
  */
 export function holdTimers(): () => void {
@@ -18,4 +18,10 @@ export function holdTimers(): () => void {
   }
   onTestFinished(release)
   return release
+}
+
+/** Clicks `element` with a DOM click, which moves no held clock, as a Vitest page action does. */
+export function clickNow(element: Element): void {
+  if (!(element instanceof HTMLElement)) throw new Error('only an HTML element takes a click')
+  element.click()
 }
