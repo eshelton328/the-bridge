@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, dialog, searchbox, box } from './inboxRouteHelpers.ts'
 
@@ -269,6 +270,59 @@ describe('the Inbox on the phone', () => {
       await dialog().getByRole('button', { name: 'Copy' }).click()
       expect(copied).toHaveLength(1)
       expect(copied[0]).toMatch(/^Read f-005-the-bridge\/increment-1\.md .* with the reason\.$/)
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
+  // Audit P-5: on plain HTTP the page has no Clipboard API, and a page may refuse the write. Copy then copies nothing,
+  // with no uncaught error and no unhandled rejection (Vitest fails the run on either). Each opens the prompt as the owner
+  // does: the task from the list, then Read the whole prompt.
+  it('copies nothing, and throws nothing, on a page with no clipboard', async () => {
+    Object.defineProperty(navigator, 'clipboard', { value: undefined, configurable: true })
+    try {
+      await phone('list')
+      await page.getByText('Write the tickets for increment one').click()
+      await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      await expect.element(dialog()).toBeVisible()
+    } finally {
+      Reflect.deleteProperty(navigator, 'clipboard')
+    }
+  })
+
+  it('copies nothing, and leaves no unhandled rejection, when the page refuses the write', async () => {
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    let asked = 0
+    clipboard.writeText = () => {
+      asked += 1
+      return Promise.reject(new DOMException('Write permission denied.', 'NotAllowedError'))
+    }
+    try {
+      await phone('list')
+      await page.getByText('Write the tickets for increment one').click()
+      await page.getByRole('link', { name: 'Read the whole prompt' }).click()
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      expect(asked).toBe(1)
+      await expect.element(dialog()).toBeVisible()
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
+  it('reports a refused write that is not NotAllowedError, and copies nothing', async () => {
+    clearReports()
+    onTestFinished(clearReports)
+    const broken = new Error('the clipboard broke')
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = () => Promise.reject(broken)
+    try {
+      await phone('promptSheet')
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      await expect.poll(() => getReports().map((r) => r.error)).toContain(broken)
+      await expect.element(dialog()).toBeVisible()
     } finally {
       clipboard.writeText = writeText
     }

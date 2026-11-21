@@ -57,6 +57,8 @@ export type NextStepDetailProps = {
   /** Back, over the item on a tablet or phone. */
   back?: ReactNode
   onPromptOpenChange?: ((open: boolean) => void) | undefined
+  /** Copy in the whole prompt's dialog or sheet, with the prompt's text; the page entry copies it. */
+  onCopyPrompt?: ((text: string) => void) | undefined
   /** The task has a discussion; see `DetailHead`. */
   discuss?: DiscussControl | undefined
   /** Undo on the line under a prompt that a discussion changed. */
@@ -118,6 +120,7 @@ export function NextStepDetail({
   layout = 'desktop',
   back,
   onPromptOpenChange,
+  onCopyPrompt,
   discuss,
   drafts,
   snooze,
@@ -173,6 +176,7 @@ export function NextStepDetail({
         layout={layout}
         drafts={drafts}
         onUndoChange={onUndoChange}
+        onCopyPrompt={onCopyPrompt}
         onEditingChange={(editingPrompt) => {
           onUiChange?.({ editingPrompt })
         }}

@@ -1,7 +1,7 @@
 // The whole prompt, read-only: in a dialog over the inbox on the desktop
 // (D8), in a sheet from the bottom on a tablet or phone (T8, M9). Done
 // closes it, Edit prompt closes it and opens the editor (a prompt that can
-// be edited only) and Copy copies the text. Props only.
+// be edited only) and Copy hands the text to `onCopy`. Props only: the page copies it.
 import {
   BottomSheet,
   BottomSheetClose,
@@ -37,9 +37,18 @@ export type PromptDialogProps = {
   layout?: Viewport | undefined
   /** Edit prompt; without it (a sent prompt) the dialog has only Copy. */
   onEdit?: (() => void) | undefined
+  /** Copy, with the prompt's text; the page entry copies it (`copyText`), so a page with no clipboard throws nothing. */
+  onCopy?: ((text: string) => void) | undefined
 }
 
-function Actions({ prompt, onEdit, figma }: { prompt: string; onEdit: (() => void) | undefined; figma: boolean }) {
+type ActionsProps = {
+  prompt: string
+  onEdit: (() => void) | undefined
+  onCopy: ((text: string) => void) | undefined
+  figma: boolean
+}
+
+function Actions({ prompt, onEdit, onCopy, figma }: ActionsProps) {
   return (
     <>
       {onEdit === undefined ? null : (
@@ -54,7 +63,7 @@ function Actions({ prompt, onEdit, figma }: { prompt: string; onEdit: (() => voi
         textSize="sm"
         data-figma={figma ? 'button · Copy' : undefined}
         onClick={() => {
-          void navigator.clipboard.writeText(prompt)
+          onCopy?.(prompt)
         }}
       >
         <CopyIcon />
@@ -71,6 +80,7 @@ export function PromptDialog({
   onOpenChange,
   layout = 'desktop',
   onEdit,
+  onCopy,
 }: PromptDialogProps) {
   if (layout !== 'desktop')
     return (
@@ -91,7 +101,7 @@ export function PromptDialog({
           <span className={sheetHint}>Read only. Edit opens the prompt for changes.</span>
           <div data-figma="sheet actions">
             <Grid columns="2" gap="10">
-              <Actions prompt={prompt} onEdit={onEdit} figma />
+              <Actions prompt={prompt} onEdit={onEdit} onCopy={onCopy} figma />
             </Grid>
           </div>
         </Stack>
@@ -115,7 +125,7 @@ export function PromptDialog({
       </p>
       <span className={hint}>Read only. Edit opens the prompt for changes.</span>
       <Grid columns="2" gap="10">
-        <Actions prompt={prompt} onEdit={onEdit} figma={false} />
+        <Actions prompt={prompt} onEdit={onEdit} onCopy={onCopy} figma={false} />
       </Grid>
     </Dialog>
   )

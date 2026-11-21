@@ -12,3 +12,6 @@ blocks' pattern instead of importing them.
 - `DiscussionThread` holds the entries and the reply box that
   `DiscussionPanel` (desktop) and the discussion page share; change it
   once for both.
+- A block never uses the clipboard: Copy hands its text up
+  (`onCopyPrompt`), and `InboxPage` copies it with `copyText`
+  (`app/InboxPhone.test.tsx`).
