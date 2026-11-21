@@ -210,6 +210,21 @@ const rule = `${esc}[0m${esc}[38;2;136;136;136m${'─'.repeat(60)}${esc}[0m`
  * A Claude Code screen whose input box holds `text` (one line for each line of it), as herdr's pane.read gives
  * it with format "ansi"; an empty box shows the dim placeholder.
  */
+/** A Claude Code screen with its "Switch model?" dialog open, as `/model sonnet` shows it on a chat with history. */
+export function switchModelScreen(): string {
+  return [
+    '  line 59: example text',
+    '▔'.repeat(40),
+    '  Switch model?',
+    '  Your next response will be slower and use more tokens',
+    '',
+    '  ❯ 1. Yes, switch to Sonnet 5.5',
+    '    2. No, go back',
+    '',
+    '  Enter to confirm · Esc to cancel',
+  ].join('\r\n')
+}
+
 export function claudeScreen(text: string): string {
   const box =
     text === ''

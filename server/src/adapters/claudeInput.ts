@@ -30,6 +30,19 @@ export function inputBoxOf(screen: string): InputBox | null {
   return { text: text.trim() === '' ? '' : text.trimEnd(), lines: box.length }
 }
 
+/**
+ * Whether a screen shows Claude Code's "Switch model?" dialog, which `/model <name>` opens on a chat with history,
+ * with its first choice ("Yes, switch to …") picked, so one Enter switches (probe in a test herdr session,
+ * 2026-11-21).
+ */
+export function switchModelDialogOf(screen: string): boolean {
+  const lines = screen
+    .replace(sgr, '')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+  return lines.includes('Switch model?') && lines.some((line) => /^❯ 1\. Yes, switch\b/.test(line))
+}
+
 /** A prompt as the box can show it: each run of white space one space, with none at the ends. */
 export const promptKey = (text: string): string => text.replace(/\s+/g, ' ').trim()
 

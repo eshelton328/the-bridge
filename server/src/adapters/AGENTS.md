@@ -123,6 +123,13 @@ client of a socket or a file sits beside them.
   match to the prompt (a box of more lines than it joins) or cannot
   remove is `inputNotEmpty`, so the page offers the input clear. A
   prompt that a working chat queues leaves the box, so it is `sent`.
+- `/model <name>` on a chat with history opens Claude Code's "Switch
+  model?" dialog, also while it works (probe in a test herdr session,
+  2026-11-21). After such a prompt the adapter reads the screen: when
+  the dialog shows with "Yes, switch" picked, it sends one Enter, and
+  answers `sent` only once the dialog is gone and the box shows again,
+  else `inputUnreadable`. It never types into an open dialog: a
+  screen with no box sends nothing (`herdrAgents.test.ts`).
 - A command (`/compact` with its instructions on one line, or
   `/clear`) goes to an idle Claude chat only, as a prompt does, with
   the same box checks; a chat that is not idle or done (working, or a
