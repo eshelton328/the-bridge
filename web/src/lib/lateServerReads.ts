@@ -6,6 +6,11 @@
 import { afterAll, beforeAll } from 'vitest'
 import { serverReadError } from './serverGuard.ts'
 
+/** Whether `answerLateServerReads` answers a read of `url` itself: an `/api` read on the page's origin (`serverReadError`). */
+export function answersLateRead(url: string, origin: string): boolean {
+  return serverReadError(url, origin) !== undefined
+}
+
 /**
  * From the file's first test to its last, an `/api` read with no test stub gets no answer, as from a server that
  * is down (`TypeError`), never the real server. Each test's own `vi.stubGlobal('fetch')` replaces it while that
@@ -18,7 +23,7 @@ export function answerLateServerReads(): void {
     before = real
     globalThis.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
-      if (serverReadError(url, window.location.origin) === undefined) return real(input, init)
+      if (!answersLateRead(url, window.location.origin)) return real(input, init)
       return Promise.reject(new TypeError('Failed to fetch: no server in this test'))
     }
   })
