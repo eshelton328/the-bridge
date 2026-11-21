@@ -19,7 +19,8 @@ from the outside world.
   (`transcriptEvents.test.ts`).
 - `uploadStore.ts` is the port for the files that the owner attaches
   to a prompt; `uploads.ts` lets only a Claude chat take one, and
-  sends a prompt with the path of each file below its text.
+  sends a prompt with the path of each file below its text; the
+  transcript reads those lines back as the entry's file names.
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open no herdr stream

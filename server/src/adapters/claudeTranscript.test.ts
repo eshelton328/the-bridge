@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { maxEntryText, maxTranscriptEntries, TranscriptEntry } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
+import { withAttachments } from '../services/uploads.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 
 const dir = mkdtempSync(join(tmpdir(), 'transcript-'))
@@ -55,6 +56,32 @@ describe('Claude transcript', () => {
     for (const entry of read.entries) TranscriptEntry.parse(entry)
     const json = JSON.stringify(read)
     for (const hidden of ['private plan', 'build output', 'side chain', '/clear']) expect(json).not.toContain(hidden)
+  })
+
+  it("shows a prompt the bridge sent as the owner's text, with no paste tags, and its files by name", async () => {
+    const paste = (id: string, t: string) => `\n\n<pasted_content id="${id}">\n${t}\n</pasted_content id="${id}">\n`
+    const uploads = '/home/dev/.local/share/the-bridge/uploads'
+    const path = file([
+      user(
+        'p1',
+        paste(
+          '4251',
+          withAttachments('Look at these.\n\nTwo lines.', [`${uploads}/u1/plan.pdf`, `${uploads}/u2/photo.jpg`]),
+        ),
+      ),
+      user('p2', paste('ec42', withAttachments('', [`${uploads}/u3/notes.md`]))),
+      user('p3', `Before ${paste('2602', 'a pasted log')} after`),
+      user('p4', 'Attached files (read each one with your tools):\n- not a path'),
+    ])
+    const read = await readClaudeTranscript(path, options)
+    expect(read.entries).toEqual([
+      { type: 'user', id: 'p1', text: 'Look at these.\n\nTwo lines.', cut: false, files: ['plan.pdf', 'photo.jpg'] },
+      { type: 'user', id: 'p2', text: '', cut: false, files: ['notes.md'] },
+      { type: 'user', id: 'p3', text: 'Before \n\na pasted log\n after', cut: false },
+      { type: 'user', id: 'p4', text: 'Attached files (read each one with your tools):\n- not a path', cut: false },
+    ])
+    for (const entry of read.entries) TranscriptEntry.parse(entry)
+    expect(JSON.stringify(read)).not.toMatch(/pasted_content|\/home\/dev/)
   })
 
   it('shows a tool call with no result as running only while the chat is working', async () => {
