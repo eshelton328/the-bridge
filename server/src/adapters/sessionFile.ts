@@ -92,7 +92,11 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
     return unknownSession
   }
   let effort: ChatEffort | null = null
+  let found: { model: string; contextUsed: number | null } | undefined
+  // From the newest line back: the model and context of the newest model entry, and the newest effort, which can be
+  // on an older line than that entry (a prompt names its turn's effort before the reply does).
   for (const line of text.split('\n').reverse()) {
+    if (found !== undefined && effort !== null) break
     let value: unknown
     try {
       value = JSON.parse(line)
@@ -100,6 +104,7 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       continue
     }
     effort ??= effortOf(value)
+    if (found !== undefined) continue
     const entry = AssistantLine.safeParse(value)
     // Claude Code writes "<synthetic>" for an entry no model made, such as an interrupted turn; a side chain is a
     // subagent's own context.
@@ -111,9 +116,9 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
       : undefined
     const contextUsed = window === undefined || used === undefined ? null : Math.min(1, used / window)
-    return { model, contextUsed, effort }
+    found = { model, contextUsed }
   }
-  return { ...unknownSession, effort }
+  return found === undefined ? { ...unknownSession, effort } : { ...found, effort }
 }
 
 /** Claude Code's folder name for a working directory: each character that is not a letter or digit becomes "-". */

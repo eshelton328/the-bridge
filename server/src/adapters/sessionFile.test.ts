@@ -111,6 +111,15 @@ describe('session file', () => {
       ].join('\n'),
     )
     expect(await readClaudeSession(path)).toEqual({ model: 'claude-opus-5-5', contextUsed: null, effort: 'xhigh' })
+    // The prompt names its turn's effort, and the reply after it names none.
+    const older = file(
+      'k.jsonl',
+      [
+        JSON.stringify({ type: 'user', perTurnEffort: 'high', message: { content: 'go' } }),
+        JSON.stringify({ type: 'assistant', message: { model: 'claude-opus-5-5' } }),
+      ].join('\n'),
+    )
+    expect(await readClaudeSession(older)).toEqual({ model: 'claude-opus-5-5', contextUsed: null, effort: 'high' })
     const effortOnly = file('j.jsonl', JSON.stringify({ type: 'user', effort: 'max' }))
     expect(await readClaudeSession(effortOnly)).toEqual({ model: null, contextUsed: null, effort: 'max' })
   })
