@@ -75,7 +75,7 @@ function withChats(hold?: Promise<void>) {
       return Promise.reject(new TypeError(`no stub for ${url}`))
     }),
   )
-  return { list: workspaces, prompts }
+  return { list: workspaces, transcripts: chats, prompts }
 }
 
 /** A gate the test opens: the held restarts answer once `release` runs. */
@@ -352,6 +352,25 @@ describe("a live chat's model picker (W10)", () => {
     await userEvent.click(restart())
     await expect.element(line('The chat needs you on the Mac')).toBeVisible()
     await expect.element(chip('Haiku · medium effort')).toBeVisible()
+  })
+
+  it('reads the transcript again after a restart that ended its stream', async () => {
+    const { hold, release } = gate()
+    const fakes = withChats(hold)
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    await expect.poll(() => fakes.transcripts.openStreams()).toContain(plan)
+    await pickModel('Opus 5.5 · medium effort', 'Sonnet')
+    await userEvent.click(restart())
+    await expect.element(chip('Restarting…')).toBeVisible()
+    // The server ends the stream while the chat is gone from herdr's list, and the pane stays.
+    fakes.transcripts.gone(plan)
+    await expect.poll(() => fakes.transcripts.openStreams()).not.toContain(plan)
+    release()
+    await expect.element(chip('Sonnet · medium effort')).toBeVisible()
+    await expect.poll(() => fakes.transcripts.openStreams()).toContain(plan)
+    fakes.transcripts.push(plan, [{ type: 'assistant', id: 'a-after', text: 'a reply after the restart', cut: false }])
+    await expect.element(page.getByText('a reply after the restart')).toBeVisible()
   })
 
   it('gives a Codex chat no picker', async () => {

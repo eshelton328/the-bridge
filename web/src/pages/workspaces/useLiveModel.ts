@@ -62,9 +62,10 @@ export function withRestarting(data: WorkspacesData, restarting: (chat: string) 
 
 /**
  * The model control of each live Claude chat: `of(chat, liveChat, listed)` for the pane `chat`, whose server ID is
- * `liveChat` and whose list gives the family `listed`. `data` is the loaded list.
+ * `liveChat` and whose list gives the family `listed`. `data` is the loaded list. `onRestarted` gets the server ID of
+ * each chat that restarted, so the page reads its transcript again.
  */
-export function useLiveModel(on: boolean, data: WorkspacesData) {
+export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (liveChat: string) => void) {
   const [chats, setChats] = useState<ReadonlyMap<string, ChatModel>>(() => new Map())
   const [failed, setFailed] = useState<string | undefined>(undefined)
   // A new list ends each `starting` restart it shows settled, in the render that draws it.
@@ -76,8 +77,10 @@ export function useLiveModel(on: boolean, data: WorkspacesData) {
     if (shown !== chats) setChats(shown)
   }
   const dataRef = useRef(data)
+  const restartedRef = useRef(onRestarted)
   useLayoutEffect(() => {
     dataRef.current = data
+    restartedRef.current = onRestarted
   })
   const inFlightRef = useRef(new Set<string>())
   const change = useCallback((chat: string, entry: ChatModel) => {
@@ -101,6 +104,8 @@ export function useLiveModel(on: boolean, data: WorkspacesData) {
           const list = dataRef.current
           switch (answer.kind) {
             case 'restarted':
+              // The chat's transcript stream may have ended while the chat was gone from the list: read it again.
+              restartedRef.current(liveChat)
               change(chat, {
                 set: { model, list },
                 ...(answer.state === 'starting' ? { restarting: { waitFor: list } } : {}),

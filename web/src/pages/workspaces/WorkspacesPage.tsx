@@ -159,7 +159,10 @@ export function WorkspacesPage() {
   // Each live Claude chat's effort (W10): a set level shows until the next list read.
   const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
   // Each live Claude chat's model (W10): while a restart runs, the chat's composer is off and says so.
-  const models = useLiveModel(import.meta.env.DEV && live, state.data)
+  // A restarted chat reads its transcript again, as its stream may have ended (not-found) while the chat restarted.
+  const models = useLiveModel(import.meta.env.DEV && live, state.data, (liveChat) => {
+    transcripts?.retry(liveChat)
+  })
   const screenData = withRestarting(data, models.isRestarting)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
