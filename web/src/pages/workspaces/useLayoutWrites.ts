@@ -4,7 +4,7 @@
 // layout: after a 204 (a split's 201) the write stays pending, and its
 // control shows it, until the next layout read changes that workspace's tabs
 // (the server's `layout.changed`), or for 2.5 s, after which the page reads
-// the layout again itself, and the list after a close. One write at a time
+// the layout again itself, and the list after a close or a split. One write at a time
 // for a chat; a workspace's newer ratio takes the place of one that waits. A
 // focus goes only to a chat herdr does not focus already. A stale view (409
 // singlePane, otherTab) reads the layout again quietly, a 404 the list (a
@@ -113,8 +113,9 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
           else
             entry.timer = setTimeout(() => {
               readAgain(server)
-              // A close also drops the chat from the list (`workspaces.changed`), which the sidebar and the phone draw.
-              if (action === 'close') readAgain(server, true)
+              // A close drops the chat from the list and a split adds its shell (`workspaces.changed`): the panes and the
+              // sidebar draw the list's chats.
+              if (action === 'close' || action === 'split') readAgain(server, true)
               done(key, entry)
             }, layoutEventWaitMs)
           return answer

@@ -211,6 +211,16 @@ describe('split (W2c)', () => {
     expect(getReports()).toEqual([])
   })
 
+  it('shows the new pane when no event comes, from the layout and the list read again after 2.5 s', async () => {
+    const fakes = withChats()
+    await showPanes()
+    fakes.list.quietWrites(true)
+    await pickInMenu('review notes', 'Split right')
+    await quiet(1500)
+    expect(drawn()).toEqual(['plan the slice', 'review notes'])
+    await expect.poll(drawn, { timeout: 4000 }).toEqual(['plan the slice', 'review notes', 'zsh'])
+  })
+
   it('sends Split down as a column, and the new pane shows under the chat', async () => {
     const fakes = withChats()
     await showPanes()
