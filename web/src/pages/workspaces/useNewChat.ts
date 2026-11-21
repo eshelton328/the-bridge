@@ -208,15 +208,18 @@ export function useNewChat(enabled: boolean, deps: NewChatDeps): NewChatStarter 
       const { data, ui, change } = depsRef.current
       const now = ui()
       if (now.newChatStart?.busy === true) return
-      const name = values.name.trim()
-      if (name !== '' && !ChatName.safeParse(name).success) {
+      const typed = values.name.trim()
+      if (typed !== '' && !ChatName.safeParse(typed).success) {
         change({ newChatStart: { nameError: nameRule } })
         return
       }
       const machine = data.liveMachine ?? ''
+      // A blank name gets a random one here, so the page knows the chat by its name when the server's answer is lost
+      // (duplicateCreate): another chat that starts in the workspace meanwhile has another name.
+      const name = typed === '' ? `chat-${newSendId().slice(0, 6)}` : typed
       const request = StartChatRequest.safeParse({
         kind: 'claude',
-        ...(name === '' ? {} : { name }),
+        name,
         ...(values.model === 'default' ? {} : { model: values.model }),
         place: { in: 'tab', workspace: `${machine}/${values.workspace}` },
         // A new create ID for each Start chat; Retry keeps it.

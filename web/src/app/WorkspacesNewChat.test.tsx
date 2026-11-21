@@ -212,6 +212,18 @@ describe('New chat on the live page (W3)', () => {
     expect(fakes.chats.prompts).toEqual([])
   })
 
+  it('names a chat the owner left unnamed, so a lost answer finds it by its name', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(phone)
+    await openPhoneForm()
+    await fill('', 'hi')
+    await expect.poll(() => fakes.list.starts).toHaveLength(1)
+    const [body] = fakes.list.starts
+    expect(typeof body === 'object' && body !== null && 'name' in body ? body.name : undefined).toMatch(
+      /^chat-[0-9a-f]{6}$/,
+    )
+  })
+
   it('opens a chat that needs the owner with its line, and keeps the first message in its box', async () => {
     const fakes = withChats()
     fakes.list.startAs('needsYou')
@@ -251,7 +263,7 @@ describe('New chat on the live page (W3)', () => {
     await fill('', 'go')
     await expect.element(page.getByText('Could not start the chat')).toBeVisible()
     await userEvent.click(page.getByRole('button', { name: 'Retry' }))
-    await expect.element(page.getByRole('heading', { name: 'chat-1' })).toBeVisible()
+    await expect.element(page.getByRole('heading', { name: /^chat-[0-9a-f]{6}$/ })).toBeVisible()
     const ids = createIds(fakes)
     expect(ids).toHaveLength(2)
     expect(ids[1]).toBe(ids[0])
