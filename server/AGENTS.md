@@ -26,7 +26,8 @@ in development (d-117); Vite sends
 
 - No herdr pane ID, key press or terminal text leaves `src/adapters/`.
 - No polling: an adapter reads only when a request or a subscription
-  asks. With no client of `/api/events` open, no herdr stream is open.
+  asks. With no client of `/api/events` open and no push subscription
+  stored (d-118), no herdr stream is open.
 - Each port has a fake, and the port's contract suite runs on both
   adapters and in `e2e/` on a real herdr.
 

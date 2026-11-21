@@ -28,6 +28,8 @@ const logMessages = [
   'session folder not watched',
   'prompt sent',
   'push store failed',
+  'push failed',
+  'push watch ended',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

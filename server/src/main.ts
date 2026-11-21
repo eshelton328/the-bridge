@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
+import { createWebPushSender } from './adapters/webPushSender.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
 import { sipsConvert } from './adapters/sipsConvert.ts'
 import { createApp } from './app.ts'
@@ -14,13 +15,16 @@ import { readConfig } from './config.ts'
 import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
 import { formatEntry, parseLine } from './logs.ts'
 import { handleProcessErrors } from './processErrors.ts'
+import { createPushSeen } from './services/push.ts'
+import { createPushNotifier } from './services/pushNotifier.ts'
 
 const config = readConfig(process.env)
 if (!config.ok) {
   process.stderr.write(`the-bridge server: set these environment variables:\n${config.error.join('\n')}\n`)
   process.exit(1)
 }
-const { port, machine, owner, herdrSocket, claudeProjects, claudeSettings, logDir, logLevel, dbFile } = config.value
+const { port, machine, owner, herdrSocket, claudeProjects, claudeSettings, logDir, logLevel, dbFile, pushSubject } =
+  config.value
 const terminal: LogSink = {
   write: (line) => {
     const entry = process.stdout.isTTY ? parseLine(line) : undefined
@@ -41,10 +45,16 @@ const agents = createHerdrAgents({
   uploads: uploadsRoot,
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
+// The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118). The notifier
+// watches the chats only while a subscription is stored.
+const push = createDiskPushStore(join(dirname(dbFile), 'push'))
+const seen = createPushSeen()
+const notifier = createPushNotifier({ agents, store: push, sender: createWebPushSender(pushSubject), seen, log })
+void notifier.refresh()
+const pushChanged = () => void notifier.refresh()
 const server = serve(
   {
-    // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118).
-    fetch: createApp({ agents, owner, log, uploads, push: createDiskPushStore(join(dirname(dbFile), 'push')) }).fetch,
+    fetch: createApp({ agents, owner, log, uploads, push, seen, pushChanged }).fetch,
     port,
     hostname: '127.0.0.1',
   },

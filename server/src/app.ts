@@ -29,6 +29,8 @@ export type AppDeps = {
   readonly push?: PushStore
   /** When a page of the owner was last visible; the push sender reads it. */
   readonly seen?: PushSeen
+  /** Runs after a push subscription is saved or removed. */
+  readonly pushChanged?: () => void
 }
 
 /** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
@@ -56,6 +58,7 @@ export function createApp({
   uploads = noUploads,
   push = noPush,
   seen = createPushSeen(),
+  pushChanged,
 }: AppDeps) {
   return (
     new Hono<AppEnv>()
@@ -88,7 +91,7 @@ export function createApp({
       .route('/api/chats', chatsRoutes(agents, log, uploads))
       .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
-      .route('/api/push', pushRoutes(push, seen, log))
+      .route('/api/push', pushRoutes(push, seen, log, pushChanged))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))
       // A throw that no route caught: the log gets the error and its causes, the client the request ID.
