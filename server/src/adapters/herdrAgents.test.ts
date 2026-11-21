@@ -2030,6 +2030,23 @@ describe('herdr agents: a new chat (slice W3)', () => {
     }
   })
 
+  it('starts in a root of "/", tries again while the new shell is busy, and fails when the agent ends in the wait', async () => {
+    const { socket, adapter, sent } = await setup({ chatRoot: '/' })
+    const tab: StartChatRequest['place'] = { in: 'tab', workspace: WorkspaceId.parse('test-mac/w17') }
+    socket.failOnce('agent.start', 'agent_pane_busy', 'the pane runs a command')
+    expect(await adapter.startChat({ kind: 'claude', place: tab })).toMatchObject({
+      ok: true,
+      value: { state: 'ready' },
+    })
+    expect(sent('agent.start')).toHaveLength(2)
+    socket.failOnce('agent.wait', 'agent_not_found', 'the agent ended')
+    expect(await adapter.startChat({ kind: 'claude', place: tab })).toMatchObject({
+      ok: false,
+      error: { reason: 'badReply' },
+    })
+    await socket.close()
+  })
+
   it('says starting when the chat is not ready in time or takes no prompt yet, and notFound for a chat or workspace it does not have', async () => {
     const { socket, adapter } = await setup()
     socket.set('agent.wait', waited('idle', false))

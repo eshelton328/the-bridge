@@ -18,7 +18,8 @@
 // the port only, as a prompt's text. POST /:chat/focus, /:chat/zoom,
 // /:chat/swap and /:chat/close change the chat's pane in its tab (slice W2,
 // 204), POST /:chat/move puts it in another tab of its workspace (204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
-// that works or waits for the owner.
+// that works or waits for the owner. POST / starts a Claude chat beside a chat or in a new tab (slice W3): 201 with
+// its pane, chat and state, or 200 with the first answer for a create ID that started one before.
 import {
   ChatCommandRequest,
   ChatId,
@@ -42,6 +43,8 @@ import {
   ZoomChatRequest,
   SendId,
   SendResultResponse,
+  StartChatRequest,
+  StartChatResponse,
 } from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
@@ -63,6 +66,7 @@ import type {
 import { clearInput, readSkills, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
+import { createNewChats, type NewChats } from '../services/newChats.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
@@ -88,6 +92,7 @@ export function chatsRoutes(
   log: Logger,
   uploads: UploadStore,
   sends: SendResults = createSendResults(),
+  newChats: NewChats = createNewChats(agents),
 ) {
   const chatOf = (c: Context<AppEnv>) => ChatId.safeParse(c.req.param('chat'))
   const invalid = (c: Context<AppEnv>) =>
@@ -190,6 +195,28 @@ export function chatsRoutes(
   }
 
   return new Hono<AppEnv>()
+    .post('/', smallJson, jsonOnly, jsonBody(StartChatRequest), async (c) => {
+      const started = await newChats.start(c.req.valid('json'))
+      if (!started.ok) return failed(c, started.error)
+      switch (started.value) {
+        case 'notFound':
+          return errorJson(c, 'not-found', { path: c.req.path, message: 'no chat or workspace has this ID' })
+        case 'folderNotAllowed':
+          return errorJson(c, 'chat-not-ready', {
+            state: 'folderNotAllowed',
+            message: 'the folder is not under the chat root',
+          })
+        case 'nameTaken':
+          return errorJson(c, 'chat-not-ready', { state: 'nameTaken', message: 'another chat has this name' })
+        case 'duplicateCreate':
+          return errorJson(c, 'chat-not-ready', {
+            state: 'duplicateCreate',
+            message: 'a start with this create ID is in progress or failed; read the chat list',
+          })
+      }
+      const body = StartChatResponse.parse(started.value.started)
+      return started.value.again ? c.json(body, 200) : c.json(body, 201)
+    })
     .post(
       '/:chat/prompt',
       bodyLimit({

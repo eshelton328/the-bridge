@@ -93,6 +93,13 @@ Thin Hono sub-apps, one file for each area, named after the area
   its own tab, 409 `zoomedTab` for a zoomed tab, and 404 for a tab of
   another workspace or a `beside` chat of another tab. The page reads the layout again on
   the `layout.changed` event.
+- `POST /api/chats` (slice W3) takes a `StartChatRequest` and starts a
+  Claude chat beside a chat or in a new tab: 201 with the pane, the chat
+  and the state (`ready`, `needsYou` or `starting`), or 200 with the
+  first answer for a `createId` that started one. An unknown chat or
+  workspace is 404; a folder outside the chat root is 409
+  `folderNotAllowed`, a name in use 409 `nameTaken`, and a `createId`
+  whose start runs or failed 409 `duplicateCreate` (`chats.test.ts`).
 - `/api/push` (d-118): `GET /key` gives the VAPID public key;
   `POST /subscriptions` saves a subscription (400 for an endpoint off
   the known push services; the endpoint is kept as `new URL()` writes

@@ -94,6 +94,9 @@ const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
 const NewPane = z.object({ pane_id: z.string(), terminal_id: LocalIdPart })
 const StartSplitReply = z.object({ pane: NewPane })
 const StartTabReply = z.object({ root_pane: NewPane })
+/** How often and how far apart a start tries again while herdr says the new pane's shell is busy (starting). */
+const busyTries = 10
+const busyGapMs = 200
 /** How long a start waits for the new Claude chat to be ready or to wait for the owner. */
 const startWaitMs = 30_000
 
@@ -102,7 +105,9 @@ async function insideRoot(root: string | undefined, folder: string | undefined):
   if (root === undefined || folder === undefined) return false
   try {
     const [top, real] = await Promise.all([realpath(root), realpath(folder)])
-    return real === top || real.startsWith(top + sep)
+    // From the root, so a root of "/" holds each folder; ".." first means the folder is outside it.
+    const rel = relative(top, real)
+    return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel))
   } catch {
     return false
   }
@@ -629,17 +634,20 @@ export function createHerdrAgents({
    * One layout write to herdr: its parsed reply, or `notFound` when the pane closed before the write. Another herdr
    * error keeps only its code.
    */
+  /** A write's herdr error: notFound for a pane or tab that closed, else the port error with herdr's code only. */
+  const writeFailed = (method: string, error: SocketFailure): Result<'notFound', AgentPortError> => {
+    if (error.kind !== 'herdrError') return err(portErrorOf(error))
+    if (notFoundCodes.has(error.code)) return ok('notFound')
+    return err(badReply(`herdr ${method}: ${error.code}`))
+  }
+
   const paneWrite = async <T>(
     method: string,
     schema: z.ZodType<T>,
     params: Readonly<Record<string, unknown>>,
   ): Promise<Result<T | 'notFound', AgentPortError>> => {
     const reply = await herdrRequest(socket, method, params)
-    if (!reply.ok) {
-      if (reply.error.kind !== 'herdrError') return err(portErrorOf(reply.error))
-      if (notFoundCodes.has(reply.error.code)) return ok('notFound')
-      return err(badReply(`herdr ${method}: ${reply.error.code}`))
-    }
+    if (!reply.ok) return writeFailed(method, reply.error)
     const parsed = schema.safeParse(reply.value)
     return parsed.success
       ? ok(parsed.data)
@@ -1082,15 +1090,21 @@ export function createHerdrAgents({
       forgetPlaces()
       // An argument list, never a shell line: the name and the model alias only, and no flag that skips a permission.
       const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model])]
-      const started = await paneWrite('agent.start', AnyReply, {
-        name: chatName,
-        kind: 'claude',
-        pane_id: pane.pane_id,
-        args,
-        timeout_ms: startWaitMs,
-      })
-      if (!started.ok) return started
-      if (started.value === 'notFound') return ok('notFound')
+      const start = { name: chatName, kind: 'claude', pane_id: pane.pane_id, args, timeout_ms: startWaitMs }
+      let started = await herdrRequest(socket, 'agent.start', start)
+      // The new pane's shell can still be starting, and herdr then refuses the start (`agent_pane_busy`).
+      for (
+        let tries = 0;
+        tries < busyTries &&
+        !started.ok &&
+        started.error.kind === 'herdrError' &&
+        started.error.code === 'agent_pane_busy';
+        tries += 1
+      ) {
+        await new Promise((resolve) => setTimeout(resolve, busyGapMs))
+        started = await herdrRequest(socket, 'agent.start', start)
+      }
+      if (!started.ok) return writeFailed('agent.start', started.error)
       const paneId = paneIdOf(pane.terminal_id)
       // herdr answers the start at once; wait for the chat to be ready or to wait for the owner. The adapter answers
       // no prompt of the new chat (a folder trust question too): `needsYou` stays until the owner answers it.
@@ -1100,6 +1114,9 @@ export function createHerdrAgents({
         { target: pane.pane_id, until: ['idle', 'done', 'blocked'], timeout_ms: startWaitMs },
         startWaitMs + 5000,
       )
+      // herdr's own timeout leaves the chat starting; any other failure (the agent or its pane ended) is an error.
+      if (!waited.ok && waited.error.kind === 'herdrError' && waited.error.code !== 'timeout')
+        return err(badReply(`herdr agent.wait: ${waited.error.code}`))
       const info = waited.ok ? AgentInfo.safeParse(waited.value) : undefined
       if (info?.success !== true) return ok({ pane: paneId, state: 'starting' })
       const status = statusOf(info.data.agent.agent_status)
