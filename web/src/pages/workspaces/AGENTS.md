@@ -63,10 +63,17 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   one quiet line under the composer by kind ("Not sent — herdr-unavailable",
   with Retry for a 5xx, no answer or a 429); a Stop that finds the chat not
   working is quiet (`blocks/useComposerActions.ts`). A send to a chat whose
-  terminal input holds text, or one the server cannot read (409
-  inputNotEmpty, W1-3: a Stop puts the stopped prompt back there),
-  keeps the draft and says "Not sent — clear the text in the chat's
-  terminal input, then send", with no Retry and no report.
+  terminal input holds text (409 inputNotEmpty, W1-3: a Stop puts the
+  stopped prompt back there) keeps the draft and says "Not sent — clear
+  the text in the chat's terminal input, then send", with no Retry and no
+  report.
+- A send, a /compact or /clear and a clear of the terminal input whose
+  chat input box the server cannot find on the screen (409
+  inputUnreadable, backend #339: a dialog, or a box it does not know)
+  sent nothing. The line says "Not sent — cannot read this chat's input
+  box. Look at the chat on the Mac." with its own lead ("Not compacted",
+  "Not cleared"), with no Retry, no "Clear the terminal input" and no
+  report; the draft and its chips stay (`app/WorkspacesInputUnreadable.test.tsx`).
 - That line offers "Clear the terminal input" (R28 part B), which asks
   first in a library confirm dialog (`blocks/ClearInputDialog.tsx`);
   Cancel does nothing. Clear posts `POST /api/chats/:chat/input/clear`

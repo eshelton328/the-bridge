@@ -41,6 +41,12 @@
 // /clear it takes starts the chat over on the same pane, as the server does:
 // each listener of `onClear` gets the chat (fakeWorkspacesServer gives it a
 // new ID).
+//
+// Backend #339: a chat the test marks with `hideInput` has an input box the
+// server cannot find on its screen (a dialog, or a box it does not know):
+// each send, command and clear of its terminal input answers 409
+// chat-not-ready `inputUnreadable` and changes nothing, as the server does,
+// before it looks at the text in the box.
 import {
   ChatCommandRequest,
   ClearInputRequest,
@@ -126,6 +132,15 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const typed = new Set<string>()
   /** The chats that do not take a typed prompt now: each send answers 409 notSubmitted. */
   const dropping = new Set<string>()
+  /** The chats whose input box the server cannot find now: each send, command and clear answers 409 inputUnreadable. */
+  const hidden = new Set<string>()
+
+  /** The 409 of a chat whose input box the server cannot find on its screen. */
+  const unreadable = () =>
+    errorAnswer(
+      { kind: 'chat-not-ready', state: 'inputUnreadable', message: 'Input unreadable', requestId: 'r-409' },
+      409,
+    )
 
   /** A send, a stop or a clear: the contract's checks, then the test's answer or 204. */
   const act = (chat: string, route: Route, init: RequestInit | undefined) => {
@@ -145,6 +160,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
       )
     const answer = route === 'prompt' ? promptAnswer : route === 'stop' ? stopAnswer : clearAnswer
     if (answer !== undefined) return answer()
+    if (route !== 'stop' && hidden.has(chat)) return unreadable()
     if (route === 'clear') {
       typed.delete(chat)
       clears.push(chat)
@@ -180,6 +196,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         400,
       )
     if (commandAnswer !== undefined) return commandAnswer()
+    if (hidden.has(chat)) return unreadable()
     if (typed.has(chat))
       return errorAnswer(
         { kind: 'chat-not-ready', state: 'inputNotEmpty', message: 'Input not empty', requestId: 'r-409' },
@@ -259,6 +276,14 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     dropSubmits: (chat: string, drop: boolean) => {
       if (drop) dropping.add(chat)
       else dropping.delete(chat)
+    },
+    /**
+     * `true`: the server cannot find the input box of `chat` on its screen (a dialog, or a box it does not know), so each
+     * send, command and clear answers 409 inputUnreadable; `false`: it finds the box again.
+     */
+    hideInput: (chat: string, hide: boolean) => {
+      if (hide) hidden.add(chat)
+      else hidden.delete(chat)
     },
     /** Puts text in the terminal input of `chat`, as a stopped prompt does: each send then answers 409 inputNotEmpty. */
     typeInTerminal: (chat: string) => {
