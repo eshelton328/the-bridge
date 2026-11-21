@@ -343,6 +343,26 @@ describe('a clear of the terminal input that misses, on the phone (R28 part B)',
       reports.expectNoText()
     })
 
+  it('keeps the draft in the chat when the owner leaves and reopens it after a failed clear, and sends it after the next clear', async () => {
+    const fake = withChats()
+    fake.answerClears(() => errorAnswer({ kind: 'herdr-unavailable', message: 'down', requestId: 'r-5' }, 503))
+    await sendIntoTypedInput(fake, phone)
+    await askToClear()
+    await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
+    await expect.element(chatOf('plan the slice').getByText('Not cleared — herdr-unavailable')).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await userEvent.click(page.getByText('plan the slice', { exact: true }).first())
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    // The reopened chat sends its kept draft; the terminal input still holds text, so the line offers the clear again.
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.element(chatOf('plan the slice').getByText(clearLine, { exact: true })).toBeVisible()
+    fake.answerClears(undefined)
+    await askToClear()
+    await userEvent.click(dialog().getByRole('button', { name: 'Clear', exact: true }))
+    await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+    await expect.element(box('plan the slice')).toHaveValue('')
+  })
+
   it('posts one clear for a double tap on Clear, and sends once when it answers', async () => {
     const fake = withChats()
     const answer = held()
