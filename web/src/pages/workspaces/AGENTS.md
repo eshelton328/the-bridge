@@ -178,7 +178,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   does, `dropFiles`): the server holds each upload for the old chat.
   The server sends no event when herdr gives the chat its new ID, so after
   a /clear it sent the page reads the server's list, one read after
-  another, until the cleared chat has left it (`readAfterClear`).
+  another, until the cleared chat has left it (`readAfterClear`). The
+  reads end when the page closes its open watcher, as it does when it
+  unmounts: no read and no load follow, and any error but that abort
+  throws (`liveWorkspaces.test.ts`, `app/WorkspacesLiveCommands.test.tsx`,
+  the-bridge #342).
   The route tests' list fake is `lib/fakeWorkspacesServer.ts`; it takes
   the W2 layout writes too.
 - A live chat opens at its newest entry and stays there as entries come

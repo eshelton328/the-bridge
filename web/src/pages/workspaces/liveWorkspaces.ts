@@ -571,6 +571,8 @@ let watching = 0
 let stopped: string | undefined
 /** The event stream's last error while it connects again, shown in the status bar until a stream opens. */
 let lost: string | undefined
+/** The open watcher's signal: it aborts when the page closes the watcher, and ends the reads after a /clear. */
+let watchSignal: AbortSignal | undefined
 /** How many events the watchers took; a read that saw it change while it ran may hold older data. */
 let taken = 0
 /** How many `layout.changed` events the watchers took for each workspace, by ID, as `taken` counts for the list. */
@@ -593,13 +595,23 @@ const clearReadsMs = [300, 700, 1500, 2500] as const
 export type ClearReadDeps = {
   /** Reads the server's list; `signal` ends the read. */
   readonly read?: (signal: AbortSignal) => Promise<Result<WorkspacesResponse, LiveMiss>>
-  /** Waits `ms`. */
-  readonly wait?: (ms: number) => Promise<void>
+  /** Waits `ms`, or less once `signal` aborts. */
+  readonly wait?: (ms: number, signal: AbortSignal) => Promise<void>
+  /** Ends the reads. The open watcher's signal by default, so the reads end when the page closes the watcher. */
+  readonly signal?: AbortSignal | undefined
 }
 
-const waitMs = (ms: number) =>
+const waitMs = (ms: number, signal: AbortSignal) =>
   new Promise<void>((resolve) => {
-    setTimeout(resolve, ms)
+    const stop = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', stop)
+      resolve()
+    }, ms)
+    signal.addEventListener('abort', stop, { once: true })
   })
 
 /**
@@ -607,14 +619,31 @@ const waitMs = (ms: number) =>
  * each wait of `clearReadsMs`, until `chat` has left it, then has the open watcher load the page again, so the pane
  * follow (`paneFollow.ts`) moves the open chat to the new ID. A read is its own request, never one the page's loads
  * share, so a load that started before herdr listed the new ID cannot answer it. Answers whether `chat` left the list.
+ *
+ * The reads end when `signal` aborts: by default when the page closes the open watcher, as it does when it unmounts.
+ * They then answer false with no further read and no load; only that abort ends them quietly, any other error throws.
+ * With no open watcher there is no page to load again, so there is no read. The reads went on for 5 s after the
+ * page had gone and reached the real server in a later test (WorkspacesLiveCommands, the-bridge #342).
  */
 export async function readAfterClear(
   chat: string,
-  { read = fetchWorkspaces, wait = waitMs }: ClearReadDeps = {},
+  { read = fetchWorkspaces, wait = waitMs, signal = watchSignal }: ClearReadDeps = {},
 ): Promise<boolean> {
+  if (signal === undefined) return false
+  // A call, so that each check sees the signal as it is now.
+  const ended = () => signal.aborted
+  if (ended()) return false
   for (const ms of clearReadsMs) {
-    await wait(ms)
-    const answer = await read(AbortSignal.timeout(liveReadTimeoutMs))
+    await wait(ms, signal)
+    if (ended()) return false
+    let answer: Result<WorkspacesResponse, LiveMiss>
+    try {
+      answer = await read(AbortSignal.any([signal, AbortSignal.timeout(liveReadTimeoutMs)]))
+    } catch (thrown) {
+      if (ended() && thrown === signal.reason) return false
+      throw thrown
+    }
+    if (ended()) return false
     if (answer.ok && !answer.value.workspaces.some((w) => w.chats.some((c) => c.id === chat))) {
       reload?.()
       return true
@@ -729,6 +758,7 @@ export function watchLiveWorkspaces({
   stopped = undefined
   lost = undefined
   const abort = new AbortController()
+  watchSignal = abort.signal
   let retryMs = 5000
   let timer: ReturnType<typeof setTimeout> | undefined
   const changed = () => {
@@ -826,6 +856,7 @@ export function watchLiveWorkspaces({
   void run()
   return () => {
     if (reload === invalidate) reload = undefined
+    if (watchSignal === abort.signal) watchSignal = undefined
     watching -= 1
     // The owner left the page: a layout miss on his next visit is reported again.
     if (watching === 0) layoutOutage = false
