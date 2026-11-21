@@ -115,3 +115,14 @@ The blind second review of round 3 (`reports/fidelity/inbox/D18.sideBySide.png`,
 - Rail items: library #115 (beta.14) closed the gap. `NavRail` items are 50 px high and 56 px apart, as Figma's.
 - Task title smaller: recorded. Figma's title is Geist SemiBold 22/28 (403:1809). No text style has 22 px (`title` is 20, `heading` 28), so the title is in `title`. LIBRARY_GAPS.md, row "22 px title".
 - Links brighter blue: no change. The links are `fg.accent`, Figma's #5ee1ff; at the larger size they looked brighter. They are now Figma's 12 px.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

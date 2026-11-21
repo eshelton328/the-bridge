@@ -65,6 +65,7 @@ import {
   toggleDiscuss,
   withDiscussReset,
 } from './discussView.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 // D1 425:9: on the desktop the page is the library's `Container size="page"`: the list starts 32 in from the rail and
 // 24 down, 1448 wide with 1384 of content in the 1512 px frame, and from `shell.detailWideFrom` at most 1448 wide in the
@@ -86,6 +87,8 @@ export type ToolkitScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
+  push?: PushSwitch | undefined
   /** Reports what the owner changes: the view, the kind chip, the search or a group opened or closed. */
   onUiChange?: ((change: Partial<ToolkitUi>) => void) | undefined
   /** Copies an open item's path, from its path badge. */
@@ -108,6 +111,7 @@ function ToolkitLayout({
   ui,
   layout,
   onNavigate,
+  push,
   onUiChange: report,
   onCopyPath,
   onCopyText,
@@ -445,7 +449,11 @@ function ToolkitLayout({
         onDiagnostic={reportShellDiagnostic}
         size={layout}
         view="detail"
-        rail={desktop ? <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
+        rail={
+          desktop ? (
+            <AppRail selected="toolkit" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
+          ) : undefined
+        }
         tabBarOverlay
         // T5, M7: the discussion's page has no tab bar, as the Artifacts discussion's (T4, M9 there).
         tabBar={
@@ -522,6 +530,7 @@ function ToolkitLayout({
         selected="toolkit"
         counts={{ artifacts: data.artifactsCount, toolkit: data.count }}
         onNavigate={onNavigate}
+        push={push}
       />
     </Backdrop>
   )

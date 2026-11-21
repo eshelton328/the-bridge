@@ -67,3 +67,14 @@ the left of the menu (`moveToWorkspace`).
 - **Menu surface (2026-11-18).** Library beta.45 gives the `Menu`
   content the `blurs.glass` backdrop blur, as Figma's chat actions menu
   (417:1740) has, so Claude's reply under the menu no longer shows through it.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

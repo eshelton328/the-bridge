@@ -147,3 +147,14 @@ What still differs from Figma after moving the Workbench onto the library's
   came in; a tap scrolls to the end and hides it (`blocks/NewestButton.tsx`,
   LIBRARY_GAPS.md: Scroll to newest). This frame's fixture chats are not
   live and sit at their own scroll, so its render does not change.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

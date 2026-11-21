@@ -162,3 +162,14 @@ The blind second review of round 3 (`reports/fidelity/inbox/D20.sideBySide.png`,
 - Prompt wraps at other words: fixed. Its size was already Figma's: Geist Regular 13 (403:1855 in D16), the size of WHY. Figma breaks a line after a slash ("following toolkit/" then "rules/linear.md."), and a browser keeps a path whole, so every later line broke elsewhere. The prompt now has a `<wbr>` after each slash and breaks at Figma's words.
 
 **Meta line in the dialog's heading (2026-11-18).** The dialog now passes its meta line to `Dialog meta` (library #158, beta.45), so the line sits 4 px under the title as Figma's (403:3915), not 12 px in the content. `dialog · Remove this task` goes from h +15 to h +7. The 8 px it gains were the gap under the title; the rest stays, as the entries above record.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

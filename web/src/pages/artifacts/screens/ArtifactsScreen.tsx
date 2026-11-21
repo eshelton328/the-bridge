@@ -35,6 +35,7 @@ import { appliedView, discussionEntries, proposalEffect } from './discussionView
 import { LibraryList } from './LibraryList.tsx'
 import { LibraryPhone } from './LibraryPhone.tsx'
 import { filedProject, openArtifact } from './openView.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type ArtifactsScreenProps = {
   data: ArtifactsData
@@ -42,6 +43,8 @@ export type ArtifactsScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
+  push?: PushSwitch | undefined
   /** Reports what the owner changes: the chip, the search, the view and the open groups. */
   onUiChange?: ((change: Partial<ArtifactsUi>) => void) | undefined
   /** Copy link on an open artifact was pressed (D2, T2, M2), with the address its link opens. */
@@ -55,6 +58,7 @@ export function ArtifactsScreen({
   ui,
   viewport,
   onNavigate,
+  push,
   onUiChange,
   onCopyLink,
   copiedLink,
@@ -131,7 +135,7 @@ export function ArtifactsScreen({
               size={layout}
               rail={
                 layout === 'desktop' ? (
-                  <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} />
+                  <AppRail selected="artifacts" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
                 ) : undefined
               }
               // The library and the artifact's page on a tablet or phone (T2, M2) run under the tab bar, as Figma draws them; their
@@ -259,6 +263,7 @@ export function ArtifactsScreen({
               selected="artifacts"
               counts={{ artifacts: data.count }}
               onNavigate={onNavigate}
+              push={push}
             />
           </Backdrop>
         )

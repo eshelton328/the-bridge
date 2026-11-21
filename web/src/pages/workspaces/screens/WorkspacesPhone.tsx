@@ -82,6 +82,7 @@ import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutAct
 import { modelText } from '../blocks/modelText.ts'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type WorkspacesPhoneProps = {
   /** The device whose width the screen has: the phone, or a tablet in a state with `tabletList` (T1). */
@@ -92,6 +93,8 @@ export type WorkspacesPhoneProps = {
   text: PhoneText
   ui: WorkspacesUi
   onNavigate?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
+  push?: PushSwitch | undefined
   onUiChange: (change: Partial<WorkspacesUi>) => void
   /** The composer drafts by chat (draftBook.ts): a chat's composer starts from its draft and sets it as the owner types. */
   drafts: DraftBook
@@ -121,6 +124,7 @@ export function WorkspacesPhone({
   text,
   ui,
   onNavigate,
+  push,
   onUiChange,
   drafts,
   onSend,
@@ -663,7 +667,9 @@ export function WorkspacesPhone({
           layers={data.layers?.sheetIcons}
         />
       )}
-      {device === 'phone' ? <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} /> : null}
+      {device === 'phone' ? (
+        <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} push={push} />
+      ) : null}
     </Backdrop>
   )
 }

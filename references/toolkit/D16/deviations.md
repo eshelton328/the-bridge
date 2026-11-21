@@ -85,3 +85,14 @@ frame's `exceptions.json` holds only icon sizes (Differences).
   where the other rail icons are 22; the shared AppRail draws every item's
   icon at 24 (d-100), so the render's icon is 24 and `exceptions.json`
   names 477:736, as for `icon/artifacts`.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

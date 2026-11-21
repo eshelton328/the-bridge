@@ -111,3 +111,14 @@ beta.36), the empty state 120 px under
 the area's top (Figma's; drawn centred). The panel keeps the Inbox's
 paddings: 16 above and below, 12 at the start, 20 at the end, 12 between
 its rows, 6 above the discussion area.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

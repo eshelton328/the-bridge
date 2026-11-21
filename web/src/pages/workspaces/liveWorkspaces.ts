@@ -907,6 +907,21 @@ export function watchLiveWorkspaces({
   }
 }
 
+/**
+ * Whether the server lists the chat `chat` (a server chat ID), read now, past the cache: a link to a chat the cached
+ * list does not name (d-118, useChatLink.ts) may name a chat made since. When it does, the cached list and every layout
+ * are marked invalid, so the page's next load reads them. A read that misses answers false.
+ */
+export async function serverListsChat(
+  chat: string,
+  { client = queryClient, fetch = fetchWorkspaces }: Pick<LiveDeps, 'client' | 'fetch'> = {},
+): Promise<boolean> {
+  const answer = await fetch(AbortSignal.timeout(liveReadTimeoutMs))
+  const listed = answer.ok && answer.value.workspaces.some((w) => w.chats.some((c) => c.id === chat))
+  if (listed) await client.invalidateQueries({ queryKey, refetchType: 'none' })
+  return listed
+}
+
 export type LiveDeps = {
   readonly client?: QueryClient
   /** Reads the server; `signal` ends the read. */

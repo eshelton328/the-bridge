@@ -132,3 +132,14 @@ and the mono value size ("Mono field value size"). The dialog is
 `Dialog size="lg"`, 540 wide (`shell.dialogLg`, Figma's 540), its fields
 16 apart (Figma's, the dialog's gap), and the helper lines `small` in
 `fg.muted`, 6 under the control, as `TextField`'s.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

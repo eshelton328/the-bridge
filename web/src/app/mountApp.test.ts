@@ -42,10 +42,14 @@ const events = new EventTarget()
 let unmount: (() => void) | undefined
 let container: HTMLElement | undefined
 
-function mount(aboveRoutes = false) {
+function mount(aboveRoutes = false, push?: boolean) {
   container = document.createElement('div')
   document.body.append(container)
-  unmount = mountApp(container, { router: crashingRouter(aboveRoutes), events })
+  unmount = mountApp(container, {
+    router: crashingRouter(aboveRoutes),
+    events,
+    ...(push === undefined ? {} : { push }),
+  })
 }
 
 afterEach(() => {
@@ -56,6 +60,7 @@ afterEach(() => {
   clearReports()
   resetRetries()
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('mountApp', () => {
@@ -92,5 +97,39 @@ describe('mountApp', () => {
     await expect.element(page.getByRole('heading', { name: 'The Bridge hit an error' })).toBeVisible()
     await expect.element(page.getByRole('button', { name: '1 error' })).toBeVisible()
     expect(getReports().map((r) => r.error)).toEqual([crash])
+  })
+
+  it('registers no service worker and sends no "seen" in a test (d-118)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const register = vi.spyOn(navigator.serviceWorker, 'register')
+    const fetches = vi.fn(() => Promise.resolve(new Response(null, { status: 204 })))
+    vi.stubGlobal('fetch', fetches)
+    mount()
+    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
+    expect(register).not.toHaveBeenCalled()
+    expect(fetches).not.toHaveBeenCalled()
+  })
+
+  it('with push on, registers /sw.js for the whole app once, sends "seen" and stops on unmount (d-118)', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => undefined)
+    const register = vi
+      .spyOn(navigator.serviceWorker, 'register')
+      .mockImplementation(() => Promise.reject(new TypeError('no worker in tests')))
+    const seen: string[] = []
+    vi.stubGlobal('fetch', (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
+      seen.push(`${init?.method ?? 'GET'} ${new URL(url, location.origin).pathname}`)
+      return Promise.resolve(new Response(null, { status: 204 }))
+    })
+    mount(false, true)
+    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
+    expect(register.mock.calls).toEqual([['/sw.js', { scope: '/' }]])
+    expect(seen).toEqual(['POST /api/push/seen'])
+    // A failed registration is reported with its kind only.
+    await expect
+      .poll(() => getReports().map((r) => [r.source, r.error.name, r.error.message]))
+      .toContainEqual(['handler', 'ServiceWorkerMissError', 'The service worker did not register: TypeError'])
+    unmount?.()
+    unmount = undefined
   })
 })

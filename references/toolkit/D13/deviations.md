@@ -126,3 +126,14 @@ same results: text and rules pass, and position fails on the same three
 keys (`button · Show on map`, `446:514`, `stop · skill-eval-cases`). The
 lines, elbows, the gate's way out and the dashed loop now show where the
 render drew lone arrow icons.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

@@ -162,3 +162,14 @@ results (text fail with `commit-msg`, `hooks/commit-msg` and `→1 ←1`;
 rules fail with the list pane's `hiddenOverflow`) and the same 35 of 58
 passing layers. `label · new failure` is 20 high against 21 (its wrapper
 is now as high as the badge); its other edges do not move.
+
+## Notifications switch (d-118)
+
+In the app, the rail has a Notifications switch at its end, which this
+frame does not draw. Erik asked on 2026-11-21: "Can we get lush
+notifications on the phone for this app?" ("lush" is a typo for "push"),
+and decision d-118 adds Web Push with this switch to turn it on. It is a
+frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
+`web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
+only when the page entry passes `push`; this frame's state and story pass
+none, so the checks above are unchanged.

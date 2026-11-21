@@ -37,6 +37,7 @@ import { InboxDetail } from './InboxDetail.tsx'
 import { InboxListPane } from './InboxListPane.tsx'
 import { listView } from './listView.ts'
 import { startView } from './startView.ts'
+import type { PushSwitch } from '../../../lib/pushSwitch.ts'
 
 export type InboxScreenProps = {
   data: InboxData
@@ -44,6 +45,8 @@ export type InboxScreenProps = {
   /** The layout before the screen measures its width; after that the width picks it. */
   viewport: Viewport
   onNavigate?: ((page: string) => void) | undefined
+  /** The Notifications switch (d-118) at the rail's end and in the phone's More drawer; none in the Figma states. */
+  push?: PushSwitch | undefined
   /** What the owner typed in the open item, from the page store; without it the screen keeps its own. */
   drafts?: InboxDrafts | undefined
   onFilterChange?: ((filter: string) => void) | undefined
@@ -79,6 +82,7 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
   const {
     ui,
     onNavigate,
+    push,
     onSelectItem,
     onBack,
     onPromptOpenChange,
@@ -333,7 +337,11 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         onDiagnostic={reportShellDiagnostic}
         size={layout}
         view={open === null && rowOpened === undefined ? 'list' : 'detail'}
-        rail={desktop ? <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} /> : undefined}
+        rail={
+          desktop ? (
+            <AppRail selected="inbox" inboxBadge={data.railBadge} onSelect={onNavigate} push={push} />
+          ) : undefined
+        }
         tabBarOverlay
         tabBar={
           desktop || inChat || keyboard ? undefined : (
@@ -351,7 +359,9 @@ function InboxLayout({ layout, drafts, ...props }: InboxLayoutProps) {
         list={discussing ? undefined : list}
         detail={detail}
       />
-      {layout === 'phone' ? <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} /> : null}
+      {layout === 'phone' ? (
+        <MoreDrawer open={moreOpen} onOpenChange={setMoreOpen} onNavigate={onNavigate} push={push} />
+      ) : null}
       {remove === undefined ? null : (
         <RemoveDialog
           proposal={remove}

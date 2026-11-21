@@ -6,6 +6,10 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
 
 - A part the library cannot draw goes in `LIBRARY_GAPS.md` with the part
   used now; never hand-build it in a block.
+- `?chat=<chat ID>` opens that live chat as a tap on its row would, full
+  screen on the phone, then leaves the URL (`useChatLink.ts`): a tap on
+  a push notification links there (d-118, `app/push/AGENTS.md`). A chat
+  the live data does not list opens nothing.
 - In development the home reads the live source (d-117): with no
   `?state=` and no `?source=`, and with `?source=live`. `?source=fixtures`
   shows the home's sample data, and a `?state=` its fixture state.

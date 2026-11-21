@@ -19,27 +19,33 @@ const summary = (c: Chat) => ({
   parent: null,
 })
 
+/** A server workspace list: one workspace, "live work", with a Claude chat, a shell and the chats `more`. */
+export const liveWorkspacesWith = (...more: Chat[]) =>
+  WorkspacesResponse.parse({
+    machine: 'mac-mini',
+    workspaces: [
+      {
+        id: 'mac-mini/w-live',
+        label: 'live work',
+        chats: [
+          summary({ local: 'p1', kind: 'claude', title: 'plan the slice' }),
+          summary({ local: 's1', kind: 'shell', title: 'tail logs' }),
+          ...more.map(summary),
+        ],
+      },
+    ],
+  })
+
 /** The server's workspace list: one workspace, "live work", with a Claude chat and a shell. */
-const liveWorkspacesBody = WorkspacesResponse.parse({
-  machine: 'mac-mini',
-  workspaces: [
-    {
-      id: 'mac-mini/w-live',
-      label: 'live work',
-      chats: [
-        summary({ local: 'p1', kind: 'claude', title: 'plan the slice' }),
-        summary({ local: 's1', kind: 'shell', title: 'tail logs' }),
-      ],
-    },
-  ],
-})
+const liveWorkspacesBody = liveWorkspacesWith()
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 
-/** A workspace's layout: one active tab with its chats side by side, its first chat focused. */
-function layoutOf(id: string): Response {
-  const chats = liveWorkspacesBody.workspaces.find((w) => w.id === id)?.chats ?? []
+/** A workspace's layout in the list `body`: one active tab with its chats side by side, its first chat focused. */
+function layoutOf(body: unknown, id: string): Response {
+  const list = WorkspacesResponse.safeParse(body)
+  const chats = (list.success ? list.data : liveWorkspacesBody).workspaces.find((w) => w.id === id)?.chats ?? []
   const [first, ...rest] = chats
   if (first === undefined) return json({ error: { kind: 'not-found', message: 'none', requestId: 'r-1' } }, 404)
   const root = rest.reduce<LayoutNode>(
@@ -77,8 +83,11 @@ export type LiveServerStubOptions = {
   readonly workspaces?: unknown
 }
 
-/** What the stub saw: the body of each `POST /api/client-errors`, which it answers 204, as the server does. */
-export type LiveServerStub = { readonly clientErrors: string[] }
+/**
+ * What the stub saw: the body of each `POST /api/client-errors`, which it answers 204, as the server does. A test sets
+ * `workspaces` to change the list (and its layouts) that later reads get, such as a chat made since the last read.
+ */
+export type LiveServerStub = { readonly clientErrors: string[]; workspaces?: unknown }
 
 /**
  * Answers the API as a server with `liveWorkspacesBody` would, from the file's first test to its last; any other URL
@@ -98,18 +107,20 @@ export function stubLiveServer(options: LiveServerStubOptions = {}): LiveServerS
         window.location.origin,
       )
       if (url.origin !== window.location.origin || !url.pathname.startsWith('/api/')) return real(input, init)
-      if (url.pathname === '/api/workspaces') return Promise.resolve(json(options.workspaces ?? liveWorkspacesBody))
+      const body = stub.workspaces ?? options.workspaces ?? liveWorkspacesBody
+      if (url.pathname === '/api/workspaces') return Promise.resolve(json(body))
       if (url.pathname === '/api/client-errors' && init?.method === 'POST') {
         stub.clientErrors.push(typeof init.body === 'string' ? init.body : '')
         return Promise.resolve(new Response(null, { status: 204 }))
       }
       const layout = /^\/api\/workspaces\/([^/]+)\/layout$/.exec(url.pathname)
-      if (layout?.[1] !== undefined) return Promise.resolve(layoutOf(decodeURIComponent(layout[1])))
+      if (layout?.[1] !== undefined) return Promise.resolve(layoutOf(body, decodeURIComponent(layout[1])))
       if (url.pathname === '/api/events') return Promise.resolve(events(init?.signal))
       return Promise.resolve(json({ error: { kind: 'not-found', message: 'no stub', requestId: 'r-1' } }, 404))
     }
   })
   afterAll(() => {
+    stub.workspaces = undefined
     if (before !== undefined) globalThis.fetch = before
   })
   return stub
