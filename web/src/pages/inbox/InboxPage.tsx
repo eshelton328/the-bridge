@@ -17,6 +17,10 @@ import {
 } from './inboxStore.ts'
 import { InboxScreen } from './screens/InboxScreen.tsx'
 
+const reportCopy = (error: unknown) => {
+  report(error, 'handler')
+}
+
 const route = getRouteApi('/inbox')
 
 export function InboxPage() {
@@ -86,8 +90,9 @@ export function InboxPage() {
         setPromptOpen(search.state, open)
       }}
       onCopyPrompt={(text) => {
-        // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write.
-        copyText(text)
+        // copyText copies nothing, and throws nothing, on a page with no clipboard or one that refuses the write;
+        // a refusal that is not the browser's NotAllowedError is a fault, so it goes to the reporter.
+        void copyText(text, { report: reportCopy })
       }}
       onRemoveOpenChange={(open) => {
         setRemoveOpen(search.state, open)

@@ -1,5 +1,6 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
+import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { renderInbox, dialog, searchbox, box } from './inboxRouteHelpers.ts'
 
@@ -304,6 +305,23 @@ describe('the Inbox on the phone', () => {
       await page.getByRole('link', { name: 'Read the whole prompt' }).click()
       await dialog().getByRole('button', { name: 'Copy' }).click()
       expect(asked).toBe(1)
+      await expect.element(dialog()).toBeVisible()
+    } finally {
+      clipboard.writeText = writeText
+    }
+  })
+
+  it('reports a refused write that is not NotAllowedError, and copies nothing', async () => {
+    clearReports()
+    onTestFinished(clearReports)
+    const broken = new Error('the clipboard broke')
+    const { clipboard } = navigator
+    const writeText = clipboard.writeText.bind(clipboard)
+    clipboard.writeText = () => Promise.reject(broken)
+    try {
+      await phone('promptSheet')
+      await dialog().getByRole('button', { name: 'Copy' }).click()
+      await expect.poll(() => getReports().map((r) => r.error)).toContain(broken)
       await expect.element(dialog()).toBeVisible()
     } finally {
       clipboard.writeText = writeText
