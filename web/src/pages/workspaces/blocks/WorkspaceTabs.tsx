@@ -158,6 +158,7 @@ export function WorkspaceTabs({
                   onUiChange?.({
                     newChatOpen: true,
                     newChatWorkspace: shown,
+                    newChatBeside: null,
                     newChatStart: null,
                   })
           }

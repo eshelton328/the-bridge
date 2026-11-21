@@ -1,7 +1,7 @@
 // The live New chat form (W3): Figma's form (D3, M7) with what the server
 // can start. The server takes Claude Code alone (Codex waits for W8, and it
-// starts no shell), picks the folder itself (the folder of the workspace's
-// first pane), and takes a model
+// starts no shell), picks the folder itself (the folder of the chat the new
+// one goes beside, or of the workspace's first pane), and takes a model
 // alias of the contract (`claude --model`) or none for Claude Code's default.
 // The first message has no skill list, so its placeholder does not offer one.
 import type { NewChatForm } from './types.ts'
@@ -17,7 +17,8 @@ const modelOptions = [
 
 /**
  * The live New chat form: Figma's labels (D3, M7), Claude Code alone (Codex waits for W8, and the server starts no
- * shell), no folders (the server starts the chat in the folder of the workspace's first pane), the models above and an empty first message, in `workspace`.
+ * shell), no folders (the server starts the chat in the folder of the chat it goes beside, or of the workspace's first
+ * pane), the models above and an empty first message, in `workspace`.
  */
 export function liveNewChatForm(workspace: string): NewChatForm {
   return {
@@ -46,6 +47,6 @@ export function liveNewChatForm(workspace: string): NewChatForm {
     message: { placeholder: 'What should it do?', skills: 'Pick a skill' },
     cancel: 'Cancel',
     start: 'Start chat',
-    live: { starting: 'Starting…', newTab: 'new tab' },
+    live: { starting: 'Starting…', newTab: 'new tab', beside: 'beside {chat}' },
   }
 }

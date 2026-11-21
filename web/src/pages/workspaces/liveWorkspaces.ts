@@ -294,9 +294,10 @@ function liveOnly(
       chatCommands,
       liveTabs: Object.fromEntries(tabs),
       liveMachine: machine,
-      // W3: New chat starts a live Claude chat in a new tab: from the phone's + and a workspace's ⋯ (M15, M14), the
-      // desktop's tab + (D1) and a chat's actions.
+      // W3: New chat starts a live Claude chat, from the phone's + and a workspace's ⋯ (M15, M14) in a new tab, from
+      // the desktop's tab + (D1) in a new tab, and from a chat's actions or a pane's menu (D2b) beside that chat.
       newChat: liveNewChatForm(current ?? ''),
+      paneMenu: [{ value: 'newChat', label: 'New chat' }, ...data.paneMenu],
       ...(data.phone === undefined
         ? {}
         : {
