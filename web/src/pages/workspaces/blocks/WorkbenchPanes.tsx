@@ -176,8 +176,9 @@ export function WorkbenchPanes({
         moveTarget={ui.moveTarget}
         onMoveTargetChange={(moveTarget) => onUiChange?.({ moveTarget })}
         onSelect={(action) => {
-          // D2b: a pane's menu holds the chat actions; a live chat's New chat starts beside it (W3).
-          if (live !== undefined && action === 'newChat' && data.newChat !== undefined)
+          // D2b: a pane's menu holds the chat actions; a live chat's New chat starts beside it (W3). It needs no layout
+          // write, so it opens the form also while the workspace's layout read fails.
+          if (action === 'newChat' && data.newChat !== undefined)
             onUiChange?.({
               menuFor: null,
               moveOpen: false,

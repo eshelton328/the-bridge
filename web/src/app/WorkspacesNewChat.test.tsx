@@ -51,8 +51,8 @@ const list = {
 
 type Fakes = { list: FakeWorkspacesServer; chats: FakeTranscriptServer }
 
-/** The fakes; with `hold`, each start's answer waits for it. */
-function withChats(hold?: Promise<void>): Fakes {
+/** The fakes; with `hold`, each start's answer waits for it, and with `noLayout` each layout read answers 502. */
+function withChats(hold?: Promise<void>, noLayout = false): Fakes {
   const chats = fakeTranscriptServer()
   for (const c of [plan, review]) chats.set(c, [])
   const workspaces = fakeWorkspacesServer(chats, list)
@@ -61,6 +61,7 @@ function withChats(hold?: Promise<void>): Fakes {
     vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url
       const path = new URL(url, window.location.origin).pathname
+      if (noLayout && path.endsWith('/layout')) return Promise.resolve(new Response('Bad Gateway', { status: 502 }))
       if (hold !== undefined && path === '/api/chats')
         return hold.then(() => workspaces.handle(path, init) ?? Promise.reject(new TypeError('no start answer')))
       const answer = chats.handle(path, init) ?? workspaces.handle(path, init)
@@ -247,6 +248,19 @@ describe('New chat on the live page (W3)', () => {
     expect(fakes.list.tabs(live).map((t) => t.chats)).toEqual([[plan, 'mac-mini/new1', review]])
     await expect.poll(() => fakes.chats.prompts).toEqual([{ chat: 'mac-mini/new1', text: 'look here' }])
     await expect.element(page.getByRole('dialog', { name: 'New chat' })).not.toBeInTheDocument()
+  })
+
+  it('starts a chat beside a desktop pane while the layout read fails', async () => {
+    const fakes = withChats(undefined, true)
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText(/^Layout not live/)).toBeVisible()
+    await userEvent.click(page.getByRole('button', { name: 'plan the slice actions' }))
+    await userEvent.click(page.getByRole('menuitem', { name: 'New chat' }))
+    await expect.element(page.getByText('beside plan the slice')).toBeVisible()
+    await fill('no-layout', '')
+    await expect.poll(() => fakes.list.starts).toHaveLength(1)
+    expect(fakes.list.starts[0]).toMatchObject({ place: { in: 'split', beside: plan, direction: 'row' } })
   })
 
   it('opens a chat that needs the owner with its line, and keeps the first message in its box', async () => {
