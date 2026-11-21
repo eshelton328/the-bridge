@@ -413,9 +413,14 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       outages.delete(chat)
       return 'wait'
     }
-    if (answered === 'quiet') return 'resume'
+    // The server's own `error` event is an answer: it is reported even when the read then got none.
+    if (answered === 'quiet' && seen.serverKind === undefined) return 'resume'
     if (seen.unreadable) {
       fail(transcriptText.dropped, { part: 'stream', kind: 'bad-event' })
+      return 'again'
+    }
+    if (answered === 'quiet') {
+      fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
       return 'again'
     }
     // A read that missed shows its line; Retry starts again.

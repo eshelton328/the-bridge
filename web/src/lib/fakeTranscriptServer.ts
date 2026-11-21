@@ -123,8 +123,8 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const reads: string[] = []
   /** The chat IDs of each stream open, in order. */
   const opens: string[] = []
-  /** An answer in place of the read's, while set: such as a 503 with an error body. */
-  let readAnswer: (() => Response) | undefined
+  /** An answer in place of the read's, while set: such as a 503 with an error body, or one the test settles later. */
+  let readAnswer: (() => Response | Promise<Response>) | undefined
   /** An answer in place of the stream's, while set: such as a 500. */
   let streamAnswer: (() => Response) | undefined
   let seq = 0
@@ -407,7 +407,7 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
       }
     },
     /** Answers each read with `answer` until it is set to undefined. */
-    answerReads: (answer: (() => Response) | undefined) => {
+    answerReads: (answer: (() => Response | Promise<Response>) | undefined) => {
       readAnswer = answer
     },
     /** Answers each stream open with `answer` until it is set to undefined. */

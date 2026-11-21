@@ -579,6 +579,34 @@ describe("a live chat's transcript (slice 3b)", () => {
       ])
     })
 
+    it("reports the stream's error event even when the read then gets no answer while hidden, on the phone", async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The next read waits until the test ends it with no answer.
+      let endRead: (() => void) | undefined
+      server.answerReads(
+        () =>
+          new Promise<Response>((_, reject) => {
+            endRead = () => {
+              reject(new TypeError('Load failed'))
+            }
+          }),
+      )
+      setHidden(true)
+      server.close(plan)
+      // Hidden, it connects again on the retry time and waits for the read.
+      await expect.poll(() => endRead).toBeDefined()
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The server's watch fails first, then the read gets no answer.
+      server.fail(plan, 'internal')
+      endRead?.()
+      await expect.poll(() => getReports().length).toBe(1)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript stream missed: ended internal (chat mac-mini/c1)',
+      ])
+    })
+
     it('reports a server error on the connection made after the page showed, once, on the phone', async () => {
       const server = withPlan()
       await openPlan([390, 844])
