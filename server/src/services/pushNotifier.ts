@@ -1,5 +1,5 @@
 // Sends a Web Push to the owner (d-118) when a chat starts to wait for
-// them (needsYou) or ends its turn (working, then done). It holds one
+// them (needsYou) or ends its turn (working, then done or idle). It holds one
 // subscription to the agents while at least one push subscription is
 // stored, so the owner hears of a chat with no page open; with none
 // stored, it holds none. No push goes while a page of the owner was
@@ -25,10 +25,13 @@ type Deps = {
   readonly retryMs?: number
 }
 
-/** The event of a status change: needsYou when a chat starts to wait, done when a working chat ends its turn. */
+/**
+ * The event of a status change: needsYou when a chat starts to wait, done when a working chat ends its turn. herdr
+ * gives `idle`, not `done`, for a turn that ends in the pane its own screen shows, so that change is `done` too.
+ */
 function eventOf(before: ChatStatus | undefined, now: ChatStatus): PushEvent | null {
   if (now === 'needsYou' && before !== 'needsYou') return 'needsYou'
-  if (now === 'done' && before === 'working') return 'done'
+  if ((now === 'done' || now === 'idle') && before === 'working') return 'done'
   return null
 }
 
