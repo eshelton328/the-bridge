@@ -428,6 +428,41 @@ describe('herdr agents: input to a chat', () => {
       }
     })
 
+    it('lists the set effort until the session file changes, and tells each open list stream', async () => {
+      const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
+      const agents = port()
+      const effortIn = async () => {
+        const listed = await agents.listWorkspaces()
+        return listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.effort : undefined
+      }
+      withStatus('idle')
+      const before = await effortIn()
+      socket.set('pane.read', paneRead('w17:p1', marked('high')))
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', marked('xhigh')))
+      })
+      const events: AgentEvent[] = []
+      const watch = agents.subscribe(
+        (event) => events.push(event),
+        () => undefined,
+      )
+      try {
+        await watch.ready
+        events.length = 0
+        expect(await agents.setEffort(chat, 'xhigh')).toEqual({ ok: true, value: 'set' })
+        expect(events).toContainEqual({ type: 'workspacesChanged' })
+        expect(await effortIn()).toBe('xhigh')
+        // The next turn writes the session file; from then on the file names the effort.
+        appendFileSync(join(projects, '-home-dev-ncc-1701', 'session-a.jsonl'), 'not json\n')
+        expect(await effortIn()).toBe(before)
+      } finally {
+        watch.close()
+        socket.onRequest(undefined)
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+      }
+    })
+
     it('sets low only after the screen showed medium, so keys that change nothing are not set', async () => {
       const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
       const keys = () =>

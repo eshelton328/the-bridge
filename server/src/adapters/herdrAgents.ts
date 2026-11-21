@@ -17,13 +17,14 @@
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
 import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, type FSWatcher, watch } from 'node:fs'
-import { realpath } from 'node:fs/promises'
+import { realpath, stat } from 'node:fs/promises'
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import {
   ChatId,
   type ChatStatus,
   type ChatSummary,
   chatsOf,
+  type KeyEffort,
   type LayoutNode,
   LocalIdPart,
   type MachineId,
@@ -420,6 +421,19 @@ export function createHerdrAgents({
   /** The pane's opaque ID: a hash of herdr's terminal ID, which stays the same for the pane's life (also over /clear). */
   const paneIdOf = (terminal: string): PaneId => PaneId.parse(`${machine}/${hashOf(`pane:${terminal}`).slice(0, 20)}`)
 
+  /**
+   * The effort that `setEffort` set for each Claude session file, with the file's change time then: the keys write
+   * nothing to the file, so the list shows this level until a newer write (the next turn) names its own.
+   */
+  const setEfforts = new Map<string, { readonly effort: KeyEffort; readonly mtimeMs: number }>()
+  const mtimeOf = (path: string) =>
+    stat(path).then(
+      (s) => s.mtimeMs,
+      () => -1,
+    )
+  /** The tellers of each open list stream, so a write by this adapter can tell `workspacesChanged`. */
+  const listTellers = new Set<() => void>()
+
   const chatOf = async (
     agent: HerdrAgent,
     kind: 'claude' | 'codex',
@@ -431,13 +445,16 @@ export function createHerdrAgents({
       path === undefined
         ? { model: null, contextUsed: null, effort: null }
         : await readClaudeSession(path, undefined, windows)
+    const set = path === undefined ? undefined : setEfforts.get(path)
+    if (path !== undefined && set !== undefined && (await mtimeOf(path)) !== set.mtimeMs) setEfforts.delete(path)
+    const kept = path === undefined ? undefined : setEfforts.get(path)?.effort
     return {
       id: chatIdOf(agent, shared),
       kind,
       title: [agent.terminal_title_stripped, agent.name].find((t): t is string => Boolean(t)) ?? kind,
       model: session.model,
       modelId: modelAliasOf(session.model),
-      effort: session.effort,
+      effort: kept ?? session.effort,
       contextUsed: session.contextUsed,
       status: statusOf(agent.agent_status),
       parent: null,
@@ -827,6 +844,15 @@ export function createHerdrAgents({
     return err(badReply(`herdr ${method}: ${reply.error.code}`))
   }
 
+  /** Keeps the effort set for the pane's session file, and tells each open list stream that the list changed. */
+  const keepEffort = async (pane: string, effort: KeyEffort) => {
+    const agents = await call('agent.list', AgentList)
+    const agent = agents.ok ? agents.value.agents.find((a) => a.pane_id === pane) : undefined
+    const path = agent === undefined ? undefined : sessionPath(agent)
+    if (path !== undefined) setEfforts.set(path, { effort, mtimeMs: await mtimeOf(path) })
+    for (const tellList of listTellers) tellList()
+  }
+
   /** Sends effort keys, then reads the screen until `shows` holds: `set`, else `effortNotConfirmed`. */
   const effortStep = async (
     pane: string,
@@ -974,8 +1000,12 @@ export function createHerdrAgents({
       // change (CLAUDE_CODE_EFFORT_LEVEL), so medium on the screen first shows that the keys work.
       const via = effort === 'low' ? 'medium' : effort
       const first = await effortStep(pane, effortKeys(effortOf(screen.value), via), (shown) => shown === via)
-      if (!first.ok || first.value !== 'set' || effort !== 'low') return first
-      return effortStep(pane, ['shift+down'], (shown) => shown === 'low' || shown === 'none')
+      const done =
+        !first.ok || first.value !== 'set' || effort !== 'low'
+          ? first
+          : await effortStep(pane, ['shift+down'], (shown) => shown === 'low' || shown === 'none')
+      if (done.ok && done.value === 'set') await keepEffort(pane, effort)
+      return done
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)
@@ -1355,6 +1385,7 @@ export function createHerdrAgents({
       const end = (error: AgentPortError) => {
         if (over) return
         over = true
+        listTellers.delete(tellList)
         uncount()
         clearTimeout(settle)
         clearTimeout(lateSession)
@@ -1368,6 +1399,10 @@ export function createHerdrAgents({
       const tell = (event: AgentEvent) => {
         if (!over) onEvent(event)
       }
+      const tellList = () => {
+        tell({ type: 'workspacesChanged' })
+      }
+      listTellers.add(tellList)
 
       /** The workspace a layout event names, in the app's terms; undefined for any other line. */
       const layoutWorkspaceOf = (line: unknown): WorkspaceId | undefined => {
