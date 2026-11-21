@@ -168,8 +168,10 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
       // Events wait here until the stream is open.
       let deliver: ((event: TranscriptChangedEvent) => void) | undefined
       let endStream: ((error: AgentPortError) => void) | undefined
+      let goneStream: (() => void) | undefined
       const waiting: TranscriptChangedEvent[] = []
       let ended: AgentPortError | undefined
+      let left = false
       const connected = await connectTranscript(agents, id.data, {
         send: (event) => {
           if (deliver) deliver(event)
@@ -178,6 +180,10 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
         end: (error) => {
           if (endStream) endStream(error)
           else ended = error
+        },
+        gone: () => {
+          if (goneStream) goneStream()
+          else left = true
         },
       })
       if (!connected.ok) return failed(c, connected.error)
@@ -205,6 +211,13 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
           log.warn('event stream ended', { requestId, reason: error.reason, detail: error.message })
           void sendError(stream, agentErrorBody(error, requestId)).finally(done)
         }
+        // The chat has left the list (after /clear its pane has a new chat ID): one not-found error, then the end.
+        const leave = () => {
+          log.info('event stream ended', { requestId, reason: 'notFound' })
+          void sendError(stream, {
+            error: { kind: 'not-found', message: 'no chat has this ID', path: c.req.path, requestId },
+          }).finally(done)
+        }
         try {
           await stream.writeSSE({ event: 'open', data: '{}', retry: retryMs })
           if (stream.aborted || stream.closed) {
@@ -214,7 +227,9 @@ export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore
           for (const event of waiting.splice(0)) write(event)
           deliver = write
           endStream = fail
+          goneStream = leave
           if (ended) fail(ended)
+          else if (left) leave()
         } catch (err) {
           log.error('event stream error', { requestId, err })
           await sendError(stream, { error: { kind: 'internal', message: internalMessage, requestId } })

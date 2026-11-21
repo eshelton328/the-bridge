@@ -14,7 +14,9 @@ from the outside world.
 - `transcriptEvents.ts` watches one chat for each open transcript
   stream, through the port, and reads it again on each change; it reads
   once when the stream opens, after the watch is ready, so no change is
-  lost (`transcriptEvents.test.ts`).
+  lost. Each stream also subscribes to the port's list changes, and a
+  read that then finds no such chat ends the stream with `gone`
+  (`transcriptEvents.test.ts`).
 - `uploadStore.ts` is the port for the files that the owner attaches
   to a prompt; `uploads.ts` lets only a Claude chat take one, and
   sends a prompt with the path of each file below its text.

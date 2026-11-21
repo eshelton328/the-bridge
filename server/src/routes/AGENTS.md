@@ -30,7 +30,10 @@ Thin Hono sub-apps, one file for each area, named after the area
 - `GET /api/chats/:chat/transcript/events` answers 400 or 404 as the
   read does, before it streams. Then it streams as `/api/events` does:
   each `transcript.changed` event holds only the entries that are new
-  or changed since the stream opened (`chats.test.ts`).
+  or changed since the stream opened. When the chat leaves the list
+  (after `/clear` the pane has a new session, so a new chat ID), it
+  sends one `error` event of kind `not-found` and ends; the page then
+  follows the chat's pane (`chats.test.ts`).
 - `POST /api/chats/:chat/prompt` and `POST /api/chats/:chat/stop` take
   only JSON, and check the body with the contract in a hono `validator`,
   so the typed client knows the body; malformed JSON is 400, not a throw. A sent input is 204; an unknown chat is 404; a shell, a chat
