@@ -16,6 +16,8 @@ import type {
   WorkspaceId,
   WorkspaceLayout,
   WorkspaceSummary,
+  StartChatRequest,
+  StartChatResponse,
 } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
@@ -74,6 +76,11 @@ export type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
 export type MoveOutcome = PaneWriteOutcome | 'sameTab' | 'zoomedTab'
 /** What a split did: the chat of the new shell pane, or `notFound` when the chat has no pane. */
 export type SplitOutcome = { readonly chat: ChatId } | 'notFound'
+/**
+ * What a start did (slice W3): the new pane, its chat once Claude has a session, and its state; `notFound` for no
+ * such chat or workspace, `folderNotAllowed` for a folder outside the chat root, `nameTaken` for a name in use.
+ */
+type StartOutcome = StartChatResponse | 'notFound' | 'folderNotAllowed' | 'nameTaken'
 
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty' | 'inputUnreadable'> | 'notWorking'
@@ -172,6 +179,11 @@ export type AgentPort = {
   ): Promise<Result<MoveOutcome, AgentPortError>>
   /** Splits the pane of one chat in two, `row` with the new pane on the right, `column` below; the new pane is a shell. */
   splitChat(chat: ChatId, direction: SplitDirection): Promise<Result<SplitOutcome, AgentPortError>>
+  /**
+   * Starts a Claude chat in a new pane beside a chat (in its folder) or in a new tab of a workspace (in the folder of
+   * its first pane), with no focus change and no flag that skips a permission. It answers no prompt of the new chat.
+   */
+  startChat(request: Omit<StartChatRequest, 'createId'>): Promise<Result<StartOutcome, AgentPortError>>
   /**
    * Gives the split of `tab` at `path` (from the tree's root; empty for the root) the share `ratio` for its first
    * part; `notFound` for no such tab or split.

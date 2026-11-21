@@ -286,6 +286,39 @@ export function createFakeAgents(
     transcripts.delete(chat)
     tell({ type: 'workspacesChanged' })
   }
+  /** Splits the pane of `chat` in two, as herdr does, with the chat that `make` gives in the new pane. */
+  const addPane = (
+    chat: ChatId,
+    direction: SplitDirection,
+    make: (id: ChatId, pane: PaneId) => ChatSummary,
+  ): ChatSummary | undefined => {
+    const workspace = workspaceOf(chat)
+    const target = chatOf(chat)
+    const tree = workspace === undefined ? undefined : treeOf(workspace)
+    if (workspace === undefined || target === undefined || tree === undefined) return undefined
+    splits += 1
+    const local = `split-${String(splits)}`
+    const made = make(ChatId.parse(`${machine}/${local}`), PaneId.parse(`${machine}/pane-${local}`))
+    // As herdr does: the chat's pane becomes a split of it and the new pane, half each.
+    trees.set(
+      workspace.id,
+      mapPanes(tree, (pane) =>
+        pane === target.pane
+          ? {
+              kind: 'split',
+              direction,
+              ratio: 0.5,
+              first: { kind: 'pane', pane },
+              second: { kind: 'pane', pane: made.pane },
+            }
+          : { kind: 'pane', pane },
+      ),
+    )
+    workspace.chats.splice(workspace.chats.findIndex((c) => c.id === chat) + 1, 0, made)
+    tell({ type: 'workspacesChanged' })
+    tell({ type: 'layoutChanged', workspace: workspace.id })
+    return made
+  }
   let clears = 0
   return {
     machine,
@@ -474,14 +507,8 @@ export function createFakeAgents(
     },
     splitChat(chat, direction) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
-      const workspace = workspaceOf(chat)
-      const target = chatOf(chat)
-      const tree = workspace === undefined ? undefined : treeOf(workspace)
-      if (workspace === undefined || target === undefined || tree === undefined) return Promise.resolve(ok('notFound'))
-      splits += 1
-      const local = `split-${String(splits)}`
-      const shell: ChatSummary = {
-        id: ChatId.parse(`${machine}/${local}`),
+      const shell = addPane(chat, direction, (id, pane) => ({
+        id,
         kind: 'shell',
         title: 'zsh',
         model: 'zsh',
@@ -490,27 +517,34 @@ export function createFakeAgents(
         contextUsed: null,
         status: 'idle',
         parent: null,
-        pane: PaneId.parse(`${machine}/pane-${local}`),
-      }
-      // As herdr does: the chat's pane becomes a split of it and the new pane, half each.
-      trees.set(
-        workspace.id,
-        mapPanes(tree, (pane) =>
-          pane === target.pane
-            ? {
-                kind: 'split',
-                direction,
-                ratio: 0.5,
-                first: { kind: 'pane', pane },
-                second: { kind: 'pane', pane: shell.pane },
-              }
-            : { kind: 'pane', pane },
-        ),
+        pane,
+      }))
+      return Promise.resolve(ok(shell === undefined ? 'notFound' : { chat: shell.id }))
+    },
+    startChat({ name, model, place }) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const chatName = name ?? `chat-${String(splits + 1)}`
+      if ((data ?? []).some((w) => w.chats.some((c) => c.title === chatName))) return Promise.resolve(ok('nameTaken'))
+      const make = (id: ChatId, pane: PaneId): ChatSummary => ({
+        id,
+        kind: 'claude',
+        title: chatName,
+        model: `claude-${model ?? 'opus'}`,
+        modelId: model ?? 'opus',
+        effort: null,
+        contextUsed: null,
+        status: 'idle',
+        parent: null,
+        pane,
+      })
+      // The fake has one tab in each workspace, so a start in a new tab splits that tab beside its first chat.
+      const beside =
+        place.in === 'split' ? place.beside : (data ?? []).find((w) => w.id === place.workspace)?.chats[0]?.id
+      const started =
+        beside === undefined ? undefined : addPane(beside, place.in === 'split' ? place.direction : 'row', make)
+      return Promise.resolve(
+        ok(started === undefined ? 'notFound' : { pane: started.pane, chat: started.id, state: 'ready' }),
       )
-      workspace.chats.splice(workspace.chats.findIndex((c) => c.id === chat) + 1, 0, shell)
-      tell({ type: 'workspacesChanged' })
-      tell({ type: 'layoutChanged', workspace: workspace.id })
-      return Promise.resolve(ok({ chat: shell.id }))
     },
     setSplitRatio(tab, path, ratio) {
       if ('error' in answer) return Promise.resolve(err(answer.error))

@@ -25,6 +25,7 @@ describe('config', () => {
         dbFile: '/tmp/bridge.db',
         claudeProjects: '/tmp/claude',
         claudeSettings: '/tmp/settings.json',
+        chatRoot: '/tmp',
         logDir: '/tmp/bridge-logs',
         logLevel: 'info',
         pushSubject: 'https://github.com/eshelton328/the-bridge',
@@ -35,6 +36,12 @@ describe('config', () => {
   it('takes the Claude settings file from BRIDGE_CLAUDE_SETTINGS when it is set', () => {
     const read = readConfig({ ...env, BRIDGE_CLAUDE_SETTINGS: '/home/dev/.claude/settings.json' })
     expect(read.ok ? read.value.claudeSettings : undefined).toBe('/home/dev/.claude/settings.json')
+  })
+
+  it('takes the chat root from BRIDGE_CHAT_ROOT, else the parent of the brain folder', () => {
+    const read = readConfig({ ...env, BRIDGE_CHAT_ROOT: '/home/dev/ncc-1701' })
+    expect(read.ok ? read.value.chatRoot : undefined).toBe('/home/dev/ncc-1701')
+    expect(readConfig({ ...env, BRIDGE_CHAT_ROOT: 'relative/folder' }).ok).toBe(false)
   })
 
   it('takes the push contact from BRIDGE_PUSH_SUBJECT, a mailto: or https:// URL only', () => {

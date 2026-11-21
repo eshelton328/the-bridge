@@ -18,6 +18,7 @@ const Env = z.object({
   BRIDGE_DB_FILE: path,
   BRIDGE_CLAUDE_PROJECTS: path,
   BRIDGE_CLAUDE_SETTINGS: path.optional(),
+  BRIDGE_CHAT_ROOT: path.optional(),
   BRIDGE_LOG_DIR: path,
   BRIDGE_LOG_LEVEL: z.enum(logLevels).default('info'),
   BRIDGE_PUSH_SUBJECT: z
@@ -40,6 +41,8 @@ export type Config = {
   readonly claudeProjects: string
   /** Claude Code's settings file, read only; the settings.json beside the projects folder when not set. */
   readonly claudeSettings: string
+  /** The folder under which the app may start a chat (slice W3); the brain folder's parent when not set. */
+  readonly chatRoot: string
   /** The folder of the log files, one for each day (d-115). */
   readonly logDir: string
   readonly logLevel: LogLevel
@@ -61,6 +64,7 @@ export function readConfig(env: Readonly<Record<string, string | undefined>>): R
     dbFile: e.BRIDGE_DB_FILE,
     claudeProjects: e.BRIDGE_CLAUDE_PROJECTS,
     claudeSettings: e.BRIDGE_CLAUDE_SETTINGS ?? join(dirname(e.BRIDGE_CLAUDE_PROJECTS), 'settings.json'),
+    chatRoot: e.BRIDGE_CHAT_ROOT ?? dirname(e.BRIDGE_BRAIN_DIR),
     logDir: e.BRIDGE_LOG_DIR,
     logLevel: e.BRIDGE_LOG_LEVEL,
     pushSubject: e.BRIDGE_PUSH_SUBJECT ?? 'https://github.com/eshelton328/the-bridge',
