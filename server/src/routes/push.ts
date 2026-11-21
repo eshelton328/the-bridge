@@ -33,7 +33,17 @@ export function pushRoutes(store: PushStore, seen: PushSeen, log: Logger) {
           message: 'the endpoint is not a known push service',
           issues: ['endpoint: unknown push service'],
         })
-      const saved = await store.save({ ...subscription, endpoint: canonicalEndpoint(subscription.endpoint) })
+      // The written form can be longer than the sent one (each "é" becomes "%C3%A9"), so the contract checks it again.
+      const written = PushSubscriptionRequest.safeParse({
+        ...subscription,
+        endpoint: canonicalEndpoint(subscription.endpoint),
+      })
+      if (!written.success)
+        return errorJson(c, 'invalid-input', {
+          message: 'the endpoint is too long',
+          issues: ['endpoint: too long as a URL'],
+        })
+      const saved = await store.save(written.data)
       return saved.ok ? c.body(null, 204) : failed(c, saved.error)
     })
     .delete('/subscriptions', smallJson, jsonOnly, jsonBody(PushUnsubscribeRequest), async (c) => {
