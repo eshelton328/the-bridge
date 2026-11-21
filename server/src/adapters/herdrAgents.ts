@@ -30,6 +30,7 @@ import {
   type MachineId,
   PaneId,
   splitId,
+  type StartState,
   WorkspaceId,
   WorkspaceLayout,
 } from '@bridge/contract'
@@ -165,6 +166,7 @@ type HerdrAgent = z.infer<typeof AgentList>['agents'][number]
 const AgentInfo = z.object({
   agent: AgentList.shape.agents.element.extend({ interactive_ready: z.boolean().optional() }),
 })
+type AgentInfoAgent = z.infer<typeof AgentInfo>['agent']
 
 const PaneList = z.object({
   panes: z.array(
@@ -848,6 +850,50 @@ export function createHerdrAgents({
     return err(badReply(`herdr ${method}: ${reply.error.code}`))
   }
 
+  type Launched =
+    | { readonly started: false; readonly error: SocketFailure }
+    | { readonly started: true; readonly waitFailed: string | undefined; readonly agent: AgentInfoAgent | undefined }
+
+  /**
+   * Starts Claude in a shell pane with an argument list, never a shell line (again while herdr says the shell is
+   * still starting: `agent_pane_busy`), then waits for it as a start does: `agent` is undefined when herdr's wait
+   * timed out, and `waitFailed` holds herdr's code of any other wait failure (the agent or its pane ended).
+   */
+  const launchClaude = async (pane: string, name: string, args: readonly string[]): Promise<Launched> => {
+    const start = { name, kind: 'claude', pane_id: pane, args, timeout_ms: startWaitMs }
+    let started = await herdrRequest(socket, 'agent.start', start)
+    for (
+      let tries = 0;
+      tries < busyTries &&
+      !started.ok &&
+      started.error.kind === 'herdrError' &&
+      started.error.code === 'agent_pane_busy';
+      tries += 1
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, busyGapMs))
+      started = await herdrRequest(socket, 'agent.start', start)
+    }
+    if (!started.ok) return { started: false, error: started.error }
+    // herdr answers the start at once. The adapter answers no prompt of the new chat (a folder trust question too).
+    const waited = await herdrRequest(
+      socket,
+      'agent.wait',
+      { target: pane, until: ['idle', 'done', 'blocked'], timeout_ms: startWaitMs },
+      startWaitMs + 5000,
+    )
+    if (!waited.ok && waited.error.kind === 'herdrError' && waited.error.code !== 'timeout')
+      return { started: true, waitFailed: waited.error.code, agent: undefined }
+    const info = waited.ok ? AgentInfo.safeParse(waited.value) : undefined
+    return { started: true, waitFailed: undefined, agent: info?.success === true ? info.data.agent : undefined }
+  }
+
+  /** A started chat's state: an idle agent whose launch herdr has not finished still refuses a prompt (`starting`). */
+  const startStateOf = (agent: AgentInfoAgent): StartState => {
+    const status = statusOf(agent.agent_status)
+    if (status === 'needsYou') return 'needsYou'
+    return agent.interactive_ready === true && (status === 'idle' || status === 'done') ? 'ready' : 'starting'
+  }
+
   /** Keeps the effort set for the pane's session file, and tells each open list stream that the list changed. */
   const keepEffort = async (pane: string, effort: KeyEffort) => {
     const agents = await call('agent.list', AgentList)
@@ -1175,40 +1221,13 @@ export function createHerdrAgents({
       forgetPlaces()
       // An argument list, never a shell line: the name and the model alias only, and no flag that skips a permission.
       const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model])]
-      const start = { name: chatName, kind: 'claude', pane_id: pane.pane_id, args, timeout_ms: startWaitMs }
-      let started = await herdrRequest(socket, 'agent.start', start)
-      // The new pane's shell can still be starting, and herdr then refuses the start (`agent_pane_busy`).
-      for (
-        let tries = 0;
-        tries < busyTries &&
-        !started.ok &&
-        started.error.kind === 'herdrError' &&
-        started.error.code === 'agent_pane_busy';
-        tries += 1
-      ) {
-        await new Promise((resolve) => setTimeout(resolve, busyGapMs))
-        started = await herdrRequest(socket, 'agent.start', start)
-      }
-      if (!started.ok) return writeFailed('agent.start', started.error)
+      const launched = await launchClaude(pane.pane_id, chatName, args)
+      if (!launched.started) return writeFailed('agent.start', launched.error)
+      if (launched.waitFailed !== undefined) return err(badReply(`herdr agent.wait: ${launched.waitFailed}`))
       const paneId = paneIdOf(pane.terminal_id)
-      // herdr answers the start at once; wait for the chat to be ready or to wait for the owner. The adapter answers
-      // no prompt of the new chat (a folder trust question too): `needsYou` stays until the owner answers it.
-      const waited = await herdrRequest(
-        socket,
-        'agent.wait',
-        { target: pane.pane_id, until: ['idle', 'done', 'blocked'], timeout_ms: startWaitMs },
-        startWaitMs + 5000,
-      )
-      // herdr's own timeout leaves the chat starting; any other failure (the agent or its pane ended) is an error.
-      if (!waited.ok && waited.error.kind === 'herdrError' && waited.error.code !== 'timeout')
-        return err(badReply(`herdr agent.wait: ${waited.error.code}`))
-      const info = waited.ok ? AgentInfo.safeParse(waited.value) : undefined
-      if (info?.success !== true) return ok({ pane: paneId, state: 'starting' })
-      const status = statusOf(info.data.agent.agent_status)
-      // An idle agent whose launch herdr has not finished still refuses a prompt, so it is `starting`.
-      const takes = info.data.agent.interactive_ready === true && (status === 'idle' || status === 'done')
-      const state = status === 'needsYou' ? 'needsYou' : takes ? 'ready' : 'starting'
-      const chat = sessionOf(info.data.agent) === undefined ? undefined : chatIdOf(info.data.agent, new Set())
+      if (launched.agent === undefined) return ok({ pane: paneId, state: 'starting' })
+      const state = startStateOf(launched.agent)
+      const chat = sessionOf(launched.agent) === undefined ? undefined : chatIdOf(launched.agent, new Set())
       return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
     },
     async setSplitRatio(tab, path, ratio) {
