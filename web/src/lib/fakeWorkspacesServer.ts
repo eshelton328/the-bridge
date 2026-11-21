@@ -1,7 +1,7 @@
 // A fake of the server's workspace routes (W5), for tests: `GET
 // /api/workspaces`, each workspace's layout (`GET
 // /api/workspaces/:workspace/layout`, its chats side by side in one tab, the
-// first focused) and the event stream (`GET /api/events`), from one list.
+// first focused unless `focus` moved it) and the event stream (`GET /api/events`), from one list.
 // Every list, layout and event is checked against the contract
 // (`WorkspacesResponse`, `WorkspaceLayout`, `WorkspacesChangedEvent`), so a
 // test cannot send what the server would not. A test plugs `handle` into its
@@ -18,6 +18,7 @@
 import {
   ChatId,
   type ChatSummary,
+  LayoutChangedEvent,
   type LayoutNode,
   WorkspaceLayout,
   WorkspacesChangedEvent,
@@ -38,18 +39,21 @@ export function fakeWorkspacesServer(
   const streams: ReadableStreamDefaultController<Uint8Array>[] = []
   let seq = 0
   let clears = 0
+  /** The focused chat of each workspace, by its ID; the first chat when not set. */
+  const focusedChats = new Map<string, string>()
 
   const layoutOf = (workspace: string) => {
     const chats = response.workspaces.find((w) => w.id === workspace)?.chats ?? []
     const [first, ...rest] = chats
     if (first === undefined) return undefined
+    const focusedChat = chats.find((c) => c.id === focusedChats.get(workspace))?.id ?? first.id
     const root = rest.reduce<LayoutNode>(
       (left, c) => ({ kind: 'split', direction: 'row', ratio: 0.5, first: left, second: { kind: 'pane', chat: c.id } }),
       { kind: 'pane', chat: first.id },
     )
     return WorkspaceLayout.parse({
       workspace,
-      tabs: [{ id: `${workspace}:t1`, label: 'main', active: true, root, focusedChat: first.id, chats }],
+      tabs: [{ id: `${workspace}:t1`, label: 'main', active: true, root, focusedChat, chats }],
     })
   }
 
@@ -87,6 +91,21 @@ export function fakeWorkspacesServer(
     for (const s of streams) s.enqueue(encoder.encode(text))
   }
 
+  /** Focuses `chat` in its workspace's layout and sends `layout.changed`, as herdr's focus change from the terminal. */
+  const focus = (chat: string) => {
+    const workspace = response.workspaces.find((w) => w.chats.some((c) => c.id === chat))
+    if (workspace === undefined) return
+    focusedChats.set(workspace.id, chat)
+    const event = LayoutChangedEvent.parse({
+      source: `${response.machine}/herdr`,
+      seq: seq++,
+      type: 'layout.changed',
+      data: { workspace: workspace.id },
+    })
+    const text = `event: layout.changed\nid: ${String(event.seq)}\ndata: ${JSON.stringify(event)}\n\n`
+    for (const s of streams) s.enqueue(encoder.encode(text))
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -110,6 +129,7 @@ export function fakeWorkspacesServer(
 
   return {
     replaceChat,
+    focus,
     /** Sets the status of `chat`, as a `workspaces.changed` read again shows it. */
     setStatus: (chat: string, status: ChatSummary['status']) => {
       update((c) => (c.id === chat ? { ...c, status } : c))
