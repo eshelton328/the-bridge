@@ -491,22 +491,27 @@ describe("a live Claude chat's Send (W1)", () => {
       reports.expectNoText()
     })
 
+  // A long text has a space every 8 characters, as typed text has: Chromium lays out one unbroken 32,768-character word
+  // in about 1 s (5 s on a CI runner), and three such fills used up the test's time (the-bridge #321, CI run 44863508591).
+  const longText = (length: number) =>
+    Array.from({ length }, (_, i) => (i % 8 === 7 && i !== length - 1 ? ' ' : 'x')).join('')
+
   it('sends no text that is empty, only spaces or over the limit, says by how much it is over, and turns Send off', async () => {
     const fake = withChats()
     await openAndType(phone, 'plan the slice', '   ')
     await userEvent.click(sendButton('plan the slice'))
-    await userEvent.fill(box('plan the slice'), 'x'.repeat(maxPromptChars + 1))
+    await userEvent.fill(box('plan the slice'), longText(maxPromptChars + 1))
     const chat = chatRegion('plan the slice')
     await expect.element(chat.getByText('Message too long — 1 character over')).toBeVisible()
     // W1b: Send is off while the text is over the limit (the library's sendDisabled), and Enter sends nothing.
     await expect.element(sendButton('plan the slice')).toBeDisabled()
-    await userEvent.fill(box('plan the slice'), 'x'.repeat(maxPromptChars + 5))
+    await userEvent.fill(box('plan the slice'), longText(maxPromptChars + 5))
     await expect.element(chat.getByText('Message too long — 5 characters over')).toBeVisible()
     await userEvent.keyboard('{Enter}')
     await new Promise((resolve) => setTimeout(resolve, 200))
     expect(fake.posts).toEqual([])
     // At the limit the line goes and the text sends.
-    await userEvent.fill(box('plan the slice'), 'x'.repeat(maxPromptChars))
+    await userEvent.fill(box('plan the slice'), longText(maxPromptChars))
     await expect.element(chat.getByText(/^Message too long/)).not.toBeInTheDocument()
     await userEvent.click(sendButton('plan the slice'))
     await expect.poll(() => fake.prompts.length).toBe(1)
