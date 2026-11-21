@@ -2,10 +2,13 @@ import { afterEach, describe, expect, it, onTestFinished } from 'vitest'
 import { page, userEvent } from 'vitest/browser'
 import { clearReports, getReports } from '../errors/reporter.ts'
 import { resetAllStores } from '../state/resetStores.ts'
-import { renderInbox, dialog, searchbox, box } from './inboxRouteHelpers.ts'
+import { renderInbox, showState, dialog, searchbox, box } from './inboxRouteHelpers.ts'
+import { stubLiveServer } from './liveServerStub.ts'
 
 // The Inbox on the phone, through the real route, loader and page store
 // (see InboxRoute.test.tsx).
+// A test opens Workspaces, whose home reads the live source (d-117): a stubbed server, never the one on this machine.
+stubLiveServer()
 
 afterEach(async () => {
   resetAllStores()
@@ -67,6 +70,20 @@ describe('the Inbox on the phone', () => {
     await sheet('Pick the header logo').getByText('Dismiss with a reason…').click()
     await expect.element(page.getByText('Pick the header logo')).not.toBeInTheDocument()
     await expect.element(page.getByRole('radio', { name: 'Done 5' })).toBeInTheDocument()
+  })
+
+  // Audit P-7: a row that leaves the list during a long touch must not open its actions later.
+  it('does not open a row’s actions when the owner leaves the Inbox during a long touch', async () => {
+    await page.viewport(390, 844)
+    const { router, rendered } = renderInbox('list')
+    view = await rendered
+    await expect.element(page.getByText('Pick the header logo', { exact: true })).toBeVisible()
+    row('Pick the header logo').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch' }))
+    await page.getByRole('button', { name: 'Workspaces', exact: true }).first().click()
+    await new Promise((resolve) => setTimeout(resolve, 700))
+    await showState(router, 'list')
+    await expect.element(searchbox()).toBeVisible()
+    expect(sheet('Pick the header logo').query()).toBeNull()
   })
 
   it('does not open the task when a long touch opened its actions', async () => {
