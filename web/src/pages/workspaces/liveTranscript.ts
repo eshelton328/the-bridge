@@ -288,7 +288,10 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     }
     if (signal.aborted) return false
     if (!answer.ok) {
-      if ((answer.error.kind === 'unreachable' || answer.error.kind === 'timeout') && quietMiss(mark)) return 'quiet'
+      // Only no answer at all can be the background's close: a 5xx that is not JSON (the proxy) is still an answer.
+      const noAnswer =
+        answer.error.kind === 'timeout' || (answer.error.kind === 'unreachable' && answer.error.status === undefined)
+      if (noAnswer && quietMiss(mark)) return 'quiet'
       const miss: TranscriptMiss = {
         part: 'read',
         kind: answer.error.kind,

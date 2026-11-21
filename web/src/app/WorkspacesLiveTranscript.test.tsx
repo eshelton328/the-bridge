@@ -565,6 +565,20 @@ describe("a live chat's transcript (slice 3b)", () => {
       expect(getReports()).toHaveLength(1)
     })
 
+    it('reports a read that answers a 502 that is not JSON while the page is hidden, on the phone', async () => {
+      const server = withPlan()
+      await openPlan([390, 844])
+      await expect.poll(() => server.openStreams()).toContain(plan)
+      // The proxy answers for a server that is down: an answer, not the background's close.
+      server.answerReads(() => new Response('Bad Gateway', { status: 502 }))
+      setHidden(true)
+      server.close(plan)
+      await expect.poll(() => getReports().length).toBe(1)
+      expect(getReports().map((r) => r.error.message)).toEqual([
+        'A chat transcript read missed: unreachable 502 (chat mac-mini/c1)',
+      ])
+    })
+
     it('reports a server error on the connection made after the page showed, once, on the phone', async () => {
       const server = withPlan()
       await openPlan([390, 844])
