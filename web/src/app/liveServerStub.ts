@@ -48,7 +48,7 @@ function layoutOf(id: string): Response {
   )
   return json({
     workspace: id,
-    tabs: [{ id: `${id}:t1`, label: 'main', active: true, root, focusedChat: first.id, chats }],
+    tabs: [{ id: `${id}:t1`, label: 'main', active: true, root, focusedChat: first.id, zoomed: false, chats }],
   })
 }
 

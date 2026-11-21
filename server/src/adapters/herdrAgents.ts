@@ -34,7 +34,14 @@ import {
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
 import type { Logger } from '../logger.ts'
-import type { AgentEvent, AgentPort, AgentPortError, ChatCommand, PromptOutcome } from '../services/agentPort.ts'
+import type {
+  AgentEvent,
+  AgentPort,
+  AgentPortError,
+  ChatCommand,
+  PaneWriteOutcome,
+  PromptOutcome,
+} from '../services/agentPort.ts'
 import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } from './herdrSocket.ts'
 import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
@@ -69,7 +76,15 @@ const HerdrNode: z.ZodDiscriminatedUnion<[typeof HerdrPaneNode, typeof HerdrSpli
 ])
 type HerdrNode = z.infer<typeof HerdrNode>
 
-const LayoutExport = z.object({ layout: z.object({ focused_pane_id: z.string(), root: HerdrNode }) })
+const LayoutExport = z.object({
+  layout: z.object({ focused_pane_id: z.string(), zoomed: z.boolean().optional(), root: HerdrNode }),
+})
+/** A reply whose fields the adapter does not read. */
+const AnyReply = z.object({})
+/** herdr's reason when a zoom or a swap changed nothing; null when it changed. */
+const Reason = z.string().nullable().optional()
+const ZoomReply = z.object({ zoom: z.object({ reason: Reason }) })
+const SwapReply = z.object({ swap: z.object({ reason: Reason }) })
 
 /** herdr's tree in the app's terms, each pane by its chat ID; undefined when a pane has no listed chat. */
 function nodeOf(node: HerdrNode, ids: ReadonlyMap<string, ChatId>): LayoutNode | undefined {
@@ -109,6 +124,7 @@ const PaneList = z.object({
       pane_id: z.string(),
       terminal_id: LocalIdPart,
       workspace_id: LocalIdPart,
+      tab_id: z.string().optional(),
       agent_status: z.string(),
       label: z.string().nullable().optional(),
     }),
@@ -455,6 +471,7 @@ export function createHerdrAgents({
         active: tab.tab_id === active,
         root,
         focusedChat: ids.get(exported.value.layout.focused_pane_id),
+        zoomed: exported.value.layout.zoomed ?? false,
         chats: chatsOf(root).map((id) => byChat.get(id)),
       })
     }
@@ -509,6 +526,51 @@ export function createHerdrAgents({
       claude: agent.agent === 'claude',
     })
   }
+
+  /**
+   * The herdr pane of any chat, a shell too, with its tab and its status (a shell is `idle`); null for no such
+   * chat. The pane ID stays here (d-110).
+   */
+  const paneOf = async (
+    chat: ChatId,
+  ): Promise<Result<{ pane: string; tab: string | undefined; status: ChatStatus } | null, AgentPortError>> => {
+    const { machine: on } = splitId(chat)
+    if (on !== machine) return ok(null)
+    const [agents, panes] = await Promise.all([call('agent.list', AgentList), call('pane.list', PaneList)])
+    if (!agents.ok) return agents
+    if (!panes.ok) return panes
+    const shared = sharedSessions(agents.value.agents)
+    const agent = agents.value.agents.filter(isChat).find((a) => chatIdOf(a, shared) === chat)
+    const pane = agent?.pane_id ?? panes.value.panes.find((p) => shellIdOf(p) === chat)?.pane_id
+    if (pane === undefined) return ok(null)
+    const tab = panes.value.panes.find((p) => p.pane_id === pane)?.tab_id
+    return ok({ pane, tab, status: agent === undefined ? 'idle' : statusOf(agent.agent_status) })
+  }
+
+  /**
+   * One layout write to herdr: its parsed reply, or `notFound` when the pane closed before the write. Another herdr
+   * error keeps only its code.
+   */
+  const paneWrite = async <T>(
+    method: string,
+    schema: z.ZodType<T>,
+    params: Readonly<Record<string, unknown>>,
+  ): Promise<Result<T | 'notFound', AgentPortError>> => {
+    const reply = await herdrRequest(socket, method, params)
+    if (!reply.ok) {
+      if (reply.error.kind !== 'herdrError') return err(portErrorOf(reply.error))
+      if (reply.error.code === 'pane_not_found') return ok('notFound')
+      return err(badReply(`herdr ${method}: ${reply.error.code}`))
+    }
+    const parsed = schema.safeParse(reply.value)
+    return parsed.success
+      ? ok(parsed.data)
+      : err(badReply(`herdr ${method}: ${parsed.error.issues[0]?.message ?? 'unknown shape'}`))
+  }
+
+  /** Done, or notFound when the pane closed before the write. */
+  const doneOf = (written: Result<unknown, AgentPortError>): Result<PaneWriteOutcome, AgentPortError> =>
+    written.ok ? ok(written.value === 'notFound' ? 'notFound' : 'done') : written
 
   /**
    * When each pane last got a stop's Escape. A second Escape soon after opens Claude Code's rewind menu, so a stop
@@ -691,6 +753,50 @@ export function createHerdrAgents({
       if (sent.value === 'needsYou') return ok('notWorking')
       if (target.value.claude) await clearPutBack(pane)
       return ok('sent')
+    },
+    async focusChat(chat) {
+      const found = await paneOf(chat)
+      if (!found.ok) return found
+      if (found.value === null) return ok('notFound')
+      return doneOf(await paneWrite('pane.focus', AnyReply, { pane_id: found.value.pane }))
+    },
+    async zoomChat(chat, zoomed) {
+      const found = await paneOf(chat)
+      if (!found.ok) return found
+      if (found.value === null) return ok('notFound')
+      const written = await paneWrite('pane.zoom', ZoomReply, {
+        pane_id: found.value.pane,
+        mode: zoomed ? 'on' : 'off',
+      })
+      if (!written.ok || written.value === 'notFound') return doneOf(written)
+      return ok(written.value.zoom.reason === 'single_pane' ? 'singlePane' : 'done')
+    },
+    async swapChats(chat, other) {
+      const [one, two] = await Promise.all([paneOf(chat), paneOf(other)])
+      if (!one.ok) return one
+      if (!two.ok) return two
+      if (one.value === null || two.value === null) return ok('notFound')
+      if (one.value.pane === two.value.pane) return ok('samePane')
+      if (one.value.tab !== two.value.tab) return ok('otherTab')
+      const written = await paneWrite('pane.swap', SwapReply, {
+        source_pane_id: one.value.pane,
+        target_pane_id: two.value.pane,
+      })
+      if (!written.ok || written.value === 'notFound') return doneOf(written)
+      const { reason } = written.value.swap
+      if (reason === 'cross_tab') return ok('otherTab')
+      if (reason === 'not_found') return ok('notFound')
+      return ok(reason === 'same_pane' ? 'samePane' : 'done')
+    },
+    async closeChat(chat) {
+      const found = await paneOf(chat)
+      if (!found.ok) return found
+      if (found.value === null) return ok('notFound')
+      const { status, pane } = found.value
+      if (status === 'needsYou') return ok('needsYou')
+      // A chat whose state herdr cannot tell may work, so only an idle or done chat (or a shell) closes.
+      if (status !== 'idle' && status !== 'done') return ok('working')
+      return doneOf(await paneWrite('pane.close', AnyReply, { pane_id: pane }))
     },
     async readTranscript(chat) {
       const located = await locate(chat)

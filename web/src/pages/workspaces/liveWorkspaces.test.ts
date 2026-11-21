@@ -564,6 +564,7 @@ describe('watchLiveWorkspaces', () => {
           active: true,
           root: { kind: 'pane', chat: 'mac-mini/bridge-themes' },
           focusedChat: 'mac-mini/bridge-themes',
+          zoomed: false,
           chats: [response.workspaces[0]?.chats[0]],
         },
       ],

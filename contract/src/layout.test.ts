@@ -34,6 +34,7 @@ const tab = {
   active: true,
   root,
   focusedChat: 'mac-mini/b',
+  zoomed: false,
   chats: [chat('a'), chat('b'), chat('term_1', 'shell')],
 }
 
@@ -49,6 +50,11 @@ describe('layout', () => {
     expect(LayoutNode.safeParse({ ...root, ratio: 1 }).success).toBe(false)
     expect(LayoutNode.safeParse({ ...root, direction: 'right' }).success).toBe(false)
     expect(LayoutNode.safeParse({ kind: 'pane', chat: 'w17:p1' }).success).toBe(false)
+  })
+
+  it('needs to know whether a tab is zoomed', () => {
+    expect(TabLayout.safeParse({ ...tab, zoomed: true }).success).toBe(true)
+    expect(TabLayout.safeParse({ ...tab, zoomed: undefined }).success).toBe(false)
   })
 
   it('parses a tab whose chats are its panes in tree order', () => {

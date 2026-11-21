@@ -125,8 +125,11 @@ export type FakeAgents = AgentPort & {
   readonly dropNextEnter: (chat: ChatId) => void
 }
 
-/** The fake's layout of a workspace: one tab with its chats side by side, the first focused; null with no chat. */
-function layoutOf(workspace: WorkspaceSummary): WorkspaceLayout | null {
+/**
+ * The fake's layout of a workspace: one tab with its chats side by side, in list order, with `focused` (else the
+ * first) focused; null with no chat.
+ */
+function layoutOf(workspace: WorkspaceSummary, focused?: ChatId, zoomed = false): WorkspaceLayout | null {
   const [first, ...rest] = workspace.chats
   if (first === undefined) return null
   // Each split gives its first pane an equal share of what is left, so n panes get 1/n each.
@@ -150,7 +153,8 @@ function layoutOf(workspace: WorkspaceSummary): WorkspaceLayout | null {
         label: '1',
         active: true,
         root: rest.length === 0 ? { kind: 'pane', chat: first.id } : root(0),
-        focusedChat: first.id,
+        focusedChat: workspace.chats.some((c) => c.id === focused) && focused !== undefined ? focused : first.id,
+        zoomed,
         chats: structuredClone(workspace.chats),
       },
     ],
@@ -187,6 +191,11 @@ export function createFakeAgents(
   const drafts = new Map<ChatId, string>()
   const dropEnter = new Set<ChatId>()
   const chatOf = (chat: ChatId) => (data ?? []).flatMap((w) => w.chats).find((c) => c.id === chat)
+  /** The workspace that holds a chat; the fake has one tab in each workspace. */
+  const workspaceOf = (chat: ChatId) => (data ?? []).find((w) => w.chats.some((c) => c.id === chat))
+  /** The focused chat of each workspace whose focus a caller changed, and the workspaces that are zoomed. */
+  const focus = new Map<WorkspaceId, ChatId>()
+  const zooms = new Set<WorkspaceId>()
   const tell = (event: AgentEvent) => {
     for (const listener of [...listeners]) listener.onEvent(event)
   }
@@ -242,7 +251,7 @@ export function createFakeAgents(
     readLayout(workspace) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const found = (data ?? []).find((w) => w.id === workspace)
-      return Promise.resolve(ok(found === undefined ? null : layoutOf(found)))
+      return Promise.resolve(ok(found === undefined ? null : layoutOf(found, focus.get(found.id), zooms.has(found.id))))
     },
     subscribe(onEvent, onEnd) {
       const listener = { onEvent, onEnd }
@@ -307,6 +316,56 @@ export function createFakeAgents(
         renew(chat, ChatId.parse(`${chat}-c${String(clears)}`))
       }
       return Promise.resolve(ok('sent'))
+    },
+    focusChat(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      if (workspace === undefined) return Promise.resolve(ok('notFound'))
+      focus.set(workspace.id, chat)
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok('done'))
+    },
+    zoomChat(chat, zoomed) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      if (workspace === undefined) return Promise.resolve(ok('notFound'))
+      if (workspace.chats.length === 1) return Promise.resolve(ok('singlePane'))
+      if (zoomed) {
+        zooms.add(workspace.id)
+        focus.set(workspace.id, chat)
+      } else zooms.delete(workspace.id)
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok('done'))
+    },
+    swapChats(chat, other) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      if (workspace === undefined || workspaceOf(other) === undefined) return Promise.resolve(ok('notFound'))
+      if (chat === other) return Promise.resolve(ok('samePane'))
+      if (workspaceOf(other) !== workspace) return Promise.resolve(ok('otherTab'))
+      const at = workspace.chats.findIndex((c) => c.id === chat)
+      const to = workspace.chats.findIndex((c) => c.id === other)
+      const [one, two] = [workspace.chats[at], workspace.chats[to]]
+      if (one === undefined || two === undefined) return Promise.resolve(ok('notFound'))
+      workspace.chats[at] = two
+      workspace.chats[to] = one
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok('done'))
+    },
+    closeChat(chat) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const workspace = workspaceOf(chat)
+      const found = chatOf(chat)
+      if (workspace === undefined || found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if (found.kind !== 'shell' && found.status !== 'idle' && found.status !== 'done')
+        return Promise.resolve(ok('working'))
+      workspace.chats = workspace.chats.filter((c) => c.id !== chat)
+      transcripts.delete(chat)
+      if (focus.get(workspace.id) === chat) focus.delete(workspace.id)
+      tell({ type: 'workspacesChanged' })
+      tell({ type: 'layoutChanged', workspace: workspace.id })
+      return Promise.resolve(ok('done'))
     },
     dropNextEnter: (chat) => {
       dropEnter.add(chat)

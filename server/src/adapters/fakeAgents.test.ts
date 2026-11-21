@@ -56,6 +56,35 @@ describeAgentPort('fake', () => {
 })
 
 describe('fake agents', () => {
+  it('writes its layout: focus, zoom, swap and close', async () => {
+    const agents = createFakeAgents(machine)
+    const brain = WorkspaceId.parse(`${machine}/omni-brain`)
+    const themes = ChatId.parse(`${machine}/bridge-themes`)
+    const drift = ChatId.parse(`${machine}/drift-check`)
+    const tab = async () => {
+      const read = await agents.readLayout(brain)
+      const first = read.ok ? read.value?.tabs[0] : undefined
+      if (first === undefined) throw new Error('no tab')
+      return first
+    }
+    expect(await agents.focusChat(drift)).toEqual({ ok: true, value: 'done' })
+    expect((await tab()).focusedChat).toBe(drift)
+    expect(await agents.zoomChat(themes, true)).toEqual({ ok: true, value: 'done' })
+    expect(await tab()).toMatchObject({ zoomed: true, focusedChat: themes })
+    expect(await agents.swapChats(themes, drift)).toEqual({ ok: true, value: 'done' })
+    expect((await tab()).chats.map((c) => c.id)).toEqual([drift, themes])
+    expect(await agents.swapChats(themes, ChatId.parse(`${machine}/brain-git`))).toEqual({
+      ok: true,
+      value: 'otherTab',
+    })
+    expect(await agents.closeChat(themes)).toEqual({ ok: true, value: 'working' })
+    expect(await agents.closeChat(drift)).toEqual({ ok: true, value: 'needsYou' })
+    agents.setStatus(themes, 'idle')
+    expect(await agents.closeChat(themes)).toEqual({ ok: true, value: 'done' })
+    expect((await tab()).chats.map((c) => c.id)).toEqual([drift])
+    expect(await agents.zoomChat(drift, true)).toEqual({ ok: true, value: 'singlePane' })
+  })
+
   it('takes back a command whose Enter the chat did not take, and keeps the chat', async () => {
     const agents = createFakeAgents(machine)
     const list = await agents.listWorkspaces()

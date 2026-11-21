@@ -20,7 +20,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A layout names each pane by its chat ID, as `GET /api/workspaces`
   does, never by a herdr pane ID; `TabLayout` checks that its chats are
   its panes in tree order and that the focused chat is in the tree
-  (`layout.test.ts`).
+  (`layout.test.ts`). `zoomed` says that the tab shows only its
+  focused pane (slice W2).
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its

@@ -98,6 +98,15 @@ client of a socket or a file sits beside them.
   the same box checks; a chat that is not idle or done (working, or a
   state herdr does not name) gets `working` and a Codex chat
   `noCommands`, with nothing typed (`herdrAgents.test.ts`).
+- A layout write (slice W2) finds a chat's pane, a shell's too, and
+  calls herdr `pane.focus`, `pane.zoom` (`on` or `off`), `pane.swap`
+  (two panes of one tab only) or `pane.close`. A close refuses a chat
+  that works, waits for the owner or has a state herdr cannot tell; a
+  pane that closed first is `notFound` (`herdrAgents.test.ts`). Never
+  call `layout.apply`: herdr replaces the tab and its terminals, so
+  each shell and agent in it ends. `pane.move` inside one tab does
+  nothing (`same_tab`), so a pane goes to another place in its own tab
+  only by a swap.
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

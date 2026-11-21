@@ -74,6 +74,7 @@ const layout = JSON.stringify({
       // Rows first: plan and review on top, drift and logs under them.
       root: split('column', split('row', pane(plan), pane(review)), split('row', pane(drift), pane(logs))),
       focusedChat: plan,
+      zoomed: false,
       chats,
     },
   ],

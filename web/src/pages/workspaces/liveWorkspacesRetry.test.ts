@@ -78,6 +78,7 @@ it('tries a live read that the server answers 503 again, and shows live data whe
             active: true,
             root: { kind: 'pane', chat },
             focusedChat: chat,
+            zoomed: false,
             chats,
           },
         ],
