@@ -1,4 +1,4 @@
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdtempSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
@@ -34,6 +34,24 @@ describe('session file', () => {
     expect(await readClaudeSession(path)).toEqual({ model: 'claude-haiku-5-5', contextUsed: null, effort: 'low' })
     // A reply further back than the limit is not read.
     expect(await readClaudeSession(path, 128 * 1024)).toEqual({ model: null, contextUsed: null, effort: null })
+  })
+
+  it('does not read a file again while its size and change time stay the same', async () => {
+    const line = (model: string) => JSON.stringify({ type: 'assistant', message: { model } })
+    const path = file('cache.jsonl', `${line('claude-opus-5-5')}\n`)
+    // Whole seconds, so that utimes can give the same change time again.
+    const atime = new Date(1_700_000_000_000)
+    const mtime = new Date(1_700_000_000_000)
+    utimesSync(path, atime, mtime)
+    expect((await readClaudeSession(path)).model).toBe('claude-opus-5-5')
+    // The same size and change time: the last result, with no read.
+    // A line of the same length, so only the change time can tell.
+    writeFileSync(path, `${line('claude-opus-4-8')}\n`)
+    utimesSync(path, atime, mtime)
+    expect((await readClaudeSession(path)).model).toBe('claude-opus-5-5')
+    // A new change time: read again.
+    utimesSync(path, atime, new Date(mtime.getTime() + 1000))
+    expect((await readClaudeSession(path)).model).toBe('claude-opus-4-8')
   })
 
   it('gives null for a file that is missing or has no assistant entry', async () => {
