@@ -15,7 +15,7 @@ export type SendResults = {
   get(chat: ChatId, send: SendId): SendResult | undefined
 }
 
-/** A send's result from its outcome: `notSent` when nothing was typed. */
+/** A send's result from its outcome: `notSent` only for an outcome that comes before any text is typed. */
 export function resultOf(outcome: FilePromptOutcome): SendResult {
   switch (outcome) {
     case 'sent':
@@ -24,11 +24,13 @@ export function resultOf(outcome: FilePromptOutcome): SendResult {
     case 'notFound':
     case 'shell':
     case 'needsYou':
-    case 'inputNotEmpty':
-    case 'inputUnreadable':
     case 'noAttachments':
     case 'badAttachment':
       return 'notSent'
+    // Before the send, or after it when the text stayed or a dialog stayed open: the chat may hold the text.
+    case 'inputNotEmpty':
+    case 'inputUnreadable':
+      return 'unknown'
   }
 }
 

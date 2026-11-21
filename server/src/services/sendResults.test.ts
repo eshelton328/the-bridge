@@ -29,10 +29,13 @@ describe('the send results', () => {
     expect(results.get(chat, send(502))).toBe('pending')
   })
 
-  it('counts a send refused before any text was typed as notSent', () => {
+  it('counts only a send refused before any text was typed as notSent', () => {
     expect(resultOf('sent')).toBe('sent')
     expect(resultOf('notSubmitted')).toBe('notSubmitted')
-    expect(resultOf('inputNotEmpty')).toBe('notSent')
     expect(resultOf('needsYou')).toBe('notSent')
+    expect(resultOf('shell')).toBe('notSent')
+    // Both can come after the text was typed: text that stayed, or a dialog that stayed open.
+    expect(resultOf('inputNotEmpty')).toBe('unknown')
+    expect(resultOf('inputUnreadable')).toBe('unknown')
   })
 })

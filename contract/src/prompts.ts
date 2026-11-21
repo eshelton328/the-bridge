@@ -39,7 +39,8 @@ export type SendPromptRequest = z.infer<typeof SendPromptRequest>
 /**
  * What became of a send, from `GET /api/chats/:chat/sends/:send`: `pending` while the server sends it, `sent`,
  * `notSubmitted` (the chat did not take it and the server removed the text), `notSent` (refused before any text was
- * typed, such as a box with text in it), or `unknown` (a herdr failure, after which the chat may hold the text). The
+ * typed, such as a chat that waits for the owner), or `unknown` (the chat may hold the text: a herdr failure, text
+ * that stayed in the box, or a screen with no box). The
  * server keeps each result for `sendResultMs`, in memory and with no text; then, or after a restart, the read is 404.
  */
 export const SendResult = z.enum(['pending', 'sent', 'notSubmitted', 'notSent', 'unknown'])
