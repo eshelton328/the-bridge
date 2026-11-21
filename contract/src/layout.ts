@@ -57,6 +57,8 @@ export const TabLayout = z
     active: z.boolean(),
     root: LayoutNode,
     focusedChat: ChatId,
+    /** The tab shows only its focused pane, at full size, until the zoom ends (slice W2). */
+    zoomed: z.boolean(),
     /** One summary for each pane, in tree order; a shell's `model` is its program, such as "pnpm dev". */
     chats: z.array(ChatSummary),
   })

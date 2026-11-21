@@ -97,7 +97,7 @@ async function layoutAnswer(reply: () => Response, url: string): Promise<Respons
     (left, c) => ({ kind: 'split', direction: 'row', ratio: 0.5, first: left, second: { kind: 'pane', chat: c.id } }),
     { kind: 'pane', chat: first.id },
   )
-  const tab = { id: `${id}:t1`, label: 'main', active: true, root, focusedChat: first.id, chats }
+  const tab = { id: `${id}:t1`, label: 'main', active: true, root, focusedChat: first.id, zoomed: false, chats }
   return new Response(JSON.stringify({ workspace: id, tabs: [tab] }), { status: 200 })
 }
 

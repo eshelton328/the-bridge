@@ -67,6 +67,7 @@ const layout = JSON.stringify({
       active: true,
       root: split(split(pane(plan), pane(review)), split(pane(drift), pane(logs))),
       focusedChat: plan,
+      zoomed: false,
       chats,
     },
   ],

@@ -28,6 +28,7 @@ const tab = (raw: Raw, focused: string, active = true) => {
     active,
     root,
     focusedChat: `mac-mini/${focused}`,
+    zoomed: false,
     chats: chatsOf(root).map((id) =>
       ChatSummary.parse({
         id,

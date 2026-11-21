@@ -54,6 +54,17 @@ export type ChatCommand =
   | { readonly command: 'compact'; readonly instructions?: string | undefined }
   | { readonly command: 'clear' }
 
+/**
+ * What a pane write did (slice W2): `done`, or `notFound` when this machine has no such chat. A zoom of a tab's
+ * only pane is `singlePane`; a swap of two chats in different tabs is `otherTab`, and of one chat with itself
+ * `samePane`; a close of a chat whose agent works (or whose state herdr cannot tell) is `working`, and of one that
+ * waits for the owner `needsYou`. Nothing changed unless it is `done`.
+ */
+export type PaneWriteOutcome = 'done' | 'notFound'
+type ZoomOutcome = PaneWriteOutcome | 'singlePane'
+type SwapOutcome = PaneWriteOutcome | 'otherTab' | 'samePane'
+type CloseOutcome = PaneWriteOutcome | 'working' | 'needsYou'
+
 /** What a stop did: as a send, or `notWorking` when the chat has no work to stop, so nothing was sent. */
 export type CancelOutcome = Exclude<SendOutcome, 'needsYou' | 'inputNotEmpty'> | 'notWorking'
 
@@ -121,4 +132,15 @@ export type AgentPort = {
    * it, the port clears it; other text in the box stays.
    */
   cancel(chat: ChatId): Promise<Result<CancelOutcome, AgentPortError>>
+  /** Makes the pane of one chat, a shell too, the focused pane of its tab. */
+  focusChat(chat: ChatId): Promise<Result<PaneWriteOutcome, AgentPortError>>
+  /** Shows only the pane of one chat in its tab, at full size (`zoomed` true), or ends the zoom of its tab. */
+  zoomChat(chat: ChatId, zoomed: boolean): Promise<Result<ZoomOutcome, AgentPortError>>
+  /** Swaps the places of two panes of one tab; each keeps its chat, and each chat keeps its ID. */
+  swapChats(chat: ChatId, other: ChatId): Promise<Result<SwapOutcome, AgentPortError>>
+  /**
+   * Closes the pane of one chat, and so ends its agent or shell. It closes no chat whose agent works or waits for
+   * the owner; the page asks the owner first, with the chat's name.
+   */
+  closeChat(chat: ChatId): Promise<Result<CloseOutcome, AgentPortError>>
 }

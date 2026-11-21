@@ -126,6 +126,11 @@ const results = {
   'agent.wait': { type: 'agent_info', agent: {} },
   'pane.read': paneRead('w17:p1', claudeScreen('')),
   'agent.send_keys': { type: 'ok' },
+  // The layout writes; the adapter reads only a zoom's or a swap's reason.
+  'pane.focus': { type: 'pane_info', pane: { pane_id: 'w17:p1' } },
+  'pane.zoom': { type: 'pane_zoom', zoom: { changed: true, zoomed: true, reason: null } },
+  'pane.swap': { type: 'pane_swap', swap: { changed: true, reason: null } },
+  'pane.close': { type: 'ok' },
   // A shell that runs a job: the foreground group is not the shell's.
   'pane.process_info': {
     type: 'pane_process_info',
@@ -275,6 +280,7 @@ const resumedTwice = {
   'agent.prompt': results['agent.prompt'],
   'agent.send_keys': results['agent.send_keys'],
   'agent.wait': results['agent.wait'],
+  'pane.focus': results['pane.focus'],
   'pane.read': paneRead('w17:p2', claudeScreen('')),
   'pane.list': {
     type: 'pane_list',
@@ -395,6 +401,97 @@ describe('herdr agents: input to a chat', () => {
         socket.set('agent.list', undefined)
       }
       expect(prompts().length).toBe(before)
+    })
+  })
+
+  describe('a pane write', () => {
+    const codex = ChatId.parse('test-mac/term_2')
+    const shell = ChatId.parse('test-mac/term_5')
+    const sent = (method: string) =>
+      socket
+        .requests()
+        .filter((r) => r.method === method)
+        .map((r) => r.params)
+    afterEach(() => {
+      socket.set('pane.list', undefined)
+      socket.set('agent.list', undefined)
+    })
+
+    it('focuses and zooms the pane of a chat, a shell too', async () => {
+      expect(await port().focusChat(shell)).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.focus').at(-1)).toEqual({ pane_id: 'w18:p2' })
+      expect(await port().zoomChat(chat, true)).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.zoom').at(-1)).toEqual({ pane_id: 'w17:p1', mode: 'on' })
+      socket.once('pane.zoom', { type: 'pane_zoom', zoom: { changed: false, reason: 'single_pane' } })
+      expect(await port().zoomChat(chat, false)).toEqual({ ok: true, value: 'singlePane' })
+      expect(sent('pane.zoom').at(-1)).toEqual({ pane_id: 'w17:p1', mode: 'off' })
+    })
+
+    it('swaps two panes of one tab, and none of two tabs', async () => {
+      const tabs: Readonly<Record<string, string>> = { 'w17:p1': 'w17:t1', 'w17:p2': 'w17:t1' }
+      socket.set('pane.list', {
+        ...results['pane.list'],
+        panes: results['pane.list'].panes.map((p) => ({ ...p, tab_id: tabs[p.pane_id] ?? 'w18:t1' })),
+      })
+      expect(await port().swapChats(chat, codex)).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.swap').at(-1)).toEqual({ source_pane_id: 'w17:p1', target_pane_id: 'w17:p2' })
+      const before = sent('pane.swap').length
+      expect(await port().swapChats(chat, shell)).toEqual({ ok: true, value: 'otherTab' })
+      expect(sent('pane.swap')).toHaveLength(before)
+    })
+
+    it('closes an idle chat or a shell, never one that waits or works, and says when the pane is gone', async () => {
+      // The recorded list gives bridge-coord herdr's "blocked".
+      expect(await port().closeChat(chat)).toEqual({ ok: true, value: 'needsYou' })
+      const before = sent('pane.close').length
+      expect(await port().closeChat(codex)).toEqual({ ok: true, value: 'done' })
+      expect(sent('pane.close').slice(before)).toEqual([{ pane_id: 'w17:p2' }])
+      socket.failOnce('pane.close', 'pane_not_found', 'pane w18:p2 not found')
+      expect(await port().closeChat(shell)).toEqual({ ok: true, value: 'notFound' })
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) =>
+          a.pane_id === 'w17:p2' ? { ...a, agent_status: 'working' } : a,
+        ),
+      })
+      const closes = sent('pane.close').length
+      expect(await port().closeChat(codex)).toEqual({ ok: true, value: 'working' })
+      expect(sent('pane.close')).toHaveLength(closes)
+    })
+
+    it('closes nothing by the old shell ID of a pane that now runs an agent', async () => {
+      // The shell of w18:p2 (term_5) started Claude, which works now.
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: [
+          ...results['agent.list'].agents,
+          {
+            ...results['agent.list'].agents[0],
+            agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-b' },
+            agent_status: 'working',
+            name: 'started-in-shell',
+            pane_id: 'w18:p2',
+            terminal_id: 'term_5',
+            workspace_id: 'w18',
+          },
+        ],
+      })
+      const closes = sent('pane.close').length
+      expect(await port().closeChat(shell)).toEqual({ ok: true, value: 'notFound' })
+      expect(sent('pane.close')).toHaveLength(closes)
+    })
+
+    it('reads whether a tab is zoomed', async () => {
+      socket.set('layout.export', {
+        ...results['layout.export'],
+        layout: { ...results['layout.export'].layout, zoomed: true },
+      })
+      try {
+        const read = await port().readLayout(WorkspaceId.parse('test-mac/w17'))
+        expect(read.ok && read.value?.tabs[0]?.zoomed).toBe(true)
+      } finally {
+        socket.set('layout.export', undefined)
+      }
     })
   })
 

@@ -53,7 +53,7 @@ export function fakeWorkspacesServer(
     )
     return WorkspaceLayout.parse({
       workspace,
-      tabs: [{ id: `${workspace}:t1`, label: 'main', active: true, root, focusedChat, chats }],
+      tabs: [{ id: `${workspace}:t1`, label: 'main', active: true, root, focusedChat, zoomed: false, chats }],
     })
   }
 

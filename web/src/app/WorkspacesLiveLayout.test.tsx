@@ -96,6 +96,7 @@ const layoutBody = (workspace: string, tabs: readonly Tab[]) =>
       active: t.active,
       root: t.root,
       focusedChat: `mac-mini/${t.focused.local}`,
+      zoomed: false,
       chats: inTree(t.root).map((id) => summary(chats.find((c) => `mac-mini/${c.local}` === id) ?? plan)),
     })),
   })

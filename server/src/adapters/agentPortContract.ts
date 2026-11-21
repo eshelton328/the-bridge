@@ -188,6 +188,26 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(await port.sendCommand(none, { command: 'compact' })).toEqual({ ok: true, value: 'notFound' })
     })
 
+    it('writes no layout of a chat that the machine does not have, and swaps no chat with itself', async () => {
+      const { port, expected } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      const none = ChatId.parse(`${port.machine}/no-such-chat`)
+      expect(await port.focusChat(none)).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.zoomChat(none, true)).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.swapChats(chat, none)).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.closeChat(none)).toEqual({ ok: true, value: 'notFound' })
+      expect(await port.swapChats(chat, chat)).toEqual({ ok: true, value: 'samePane' })
+    })
+
+    it('focuses the pane of a listed chat, and closes no chat whose agent works', async () => {
+      const { port, expected, setStatus } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      expect(await port.focusChat(chat)).toEqual({ ok: true, value: 'done' })
+      await setStatus('working')
+      await statusShown(port, expected, 'working')
+      expect(await port.closeChat(chat)).toEqual({ ok: true, value: 'working' })
+    })
+
     it('says the agents are unreachable to a prompt and a stop when they do not answer', async () => {
       const { unreachable } = await setup()
       const chat = ChatId.parse(`${unreachable.machine}/any-chat`)
