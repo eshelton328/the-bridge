@@ -160,7 +160,17 @@ export function WorkspacesPage() {
   const clearChatLink = useCallback(() => {
     void navigate({ search: (prev) => ({ ...prev, chat: undefined }), replace: true })
   }, [navigate])
-  useChatLink(search.chat, data, currentUi, changeUi, clearChatLink)
+  // A chat made since the page last read the list is not in the list it comes back with: the link reads it again.
+  const readAgain = useCallback(
+    async (chat: string) => {
+      if (!(import.meta.env.DEV && live)) return false
+      const listed = await import('./liveWorkspaces.ts').then((l) => l.serverListsChat(chat))
+      if (listed) void router.invalidate()
+      return listed
+    },
+    [router, live],
+  )
+  useChatLink(search.chat, data, currentUi, changeUi, clearChatLink, readAgain)
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
