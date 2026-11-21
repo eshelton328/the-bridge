@@ -2,9 +2,9 @@
 
 /**
  * The error for a test's `fetch` of the-bridge server's API (`/api/…` on the page's origin), or undefined for any
- * other URL. The test server sends `/api` to a real server through the Vite proxy (vite.config.ts), so a test that
- * reads it with no stub gets that machine's data, or none: RouteScroll's `/workspaces?source=live` case failed
- * once in a full verify that way. A test stubs `fetch` (`vi.stubGlobal`) for each read it makes.
+ * other URL. With BRIDGE_SERVER_URL set, the test server sends `/api` to a real server through the Vite proxy
+ * (vite.config.ts), so a test that reads it with no stub gets that machine's data, or none: RouteScroll's
+ * `/workspaces?source=live` case failed once in a full verify that way. A test stubs `fetch` (`vi.stubGlobal`) for each read it makes.
  */
 export function serverReadError(url: string, origin: string): Error | undefined {
   const target = new URL(url, origin)

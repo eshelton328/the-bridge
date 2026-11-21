@@ -37,11 +37,17 @@ git clone https://github.com/eshelton328/the-bridge.git ~/the-bridge
 cd ~/the-bridge
 pnpm install
 cd web
-pnpm dev
+BRIDGE_SERVER_URL=http://127.0.0.1:5182 pnpm dev
 ```
 
 `pnpm dev` serves the app on http://localhost:5173 until you stop it
 with Ctrl-C. Open that address in a browser; `/` goes to the Inbox.
+`BRIDGE_SERVER_URL` is required: it is the URL of the-bridge server that the
+dev server sends `/api` to, and `pnpm dev` stops with an error when it is
+not set. Pages with sample data work when no server listens at that URL.
+The served app sets `BRIDGE_SERVER_URL=http://127.0.0.1:5181`, the
+server with the owner's real herdr session; a test or a probe uses its
+own server on another port.
 
 ## First use
 
@@ -55,8 +61,7 @@ with Ctrl-C. Open that address in a browser; `/` goes to the Inbox.
 - To see live workspaces, start the server as
   [server/AGENTS.md](server/AGENTS.md) says, then open `/workspaces`:
   in development its home reads the server, and `?source=fixtures` shows
-  the sample data. The dev server sends `/api` to `BRIDGE_SERVER_URL`, or
-  to http://127.0.0.1:5181 when it is not set.
+  the sample data. Set `BRIDGE_SERVER_URL` to that server's URL.
 
 ## Help
 
