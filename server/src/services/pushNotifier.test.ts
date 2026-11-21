@@ -78,6 +78,18 @@ describe('the push notifier', () => {
     t.notifier.close()
   })
 
+  it('sends done for a chat that a list change added while it worked', async () => {
+    const t = setup([sub(1)])
+    await t.notifier.refresh()
+    const next = ChatId.parse('test-mac/bridge-themes-next')
+    t.agents.renewSession(chat, next)
+    await t.settle()
+    t.agents.setStatus(next, 'done')
+    await t.settle()
+    expect(t.sent.map((s) => [s.payload.chat, s.payload.event])).toEqual([[next, 'done']])
+    t.notifier.close()
+  })
+
   it('sends nothing while a page was seen in the last 30 s', async () => {
     const t = setup([sub(1)])
     await t.notifier.refresh()

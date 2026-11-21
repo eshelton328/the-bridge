@@ -63,12 +63,26 @@ export function createPushNotifier({ agents, store, sender, seen, log, retryMs =
     )
   }
 
-  const open = async () => {
-    // The statuses now, so the first change of each chat is known as a change.
+  // The status of each chat that the list shows and no event told yet, so its first change is known
+  // as a change (a chat that a list change adds while it works ends with done). A chat that left the
+  // list is forgotten.
+  const learn = async () => {
     const list = await agents.listWorkspaces()
-    if (list.ok) for (const chat of list.value.flatMap((w) => w.chats)) last.set(chat.id, chat.status)
+    if (!list.ok) return
+    const chats = list.value.flatMap((w) => w.chats)
+    const listed = new Set(chats.map((c) => c.id))
+    for (const id of last.keys()) if (!listed.has(id)) last.delete(id)
+    for (const c of chats) if (!last.has(c.id)) last.set(c.id, c.status)
+  }
+
+  const open = async () => {
+    await learn()
     watch = agents.subscribe(
       (event) => {
+        if (event.type === 'workspacesChanged') {
+          void learn()
+          return
+        }
         if (event.type !== 'chatStatus') return
         const before = last.get(event.chat)
         last.set(event.chat, event.status)
