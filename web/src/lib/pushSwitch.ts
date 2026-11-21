@@ -3,7 +3,10 @@
 // server's key and saves the subscription; off ends the subscription and
 // removes it from the server. A miss goes to the sink that
 // errors/globalHandlers.ts sets (lib may not import errors) as a
-// PushMissError, with its kind only.
+// PushMissError, with its kind only. A build that reads no live server (a
+// production build on fixtures, d-117) registers no worker and has no
+// server to save to, so there the switch is unsupported.
+import { readsLiveServer } from './dataSource.ts'
 import { pushBrowser, type PushSubscriptionLike, pushSupportOf } from './pushBrowser.ts'
 import { readPushKey, removePushSubscription, savePushSubscription } from './pushServer.ts'
 
@@ -13,7 +16,7 @@ import { readPushKey, removePushSubscription, savePushSubscription } from './pus
  */
 export type PushSwitchState = 'unsupported' | 'homeScreen' | 'denied' | 'off' | 'on'
 
-/** The switch as a screen draws it: its state, whether a change runs, whether the last turn-on missed. */
+/** The switch as a screen draws it: its state, whether a change runs, whether the last turn on or off missed. */
 export type PushSwitch = {
   readonly state: PushSwitchState | 'unknown'
   readonly busy: boolean
@@ -48,6 +51,7 @@ const missed = (error: PushMissError) => {
 
 /** Where the switch stands now, read from the browser. */
 export async function readPushState(): Promise<PushSwitchState> {
+  if (!readsLiveServer()) return 'unsupported'
   const support = pushSupportOf(pushBrowser.env())
   if (support !== 'supported') return support
   const permission = pushBrowser.permission()
@@ -61,7 +65,7 @@ export async function readPushState(): Promise<PushSwitchState> {
   }
 }
 
-/** The outcome of a turn on or off: the state, and whether a turn-on missed (the row then says so). */
+/** The outcome of a turn on or off: the state, and whether the turn missed (the row then says so). */
 export type PushTurn = { readonly state: PushSwitchState; readonly failed: boolean }
 
 /**
@@ -110,14 +114,17 @@ async function endSubscription(subscription: PushSubscriptionLike): Promise<void
   }
 }
 
-/** Turns push off: ends this browser's subscription, then removes it from the server. */
+/**
+ * Turns push off: ends this browser's subscription, then removes it from the server. A miss reading the subscription
+ * ends nothing, so the switch stays on with `failed`, and the owner can try again.
+ */
 export async function turnPushOff(): Promise<PushTurn> {
   let subscription: PushSubscriptionLike | null
   try {
     subscription = await pushBrowser.subscription()
   } catch (error) {
     missed(new PushMissError('remove', error instanceof Error ? error.name : 'unknown'))
-    return { state: 'off', failed: false }
+    return { state: 'on', failed: true }
   }
   if (subscription === null) return { state: 'off', failed: false }
   const endpoint = subscription.endpoint

@@ -29,6 +29,8 @@ export type FakePushOptions = {
   answer?: NotificationPermission
   /** Whether the browser has a subscription now. */
   subscribed?: boolean
+  /** Whether reading the subscription throws, as a broken service worker registration does. */
+  readFails?: boolean
   /** The status each server call answers; 204 (200 with the key) when not set. */
   status?: { key?: number; save?: number; remove?: number; seen?: number }
 }
@@ -61,7 +63,11 @@ export function fakePush(options: FakePushOptions = {}) {
     permission = options.answer ?? 'granted'
     return Promise.resolve(permission)
   })
-  vi.spyOn(pushBrowser, 'subscription').mockImplementation(() => Promise.resolve(subscribed ? asSubscription() : null))
+  vi.spyOn(pushBrowser, 'subscription').mockImplementation(() =>
+    options.readFails === true
+      ? Promise.reject(new DOMException('no registration', 'InvalidStateError'))
+      : Promise.resolve(subscribed ? asSubscription() : null),
+  )
   const subscribe = vi.spyOn(pushBrowser, 'subscribe').mockImplementation(() => {
     subscribed = true
     return Promise.resolve(asSubscription())

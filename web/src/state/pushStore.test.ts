@@ -10,6 +10,7 @@ afterEach(() => {
   resetAllStores()
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
+  vi.unstubAllEnvs()
 })
 
 /** Collects the push misses the store sends to the sink, by kind. */
@@ -113,6 +114,24 @@ describe('pushStore', () => {
       { method: 'DELETE', path: '/api/push/subscriptions', body: { endpoint: fakeEndpoint } },
     ])
     expect(pushStore.getState()).toMatchObject({ status: 'off', failed: false })
+  })
+
+  it('stays on with a line when reading the subscription misses on the way off, and reports the kind only', async () => {
+    const sink = misses()
+    const push = fakePush({ permission: 'granted', subscribed: true, readFails: true })
+    await pushStore.getState().actions.setOn(false)
+    expect(push.unsubscribe).not.toHaveBeenCalled()
+    expect(push.requests).toEqual([])
+    expect(pushStore.getState()).toMatchObject({ status: 'on', failed: true, busy: false })
+    expect(sink.kinds).toEqual(['remove InvalidStateError'])
+    sink.remove()
+  })
+
+  it('reads unsupported in a build that reads no live server, which registers no worker', async () => {
+    fakePush({ permission: 'granted', subscribed: true })
+    vi.stubEnv('DEV', false)
+    await pushStore.getState().actions.refresh()
+    expect(pushStore.getState().status).toBe('unsupported')
   })
 
   it('takes no second turn while one runs', async () => {

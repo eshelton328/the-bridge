@@ -63,6 +63,15 @@ export const Failed: Story = {
   },
 }
 
+export const FailedOff: Story = {
+  args: { push: push({ state: 'on', failed: true }) },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Not turned off. Try again.')).toBeVisible()
+    await expect(canvas.getByRole('switch', { name: 'Notifications' })).toBeChecked()
+    await expect(canvas.getByRole('switch', { name: 'Notifications' })).toBeEnabled()
+  },
+}
+
 export const Busy: Story = {
   args: { push: push({ busy: true }) },
   play: async ({ canvas }) => {

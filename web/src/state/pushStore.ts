@@ -12,6 +12,7 @@ type PushState = {
   /** `unknown` until the first read of the browser. */
   status: PushSwitchState | 'unknown'
   busy: boolean
+  /** Whether the last turn on or off missed. */
   failed: boolean
   actions: {
     /** Reads the state from the browser again, as the permission can change in Settings meanwhile. */
@@ -53,7 +54,7 @@ const usePushStore = createAppStore<PushState>('push', (set, get) => {
 export const usePushStatus = (): PushState['status'] => usePushStore((s) => s.status)
 /** Whether a turn on or off runs. @public */
 export const usePushBusy = (): boolean => usePushStore((s) => s.busy)
-/** Whether the last turn-on missed. @public */
+/** Whether the last turn on or off missed. @public */
 export const usePushFailed = (): boolean => usePushStore((s) => s.failed)
 /** The push actions; a stable reference. @public */
 export const usePushActions = (): PushState['actions'] => usePushStore((s) => s.actions)

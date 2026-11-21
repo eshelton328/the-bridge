@@ -7,12 +7,12 @@
 import { Switch } from '@eshelton328/component-library-1701'
 import type { PushSwitch } from '../lib/pushSwitch.ts'
 
-/** The line under the label for each state the owner cannot change from here, and for a turn-on that missed. */
+/** The line under the label for each state the owner cannot change from here, and for a turn on or off that missed. */
 function notificationsHint(push: PushSwitch): string | undefined {
   if (push.state === 'denied') return 'Blocked in Settings'
   if (push.state === 'homeScreen') return 'Add The Bridge to the Home Screen to get notifications'
   if (push.state === 'unsupported') return 'This browser cannot get notifications'
-  if (push.failed) return 'Not turned on. Try again.'
+  if (push.failed) return push.state === 'on' ? 'Not turned off. Try again.' : 'Not turned on. Try again.'
   return undefined
 }
 
