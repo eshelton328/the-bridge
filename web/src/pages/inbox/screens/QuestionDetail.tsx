@@ -20,6 +20,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { Viewport } from '../../../lib/screenState.ts'
 import { DetailFrame } from '../../../blocks/DetailFrame.tsx'
+import { BlockBoundary } from '../../../errors/BlockBoundary.tsx'
 import { DetailHead, type SnoozeControl } from '../blocks/DetailHead.tsx'
 import { DetailSection } from '../blocks/DetailSection.tsx'
 import { PinnedAction } from '../blocks/PinnedAction.tsx'
@@ -79,9 +80,12 @@ export function QuestionDetail({ detail, layout = 'desktop', back, drafts, snooz
         </Panel>
       </div>
       <DetailSection title="Context">
-        <MarkdownView size="sm" padding="none">
-          <p>{detail.context}</p>
-        </MarkdownView>
+        {/* A rich block: when it fails to render, only it shows the error (d-084, audit P-6). */}
+        <BlockBoundary contentKey={detail.id}>
+          <MarkdownView size="sm" padding="none">
+            <p>{detail.context}</p>
+          </MarkdownView>
+        </BlockBoundary>
       </DetailSection>
       <DetailSection title="Choose one">
         <OptionList
