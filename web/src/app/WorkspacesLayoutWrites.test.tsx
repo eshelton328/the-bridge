@@ -241,6 +241,19 @@ describe('zoom (W2)', () => {
   })
 })
 
+describe('one write at a time (W2)', () => {
+  it("turns Maximise off while the pane's focus waits, so no zoom is dropped", async () => {
+    const fakes = withChats()
+    await showPanes()
+    fakes.list.quietWrites(true)
+    await userEvent.click(region('review notes').getByRole('heading', { name: 'review notes' }))
+    await expect.poll(() => writesOf(fakes)).toEqual([{ chat: review, action: 'focus', body: {} }])
+    await expect.element(page.getByRole('button', { name: 'Maximise review notes' })).toBeDisabled()
+    // Once the page reads the layout itself, Maximise zooms again.
+    await expect.element(page.getByRole('button', { name: 'Maximise review notes' }), { timeout: 4000 }).toBeEnabled()
+  })
+})
+
 describe('focus (W2)', () => {
   it('sends one focus for a tap on a pane header, and none when herdr focuses that chat already', async () => {
     const fakes = withChats()

@@ -190,7 +190,8 @@ export function WorkbenchPanes({
             ? undefined
             : {
                 zoomed: tab.zoomed && tab.focused === pane.id,
-                pending: pending === 'zoom',
+                // Off while any write of this pane waits, as the page sends one write at a time for a chat.
+                pending: pending !== undefined,
                 onToggle: () => {
                   live.zoom(pane.id, !(tab.zoomed && tab.focused === pane.id))
                 },
