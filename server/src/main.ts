@@ -5,6 +5,7 @@
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
+import { createDiskPushStore } from './adapters/diskPush.ts'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
 import { sipsConvert } from './adapters/sipsConvert.ts'
@@ -41,7 +42,12 @@ const agents = createHerdrAgents({
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 const server = serve(
-  { fetch: createApp({ agents, owner, log, uploads }).fetch, port, hostname: '127.0.0.1' },
+  {
+    // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118).
+    fetch: createApp({ agents, owner, log, uploads, push: createDiskPushStore(join(dirname(dbFile), 'push')) }).fetch,
+    port,
+    hostname: '127.0.0.1',
+  },
   (info) => {
     log.info('server started', { port: info.port })
   },
