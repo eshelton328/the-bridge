@@ -28,7 +28,8 @@
 // A live chat's focus, zoom, swap, close, split and move go to the server (useLayoutWrites.ts, W2), and the page waits
 // for the layout read after `layout.changed` to move a pane. A move of the open pane to another tab shows that tab
 // once the layout read has the chat there (W2d, `shownTabs.ts`). New chat starts a live Claude chat and opens it once
-// the workspace list shows it (useNewChat.ts, W3).
+// the workspace list shows it (useNewChat.ts, W3). A live Claude chat's model chip picks its effort for the session
+// (useLiveEffort.ts, W10), through the server's effort route only, never by sending /effort.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -43,6 +44,7 @@ import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import type { WorkspacesUi } from './types.ts'
+import { useLiveEffort } from './useLiveEffort.ts'
 import { useLiveSkills } from './useLiveSkills.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
@@ -150,6 +152,8 @@ export function WorkspacesPage() {
   const pendings = useLivePending(import.meta.env.DEV && live, search.state, drafts)
   // Each live Claude chat's "/" list, read from the server each time it opens (review R34).
   const skillLists = useLiveSkills(import.meta.env.DEV && live)
+  // Each live Claude chat's effort (W10): a set level shows until the next list read.
+  const efforts = useLiveEffort(import.meta.env.DEV && live, state.data)
   const layoutWrites = useLayoutWrites(import.meta.env.DEV && live, data, (workspace, chat, tab) => {
     changeUi(followTab(liveData, uiRef.current, workspace, chat, tab))
   })
@@ -286,6 +290,10 @@ export function WorkspacesPage() {
       newChat={newChat}
       filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
       pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
+      effortOf={(chat) => {
+        const pane = data.panes.find((p) => p.id === chat)
+        return efforts.of(chat, liveChatOf(chat), pane?.type === 'chat' ? pane.head.effortLevel : undefined)
+      }}
       onStop={(chat) => {
         const liveChat = liveChatOf(chat)
         return liveChat === undefined

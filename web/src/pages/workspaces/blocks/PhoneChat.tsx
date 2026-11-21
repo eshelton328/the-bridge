@@ -20,6 +20,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, WorkbenchPane } from '../types.ts'
 import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
+import type { EffortControl } from './EffortPicker.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
@@ -77,6 +78,8 @@ export type PhoneChatProps = {
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
   onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The chat's effort picker (W10), when it is a live Claude chat (ChatHead `effortPicker`). */
+  effort?: EffortControl | undefined
   /** The chat's files (W1b), when it is a live Claude chat (ChatPane `files`). */
   files?: ChatFiles | undefined
   /** The chat's pending send, when it is a live Claude chat (ChatPane `pending`). */
@@ -111,6 +114,7 @@ export function PhoneChat(props: PhoneChatProps) {
     onSend,
     onStop,
     files,
+    effort,
     pending,
     transcripts,
     onCopy,
@@ -125,8 +129,12 @@ export function PhoneChat(props: PhoneChatProps) {
   )
   const head = (
     <ChatHead
+      // Keyed by chat (not the composer's key, its sibling), so the effort picker's line and pending pick stay with
+      // the chat they were for.
+      key={`head:${pane.id}`}
       size={device === 'tablet' ? 'full' : 'phone'}
       head={pane.head}
+      effortPicker={effort}
       workspace={workspace}
       contextLabel={contextLabel}
       back={

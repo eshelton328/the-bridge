@@ -9,6 +9,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, WorkbenchPane } from '../types.ts'
 import type { ChatSkills } from './useSkillRows.ts'
 import { ChatHead } from './ChatHead.tsx'
+import type { EffortControl } from './EffortPicker.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
@@ -49,6 +50,8 @@ export type MainChatProps = {
   onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat: the running composer's Stop (ChatPane `onStop`). */
   onStop?: (() => Promise<ComposerAnswer>) | undefined
+  /** The chat's effort picker (W10), when it is a live Claude chat (ChatHead `effortPicker`). */
+  effort?: EffortControl | undefined
   /** The chat's files (W1b), when it is a live Claude chat (ChatPane `files`). */
   files?: ChatFiles | undefined
   /** The chat's pending send, when it is a live Claude chat (ChatPane `pending`). */
@@ -78,6 +81,7 @@ export function MainChat(props: MainChatProps) {
     onSend,
     onStop,
     files,
+    effort,
     pending,
     transcripts,
     onCopy,
@@ -93,7 +97,11 @@ export function MainChat(props: MainChatProps) {
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column} onClick={tap}>
       <ChatHead
+        // Keyed by chat (not the composer's key, its sibling), so the effort picker's line and pending pick stay with
+        // the chat they were for.
+        key={`head:${pane.id}`}
         head={pane.head}
+        effortPicker={effort}
         workspace={workspace}
         contextLabel={contextLabel}
         menu={menu}
