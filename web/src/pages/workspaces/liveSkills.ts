@@ -8,10 +8,9 @@
 // refuses, with the miss's kind only: never the chat, a skill's name or
 // description, or the server's message. A read the page stops (the list
 // closed) ends quietly.
-import { ChatSkillsResponse } from '@bridge/contract'
+import { type ChatSkill, ChatSkillsResponse } from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
-import type { LiveSkill } from './blocks/skillLists.ts'
 import { type LiveMiss, liveReadTimeoutMs, readChecked } from './liveWorkspaces.ts'
 
 /** A skills read that missed, for report(): its kind, and nothing else. */
@@ -34,7 +33,7 @@ const serverFault = (miss: LiveMiss) =>
   (miss.kind === 'status' && miss.status >= 500)
 
 /** The skills of the live chat `chat` (its server ID), or none when the read missed or `signal` stopped it. */
-export async function readSkills(chat: string, signal: AbortSignal): Promise<readonly LiveSkill[] | undefined> {
+export async function readSkills(chat: string, signal: AbortSignal): Promise<readonly ChatSkill[] | undefined> {
   try {
     const read = await readChecked(
       (init) =>

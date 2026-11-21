@@ -12,16 +12,11 @@
 // that hold it, then the descriptions that hold it, each group in the
 // server's order. The reads are the page's (useLiveSkills.ts); this file
 // has no live code.
+import type { ChatSkill, SkillSource } from '@bridge/contract'
 import type { ChatCommandValue } from './chatCommands.ts'
 
-/** Where a skill comes from, as the contract's `SkillSource` names it. */
-type SkillSource = 'builtin' | 'user' | 'project' | 'plugin'
-
-/** One skill of a chat, as the server lists it: the name the owner types after "/", with no "/". */
-export type LiveSkill = { readonly name: string; readonly description: string; readonly source: SkillSource }
-
 /** What a chat's list shows now: its skills from the last read that answered, none before it or after a miss. */
-export type SkillListView = { readonly skills: readonly LiveSkill[] }
+export type SkillListView = { readonly skills: readonly ChatSkill[] }
 
 /** The page's reads of each live chat's "/" list. */
 export type SkillLists = {
@@ -37,7 +32,7 @@ export type SkillLists = {
  * Reads the skills of `chat` (its server ID): the list, or none when the read missed. It stops when `signal` aborts,
  * as a list that closed stops it.
  */
-export type ReadSkills = (chat: string, signal: AbortSignal) => Promise<readonly LiveSkill[] | undefined>
+export type ReadSkills = (chat: string, signal: AbortSignal) => Promise<readonly ChatSkill[] | undefined>
 
 const none: SkillListView = { skills: [] }
 
