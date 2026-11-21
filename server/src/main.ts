@@ -43,6 +43,7 @@ const agents = createHerdrAgents({
   claudeSettings,
   home: homedir(),
   uploads: uploadsRoot,
+  chatRoot: config.value.chatRoot,
 })
 const uploads = createDiskUploads({ root: uploadsRoot, convert: sipsConvert })
 // The VAPID keys and push subscriptions go beside the database too, 0700 and 0600 (d-118). The notifier

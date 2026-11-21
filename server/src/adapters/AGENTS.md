@@ -175,6 +175,17 @@ client of a socket or a file sits beside them.
   test herdr session, 2026-11-21). `pane.move` inside one tab does nothing
   (`same_tab`), so the adapter answers `sameTab` with no call, and a
   pane goes to another place in its own tab only by a swap.
+- A new chat (slice W3) starts in a new pane: `pane.split` beside a
+  chat in its folder, or `tab.create` in the folder of the workspace's
+  first pane, both with no focus change. The folder must be in the chat
+  root (`BRIDGE_CHAT_ROOT`) once both are real paths, so a link or
+  ".." cannot leave it (`folderNotAllowed`, nothing made); a name in
+  use is `nameTaken`. Then `agent.start` with an argument list of
+  `-n <name>` and `--model <alias>` only, never a flag that skips a
+  permission, and `agent.wait` (30 s) for idle, done or blocked. A
+  blocked start is `needsYou` and stays so: the adapter sends no key
+  and answers no prompt of it, such as Claude's folder trust question
+  (`herdrAgents.test.ts`).
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

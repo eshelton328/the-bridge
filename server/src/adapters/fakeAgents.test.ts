@@ -1,4 +1,5 @@
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
+import { ok } from '@bridge/shared'
 import { describe, expect, it } from 'vitest'
 import { describeAgentPort } from './agentPortContract.ts'
 import { createFakeAgents } from './fakeAgents.ts'
@@ -83,6 +84,31 @@ describe('fake agents', () => {
     expect(await agents.closeChat(themes)).toEqual({ ok: true, value: 'done' })
     expect((await tab()).chats.map((c) => c.id)).toEqual([drift])
     expect(await agents.zoomChat(drift, true)).toEqual({ ok: true, value: 'singlePane' })
+  })
+
+  it('starts a Claude chat beside a chat or in a workspace, ready, and refuses a name in use', async () => {
+    const agents = createFakeAgents(machine)
+    const before = await agents.listWorkspaces()
+    const first = before.ok ? before.value[0] : undefined
+    const beside = first?.chats[0]
+    if (first === undefined || beside === undefined) throw new Error('the fake has no chat')
+    const started = await agents.startChat({
+      kind: 'claude',
+      name: 'w3-fake',
+      model: 'sonnet',
+      place: { in: 'split', beside: beside.id, direction: 'row' },
+    })
+    expect(started).toMatchObject({ ok: true, value: { state: 'ready' } })
+    const listed = await agents.listWorkspaces()
+    const made = listed.ok ? listed.value[0]?.chats.find((c) => c.title === 'w3-fake') : undefined
+    expect(made).toMatchObject({ kind: 'claude', modelId: 'sonnet', status: 'idle' })
+    expect(started.ok && typeof started.value === 'object' ? started.value.pane : undefined).toBe(made?.pane)
+    const inTab = await agents.startChat({ kind: 'claude', place: { in: 'tab', workspace: first.id } })
+    expect(inTab).toMatchObject({ ok: true, value: { state: 'ready' } })
+    const again = await agents.startChat({ kind: 'claude', name: 'w3-fake', place: { in: 'tab', workspace: first.id } })
+    const nowhere = { in: 'tab', workspace: WorkspaceId.parse(`${machine}/w-none`) } as const
+    const missing = await agents.startChat({ kind: 'claude', place: nowhere })
+    expect([again, missing]).toEqual([ok('nameTaken'), ok('notFound')])
   })
 
   it('takes back a command whose Enter the chat did not take, and keeps the chat', async () => {

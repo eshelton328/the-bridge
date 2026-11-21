@@ -15,9 +15,10 @@
 // agent session ID, or herdr's terminal ID when it has none or when another
 // pane has resumed the same session, so each chat ID is on one chat only.
 // A herdr ID that the contract's IDs cannot hold makes the reply badReply.
-import { createHash } from 'node:crypto'
+import { createHash, randomBytes } from 'node:crypto'
 import { existsSync, type FSWatcher, watch } from 'node:fs'
-import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path'
+import { realpath } from 'node:fs/promises'
+import { basename, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import {
   ChatId,
   type ChatStatus,
@@ -89,6 +90,23 @@ const ZoomReply = z.object({ zoom: z.object({ reason: Reason }) })
 const SwapReply = z.object({ swap: z.object({ reason: Reason }) })
 /** herdr's reply to a split: the new pane, of which the adapter reads only its terminal. */
 const SplitReply = z.object({ pane: z.object({ terminal_id: LocalIdPart }) })
+/** herdr's new pane of a start: its pane ID and terminal, from `pane.split` or from the root pane of `tab.create`. */
+const NewPane = z.object({ pane_id: z.string(), terminal_id: LocalIdPart })
+const StartSplitReply = z.object({ pane: NewPane })
+const StartTabReply = z.object({ root_pane: NewPane })
+/** How long a start waits for the new Claude chat to be ready or to wait for the owner. */
+const startWaitMs = 30_000
+
+/** Whether `folder` is in `root` once both are real paths, so a link or ".." cannot leave the root. */
+async function insideRoot(root: string | undefined, folder: string | undefined): Promise<boolean> {
+  if (root === undefined || folder === undefined) return false
+  try {
+    const [top, real] = await Promise.all([realpath(root), realpath(folder)])
+    return real === top || real.startsWith(top + sep)
+  } catch {
+    return false
+  }
+}
 /** herdr's reply to a move: whether the pane moved, and why not (`same_tab`, `zoomed_tab`). */
 const MoveReply = z.object({
   move_result: z.object({ changed: z.boolean(), reason: z.string().nullable().optional() }),
@@ -127,6 +145,8 @@ const AgentList = z.object({
   ),
 })
 type HerdrAgent = z.infer<typeof AgentList>['agents'][number]
+/** herdr's reply to `agent.wait`: the agent, as `agent.list` gives it. */
+const AgentInfo = z.object({ agent: AgentList.shape.agents.element })
 
 const PaneList = z.object({
   panes: z.array(
@@ -274,6 +294,8 @@ export type HerdrAgentsOptions = {
   readonly home: string
   /** Gets one warning for each herdr status the adapter does not know. */
   readonly log: Logger
+  /** The folder under which a start may open a chat (slice W3); none: every start is `folderNotAllowed`. */
+  readonly chatRoot?: string
   /** The time in ms, for the stop hold; a test can move it. */
   readonly now?: () => number
 }
@@ -323,6 +345,7 @@ export function createHerdrAgents({
   log,
   watch: watchFs = (path, listener) => watch(path, listener),
   now = Date.now,
+  chatRoot,
 }: HerdrAgentsOptions): AgentPort {
   const unknownSeen = new Set<string>()
   /** The chat's status for herdr's `status`; one it does not know is `unknown`, logged once. */
@@ -1015,6 +1038,72 @@ export function createHerdrAgents({
       if (!written.ok) return written
       if (written.value === 'notFound') return ok('notFound')
       return ok({ chat: ChatId.parse(`${machine}/${written.value.pane.terminal_id}`) })
+    },
+    async startChat({ name, model, place }) {
+      // The new pane's place: beside the chat in its folder, or a new tab in the folder of the workspace's first pane.
+      let beside: string | undefined
+      let workspace: string
+      let cwd: string | undefined
+      if (place.in === 'split') {
+        const found = await paneOf(place.beside)
+        if (!found.ok) return found
+        if (found.value?.workspace === undefined) return ok('notFound')
+        ;({ pane: beside, workspace, cwd } = found.value)
+      } else {
+        const { machine: on, local } = splitId(place.workspace)
+        if (on !== machine) return ok('notFound')
+        const panes = await call('pane.list', PaneList)
+        if (!panes.ok) return panes
+        const first = panes.value.panes.find((p) => p.workspace_id === local)
+        if (first === undefined) return ok('notFound')
+        workspace = local
+        cwd = first.cwd ?? undefined
+      }
+      if (cwd === undefined || !(await insideRoot(chatRoot, cwd))) return ok('folderNotAllowed')
+      const agents = await call('agent.list', AgentList)
+      if (!agents.ok) return agents
+      const chatName = name ?? `chat-${randomBytes(3).toString('hex')}`
+      if (agents.value.agents.some((a) => a.name === chatName)) return ok('nameTaken')
+      // No focus change: herdr's active tab and pane stay as they were.
+      const made =
+        beside === undefined
+          ? await paneWrite('tab.create', StartTabReply, { workspace_id: workspace, cwd, focus: false })
+          : await paneWrite('pane.split', StartSplitReply, {
+              target_pane_id: beside,
+              direction: place.in === 'split' && place.direction === 'row' ? 'right' : 'down',
+              focus: false,
+              cwd,
+            })
+      if (!made.ok) return made
+      if (made.value === 'notFound') return ok('notFound')
+      const pane = 'pane' in made.value ? made.value.pane : made.value.root_pane
+      forgetPlaces()
+      // An argument list, never a shell line: the name and the model alias only, and no flag that skips a permission.
+      const args = ['-n', chatName, ...(model === undefined ? [] : ['--model', model])]
+      const started = await paneWrite('agent.start', AnyReply, {
+        name: chatName,
+        kind: 'claude',
+        pane_id: pane.pane_id,
+        args,
+        timeout_ms: startWaitMs,
+      })
+      if (!started.ok) return started
+      if (started.value === 'notFound') return ok('notFound')
+      const paneId = paneIdOf(pane.terminal_id)
+      // herdr answers the start at once; wait for the chat to be ready or to wait for the owner. The adapter answers
+      // no prompt of the new chat (a folder trust question too): `needsYou` stays until the owner answers it.
+      const waited = await herdrRequest(
+        socket,
+        'agent.wait',
+        { target: pane.pane_id, until: ['idle', 'done', 'blocked'], timeout_ms: startWaitMs },
+        startWaitMs + 5000,
+      )
+      const info = waited.ok ? AgentInfo.safeParse(waited.value) : undefined
+      if (info?.success !== true) return ok({ pane: paneId, state: 'starting' })
+      const status = statusOf(info.data.agent.agent_status)
+      const state = status === 'needsYou' ? 'needsYou' : status === 'idle' || status === 'done' ? 'ready' : 'starting'
+      const chat = sessionOf(info.data.agent) === undefined ? undefined : chatIdOf(info.data.agent, new Set())
+      return ok({ pane: paneId, ...(chat === undefined ? {} : { chat }), state })
     },
     async setSplitRatio(tab, path, ratio) {
       const { machine: on, local } = splitId(tab)

@@ -1,7 +1,17 @@
-import { appendFileSync, existsSync, mkdirSync, mkdtempSync, statSync, watch, writeFileSync } from 'node:fs'
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  statSync,
+  symlinkSync,
+  watch,
+  writeFileSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { TabId, ChatId, MachineId, WorkspaceId } from '@bridge/contract'
+import { basename, join } from 'node:path'
+import { TabId, ChatId, MachineId, type StartChatRequest, WorkspaceId } from '@bridge/contract'
+import { ok } from '@bridge/shared'
 import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
@@ -1908,5 +1918,132 @@ describe('herdr agents: the place of a chat while a list stream is open', () => 
       stream.close()
       socket.set('agent.list', undefined)
     }
+  })
+})
+
+describe('herdr agents: a new chat (slice W3)', () => {
+  const root = mkdtempSync(join(tmpdir(), 'chat-root-'))
+  const repo = join(root, 'repo')
+  mkdirSync(repo)
+  const outside = mkdtempSync(join(tmpdir(), 'outside-'))
+  symlinkSync(outside, join(root, 'link'))
+  const codex = ChatId.parse('test-mac/term_2')
+  const withCwd = (folders: Readonly<Record<string, string>>) => ({
+    ...results['pane.list'],
+    panes: results['pane.list'].panes.map((p) => ({ ...p, cwd: folders[p.pane_id] })),
+  })
+  const newPane = { pane_id: 'w17:p9', terminal_id: 'term_9' }
+  const waited = (status: string) => ({
+    type: 'agent_info',
+    agent: {
+      agent: 'claude',
+      agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: 'session-new' },
+      agent_status: status,
+      cwd: repo,
+      name: 'w3-test',
+      pane_id: 'w17:p9',
+      terminal_id: 'term_9',
+      workspace_id: 'w17',
+    },
+  })
+  const setup = async ({ chatRoot }: { chatRoot: string | undefined } = { chatRoot: root }) => {
+    const socket = await startFakeHerdrSocket({
+      ...results,
+      'pane.list': withCwd({ 'w17:p1': repo, 'w17:p2': repo, 'w18:p1': join(root, 'link'), 'w18:p2': outside }),
+      'pane.split': { type: 'pane_info', pane: newPane },
+      'tab.create': { type: 'tab_created', tab: { tab_id: 'w17:t2' }, root_pane: newPane },
+      'agent.start': { type: 'agent_started', agent: { pane_id: 'w17:p9', launch_pending: true } },
+      'agent.wait': waited('idle'),
+    })
+    const adapter = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log: memoryLogger().log,
+      claudeProjects: projects,
+      home,
+      ...(chatRoot === undefined ? {} : { chatRoot }),
+    })
+    const sent = (method: string) =>
+      socket
+        .requests()
+        .filter((r) => r.method === method)
+        .map((r) => r.params)
+    return { socket, adapter, sent }
+  }
+
+  it('starts Claude beside a chat in its folder, with no focus change, the name and model only, and waits for it', async () => {
+    const { socket, adapter, sent } = await setup()
+    const split: StartChatRequest['place'] = { in: 'split', beside: codex, direction: 'row' }
+    const started = await adapter.startChat({ kind: 'claude', name: 'w3-test', model: 'sonnet', place: split })
+    await socket.close()
+    expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'ready' } })
+    expect(started.ok && typeof started.value === 'object' ? started.value.pane : '').toMatch(
+      /^test-mac\/[0-9a-f]{20}$/,
+    )
+    expect(sent('pane.split')).toEqual([{ target_pane_id: 'w17:p2', direction: 'right', focus: false, cwd: repo }])
+    expect(sent('agent.start')).toEqual([
+      {
+        name: 'w3-test',
+        kind: 'claude',
+        pane_id: 'w17:p9',
+        args: ['-n', 'w3-test', '--model', 'sonnet'],
+        timeout_ms: 30000,
+      },
+    ])
+    expect(sent('agent.wait')).toEqual([{ target: 'w17:p9', until: ['idle', 'done', 'blocked'], timeout_ms: 30000 }])
+    // No focus change and no key: herdr's active pane stays, and the adapter answers nothing in the new chat.
+    for (const method of ['pane.focus', 'tab.focus', 'workspace.focus', 'agent.send_keys', 'agent.prompt'])
+      expect(sent(method)).toEqual([])
+  })
+
+  it("opens a new tab in the folder of the workspace's first pane, and keeps a chat that waits for the owner as needsYou", async () => {
+    const { socket, adapter, sent } = await setup()
+    socket.set('agent.wait', waited('blocked'))
+    const started = await adapter.startChat({
+      kind: 'claude',
+      place: { in: 'tab', workspace: WorkspaceId.parse('test-mac/w17') },
+    })
+    await socket.close()
+    expect(started).toMatchObject({ ok: true, value: { chat: 'test-mac/session-new', state: 'needsYou' } })
+    expect(sent('tab.create')).toEqual([{ workspace_id: 'w17', cwd: repo, focus: false }])
+    expect(sent('agent.start')[0]).toMatchObject({ args: ['-n', expect.stringMatching(/^chat-[0-9a-f]{6}$/)] })
+    expect(sent('agent.send_keys')).toEqual([])
+  })
+
+  it('starts nothing in a folder outside the chat root, through a link or "..", with no root, or with a name in use', async () => {
+    const outsideByDots = join(repo, '..', '..', basename(outside))
+    const tab: StartChatRequest['place'] = { in: 'tab', workspace: WorkspaceId.parse('test-mac/w18') }
+    const cases: { chatRoot: string | undefined; folders: Record<string, string>; name?: string }[] = [
+      { chatRoot: root, folders: { 'w18:p1': join(root, 'link') } },
+      { chatRoot: root, folders: { 'w18:p1': outsideByDots } },
+      { chatRoot: undefined, folders: { 'w18:p1': repo } },
+      { chatRoot: root, folders: { 'w18:p1': repo }, name: 'bridge-coord' },
+    ]
+    for (const { chatRoot, folders, name } of cases) {
+      const { socket, adapter, sent } = await setup({ chatRoot })
+      socket.set('pane.list', withCwd(folders))
+      const started = await adapter.startChat({ kind: 'claude', ...(name === undefined ? {} : { name }), place: tab })
+      await socket.close()
+      expect(started).toEqual({ ok: true, value: name === undefined ? 'folderNotAllowed' : 'nameTaken' })
+      expect([...sent('tab.create'), ...sent('agent.start')]).toEqual([])
+    }
+  })
+
+  it('says starting when the chat is not ready in time, and notFound for a chat or workspace it does not have', async () => {
+    const { socket, adapter } = await setup()
+    socket.failOnce('agent.wait', 'timeout', 'agent did not reach a settled state')
+    const started = await adapter.startChat({
+      kind: 'claude',
+      place: { in: 'tab', workspace: WorkspaceId.parse('test-mac/w17') },
+    })
+    expect(started).toMatchObject({ ok: true, value: { state: 'starting' } })
+    expect(started.ok && typeof started.value === 'object' ? Object.keys(started.value) : []).toEqual(['pane', 'state'])
+    const gone = ChatId.parse('test-mac/term_404')
+    const missing = await Promise.all([
+      adapter.startChat({ kind: 'claude', place: { in: 'split', beside: gone, direction: 'row' } }),
+      adapter.startChat({ kind: 'claude', place: { in: 'tab', workspace: WorkspaceId.parse('other-mac/w17') } }),
+    ])
+    expect(missing).toEqual([ok('notFound'), ok('notFound')])
+    await socket.close()
   })
 })
