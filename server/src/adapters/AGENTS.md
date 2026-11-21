@@ -71,8 +71,14 @@ client of a socket or a file sits beside them.
   its repository root (not home), at most 500. Only front matter is
   read (16 KB), again only when a change time moves; no plugins yet.
 - A Claude chat's `contextUsed` is its last request's input and cache
-  tokens over the model's context window; a model that `sessionFile.ts`
-  has no window for gets `null` (`sessionFile.test.ts`). The read goes
+  tokens over the model's auto-compact window when Claude Code's
+  settings set one (`modelSettings["<model>"].autoCompactWindow`, as
+  the chat compacts there), else over the model's context window, at
+  most 1; a model that `sessionFile.ts` has no window for gets `null`
+  (`sessionFile.test.ts`). `claudeSettings.ts` only reads the settings
+  file (`BRIDGE_CLAUDE_SETTINGS`, else the `settings.json` beside the
+  projects folder), again only when its size or change time moves
+  (`claudeSettings.test.ts`). The read goes
   back from the end of the session file in chunks of 64 KB to the newest
   reply, up to 16 MB, as Claude Code can write lines of 80 KB and more
   after a reply; a file with the same size and change time is not read

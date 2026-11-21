@@ -1,6 +1,7 @@
 // The server's settings, every one from an environment variable (d-111), so
 // a test or a later ephemeral environment points it anywhere. The server
 // does not start when one is missing or wrong.
+import { dirname, join } from 'node:path'
 import { MachineId } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
@@ -16,6 +17,7 @@ const Env = z.object({
   BRIDGE_BRAIN_DIR: path,
   BRIDGE_DB_FILE: path,
   BRIDGE_CLAUDE_PROJECTS: path,
+  BRIDGE_CLAUDE_SETTINGS: path.optional(),
   BRIDGE_LOG_DIR: path,
   BRIDGE_LOG_LEVEL: z.enum(logLevels).default('info'),
 })
@@ -32,6 +34,8 @@ export type Config = {
   readonly dbFile: string
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** Claude Code's settings file, read only; the settings.json beside the projects folder when not set. */
+  readonly claudeSettings: string
   /** The folder of the log files, one for each day (d-115). */
   readonly logDir: string
   readonly logLevel: LogLevel
@@ -50,6 +54,7 @@ export function readConfig(env: Readonly<Record<string, string | undefined>>): R
     brainDir: e.BRIDGE_BRAIN_DIR,
     dbFile: e.BRIDGE_DB_FILE,
     claudeProjects: e.BRIDGE_CLAUDE_PROJECTS,
+    claudeSettings: e.BRIDGE_CLAUDE_SETTINGS ?? join(dirname(e.BRIDGE_CLAUDE_PROJECTS), 'settings.json'),
     logDir: e.BRIDGE_LOG_DIR,
     logLevel: e.BRIDGE_LOG_LEVEL,
   })

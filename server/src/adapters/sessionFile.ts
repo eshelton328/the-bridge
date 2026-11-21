@@ -5,6 +5,7 @@
 import { type FileHandle, open } from 'node:fs/promises'
 import { ChatEffort, type ModelAlias } from '@bridge/contract'
 import { z } from 'zod'
+import type { CompactWindows } from './claudeSettings.ts'
 
 /** The size of each read from the end of a session file. */
 const tailBytes = 64 * 1024
@@ -55,7 +56,10 @@ const contextWindows: Readonly<Record<string, number>> = {
 export type ClaudeSession = {
   /** The model of the last assistant entry, such as "claude-opus-5-5"; null when the file has none. */
   readonly model: string | null
-  /** The share of the model's context window that the last request used, 0 to 1; null when not known. */
+  /**
+   * The share of the context that the last request used, 0 to 1; null when not known. The whole is the model's
+   * auto-compact window when Claude Code's settings set one (the chat compacts there), else its context window.
+   */
   readonly contextUsed: number | null
   /** The effort of the newest entry that names a known one; null when none does. */
   readonly effort: ChatEffort | null
@@ -81,7 +85,9 @@ function effortOf(value: unknown): ChatEffort | null {
 }
 
 /** What the lines of one read gave: the newest reply's model and context share, if any, and the newest effort. */
-type Scan = { found?: { model: string; contextUsed: number | null }; effort: ChatEffort | null }
+type Scan = { found?: Reply; effort: ChatEffort | null }
+/** The newest reply's model and the tokens its request used, null when the line has no usage. */
+type Reply = { model: string; used: number | null }
 
 /**
  * Reads `lines`, newest first, from `effort` on: the first reply ends the read, and the effort of the reply's turn
@@ -105,18 +111,27 @@ function scanLines(lines: readonly string[], effortSoFar: ChatEffort | null): Sc
     // subagent's own context.
     if (!entry.success || entry.data.message.model === '<synthetic>' || entry.data.isSidechain === true) continue
     const { model, usage } = entry.data.message
-    // A dated ID, such as "claude-haiku-4-5-20251001", has the window of its alias.
-    const window = contextWindows[model.replace(/-\d{8}$/, '')]
     const used = usage
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
-      : undefined
-    found = { model, contextUsed: window === undefined || used === undefined ? null : Math.min(1, used / window) }
+      : null
+    found = { model, used }
   }
   return found === undefined ? { effort } : { found, effort }
 }
 
+/** What one read of a session file found, before the context share. */
+type Read = { reply: Reply | null; effort: ChatEffort | null }
+
+/** The share of the whole that `reply` used, capped at 1; null for a model with no window or a reply with no usage. */
+function contextUsedOf(reply: Reply, compactWindows: CompactWindows): number | null {
+  // A dated ID, such as "claude-haiku-4-5-20251001", has the window of its alias.
+  const model = reply.model.replace(/-\d{8}$/, '')
+  const window = compactWindows[model] ?? contextWindows[model]
+  return window === undefined || reply.used === null ? null : Math.min(1, reply.used / window)
+}
+
 /** The last result for each session file, with the size and change time it was read at. */
-const cache = new Map<string, { size: number; mtimeMs: number; limit: number; session: ClaudeSession }>()
+const cache = new Map<string, { size: number; mtimeMs: number; limit: number; read: Read }>()
 /** The most files the cache holds; the oldest entry goes first. */
 const cacheEntries = 512
 
@@ -124,23 +139,32 @@ const cacheEntries = 512
  * The model, context share and effort of the session file at `path`; each null when it cannot be read. It reads
  * back from the end in chunks of 64 KB and stops at the first reply, or after `limit` bytes: Claude Code can write
  * lines of 80 KB and more (a prompt snapshot) after a reply. A file whose size and change time are the same as at
- * the last read is not read again.
+ * the last read is not read again. `compactWindows` are the auto-compact windows from Claude Code's settings.
  */
-export async function readClaudeSession(path: string, limit = maxSessionBytes): Promise<ClaudeSession> {
+export async function readClaudeSession(
+  path: string,
+  limit = maxSessionBytes,
+  compactWindows: CompactWindows = {},
+): Promise<ClaudeSession> {
   try {
     const handle = await open(path, 'r')
     try {
       const { size, mtimeMs } = await handle.stat()
       const known = cache.get(path)
-      if (known?.size === size && known.mtimeMs === mtimeMs && known.limit === limit) return known.session
-      const session = await readBack(handle, size, limit)
-      cache.delete(path)
-      cache.set(path, { size, mtimeMs, limit, session })
-      for (const oldest of cache.keys()) {
-        if (cache.size <= cacheEntries) break
-        cache.delete(oldest)
+      const fresh = known?.size === size && known.mtimeMs === mtimeMs && known.limit === limit
+      const read = fresh ? known.read : await readBack(handle, size, limit)
+      if (!fresh) {
+        cache.delete(path)
+        cache.set(path, { size, mtimeMs, limit, read })
+        for (const oldest of cache.keys()) {
+          if (cache.size <= cacheEntries) break
+          cache.delete(oldest)
+        }
       }
-      return session
+      const { reply, effort } = read
+      return reply === null
+        ? { ...unknownSession, effort }
+        : { model: reply.model, contextUsed: contextUsedOf(reply, compactWindows), effort }
     } finally {
       await handle.close()
     }
@@ -149,7 +173,7 @@ export async function readClaudeSession(path: string, limit = maxSessionBytes): 
   }
 }
 
-async function readBack(handle: FileHandle, size: number, limit: number): Promise<ClaudeSession> {
+async function readBack(handle: FileHandle, size: number, limit: number): Promise<Read> {
   let end = size
   let read = 0
   // The start of a line whose rest was in the chunk before; it joins the next chunk, which holds its start.
@@ -172,9 +196,9 @@ async function readBack(handle: FileHandle, size: number, limit: number): Promis
     carry = data.subarray(0, cut)
     const scan = scanLines(data.subarray(cut).toString('utf8').split('\n').reverse(), effort)
     effort = scan.effort
-    if (scan.found !== undefined) return { ...scan.found, effort }
+    if (scan.found !== undefined) return { reply: scan.found, effort }
   }
-  return { ...unknownSession, effort }
+  return { reply: null, effort }
 }
 
 /** Claude Code's folder name for a working directory: each character that is not a letter or digit becomes "-". */

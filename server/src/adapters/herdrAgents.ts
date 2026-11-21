@@ -46,6 +46,7 @@ import { type SocketFailure, type HerdrStream, herdrRequest, herdrSubscribe } fr
 import { boxKeys, type InputBox, inputBoxOf, promptKey } from './claudeInput.ts'
 import { readClaudeTranscript } from './claudeTranscript.ts'
 import { readClaudeSkills } from './claudeSkills.ts'
+import { readCompactWindows } from './claudeSettings.ts'
 import { claudeProjectFolder, modelAliasOf, readClaudeSession } from './sessionFile.ts'
 
 const HerdrStatus = z.enum(['idle', 'working', 'blocked', 'done', 'unknown'])
@@ -263,6 +264,8 @@ export type HerdrAgentsOptions = {
   readonly machine: MachineId
   /** Where Claude Code keeps its session files, such as ~/.claude/projects. */
   readonly claudeProjects: string
+  /** Claude Code's settings file, read only for each model's auto-compact window; none: the model's window. */
+  readonly claudeSettings?: string
   /** Starts a file system watch; a test can give one that loses events, as a macOS folder watch can. */
   readonly watch?: (path: string, listener: (event: string, name: string | null) => void) => FSWatcher
   /** The folder of the owner's uploads; a transcript shows a prompt's files in it by name. */
@@ -314,6 +317,7 @@ export function createHerdrAgents({
   socket,
   machine,
   claudeProjects,
+  claudeSettings,
   home,
   uploads,
   log,
@@ -382,8 +386,11 @@ export function createHerdrAgents({
     shared: ReadonlySet<string>,
   ): Promise<ChatSummary> => {
     const path = kind === 'claude' ? sessionPath(agent) : undefined
+    const windows = path === undefined || claudeSettings === undefined ? {} : await readCompactWindows(claudeSettings)
     const session =
-      path === undefined ? { model: null, contextUsed: null, effort: null } : await readClaudeSession(path)
+      path === undefined
+        ? { model: null, contextUsed: null, effort: null }
+        : await readClaudeSession(path, undefined, windows)
     return {
       id: chatIdOf(agent, shared),
       kind,
