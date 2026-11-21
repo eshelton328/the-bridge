@@ -34,7 +34,11 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   `transcript.changed` by entry ID, only while the pane shows (ChatPane
   calls the page's `TranscriptWatch`, `useLiveTranscripts.ts`). A stream
   route that answers 404 (a server before backend 3b-3) gives one read,
-  no line and no report. Any other miss shows a quiet line with Retry in
+  no line and no report. A stream that ends with an `error` event of
+  kind `not-found` is a chat that left the list (after /clear or a closed
+  pane, backend #313): it ends quietly, with no line, no report, no read
+  and no connecting again; only the kind decides, never the message.
+  Any other miss shows a quiet line with Retry in
   the pane (`blocks/TranscriptProblem.tsx`) and calls `report()` once for
   each outage of a shown chat, with the miss kind, the HTTP status and
   the chat ID only, never transcript text, a tool target or the server's

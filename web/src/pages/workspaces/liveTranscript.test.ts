@@ -1,6 +1,7 @@
 // The live transcript (slice 3b): the merge by entry ID, the order of the
 // stream and the read, a reconnect that reads again, the earlier and cut
-// lines, the 404 of a server with no stream route yet, and what reaches
+// lines, the 404 of a server with no stream route yet, the quiet end of a
+// chat that left the list (a not-found error event), and what reaches
 // report(). The server is the contract-checked fake (lib/fakeTranscriptServer.ts).
 import type { TranscriptEntry } from '@bridge/contract'
 import { afterEach, describe, expect, it, vi } from 'vitest'
@@ -199,6 +200,55 @@ describe('watchTranscript', () => {
     vi.setSystemTime(Date.now() + repeatWindowMs)
     server.fail(chat)
     await expect.poll(() => getReports().length).toBe(2)
+  })
+
+  it('ends quietly on a not-found error event: no line, no report, no read and no connecting again', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    server.gone(chat)
+    await expect.poll(() => server.openStreams()).toEqual([])
+    // Longer than the retry time (50 ms).
+    await settle(300)
+    expect(server.opens).toEqual([chat])
+    expect(server.reads).toEqual([chat])
+    expect(view()?.problem).toBeUndefined()
+    expect(ids()).toEqual(['u1'])
+    expect(getReports()).toEqual([])
+  })
+
+  it('ends quietly on not-found while the read still runs, and takes away the line of an earlier drop', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    // Each read waits 300 ms, so the chat leaves the list while the second connection's read runs.
+    watch(server, 300)
+    await expect.poll(ids).toEqual(['u1'])
+    server.drop(chat)
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    await expect.poll(() => server.openStreams()).toEqual([chat])
+    server.gone(chat)
+    await expect.poll(() => view()?.problem).toBeUndefined()
+    await settle(500)
+    expect(server.opens).toEqual([chat, chat])
+    expect(view()?.problem).toBeUndefined()
+    // The drop's report only: the end is not an outage.
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: ended (chat mac-mini/c1)',
+    ])
+  })
+
+  it('keeps the outage for an error event of another kind: the line, a read again and one report', async () => {
+    const server = fakeTranscriptServer()
+    server.set(chat, [user('u1', 'go')])
+    watch(server)
+    await expect.poll(ids).toEqual(['u1'])
+    server.fail(chat, 'internal')
+    await expect.poll(() => view()?.problem).toBe(transcriptText.dropped)
+    await expect.poll(() => server.reads.length).toBe(2)
+    expect(getReports().map((r) => r.error.message)).toEqual([
+      'A chat transcript stream missed: ended internal (chat mac-mini/c1)',
+    ])
   })
 
   it("reports a second outage inside report()'s repeat window once: the screen line still shows it", async () => {

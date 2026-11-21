@@ -21,7 +21,11 @@
 // miss shows a
 // quiet line in the pane with Retry: a read that missed ("Transcript not live
 // — <kind>"), a stream that dropped or answered 5xx ("connecting again") or
-// that the server refused ("stopped"). report() gets one TranscriptMissError
+// that the server refused ("stopped"). A stream that ends with an `error`
+// event of kind `not-found` is a chat that left the list (after /clear, or
+// when its pane closed; backend #313): the page ends it quietly, with no
+// line, no report, no read and no connecting again. Only the event's kind
+// decides, never its message. report() gets one TranscriptMissError
 // for each outage of each chat, with the miss's kind, its HTTP status and the
 // chat ID only: never transcript text, a tool target or the server's message.
 import {
@@ -293,14 +297,24 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       return 'wait'
     }
     let loaded = false
-    // Set by `take` while the stream runs: an event the page cannot read, and the kind of the server's `error` event.
-    const seen: { unreadable: boolean; serverKind: string | undefined } = { unreadable: false, serverKind: undefined }
+    // Set by `take` while the stream runs: an event the page cannot read, the kind of the server's `error` event, and
+    // whether that kind says the chat left the list.
+    const seen: { unreadable: boolean; serverKind: string | undefined; gone: boolean } = {
+      unreadable: false,
+      serverKind: undefined,
+      gone: false,
+    }
     const waiting: (readonly TranscriptEntry[])[] = []
     const take = (frame: Frame) => {
       if (frame.retry !== undefined) retryMs = frame.retry
       if (frame.event === 'error') {
         const body = ErrorBody.safeParse(readJson(frame.data))
         seen.serverKind = body.success ? body.data.error.kind : undefined
+        // The chat left the list: end this connection, and the read that may still run, with nothing more.
+        if (seen.serverKind === 'not-found') {
+          seen.gone = true
+          connection.abort()
+        }
         return
       }
       if (frame.event !== 'transcript.changed') return
@@ -332,6 +346,12 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     } else connection.abort()
     await streamed
     if (closed()) return 'wait'
+    if (seen.gone) {
+      // No line, no report and no connecting again: a line left by an earlier drop goes too, as nothing reconnects.
+      update((view) => ({ ...view, problem: undefined }))
+      outages.delete(chat)
+      return 'wait'
+    }
     if (seen.unreadable) {
       fail(transcriptText.dropped, { part: 'stream', kind: 'bad-event' })
       return 'again'

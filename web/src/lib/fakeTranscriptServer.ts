@@ -17,6 +17,10 @@
 // W1-3: a chat whose terminal input holds text (`typeInTerminal`) refuses a
 // send with 409 chat-not-ready `inputNotEmpty`, as the server does, until
 // the test clears it (`clearTerminal`). A stop never sees this state.
+//
+// #313: `gone` ends a chat's streams as the server does when the chat leaves
+// the list: one `error` event of kind `not-found`, checked against
+// `ErrorBody`, then the end.
 import {
   ErrorBody,
   maxTranscriptEntries,
@@ -206,6 +210,23 @@ export function fakeTranscriptServer({ streams: mode = 'open' }: FakeTranscriptO
      */
     fail: (chat: string, kind: 'herdr-unavailable' | 'herdr-bad-reply' | 'internal' = 'herdr-unavailable') => {
       const body = ErrorBody.parse({ error: { kind, message: 'herdr stopped answering', requestId: 'r-watch' } })
+      const text = `event: error\ndata: ${JSON.stringify(body)}\n\n`
+      for (const s of open.filter((o) => o.chat === chat)) {
+        open.splice(open.indexOf(s), 1)
+        s.control.enqueue(encoder.encode(text))
+        s.control.close()
+      }
+    },
+    /**
+     * Ends each open stream of `chat` as the server does when the chat leaves the list, such as after /clear or when
+     * its pane closes (backend #313): one `error` event of kind `not-found`, with the server's message and no transcript
+     * text, then the end.
+     */
+    gone: (chat: string) => {
+      const path = `/api/chats/${encodeURIComponent(chat)}/transcript/events`
+      const body = ErrorBody.parse({
+        error: { kind: 'not-found', message: 'no chat has this ID', path, requestId: 'r-gone' },
+      })
       const text = `event: error\ndata: ${JSON.stringify(body)}\n\n`
       for (const s of open.filter((o) => o.chat === chat)) {
         open.splice(open.indexOf(s), 1)
