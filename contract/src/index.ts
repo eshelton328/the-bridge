@@ -1,5 +1,5 @@
 // The package entry. Name each export; no `export *`.
-export { LocalIdPart, ChatId, MachineId, splitId, TabId, UploadId, WorkspaceId } from './ids.ts'
+export { LocalIdPart, ChatId, MachineId, PaneId, splitId, TabId, UploadId, WorkspaceId } from './ids.ts'
 export { ClientErrorReport, ClientErrorSource } from './clientErrors.ts'
 export { ErrorBody, ErrorKind, errorStatus } from './errors.ts'
 export { EventEnvelope, EventSource, eventOf } from './events.ts'
@@ -24,4 +24,13 @@ export {
   TranscriptResponse,
   UserEntry,
 } from './transcripts.ts'
-export { ChatKind, ChatParent, ChatStatus, ChatSummary, WorkspaceSummary, WorkspacesResponse } from './workspaces.ts'
+export {
+  ChatEffort,
+  ChatKind,
+  ChatParent,
+  ChatStatus,
+  ChatSummary,
+  ModelAlias,
+  WorkspaceSummary,
+  WorkspacesResponse,
+} from './workspaces.ts'

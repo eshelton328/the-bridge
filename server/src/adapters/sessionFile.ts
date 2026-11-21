@@ -3,6 +3,7 @@
 // the last 64 KB is read, and only when a request asks, so a long
 // transcript costs the same as a short one.
 import { open } from 'node:fs/promises'
+import { ChatEffort, type ModelAlias } from '@bridge/contract'
 import { z } from 'zod'
 
 const tailBytes = 64 * 1024
@@ -11,6 +12,13 @@ const Usage = z.object({
   input_tokens: z.number().nonnegative().optional(),
   cache_read_input_tokens: z.number().nonnegative().optional(),
   cache_creation_input_tokens: z.number().nonnegative().optional(),
+})
+
+/** A line that holds the effort of its turn: Claude Code writes `perTurnEffort` and `effort` on its entries. */
+const EffortLine = z.object({
+  isSidechain: z.boolean().optional(),
+  perTurnEffort: z.unknown().optional(),
+  effort: z.unknown().optional(),
 })
 
 const AssistantLine = z.object({
@@ -43,9 +51,30 @@ export type ClaudeSession = {
   readonly model: string | null
   /** The share of the model's context window that the last request used, 0 to 1; null when not known. */
   readonly contextUsed: number | null
+  /** The effort of the newest entry that names a known one; null when none does. */
+  readonly effort: ChatEffort | null
 }
 
-/** The model and context share of the session file at `path`; both null when it cannot be read. */
+const unknownSession: ClaudeSession = { model: null, contextUsed: null, effort: null }
+
+/** The family of a Claude model ID, such as "opus" for "claude-opus-5-5"; null for another model or none. */
+export function modelAliasOf(model: string | null): ModelAlias | null {
+  const family = /^claude-(fable|opus|sonnet|haiku)(?:-|$)/.exec(model ?? '')?.[1]
+  return family === 'fable' || family === 'opus' || family === 'sonnet' || family === 'haiku' ? family : null
+}
+
+/** The effort that one parsed line names, its turn's first; null when it names none that `/effort` takes. */
+function effortOf(value: unknown): ChatEffort | null {
+  const line = EffortLine.safeParse(value)
+  if (!line.success || line.data.isSidechain === true) return null
+  for (const field of [line.data.perTurnEffort, line.data.effort]) {
+    const effort = ChatEffort.safeParse(field)
+    if (effort.success) return effort.data
+  }
+  return null
+}
+
+/** The model, context share and effort of the session file at `path`; each null when it cannot be read. */
 export async function readClaudeSession(path: string): Promise<ClaudeSession> {
   let text: string
   try {
@@ -60,15 +89,22 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       await handle.close()
     }
   } catch {
-    return { model: null, contextUsed: null }
+    return unknownSession
   }
+  let effort: ChatEffort | null = null
+  let found: { model: string; contextUsed: number | null } | undefined
+  // From the newest line back: the model and context of the newest model entry, and the newest effort, which can be
+  // on an older line than that entry (a prompt names its turn's effort before the reply does).
   for (const line of text.split('\n').reverse()) {
+    if (found !== undefined && effort !== null) break
     let value: unknown
     try {
       value = JSON.parse(line)
     } catch {
       continue
     }
+    effort ??= effortOf(value)
+    if (found !== undefined) continue
     const entry = AssistantLine.safeParse(value)
     // Claude Code writes "<synthetic>" for an entry no model made, such as an interrupted turn; a side chain is a
     // subagent's own context.
@@ -80,9 +116,9 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
       : undefined
     const contextUsed = window === undefined || used === undefined ? null : Math.min(1, used / window)
-    return { model, contextUsed }
+    found = { model, contextUsed }
   }
-  return { model: null, contextUsed: null }
+  return found === undefined ? { ...unknownSession, effort } : { ...found, effort }
 }
 
 /** Claude Code's folder name for a working directory: each character that is not a letter or digit becomes "-". */

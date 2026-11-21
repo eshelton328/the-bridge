@@ -40,7 +40,14 @@ client of a socket or a file sits beside them.
   watch that fails ends the stream as `unreachable`.
 - A Claude chat's `contextUsed` is its last request's input and cache
   tokens over the model's context window; a model that `sessionFile.ts`
-  has no window for gets `null` (`sessionFile.test.ts`).
+  has no window for gets `null` (`sessionFile.test.ts`). Its `effort`
+  is the newest `perTurnEffort` (else `effort`) that a session line
+  names, and its `modelId` the family of its model ID ("opus"); a Codex
+  chat and a shell get `null` for both.
+- Each chat's `pane` is a hash of herdr's terminal ID with the machine
+  before it: never herdr's own ID, and the same for the pane's life, so
+  it stays when `/clear` gives the pane a new session and so a new chat
+  ID (`herdrAgents.test.ts`).
 - A prompt or a stop goes only to its own chat's pane, with herdr
   `agent.prompt` or one `esc` of `agent.send_keys`. A shell, a chat that
   waits for the owner (`blocked`) and, for a stop, a chat that does not

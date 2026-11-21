@@ -207,6 +207,15 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect(new Set(chats).size).toBe(chats.length)
     })
 
+    it('gives each listed chat its own pane ID on its machine', async () => {
+      const { port } = await setup()
+      const read = await port.listWorkspaces()
+      if (!read.ok) throw new Error(read.error.message)
+      const panes = read.value.flatMap((w) => w.chats.map((c) => c.pane))
+      for (const pane of panes) expect(splitId(pane).machine).toBe(port.machine)
+      expect(new Set(panes).size).toBe(panes.length)
+    })
+
     it('lists the expected chat in its workspace', async () => {
       const { port, expected } = await setup()
       const read = await port.listWorkspaces()

@@ -42,6 +42,9 @@ const summary = (id: string, kind: 'claude' | 'codex' | 'shell', title: string) 
   title,
   model: kind === 'codex' ? 'gpt-5.5' : kind === 'shell' ? 'zsh' : 'claude-opus-5-5',
   contextUsed: null,
+  modelId: null,
+  effort: null,
+  pane: `${id}-pane`,
   status: 'working',
   parent: null,
 })

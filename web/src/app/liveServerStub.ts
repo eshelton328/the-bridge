@@ -12,6 +12,9 @@ const summary = (c: Chat) => ({
   title: c.title,
   model: c.kind === 'shell' ? 'zsh' : 'claude-opus-5-5',
   contextUsed: null,
+  modelId: null,
+  effort: null,
+  pane: `mac-mini/pane-${c.local}`,
   status: 'idle',
   parent: null,
 })

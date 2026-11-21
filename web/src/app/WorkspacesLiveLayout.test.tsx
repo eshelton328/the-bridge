@@ -54,6 +54,9 @@ const summary = (c: Chat) => ({
   title: c.title,
   model: c.model,
   contextUsed: null,
+  modelId: null,
+  effort: null,
+  pane: `mac-mini/pane-${c.local}`,
   status: 'idle',
   parent: null,
 })

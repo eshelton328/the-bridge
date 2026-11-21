@@ -6,9 +6,12 @@ const chat = (local: string, kind: 'claude' | 'shell' = 'claude') => ({
   kind,
   title: local,
   model: kind === 'shell' ? 'pnpm dev' : 'claude-opus-5-5',
+  modelId: kind === 'shell' ? null : 'opus',
+  effort: null,
   contextUsed: null,
   status: 'idle',
   parent: null,
+  pane: `mac-mini/pane-${local}`,
 })
 
 const root = {
