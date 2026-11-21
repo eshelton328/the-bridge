@@ -42,5 +42,15 @@ Thin Hono sub-apps, one file for each area, named after the area
   when text stays, `noCommands` for a Codex chat. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the
   field and the rule (`chats.test.ts`).
+- `POST /api/chats/:chat/uploads` starts the upload of a file (slice
+  W1b): 201 with the upload ID and the chunk size; a shell is 409
+  `shell`, a Codex chat 409 `noAttachments`, a file over 1 GiB 413
+  `too-large`. `/api/uploads` (`uploads.ts`) takes each chunk with
+  `PUT /:upload/chunks/:n` as `application/octet-stream` and streams
+  it to the store, then `POST /:upload/complete` and
+  `DELETE /:upload`. A wrong chunk or an early complete is 409
+  `upload-conflict`, a full disk 507 `storage-full`. The file name and
+  bytes never go into a log line or an `ErrorBody` (`uploads.test.ts`).
+- The JSON checks of each POST route are in `jsonBody.ts`.
 - A route takes its services or ports as function arguments; it never
   imports an adapter.

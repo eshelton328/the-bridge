@@ -24,6 +24,7 @@ const logMessages = [
   'event stream ended',
   'herdr status not known',
   'client error',
+  'upload failed',
 ] as const
 export type LogMessage = (typeof logMessages)[number]
 const listed: ReadonlySet<unknown> = new Set(logMessages)

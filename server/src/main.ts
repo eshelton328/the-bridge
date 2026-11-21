@@ -3,7 +3,9 @@
 // for each day in BRIDGE_LOG_DIR and to the terminal: JSON lines, or
 // readable lines when the terminal is a TTY (d-115).
 import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
+import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
 import { createApp } from './app.ts'
 import { readConfig } from './config.ts'
@@ -16,7 +18,7 @@ if (!config.ok) {
   process.stderr.write(`the-bridge server: set these environment variables:\n${config.error.join('\n')}\n`)
   process.exit(1)
 }
-const { port, machine, owner, herdrSocket, claudeProjects, logDir, logLevel } = config.value
+const { port, machine, owner, herdrSocket, claudeProjects, logDir, logLevel, dbFile } = config.value
 const terminal: LogSink = {
   write: (line) => {
     const entry = process.stdout.isTTY ? parseLine(line) : undefined
@@ -26,9 +28,14 @@ const terminal: LogSink = {
 const log = createLogger(teeSinks(dailyFiles(logDir), terminal), logLevel).child({ machine })
 handleProcessErrors(process, log)
 const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects, home: homedir() })
-const server = serve({ fetch: createApp({ agents, owner, log }).fetch, port, hostname: '127.0.0.1' }, (info) => {
-  log.info('server started', { port: info.port })
-})
+// Uploads go beside the database, in a folder only the owner reads (slice W1b).
+const uploads = createDiskUploads({ root: join(dirname(dbFile), 'uploads') })
+const server = serve(
+  { fetch: createApp({ agents, owner, log, uploads }).fetch, port, hostname: '127.0.0.1' },
+  (info) => {
+    log.info('server started', { port: info.port })
+  },
+)
 server.on('error', (err) => {
   log.fatal('server error', { err })
   process.exitCode = 1

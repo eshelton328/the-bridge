@@ -2,7 +2,7 @@
 // Tests call it in process with app.request() (d-113); main.ts serves it.
 import { Hono } from 'hono'
 import { requestId } from 'hono/request-id'
-import { toAppError } from '@bridge/shared'
+import { err, toAppError } from '@bridge/shared'
 import { type Access, access } from './auth.ts'
 import { type AppEnv, errorJson, internalMessage, isPlainErrorKind } from './errors.ts'
 import type { Logger } from './logger.ts'
@@ -10,18 +10,31 @@ import { createRateLimit } from './rateLimit.ts'
 import { chatsRoutes } from './routes/chats.ts'
 import { clientErrorsRoutes } from './routes/clientErrors.ts'
 import { eventsRoutes } from './routes/events.ts'
+import { uploadsRoutes } from './routes/uploads.ts'
 import { workspacesRoutes } from './routes/workspaces.ts'
 import type { AgentPort } from './services/agentPort.ts'
 import { createLiveEvents } from './services/liveEvents.ts'
+import { defaultChunkBytes, type UploadStore } from './services/uploadStore.ts'
 
 export type AppDeps = {
   readonly agents: AgentPort
   /** The Tailscale login of the owner, the only viewer let in through Tailscale Serve. */
   readonly owner: string
   readonly log: Logger
+  /** Where uploaded files wait for a chat; with none, each upload route answers 500. main.ts gives the disk store. */
+  readonly uploads?: UploadStore
 }
 
-export function createApp({ agents, owner, log }: AppDeps) {
+/** The store of an app with none: each call fails, so an upload answers 500 and is logged. */
+const noUploads: UploadStore = {
+  chunkSize: defaultChunkBytes,
+  start: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  writeChunk: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  complete: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  remove: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+}
+
+export function createApp({ agents, owner, log, uploads = noUploads }: AppDeps) {
   return (
     new Hono<AppEnv>()
       // Each response carries an X-Request-Id, and the request's log line has the same ID (d-115).
@@ -50,7 +63,8 @@ export function createApp({ agents, owner, log }: AppDeps) {
         return undefined
       })
       .route('/api/workspaces', workspacesRoutes(agents, log))
-      .route('/api/chats', chatsRoutes(agents, log))
+      .route('/api/chats', chatsRoutes(agents, log, uploads))
+      .route('/api/uploads', uploadsRoutes(uploads, log))
       .route('/api/events', eventsRoutes(createLiveEvents(agents), log))
       .route('/api/client-errors', clientErrorsRoutes(log, createRateLimit(60, 60_000)))
       .notFound((c) => errorJson(c, 'not-found', { path: c.req.path, message: 'no route has this path' }))

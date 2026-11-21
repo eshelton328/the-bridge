@@ -9,26 +9,32 @@
 // JSON, so a cross-site form cannot post. The prompt text goes to the
 // port only, never into a log line or an ErrorBody. POST /:chat/input/clear
 // empties the chat's input box (204); the text it removes goes nowhere.
+// POST /:chat/uploads starts the upload of a file for that chat (slice
+// W1b, routes/uploads.ts).
 import {
   ChatId,
   ClearInputRequest,
   ErrorBody,
   maxPromptChars,
   SendPromptRequest,
+  StartUploadRequest,
+  StartUploadResponse,
   StopChatRequest,
   TranscriptChangedEvent,
   TranscriptResponse,
 } from '@bridge/contract'
-import type { Context, Next } from 'hono'
+import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
-import { validator } from 'hono/validator'
-import type { z } from 'zod'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
 import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, PromptOutcome } from '../services/agentPort.ts'
 import { clearInput, readTranscript, sendPrompt, stopChat } from '../services/chats.ts'
+import type { UploadStore } from '../services/uploadStore.ts'
+import { startUpload } from '../services/uploads.ts'
+import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
+import { storeFailed } from './uploads.ts'
 import { connectTranscript } from '../services/transcriptEvents.ts'
 
 const pingMs = 25_000
@@ -43,7 +49,7 @@ const maxPromptBytes = maxPromptChars * 6 + 1024
 const sendError = (stream: SSEStreamingApi, body: ErrorBody) =>
   stream.writeSSE({ event: 'error', data: JSON.stringify(ErrorBody.parse(body)) })
 
-export function chatsRoutes(agents: AgentPort, log: Logger) {
+export function chatsRoutes(agents: AgentPort, log: Logger, uploads: UploadStore) {
   const chatOf = (c: Context<AppEnv>) => ChatId.safeParse(c.req.param('chat'))
   const invalid = (c: Context<AppEnv>) =>
     errorJson(c, 'invalid-input', {
@@ -56,33 +62,6 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
   }
   const notFound = (c: Context<AppEnv>) =>
     errorJson(c, 'not-found', { path: c.req.path, message: 'no chat has this ID' })
-  const jsonOnly = async (c: Context<AppEnv>, next: Next) => {
-    if (!/^application\/json(;|$)/i.test(c.req.header('Content-Type') ?? ''))
-      return errorJson(c, 'invalid-input', {
-        message: 'the request must be JSON',
-        issues: ['Content-Type must be application/json'],
-      })
-    // Parsed here, so malformed JSON is a 400; hono's validator would throw it to onError as a 500. The
-    // validator below reads the parsed body from hono's cache.
-    const read = await c.req.json().then(
-      () => true,
-      () => false,
-    )
-    if (!read)
-      return errorJson(c, 'invalid-input', { message: 'the request must be JSON', issues: ['body: invalid_json'] })
-    await next()
-    return undefined
-  }
-  /** Checks the body with `schema`; an issue names the field and the rule only, never the text. */
-  const body = <S extends z.ZodType>(schema: S) =>
-    validator('json', (value, c: Context<AppEnv>) => {
-      const parsed = schema.safeParse(value)
-      if (parsed.success) return parsed.data
-      return errorJson(c, 'invalid-input', {
-        message: 'the request does not match the contract',
-        issues: parsed.error.issues.map((i) => `${i.path.join('.') || 'body'}: ${i.code}`),
-      })
-    })
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
   const answer = (c: Context<AppEnv>, outcome: PromptOutcome | CancelOutcome | ClearOutcome) => {
     switch (outcome) {
@@ -124,7 +103,7 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
           errorJson(c, 'invalid-input', { message: 'the prompt is too long', issues: ['the body is too large'] }),
       }),
       jsonOnly,
-      body(SendPromptRequest),
+      jsonBody(SendPromptRequest),
       async (c) => {
         const id = chatOf(c)
         if (!id.success) return invalid(c)
@@ -132,13 +111,34 @@ export function chatsRoutes(agents: AgentPort, log: Logger) {
         return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
       },
     )
-    .post('/:chat/stop', jsonOnly, body(StopChatRequest), async (c) => {
+    .post('/:chat/uploads', smallJson, jsonOnly, jsonBody(StartUploadRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const started = await startUpload(agents, uploads, id.data, c.req.valid('json'))
+      if (!started.ok)
+        return started.error.from === 'agents'
+          ? failed(c, started.error.error)
+          : storeFailed(c, log, started.error.error)
+      switch (started.value) {
+        case 'notFound':
+          return notFound(c)
+        case 'shell':
+          return errorJson(c, 'chat-not-ready', { state: 'shell', message: 'a shell chat takes no file' })
+        case 'noAttachments':
+          return errorJson(c, 'chat-not-ready', { state: 'noAttachments', message: 'this chat takes no file yet' })
+        case 'tooLarge':
+          return errorJson(c, 'too-large', { message: 'the file is larger than 1 GiB' })
+        default:
+          return c.json(StartUploadResponse.parse(started.value), 201)
+      }
+    })
+    .post('/:chat/stop', smallJson, jsonOnly, jsonBody(StopChatRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const stopped = await stopChat(agents, id.data)
       return stopped.ok ? answer(c, stopped.value) : failed(c, stopped.error)
     })
-    .post('/:chat/input/clear', jsonOnly, body(ClearInputRequest), async (c) => {
+    .post('/:chat/input/clear', smallJson, jsonOnly, jsonBody(ClearInputRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)
       const cleared = await clearInput(agents, id.data)
