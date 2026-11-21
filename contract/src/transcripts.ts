@@ -42,6 +42,10 @@ export const UserEntry = z.object({
 /** The agent's reply text, in Markdown, as written. */
 export const AssistantEntry = z.object({ type: z.literal('assistant'), id: EntryId, ...Text })
 
+/** The kind of a tool call (R32): a command, a file read or edit, a search, the web, an agent, a message, a plan step, an MCP tool, or other. */
+export const ToolKind = z.enum(['shell', 'read', 'edit', 'search', 'web', 'agent', 'message', 'plan', 'mcp', 'other'])
+export type ToolKind = z.infer<typeof ToolKind>
+
 /**
  * A tool call: its name and a short target, never its arguments or its result. For a shell tool the target is
  * the program names only ("git | grep"); for a file tool the path from the repo, or with the home folder as "~";
@@ -54,6 +58,12 @@ export const ToolEntry = z.object({
   name: z.string().min(1).max(100),
   target: z.string().max(200),
   running: z.boolean(),
+  /** What the call does, for its icon and for grouping (R32). The server sends it; an older client fixture may not. */
+  kind: ToolKind.optional(),
+  /** A readable title, such as "Ran a command" for `Bash`. */
+  title: z.string().min(1).max(100).optional(),
+  /** The call's own one-line `description`, as the agent wrote it for the owner; "" when it has none. */
+  label: z.string().max(120).optional(),
 })
 
 /** One entry of a transcript, picked by its `type`. */

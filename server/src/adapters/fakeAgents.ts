@@ -32,9 +32,27 @@ export function fakeTranscript(): TranscriptRead {
   return {
     entries: [
       { type: 'user', id: 'u1', text: 'Make the dark theme follow the system setting.', cut: false },
-      { type: 'tool', id: 't1', name: 'Read', target: 'web/src/theme.ts', running: false },
+      {
+        type: 'tool',
+        id: 't1',
+        name: 'Read',
+        target: 'web/src/theme.ts',
+        running: false,
+        kind: 'read',
+        title: 'Read a file',
+        label: '',
+      },
       { type: 'assistant', id: 'a1', text: 'The theme now reads `prefers-color-scheme`.', cut: false },
-      { type: 'tool', id: 't2', name: 'Bash', target: 'pnpm', running: true },
+      {
+        type: 'tool',
+        id: 't2',
+        name: 'Bash',
+        target: 'pnpm',
+        running: true,
+        kind: 'shell',
+        title: 'Ran a command',
+        label: 'Run the web tests',
+      },
     ],
     earlier: false,
   }

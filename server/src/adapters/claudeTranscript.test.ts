@@ -48,7 +48,16 @@ describe('Claude transcript', () => {
       entries: [
         { type: 'user', id: 'u1', text: 'Fix the build', cut: false },
         { type: 'assistant', id: 'a2:0', text: 'Checking.', cut: false },
-        { type: 'tool', id: 't1', name: 'Bash', target: 'pnpm', running: false },
+        {
+          type: 'tool',
+          id: 't1',
+          name: 'Bash',
+          target: 'pnpm',
+          running: false,
+          kind: 'shell',
+          title: 'Ran a command',
+          label: '',
+        },
         { type: 'assistant', id: 'a3:0', text: '**Fixed.**', cut: false },
       ],
       earlier: false,
