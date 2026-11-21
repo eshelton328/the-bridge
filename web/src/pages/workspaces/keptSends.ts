@@ -26,9 +26,9 @@ import { readSendResult } from './liveSend.ts'
 import { subscribeTranscripts, transcriptViews } from './liveTranscript.ts'
 
 /** How long to wait before reading a `pending` result again. */
-export const pendingReadMs = 1500
+const pendingReadMs = 1500
 /** How many times a `pending` result is read before the page treats the send as `unknown`. */
-export const pendingReads = 5
+const pendingReads = 5
 
 const maybeSent: ComposerNotice = { line: 'This message may have been sent', retry: false }
 /** The line of each result that did not reach the chat: the line a miss of that kind shows (liveSend.ts). */
