@@ -25,7 +25,7 @@ import { answerLateServerReads } from '../lib/lateServerReads.ts'
 // it opens the app with no URL parameters, taps Workspaces and a live chat,
 // types and taps Send (or presses Enter), with a stubbed server (`fetch`)
 // whose chat routes are the contract-checked fake
-// (lib/fakeTranscriptServer.ts). A 204 empties the box; a miss keeps the
+// (lib/fakeTranscriptServer.ts). The box empties as a send starts; a miss puts back the
 // text and shows one quiet line under the composer; one send and one stop
 // are in flight at a time; Stop shows only while the chat works; a Codex
 // chat still cannot send. No report, posted client error or console line
@@ -331,10 +331,11 @@ describe("a live Claude chat's Send (W1)", () => {
     await openAndType(phone, 'plan the slice')
     await userEvent.click(sendButton('plan the slice'))
     await expect.poll(() => fake.posts.length).toBe(1)
-    // Back to the list and into the same chat again: a new composer, which starts from the saved draft.
+    // Back to the list and into the same chat again: a new composer, which starts from the saved draft, emptied as the
+    // send started.
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('plan the slice')
-    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await expect.element(box('plan the slice')).toHaveValue('')
     await userEvent.fill(box('plan the slice'), 'a newer draft')
     answer.end(noContent())
     await expect.poll(() => fake.posts.length).toBe(1)
@@ -355,9 +356,11 @@ describe("a live Claude chat's Send (W1)", () => {
     await expect.poll(() => fake.posts.length).toBe(1)
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('plan the slice')
-    await expect.element(box('plan the slice')).toHaveValue(secret)
-    answer.end(noContent())
     await expect.element(box('plan the slice')).toHaveValue('')
+    answer.end(noContent())
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await expect.element(box('plan the slice')).toHaveValue('')
+    await expect.element(page.getByText(/^Not sent/)).not.toBeInTheDocument()
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('plan the slice')
     await expect.element(box('plan the slice')).toHaveValue('')
@@ -374,8 +377,9 @@ describe("a live Claude chat's Send (W1)", () => {
     await router?.navigate({ to: '/' })
     await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
     await tapChat('plan the slice')
-    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await expect.element(box('plan the slice')).toHaveValue('')
     answer.end(noContent())
+    await new Promise((resolve) => setTimeout(resolve, 200))
     await expect.element(box('plan the slice')).toHaveValue('')
     // A draft typed in another chat then saves no sent text back into this one.
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
@@ -395,13 +399,18 @@ describe("a live Claude chat's Send (W1)", () => {
     await expect.poll(() => fake.posts.length).toBe(1)
     await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
     await tapChat('plan the slice')
-    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await expect.element(box('plan the slice')).toHaveValue('')
+    // The owner types the text again and sends it: the page posts nothing while the first send is pending, and the box
+    // keeps the text that did not go.
+    await userEvent.fill(box('plan the slice'), secret)
     await userEvent.click(sendButton('plan the slice'), { force: true })
     await userEvent.keyboard('{Enter}')
     await new Promise((resolve) => setTimeout(resolve, 200))
     expect(fake.posts).toEqual([{ chat: plan, route: 'prompt' }])
+    await expect.element(box('plan the slice')).toHaveValue(secret)
     answer.end(noContent())
-    await expect.element(box('plan the slice')).toHaveValue('')
+    await new Promise((resolve) => setTimeout(resolve, 200))
+    await expect.element(box('plan the slice')).toHaveValue(secret)
     // Once the answer came, the chat sends again.
     fake.answerPrompts(undefined)
     await userEvent.fill(box('plan the slice'), 'the next message')

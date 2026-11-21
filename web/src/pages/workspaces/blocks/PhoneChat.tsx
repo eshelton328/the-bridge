@@ -20,7 +20,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { SidebarLayers, Skill, WorkbenchPane } from '../types.ts'
 import { ChatHead } from './ChatHead.tsx'
 import type { CopyReply } from './ChatEntryView.tsx'
-import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
+import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
 
@@ -84,6 +84,8 @@ export type PhoneChatProps = {
   onStop?: (() => Promise<ComposerAnswer>) | undefined
   /** The chat's files (W1b), when it is a live Claude chat (ChatPane `files`). */
   files?: ChatFiles | undefined
+  /** The chat's pending send, when it is a live Claude chat (ChatPane `pending`). */
+  pending?: ChatPending | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -114,6 +116,7 @@ export function PhoneChat(props: PhoneChatProps) {
     onSend,
     onStop,
     files,
+    pending,
     transcripts,
     onCopy,
     notice,
@@ -184,6 +187,7 @@ export function PhoneChat(props: PhoneChatProps) {
       onSend={onSend}
       onStop={onStop}
       files={files}
+      pending={pending}
       skills={skills}
       onSkillsOpenChange={onSkillsOpenChange}
       autoFocus={skills.open || focusMessage}

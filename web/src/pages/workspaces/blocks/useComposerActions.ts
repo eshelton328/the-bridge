@@ -1,5 +1,7 @@
 // A chat composer's Send and Stop (W1), for ChatPane: one send and one stop in
-// flight at a time, the box emptied only by a send that went through, and
+// flight at a time, the box emptied as a send starts and its text put back
+// when the send missed (the pending send, the page shows the text in the
+// transcript meanwhile), and
 // the one quiet line under the composer that says why a send or a stop
 // missed, with Retry when it may work later. A text over the server's
 // `maxPromptChars` is not sent and the line says by how much. The line holds
@@ -49,8 +51,13 @@ export type ComposerActionsOptions = {
   readonly onSend?: ((text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops the chat; not set, Stop does nothing. */
   readonly onStop?: (() => Promise<ComposerAnswer>) | undefined
-  /** Empties the box when it still holds `submitted`. */
+  /** Empties the box when it still holds `submitted`: called as a send starts. */
   readonly clear: (submitted: string) => void
+  /**
+   * Puts `submitted` back in the box after its send missed, before any text the owner typed meanwhile; not set, the box
+   * keeps the text until the send went through.
+   */
+  readonly restore?: ((submitted: string) => void) | undefined
   /**
    * The chat's draft now, read when a clear of its terminal input answers: the chat may have opened again in another
    * pane, where the owner changed or emptied it. The text this pane last held when not set.
@@ -70,6 +77,7 @@ export function useComposerActions({
   onSend,
   onStop,
   clear,
+  restore,
   draftNow,
   withFiles = false,
   filesHeld = false,
@@ -101,17 +109,24 @@ export function useComposerActions({
     sendingRef.current = true
     setSending(true)
     setProblem(undefined)
+    // The box empties as the send starts, and a miss puts the text back.
+    if (restore !== undefined) clear(submitted)
     return onSend(submitted).then(
       (answer) => {
         sendingRef.current = false
         setSending(false)
-        if (answer === true) clear(submitted)
-        else if (answer !== false) setProblem({ ...answer, action: 'send' })
+        if (answer === true) {
+          if (restore === undefined) clear(submitted)
+        } else {
+          restore?.(submitted)
+          if (answer !== false) setProblem({ ...answer, action: 'send' })
+        }
         return answer === true
       },
       () => {
         sendingRef.current = false
         setSending(false)
+        restore?.(submitted)
         return false
       },
     )

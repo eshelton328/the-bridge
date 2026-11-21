@@ -25,7 +25,7 @@ import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '..
 import type { CopyReply } from './ChatEntryView.tsx'
 import { isChatCommand, withCommands } from './chatCommands.ts'
 import { type LayoutWrites, swapTargets, tabOf, withLayoutActions } from './layoutActions.ts'
-import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
+import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
 import { PaneDropZone } from './PaneDropZone.tsx'
@@ -70,6 +70,8 @@ export type WorkbenchPanesProps = {
   onStop?: ((chat: string) => Promise<ComposerAnswer>) | undefined
   /** A live Claude chat's files (W1b), by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `files`). */
   filesOf?: ((chat: string) => ChatFiles | undefined) | undefined
+  /** A live Claude chat's pending send, by chat id; none for a sample chat, a Codex chat or a shell (ChatPane `pending`). */
+  pendingOf?: ((chat: string) => ChatPending | undefined) | undefined
   /** Reads each live chat's transcript while its pane shows (ChatPane); fixtures have none. */
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy: the page writes the clipboard, and the button shows the result (audit P-4). */
@@ -92,6 +94,7 @@ export function WorkbenchPanes({
   onSend,
   onStop,
   filesOf,
+  pendingOf,
   transcripts,
   onCopy,
   layout,
@@ -252,6 +255,7 @@ export function WorkbenchPanes({
             }
             onStop={onStop && (() => onStop(pane.id))}
             files={filesOf?.(pane.id)}
+            pending={pendingOf?.(pane.id)}
             skills={{
               label: data.skillsLabel,
               matching: data.skillsMatching,

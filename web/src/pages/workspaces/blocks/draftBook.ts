@@ -10,11 +10,23 @@ export type DraftBook = {
   readonly get: (chat: string) => string | undefined
   /** Sets the chat's draft as the owner types. */
   readonly set: (chat: string, text: string) => void
-  /** After a send went through: empties the chat's draft only if it still holds `sent` (or none). */
+  /** When a send starts: empties the chat's draft only if it still holds `sent` (or none). */
   readonly clear: (chat: string, sent: string) => void
+  /**
+   * After a send missed: puts `sent` back in the chat's draft. A draft the owner typed meanwhile stays, after `sent`
+   * and a blank line, so neither text is lost.
+   */
+  readonly restore: (chat: string, sent: string) => void
   /** Calls `listener` after each change of the chat's draft; the result stops it. */
   readonly subscribe: (chat: string, listener: () => void) => () => void
 }
+
+/**
+ * The draft after a send of `sent` missed, when the box holds `now`: `sent` again, and a draft typed meanwhile after it
+ * and a blank line.
+ */
+export const restoredDraft = (now: string, sent: string): string =>
+  now === '' || now === sent ? sent : `${sent}\n\n${now}`
 
 export function createDraftBook(
   initial: Readonly<Record<string, string>> | undefined,
@@ -35,6 +47,9 @@ export function createDraftBook(
       const saved = drafts[chat]
       if (saved !== undefined && saved !== sent) return
       set(chat, '')
+    },
+    restore: (chat, sent) => {
+      set(chat, restoredDraft(drafts[chat] ?? '', sent))
     },
     subscribe: (chat, listener) => {
       const forChat = listeners.get(chat) ?? new Set()
