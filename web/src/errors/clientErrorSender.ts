@@ -7,7 +7,7 @@
 // header (which repeats the message) and the route's path, and nothing
 // from the page. Only the errors on an allowlist (`ownMessage`: the JS
 // built-ins and two app classes) send their own message. The transcript,
-// layout, live, send and stop misses send their kind and a ZodError its issue codes
+// layout, live, send, stop and command misses send their kind and a ZodError its issue codes
 // (`kindOnly`); every other error sends an empty message, so a new error
 // class sends no transcript, draft, tool or server text by default.
 //

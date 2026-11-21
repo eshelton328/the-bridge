@@ -18,6 +18,9 @@
 // Every reply's Copy, sample or live, writes the clipboard
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
+// A live Claude chat's /compact and /clear go to the server from their dialog (liveSend.ts, W5). When a live chat's ID
+// changes on its pane (/clear, from the page or the terminal), the owner's changes move to the new ID before the page
+// draws the new list (paneFollow.ts): the open chat stays open, now the new one, with an empty composer.
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -27,11 +30,13 @@ import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
+import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import {
+  useSeenPanes,
   useWorkspacesActions,
   useWorkspacesUi,
   workspacesDraftBook,
@@ -49,7 +54,7 @@ const draftsFor = (state: WorkspacesStateKey) =>
     saveDrafts(state, drafts)
   })
 
-/** The live module's send or stop, loaded when first used; a module that fails to load is reported. */
+/** The live module's send, stop or command, loaded when first used; a module that fails to load is reported. */
 const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
   import('./liveSend.ts').then(use, (error: unknown) => {
     report(error, 'handler')
@@ -68,8 +73,9 @@ export function WorkspacesPage() {
   const state = route.useLoaderData()
   const search = route.useSearch()
   const navigate = route.useNavigate()
-  const changed = useWorkspacesUi(search.state)
-  const { setUi, showState, send } = useWorkspacesActions()
+  const edits = useWorkspacesUi(search.state)
+  const seen = useSeenPanes(search.state)
+  const { setUi, showState, send, followPanes } = useWorkspacesActions()
   const router = useRouter()
   useEffect(() => {
     showState(search.state)
@@ -88,6 +94,14 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
+  // Pane follow (W5): a chat whose ID changed on its pane since the last list takes the changes of its old ID, in this
+  // render already, and in the store before the browser paints.
+  const panes = useMemo(() => chatPanesOf(state.data), [state.data])
+  const moves = useMemo(() => paneMoves(seen, panes), [seen, panes])
+  const changed = useMemo(() => withMovedChats(edits, moves), [edits, moves])
+  useLayoutEffect(() => {
+    followPanes(search.state, panes)
+  }, [followPanes, search.state, panes])
   // The drafts of the shown state, one book for every visit: another `?state=` gets its own.
   const drafts = workspacesDraftBook(search.state, () => draftsFor(search.state))
   // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
@@ -102,6 +116,11 @@ export function WorkspacesPage() {
   })
   const { data, transcripts } = useLiveTranscripts(import.meta.env.DEV && live, state.data)
   const files = useLiveUploads(import.meta.env.DEV && live)
+  // The file chips of a chat that left for a new ID on its pane go, as its draft stays behind: the server holds each
+  // upload for the chat that started it, so the new chat's send could not name them.
+  useEffect(() => {
+    for (const old of moves.keys()) files.drop(old)
+  }, [moves, files])
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
@@ -187,6 +206,19 @@ export function WorkspacesPage() {
         return liveChat === undefined
           ? Promise.resolve(false)
           : once(`stop:${chat}`, () => viaLive((m) => m.stopChat(liveChat)))
+      }}
+      onCommand={(chat, request) => {
+        const liveChat = liveChatOf(chat)
+        return liveChat === undefined
+          ? Promise.resolve(false)
+          : once(`command:${chat}`, () =>
+              viaLive((m) => m.sendCommand(liveChat, request)).then((answer) => {
+                // The server sends no event when the cleared chat gets its new ID: read the list until it shows.
+                if (answer === true && request.command === 'clear')
+                  void import('./liveWorkspaces.ts').then((m) => m.readAfterClear(liveChat))
+                return answer
+              }),
+            )
       }}
       onNavigate={(page) => {
         // The tablet's More (the phone opens its drawer) goes to Toolkit, the one page behind More with a route

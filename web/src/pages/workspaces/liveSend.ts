@@ -29,15 +29,33 @@
 // server no longer has as complete for this chat) sends nothing, says so
 // and is not reported; the page fails those chips, and their Retry starts
 // each file again (backend #309).
-import { ClearInputRequest, ErrorBody, SendPromptRequest, StopChatRequest, type UploadId } from '@bridge/contract'
+//
+// W5: a live Claude chat's /compact and /clear (`POST /api/chats/:chat/command`
+// with the contract's `ChatCommandRequest`, actions `compact` and
+// `clearContext`) answer the same way, with their own lead: "Not compacted —
+// chat is working" (409 `working`), "Not cleared — chat waits for an answer in
+// the terminal" (409 `needsYou`). A command to a chat whose terminal input
+// holds text asks the owner to clear it and offers the same "Clear the
+// terminal input" as a send; no Retry and no report. The instructions of a
+// /compact go to the chat only, never into a line or a report, as a prompt's
+// text.
+import {
+  ChatCommandRequest,
+  ClearInputRequest,
+  ErrorBody,
+  SendPromptRequest,
+  StopChatRequest,
+  type UploadId,
+} from '@bridge/contract'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { liveReadTimeoutMs, readJson } from './liveWorkspaces.ts'
 
-type Action = 'send' | 'stop' | 'clear'
+/** What the page posts: a send, a stop, a clear of the terminal input, or a /compact or /clear (W5). */
+type Action = 'send' | 'stop' | 'clear' | 'compact' | 'clearContext'
 
-/** A send, a stop or a clear that missed, for report(): the action, the kind and the status, and nothing else. */
+/** A send, a stop, a clear or a command that missed, for report(): the action, the kind and the status, and nothing else. */
 class ChatSendMissError extends Error {
   readonly miss: string
 
@@ -51,7 +69,13 @@ class ChatSendMissError extends Error {
 /** The send line's words for a chat whose terminal input holds text. */
 const inputNotEmptyText = "clear the text in the chat's terminal input, then send"
 
-const lead: Record<Action, string> = { send: 'Not sent', stop: 'Not stopped', clear: 'Not cleared' }
+const lead: Record<Action, string> = {
+  send: 'Not sent',
+  stop: 'Not stopped',
+  clear: 'Not cleared',
+  compact: 'Not compacted',
+  clearContext: 'Not cleared',
+}
 
 /** The composer's line for a miss of `kind`, with Retry when `retry`. */
 const line = (action: Action, text: string, retry: boolean): Exclude<ComposerAnswer, boolean> => ({
@@ -87,8 +111,15 @@ async function missOf(
       if (action === 'send' && error.state === 'inputNotEmpty')
         return { ...line(action, inputNotEmptyText, false), clearInput: clear }
       if (action === 'clear' && error.state === 'inputNotEmpty') return line(action, 'the text is still there', false)
+      if (error.state === 'inputNotEmpty')
+        return {
+          ...line(action, "clear the text in the chat's terminal input, then try again", false),
+          clearInput: clear,
+        }
       if (action === 'send' && error.state === 'notSubmitted')
         return line(action, 'the chat did not take the message', true)
+      // A command to a chat that started work after the menu showed it idle or done.
+      if (error.state === 'working') return line(action, 'chat is working', false)
       // A Stop of a chat that is not working: it stopped already.
       if (action === 'stop' && error.state === 'notWorking') return false
       if (error.state === 'noAttachments') return line(action, 'this chat takes no files', false)
@@ -115,7 +146,7 @@ async function missOf(
     case 'too-large':
     case 'unsupported-media':
     case 'storage-full':
-      // Only an upload gets these kinds, never a send, a stop or a clear.
+      // Only an upload gets these kinds, never a send, a stop, a clear or a command.
       return unexpected(action, error.kind, res.status)
   }
 }
@@ -175,5 +206,24 @@ export function stopChat(chat: string): Promise<ComposerAnswer> {
   const json = StopChatRequest.parse({})
   return post('stop', (signal) =>
     api.api.chats[':chat'].stop.$post({ param: { chat: encodeURIComponent(chat) }, json }, { init: { signal } }),
+  )
+}
+
+/**
+ * Sends `/compact`, with the owner's instructions if any, or `/clear` to the live chat `chat` (its server ID). A
+ * request the contract refuses is not sent: the dialog stops it first, so this answers `false` with no line. A chat
+ * whose terminal input holds text gets a line that can clear it (`clearInput`).
+ */
+export function sendCommand(chat: string, command: ChatCommandRequest): Promise<ComposerAnswer> {
+  const body = ChatCommandRequest.safeParse(command)
+  if (!body.success) return Promise.resolve(false)
+  return post(
+    body.data.command === 'compact' ? 'compact' : 'clearContext',
+    (signal) =>
+      api.api.chats[':chat'].command.$post(
+        { param: { chat: encodeURIComponent(chat) }, json: body.data },
+        { init: { signal } },
+      ),
+    () => clearInput(chat),
   )
 }

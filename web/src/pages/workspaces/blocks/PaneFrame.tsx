@@ -1,5 +1,5 @@
 // One pane of the split with its header: the kind mark, the title, the model
-// and context used, the status, Maximise and the pane menu (D1 105:178).
+// (with its effort, W5) and context used, the status, Maximise and the pane menu (D1 105:178).
 // Props only; the screen decides which pane is focused and which menu is open.
 // An overlay, such as the drop zone of a chat dragged over the pane (D8),
 // covers the whole pane, header included.
@@ -8,6 +8,7 @@ import type { ReactNode } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import { PaneSlot } from '../../../errors/PaneSlot.tsx'
 import type { PaneHead } from '../types.ts'
+import { modelText } from './modelText.ts'
 
 // The split's panel is a flex column; the pane fills it. The pane is a size container, so a chat's long draft
 // stops at half the pane (`ChatPane`); the split sets its size, so the containment changes no layout. It places the
@@ -44,7 +45,7 @@ export function PaneFrame({ head, figma, focused, onActivate, menu, children, ov
         leading={<KindMark kind={head.kind} size="16" />}
         meta={
           <>
-            <span>{head.model}</span>
+            <span>{modelText(head)}</span>
             {head.context === undefined ? null : <ContextMeter value={head.context} />}
           </>
         }

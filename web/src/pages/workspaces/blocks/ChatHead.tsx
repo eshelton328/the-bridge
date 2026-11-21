@@ -1,6 +1,6 @@
 // The header of a chat shown alone (D2 105:785): the kind mark, the title over
-// its workspace (and where the chat came from, D16), the status and the chat actions; under them the model, the
-// context used and its label. While the owner renames the chat, a field takes the
+// its workspace (and where the chat came from, D16), the status and the chat actions; under them the model (with its
+// effort, W5), the context used and its label. While the owner renames the chat, a field takes the
 // title's place (D21). On the phone (M3 105:2748) a back button comes
 // first and the rows sit 8 apart under a 4 px top; the folders chip can take
 // the context label's place (M8) or follow it (T5). While the phone's keyboard is up the
@@ -103,7 +103,13 @@ export function ChatHead(props: ChatHeadProps) {
       </Inline>
       {meta === undefined ? (
         <Inline gap="8" align="center">
-          <ModelChip model={chat.model} options={[{ value: chat.model, label: chat.model }]} value={chat.model} />
+          {/* A live chat's model and effort are read-only (d-101): its chip is text and opens no menu. */}
+          <ModelChip
+            model={chat.model}
+            effort={chat.effort}
+            options={chat.readOnlyModel === true ? undefined : [{ value: chat.model, label: chat.model }]}
+            value={chat.model}
+          />
           {chat.context === undefined ? null : <ContextMeter value={chat.context} high={chat.context >= 75} />}
           {props.extraAfterLabel === true && extra !== undefined && extra !== null ? contextText : null}
           {extra ?? contextText}

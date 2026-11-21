@@ -33,7 +33,16 @@
 // empty text when it has one; one that is not complete, or of another chat,
 // answers 409 upload-conflict and sends nothing, as the server does
 // (backend #309).
+//
+// W5: it takes a Claude chat's command (`POST /api/chats/:chat/command`,
+// `ChatCommandRequest`): it records each one it takes in `commands` and
+// answers 204, or the test's answer (`answerCommands`); a chat whose terminal
+// input holds text refuses it with 409 inputNotEmpty, as the server does. A
+// /clear it takes starts the chat over on the same pane, as the server does:
+// each listener of `onClear` gets the chat (fakeWorkspacesServer gives it a
+// new ID).
 import {
+  ChatCommandRequest,
   ClearInputRequest,
   ErrorBody,
   maxTranscriptEntries,
@@ -102,9 +111,13 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
   const stops: string[] = []
   /** The chat of each clear of the terminal input the server took, in order. */
   const clears: string[] = []
-  /** Each send, stop or clear the page posted, taken or not: its chat and route. */
-  const posts: { chat: string; route: Route }[] = []
-  /** The path of each send, stop or clear as the page wrote it, before any decoding. */
+  /** Each send, stop, clear or command the page posted, taken or not: its chat and route. */
+  const posts: { chat: string; route: Route | 'command' }[] = []
+  /** Each command the server took, in order: the chat and the request. */
+  const commands: { chat: string; request: ChatCommandRequest }[] = []
+  let commandAnswer: ActionAnswer | undefined
+  const clearListeners: ((chat: string) => void)[] = []
+  /** The path of each send, stop, clear or command as the page wrote it, before any decoding. */
   const paths: string[] = []
   let promptAnswer: ActionAnswer | undefined
   let stopAnswer: ActionAnswer | undefined
@@ -156,6 +169,27 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     return new Response(null, { status: 204 })
   }
 
+  /** A command: the contract's checks, then the test's answer or 204; a /clear taken tells the `onClear` listeners. */
+  const command = (chat: string, init: RequestInit | undefined) => {
+    posts.push({ chat, route: 'command' })
+    const json = new Headers(init?.headers).get('content-type') === 'application/json'
+    const parsed = ChatCommandRequest.safeParse(readBody(init))
+    if (!json || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    if (commandAnswer !== undefined) return commandAnswer()
+    if (typed.has(chat))
+      return errorAnswer(
+        { kind: 'chat-not-ready', state: 'inputNotEmpty', message: 'Input not empty', requestId: 'r-409' },
+        409,
+      )
+    commands.push({ chat, request: parsed.data })
+    if (parsed.data.command === 'clear') for (const listener of clearListeners) listener(chat)
+    return new Response(null, { status: 204 })
+  }
+
   const read = (chat: string) => {
     const entries = transcripts.get(chat) ?? []
     const body = TranscriptResponse.parse({
@@ -200,6 +234,15 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     clears,
     posts,
     paths,
+    commands,
+    /** Answers each command with `answer` until it is set to undefined; the command is not recorded in `commands`. */
+    answerCommands: (answer: ActionAnswer | undefined) => {
+      commandAnswer = answer
+    },
+    /** Calls `listener` with the chat of each /clear the server takes. */
+    onClear: (listener: (chat: string) => void) => {
+      clearListeners.push(listener)
+    },
     /** Answers each send with `answer` until it is set to undefined; the send is not recorded in `prompts`. */
     answerPrompts: (answer: ActionAnswer | undefined) => {
       promptAnswer = answer
@@ -295,10 +338,15 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
     answerStreams: (answer: (() => Response) | undefined) => {
       streamAnswer = answer
     },
-    /** The answer to a request for `path`, or undefined when it is not a transcript, send, stop or clear route. */
+    /** The answer to a request for `path`, or undefined when it is not a transcript, send, stop, clear or command route. */
     handle: (path: string, init?: RequestInit): Response | Promise<Response> | undefined => {
       const upload = uploads.handle(path, init)
       if (upload !== undefined) return upload
+      const posted = /^\/api\/chats\/([^/]+)\/command$/.exec(path)
+      if (posted !== null && init?.method === 'POST') {
+        paths.push(path)
+        return command(decodeURIComponent(posted[1] ?? ''), init)
+      }
       const action = /^\/api\/chats\/([^/]+)\/(prompt|stop|input\/clear)$/.exec(path)
       if (action !== null && init?.method === 'POST') {
         paths.push(path)

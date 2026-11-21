@@ -26,6 +26,8 @@ export type LiveFiles = {
   readonly sending: (ids: readonly UploadId[]) => void
   /** The send that named `ids` ended, `wentThrough` or not: a file removed meanwhile is deleted only if not. */
   readonly settled: (ids: readonly UploadId[], wentThrough: boolean) => void
+  /** `chat` left the list for a new ID on its pane: its files go (W5 pane follow). */
+  readonly drop: (chat: string) => void
 }
 
 export function useLiveUploads(on: boolean): LiveFiles {
@@ -71,5 +73,6 @@ export function useLiveUploads(on: boolean): LiveFiles {
     conflict: (chat, sent) => shown?.conflictFiles(chat, sent),
     sending: (ids) => shown?.sendingFiles(ids),
     settled: (ids, wentThrough) => shown?.settledFiles(ids, wentThrough),
+    drop: (chat) => shown?.dropFiles(chat),
   }
 }

@@ -9,12 +9,14 @@
 // The empty pane's Close pane reports the pane closed (`onClosePane`).
 // A chat's composer starts from the owner's draft (`drafts`, draftBook.ts) and sets
 // it as he types, so the draft outlives the pane: a page visit, a closed pane. Its
-// Send goes to `onSend` with the chat's id.
+// Send goes to `onSend` with the chat's id. A live Claude chat's pane menu ends
+// with /compact and /clear (W5), which open their dialog for that chat.
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
+import { isChatCommand, withCommands } from './chatCommands.ts'
 import { ChatPane, type ChatFiles, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
@@ -103,7 +105,7 @@ export function WorkbenchPanes({
     const menu = (
       <PaneMenu
         title={pane.head.title}
-        actions={data.paneMenu}
+        actions={withCommands(data.paneMenu, pane, data.chatCommands)}
         targets={targets}
         newWorkspace={data.newWorkspace}
         open={ui.menuFor === pane.id}
@@ -114,6 +116,17 @@ export function WorkbenchPanes({
         onHighlightChange={(menuHighlight) => onUiChange?.({ menuHighlight })}
         moveTarget={ui.moveTarget}
         onMoveTargetChange={(moveTarget) => onUiChange?.({ moveTarget })}
+        onSelect={(action) => {
+          // A command's dialog acts on the focused chat (W5): the pane whose menu picked it takes the focus.
+          if (isChatCommand(action))
+            onUiChange?.({
+              menuFor: null,
+              moveOpen: false,
+              focusedPane: pane.id,
+              chatDialog: action,
+              commandFor: pane.id,
+            })
+        }}
       />
     )
     const layers = pane.type === 'chat' ? (chatsLayers[chats++] ?? { composer: pane.id }) : { composer: pane.id }

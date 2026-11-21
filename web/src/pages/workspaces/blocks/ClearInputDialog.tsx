@@ -11,15 +11,22 @@ export type ClearInputDialogProps = {
   onOpenChange: (open: boolean) => void
   /** Clear was pressed: the dialog has closed and the caller empties the terminal input. */
   onConfirm: () => void
+  /** What the page does once the input is empty; "Then the page sends your message." when not set. */
+  then?: string | undefined
 }
 
-export function ClearInputDialog({ open, onOpenChange, onConfirm }: ClearInputDialogProps) {
+export function ClearInputDialog({
+  open,
+  onOpenChange,
+  onConfirm,
+  then = 'Then the page sends your message.',
+}: ClearInputDialogProps) {
   if (!open) return null
   return (
     <Dialog
       role="alertdialog"
       title="Clear the terminal input?"
-      description="The text in the chat's terminal input will be lost. Then the page sends your message."
+      description={`The text in the chat's terminal input will be lost. ${then}`}
       open
       onOpenChange={onOpenChange}
       actions={

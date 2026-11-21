@@ -44,7 +44,8 @@
 // opens the actions' Fork over it as D15's dialog (ForkDialog) in place of
 // M18's sheet, and T10 the actions' Subtask as D17's dialog (SubtaskDialog)
 // in place of M20's sheet.
-// Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
+// A live Claude chat's ⋯ offers /compact and /clear after any other actions
+// (W5); the screen draws their dialog. // Later phone frames add their views here. Props only; WorkspacesScreen keeps the ui
 // and passes `onUiChange`.
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useRef, useState } from 'react'
@@ -72,6 +73,8 @@ import { SubtaskDialog } from '../blocks/SubtaskDialog.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { DraftBook } from '../blocks/draftBook.ts'
+import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
+import { modelText } from '../blocks/modelText.ts'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 
@@ -289,7 +292,11 @@ export function WorkspacesPhone({
   const meta =
     chat === undefined || ui.keyboardOpen !== true
       ? undefined
-      : [chat.head.model, chat.head.context === undefined ? undefined : `${String(chat.head.context)}%`, folderCount]
+      : [
+          modelText(chat.head),
+          chat.head.context === undefined ? undefined : `${String(chat.head.context)}%`,
+          folderCount,
+        ]
           .filter((part) => part !== undefined)
           .join(' · ')
   // M23: the name field closes, saved or undone, and the focus goes back to the message box if it had it before.
@@ -307,7 +314,13 @@ export function WorkspacesPhone({
     if (action === 'subtask' && data.subtask !== undefined) onUiChange({ chatDialog: 'subtask' })
     if (action === 'subagents' && data.subagents !== undefined)
       onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })
+    // W5: a live Claude chat's /compact or /clear opens its dialog over the chat.
+    if (isChatCommand(action))
+      onUiChange({ chatDialog: action, commandFor: ui.focusedPane, menuFor: null, moveOpen: false })
   }
+  // The chat's actions with a live Claude chat's commands after them (W5): the tablet's menu and the phone's sheet.
+  const tabletActions = data.chatMenu === undefined ? undefined : withCommands(data.chatMenu, chat, data.chatCommands)
+  const phoneActions = withCommands(text.chatMenu ?? [], chat, data.chatCommands)
   if (chat !== undefined)
     return (
       <Backdrop size={device}>
@@ -379,11 +392,11 @@ export function WorkspacesPhone({
                   onUiChange({ skillsFor: open ? chat.id : null })
                 }}
                 renderMenu={
-                  device === 'tablet' && data.chatMenu !== undefined
+                  device === 'tablet' && tabletActions !== undefined
                     ? (trigger) => (
                         <ChatActionsMenu
                           title={chat.head.title}
-                          actions={data.chatMenu ?? []}
+                          actions={tabletActions}
                           targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                           newWorkspace={data.newWorkspace}
                           trigger={trigger}
@@ -410,12 +423,12 @@ export function WorkspacesPhone({
                           figma={{ menu: data.layers?.chatMenu }}
                         />
                       )
-                    : text.chatMenu === undefined
+                    : phoneActions.length === 0
                       ? undefined
                       : (trigger) => (
                           <PhoneChatActions
                             title={chat.head.title}
-                            actions={text.chatMenu ?? []}
+                            actions={phoneActions}
                             targets={data.workspaces.filter((w) => w.id !== chatWorkspace)}
                             newWorkspace={data.newWorkspace}
                             trigger={trigger}

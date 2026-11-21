@@ -4,11 +4,13 @@
 // the pane. The chat shown alone has the same menu behind the ⋯ of its
 // header (D2b 402:5486), with New chat, Subagents and Folders, and no Close
 // pane. Both use the compact row pitch, and a state can set the highlighted
-// row and workspace. Props only.
+// row and workspace. A live Claude chat's /compact and /clear come last,
+// after a separator, on only while it is idle or done (W5). Props only.
 import {
   BranchIcon,
   Button,
   BubbleIcon,
+  CloseCircleIcon,
   CloseIcon,
   EditIcon,
   GridIcon,
@@ -18,6 +20,7 @@ import {
   MoveIcon,
   PlusIcon,
   ProjectsIcon,
+  SortIcon,
   SparkleIcon,
   WorkspacesIcon,
 } from '@eshelton328/component-library-1701'
@@ -42,6 +45,9 @@ const icons: Record<PaneAction['value'], ReactNode> = {
   move: <MoveIcon size="16" />,
   rename: <EditIcon size="16" />,
   close: <CloseIcon size="16" />,
+  // W5: the library has no icon for compacting or clearing a context (LIBRARY_GAPS.md: Chat commands).
+  compact: <SortIcon size="16" />,
+  clear: <CloseCircleIcon size="16" />,
 }
 
 export type PaneMenuProps = {
@@ -89,6 +95,7 @@ export function PaneMenu(props: PaneMenuProps) {
       value: a.value,
       label: a.label,
       icon: icons[a.value],
+      disabled: a.disabled,
       submenu:
         a.value === 'move'
           ? {
@@ -100,7 +107,8 @@ export function PaneMenu(props: PaneMenuProps) {
             }
           : undefined,
     }
-    return a.value === separatorBefore ? [{ type: 'separator' }, entry] : [entry]
+    // A live Claude chat's commands follow the other actions after their own separator (W5, chatCommands.ts).
+    return a.value === separatorBefore || a.value === 'compact' ? [{ type: 'separator' }, entry] : [entry]
   })
   return (
     <Menu

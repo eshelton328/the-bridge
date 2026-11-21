@@ -30,6 +30,13 @@ export const SidebarChat = z.object({
    * `label` names the mark for assistive technology.
    */
   mark: z.object({ kind: z.enum(['fork']), label: z.string() }).optional(),
+  /** A live Claude chat's effort, such as "high effort" (W5); its pane's header shows it after the model. */
+  effort: z.string().optional(),
+  /**
+   * A live chat's pane (W5): opaque, and stable for the pane's life. When the chat's ID leaves the list and a chat on
+   * the same pane comes, as after /clear, the page moves what it keeps by chat ID to the new one (`paneFollow.ts`).
+   */
+  pane: z.string().optional(),
 })
 export type SidebarChat = z.infer<typeof SidebarChat>
 
@@ -55,6 +62,13 @@ export const PaneHead = z.object({
   status: PaneStatus,
   /** Where the chat came from, after its workspace in the header, such as "forked from bridge themes" (D16). */
   origin: z.string().optional(),
+  /** The effort after the model, such as "high effort", as Figma draws "Sonnet 5.5 · high effort"; none when not set. */
+  effort: z.string().optional(),
+  /**
+   * `true`: the model chip is text and opens no menu. A live chat's model and effort are read-only (d-101, W5): the
+   * page has no picker for them.
+   */
+  readOnlyModel: z.boolean().optional(),
 })
 export type PaneHead = z.infer<typeof PaneHead>
 
@@ -136,6 +150,11 @@ export const WorkbenchPane = z.discriminatedUnion('type', [
      * transcript into `entries` (liveTranscript.ts); a fixture's chat has none.
      */
     liveChat: z.string().optional(),
+    /**
+     * A live Claude chat (W5): `true` while it takes /compact and /clear (idle or done), `false` while it does not (any
+     * other status); a chat with none set has no commands.
+     */
+    takesCommands: z.boolean().optional(),
     /** The line over the entries when the transcript has older entries than it shows, such as "Earlier entries not live yet". */
     earlier: z.string().optional(),
     /** The line in place of the entries when a read transcript has none, such as "No messages yet". */
@@ -171,8 +190,22 @@ export type WorkbenchPane = z.infer<typeof WorkbenchPane>
 
 /** An action of a pane's or a chat's menu; `move` opens the list of workspaces. */
 export const PaneAction = z.object({
-  value: z.enum(['newChat', 'fork', 'sideChat', 'subtask', 'subagents', 'folders', 'move', 'rename', 'close']),
+  value: z.enum([
+    'newChat',
+    'fork',
+    'sideChat',
+    'subtask',
+    'subagents',
+    'folders',
+    'move',
+    'rename',
+    'close',
+    'compact',
+    'clear',
+  ]),
   label: z.string(),
+  /** `true`: the row shows and cannot be picked, such as /compact while the chat works (W5). */
+  disabled: z.boolean().optional(),
 })
 export type PaneAction = z.infer<typeof PaneAction>
 
@@ -783,6 +816,11 @@ const WorkspacesDataFields = z.object({
   sideChat: SideChat.optional(),
   /** The actions behind the ⋯ of the chat shown alone (D2b), with a separator before `subagents`. */
   chatMenu: z.array(PaneAction).optional(),
+  /**
+   * The commands a live Claude chat's actions offer after its other actions, with a separator before them (W5):
+   * `compact` and `clear`, each of which opens its dialog. On only while the chat is idle or done (`takesCommands`); a Codex chat and a shell have none.
+   */
+  chatCommands: z.array(PaneAction).optional(),
   /** The Figma layers of the sidebar frame's parts; D2's when not set. */
   layers: SidebarLayers.optional(),
   /** The subagents and subtasks of the chat shown alone (D3). */
@@ -893,6 +931,11 @@ export const WorkspacesUi = z.object({
   newChatOpen: z.boolean().optional(),
   /** The chat action whose dialog is open over the screen, for the focused chat, such as `fork` (D15), or null. */
   chatDialog: PaneAction.shape.value.nullable().optional(),
+  /**
+   * The chat a /compact or /clear dialog acts on (W5), by pane id: the chat whose actions opened it, so a change of
+   * the focused pane while the dialog is open (a live layout) does not send the command to another chat.
+   */
+  commandFor: z.string().nullable().optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */
