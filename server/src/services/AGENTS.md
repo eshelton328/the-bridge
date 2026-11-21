@@ -24,6 +24,8 @@ from the outside world.
 - `layoutWrites.ts` sends the layout writes of slice W2 (a move too) to the port;
   a close goes to the port only when its confirm names the chat, and a
   ratio only for a tab of the workspace in the path.
+- `push.ts` is the port of the Web Push keys and subscriptions
+  (d-118).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open no herdr stream

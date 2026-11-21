@@ -173,6 +173,11 @@ client of a socket or a file sits beside them.
   gets the copy's path. Each start removes an unfinished upload after
   24 hours and a complete one after 7 days, with no timer
   (`diskUploads.test.ts`).
+- The push store (`diskPush.ts`) keeps `vapid.json` and
+  `subscriptions.json` in a 0700 folder beside the database, each file
+  0600 and replaced in one rename; it makes the P-256 VAPID keys once
+  with Node's crypto, keeps at most 10 subscriptions, and a fault gives
+  its errno code only (`diskPush.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
