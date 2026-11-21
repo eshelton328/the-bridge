@@ -24,8 +24,10 @@ Updated on 2026-11-17 against the installed library 1.0.0-beta.7 (#107, #108) by
   `pressedBorder="discuss"`, so its border is `accent.discuss`, the solid
   violet: the 50 % violet over the pressed fill gives only 2.26:1 to
   2.93:1, under the 3:1 of WCAG 1.4.11, so the border is stronger than
-  Figma's. The fill stays `surface.selected`; no token has Figma's violet
-  fill (LIBRARY_GAPS.md: Discuss toggle). It is 32 px high (`md`), as
+  Figma's. Since library beta.86 (#269) the pressed toggle fills with
+  `surface.discuss`, Figma's violet (#9e8fff at 0.3). Figma's label is
+  violet too; it stays `fg.default`, as `accent.discuss` over the fill
+  gives under 4.5:1. It is 32 px high (`md`), as
   Figma's, and its label is Medium 12 (`Button textSize="xs"`,
   `labelXs`), as Figma's.
 - **Discussion panel width.** Figma's panel (403:947) is 628 px wide,

@@ -122,7 +122,8 @@ export function SnoozeActions({ snooze, iconOnly = false }: { snooze: SnoozeCont
 
 /** Discuss: in the task bar, or in the phone's nav before Snooze and Dismiss (M17, 402:1945). */
 export function DiscussButton({ discuss }: { discuss: DiscussControl }) {
-  // Open, its border is accent.discuss (`pressedBorder="discuss"`); Figma's violet fill has no token (LIBRARY_GAPS.md).
+  // Open, it is violet: border accent.discuss and fill surface.discuss (`pressedBorder="discuss"`, library #269). Closed,
+  // it stays neutral, though Figma draws it violet too, so the open state shows (T16 and M17 deviations.md).
   return (
     <Button
       textSize="xs"

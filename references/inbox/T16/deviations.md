@@ -58,10 +58,12 @@ shorter, below Figma's status bar (d-102), and the position check adds
   layers below it start 9 px higher than before (now `start` y +15,
   `section · MY NOTES` y +16, `notes field` y +18, `section · SOURCES`
   y +25).
-- **Discuss.** Figma draws Discuss in violet (402:11096); the
-  library has no discuss toggle, so it is a secondary `Button`, 32 px
-  high against Figma's 30 (`task bar` h +2). Library gap: Discuss
-  toggle.
+- **Discuss.** Figma draws Discuss in violet (402:11096); it is the
+  library's Discuss toggle (`Button pressedBorder="discuss"`), not pressed, 32 px
+  high against Figma's 30 (`task bar` h +2). The closed toggle stays the neutral secondary
+  `Button`: Figma draws the closed and the open toggle in the same violet,
+  and here only the open (`pressed`) one is violet, so the two states
+  differ (WCAG 1.4.11; d-100).
 - **My notes.** With no note yet, the notes are a 1-row `TextArea`
   (`notes field`), 5 px taller than Figma's 39 px field.
 - **Behaviour.** Discuss opens the discussion's page (T17); Back
