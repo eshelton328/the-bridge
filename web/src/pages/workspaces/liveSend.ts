@@ -174,14 +174,14 @@ async function post(
     res = await call(signal)
   } catch {
     // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
-    return line(action, signal.aborted ? 'timeout' : 'unreachable', true)
+    return { ...line(action, signal.aborted ? 'timeout' : 'unreachable', true), noAnswer: true }
   }
   if (res.status === 204) return true
   try {
     return await missOf(action, res, clear)
   } catch {
     // The connection dropped while the error body came.
-    return line(action, signal.aborted ? 'timeout' : 'unreachable', true)
+    return { ...line(action, signal.aborted ? 'timeout' : 'unreachable', true), noAnswer: true }
   }
 }
 

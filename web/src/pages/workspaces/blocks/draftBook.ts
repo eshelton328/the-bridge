@@ -17,9 +17,17 @@ export type DraftBook = {
    * and a blank line, so neither text is lost.
    */
   readonly restore: (chat: string, sent: string) => void
+  /**
+   * Takes `sent` back out of the chat's draft when the draft starts with it, as `restore` put it there: a send whose
+   * answer did not come but that reached the chat. A draft typed after it stays.
+   */
+  readonly withdraw: (chat: string, sent: string) => void
   /** Calls `listener` after each change of the chat's draft; the result stops it. */
   readonly subscribe: (chat: string, listener: () => void) => () => void
 }
+
+/** Whether the draft `now` starts with `sent`, as `restore` puts it. */
+export const holdsSent = (now: string, sent: string): boolean => now === sent || now.startsWith(`${sent}\n\n`)
 
 /**
  * The draft after a send of `sent` missed, when the box holds `now`: `sent` again, and a draft typed meanwhile after it
@@ -50,6 +58,11 @@ export function createDraftBook(
     },
     restore: (chat, sent) => {
       set(chat, restoredDraft(drafts[chat] ?? '', sent))
+    },
+    withdraw: (chat, sent) => {
+      const now = drafts[chat] ?? ''
+      if (now === sent) set(chat, '')
+      else if (now.startsWith(`${sent}\n\n`)) set(chat, now.slice(sent.length + 2))
     },
     subscribe: (chat, listener) => {
       const forChat = listeners.get(chat) ?? new Set()

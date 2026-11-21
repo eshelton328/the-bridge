@@ -33,6 +33,8 @@ export type ComposerAnswer =
       readonly clearInput?: (() => Promise<ComposerAnswer>) | undefined
       /** The server refused the send's files (409 upload-conflict): the page fails their chips. */
       readonly uploadConflict?: boolean
+      /** No answer came (the request failed or timed out): the server may have taken it. */
+      readonly noAnswer?: boolean
     }
 
 type Problem = {

@@ -14,12 +14,19 @@
 //   before he sends it again.
 // - no answer: keep it and read again the next time its chat opens, or after
 //   the next load.
+// A send whose request got no answer is kept too, marked `restored`: the
+// composer put its text back in the draft, while the server may have taken
+// it. A reload ends the request so, in the second before the page goes. Its
+// read takes the text back out of the draft when it was `sent`; any other
+// result shows its line, and puts the text back only when the draft does not
+// hold it already. One whose text the owner changed or cleared since is
+// forgotten with no read, as is each one of a chat when it sends again.
 // The page never sends it again itself. Nothing here goes to report(), a log
 // or the console: a kept send holds the owner's text and file names.
 import { sendResultMs } from '@bridge/contract'
 import { registerReset } from '../../state/resetStores.ts'
 import type { ComposerNotice } from './blocks/ChatPane.tsx'
-import type { DraftBook } from './blocks/draftBook.ts'
+import { type DraftBook, holdsSent } from './blocks/draftBook.ts'
 import { dropSend, type KeptSend, loadSends } from './draftStorage.ts'
 import { showNotice } from './livePending.ts'
 import { readSendResult } from './liveSend.ts'
@@ -50,9 +57,9 @@ const wait = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
-/** Puts the text of `send` back in its chat's box with `notice`, then forgets the send. */
+/** Puts the text of `send` back in its chat's box, unless it is there, with `notice`; then forgets the send. */
 function restore(state: string | undefined, drafts: DraftBook, send: KeptSend, notice: ComposerNotice): void {
-  if (/\S/.test(send.text)) drafts.restore(send.chat, send.text)
+  if (/\S/.test(send.text) && !holdsSent(drafts.get(send.chat) ?? '', send.text)) drafts.restore(send.chat, send.text)
   showNotice(send.liveChat, notice)
   dropSend(state, send.sendId)
 }
@@ -60,6 +67,11 @@ function restore(state: string | undefined, drafts: DraftBook, send: KeptSend, n
 /** Reads what became of `send` and acts on it; a read with no answer keeps it for the next time its chat opens. */
 async function settle(state: string | undefined, drafts: DraftBook, send: KeptSend, now: number): Promise<void> {
   if (reading.has(send.sendId)) return
+  // The owner changed or cleared the text put back after no answer: he has dealt with it.
+  if (send.restored === true && /\S/.test(send.text) && !holdsSent(drafts.get(send.chat) ?? '', send.text)) {
+    dropSend(state, send.sendId)
+    return
+  }
   const started = generation
   if (now - send.at >= sendResultMs) {
     restore(state, drafts, send, maybeSent)
@@ -82,8 +94,11 @@ async function settle(state: string | undefined, drafts: DraftBook, send: KeptSe
         failed.set(send.liveChat, forChat)
         return
       }
-      if (result === 'sent') dropSend(state, send.sendId)
-      else if (result === 'notSent' || result === 'notSubmitted') restore(state, drafts, send, notReached[result])
+      if (result === 'sent') {
+        // The chat has it: a text put back after no answer leaves the draft, so it does not show twice.
+        if (send.restored === true && /\S/.test(send.text)) drafts.withdraw(send.chat, send.text)
+        dropSend(state, send.sendId)
+      } else if (result === 'notSent' || result === 'notSubmitted') restore(state, drafts, send, notReached[result])
       else restore(state, drafts, send, maybeSent)
       return
     }

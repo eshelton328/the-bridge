@@ -30,6 +30,11 @@ export const KeptSend = z.object({
   files: z.array(z.string()),
   /** When the send started, in ms since the epoch. */
   at: z.number(),
+  /**
+   * Its request got no answer, so the composer put the text back in the draft while the server may have taken it. A
+   * reload ends the request this way in the second before the page goes, so the page reads its result on load too.
+   */
+  restored: z.boolean().optional(),
 })
 export type KeptSend = z.infer<typeof KeptSend>
 
@@ -100,6 +105,28 @@ export function loadSends(state: string | undefined): readonly KeptSend[] {
 export function keepSend(state: string | undefined, send: KeptSend): void {
   const saved = savedFor(state)
   write(state, saved?.drafts ?? none, [...(saved?.sends ?? noSends), send])
+}
+
+/** Marks the kept send `sendId` as put back in its chat's draft after its request got no answer. */
+export function markRestored(state: string | undefined, sendId: string): void {
+  const saved = savedFor(state)
+  if (saved?.sends?.some((send) => send.sendId === sendId) !== true) return
+  write(
+    state,
+    saved.drafts,
+    saved.sends.map((send) => (send.sendId === sendId ? { ...send, restored: true } : send)),
+  )
+}
+
+/** Forgets the kept sends of `chat` that were put back in its draft: a new send of the chat supersedes them. */
+export function dropRestored(state: string | undefined, chat: string): void {
+  const saved = savedFor(state)
+  if (saved?.sends?.some((send) => send.chat === chat && send.restored === true) !== true) return
+  write(
+    state,
+    saved.drafts,
+    saved.sends.filter((send) => send.chat !== chat || send.restored !== true),
+  )
 }
 
 /** Forgets the kept send `sendId`; nothing when it is not kept. */

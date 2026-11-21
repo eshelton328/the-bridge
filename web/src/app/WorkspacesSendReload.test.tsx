@@ -474,6 +474,90 @@ describe('a send that a reload cut off (send ID, backend #369)', () => {
     expect(fake.resultReads).toEqual([sendId, sendId])
   })
 
+  /**
+   * A reload as a browser makes it: the page's request fails at once (the browser ends it), so the composer puts the text
+   * back with "Not sent — unreachable" in the second before the page goes; then the reload.
+   */
+  async function sendThenAbortedReload(fake: FakeTranscriptServer) {
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openChat(phone, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    const sendId = fake.sendIds[0] ?? ''
+    answer.end(Promise.reject(new TypeError('Load failed')))
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    expect(keptIds()).toEqual([sendId])
+    await reload()
+    fake.answerPrompts(undefined)
+    return sendId
+  }
+
+  it('takes the text back out of the box when a send whose request the reload ended was sent', async () => {
+    const fake = withChats()
+    const reports = watchReports()
+    const sendId = await sendThenAbortedReload(fake)
+    fake.setSendResult(plan, sendId, 'sent')
+    fake.push(plan, [user('u9', secret)])
+    await openChat(phone, 'plan the slice')
+    await expect.poll(keptIds).toEqual([])
+    await expect.element(box('plan the slice')).toHaveValue('')
+    expect(shownCount('plan the slice', secret)).toBe(1)
+    expect(fake.resultReads).toEqual([sendId])
+    expect(getReports()).toEqual([])
+    reports.expectNoText()
+  })
+
+  for (const miss of [missed[0], missed[2]])
+    it(`keeps the text once, with "${miss.line}", when a send whose request the reload ended is ${miss.result}`, async () => {
+      const fake = withChats()
+      const sendId = await sendThenAbortedReload(fake)
+      fake.setSendResult(plan, sendId, miss.result)
+      await openChat(phone, 'plan the slice')
+      await expect.element(chatOf('plan the slice').getByText(miss.line)).toBeVisible()
+      await expect.element(box('plan the slice')).toHaveValue(secret)
+      expect(keptIds()).toEqual([])
+      expect(fake.posts).toHaveLength(1)
+    })
+
+  it('forgets a send whose request got no answer once the owner clears its text, with no read', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openChat(phone, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    answer.end(Promise.reject(new TypeError('Load failed')))
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    await userEvent.clear(box('plan the slice'))
+    await reload()
+    fake.answerPrompts(undefined)
+    await openChat(phone, 'plan the slice')
+    await expect.poll(keptIds).toEqual([])
+    await expect.element(box('plan the slice')).toHaveValue('')
+    expect(fake.resultReads).toEqual([])
+    expect(chatOf('plan the slice').getByText(maybeSent).elements()).toHaveLength(0)
+  })
+
+  it('forgets a send whose request got no answer when the chat sends again', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openChat(phone, 'plan the slice')
+    await userEvent.fill(box('plan the slice'), secret)
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    answer.end(Promise.reject(new TypeError('Failed to fetch')))
+    await expect.element(chatOf('plan the slice').getByText('Not sent — unreachable')).toBeVisible()
+    expect(keptIds()).toHaveLength(1)
+    fake.answerPrompts(undefined)
+    await userEvent.click(chatOf('plan the slice').getByRole('button', { name: 'Retry' }))
+    await expect.poll(() => fake.prompts).toEqual([{ chat: plan, text: secret }])
+    await expect.poll(keptIds).toEqual([])
+  })
+
   it('sends the restored text with a new send ID, so the server takes it (no 409 duplicateSend)', async () => {
     const fake = withChats()
     const sendId = await sendThenReload(fake)

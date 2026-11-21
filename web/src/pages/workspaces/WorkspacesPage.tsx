@@ -37,7 +37,7 @@ import { workspacesSources } from './loadWorkspacesState.ts'
 import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { followTab, withShownTabs } from './shownTabs.ts'
-import { dropSend, keepSend, loadDrafts, newSendId, saveDrafts } from './draftStorage.ts'
+import { dropRestored, dropSend, keepSend, loadDrafts, markRestored, newSendId, saveDrafts } from './draftStorage.ts'
 import { chatPanesOf, paneMoves, withMovedChats } from './paneFollow.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
@@ -219,13 +219,18 @@ export function WorkspacesPage() {
                 const settled = () => {
                   dropSend(search.state, sendId)
                 }
+                // A send whose request got no answer before is settled by this one: the owner acted on its text.
+                dropRestored(search.state, chat)
                 keepSend(search.state, { chat, liveChat, sendId, text, files: [...names], at: Date.now() })
                 const bubble = pendings.start(liveChat, text, names, settled)
                 const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId))
-                // Any answer settles the kept send: a miss puts the text back in the draft, which is saved.
+                // An answer settles the kept send: a miss puts the text back in the draft, which is saved. With no answer
+                // the server may have it, and a reload ends the request so in the second before the page goes: the text
+                // goes back in the draft, and the kept send stays, marked, for the next load to read (keptSends.ts).
                 void posted.then(
                   (answer) => {
-                    settled()
+                    if (typeof answer === 'object' && answer.noAnswer === true) markRestored(search.state, sendId)
+                    else settled()
                     if (answer === true) bubble?.sent()
                     else bubble?.missed()
                   },
