@@ -522,6 +522,46 @@ describe('the end of a live transcript after Send, the background and a reconnec
     window.dispatchEvent(new PointerEvent('pointerup', { pointerType: 'mouse', button: 0 }))
   })
 
+  it("keeps a fling's place: scroll events after the finger lifts are not moved back, on the phone", async () => {
+    const server = withLong()
+    await tapWorkspaces([390, 844])
+    const scroller = await tapChat('plan the slice')
+    await expectAtEnd(scroller)
+    await expect.poll(() => server.openStreams()).toEqual([plan])
+    // The finger moves up and the view follows it, then the finger lifts.
+    const moved = new Promise((resolve) => {
+      scroller.addEventListener('scroll', resolve, { once: true })
+    })
+    const box = scroller.getBoundingClientRect()
+    const finger = (y: number) =>
+      new Touch({ identifier: 1, target: scroller, clientX: box.left + 40, clientY: box.top + y })
+    scroller.dispatchEvent(
+      new TouchEvent('touchstart', { bubbles: true, touches: [finger(200)], changedTouches: [finger(200)] }),
+    )
+    scroller.dispatchEvent(
+      new TouchEvent('touchmove', { bubbles: true, touches: [finger(500)], changedTouches: [finger(500)] }),
+    )
+    scroller.scrollTop -= 300
+    await moved
+    scroller.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [finger(500)] }))
+    // The fling goes on well after the finger lifted, with no input.
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    for (const step of [400, 400, 300, 200, 100]) {
+      const fling = new Promise((resolve) => {
+        scroller.addEventListener('scroll', resolve, { once: true })
+      })
+      scroller.scrollTop -= step
+      await fling
+      await afterRendering()
+    }
+    const place = scroller.scrollTop
+    expect(fromEnd(scroller)).toBeGreaterThan(1500)
+    pushReplies(server, plan, 1, 1)
+    await expect.element(page.getByText(/^Reply 1 landed\./)).toBeInTheDocument()
+    await afterRendering()
+    expect(scroller.scrollTop).toBe(place)
+  })
+
   it('keeps the first entry in view for a reader who scrolled up, through the background and a reconnect, on the phone', async () => {
     const server = withLong()
     await tapWorkspaces([390, 844])
