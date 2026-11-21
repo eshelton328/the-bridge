@@ -52,6 +52,8 @@ export const transcriptText = {
   empty: 'No messages yet',
   /** Before the names of the files sent with a prompt, until the page shows them as chips. */
   files: 'Files:',
+  /** The label of a slash command's error output, such as a /compact that failed. */
+  error: 'Error',
   /** Under the entries while the stream is down and the page connects again. */
   dropped: 'Transcript updates lost — connecting again',
 } as const
@@ -447,6 +449,8 @@ export function chatEntryOf(entry: TranscriptEntry, kind: AgentKind): ChatEntry 
       return { type: 'assistant', kind, name: agentNames[kind], text: entry.text, copy: 'Copy', ...cut }
     case 'tool':
       return { type: 'tool', name: entry.name, target: entry.target, running: entry.running }
+    case 'error':
+      return { type: 'event', label: transcriptText.error, text: entry.text }
   }
 }
 

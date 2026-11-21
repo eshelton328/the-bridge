@@ -323,6 +323,11 @@ describe('watchTranscript', () => {
       type: 'user',
       text: 'Files: `notes.md`',
     })
+    expect(chatEntryOf({ type: 'error', id: 'e1', text: 'Error: compact failed', cut: false }, 'claude')).toEqual({
+      type: 'event',
+      label: 'Error',
+      text: 'Error: compact failed',
+    })
     expect(chatEntryOf({ ...user('u1', 'long'), cut: true }, 'claude')).toEqual({
       type: 'user',
       text: 'long',

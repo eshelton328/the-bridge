@@ -12,6 +12,7 @@ import {
   maxAttachments,
   maxEntryFileName,
   maxEntryText,
+  maxErrorText,
   maxTranscriptEntries,
   type TranscriptEntry,
 } from '@bridge/contract'
@@ -37,6 +38,7 @@ const Line = z.object({
   uuid: Id,
   isSidechain: z.boolean().optional(),
   isMeta: z.boolean().optional(),
+  isCompactSummary: z.boolean().optional(),
   message: z.object({ content: z.union([z.string(), z.array(z.unknown())]) }),
 })
 
@@ -52,6 +54,33 @@ export type TranscriptOptions = TargetContext & {
   readonly working: boolean
   /** The folder of the owner's uploads: a prompt's file lines name files in it. None: a prompt keeps them as text. */
   readonly uploads?: string | undefined
+}
+
+/** The tags of a slash command's own lines: the command, its words and its args, then its output. */
+const commandName = /^<command-name>\/?([^<]{1,100})<\/command-name>/
+const commandArgs = /<command-args>([\s\S]*?)<\/command-args>/
+const commandStdout = /^<local-command-stdout>[\s\S]*<\/local-command-stdout>$/
+const commandStderr = /^<local-command-stderr>([\s\S]*)<\/local-command-stderr>$/
+/** Terminal colour codes that a command's output can hold. */
+const colour = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, 'g')
+
+/**
+ * A slash command's lines: its own line as the owner typed it (`/compact keep the plan`), its error output as an
+ * error's text, nothing for its other output, and undefined for any other text.
+ */
+function commandOf(text: string): { command: string } | { error: string } | null | undefined {
+  const trimmed = text.trim()
+  // Only a whole output block: a prompt that starts with the tag stays the owner's text.
+  if (commandStdout.test(trimmed)) return null
+  const stderr = commandStderr.exec(trimmed)
+  if (stderr !== null) {
+    const error = (stderr[1] ?? '').replace(colour, '').trim()
+    return error === '' ? null : { error }
+  }
+  const name = commandName.exec(trimmed)
+  if (name?.[1] === undefined) return undefined
+  const args = commandArgs.exec(trimmed)?.[1]?.trim() ?? ''
+  return { command: `/${name[1].trim()}${args === '' ? '' : ` ${args}`}` }
 }
 
 /** Claude Code's tags around pasted text, with the same ID on both; the text inside is the owner's. */
@@ -84,14 +113,24 @@ function promptOf(raw: string, uploads: string | undefined): { text: string; fil
 /** The entries of one session line, in order; `results` gets the IDs of the tool calls it answers. */
 function entriesOf(value: unknown, options: TranscriptOptions, results: Set<string>): TranscriptEntry[] {
   const line = Line.safeParse(value)
-  if (!line.success || line.data.isSidechain === true || line.data.isMeta === true) return []
+  const { data } = line
+  // A compact summary is Claude Code's own text for the model, not a prompt.
+  if (!line.success || data?.isSidechain === true || data?.isMeta === true || data?.isCompactSummary === true) return []
   const { type, uuid, message } = line.data
   const blocks = (typeof message.content === 'string' ? [{ type: 'text', text: message.content }] : message.content)
     .map((b) => Block.safeParse(b))
     .flatMap((b) => (b.success ? [b.data] : []))
   if (type === 'user') {
     for (const b of blocks) if (b.type === 'tool_result') results.add(b.tool_use_id)
-    const prompt = promptOf(blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n'), options.uploads)
+    const raw = blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n')
+    const command = commandOf(raw)
+    if (command === null) return []
+    if (command !== undefined && 'error' in command) {
+      const cut = command.error.length > maxErrorText
+      return [{ type: 'error', id: uuid, text: command.error.slice(0, maxErrorText), cut }]
+    }
+    if (command !== undefined) return [{ type: 'user', id: uuid, ...textOf(command.command) }]
+    const prompt = promptOf(raw, options.uploads)
     if (prompt.text === '' && prompt.files === undefined) return []
     return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]
   }

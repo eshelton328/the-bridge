@@ -46,6 +46,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   the server fake is `lib/fakeTranscriptServer.ts`). A prompt sent
   with files (`UserEntry.files`) shows a "Files:" line with each name
   as inline code below its text, until the page draws them as chips.
+  A slash command's error output (`ErrorEntry`) shows as an `event`
+  entry labelled "Error" with its text.
 - A live Claude chat sends and stops (W1): `liveSend.ts` posts
   `POST /api/chats/:chat/prompt` with `{ text }` and `.../stop` with `{}`
   to the chat whose composer sent it, read at send time, and a 204 empties
