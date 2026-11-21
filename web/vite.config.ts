@@ -18,18 +18,22 @@ export function apiProxy(env: Env = process.env): Record<string, string> {
 
 /**
  * Stops `vite` and `vite preview` (whose proxy is the dev server's) when BRIDGE_SERVER_URL is unset or empty. The
- * check runs when a server starts, not when the config loads, so `vite build` and tools that only read the config
- * (knip) run without the variable. Vitest's browser server and Storybook (process.env.VITEST, process.env.STORYBOOK)
- * start without it too, with no proxy.
+ * check is the plugin's `config` hook, which Vite runs for command `serve` (dev and preview) and `build`, so tools
+ * that only read the config (knip) run without the variable, and so does `vite build`. Vitest's browser server and
+ * Storybook (process.env.VITEST, process.env.STORYBOOK) start without it too, with no proxy. It has no
+ * configurePreviewServer hook: one would turn off `vite preview`'s error for a missing build.
  */
 export function requireServerUrl(env: Env = process.env) {
-  const check = () => {
-    if (Object.keys(apiProxy(env)).length > 0 || env.VITEST !== undefined || env.STORYBOOK !== undefined) return
-    throw new Error(
-      'Set BRIDGE_SERVER_URL to the bridge server for /api, for example http://127.0.0.1:<test port>; the served app uses http://127.0.0.1:5181',
-    )
+  return {
+    name: 'bridge-require-server-url',
+    config(_config: unknown, { command }: { command: string }) {
+      if (command !== 'serve' || Object.keys(apiProxy(env)).length > 0) return
+      if (env.VITEST !== undefined || env.STORYBOOK !== undefined) return
+      throw new Error(
+        'Set BRIDGE_SERVER_URL to the bridge server for /api, for example http://127.0.0.1:<test port>; the served app uses http://127.0.0.1:5181',
+      )
+    },
   }
-  return { name: 'bridge-require-server-url', configureServer: check, configurePreviewServer: check }
 }
 
 // The app. The router plugin reads tsr.config.json in this folder and

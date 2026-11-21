@@ -7,30 +7,31 @@ import assert from 'node:assert/strict'
 import config, { apiProxy, requireServerUrl } from '../web/vite.config.ts'
 
 const message = /Set BRIDGE_SERVER_URL to the bridge server for \/api/
+const serve = { command: 'serve' }
 
 void test('vite and vite preview stop when BRIDGE_SERVER_URL is unset or empty', () => {
   for (const env of [{}, { BRIDGE_SERVER_URL: '' }, { BRIDGE_SERVER_URL: '  ' }]) {
-    const plugin = requireServerUrl(env)
     assert.throws(() => {
-      plugin.configureServer()
-    }, message)
-    assert.throws(() => {
-      plugin.configurePreviewServer()
+      requireServerUrl(env).config({}, serve)
     }, message)
   }
 })
 
+void test("the check adds no preview server hook, which would turn off vite preview's missing-build error", () => {
+  assert.ok(!('configurePreviewServer' in requireServerUrl({})))
+  assert.ok(!('configureServer' in requireServerUrl({})))
+})
+
 void test('with BRIDGE_SERVER_URL set, the servers start and the proxy sends /api to it', () => {
   const env = { BRIDGE_SERVER_URL: 'http://127.0.0.1:5999' }
-  const plugin = requireServerUrl(env)
-  plugin.configureServer()
-  plugin.configurePreviewServer()
+  requireServerUrl(env).config({}, serve)
   assert.deepEqual(apiProxy(env), { '/api': 'http://127.0.0.1:5999' })
 })
 
-void test('Vitest and Storybook servers start without BRIDGE_SERVER_URL, with no proxy', () => {
+void test('the build, Vitest and Storybook start without BRIDGE_SERVER_URL, with no proxy', () => {
+  requireServerUrl({}).config({}, { command: 'build' })
   for (const env of [{ VITEST: 'true' }, { STORYBOOK: 'true' }]) {
-    requireServerUrl(env).configureServer()
+    requireServerUrl(env).config({}, serve)
     assert.deepEqual(apiProxy(env), {})
   }
 })
@@ -49,11 +50,11 @@ void test('the check reads process.env when the server starts', () => {
     Reflect.deleteProperty(process.env, 'BRIDGE_SERVER_URL')
     if (process.env.VITEST === undefined && process.env.STORYBOOK === undefined) {
       assert.throws(() => {
-        plugin.configureServer()
+        plugin.config({}, serve)
       }, message)
     }
     process.env.BRIDGE_SERVER_URL = 'http://127.0.0.1:5998'
-    plugin.configureServer()
+    plugin.config({}, serve)
   } finally {
     if (saved === undefined) Reflect.deleteProperty(process.env, 'BRIDGE_SERVER_URL')
     else process.env.BRIDGE_SERVER_URL = saved
