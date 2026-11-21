@@ -8,7 +8,9 @@
 // AppShell detail, which docks the start bar there (R20). A live form (W3,
 // `start`) keeps the owner's values here: Start chat hands them to the page,
 // says "Starting…" and is off while the start runs, and a miss shows its line
-// with Retry over Start chat. Props only.
+// with Retry over Start chat. The start bar is a keyboard keep area, so a
+// finger's first tap on Start chat with the keyboard up starts the chat.
+// Props only.
 import { ArrowUpIcon, Button, ScrollFrame } from '@eshelton328/component-library-1701'
 import { useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
@@ -96,7 +98,10 @@ export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen
         </div>
       }
       footer={
-        <div className={bar} data-figma={layers?.startBar}>
+        // The start bar sits on the keyboard (M11) and acts on the fields, as a composer's box does: AppShell takes a
+        // finger's tap outside `data-keyboard-keep` as one that only closes the keyboard, and swallows its click. The
+        // whole bar keeps, so a tap that the rising keyboard moves off Start chat onto the bar is not swallowed.
+        <div className={bar} data-figma={layers?.startBar} data-keyboard-keep="">
           {line === undefined ? null : (
             <p className={summary} data-figma={layers?.summary}>
               {line}
