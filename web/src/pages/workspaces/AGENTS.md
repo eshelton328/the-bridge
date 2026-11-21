@@ -120,7 +120,9 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw
   and moves the owner's ui changes from the old ID to the new one (open
   chat, phone view, saved panes and focus, names, menus) before the page
-  draws the new list. The draft is not moved: it was for the old context.
+  draws the new list. The draft and the file chips are not moved: the draft
+  was for the old context, and the server holds each upload for the old
+  chat.
   The server sends no event when herdr gives the chat its new ID, so after
   a /clear it sent the page reads the list again a few times
   (`readAfterClear`, `clearReadsMs`).

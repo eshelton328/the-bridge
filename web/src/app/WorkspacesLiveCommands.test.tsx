@@ -399,12 +399,18 @@ describe('/clear and the pane follow (W5)', () => {
     await expect.element(chatRegion('plan the slice').getByText('Fix the build')).toBeVisible()
   })
 
-  it('follows the pane to the new chat after Clear on the phone, with an empty composer', async () => {
+  it('follows the pane to the new chat after Clear on the phone, with an empty composer and no chips', async () => {
     const { chats } = withChats()
+    vi.stubGlobal('XMLHttpRequest', chats.uploads.XMLHttpRequest)
     const reports = watchReports()
     await tapWorkspaces(phone)
     await tapChat('plan the slice')
     await userEvent.fill(chatRegion('plan the slice').getByRole('textbox'), secret)
+    // A file of the old chat: its upload belongs to that chat on the server, so it stays with it, as the draft does.
+    const input = chatRegion('plan the slice').element().querySelector('input[type="file"]')
+    if (!(input instanceof HTMLInputElement)) throw new Error('no file input')
+    await userEvent.upload(input, [new File(['abc'], 'notes.pdf', { type: 'application/pdf' })])
+    await expect.element(chatRegion('plan the slice').getByRole('group', { name: 'Attached files' })).toBeVisible()
     await pick('plan the slice', 'Clear context…')
     await userEvent.click(page.getByRole('alertdialog').getByRole('button', { name: 'Clear' }))
     await expect.poll(() => chats.commands).toEqual([{ chat: plan, request: { command: 'clear' } }])
@@ -415,6 +421,9 @@ describe('/clear and the pane follow (W5)', () => {
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
     // The draft was for the old context: the new chat's composer is empty.
     await expect.element(chatRegion('plan the slice').getByRole('textbox')).toHaveValue('')
+    await expect
+      .element(chatRegion('plan the slice').getByRole('group', { name: 'Attached files' }))
+      .not.toBeInTheDocument()
     await expect.element(page.getByText(/^Transcript not live/)).not.toBeInTheDocument()
     // The new chat takes a send.
     await userEvent.fill(chatRegion('plan the slice').getByRole('textbox'), 'next')
