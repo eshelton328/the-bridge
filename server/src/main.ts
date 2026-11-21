@@ -7,6 +7,7 @@ import { dirname, join } from 'node:path'
 import { serve } from '@hono/node-server'
 import { createDiskUploads } from './adapters/diskUploads.ts'
 import { createHerdrAgents } from './adapters/herdrAgents.ts'
+import { sipsConvert } from './adapters/sipsConvert.ts'
 import { createApp } from './app.ts'
 import { readConfig } from './config.ts'
 import { createLogger, dailyFiles, type LogSink, teeSinks } from './logger.ts'
@@ -29,7 +30,7 @@ const log = createLogger(teeSinks(dailyFiles(logDir), terminal), logLevel).child
 handleProcessErrors(process, log)
 const agents = createHerdrAgents({ socket: herdrSocket, machine, log, claudeProjects, home: homedir() })
 // Uploads go beside the database, in a folder only the owner reads (slice W1b).
-const uploads = createDiskUploads({ root: join(dirname(dbFile), 'uploads') })
+const uploads = createDiskUploads({ root: join(dirname(dbFile), 'uploads'), convert: sipsConvert })
 const server = serve(
   { fetch: createApp({ agents, owner, log, uploads }).fetch, port, hostname: '127.0.0.1' },
   (info) => {

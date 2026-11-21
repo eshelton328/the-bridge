@@ -32,6 +32,7 @@ const noUploads: UploadStore = {
   writeChunk: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
   complete: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
   remove: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
+  attachment: () => Promise.resolve(err({ reason: 'failed', code: 'no-store' })),
 }
 
 export function createApp({ agents, owner, log, uploads = noUploads }: AppDeps) {

@@ -3,7 +3,8 @@
 // /:upload/chunks/:n takes one chunk as raw bytes (application/octet-stream,
 // which a cross-site form cannot send) and streams it to the store, so a
 // large file never sits in memory. POST /:upload/complete makes it a file,
-// and DELETE /:upload removes it. The file name and bytes never go into a
+// (a HEIC photo that does not convert to JPEG is 415), and DELETE
+// /:upload removes it. The file name and bytes never go into a
 // log line or an ErrorBody (d-115).
 import { CompleteUploadRequest, CompleteUploadResponse, UploadId } from '@bridge/contract'
 import type { Context } from 'hono'
@@ -30,10 +31,16 @@ export function uploadsRoutes(uploads: UploadStore, log: Logger) {
   const uploadOf = (c: Context<AppEnv>) => UploadId.safeParse(c.req.param('upload'))
   const invalid = (c: Context<AppEnv>) =>
     errorJson(c, 'invalid-input', { message: 'the upload ID is not valid', issues: ['upload: invalid_format'] })
-  const missed = (c: Context<AppEnv>, outcome: 'notFound' | 'conflict') =>
-    outcome === 'notFound'
-      ? errorJson(c, 'not-found', { path: c.req.path, message: 'no upload has this ID' })
-      : errorJson(c, 'upload-conflict', { message: 'the request does not match the upload' })
+  const missed = (c: Context<AppEnv>, outcome: 'notFound' | 'conflict' | 'unsupported') => {
+    switch (outcome) {
+      case 'notFound':
+        return errorJson(c, 'not-found', { path: c.req.path, message: 'no upload has this ID' })
+      case 'conflict':
+        return errorJson(c, 'upload-conflict', { message: 'the request does not match the upload' })
+      case 'unsupported':
+        return errorJson(c, 'unsupported-media', { message: 'the server cannot convert this photo to JPEG' })
+    }
+  }
   return new Hono<AppEnv>()
     .put('/:upload/chunks/:n', async (c) => {
       if (!/^application\/octet-stream(;|$)/i.test(c.req.header('Content-Type') ?? ''))

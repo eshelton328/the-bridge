@@ -11,7 +11,16 @@ export type UploadStoreSetup = {
   readonly file: (upload: UploadId) => Promise<{ readonly name: string; readonly bytes: Uint8Array } | null>
 }
 
+export type UploadStoreOptions = {
+  /** The store's clock. */
+  readonly now: () => number
+  /** Whether a HEIC photo converts to JPEG. */
+  readonly heicConverts: boolean
+}
+
 const chat = ChatId.parse('test-mac/chat-a')
+const otherChat = ChatId.parse('test-mac/chat-b')
+const hour = 60 * 60 * 1000
 const none = UploadId.parse('AAAAAAAAAAAAAAAAAAAAAA')
 const text = (value: string) => new TextEncoder().encode(value)
 async function* bytesOf(...pieces: string[]): AsyncIterable<Uint8Array> {
@@ -23,7 +32,20 @@ const started = async (store: UploadStore, name: string, size: number) => {
   return upload.value
 }
 
-export function describeUploadStore(name: string, setup: () => Promise<UploadStoreSetup>): void {
+/** Starts, fills and completes a file of `content`. */
+const stored = async (store: UploadStore, name: string, content: string) => {
+  const upload = await started(store, name, content.length)
+  for (let n = 0; n * 4 < content.length; n++)
+    await store.writeChunk(upload, n, bytesOf(content.slice(n * 4, n * 4 + 4)))
+  return upload
+}
+
+export function describeUploadStore(
+  name: string,
+  makeSetup: (options: UploadStoreOptions) => Promise<UploadStoreSetup>,
+): void {
+  let time = 1_000_000
+  const setup = (heicConverts = true) => makeSetup({ now: () => time, heicConverts })
   describe(`UploadStore contract: ${name}`, () => {
     it('stores a file sent in chunks in any order, in pieces of any length, and completes it', async () => {
       const { store, file } = await setup()
@@ -91,10 +113,49 @@ export function describeUploadStore(name: string, setup: () => Promise<UploadSto
 
     it('keeps only a safe name, with its extension', async () => {
       const { store, file } = await setup()
-      const upload = await started(store, '../../Photo 1 (copy).HEIC', 1)
+      const upload = await started(store, '../../Photo 1 (copy).PNG', 1)
       await store.writeChunk(upload, 0, bytesOf('x'))
       await store.complete(upload)
-      expect((await file(upload))?.name).toBe('Photo_1_copy_.HEIC')
+      expect((await file(upload))?.name).toBe('Photo_1_copy_.PNG')
+    })
+
+    it('gives the path of a complete file only to its own chat', async () => {
+      const { store } = await setup()
+      const upload = await stored(store, 'a.txt', 'abc')
+      expect(await store.attachment(upload, chat)).toEqual({ ok: true, value: null })
+      await store.complete(upload)
+      const path = await store.attachment(upload, chat)
+      expect(path.ok && path.value?.endsWith('/a.txt')).toBe(true)
+      expect(await store.attachment(upload, otherChat)).toEqual({ ok: true, value: null })
+      expect(await store.attachment(none, chat)).toEqual({ ok: true, value: null })
+    })
+
+    it('gives a HEIC photo as its JPEG copy, and one that does not convert is unsupported', async () => {
+      const { store, file } = await setup()
+      const upload = await stored(store, 'IMG_1.HEIC', 'heic')
+      expect(await store.complete(upload)).toEqual({ ok: true, value: 'complete' })
+      expect((await file(upload))?.name).toBe('IMG_1.jpg')
+      const path = await store.attachment(upload, chat)
+      expect(path.ok && path.value?.endsWith('/IMG_1.jpg')).toBe(true)
+      const failing = await setup(false)
+      const bad = await stored(failing.store, 'IMG_2.heic', 'heic')
+      expect(await failing.store.complete(bad)).toEqual({ ok: true, value: 'unsupported' })
+      expect(await failing.store.attachment(bad, chat)).toEqual({ ok: true, value: null })
+    })
+
+    it('removes an unfinished upload after 24 hours and a complete one after 7 days, at the next start', async () => {
+      const { store } = await setup()
+      const unfinished = await started(store, 'a.bin', 8)
+      const complete = await stored(store, 'b.txt', 'b')
+      await store.complete(complete)
+      time += 24 * hour
+      await started(store, 'c.bin', 1)
+      expect(await store.writeChunk(unfinished, 0, bytesOf('abcd'))).toEqual({ ok: true, value: 'notFound' })
+      expect((await store.attachment(complete, chat)).ok).toBe(true)
+      expect(await store.attachment(complete, chat)).not.toEqual({ ok: true, value: null })
+      time += 6 * 24 * hour
+      await started(store, 'd.bin', 1)
+      expect(await store.attachment(complete, chat)).toEqual({ ok: true, value: null })
     })
   })
 }

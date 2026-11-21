@@ -20,7 +20,7 @@ const startPath = (chat: string) => `/api/chats/${encodeURIComponent(chat)}/uplo
 /** A file name that must never reach a log line. */
 const secretName = 'MARKER-not-a-real-name.png'
 
-function setup(store: UploadStore = createFakeUploads(4)) {
+function setup(store: UploadStore = createFakeUploads({ chunkSize: 4 })) {
   const logger = memoryLogger()
   const app = createApp({ agents: createFakeAgents(machine), owner, log: logger.log, uploads: store })
   const start = (chat: string, body: unknown) =>
@@ -30,14 +30,21 @@ function setup(store: UploadStore = createFakeUploads(4)) {
   const complete = (upload: string) =>
     app.request(`/api/uploads/${upload}/complete`, { method: 'POST', headers: json, body: '{}' })
   const remove = (upload: string) => app.request(`/api/uploads/${upload}`, { method: 'DELETE', headers: local })
-  return { app, logger, start, put, complete, remove }
+  /** Uploads a file of `content` to `chat` and completes it. */
+  const uploaded = async (chat: string, name: string, content: string) => {
+    const res = await start(chat, { name, size: content.length, type: '' })
+    const { upload } = StartUploadResponse.parse(await res.json())
+    for (let n = 0; n * 4 < content.length; n++) await put(upload, n, content.slice(n * 4, n * 4 + 4))
+    return upload
+  }
+  return { app, logger, start, put, complete, remove, uploaded }
 }
 
 const kindOf = async (res: Response) => ErrorBody.parse(await res.json()).error
 
 describe('the upload routes', () => {
   it('start, take each chunk, complete and remove a file of a Claude chat', async () => {
-    const store = createFakeUploads(4)
+    const store = createFakeUploads({ chunkSize: 4 })
     const { start, put, complete, remove } = setup(store)
     const res = await start('test-mac/bridge-themes', { name: secretName, size: 6, type: 'image/png' })
     expect(res.status).toBe(201)
@@ -123,7 +130,7 @@ describe('the upload routes', () => {
 
   it('answers a full disk 507 storage-full and another fault 500, and logs no file name', async () => {
     const failing = (reason: 'full' | 'failed'): UploadStore => ({
-      ...createFakeUploads(4),
+      ...createFakeUploads({ chunkSize: 4 }),
       start: () => Promise.resolve(err({ reason, code: reason === 'full' ? 'ENOSPC' : 'EIO' })),
     })
     const full = setup(failing('full'))
@@ -145,5 +152,13 @@ describe('the upload routes', () => {
       body: JSON.stringify({ name: 'a', size: 1, type: '' }),
     })
     expect(res.status).toBe(500)
+  })
+
+  it('answers a HEIC photo that does not convert 415 unsupported-media', async () => {
+    const { uploaded, complete } = setup(createFakeUploads({ chunkSize: 4, heicConverts: false }))
+    const upload = await uploaded('test-mac/bridge-themes', 'IMG_1.HEIC', 'heic')
+    const res = await complete(upload)
+    expect(res.status).toBe(415)
+    expect((await kindOf(res)).kind).toBe('unsupported-media')
   })
 })
