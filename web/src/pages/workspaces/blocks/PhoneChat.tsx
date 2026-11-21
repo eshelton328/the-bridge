@@ -129,6 +129,9 @@ export function PhoneChat(props: PhoneChatProps) {
   )
   const head = (
     <ChatHead
+      // Keyed by chat (not the composer's key, its sibling), so the effort picker's line and pending pick stay with
+      // the chat they were for.
+      key={`head:${pane.id}`}
       size={device === 'tablet' ? 'full' : 'phone'}
       head={pane.head}
       effortPicker={effort}

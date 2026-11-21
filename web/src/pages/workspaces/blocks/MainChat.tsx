@@ -97,6 +97,9 @@ export function MainChat(props: MainChatProps) {
   return (
     <section data-figma={layers?.mainChat ?? '105:784'} aria-label={pane.head.title} className={column} onClick={tap}>
       <ChatHead
+        // Keyed by chat (not the composer's key, its sibling), so the effort picker's line and pending pick stay with
+        // the chat they were for.
+        key={`head:${pane.id}`}
         head={pane.head}
         effortPicker={effort}
         workspace={workspace}

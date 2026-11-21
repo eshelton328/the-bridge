@@ -262,6 +262,21 @@ describe("a live chat's effort picker (W10)", () => {
     expect(JSON.stringify(reports.map((r) => [r.error.message, r.error.stack]))).not.toContain(plan)
   })
 
+  it("keeps a miss's line with its chat when the desktop shows another chat", async () => {
+    const fakes = withChats()
+    await tapWorkspaces(desktop)
+    await tapChat('plan the slice')
+    fakes.list.answerEffort(() =>
+      errorAnswer({ kind: 'chat-not-ready', state: 'needsYou', message: 'Not ready', requestId: 'r-409' }, 409),
+    )
+    await userEvent.click(chip('Opus 5.5 · medium effort'))
+    await userEvent.click(choice('high'))
+    await expect.element(page.getByRole('status').getByText('The chat needs you on the Mac')).toBeVisible()
+    await tapChat('review notes')
+    await expect.element(chip('Opus 5.5')).toBeVisible()
+    expect(page.getByText('The chat needs you on the Mac').elements()).toHaveLength(0)
+  })
+
   it('gives a Codex chat no picker (W8)', async () => {
     withChats()
     await tapWorkspaces(phone)
