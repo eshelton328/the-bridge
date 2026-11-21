@@ -48,6 +48,13 @@ describe('the disk push store', () => {
     expect(JSON.parse(readFileSync(join(root, 'subscriptions.json'), 'utf8'))).toHaveLength(9)
   })
 
+  it('removes a subscription saved in a loose form by its written form', async () => {
+    const store = createDiskPushStore(newRoot())
+    value(await store.save({ ...sub(1), endpoint: 'https:/web.push.apple.com/example-1' }))
+    value(await store.remove(sub(1).endpoint))
+    expect(value(await store.subscriptions())).toEqual([])
+  })
+
   it('gives no subscriptions before the first save, and an errno code when the folder cannot be made', async () => {
     expect(value(await createDiskPushStore(newRoot()).subscriptions())).toEqual([])
     const blocked = createDiskPushStore('/dev/null/push')
