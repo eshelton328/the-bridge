@@ -384,6 +384,9 @@ describe('herdr agents: input to a chat', () => {
       withStatus('working')
       try {
         expect(await port().sendCommand(chat, { command: 'compact' })).toEqual({ ok: true, value: 'working' })
+        // A state herdr does not name could be work, so it gets no command either.
+        withStatus('thinking-hard')
+        expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'working' })
         withStatus('idle')
         socket.set('pane.read', paneRead('w17:p1', claudeScreen('half a thought')))
         expect(await port().sendCommand(chat, { command: 'clear' })).toEqual({ ok: true, value: 'inputNotEmpty' })

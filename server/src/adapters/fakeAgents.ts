@@ -296,8 +296,10 @@ export function createFakeAgents(
       if (found.kind === 'shell') return Promise.resolve(ok('shell'))
       if (found.kind === 'codex') return Promise.resolve(ok('noCommands'))
       if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
-      if (found.status === 'working') return Promise.resolve(ok('working'))
+      if (found.status !== 'idle' && found.status !== 'done') return Promise.resolve(ok('working'))
       if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
+      // As a prompt: the port takes back a command whose Enter the chat did not take.
+      if (dropEnter.delete(chat)) return Promise.resolve(ok('notSubmitted'))
       inputs.push({ chat, command: structuredClone(command) })
       // /clear starts a new session, so the chat gets a new ID on the same pane.
       if (command.command === 'clear') {

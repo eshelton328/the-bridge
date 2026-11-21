@@ -642,8 +642,9 @@ export function createHerdrAgents({
       const { pane, status, claude } = target.value
       if (!claude) return ok('noCommands')
       if (status === 'needsYou') return ok('needsYou')
-      // A working Claude Code queues a command behind its turn; the owner asked for it now, so it is refused.
-      if (status === 'working') return ok('working')
+      // A working Claude Code queues a command behind its turn; the owner asked for it now, so it is refused. A chat
+      // whose state herdr cannot tell may work too, so only an idle or done chat takes a command.
+      if (status !== 'idle' && status !== 'done') return ok('working')
       return submit(pane, claude, commandText(command))
     },
     async clearInputBox(chat) {

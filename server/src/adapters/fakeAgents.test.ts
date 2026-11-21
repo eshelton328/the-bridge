@@ -56,6 +56,30 @@ describeAgentPort('fake', () => {
 })
 
 describe('fake agents', () => {
+  it('takes back a command whose Enter the chat did not take, and keeps the chat', async () => {
+    const agents = createFakeAgents(machine)
+    const list = await agents.listWorkspaces()
+    const chat = list.ok ? list.value.flatMap((w) => w.chats).find((c) => c.kind === 'claude') : undefined
+    if (chat === undefined) throw new Error('the fake has no Claude chat')
+    agents.setStatus(chat.id, 'idle')
+    agents.dropNextEnter(chat.id)
+    expect(await agents.sendCommand(chat.id, { command: 'clear' })).toEqual({ ok: true, value: 'notSubmitted' })
+    expect(agents.inputs()).toEqual([])
+    expect(await agents.sendPrompt(chat.id, 'Check the lint.')).toEqual({ ok: true, value: 'sent' })
+    const after = await agents.listWorkspaces()
+    expect(after.ok && after.value.flatMap((w) => w.chats).some((c) => c.id === chat.id)).toBe(true)
+  })
+
+  it('sends no command to a chat whose state it cannot tell', async () => {
+    const agents = createFakeAgents(machine)
+    const list = await agents.listWorkspaces()
+    const chat = list.ok ? list.value.flatMap((w) => w.chats).find((c) => c.kind === 'claude') : undefined
+    if (chat === undefined) throw new Error('the fake has no Claude chat')
+    agents.setStatus(chat.id, 'unknown')
+    expect(await agents.sendCommand(chat.id, { command: 'compact' })).toEqual({ ok: true, value: 'working' })
+    expect(agents.inputs()).toEqual([])
+  })
+
   it('sends no prompt to a chat that waits for the owner', async () => {
     const port = createFakeAgents(machine)
     const chat = ChatId.parse('test-mac/drift-check')
