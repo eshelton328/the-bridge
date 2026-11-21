@@ -27,6 +27,7 @@ describe('config', () => {
         claudeSettings: '/tmp/settings.json',
         logDir: '/tmp/bridge-logs',
         logLevel: 'info',
+        pushSubject: 'https://github.com/eshelton328/the-bridge',
       },
     })
   })
@@ -34,6 +35,12 @@ describe('config', () => {
   it('takes the Claude settings file from BRIDGE_CLAUDE_SETTINGS when it is set', () => {
     const read = readConfig({ ...env, BRIDGE_CLAUDE_SETTINGS: '/home/dev/.claude/settings.json' })
     expect(read.ok ? read.value.claudeSettings : undefined).toBe('/home/dev/.claude/settings.json')
+  })
+
+  it('takes the push contact from BRIDGE_PUSH_SUBJECT, a mailto: or https:// URL only', () => {
+    const read = readConfig({ ...env, BRIDGE_PUSH_SUBJECT: 'https://example.com/the-bridge' })
+    expect(read.ok ? read.value.pushSubject : undefined).toBe('https://example.com/the-bridge')
+    expect(readConfig({ ...env, BRIDGE_PUSH_SUBJECT: 'owner@example.com' }).ok).toBe(false)
   })
 
   it('takes the log level from BRIDGE_LOG_LEVEL and refuses an unknown one', () => {

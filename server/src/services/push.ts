@@ -1,7 +1,7 @@
 // Web Push (d-118): the store of the VAPID keys and the owner's push
 // subscriptions, which push services a subscription may name, and when the
 // owner last had a page open.
-import type { PushSubscriptionRequest } from '@bridge/contract'
+import type { PushPayload, PushSubscriptionRequest } from '@bridge/contract'
 import type { Result } from '@bridge/shared'
 
 /** The server's VAPID keys, base64url: the public key as an uncompressed P-256 point, the private key as its d. */
@@ -23,6 +23,18 @@ export type PushStore = {
   remove(endpoint: string): Promise<Result<void, PushStoreError>>
 }
 
+/** A send fault: the push service's HTTP status or an errno code, never the endpoint. */
+type PushSendError = { readonly code: string }
+
+export type PushSender = {
+  /** Sends one push; `gone` when the push service no longer knows the subscription (404 or 410). */
+  send(
+    subscription: PushSubscriptionRequest,
+    payload: PushPayload,
+    keys: VapidKeys,
+  ): Promise<Result<'sent' | 'gone', PushSendError>>
+}
+
 /** The hosts of the push services of Safari, Chrome, Firefox and Edge; the server sends to no other host. */
 const pushHosts = [
   /^web\.push\.apple\.com$/,
@@ -36,6 +48,14 @@ export function knownPushService(endpoint: string): boolean {
   if (!URL.canParse(endpoint)) return false
   const url = new URL(endpoint)
   return url.protocol === 'https:' && url.port === '' && pushHosts.some((host) => host.test(url.hostname))
+}
+
+/**
+ * The endpoint as the WHATWG URL parser writes it. The host check reads that form, and web-push
+ * parses with Node's old url.parse, which reads `https:/host/x` as no host, so a send must use it.
+ */
+export function canonicalEndpoint(endpoint: string): string {
+  return URL.canParse(endpoint) ? new URL(endpoint).href : endpoint
 }
 
 /** How long after a page's "seen" no push goes. */

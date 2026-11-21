@@ -178,6 +178,12 @@ client of a socket or a file sits beside them.
   0600 and replaced in one rename; it makes the P-256 VAPID keys once
   with Node's crypto, keeps at most 10 subscriptions, and a fault gives
   its errno code only (`diskPush.test.ts`).
+- `webPushSender.ts` sends a push with the `web-push` package: the
+  payload encrypted for the browser's keys, a VAPID JWT whose contact
+  is `BRIDGE_PUSH_SUBJECT` (else the public repository's URL; never a
+  personal address, as each push service reads it), a TTL of
+  1 hour; 404 and 410 are `gone`, any other fault its HTTP status or
+  errno code (`webPushSender.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
