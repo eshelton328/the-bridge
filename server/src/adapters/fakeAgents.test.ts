@@ -182,3 +182,18 @@ describe('fake agents', () => {
     expect(ends).toEqual(['no socket'])
   })
 })
+
+describe('fake agents: effort', () => {
+  it('sets the effort of an idle Claude chat, and of no chat that works', async () => {
+    const agents = createFakeAgents(machine)
+    const themes = ChatId.parse('test-mac/bridge-themes')
+    agents.setStatus(themes, 'idle')
+    expect(await agents.setEffort(themes, 'low')).toEqual({ ok: true, value: 'set' })
+    const listed = await agents.listWorkspaces()
+    expect(listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === themes)?.effort : undefined).toBe(
+      'low',
+    )
+    agents.setStatus(themes, 'working')
+    expect(await agents.setEffort(themes, 'high')).toEqual({ ok: true, value: 'working' })
+  })
+})

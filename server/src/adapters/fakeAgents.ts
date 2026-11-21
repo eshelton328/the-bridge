@@ -439,6 +439,19 @@ export function createFakeAgents(
       }
       return Promise.resolve(ok('sent'))
     },
+    setEffort(chat, effort) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.kind === 'codex') return Promise.resolve(ok('noCommands'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if (found.status !== 'idle' && found.status !== 'done') return Promise.resolve(ok('working'))
+      if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
+      found.effort = effort
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok('set'))
+    },
     focusChat(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = workspaceOf(chat)

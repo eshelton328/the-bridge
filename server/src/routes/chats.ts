@@ -15,7 +15,9 @@
 // POST /:chat/uploads starts the upload of a file for that chat (slice
 // W1b, routes/uploads.ts). POST /:chat/command types /compact or /clear
 // into an idle Claude chat (slice W5, 204); the compact instructions go to
-// the port only, as a prompt's text. POST /:chat/focus, /:chat/zoom,
+// the port only, as a prompt's text.
+// POST /:chat/effort sets a Claude chat's effort for its session only, with Claude Code's effort keys (slice W10,
+// 204). POST /:chat/focus, /:chat/zoom,
 // /:chat/swap and /:chat/close change the chat's pane in its tab (slice W2,
 // 204), POST /:chat/move puts it in another tab of its workspace (204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
 // that works or waits for the owner. POST / starts a Claude chat beside a chat or in a new tab (slice W3): 201 with
@@ -37,6 +39,7 @@ import {
   StartUploadRequest,
   StartUploadResponse,
   StopChatRequest,
+  SetEffortRequest,
   SwapChatsRequest,
   TranscriptChangedEvent,
   TranscriptResponse,
@@ -59,11 +62,12 @@ import type {
   ClearOutcome,
   CloseOutcome,
   CommandOutcome,
+  EffortOutcome,
   MoveOutcome,
   SwapOutcome,
   ZoomOutcome,
 } from '../services/agentPort.ts'
-import { clearInput, readSkills, readTranscript, sendCommand, stopChat } from '../services/chats.ts'
+import { clearInput, readSkills, readTranscript, sendCommand, setEffort, stopChat } from '../services/chats.ts'
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
 import { createNewChats, type NewChats } from '../services/newChats.ts'
@@ -147,9 +151,13 @@ export function chatsRoutes(
     }
   }
   /** The answer to a send or a stop: 204 when sent; the chat's state when it cannot take it. */
-  const answer = (c: Context<AppEnv>, outcome: FilePromptOutcome | CancelOutcome | ClearOutcome | CommandOutcome) => {
+  const answer = (
+    c: Context<AppEnv>,
+    outcome: FilePromptOutcome | CancelOutcome | ClearOutcome | CommandOutcome | EffortOutcome,
+  ) => {
     switch (outcome) {
       case 'sent':
+      case 'set':
       case 'cleared':
         return c.body(null, 204)
       case 'notFound':
@@ -185,6 +193,11 @@ export function chatsRoutes(
         return errorJson(c, 'chat-not-ready', {
           state: 'working',
           message: 'the chat works now; send the command when it is idle',
+        })
+      case 'effortNotConfirmed':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'effortNotConfirmed',
+          message: "the chat's screen did not show the new effort; look at the chat",
         })
       case 'notSubmitted':
         return errorJson(c, 'chat-not-ready', {
@@ -286,6 +299,12 @@ export function chatsRoutes(
         return sent.ok ? answer(c, sent.value) : failed(c, sent.error)
       },
     )
+    .post('/:chat/effort', smallJson, jsonOnly, jsonBody(SetEffortRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const set = await setEffort(agents, id.data, c.req.valid('json').effort)
+      return set.ok ? answer(c, set.value) : failed(c, set.error)
+    })
     .post('/:chat/focus', smallJson, jsonOnly, jsonBody(FocusChatRequest), async (c) => {
       const id = chatOf(c)
       if (!id.success) return invalid(c)

@@ -398,6 +398,66 @@ describe('herdr agents: input to a chat', () => {
       }
     })
 
+    it('sets the effort with the effort keys on an idle chat at an empty prompt, and checks the screen', async () => {
+      const marked = (level: string, text = '') =>
+        claudeScreen(text).replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
+      const keys = () =>
+        socket
+          .requests()
+          .filter((r) => r.method === 'agent.send_keys')
+          .map((r) => r.params)
+      withStatus('idle')
+      socket.set('pane.read', paneRead('w17:p1', marked('medium')))
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', marked('xhigh')))
+      })
+      try {
+        expect(await port().setEffort(chat, 'xhigh')).toEqual({ ok: true, value: 'set' })
+        expect(keys().at(-1)).toEqual({ target: 'w17:p1', keys: ['shift+up', 'shift+up'] })
+        const sent = keys().length
+        expect(await port().setEffort(chat, 'low')).toEqual({ ok: true, value: 'effortNotConfirmed' })
+        socket.set('pane.read', paneRead('w17:p1', marked('high', 'a draft')))
+        expect(await port().setEffort(chat, 'low')).toEqual({ ok: true, value: 'inputNotEmpty' })
+        withStatus('working')
+        expect(await port().setEffort(chat, 'low')).toEqual({ ok: true, value: 'working' })
+        expect(keys()).toHaveLength(sent + 1)
+      } finally {
+        socket.onRequest(undefined)
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+      }
+    })
+
+    it('sets low only after the screen showed medium, so keys that change nothing are not set', async () => {
+      const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
+      const keys = () =>
+        socket
+          .requests()
+          .filter((r) => r.method === 'agent.send_keys')
+          .map((r) => r.params)
+      withStatus('idle')
+      // CLAUDE_CODE_EFFORT_LEVEL: no mark, and the keys change nothing.
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      try {
+        expect(await port().setEffort(chat, 'low')).toEqual({ ok: true, value: 'effortNotConfirmed' })
+        const screens = [marked('medium'), claudeScreen('')]
+        socket.onRequest((method) => {
+          if (method === 'agent.send_keys')
+            socket.set('pane.read', paneRead('w17:p1', screens.shift() ?? claudeScreen('')))
+        })
+        socket.set('pane.read', paneRead('w17:p1', marked('high')))
+        expect(await port().setEffort(chat, 'low')).toEqual({ ok: true, value: 'set' })
+        expect(keys().slice(-2)).toEqual([
+          { target: 'w17:p1', keys: ['shift+down'] },
+          { target: 'w17:p1', keys: ['shift+down'] },
+        ])
+      } finally {
+        socket.onRequest(undefined)
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+      }
+    })
+
     it('types nothing into a chat that works, waits for the owner, is a Codex chat or holds text', async () => {
       const before = prompts().length
       // The recorded list gives bridge-coord herdr's "blocked".

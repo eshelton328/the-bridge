@@ -12,6 +12,38 @@ const dimRun = new RegExp(`${esc}\\[2m[^${esc}]*`, 'g')
 /** A rule of "─"; a named chat (`claude -n`) draws its name near the end of the top rule: "──── name ─". */
 const rule = /^─{8,}(?: [^─]+ ─+)?$/
 
+/** The effort levels in the order that Claude Code's effort keys step through them; the keys stop at each end. */
+const keyEfforts = ['low', 'medium', 'high', 'xhigh'] as const
+type KeyLevel = (typeof keyEfforts)[number]
+/** The effort mark on or above the box's top rule: "◐ medium · /effort". */
+const effortMark = /[○◐●◉] (low|medium|high|xhigh|max) · \/effort/
+
+/**
+ * The effort that a Claude Code screen shows near its input box (probe in a test herdr session, 2026-11-21): a
+ * level, `none` when the box shows and no mark (Claude Code can hide the mark at `low`), null with no box.
+ */
+export function effortOf(screen: string): KeyLevel | 'max' | 'none' | null {
+  const lines = screen.split(/\r?\n/).map((line) => line.replace(sgr, ''))
+  const rules = lines.flatMap((line, at) => (rule.test(line.trim()) ? [at] : []))
+  const top = rules.at(-2)
+  if (top === undefined || inputBoxOf(screen) === null) return null
+  const found = effortMark.exec(`${lines[top - 1] ?? ''} ${lines[top] ?? ''}`)?.[1]
+  return keyEfforts.find((level) => level === found) ?? (found === 'max' ? 'max' : 'none')
+}
+
+/**
+ * The effort keys that move a chat from `shown` to `effort`: the difference when the screen shows a level the keys
+ * reach, else down to `low` first (the keys stop there; four presses from `max`) and then up.
+ */
+export function effortKeys(shown: ReturnType<typeof effortOf>, effort: KeyLevel): string[] {
+  const to = keyEfforts.indexOf(effort)
+  const from = keyEfforts.findIndex((level) => level === shown)
+  // From `max` (above `xhigh`) or an unknown level, one press for each level reaches `low`; more stay there.
+  if (from === -1)
+    return [...Array<string>(keyEfforts.length).fill('shift+down'), ...Array<string>(to).fill('shift+up')]
+  return Array<string>(Math.abs(to - from)).fill(to > from ? 'shift+up' : 'shift+down')
+}
+
 /** The text in the box, '' when it is empty, and how many screen lines the box has. */
 export type InputBox = { readonly text: string; readonly lines: number }
 

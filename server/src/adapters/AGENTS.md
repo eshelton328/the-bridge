@@ -190,6 +190,20 @@ client of a socket or a file sits beside them.
   blocked start is `needsYou` and stays so: the adapter sends no key
   and answers no prompt of it, such as Claude's folder trust question
   (`herdrAgents.test.ts`).
+- An effort change (slice W10) goes to an idle Claude chat with an
+  empty box only, as Claude Code's effort keys (`shift+up` and
+  `shift+down` in one `agent.send_keys`), never as `/effort` or
+  `/model`, which save the owner's default. The keys change the
+  session's effort only and stop at `low` and `xhigh`. The adapter
+  reads the mark on or above the box's top rule ("◐ medium ·
+  /effort"; none can mean `low`), steps from it, or presses
+  `shift+down` four times first when it sees none or `max`, and then
+  reads the screen up to 4 times in 1.5 s: `set` when it shows the
+  level, else `effortNotConfirmed`. A `low` target goes through
+  `medium` first, so a chat whose keys change nothing
+  (`CLAUDE_CODE_EFFORT_LEVEL`) is not `set`
+  (probe in a test herdr session, 2026-11-21; `claudeInput.test.ts`,
+  `herdrAgents.test.ts`).
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

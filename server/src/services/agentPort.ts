@@ -5,6 +5,7 @@
 // answerApproval, each with the contract suite in
 // adapters/agentPortContract.ts.
 import type {
+  KeyEffort,
   ChatSkill,
   ChatId,
   ChatStatus,
@@ -56,6 +57,12 @@ export type ClearOutcome = Exclude<SendOutcome, 'sent'> | 'cleared' | 'noCommand
  * `noCommands` for a Codex chat, which takes none from the port yet. Nothing was sent unless it is `sent`.
  */
 export type CommandOutcome = PromptOutcome | 'working' | 'noCommands'
+
+/**
+ * What an effort change did (slice W10): `set` once the chat's screen shows the effort; `effortNotConfirmed`
+ * when it does not after the keys; else why no key was sent, as a command.
+ */
+export type EffortOutcome = Exclude<CommandOutcome, 'sent' | 'notSubmitted'> | 'set' | 'effortNotConfirmed'
 
 /** A Claude Code command: `/compact` with the owner's instructions if any, or `/clear`. */
 export type ChatCommand =
@@ -154,6 +161,11 @@ export type AgentPort = {
    * it, the port clears it; other text in the box stays.
    */
   cancel(chat: ChatId): Promise<Result<CancelOutcome, AgentPortError>>
+  /**
+   * Sets the effort of an idle Claude chat with an empty input box for its session only, with Claude Code's effort
+   * keys; never with `/effort`, which saves the owner's default.
+   */
+  setEffort(chat: ChatId, effort: KeyEffort): Promise<Result<EffortOutcome, AgentPortError>>
   /** Makes the pane of one chat, a shell too, the focused pane of its tab. */
   focusChat(chat: ChatId): Promise<Result<PaneWriteOutcome, AgentPortError>>
   /** Shows only the pane of one chat in its tab, at full size (`zoomed` true), or ends the zoom of its tab. */
