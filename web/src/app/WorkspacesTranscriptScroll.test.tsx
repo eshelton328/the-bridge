@@ -472,6 +472,33 @@ describe('the end of a live transcript after Send, the background and a reconnec
     })
   }
 
+  it('keeps an older entry in view when the focus moves to it, as Tab or a link does, on the desktop', async () => {
+    const server = withLong()
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(page.getByText('plan question 39', { exact: true })).toBeInTheDocument()
+    const planPane = paneScroller('plan the slice')
+    await expectAtEnd(planPane)
+    await expect.poll(() => server.openStreams()).toContain(plan)
+    // The Copy of an early reply: focusing it scrolls it into view with no touch, wheel or scroll key.
+    const copy = planPane.querySelectorAll('button')[2]
+    if (!(copy instanceof HTMLButtonElement)) throw new Error('no Copy button in the transcript')
+    copy.focus()
+    await afterRendering()
+    await afterRendering()
+    const box = copy.getBoundingClientRect()
+    const view = planPane.getBoundingClientRect()
+    expect(box.top).toBeGreaterThanOrEqual(view.top)
+    expect(box.bottom).toBeLessThanOrEqual(view.bottom)
+    expect(fromEnd(planPane)).toBeGreaterThan(planPane.clientHeight)
+    // An entry that comes in leaves the reader there.
+    const place = planPane.scrollTop
+    pushReplies(server, plan, 1, 1)
+    await expect.element(page.getByText(/^Reply 1 landed\./)).toBeInTheDocument()
+    await afterRendering()
+    expect(planPane.scrollTop).toBe(place)
+  })
+
   it('keeps the first entry in view for a reader who scrolled up, through the background and a reconnect, on the phone', async () => {
     const server = withLong()
     await tapWorkspaces([390, 844])

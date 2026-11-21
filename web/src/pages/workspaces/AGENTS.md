@@ -218,7 +218,8 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   in, unless the reader scrolled up; back at the end, it follows again
   (`blocks/usePinnedEnd.ts`, `app/WorkspacesTranscriptScroll.test.tsx`).
   Only the reader leaves the end: a moving finger on the transcript, a
-  wheel turn, a scroll key or a drag of its scroll bar. Any other scroll
+  wheel turn, a scroll key, a drag of its scroll bar or a focus moved
+  into an entry (Tab, a link). Any other scroll
   away from the end goes back in the same frame, such as the one iOS made
   after Send closed the keyboard (review R33); the page back from the
   background follows too.

@@ -12,7 +12,10 @@
 // One rule decides the pin (screen review R33): only the reader leaves the
 // end. A scroll counts as the reader's while a finger moves on the transcript
 // (and a moment after it lifts, for the fling), after a wheel turn or a
-// scroll key, or while a mouse drags the scroll bar. Any other scroll away
+// scroll key, while a mouse drags the scroll bar, or after the focus moves
+// into the transcript (Tab, a link or a screen reader's next item).
+// Once the reader has left the end, no scroll is moved back: a fling's
+// scroll events after the finger lifts keep the place. Any other scroll away
 // from the end while pinned, such as one iOS makes after Send closes the
 // keyboard (its trace shows a scroll to an old place 1.3 s after Send with no
 // touch), goes back to the end in the same frame, before the browser paints.
@@ -22,7 +25,10 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 /** How near the end, in px, still counts as the end: a scroll position can be a fraction short of it. */
 const endSlack = 2
 
-/** How long, in ms, after the reader's last wheel turn, scroll key or lifted finger a scroll still counts as theirs. */
+/**
+ * How long, in ms, after the reader's last wheel turn, scroll key, lifted finger or focus move into the transcript a
+ * scroll still counts as theirs.
+ */
 const readerScrollMs = 500
 
 /** The keys that scroll a focused scroller. */
@@ -53,7 +59,7 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     pinnedRef.current = true
     const view = scroller.ownerDocument.defaultView ?? window
     // The reader's input: a finger that moves on the transcript, a mouse on its scroll bar, and the time of the
-    // last wheel turn, scroll key or lifted finger.
+    // last wheel turn, scroll key, lifted finger or focus move into the transcript.
     const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY }
     const readerScrolls = () => reader.touching || reader.dragging || performance.now() - reader.last < readerScrollMs
     const follow = () => {
@@ -73,7 +79,8 @@ export function usePinnedEnd(enabled: boolean, key: string) {
       reader.touching = false
       reader.last = performance.now()
     }
-    const onWheel = () => {
+    // A wheel turn, and a focus that moves into the transcript, which scrolls the focused entry into view.
+    const onReader = () => {
       reader.last = performance.now()
     }
     const onKey = (event: KeyboardEvent) => {
@@ -107,7 +114,8 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     const passive = { passive: true } as const
     scroller.addEventListener('scroll', onScroll, passive)
     scroller.addEventListener('touchmove', onTouchMove, passive)
-    scroller.addEventListener('wheel', onWheel, passive)
+    scroller.addEventListener('wheel', onReader, passive)
+    scroller.addEventListener('focusin', onReader)
     scroller.addEventListener('pointerdown', onPointerDown, passive)
     view.addEventListener('touchend', onTouchEnd, passive)
     view.addEventListener('touchcancel', onTouchEnd, passive)
@@ -119,7 +127,8 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     return () => {
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('touchmove', onTouchMove)
-      scroller.removeEventListener('wheel', onWheel)
+      scroller.removeEventListener('wheel', onReader)
+      scroller.removeEventListener('focusin', onReader)
       scroller.removeEventListener('pointerdown', onPointerDown)
       view.removeEventListener('touchend', onTouchEnd)
       view.removeEventListener('touchcancel', onTouchEnd)
