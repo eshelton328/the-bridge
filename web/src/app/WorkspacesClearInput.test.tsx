@@ -18,6 +18,7 @@ import { testRender } from '../lib/testRender.ts'
 import { resetAllStores } from '../state/resetStores.ts'
 import { routeTree } from './routeTree.gen.ts'
 import { stubLiveServer } from './liveServerStub.ts'
+import { answerLateServerReads } from '../lib/lateServerReads.ts'
 
 // R28 part B: a send that found text in the chat's terminal input (409
 // inputNotEmpty) offers "Clear the terminal input". It asks first in a
@@ -42,6 +43,9 @@ const summary = (id: string, kind: 'claude' | 'codex', title: string) => ({
   title,
   model: kind === 'codex' ? 'gpt-5.5' : 'claude-opus-5-5',
   contextUsed: null,
+  modelId: null,
+  effort: null,
+  pane: `${id}-pane`,
   status: 'idle',
   parent: null,
 })
@@ -126,6 +130,9 @@ let view: { unmount: () => Promise<void> } | undefined
 const cleanups: (() => void)[] = []
 
 stubLiveServer()
+
+// A read that a page starts after its test ended gets no answer, not the real server (lib/lateServerReads.ts).
+answerLateServerReads()
 
 afterEach(async () => {
   for (const cleanup of cleanups.splice(0)) cleanup()
