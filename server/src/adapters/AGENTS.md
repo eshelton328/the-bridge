@@ -59,6 +59,17 @@ client of a socket or a file sits beside them.
   between them, never as text; each line end of the box joins with a
   space or with nothing. Other text
   stays (`agentPortContract.ts`, `herdrAgents.test.ts`).
+- The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
+  `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
+  0600 files, under the folder beside the database. Each chunk goes to
+  a temporary file and takes its place only when its length is right,
+  so a short retry keeps the chunk that came; it stops at the first
+  piece of a stream that goes past the chunk's length. The state file is
+  replaced in one rename, and complete joins the chunks in turn with
+  their renames,
+  and never runs a file; it reads the bytes only to join the chunks. It keeps only a safe file
+  name with its extension, and a fault gives only its errno code
+  (`diskUploads.test.ts`).
 - Tests here use a fake socket, never a real herdr.
 - A herdr reply that the contract cannot hold is `badReply`, never a
   throw; a status herdr adds later is the chat's `unknown`, logged once
