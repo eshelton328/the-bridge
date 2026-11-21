@@ -446,6 +446,22 @@ describe('/clear and the pane follow (W5)', () => {
     expect(chatRegion('plan the slice').getByText('Fix the build').elements()).toHaveLength(0)
   })
 
+  it('sends Clear to the chat whose actions opened it, though the focus moves to another pane meanwhile', async () => {
+    const { chats, list: workspaces } = withChats()
+    await tapWorkspaces(desktop)
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await expect.element(chatRegion('plan the slice').getByText('Fix the build')).toBeVisible()
+    await pick('plan the slice', 'Clear context…', 'menuitem')
+    const dialog = page.getByRole('alertdialog', { name: 'Clear the context?' })
+    await expect.element(dialog.getByText('plan the slice')).toBeVisible()
+    // herdr's focus moves to review notes while the dialog is open (a live layout.changed).
+    workspaces.focus(review)
+    await new Promise((resolve) => setTimeout(resolve, 800))
+    await expect.element(dialog.getByText('plan the slice')).toBeVisible()
+    await userEvent.click(dialog.getByRole('button', { name: 'Clear' }))
+    await expect.poll(() => chats.commands).toEqual([{ chat: plan, request: { command: 'clear' } }])
+  })
+
   it('follows the pane in the desktop workbench after Clear', async () => {
     const { chats } = withChats()
     await tapWorkspaces(desktop)

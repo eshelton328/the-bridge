@@ -315,7 +315,8 @@ export function WorkspacesPhone({
     if (action === 'subagents' && data.subagents !== undefined)
       onUiChange({ phoneView: 'subagents', menuFor: null, moveOpen: false })
     // W5: a live Claude chat's /compact or /clear opens its dialog over the chat.
-    if (isChatCommand(action)) onUiChange({ chatDialog: action, menuFor: null, moveOpen: false })
+    if (isChatCommand(action))
+      onUiChange({ chatDialog: action, commandFor: ui.focusedPane, menuFor: null, moveOpen: false })
   }
   // The chat's actions with a live Claude chat's commands after them (W5): the tablet's menu and the phone's sheet.
   const tabletActions = data.chatMenu === undefined ? undefined : withCommands(data.chatMenu, chat, data.chatCommands)

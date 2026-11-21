@@ -87,6 +87,7 @@ export function withMovedChats(ui: Partial<WorkspacesUi>, moves: ReadonlyMap<str
     ...(ui.focusedPane === undefined ? {} : { focusedPane: moved(moves, ui.focusedPane) }),
     ...(ui.menuFor === undefined ? {} : { menuFor: id(ui.menuFor) ?? null }),
     ...(ui.skillsFor === undefined ? {} : { skillsFor: id(ui.skillsFor) ?? null }),
+    ...(ui.commandFor === undefined ? {} : { commandFor: id(ui.commandFor) ?? null }),
     ...(ui.drag == null ? {} : { drag: { ...ui.drag, chat: moved(moves, ui.drag.chat) } }),
     ...(ui.paneDrag == null
       ? {}

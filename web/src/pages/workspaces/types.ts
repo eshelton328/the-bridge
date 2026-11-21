@@ -931,6 +931,11 @@ export const WorkspacesUi = z.object({
   newChatOpen: z.boolean().optional(),
   /** The chat action whose dialog is open over the screen, for the focused chat, such as `fork` (D15), or null. */
   chatDialog: PaneAction.shape.value.nullable().optional(),
+  /**
+   * The chat a /compact or /clear dialog acts on (W5), by pane id: the chat whose actions opened it, so a change of
+   * the focused pane while the dialog is open (a live layout) does not send the command to another chat.
+   */
+  commandFor: z.string().nullable().optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */

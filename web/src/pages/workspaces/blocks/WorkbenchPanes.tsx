@@ -119,7 +119,13 @@ export function WorkbenchPanes({
         onSelect={(action) => {
           // A command's dialog acts on the focused chat (W5): the pane whose menu picked it takes the focus.
           if (isChatCommand(action))
-            onUiChange?.({ menuFor: null, moveOpen: false, focusedPane: pane.id, chatDialog: action })
+            onUiChange?.({
+              menuFor: null,
+              moveOpen: false,
+              focusedPane: pane.id,
+              chatDialog: action,
+              commandFor: pane.id,
+            })
         }}
       />
     )

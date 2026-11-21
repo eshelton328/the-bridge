@@ -137,15 +137,15 @@ export function WorkspacesScreen({
         onRetry={onRetry}
       />
     )
-  // The chat a command's dialog acts on (W5): the focused chat, which the actions that opened it focused.
-  const focused = data.panes.find((p) => p.id === ui.focusedPane)
-  const commandChat = focused?.type === 'chat' ? focused : undefined
+  // The chat a command's dialog acts on (W5): the chat whose actions opened it, kept while the dialog is open.
+  const target = data.panes.find((p) => p.id === (ui.commandFor ?? ui.focusedPane))
+  const commandChat = target?.type === 'chat' ? target : undefined
   const commandDialog = (
     <ChatCommandDialog
       dialog={ui.chatDialog}
       chat={commandChat === undefined ? undefined : (ui.names?.[commandChat.id] ?? commandChat.head.title)}
       onOpenChange={(open) => {
-        if (!open) change({ chatDialog: null })
+        if (!open) change({ chatDialog: null, commandFor: null })
       }}
       onRun={commandChat === undefined || onCommand === undefined ? undefined : (r) => onCommand(commandChat.id, r)}
     />
@@ -282,7 +282,8 @@ function WorkspacesLayout({
           }}
           onSelect={(action) => {
             if (action === 'rename') change({ menuFor: null, moveOpen: false, renaming: true })
-            if (isChatCommand(action)) change({ menuFor: null, moveOpen: false, chatDialog: action })
+            if (isChatCommand(action))
+              change({ menuFor: null, moveOpen: false, chatDialog: action, commandFor: chat.id })
           }}
           moveTarget={ui.moveTarget}
           onMoveTargetChange={(moveTarget) => {
