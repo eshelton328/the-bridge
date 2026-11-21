@@ -2,7 +2,7 @@ import { appendFileSync, existsSync, mkdirSync, mkdtempSync, statSync, watch, wr
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ChatId, MachineId, WorkspaceId } from '@bridge/contract'
-import { afterAll, beforeAll, describe, expect, it } from 'vitest'
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest'
 import type { AgentEvent } from '../services/agentPort.ts'
 import { describeAgentPort } from './agentPortContract.ts'
 import { claudeScreen, type FakeHerdrSocket, paneRead, startFakeHerdrSocket } from './fakeHerdrSocket.ts'
@@ -421,6 +421,42 @@ describe('herdr agents: input to a chat', () => {
       socket.set('pane.read', undefined)
       socket.set('agent.list', undefined)
     }
+  })
+
+  describe('a prompt whose Enter the chat did not take', () => {
+    const idle = () => {
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) => (a.pane_id === 'w17:p1' ? { ...a, agent_status: 'idle' } : a)),
+      })
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+    }
+    afterEach(() => {
+      socket.onRequest(undefined)
+      socket.set('pane.read', undefined)
+      socket.set('agent.list', undefined)
+    })
+
+    it('answers inputNotEmpty and sends no key when the box is too long to match to the prompt', async () => {
+      idle()
+      const text = Array.from({ length: 20 }, (_, n) => `step ${String(n)}`).join('\n')
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', claudeScreen(text)))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, text)).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(sentTo('agent.send_keys')).toBe(keys)
+    })
+
+    it('answers inputNotEmpty when its ctrl+u leaves the prompt in the box', async () => {
+      idle()
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt') socket.set('pane.read', paneRead('w17:p1', claudeScreen('Reply OK.')))
+      })
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, 'Reply OK.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(sentTo('agent.send_keys')).toBe(keys + 1)
+    })
   })
 
   it('sends no prompt to a box that it cannot read, such as a draft with a line of "─"', async () => {

@@ -546,20 +546,20 @@ export function createHerdrAgents({
     input('agent.send_keys', { target: pane, keys: Array.from({ length: box.lines * 2 }, () => 'ctrl+u') })
 
   /**
-   * Whether the box still holds the prompt this port just sent (`sent`, its hash), at each of a few reads: the
-   * chat did not take its Enter. The box it reads then, to empty it; null when the chat took the prompt, which
-   * leaves the box empty, also when a working chat queues it.
+   * What stays in the box after a send, at each of a few reads: null when the box empties, as the chat takes the
+   * prompt (a working chat queues it, which empties the box too) or when the screen cannot be read. Otherwise the
+   * box at the last read, and whether it holds the prompt this port sent (`sent`, its hash): a box too long to
+   * match, or with other text, is not `ours`.
    */
-  const notTaken = async (pane: string, sent: string): Promise<InputBox | null> => {
-    let box: InputBox | null = null
+  const leftInBox = async (pane: string, sent: string): Promise<{ box: InputBox; ours: boolean } | null> => {
+    let left: { box: InputBox; ours: boolean } | null = null
     for (let read = 0; read < submitReads; read += 1) {
       await new Promise((resolve) => setTimeout(resolve, submitReadGapMs))
       const now = await inputBox(pane)
-      if (!now.ok || now.value === null) return null
-      if (!boxKeys(now.value).some((key) => hashOf(key) === sent)) return null
-      box = now.value
+      if (!now.ok || now.value === null || now.value.text === '') return null
+      left = { box: now.value, ours: boxKeys(now.value).some((key) => hashOf(key) === sent) }
     }
-    return box
+    return left
   }
 
   /**
@@ -595,11 +595,16 @@ export function createHerdrAgents({
       lastSent.set(pane, key)
       if (!claude) return sent
       // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
-      const stuck = await notTaken(pane, key)
-      if (stuck === null) return sent
+      const left = await leftInBox(pane, key)
+      if (left === null) return sent
       lastSent.delete(pane)
-      await emptyBox(pane, stuck)
-      return ok('notSubmitted')
+      // Text the adapter cannot match to the prompt stays; the owner's input clear removes it.
+      if (!left.ours) return ok('inputNotEmpty')
+      const keys = await emptyBox(pane, left.box)
+      if (!keys.ok) return keys
+      const after = await inputBox(pane)
+      if (!after.ok) return after
+      return ok(after.value?.text === '' ? 'notSubmitted' : 'inputNotEmpty')
     },
     async clearInputBox(chat) {
       const target = await agentPane(chat)

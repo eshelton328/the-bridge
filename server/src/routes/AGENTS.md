@@ -37,7 +37,7 @@ Thin Hono sub-apps, one file for each area, named after the area
   that waits for the owner, or a stop to a chat that does not work is
   409 `chat-not-ready` with that state; a prompt to a chat whose input box
   holds text is 409 `inputNotEmpty`, and a prompt the chat did not take
-  is 409 `notSubmitted`. `POST /api/chats/:chat/input/clear` takes an
+  is 409 `notSubmitted` (or `inputNotEmpty` when its text stays). `POST /api/chats/:chat/input/clear` takes an
   empty JSON object and empties the box: 204, or 409 `inputNotEmpty`
   when text stays, `noCommands` for a Codex chat. The prompt text goes only to the
   port: never into a log line or an `ErrorBody`, whose issues name the

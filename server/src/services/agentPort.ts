@@ -88,7 +88,9 @@ export type AgentPort = {
    * Sends `text` to one Claude or Codex chat as the owner's next prompt, as if typed and sent. It sends to that chat
    * only, and keeps no copy of the text. It sends nothing to a chat whose input box holds text, so two prompts never
    * join. After the send it reads the box again: when the prompt stays there, the chat did not take it, so the port
-   * removes it and answers `notSubmitted`. A prompt that a working chat queues leaves the box, so it is `sent`.
+   * removes it and answers `notSubmitted`; when the box keeps text that it cannot remove, or cannot match to the
+   * prompt (such as a long one), it answers `inputNotEmpty`. A prompt that a working chat queues leaves the box, so
+   * it is `sent`.
    */
   sendPrompt(chat: ChatId, text: string): Promise<Result<PromptOutcome, AgentPortError>>
   /**

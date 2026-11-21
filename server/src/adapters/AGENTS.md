@@ -62,8 +62,10 @@ client of a socket or a file sits beside them.
 - After a prompt to a Claude chat, the adapter reads the box again, up
   to 8 times 150 ms apart. When each read still shows that prompt, the
   chat did not take its Enter: the adapter empties the box with ctrl+u
-  and answers `notSubmitted`. A prompt that a working chat queues
-  leaves the box, so it is `sent`.
+  and answers `notSubmitted` once a read shows it empty. Text it cannot
+  match to the prompt (a box of more lines than it joins) or cannot
+  remove is `inputNotEmpty`, so the page offers the input clear. A
+  prompt that a working chat queues leaves the box, so it is `sent`.
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text
