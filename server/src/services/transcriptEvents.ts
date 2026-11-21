@@ -44,10 +44,17 @@ export async function connectTranscript(
     for (const entry of entries) known.set(entry.id, JSON.stringify(entry))
   }
 
+  // Resolves when the stream ends, so a start that waits for a watch or a subscription that ended stops waiting.
+  let endWait: () => void = () => undefined
+  const endedEarly = new Promise<void>((resolve) => {
+    endWait = resolve
+  })
+
   const stop = () => {
     over = true
     watch.close()
     list.close()
+    endWait()
   }
 
   const refresh = async (): Promise<void> => {
@@ -90,8 +97,10 @@ export async function connectTranscript(
       ended(error)
     },
   )
+  let endError: AgentPortError | undefined
   const ended = (error: AgentPortError) => {
     if (over) return
+    endError = error
     stop()
     client.end(error)
   }
@@ -102,7 +111,9 @@ export async function connectTranscript(
     else again = true
   }, ended)
   let opening = true
-  await Promise.all([watch.ready, list.ready])
+  await Promise.race([Promise.all([watch.ready, list.ready]), endedEarly])
+  // An end before the start finished: the agents' error, which the caller answers before any stream opens.
+  if (isOver()) return endError === undefined ? ok(() => undefined) : err(endError)
   const first = await agents.readTranscript(chat)
   opening = false
   if (isOver()) return first.ok ? ok(() => undefined) : first

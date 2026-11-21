@@ -87,6 +87,31 @@ describe('transcript events', () => {
     expect(agents.subscriptions()).toBe(0)
   })
 
+  it('gives the error, and does not wait, when the list subscription ends before the watch is ready', async () => {
+    const fake = createFakeAgents(machine)
+    const error = { reason: 'unreachable', message: 'no socket' } as const
+    let closed = 0
+    const agents: typeof fake = {
+      ...fake,
+      // A watch whose handshake never ends, and a subscription that ends at once.
+      watchTranscript: () => ({
+        ready: new Promise<void>(() => undefined),
+        close: () => {
+          closed += 1
+        },
+      }),
+      subscribe: (_onEvent, onEnd) => {
+        queueMicrotask(() => {
+          onEnd(error)
+        })
+        return { ready: new Promise<void>(() => undefined), close: () => undefined }
+      },
+    }
+    const c = client()
+    expect(await connectTranscript(agents, themes, c)).toEqual({ ok: false, error })
+    expect(closed).toBe(1)
+  })
+
   it('gives null and watches nothing for a chat that the machine does not have', async () => {
     const agents = createFakeAgents(machine)
     expect(await connectTranscript(agents, ChatId.parse('test-mac/no-such-chat'), client())).toEqual({
