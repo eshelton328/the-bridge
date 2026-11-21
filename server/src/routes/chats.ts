@@ -22,6 +22,10 @@
 // 204), POST /:chat/move puts it in another tab of its workspace (204), and POST /:chat/split puts a new shell pane beside it (201, its chat ID); a close must name the chat in its confirm, and never ends a chat
 // that works or waits for the owner. POST / starts a Claude chat beside a chat or in a new tab (slice W3): 201 with
 // its pane, chat and state, or 200 with the first answer for a create ID that started one before.
+// POST /:chat/model restarts an idle Claude chat with a new model by resume (slice W10): 200 with the chat and its
+// state, or 502 with `failed` and the session when the old chat ended and no new one resumed it. The confirm must
+// name the chat. Settings from the chat's first command line that are not flags (environment variables) are not
+// kept. While a restart runs, each POST to that chat is 409 `restarting`.
 import {
   ChatCommandRequest,
   ChatId,
@@ -48,10 +52,13 @@ import {
   SendResultResponse,
   StartChatRequest,
   StartChatResponse,
+  RestartModelRequest,
+  RestartModelResponse,
 } from '@bridge/contract'
 import type { Context } from 'hono'
 import { Hono } from 'hono'
 import { bodyLimit } from 'hono/body-limit'
+import { createMiddleware } from 'hono/factory'
 import { type SSEStreamingApi, streamSSE } from 'hono/streaming'
 import { type AppEnv, agentErrorBody, agentErrorJson, errorJson, internalMessage } from '../errors.ts'
 import type { Logger } from '../logger.ts'
@@ -63,6 +70,7 @@ import type {
   CloseOutcome,
   CommandOutcome,
   EffortOutcome,
+  RestartOutcome,
   MoveOutcome,
   SwapOutcome,
   ZoomOutcome,
@@ -71,6 +79,7 @@ import { clearInput, readSkills, readTranscript, sendCommand, setEffort, stopCha
 import type { UploadStore } from '../services/uploadStore.ts'
 import { createSendResults, resultOf, type SendResults } from '../services/sendResults.ts'
 import { createNewChats, type NewChats } from '../services/newChats.ts'
+import { createRestarts, type Restarts } from '../services/restarts.ts'
 import { type FilePromptOutcome, sendPromptWithFiles, startUpload } from '../services/uploads.ts'
 import { jsonBody, jsonOnly, smallJson } from './jsonBody.ts'
 import { storeFailed } from './uploads.ts'
@@ -97,6 +106,7 @@ export function chatsRoutes(
   uploads: UploadStore,
   sends: SendResults = createSendResults(),
   newChats: NewChats = createNewChats(agents),
+  restarts: Restarts = createRestarts(agents),
 ) {
   const chatOf = (c: Context<AppEnv>) => ChatId.safeParse(c.req.param('chat'))
   const invalid = (c: Context<AppEnv>) =>
@@ -207,7 +217,67 @@ export function chatsRoutes(
     }
   }
 
+  /** The answer to a model restart's refusal; the chat and its state, or `failed`, come as JSON. */
+  const refusedRestart = (
+    c: Context<AppEnv>,
+    outcome: Exclude<RestartOutcome | 'notConfirmed' | 'restarting', object>,
+  ) => {
+    switch (outcome) {
+      case 'notConfirmed':
+        return errorJson(c, 'invalid-input', {
+          message: 'the confirm does not name this chat, so nothing restarted',
+          issues: ['confirm: the ID of the chat to restart'],
+        })
+      case 'launchArgsUnknown':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'launchArgsUnknown',
+          message: "the chat's command line has a flag the server does not know; change the model on the Mac",
+        })
+      case 'skipsPermissions':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'skipsPermissions',
+          message: 'the chat skips permissions; change the model on the Mac',
+        })
+      case 'folderChanged':
+        return errorJson(c, 'chat-not-ready', {
+          state: 'folderChanged',
+          message: 'the chat runs in another folder than its pane; change the model on the Mac',
+        })
+      case 'sameModel':
+        return errorJson(c, 'chat-not-ready', { state: 'sameModel', message: 'the chat has this model already' })
+      case 'restarting':
+        return errorJson(c, 'chat-not-ready', { state: 'restarting', message: 'a restart of this chat runs now' })
+      case 'notFound':
+      case 'shell':
+      case 'needsYou':
+      case 'noCommands':
+      case 'working':
+      case 'inputNotEmpty':
+      case 'inputUnreadable':
+        return answer(c, outcome)
+    }
+  }
+  /** A restart ends the chat and starts it again: no other input reaches it until the restart ends. */
+  const restartGate = createMiddleware<AppEnv>(async (c, next) => {
+    const id = ChatId.safeParse(c.req.param('chat'))
+    if (c.req.method === 'POST' && id.success && restarts.running(id.data))
+      return errorJson(c, 'chat-not-ready', { state: 'restarting', message: 'a restart of this chat runs now' })
+    await next()
+    return undefined
+  })
+
   return new Hono<AppEnv>()
+    .use('/:chat/*', restartGate)
+    .post('/:chat/model', smallJson, jsonOnly, jsonBody(RestartModelRequest), async (c) => {
+      const id = chatOf(c)
+      if (!id.success) return invalid(c)
+      const { model, confirm } = c.req.valid('json')
+      const done = await restarts.restart(id.data, model, confirm)
+      if (!done.ok) return failed(c, done.error)
+      if (typeof done.value === 'string') return refusedRestart(c, done.value)
+      const body = RestartModelResponse.parse(done.value)
+      return body.state === 'failed' ? c.json(body, 502) : c.json(body, 200)
+    })
     .post('/', smallJson, jsonOnly, jsonBody(StartChatRequest), async (c) => {
       const started = await newChats.start(c.req.valid('json'))
       if (!started.ok) return failed(c, started.error)

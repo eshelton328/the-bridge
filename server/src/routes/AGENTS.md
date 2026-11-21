@@ -99,6 +99,15 @@ Thin Hono sub-apps, one file for each area, named after the area
   (`working`, `needsYou`, `noCommands`, `inputNotEmpty`,
   `inputUnreadable`), or 409 `effortNotConfirmed` when the screen does
   not show the level after the keys (`chats.test.ts`).
+- `POST /api/chats/:chat/model` (slice W10) takes `{ model, confirm }`
+  and restarts an idle Claude chat with that model by resume: 200 with
+  the chat (the same ID) and its state, or 502 with `failed` and the
+  session when the old chat ended and no new one resumed it. A confirm
+  of another chat is 400 with no call to the port; 409
+  `launchArgsUnknown`, `skipsPermissions`, `folderChanged`,
+  `sameModel`, or as an effort change. While a restart of a chat runs,
+  each POST to that chat is 409 `restarting` (`restartGate`,
+  `chats.test.ts`).
 - `POST /api/chats` (slice W3) takes a `StartChatRequest` and starts a
   Claude chat beside a chat or in a new tab: 201 with the pane, the chat
   and the state (`ready`, `needsYou` or `starting`), or 200 with the

@@ -12,12 +12,15 @@ import {
   ChatSkillsResponse,
   SendResultResponse,
   StartChatResponse,
+  RestartModelResponse,
 } from '@bridge/contract'
+import { ok, type Result } from '@bridge/shared'
 import { testClient } from 'hono/testing'
 import { describe, expect, it } from 'vitest'
 import { createFakeAgents } from '../adapters/fakeAgents.ts'
 import { createApp } from '../app.ts'
 import { memoryLogger } from '../logger.ts'
+import type { AgentPortError, RestartOutcome } from '../services/agentPort.ts'
 
 const machine = MachineId.parse('test-mac')
 const owner = 'owner@example.com'
@@ -611,5 +614,63 @@ describe('POST /api/chats/:chat/effort (slice W10)', () => {
     expect([busy.status, ErrorBody.parse(await busy.json()).error]).toMatchObject([409, { state: 'working' }])
     expect((await effort(app, 'test-mac/no-such-chat', { effort: 'low' })).status).toBe(404)
     expect((await effort(app, themes, { effort: 'max' })).status).toBe(400)
+  })
+})
+
+describe('POST /api/chats/:chat/model (slice W10)', () => {
+  const post = (app: ReturnType<typeof createApp>, chat: string, path: string, body: unknown) =>
+    app.request(`/api/chats/${encodeURIComponent(chat)}/${path}`, {
+      method: 'POST',
+      headers: { ...local, 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+  it('answers 200 with the chat, 409 for the same model, 400 for a confirm of another chat, and 404', async () => {
+    const agents = createFakeAgents(machine)
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    agents.setStatus(ChatId.parse(themes), 'idle')
+    const done = await post(app, themes, 'model', { model: 'haiku', confirm: themes })
+    expect([done.status, RestartModelResponse.parse(await done.json())]).toEqual([
+      200,
+      { state: 'ready', chat: themes },
+    ])
+    const same = await post(app, themes, 'model', { model: 'haiku', confirm: themes })
+    expect([same.status, ErrorBody.parse(await same.json()).error]).toMatchObject([409, { state: 'sameModel' }])
+    expect((await post(app, themes, 'model', { model: 'opus', confirm: 'test-mac/other' })).status).toBe(400)
+    expect(
+      (await post(app, 'test-mac/no-such-chat', 'model', { model: 'opus', confirm: 'test-mac/no-such-chat' })).status,
+    ).toBe(404)
+  })
+
+  it('answers 502 with the session when the restart failed, and 409 restarting to any input while one runs', async () => {
+    const fake = createFakeAgents(machine)
+    const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
+    let finish: () => void = () => undefined
+    const agents = {
+      ...fake,
+      restartModel: () =>
+        new Promise<Result<RestartOutcome, AgentPortError>>((resolve) => {
+          finish = () => {
+            resolve(ok({ state: 'failed', session }))
+          }
+        }),
+    }
+    const app = createApp({ agents, owner, log: memoryLogger().log })
+    const running = post(app, themes, 'model', { model: 'opus', confirm: themes })
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    for (const [path, body] of [
+      ['prompt', { text: 'marker-5150' }],
+      ['effort', { effort: 'high' }],
+      ['model', { model: 'sonnet', confirm: themes }],
+    ] as const) {
+      const held = await post(app, themes, path, body)
+      expect([held.status, ErrorBody.parse(await held.json()).error]).toMatchObject([409, { state: 'restarting' }])
+    }
+    finish()
+    const failed = await running
+    expect([failed.status, RestartModelResponse.parse(await failed.json())]).toEqual([
+      502,
+      { state: 'failed', session },
+    ])
   })
 })

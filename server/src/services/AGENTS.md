@@ -46,6 +46,10 @@ from the outside world.
   first start runs or after it failed in herdr (it may have made a
   pane). A refusal (`notFound`, `folderNotAllowed`, `nameTaken`)
   made nothing, so it frees the ID (`newChats.test.ts`).
+- `restarts.ts` holds one lock for each chat with a model restart in
+  progress (slice W10, in memory): a confirm of another chat is
+  `notConfirmed` with no call to the port, and a second restart of the
+  chat is `restarting` (`restarts.test.ts`).
 - No polling (d-112): a service reads a port when a request or a
   subscription asks. `liveEvents.ts` shares one port subscription among
   all clients of `/api/events`, so with no client open (and no push
