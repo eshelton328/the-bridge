@@ -39,6 +39,16 @@ highlighted from `ui.menuHighlight`) and Move to workspace closed.
 
 ## Deviations
 
+- **No row is drawn selected (review R38).** Figma draws bridge themes
+  with the selected fill and border. Erik (review R38, 2026-11-21): "On
+  tablet and mobile this shouldn't stay highlighted (selected )". The
+  phone and tablet list shows no chat beside it, so after a return from a
+  chat the row kept a selected state that marked nothing. The list now
+  passes no selected chat to `SidebarGroup`, so every row draws
+  unselected; the desktop sidebar keeps the shown chat selected
+  (`web/src/app/WorkspacesNoKeptSelect.test.tsx`). The fill has no
+  `data-figma` and no text, so no check measures it.
+
 - **Lower workspaces start higher (Sidebar group header), `146:165` to
   `146:231` y -6 to -8.** As in M01: `GroupHeader variant="sidebar"` is
   30 high against Figma's 28 and its rows start right under it, where

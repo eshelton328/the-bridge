@@ -631,7 +631,6 @@ export function WorkspacesPhone({
               device={device}
               text={text}
               workspaces={data.workspaces}
-              selected={ui.focusedPane}
               openable={data.panes.flatMap((p) => (p.type === 'chat' ? [p.id] : []))}
               ui={ui}
               onUiChange={onUiChange}
