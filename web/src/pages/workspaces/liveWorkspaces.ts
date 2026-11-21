@@ -30,7 +30,10 @@
 // showed again is iOS closing it in the background (pageResume.ts): no
 // report and no line, and the read goes again once the page shows, at once
 // if it does; one such miss for each trip, as a transcript stream has. An
-// answer from the server (any status) is reported as before.
+// answer from the server (any status) is reported as before. The list read
+// (`GET /api/workspaces`) takes the same rule: such a miss shows no notice,
+// and the list is read again once the page shows; a second one in the same
+// trip, or any answer from the server, shows the notice as before.
 // Review R34: the home's sample skills never reach the live page; each live
 // Claude chat's "/" list is read from the server when it opens (liveSkills.ts).
 import {
@@ -483,21 +486,23 @@ class LayoutReadMissError extends Error {
 const noAnswer = (miss: LiveMiss) =>
   miss.kind === 'timeout' || (miss.kind === 'unreachable' && miss.status === undefined)
 
-/** For each workspace (its server ID), the trip to the background whose quiet layout miss it has had (`hidesSoFar`). */
-const quietLayoutFor = new Map<string, number>()
+/** For each read (its query key, as JSON), the trip to the background whose quiet miss it has had (`hidesSoFar`). */
+const quietMissFor = new Map<string, number>()
 
 /**
- * A layout read of `workspace` that started at `mark` and got no answer is the close of a trip to the background (as
- * `liveTranscript.ts` takes a stream's): any such miss while the page is hidden, and the first one the visible page
- * sees of a trip that had none while hidden. It is not reported and gives no line; the read goes again.
+ * A read of `key` (the list's or a workspace's layout's query key) that started at `mark` and got no answer is the
+ * close of a trip to the background (as `liveTranscript.ts` takes a stream's): any such miss while the page is hidden,
+ * and the first one the visible page sees of a trip that had none while hidden. It shows no notice, gives no line and
+ * is not reported; the read goes again.
  */
-function quietLayoutMiss(workspace: string, mark: ResumeMark): boolean {
+function quietMiss(key: QueryKey, mark: ResumeMark): boolean {
+  const read = JSON.stringify(key)
   if (isHidden()) {
-    quietLayoutFor.set(workspace, hidesSoFar())
+    quietMissFor.set(read, hidesSoFar())
     return true
   }
-  if (!fromBackground(mark) || quietLayoutFor.get(workspace) === hidesSoFar()) return false
-  quietLayoutFor.set(workspace, hidesSoFar())
+  if (!fromBackground(mark) || quietMissFor.get(read) === hidesSoFar()) return false
+  quietMissFor.set(read, hidesSoFar())
   return true
 }
 
@@ -952,8 +957,17 @@ export async function withLiveWorkspaces(
   // runs, so the router's abort of one load does not end it: a burst of events reloads the page, and each reload
   // aborts the one before, which would otherwise start the read again each time.
   const read = async ({ signal: cancel }: { signal: AbortSignal }) => {
-    const before = taken
-    const answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+    let before = taken
+    let mark = resumeMark()
+    let answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+    // iOS closed the read with the page in the background: read again once the page shows, at once if it does.
+    while (!answer.ok && noAnswer(answer.error) && quietMiss(queryKey, mark)) {
+      await whenVisible(cancel)
+      cancel.throwIfAborted()
+      before = taken
+      mark = resumeMark()
+      answer = await fetch(AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
+    }
     if (!answer.ok) throw new LiveMissError(answer.error)
     if (taken !== before)
       setTimeout(() => {
@@ -1008,7 +1022,7 @@ async function layoutsOf(
       let mark = resumeMark()
       let answer = await fetch(id, AbortSignal.any([cancel, AbortSignal.timeout(liveReadTimeoutMs)]))
       // iOS closed the read with the page in the background: read again once the page shows, at once if it does.
-      while (!answer.ok && noAnswer(answer.error) && quietLayoutMiss(id, mark)) {
+      while (!answer.ok && noAnswer(answer.error) && quietMiss(layoutKey(id), mark)) {
         await whenVisible(cancel)
         cancel.throwIfAborted()
         before = [taken, layoutsTaken.get(id) ?? 0]
