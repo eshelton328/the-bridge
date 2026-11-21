@@ -17,26 +17,52 @@ function keyboardUp(el: Element): boolean {
 }
 
 /**
+ * How long after the press ends its click may come, in ms; past it, or after a cancelled press (a scroll), the
+ * paperclip opens the input again, so Enter or Space on it still works.
+ */
+const CLICK_WAIT_MS = 500
+
+/**
  * For the composer box around the paperclip (`attachLabel` names its button): `onPointerDownCapture` goes on the
  * box, and the paperclip's handler opens the input only when `opens()` is true.
  */
 export function useKeyboardFirst(attachLabel: string) {
   const closeOnlyRef = useRef(false)
-  const onPointerDownCapture = (event: PointerEvent<HTMLElement>) => {
+  const endRef = useRef<(() => void) | undefined>(undefined)
+  const clear = () => {
     closeOnlyRef.current = false
+    endRef.current?.()
+    endRef.current = undefined
+  }
+  const onPointerDownCapture = (event: PointerEvent<HTMLElement>) => {
+    clear()
     if (event.pointerType !== 'touch' && event.pointerType !== 'pen') return
     const target = event.target
     if (!(target instanceof Element)) return
     if (target.closest(`button[aria-label="${CSS.escape(attachLabel)}"]`) === null) return
     if (!keyboardUp(target)) return
     closeOnlyRef.current = true
-    const focused = target.ownerDocument.activeElement
+    // Only this press's own click is held back: a cancelled press clears it at once, an ended one after its click.
+    const doc = target.ownerDocument
+    const win = doc.defaultView ?? window
+    let timer: number | undefined
+    const onUp = () => {
+      timer = win.setTimeout(clear, CLICK_WAIT_MS)
+    }
+    doc.addEventListener('pointerup', onUp, true)
+    doc.addEventListener('pointercancel', clear, true)
+    endRef.current = () => {
+      doc.removeEventListener('pointerup', onUp, true)
+      doc.removeEventListener('pointercancel', clear, true)
+      win.clearTimeout(timer)
+    }
+    const focused = doc.activeElement
     if (focused instanceof HTMLElement) focused.blur()
   }
   /** Whether this click opens the input: false once, for the press that closed the keyboard. */
   const opens = () => {
     const closeOnly = closeOnlyRef.current
-    closeOnlyRef.current = false
+    clear()
     return !closeOnly
   }
   return { onPointerDownCapture, opens }

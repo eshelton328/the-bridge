@@ -224,6 +224,20 @@ describe('the paperclip with the phone keyboard up (R29)', () => {
     expect(click.mock.contexts[0]).toBe(fileInput())
   })
 
+  it('opens the picker with Enter after a touch on the paperclip that became a scroll', async () => {
+    const { viewport, click } = await openChat(phone)
+    await raiseKeyboard(viewport)
+    const clip = paperclip()
+    // The finger lands on the paperclip with the keyboard up, then the touch turns into a scroll: no click comes.
+    clip.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+    clip.dispatchEvent(new PointerEvent('pointercancel', { bubbles: true, cancelable: true, pointerType: 'touch' }))
+    expect(click).not.toHaveBeenCalled()
+    clip.focus()
+    await userEvent.keyboard('{Enter}')
+    expect(click).toHaveBeenCalledTimes(1)
+    expect(click.mock.contexts[0]).toBe(fileInput())
+  })
+
   it('opens the picker on one tap with the keyboard closed', async () => {
     const { click } = await openChat(phone)
     expect(shell().style.getPropertyValue('--app-shell-keyboard')).toBe('')
