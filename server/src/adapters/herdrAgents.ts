@@ -664,14 +664,13 @@ export function createHerdrAgents({
    * After `/model <name>`, a chat with history asks "Switch model?" first, also while it works. The owner asked for
    * the switch, so one Enter picks "Yes, switch", only when the screen shows that dialog with that choice picked;
    * then the screen is read until the dialog is gone and the input box shows again (`sent`), else
-   * `inputUnreadable`. `none` when the box shows again with no dialog: the chat switched at once or kept the text.
+   * `inputUnreadable`. Each read of the check looks for the dialog, as it can come late; `none` when no read
+   * showed it and the box shows: the chat switched at once or kept the text.
    */
   const confirmModelSwitch = async (pane: string): Promise<Result<'none' | PromptOutcome, AgentPortError>> => {
-    let waited = 0
     let box: InputBox | null = null
     for (const gap of submitReadGapsMs) {
       await new Promise((resolve) => setTimeout(resolve, gap))
-      waited += gap
       const screen = await screenOf(pane)
       if (!screen.ok) return screen
       if (switchModelDialogOf(screen.value)) {
@@ -686,7 +685,6 @@ export function createHerdrAgents({
         return ok('inputUnreadable')
       }
       box = inputBoxOf(screen.value)
-      if (box !== null && waited >= emptyProofMs) return ok('none')
     }
     // Another dialog hides the box: the page must not count it as sent.
     return ok(box === null ? 'inputUnreadable' : 'none')

@@ -715,6 +715,29 @@ describe('herdr agents: input to a chat', () => {
       expect(lastKeys()).toEqual({ target: 'w17:p1', keys: ['enter'] })
     })
 
+    it('picks "Yes, switch" when the dialog shows 300 ms after the send', async () => {
+      working()
+      socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      socket.onRequest((method) => {
+        if (method === 'agent.prompt')
+          setTimeout(() => {
+            socket.set('pane.read', paneRead('w17:p1', switchModelScreen()))
+          }, 300)
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
+      })
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'sent' })
+      expect(lastKeys()).toEqual({ target: 'w17:p1', keys: ['enter'] })
+    })
+
+    it('sends no Enter when the chat only shows the words of the dialog above its input box', async () => {
+      working()
+      const quoted = `  Switch model?\r\n  ❯ 1. Yes, switch to Sonnet 5.5\r\n${claudeScreen('')}`
+      socket.set('pane.read', paneRead('w17:p1', quoted))
+      const keys = sentTo('agent.send_keys')
+      expect(await port().sendPrompt(chat, '/model sonnet')).toEqual({ ok: true, value: 'sent' })
+      expect(sentTo('agent.send_keys')).toBe(keys)
+    })
+
     it('answers inputUnreadable when the dialog stays after its Enter', async () => {
       working()
       socket.set('pane.read', paneRead('w17:p1', claudeScreen('')))
