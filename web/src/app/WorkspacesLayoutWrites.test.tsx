@@ -330,7 +330,7 @@ describe('swap (W2)', () => {
     const choices = page
       .getByRole('menuitem')
       .elements()
-      .map((e) => e.textContent ?? '')
+      .map((e) => e.textContent)
     expect(choices).toContain('plan the slice')
     expect(choices).toContain('tail logs')
     // drift check is in the workspace's other tab, and the pane does not swap with itself.
@@ -467,7 +467,7 @@ describe('a stale view and a failed write (W2)', () => {
     )
     await pickInMenu('review notes', 'Zoom pane')
     await expect.element(page.getByText('Not zoomed — herdr-unavailable')).toBeVisible()
-    expect(getReports().map((r) => [r.error.name, Reflect.get(r.error, 'miss')])).toEqual([
+    expect(getReports().map((r): unknown[] => [r.error.name, Reflect.get(r.error, 'miss')])).toEqual([
       ['LayoutWriteMissError', 'herdr-unavailable'],
     ])
     await expect.poll(() => posted).toHaveLength(1)
