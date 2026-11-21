@@ -1545,7 +1545,16 @@ describe('herdr adapter transcripts', () => {
       value: {
         entries: [
           { type: 'user', id: 'u1', text: secretText, cut: false },
-          { type: 'tool', id: 't1', name: 'Bash', target: 'pnpm', running: true },
+          {
+            type: 'tool',
+            id: 't1',
+            name: 'Bash',
+            target: 'pnpm',
+            running: true,
+            kind: 'shell',
+            title: 'Ran a command',
+            label: '',
+          },
         ],
         earlier: false,
       },

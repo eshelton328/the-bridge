@@ -20,6 +20,7 @@ import { z } from 'zod'
 import type { TranscriptRead } from '../services/agentPort.ts'
 import { attachedLine } from '../services/uploads.ts'
 import { type TargetContext, toolTarget } from './toolTarget.ts'
+import { toolLabel } from './toolLabel.ts'
 
 const partBytes = 1024 * 1024
 /** The most bytes read from one file; a longer file still gives its last entries, with `earlier`. */
@@ -189,6 +190,7 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
           name: b.name.slice(0, 100),
           target: toolTarget(b.name, b.input, options),
           running: options.working && !results.has(b.id),
+          ...toolLabel(b.name, b.input),
         },
       ]
     return []

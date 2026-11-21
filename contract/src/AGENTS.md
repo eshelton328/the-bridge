@@ -31,7 +31,8 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
 - A transcript entry has an ID that is stable in its chat; a change
   event replaces the entry with that ID or adds it at the end. A tool
   entry has a name and a short target, never its arguments or its
-  result. A user entry of a prompt sent with files has `files`: the
+  result; the server adds its `ToolKind`, a readable title and a
+  one-line label from the call's own description (R32). A user entry of a prompt sent with files has `files`: the
   file names, never a path. An error entry is a slash command's error
   output, text only, at most `maxErrorText` (500) characters
   (`transcripts.test.ts`).

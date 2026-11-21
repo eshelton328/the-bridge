@@ -60,6 +60,7 @@ export {
   maxEntryText,
   maxTranscriptEntries,
   ToolEntry,
+  ToolKind,
   TranscriptChangedEvent,
   TranscriptEntry,
   TranscriptResponse,

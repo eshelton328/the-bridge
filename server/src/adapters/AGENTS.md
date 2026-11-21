@@ -44,7 +44,11 @@ client of a socket or a file sits beside them.
   tool call's name and target, never thinking, a tool's arguments or
   its result. A shell tool's target is its program names, a file tool's
   its path from the chat's folder or with "~", a web tool's its host
-  (`toolTarget.ts`). A prompt shows as the owner wrote it: the
+  (`toolTarget.ts`). Each tool entry also has a kind, a readable
+  title ("Ran a command" for `Bash`, a title made from the name for
+  another tool) and a label: the first line of the call's own
+  `description` field, at most 120 characters, the only argument read
+  (`toolLabel.ts`, R32). A prompt shows as the owner wrote it: the
   `pasted_content` tags that Claude Code puts around a paste are
   removed, and the file lines that `uploads.ts` adds below a prompt
   with files become the entry's `files`, the name of each file only
