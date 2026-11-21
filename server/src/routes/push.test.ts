@@ -53,6 +53,26 @@ describe('/api/push', () => {
     expect(logger.text()).not.toContain('QGexample')
   })
 
+  it('keeps an endpoint in the form that the host check read, so a send goes to that host', async () => {
+    const { push, send } = setup()
+    const loose = 'https:/web.push.apple.com/QGexample-endpoint'
+    expect((await send('POST', '/subscriptions', { ...subscription, endpoint: loose })).status).toBe(204)
+    const saved = await push.subscriptions()
+    expect(saved.ok && saved.value.map((s) => s.endpoint)).toEqual([endpoint])
+    expect((await send('DELETE', '/subscriptions', { endpoint: loose })).status).toBe(204)
+    const left = await push.subscriptions()
+    expect(left.ok && left.value).toEqual([])
+  })
+
+  it('refuses an endpoint that grows past the contract when written as a URL, with 400', async () => {
+    const { push, send } = setup()
+    const long = `https://web.push.apple.com/${'é'.repeat(200)}`
+    const answer = await send('POST', '/subscriptions', { ...subscription, endpoint: long })
+    expect(answer.status).toBe(400)
+    const saved = await push.subscriptions()
+    expect(saved.ok && saved.value).toEqual([])
+  })
+
   it('refuses an endpoint of an unknown host and a body that is not the contract, with 400', async () => {
     const { send } = setup()
     const other = await send('POST', '/subscriptions', { ...subscription, endpoint: 'https://push.example.com/x' })

@@ -91,7 +91,8 @@ Thin Hono sub-apps, one file for each area, named after the area
   the `layout.changed` event.
 - `/api/push` (d-118): `GET /key` gives the VAPID public key;
   `POST /subscriptions` saves a subscription (400 for an endpoint off
-  the known push services) and `DELETE /subscriptions` removes one;
+  the known push services; the endpoint is kept as `new URL()` writes
+  it, the form the host check read) and `DELETE /subscriptions` removes one;
   `POST /seen` marks a page as visible for 30 s. No endpoint or key goes
   into a log line or an `ErrorBody` (`push.test.ts`).
 - The JSON checks of each POST route are in `jsonBody.ts`.

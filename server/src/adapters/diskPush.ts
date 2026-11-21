@@ -8,7 +8,13 @@ import { join } from 'node:path'
 import { maxPushSubscriptions, PushSubscriptionRequest } from '@bridge/contract'
 import { err, ok, type Result } from '@bridge/shared'
 import { z } from 'zod'
-import type { PushStore, PushStoreError, StoredSubscription, VapidKeys } from '../services/push.ts'
+import {
+  canonicalEndpoint,
+  type PushStore,
+  type PushStoreError,
+  type StoredSubscription,
+  type VapidKeys,
+} from '../services/push.ts'
 
 const Keys = z.object({ publicKey: z.string().min(1), privateKey: z.string().min(1) })
 const Stored = z.array(PushSubscriptionRequest.extend({ savedAt: z.number() }))
@@ -91,7 +97,8 @@ export function createDiskPushStore(root: string, now: () => number = Date.now):
       serial(() =>
         guarded(async () => {
           const all = await list()
-          const left = all.filter((s) => s.endpoint !== endpoint)
+          // Both in the written form, so an endpoint saved before the routes wrote it is still found.
+          const left = all.filter((s) => canonicalEndpoint(s.endpoint) !== canonicalEndpoint(endpoint))
           if (left.length !== all.length) await writeJson(listFile, left)
         }),
       ),

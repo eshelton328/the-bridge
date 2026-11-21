@@ -20,6 +20,10 @@ const Env = z.object({
   BRIDGE_CLAUDE_SETTINGS: path.optional(),
   BRIDGE_LOG_DIR: path,
   BRIDGE_LOG_LEVEL: z.enum(logLevels).default('info'),
+  BRIDGE_PUSH_SUBJECT: z
+    .string()
+    .regex(/^(mailto:|https:\/\/)\S+$/, 'must be a mailto: or https:// URL')
+    .optional(),
 })
 
 export type Config = {
@@ -39,6 +43,8 @@ export type Config = {
   /** The folder of the log files, one for each day (d-115). */
   readonly logDir: string
   readonly logLevel: LogLevel
+  /** The contact that the VAPID key names to the push services (d-118); the public repository when not set, never a personal address. */
+  readonly pushSubject: string
 }
 
 /** The config from the environment, or one line for each variable that is missing or wrong. */
@@ -57,5 +63,6 @@ export function readConfig(env: Readonly<Record<string, string | undefined>>): R
     claudeSettings: e.BRIDGE_CLAUDE_SETTINGS ?? join(dirname(e.BRIDGE_CLAUDE_PROJECTS), 'settings.json'),
     logDir: e.BRIDGE_LOG_DIR,
     logLevel: e.BRIDGE_LOG_LEVEL,
+    pushSubject: e.BRIDGE_PUSH_SUBJECT ?? 'https://github.com/eshelton328/the-bridge',
   })
 }
