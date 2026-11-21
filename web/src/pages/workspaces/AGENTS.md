@@ -223,6 +223,13 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   (`app/WorkspacesTypingRenders.test.tsx`).
 - A sample chat's Send goes to the store's `send` through the library's
   `onSend`; a failed send keeps the draft (`WorkspacesSendDraft.test.tsx`).
+- A press on Send never takes the focus from the message box, so the
+  phone's keyboard stays up through the send and the box emptying, as
+  chat apps do (the owner's phone review, 2026-11-21): `blocks/useSendKeepsFocus.ts`
+  cancels the default of Send's `pointerdown`, `mousedown` and
+  `touchstart`, and clicks Send on a touch that ends on it. Never disable
+  the box while a send is pending; a disabled field closes the iOS
+  keyboard (`app/WorkspacesSendKeepsFocus.test.tsx`).
 - A send that ends after the owner opened another chat changes only the
   sent chat's draft, and only while it still holds the text sent
   (`DraftBook.clear`). `WorkspacesPage` merges each ui change into the ui

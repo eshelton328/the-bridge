@@ -69,6 +69,7 @@ import { TranscriptProblem } from './TranscriptProblem.tsx'
 import { type ComposerAnswer, useComposerActions } from './useComposerActions.ts'
 import { useKeyboardFirst } from './useKeyboardFirst.ts'
 import { usePinnedEnd } from './usePinnedEnd.ts'
+import { useSendKeepsFocus } from './useSendKeepsFocus.ts'
 
 /** What a live chat's composer shows of its files now. */
 export type ChatFilesView = {
@@ -321,6 +322,8 @@ export function ChatPane(props: ChatPaneProps) {
   // Where the caret goes once a picked skill is in the box.
   const caretRef = useRef<number | null>(null)
   const textArea = () => areaRef.current?.querySelector('textarea') ?? null
+  // A press on Send keeps the focus in the box, so the phone's keyboard stays up through the send (useSendKeepsFocus.ts).
+  useSendKeepsFocus(areaRef, skills === undefined)
   const fileRef = useRef<HTMLInputElement>(null)
   // A live chat's transcript is read while the pane shows, and the stream closes when it unmounts.
   useEffect(
