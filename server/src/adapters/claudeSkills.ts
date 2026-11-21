@@ -1,11 +1,6 @@
-// The skills and commands of a Claude chat's "/" list, from the files that
-// Claude Code reads when a session starts (R34): the owner's (~/.claude/skills
-// and ~/.claude/commands) and each folder's from the chat's folder up to its
-// repository root (.claude/skills, .claude/commands). Not the skills of a
-// folder below the chat's folder: Claude Code loads those only once it works
-// there. Only the front matter of a file is read (its first 16 KB), never the
-// rest; a folder and a file are read again only when their change time or
-// size moves.
+// A Claude chat's "/" list (R34): the skills and commands that Claude Code
+// loads when a session starts, from their front matter only. The rules are in
+// adapters/AGENTS.md.
 import { readdir, stat, open } from 'node:fs/promises'
 import { basename, dirname, join } from 'node:path'
 import { ChatSkill, maxSkills, type SkillSource } from '@bridge/contract'
@@ -107,14 +102,11 @@ async function namesIn(folder: string): Promise<string[]> {
   }
 }
 
-const exists = async (path: string) => {
-  try {
-    await stat(path)
-    return true
-  } catch {
-    return false
-  }
-}
+const exists = (path: string) =>
+  stat(path).then(
+    () => true,
+    () => false,
+  )
 
 /** The skills of one `skills` folder (`<skill>/SKILL.md`), each name with `prefix` before it. */
 async function skillsIn(folder: string, source: SkillSource, prefix = ''): Promise<ChatSkill[]> {

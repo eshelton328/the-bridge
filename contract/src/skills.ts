@@ -1,6 +1,4 @@
-// The skills and commands that a chat's "/" list offers (R34): each by the
-// name the owner types after "/", a one-line description and where it comes
-// from. Never a path or a file's text beyond its description.
+// A chat's "/" list (R34): each skill by the name typed after "/", never a path.
 import { z } from 'zod'
 import { ChatId } from './ids.ts'
 
