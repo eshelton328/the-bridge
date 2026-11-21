@@ -439,6 +439,20 @@ describe('close (W2)', () => {
     await expect.element(page.getByText('review notes', { exact: true })).not.toBeInTheDocument()
   })
 
+  it('reads the list again itself when no event comes 2.5 s after a close, so the phone drops the chat', async () => {
+    const fakes = withChats()
+    await tapWorkspaces(phone)
+    await tapChat('review notes')
+    fakes.list.quietWrites(true)
+    await userEvent.click(actionsButton('review notes'))
+    await userEvent.click(page.getByText('Close pane…', { exact: true }))
+    await userEvent.click(
+      page.getByRole('alertdialog', { name: 'Close review notes?' }).getByRole('button', { name: 'Close' }),
+    )
+    await expect.poll(() => writesOf(fakes)).toEqual([{ chat: review, action: 'close', body: { confirm: review } }])
+    await expect.element(page.getByText('review notes', { exact: true }), { timeout: 5000 }).not.toBeInTheDocument()
+  })
+
   it("closes from the tablet's menu, which has no zoom or swap, and a Send there sends no focus", async () => {
     const fakes = withChats()
     await tapWorkspaces(tablet)

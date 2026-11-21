@@ -3,7 +3,7 @@
 // no live code. There is no optimistic layout: after a 204 the write stays
 // pending, and its control shows it, until the next layout read changes that
 // workspace's tabs (the server's `layout.changed`), or for 2.5 s, after
-// which the page reads the layout again itself. One write at a time for a
+// which the page reads the layout again itself, and the list after a close. One write at a time for a
 // chat. A focus goes only to a chat herdr does not focus already. A stale
 // view (409 singlePane, otherTab) reads the layout again quietly, a gone
 // chat (404) the list; any other miss but a close's shows one line in the
@@ -87,6 +87,8 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
           else
             entry.timer = setTimeout(() => {
               readAgain(workspace)
+              // A close also drops the chat from the list (`workspaces.changed`), which the sidebar and the phone draw.
+              if (action === 'close') readAgain(workspace, true)
               done(chat)
             }, layoutEventWaitMs)
           return answer
