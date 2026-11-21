@@ -39,6 +39,8 @@ export type ContractSetup = {
   readonly typeInput: (text: string) => Promise<void>
   /** Empties the expected chat's input box, as the owner would. */
   readonly clearInput: () => Promise<void>
+  /** The expected chat's next prompt gets its text but not its Enter, so the text stays in its box. */
+  readonly dropNextEnter: () => Promise<void>
   /** A port of the same adapter whose agents do not answer, such as one on a socket that is not there. */
   readonly unreachable: AgentPort
 }
@@ -144,10 +146,48 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       expect((await received()).filter((r) => r.startsWith('text:')).at(-1)).toBe('text:Reply OK.')
     })
 
+    it('empties an input box that holds text the owner typed, so the next prompt goes alone', async () => {
+      const { port, expected, setStatus, received, typeInput } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      expect(await port.clearInputBox(chat)).toEqual({ ok: true, value: 'cleared' })
+      await typeInput('half a thought')
+      expect(await port.sendPrompt(chat, 'Check the build.')).toEqual({ ok: true, value: 'inputNotEmpty' })
+      expect(await port.clearInputBox(chat)).toEqual({ ok: true, value: 'cleared' })
+      expect(await port.sendPrompt(chat, 'Check the tests.')).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Check the tests.'))
+      expect((await received()).filter((r) => r.includes('half a thought'))).toEqual([])
+    })
+
+    it('takes back a prompt whose Enter the chat did not take, so the next prompt goes alone', async () => {
+      const { port, expected, setStatus, received, dropNextEnter } = await setup()
+      const { chat } = await chatsToUse(port, expected)
+      await setStatus('idle')
+      await statusShown(port, expected, 'idle')
+      await dropNextEnter()
+      expect(await port.sendPrompt(chat, 'Check the lint.')).toEqual({ ok: true, value: 'notSubmitted' })
+      expect(await port.sendPrompt(chat, 'Check the types.')).toEqual({ ok: true, value: 'sent' })
+      await untilAsync('the prompt to arrive', async () => (await received()).includes('text:Check the types.'))
+      expect((await received()).filter((r) => r.includes('Check the lint.'))).toEqual([])
+    })
+
+    it('clears no input box of a shell or of a chat that the machine does not have', async () => {
+      const { port, expected } = await setup()
+      const { shell } = await chatsToUse(port, expected)
+      expect(await port.clearInputBox(shell)).toEqual({ ok: true, value: 'shell' })
+      const none = ChatId.parse(`${port.machine}/no-such-chat`)
+      expect(await port.clearInputBox(none)).toEqual({ ok: true, value: 'notFound' })
+    })
+
     it('says the agents are unreachable to a prompt and a stop when they do not answer', async () => {
       const { unreachable } = await setup()
       const chat = ChatId.parse(`${unreachable.machine}/any-chat`)
-      for (const answer of [await unreachable.sendPrompt(chat, 'Go on.'), await unreachable.cancel(chat)])
+      for (const answer of [
+        await unreachable.sendPrompt(chat, 'Go on.'),
+        await unreachable.cancel(chat),
+        await unreachable.clearInputBox(chat),
+      ])
         expect(answer).toMatchObject({ ok: false, error: { reason: 'unreachable' } })
     })
 

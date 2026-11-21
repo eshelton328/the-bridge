@@ -107,6 +107,7 @@ describe('GET /api/chats/:chat/transcript/events', () => {
 describe('POST /api/chats/:chat/prompt and /stop', () => {
   const promptPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/prompt`
   const stopPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/stop`
+  const clearPath = (id: string) => `/api/chats/${encodeURIComponent(id)}/input/clear`
   const json = { ...local, 'Content-Type': 'application/json' }
   const secret = 'Deploy with token marker-5150'
   const setup = (agents = createFakeAgents(machine)) => {
@@ -159,6 +160,34 @@ describe('POST /api/chats/:chat/prompt and /stop', () => {
     agents.typeInput(ChatId.parse(themes), 'half a thought')
     expect(await states(await post(promptPath(themes), { text: 'Go on.' }))).toEqual([409, 'inputNotEmpty'])
     expect(agents.inputs()).toEqual([])
+  })
+
+  it("empties a chat's input box with 204, so the next prompt goes, and answers 409 for a shell or 404 for no chat", async () => {
+    const { agents, post } = setup()
+    const states = async (res: Response) => {
+      const { error } = ErrorBody.parse(await res.json())
+      return [res.status, error.kind === 'chat-not-ready' ? error.state : error.kind]
+    }
+    agents.typeInput(ChatId.parse(themes), 'marker-7301 half a thought')
+    expect((await post(promptPath(themes), { text: 'Go on.' })).status).toBe(409)
+    const cleared = await post(clearPath(themes), {})
+    expect([cleared.status, await cleared.text()]).toEqual([204, ''])
+    expect((await post(promptPath(themes), { text: 'Go on.' })).status).toBe(204)
+    expect(await states(await post(clearPath('test-mac/brain-git'), {}))).toEqual([409, 'shell'])
+    expect(await states(await post(clearPath('test-mac/none'), {}))).toEqual([404, 'not-found'])
+    expect(await states(await post(clearPath(themes), { text: 'x' }))).toEqual([400, 'invalid-input'])
+  })
+
+  it('answers 409 notSubmitted when the chat did not take the prompt, and the next prompt goes', async () => {
+    const { agents, post } = setup()
+    agents.dropNextEnter(ChatId.parse(themes))
+    const res = await post(promptPath(themes), { text: 'marker-7302 Go on.' })
+    const body = await res.text()
+    expect(res.status).toBe(409)
+    expect(ErrorBody.parse(JSON.parse(body)).error).toMatchObject({ kind: 'chat-not-ready', state: 'notSubmitted' })
+    expect(body).not.toContain('marker-7302')
+    expect((await post(promptPath(themes), { text: 'Go on.' })).status).toBe(204)
+    expect(agents.inputs()).toEqual([{ chat: themes, text: 'Go on.' }])
   })
 
   it('takes the longest prompt when JSON writes each character as a \\u escape', async () => {

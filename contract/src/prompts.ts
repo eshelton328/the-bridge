@@ -1,6 +1,6 @@
 // What the owner sends to a chat: `POST /api/chats/:chat/prompt` with a
-// prompt, and `POST /api/chats/:chat/stop` to stop the chat's work
-// (slice W1). Each request acts on one chat, the one in its path. The
+// prompt, `POST /api/chats/:chat/stop` to stop the chat's work (slice
+// W1), and `POST /api/chats/:chat/input/clear` to empty its input box. Each request acts on one chat, the one in its path. The
 // server answers 204 with no body; a chat that cannot take the request
 // gets a `chat-not-ready` error (errors.ts). The prompt text goes to the
 // chat only, never into a log line or an error body (d-115).
@@ -21,3 +21,11 @@ export type SendPromptRequest = z.infer<typeof SendPromptRequest>
 /** The body of a stop: an empty JSON object, so a stop is JSON as a prompt is. */
 export const StopChatRequest = z.strictObject({})
 export type StopChatRequest = z.infer<typeof StopChatRequest>
+
+/**
+ * The body of `POST /api/chats/:chat/input/clear`, which empties the input box of a Claude chat's terminal (204),
+ * for text that another client typed there and did not send: an empty JSON object. The text it removes is lost,
+ * so the page asks the owner first; the server never returns or logs that text.
+ */
+export const ClearInputRequest = z.strictObject({})
+export type ClearInputRequest = z.infer<typeof ClearInputRequest>

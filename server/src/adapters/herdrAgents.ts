@@ -246,6 +246,9 @@ const putBackWaitMs = 3000
 /** How many times a stop reads the box for the prompt that comes back, and the time between two reads. */
 const putBackReads = 5
 const putBackReadGapMs = 100
+/** How many times, and how far apart, a send reads the box to see that the chat took its prompt. */
+const submitReads = 8
+const submitReadGapMs = 150
 
 const PaneRead = z.object({ read: z.object({ text: z.string() }) })
 
@@ -530,13 +533,33 @@ export function createHerdrAgents({
       if (box.value.text !== '') {
         if (!boxKeys(box.value).some((key) => hashOf(key) === sent)) return
         lastSent.delete(pane)
-        const keys = Array.from({ length: box.value.lines * 2 }, () => 'ctrl+u')
-        await herdrRequest(socket, 'agent.send_keys', { target: pane, keys })
+        await emptyBox(pane, box.value)
         return
       }
       // The turn ended, but the prompt may come back a moment later.
       await new Promise((resolve) => setTimeout(resolve, putBackReadGapMs))
     }
+  }
+
+  /** Empties the box with ctrl+u: one deletes one screen line, and one more the line break before it. */
+  const emptyBox = (pane: string, box: InputBox) =>
+    input('agent.send_keys', { target: pane, keys: Array.from({ length: box.lines * 2 }, () => 'ctrl+u') })
+
+  /**
+   * Whether the box still holds the prompt this port just sent (`sent`, its hash), at each of a few reads: the
+   * chat did not take its Enter. The box it reads then, to empty it; null when the chat took the prompt, which
+   * leaves the box empty, also when a working chat queues it.
+   */
+  const notTaken = async (pane: string, sent: string): Promise<InputBox | null> => {
+    let box: InputBox | null = null
+    for (let read = 0; read < submitReads; read += 1) {
+      await new Promise((resolve) => setTimeout(resolve, submitReadGapMs))
+      const now = await inputBox(pane)
+      if (!now.ok || now.value === null) return null
+      if (!boxKeys(now.value).some((key) => hashOf(key) === sent)) return null
+      box = now.value
+    }
+    return box
   }
 
   /**
@@ -567,8 +590,34 @@ export function createHerdrAgents({
         if (box.value?.text !== '') return ok('inputNotEmpty')
       }
       const sent = await input('agent.prompt', { target: pane, text })
-      if (sent.ok && sent.value === 'sent') lastSent.set(pane, hashOf(promptKey(text)))
-      return sent
+      if (!sent.ok || sent.value !== 'sent') return sent
+      const key = hashOf(promptKey(text))
+      lastSent.set(pane, key)
+      if (!claude) return sent
+      // A lost Enter leaves the prompt in the box, where it would block each next send: take it back.
+      const stuck = await notTaken(pane, key)
+      if (stuck === null) return sent
+      lastSent.delete(pane)
+      await emptyBox(pane, stuck)
+      return ok('notSubmitted')
+    },
+    async clearInputBox(chat) {
+      const target = await agentPane(chat)
+      if (!target.ok) return target
+      if (typeof target.value === 'string') return ok(target.value)
+      const { pane, status, claude } = target.value
+      if (!claude) return ok('noCommands')
+      if (status === 'needsYou') return ok('needsYou')
+      const box = await inputBox(pane)
+      if (!box.ok) return box
+      if (box.value === null) return ok('inputNotEmpty')
+      if (box.value.text === '') return ok('cleared')
+      const keys = await emptyBox(pane, box.value)
+      if (!keys.ok) return keys
+      if (keys.value === 'needsYou') return ok('needsYou')
+      const after = await inputBox(pane)
+      if (!after.ok) return after
+      return ok(after.value?.text === '' ? 'cleared' : 'inputNotEmpty')
     },
     async cancel(chat) {
       const target = await agentPane(chat)

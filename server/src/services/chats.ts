@@ -2,7 +2,7 @@
 // to one chat for the owner.
 import type { ChatId, TranscriptResponse } from '@bridge/contract'
 import { ok, type Result } from '@bridge/shared'
-import type { AgentPort, AgentPortError, CancelOutcome, SendOutcome } from './agentPort.ts'
+import type { AgentPort, AgentPortError, CancelOutcome, ClearOutcome, PromptOutcome } from './agentPort.ts'
 
 /** The last entries of `chat`'s transcript; `null` when this machine has no such chat. */
 export async function readTranscript(
@@ -19,8 +19,13 @@ export function sendPrompt(
   agents: AgentPort,
   chat: ChatId,
   text: string,
-): Promise<Result<SendOutcome, AgentPortError>> {
+): Promise<Result<PromptOutcome, AgentPortError>> {
   return agents.sendPrompt(chat, text)
+}
+
+/** Empties the input box of `chat`; the text it removes goes nowhere. */
+export function clearInput(agents: AgentPort, chat: ChatId): Promise<Result<ClearOutcome, AgentPortError>> {
+  return agents.clearInputBox(chat)
 }
 
 /** Stops the work of `chat`, when it works. */

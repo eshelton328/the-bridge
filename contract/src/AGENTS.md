@@ -26,7 +26,7 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   entry has a name and a short target, never its arguments or its
   result (`transcripts.test.ts`).
 - A prompt request holds only its text (a strict object), and a stop
-  request is an empty object; the text goes to the chat and nowhere else
+  request and an input clear request are empty objects; the text goes to the chat and nowhere else
   (`prompts.test.ts`).
 - An upload request holds the file's name, size and type only (a strict
   object), never a path; the file goes up in chunks of the size the

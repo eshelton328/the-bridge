@@ -40,6 +40,10 @@ describeAgentPort('fake', () => {
       port.typeInput(ChatId.parse('test-mac/drift-check'), '')
       return Promise.resolve()
     },
+    dropNextEnter: () => {
+      port.dropNextEnter(ChatId.parse('test-mac/drift-check'))
+      return Promise.resolve()
+    },
     received: () =>
       Promise.resolve(
         port

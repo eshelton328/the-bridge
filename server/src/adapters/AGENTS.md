@@ -59,6 +59,15 @@ client of a socket or a file sits beside them.
   between them, never as text; each line end of the box joins with a
   space or with nothing. Other text
   stays (`agentPortContract.ts`, `herdrAgents.test.ts`).
+- After a prompt to a Claude chat, the adapter reads the box again, up
+  to 8 times 150 ms apart. When each read still shows that prompt, the
+  chat did not take its Enter: the adapter empties the box with ctrl+u
+  and answers `notSubmitted`. A prompt that a working chat queues
+  leaves the box, so it is `sent`.
+- An input clear empties a Claude chat's box with ctrl+u, for text that
+  another client typed there, and reads it again: `cleared` or
+  `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text
+  is never returned or logged (`agentPortContract.ts`).
 - The upload store (`diskUploads.ts`, fake `fakeUploads.ts`, suite
   `uploadStoreContract.ts`) keeps each upload in a 0700 folder with
   0600 files, under the folder beside the database. Each chunk goes to
