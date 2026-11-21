@@ -44,6 +44,11 @@ const pane = css({
   p: '12',
   pb: '0',
   overflow: 'auto',
+  // Screen review R14: no scroll bar anywhere, and a scroll that reaches the end stops here. The library's scroll
+  // areas use the same three styles, which it keeps to itself.
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
+  overscrollBehavior: 'contain',
   bg: 'surface.pane',
 })
 // The pane holds the scrolling list, and the toast sticks to the list's bottom (D18 403:2943: 12 px in,
