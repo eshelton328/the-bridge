@@ -369,6 +369,13 @@ export function fakeTranscriptServer({ streams: mode = 'open', uploads: uploadOp
         s.control.error(new TypeError('network error'))
       }
     },
+    /** Ends each open stream of `chat` with no event, as iOS closes the connections of a page in the background. */
+    close: (chat: string) => {
+      for (const s of open.filter((o) => o.chat === chat)) {
+        open.splice(open.indexOf(s), 1)
+        s.control.close()
+      }
+    },
     /**
      * Ends each open stream of `chat` as the server does when its herdr watch fails (backend 3b-3): one `error` event
      * with an ErrorBody of `kind`, then the end of the stream.

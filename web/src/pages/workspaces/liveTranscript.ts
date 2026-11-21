@@ -28,6 +28,18 @@
 // decides, never its message. report() gets one TranscriptMissError
 // for each outage of each chat, with the miss's kind, its HTTP status and the
 // chat ID only: never transcript text, a tool target or the server's message.
+//
+// Back from the background (pageResume.ts). iOS closes the stream of a page in
+// the background, and the page sees it when it shows again. A stream that ends
+// or drops, or a stream or read that gets no answer, while the page is hidden,
+// went hidden during the connection, or had just come back (5 s), is that
+// close: the page shows no line and reports nothing. While the page is hidden
+// it connects again after the retry time, as before (a desktop tab in the
+// background keeps running); once it shows it connects again at once. A
+// visible page takes one such quiet miss for each trip to the background; a
+// miss of the connection after it is an outage as usual. An answer from the
+// server (a status, an `error` event, a reply the contract refuses) is never
+// quiet.
 import {
   ChatId,
   ErrorBody,
@@ -40,6 +52,15 @@ import type { Result } from '@bridge/shared'
 import { report } from '../../errors/reporter.ts'
 import { api } from '../../lib/api.ts'
 import { type Frame, frames, type LiveMiss, liveReadTimeoutMs, readChecked, readJson } from './liveWorkspaces.ts'
+import {
+  followPageVisibility,
+  fromBackground,
+  hidesSoFar,
+  isHidden,
+  type ResumeMark,
+  resumeMark,
+  whenVisible,
+} from './pageResume.ts'
 import type { AgentKind, ChatEntry, WorkspacesData } from './types.ts'
 
 /** The pane's quiet lines, picked by the chat that built slice 3b's page part (d-101); the PR records them. */
@@ -203,14 +224,35 @@ type Session = { watchers: number; readonly retry: () => void; readonly stop: ()
 
 const sessions = new Map<string, Session>()
 
-/** What a connection asks next: connect again after the retry time, or wait for Retry. */
-type Outcome = 'again' | 'wait'
+/**
+ * What a connection asks next: connect again after the retry time, wait for Retry, or (a quiet miss) connect again
+ * after the retry time while the page is hidden and at once when it shows.
+ */
+type Outcome = 'again' | 'wait' | 'resume'
+
+followPageVisibility()
 
 function startSession(chat: ChatId, deps: TranscriptDeps): Session {
   let retryMs = deps.retryMs ?? 5000
   const abort = new AbortController()
   const closed = () => abort.signal.aborted
   let wake: (() => void) | undefined
+  /** The trip to the background whose quiet miss this chat has had (`hidesSoFar`); -1 for none yet. */
+  let quietFor = -1
+  /**
+   * A miss of the connection that started at `mark` is the close of a trip to the background: any miss while the page
+   * is hidden, and the first one the visible page sees of a trip that had none while hidden.
+   */
+  const quietMiss = (mark: ResumeMark | undefined): boolean => {
+    if (mark === undefined) return false
+    if (isHidden()) {
+      quietFor = hidesSoFar()
+      return true
+    }
+    if (!fromBackground(mark) || quietFor === hidesSoFar()) return false
+    quietFor = hidesSoFar()
+    return true
+  }
   const update = (change: (view: TranscriptView) => TranscriptView) => {
     if (!closed()) setView(chat, change(views.get(chat) ?? emptyView))
   }
@@ -226,8 +268,11 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     })
   }
 
-  /** Reads the transcript and shows it; false when the read missed (the line shows) or `signal` ended it. */
-  const load = async (signal: AbortSignal): Promise<boolean> => {
+  /**
+   * Reads the transcript and shows it; false when the read missed (the line shows) or `signal` ended it, `quiet` when
+   * it got no answer as the page came back from the background (`mark`).
+   */
+  const load = async (signal: AbortSignal, mark?: ResumeMark): Promise<boolean | 'quiet'> => {
     let answer: Result<TranscriptResponse, LiveMiss>
     try {
       answer = await readTranscript(chat, signal)
@@ -243,6 +288,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     }
     if (signal.aborted) return false
     if (!answer.ok) {
+      if ((answer.error.kind === 'unreachable' || answer.error.kind === 'timeout') && quietMiss(mark)) return 'quiet'
       const miss: TranscriptMiss = {
         part: 'read',
         kind: answer.error.kind,
@@ -266,6 +312,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
 
   /** One connection: the stream, the read, then the events until the stream ends. */
   const connect = async (): Promise<Outcome> => {
+    const mark = resumeMark()
     const connection = new AbortController()
     const signal = AbortSignal.any([abort.signal, connection.signal])
     let res: Response
@@ -280,6 +327,7 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       res = await openStream(chat, signal)
     } catch {
       if (closed()) return 'wait'
+      if (quietMiss(mark)) return 'resume'
       // fetch rejects when no answer comes in time, or when the server or the tailnet cannot be reached.
       fail(transcriptText.dropped, { part: 'stream', kind: opening.late ? 'timeout' : 'unreachable' })
       return 'again'
@@ -347,7 +395,8 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
         return 'dropped' as const
       }
     })()
-    const read = await load(signal)
+    const answered = await load(signal, mark)
+    const read = answered === true
     if (read) {
       loaded = true
       const shown = views.get(chat) ?? emptyView
@@ -361,12 +410,15 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
       outages.delete(chat)
       return 'wait'
     }
+    if (answered === 'quiet') return 'resume'
     if (seen.unreadable) {
       fail(transcriptText.dropped, { part: 'stream', kind: 'bad-event' })
       return 'again'
     }
     // A read that missed shows its line; Retry starts again.
     if (!read) return 'wait'
+    // An end with no `error` event, or a drop, as iOS makes of a page in the background.
+    if (seen.serverKind === undefined && quietMiss(mark)) return 'resume'
     fail(transcriptText.dropped, { part: 'stream', kind: 'ended', errorKind: seen.serverKind })
     return 'again'
   }
@@ -389,7 +441,16 @@ function startSession(chat: ChatId, deps: TranscriptDeps): Session {
     while (!closed()) {
       const outcome = await connect()
       if (closed()) return
-      await pause(outcome === 'again' ? retryMs : undefined)
+      if (outcome === 'resume') {
+        // Back from the background: at once when the page shows, else after the retry time or as soon as it shows.
+        if (!isHidden()) continue
+        const shown = new AbortController()
+        void whenVisible(AbortSignal.any([abort.signal, shown.signal])).then(() => {
+          if (!shown.signal.aborted) wake?.()
+        })
+        await pause(retryMs)
+        shown.abort()
+      } else await pause(outcome === 'again' ? retryMs : undefined)
     }
   }
   void run()
