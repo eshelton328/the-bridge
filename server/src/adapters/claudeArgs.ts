@@ -1,14 +1,9 @@
 // The command line of a running Claude chat, read for a model restart
-// (slice W10): which of its flags the restart keeps. Only flags on the
-// list below pass; any other token, a flag that skips a permission, or a
-// permission mode that skips one refuses the restart. A value with a space
-// in it reads as two tokens (the process table joins its arguments with
-// spaces), so it refuses too, unless each part is a valid token: a value
-// such as "/tmp/work --chrome" reads as `/tmp/work` and `--chrome`. macOS
-// gives no argument boundaries of another process without a native
-// helper. A skip flag or the bypass mode is refused wherever it shows,
-// so such a split can only move text between flags on the list. Nothing
-// here logs a token.
+// (slice W10): which of its flags the restart keeps. herdr's process
+// info gives the arguments as a list, so a value with a space in it stays
+// one token. Only flags on the list below pass; any other token, a flag
+// that skips a permission, or a permission mode that skips one refuses
+// the restart. Nothing here logs a token.
 import { ChatName } from '@bridge/contract'
 
 /** Flags the restart keeps, each with one value. */
@@ -49,9 +44,9 @@ const valueCheck = (flag: string, value: string): LaunchRefusal | undefined => {
   return value.startsWith('-') ? 'launchArgsUnknown' : undefined
 }
 
-/** Reads a process's argument line (`ps -o args=`): its program must be `claude`, and each token a known flag. */
-export function launchArgsOf(line: string): LaunchArgs | LaunchRefusal {
-  const [program, ...tokens] = line.trim().split(/\s+/)
+/** Reads a process's arguments, its program first: the program must be `claude`, and each token a known flag. */
+export function launchArgsOf(argv: readonly string[]): LaunchArgs | LaunchRefusal {
+  const [program, ...tokens] = argv
   if (program === undefined || (program !== 'claude' && !program.endsWith('/claude'))) return 'launchArgsUnknown'
   const kept: string[] = []
   let name: string | undefined
