@@ -72,16 +72,19 @@ describe('Claude transcript', () => {
       user('p2', paste('ec42', withAttachments('', [`${uploads}/u3/notes.md`]))),
       user('p3', `Before ${paste('2602', 'a pasted log')} after`),
       user('p4', 'Attached files (read each one with your tools):\n- not a path'),
+      user('p5', withAttachments('Read this', ['/etc/hosts'])),
     ])
-    const read = await readClaudeTranscript(path, options)
+    const read = await readClaudeTranscript(path, { ...options, uploads })
     expect(read.entries).toEqual([
       { type: 'user', id: 'p1', text: 'Look at these.\n\nTwo lines.', cut: false, files: ['plan.pdf', 'photo.jpg'] },
       { type: 'user', id: 'p2', text: '', cut: false, files: ['notes.md'] },
       { type: 'user', id: 'p3', text: 'Before \n\na pasted log\n after', cut: false },
       { type: 'user', id: 'p4', text: 'Attached files (read each one with your tools):\n- not a path', cut: false },
+      // A path outside the uploads folder is the owner's own text.
+      { type: 'user', id: 'p5', text: withAttachments('Read this', ['/etc/hosts']), cut: false },
     ])
     for (const entry of read.entries) TranscriptEntry.parse(entry)
-    expect(JSON.stringify(read)).not.toMatch(/pasted_content|\/home\/dev/)
+    expect(JSON.stringify(read.entries.slice(0, 3))).not.toMatch(/pasted_content|\/home\/dev/)
   })
 
   it('keeps the indent of a first line in a paste, as a Markdown code block needs', async () => {

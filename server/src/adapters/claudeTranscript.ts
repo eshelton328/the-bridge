@@ -50,6 +50,8 @@ const textOf = (text: string) => {
 export type TranscriptOptions = TargetContext & {
   /** True when the chat's status is `working`; a tool call with no result is running only then. */
   readonly working: boolean
+  /** The folder of the owner's uploads: a prompt's file lines name files in it. None: a prompt keeps them as text. */
+  readonly uploads?: string | undefined
 }
 
 /** Claude Code's tags around pasted text, with the same ID on both; the text inside is the owner's. */
@@ -59,7 +61,7 @@ const pasted = /<pasted_content id="([^"]{1,100})">\n?([\s\S]*?)\n?<\/pasted_con
  * A prompt as the owner wrote it: each paste's tags removed, and the file lines that the server adds below a
  * prompt with files (`uploads.ts`) taken out, with the name of each file.
  */
-function promptOf(raw: string): { text: string; files?: string[] } {
+function promptOf(raw: string, uploads: string | undefined): { text: string; files?: string[] } {
   // Only blank lines go from the start, so a first line indented as code keeps its indent.
   const text = raw
     .replace(pasted, (_all, _id, inner: string) => inner)
@@ -71,7 +73,9 @@ function promptOf(raw: string): { text: string; files?: string[] } {
     .slice(at + attachedLine.length)
     .split('\n')
     .slice(1)
-  if (lines.length === 0 || lines.length > maxAttachments || !lines.every((l) => l.startsWith('- /'))) return { text }
+  // Only paths in the uploads folder are the server's own lines; a prompt that only looks like one stays text.
+  const inUploads = (l: string) => uploads !== undefined && l.startsWith(`- ${uploads}/`)
+  if (lines.length === 0 || lines.length > maxAttachments || !lines.every(inUploads)) return { text }
   const files = lines.map((l) => (l.split('/').at(-1) ?? '').slice(0, maxEntryFileName))
   if (files.some((f) => f === '')) return { text }
   return { text: text.slice(0, at).trimEnd(), files }
@@ -87,7 +91,7 @@ function entriesOf(value: unknown, options: TranscriptOptions, results: Set<stri
     .flatMap((b) => (b.success ? [b.data] : []))
   if (type === 'user') {
     for (const b of blocks) if (b.type === 'tool_result') results.add(b.tool_use_id)
-    const prompt = promptOf(blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n'))
+    const prompt = promptOf(blocks.flatMap((b) => (b.type === 'text' ? [b.text] : [])).join('\n\n'), options.uploads)
     if (prompt.text === '' && prompt.files === undefined) return []
     return [{ type: 'user', id: uuid, ...textOf(prompt.text), ...(prompt.files && { files: prompt.files }) }]
   }
