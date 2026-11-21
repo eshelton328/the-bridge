@@ -197,6 +197,22 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   waits. A 404 reads the layout again quietly; any other miss says "Not
   split — <kind>" or "Not resized — <kind>" in the status bar
   (`app/WorkspacesLayoutSplit.test.tsx`).
+- Move to tab (W2d, backend #337): the desktop workbench's pane menu
+  adds Move to tab… when the pane's workspace has another herdr tab; its
+  list names the other tabs (`moveTargets`), and a tab herdr zooms is off
+  with "zoomed" at its end. A pick opens `blocks/MoveChatDialog.tsx`
+  (`ui.chatDialog` `moveTab`, `ui.commandFor`, `ui.moveToTab`): Place
+  (beside the tab's focused pane, the default, or beside one of its
+  panes) and Side (Right `row`, Below `column`), then Move posts `POST
+  /api/chats/:chat/move` with `{ tab, direction, beside? }`. The phone and
+  the tablet have none. The pane moves when the layout read after
+  `layout.changed` shows it, and when the moved chat was the focused
+  pane the workbench shows the tab it went to (`showMovedChat`), until
+  herdr's next layout change of the workspace shows its active tab
+  again. 409 sameTab reads the layout again quietly, 409 zoomedTab with
+  "Not moved — that tab is zoomed", a 404 reads the list, and any other
+  miss says "Not moved — <kind>" in the status bar
+  (`app/WorkspacesLayoutMove.test.tsx`).
 - Pane follow (W5, `paneFollow.ts`): after a /clear, from the page or the
   terminal, the list drops the chat's ID and lists a new one on the same
   pane (`ChatSummary.pane`). The page store keeps the panes it last saw

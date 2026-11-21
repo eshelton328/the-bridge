@@ -32,7 +32,10 @@
 // actions end with Close pane…, whose dialog (CloseChatDialog) shows over
 // every layout for the chat in `ui.commandFor`; the chat beside the sidebar
 // focuses on a tap on its header or a Send. The phone and the tablet's chat
-// send no focus.
+// send no focus. A tab picked in a workbench pane's Move to tab… opens its
+// dialog (MoveChatDialog, W2d) for the chat in `ui.commandFor` and the tab in
+// `ui.moveToTab`, while both are still in the layout read; the workbench
+// follows the move of its focused pane.
 import type { ChatCommandRequest } from '@bridge/contract'
 import { AppShell, Backdrop } from '@eshelton328/component-library-1701'
 import { type ReactNode, useLayoutEffect, useRef, useState } from 'react'
@@ -52,6 +55,7 @@ import { ChatCommandDialog } from '../blocks/ChatCommandDialog.tsx'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { CloseChatDialog } from '../blocks/CloseChatDialog.tsx'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
+import { MoveChatDialog } from '../blocks/MoveChatDialog.tsx'
 import { ChatNameField } from '../blocks/ChatNameField.tsx'
 import { ChatToast } from '../blocks/ChatToast.tsx'
 import { ForkDialog } from '../blocks/ForkDialog.tsx'
@@ -182,6 +186,35 @@ export function WorkspacesScreen({
         }
       />
     )
+  // Move to tab… of a live chat (W2d): its dialog, for the chat in `ui.commandFor` and the tab in `ui.moveToTab`.
+  const moving = ui.chatDialog === 'moveTab' ? data.panes.find((p) => p.id === ui.commandFor) : undefined
+  const movingTabs = moving === undefined ? undefined : tabOf(data, moving.id)
+  const toTab =
+    movingTabs === undefined ? undefined : data.liveTabs?.[movingTabs.workspace]?.find((t) => t.id === ui.moveToTab)
+  const nameOf = (id: string) => {
+    const pane = data.panes.find((p) => p.id === id)
+    return ui.names?.[id] ?? (pane === undefined || pane.type === 'empty' ? id : pane.head.title)
+  }
+  const closeMove = { chatDialog: null, commandFor: null, moveToTab: null }
+  const moveDialog =
+    layoutWrites === undefined || moving === undefined || toTab?.id === undefined ? null : (
+      <MoveChatDialog
+        key={`${moving.id} ${toTab.id}`}
+        chat={nameOf(moving.id)}
+        tab={toTab.label === undefined || toTab.label === '' ? 'the other tab' : toTab.label}
+        panes={toTab.chats.map((id) => ({ id, title: nameOf(id) }))}
+        onOpenChange={(open) => {
+          if (!open) change(closeMove)
+        }}
+        onMove={({ beside, direction }) => {
+          const tab = toTab.id
+          if (tab === undefined) return
+          // The workbench follows the open pane (the focused one) to its new tab.
+          layoutWrites.move(moving.id, { tab, direction, beside }, ui.focusedPane === moving.id)
+          change(closeMove)
+        }}
+      />
+    )
   // The ui lives here, above the layout, so a width change that swaps the layout keeps what the owner changed.
   return (
     <ViewportFrame initial={viewport}>
@@ -206,6 +239,7 @@ export function WorkspacesScreen({
           />
           {commandDialog}
           {closeDialog}
+          {moveDialog}
         </>
       )}
     </ViewportFrame>

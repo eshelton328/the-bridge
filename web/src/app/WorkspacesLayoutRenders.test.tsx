@@ -30,7 +30,8 @@ import { routeTree } from './routeTree.gen.ts'
 // WorkspacesTypingRenders.test.tsx). The test takes the owner's path with
 // two live chats of 40 Markdown entries each and counts react-markdown's
 // renders (one per message or reply). A drag of the handle between them
-// (W2c) moves the panes and sends a ratio, and renders no entry either.
+// (W2c) moves the panes and sends a ratio, and renders no entry either, and
+// so does a move of another chat of the shown workspace to another tab (W2d).
 vi.mock('react-markdown', { spy: true })
 
 const live = 'mac-mini/w-live'
@@ -38,6 +39,8 @@ const other = 'mac-mini/w-other'
 const plan = 'mac-mini/c1'
 const review = 'mac-mini/c2'
 const away = 'mac-mini/c3'
+const spare = 'mac-mini/c4'
+const extra = 'mac-mini/c5'
 
 const summary = (id: string, title: string) => ({
   id,
@@ -54,7 +57,16 @@ const summary = (id: string, title: string) => ({
 const list = {
   machine: 'mac-mini',
   workspaces: [
-    { id: live, label: 'live work', chats: [summary(plan, 'plan the slice'), summary(review, 'review notes')] },
+    {
+      id: live,
+      label: 'live work',
+      chats: [
+        summary(plan, 'plan the slice'),
+        summary(review, 'review notes'),
+        summary(spare, 'spare chat'),
+        summary(extra, 'extra chat'),
+      ],
+    },
     { id: other, label: 'other work', chats: [summary(away, 'away chat')] },
   ],
 }
@@ -71,7 +83,10 @@ function withChats(): { list: FakeWorkspacesServer; layoutReads: string[] } {
   chats.set(plan, transcript('plan', 40))
   chats.set(review, transcript('review', 40))
   chats.set(away, [])
-  const workspaces = fakeWorkspacesServer(chats, list)
+  chats.set(spare, [])
+  chats.set(extra, [])
+  // live work's first tab, the one drawn, holds the two long chats; spare and extra sit in two other tabs.
+  const workspaces = fakeWorkspacesServer(chats, list, { tabs: { [live]: [[plan, review], [spare], [extra]] } })
   const layoutReads: string[] = []
   vi.stubGlobal(
     'fetch',
@@ -142,6 +157,26 @@ describe('a layout change of another workspace renders no transcript entry (W2)'
     fakes.list.layoutChanged(other)
     // The page reads the other workspace's layout again, and draws nothing new for the shown chats.
     await expect.poll(() => fakes.layoutReads.slice(before)).toContain(other)
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    expect(vi.mocked(Markdown).mock.calls.length).toBe(0)
+    expect(getReports()).toEqual([])
+  })
+
+  it('in a move of another chat of the shown workspace to another tab (W2d)', async () => {
+    const fakes = withChats()
+    await tapWorkspaces([1512, 982])
+    await userEvent.click(page.getByRole('button', { name: 'Hide the workspace sidebar' }))
+    await markdownShown(80)
+    vi.mocked(Markdown).mockClear()
+    const before = fakes.layoutReads.length
+    // spare chat moves from tab 2 to tab 3, as the move of another page or of herdr itself does: tab 2 closes.
+    const moved = fakes.list.handle(`/api/chats/${encodeURIComponent(spare)}/move`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ tab: `${live}:t3`, direction: 'row' }),
+    })
+    expect(moved?.status).toBe(204)
+    await expect.poll(() => fakes.layoutReads.slice(before)).toContain(live)
     await new Promise((resolve) => setTimeout(resolve, 400))
     expect(vi.mocked(Markdown).mock.calls.length).toBe(0)
     expect(getReports()).toEqual([])

@@ -170,6 +170,25 @@ export function openChat(data: WorkspacesData, ui: WorkspacesUi, chat: string): 
   }
 }
 
+/**
+ * The ui change that shows a moved chat in the tab it went to (W2d): `layout`, the page's layout of that tab, becomes
+ * the workspace's, and the chat the focused pane when that workspace is shown. Herdr's next layout change of the
+ * workspace replaces it with its active tab (`withLoadedLayouts`), as it does a chat opened from the sidebar.
+ */
+export function showMovedChat(
+  ui: WorkspacesUi,
+  current: string | null,
+  workspace: string,
+  chat: string,
+  layout: WorkspaceLayout,
+): Partial<WorkspacesUi> {
+  const shown = (ui.workspace ?? current) === workspace
+  return {
+    layouts: { ...ui.layouts, [workspace]: { ...layout, sideChatOpen: ui.layouts?.[workspace]?.sideChatOpen } },
+    ...(shown ? { focusedPane: chat, resize: null } : {}),
+  }
+}
+
 /** Each layout of `layouts` as JSON, by workspace id: what `layoutsSeen` holds. */
 export const layoutsSeenOf = (layouts: WorkspacesUi['layouts']): Record<string, string> =>
   Object.fromEntries(Object.entries(layouts ?? {}).map(([id, layout]) => [id, JSON.stringify(layout)]))

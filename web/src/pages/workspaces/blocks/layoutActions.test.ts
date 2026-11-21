@@ -1,6 +1,7 @@
+import { TabId } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import type { PaneAction, WorkspacesData } from '../types.ts'
-import { herdrFocuses, swapTargets, withLayoutActions, zoomedTab } from './layoutActions.ts'
+import { herdrFocuses, moveTargets, swapTargets, withLayoutActions, zoomedTab } from './layoutActions.ts'
 
 // W2: which layout actions a pane's menu and a chat's actions offer, from the herdr tabs the page read.
 const data: Pick<WorkspacesData, 'liveTabs'> = {
@@ -86,5 +87,44 @@ describe('the live tab helpers (W2)', () => {
     expect(zoomedTab(data, 'w1')?.focused).toBe('b')
     expect(zoomedTab(data, 'w2')).toBeUndefined()
     expect(zoomedTab(data, null)).toBeUndefined()
+  })
+})
+
+describe('Move to tab… (W2d)', () => {
+  const tabs: Pick<WorkspacesData, 'liveTabs'> = {
+    liveTabs: {
+      w1: [
+        { id: TabId.parse('m/w1:t1'), label: 'main', active: true, chats: ['a', 'b'], focused: 'a', zoomed: false },
+        { id: TabId.parse('m/w1:t2'), label: '', active: false, chats: ['c'], focused: 'c', zoomed: false },
+        { id: TabId.parse('m/w1:t3'), label: 'logs', active: false, chats: ['d', 'e'], focused: 'd', zoomed: true },
+      ],
+      w2: [{ id: TabId.parse('m/w2:t1'), label: 'solo', active: true, chats: ['f'], focused: 'f', zoomed: false }],
+    },
+  }
+
+  it("lists the workspace's other tabs by name, a tab with no name by its place, and whether herdr zooms each", () => {
+    expect(moveTargets(tabs, 'a')).toEqual([
+      { id: TabId.parse('m/w1:t2'), label: 'Tab 2', zoomed: false },
+      { id: TabId.parse('m/w1:t3'), label: 'logs', zoomed: true },
+    ])
+    expect(moveTargets(tabs, 'c').map((t) => t.label)).toEqual(['main', 'logs'])
+    expect(moveTargets(tabs, 'f')).toEqual([])
+    expect(moveTargets(tabs, 'x')).toEqual([])
+  })
+
+  it('offers Move to tab… after Swap with… in the workbench only, and none in a workspace of one tab', () => {
+    expect(values(withLayoutActions(sample, tabs, 'b', 'pane'))).toEqual([
+      'rename:Rename chat',
+      'focus:Focus in terminal',
+      'zoom:Zoom pane',
+      'swap:Swap with…',
+      'moveTab:Move to tab…',
+      'splitRight:Split right',
+      'splitDown:Split down',
+      'close:Close pane…',
+    ])
+    expect(values(withLayoutActions(sample, tabs, 'f', 'pane'))).not.toContain('moveTab:Move to tab…')
+    expect(values(withLayoutActions(sample, tabs, 'b', 'desktopChat'))).not.toContain('moveTab:Move to tab…')
+    expect(values(withLayoutActions(sample, tabs, 'b', 'chat'))).not.toContain('moveTab:Move to tab…')
   })
 })

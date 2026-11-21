@@ -4,7 +4,7 @@ import { ChatSummary, LayoutNode, TabLayout, chatsOf } from '@bridge/contract'
 import { describe, expect, it } from 'vitest'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { workspacesHome } from './home.ts'
-import { layoutOfTab } from './liveLayout.ts'
+import { layoutOfLiveTab, layoutOfTab, liveTabsOf } from './liveLayout.ts'
 import type { WorkspacesUi } from './types.ts'
 
 const pane = (local: string) => ({ kind: 'pane', chat: `mac-mini/${local}` }) as const
@@ -220,5 +220,19 @@ describe('withLoadedLayouts', () => {
     const changed = { layouts: { w: mine }, focusedPane: 'b', resize, layoutsSeen: layoutsSeenOf({ w: one }) }
     expect(withLoadedLayouts(ui({ w: two }), changed, 'w').resize).toBeNull()
     expect(withLoadedLayouts(ui({ w: one }), changed, 'w').resize).toEqual(resize)
+  })
+})
+
+describe('layoutOfLiveTab (W2d)', () => {
+  it('draws a tab the workbench follows a moved chat to, with that chat focused, and its label kept', () => {
+    // herdr focuses e in this tab; the page draws it from b's place, the moved chat, so b is drawn and focused.
+    const [live] = liveTabsOf([
+      tab(row(0.5, pane('a'), row(0.5, pane('b'), row(0.5, pane('c'), row(0.5, pane('d'), pane('e'))))), 'e', false),
+    ])
+    if (live === undefined) throw new Error('no tab')
+    expect(live.label).toBe('main')
+    expect(layoutOfLiveTab(live, 'b')).toMatchObject({ panes: ['a', 'b', 'd', 'c'], focusedPane: 'b' })
+    expect(layoutOfLiveTab(live, 'x')).toBeUndefined()
+    expect(layoutOfLiveTab({ ...live, root: undefined }, 'b')).toBeUndefined()
   })
 })

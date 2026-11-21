@@ -17,14 +17,16 @@
 // focus the chat in herdr (`layout`). The panes move only when the new
 // layout comes. Split right and Split down (W2c) put a new shell pane
 // beside the chat or below it; with `onResize` (a live split) a dragged
-// handle's sizes go there, not to the ui.
+// handle's sizes go there, not to the ui. Move to tab… (W2d) lists the
+// workspace's other herdr tabs; a pick opens its dialog (`ui.chatDialog`
+// `moveTab`, for the chat in `ui.commandFor` and the tab in `ui.moveToTab`).
 // Props only; `ui` says which pane is focused and which menu,
 // skill list or side chat is open.
 import { SplitPanes } from '@eshelton328/component-library-1701'
 import type { ResizePart, WorkbenchPane, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import { isChatCommand, withCommands } from './chatCommands.ts'
-import { type LayoutWrites, swapTargets, tabOf, withLayoutActions } from './layoutActions.ts'
+import { type LayoutWrites, moveTargets, swapTargets, tabOf, withLayoutActions } from './layoutActions.ts'
 import { ChatPane, type ChatFiles, type ChatPending, type TranscriptWatch } from './ChatPane.tsx'
 import type { DraftBook } from './draftBook.ts'
 import { EmptyPane } from './EmptyPane.tsx'
@@ -54,7 +56,7 @@ const readoutPane: Record<ResizePart, { place: number; placement: 'end' | 'botto
 }
 
 // The layout actions that are off while a write of their pane waits (W2).
-const layoutValues = new Set(['focus', 'zoom', 'unzoom', 'swap', 'close', 'splitRight', 'splitDown'])
+const layoutValues = new Set(['focus', 'zoom', 'unzoom', 'swap', 'close', 'splitRight', 'splitDown', 'moveTab'])
 
 export type WorkbenchPanesProps = {
   data: WorkspacesData
@@ -148,6 +150,14 @@ export function WorkbenchPanes({
             : (other) => {
                 onUiChange?.({ menuFor: null, moveOpen: false })
                 live.swap(pane.id, other)
+              }
+        }
+        moveTabs={live === undefined ? undefined : moveTargets(data, pane.id)}
+        onMoveTab={
+          live === undefined
+            ? undefined
+            : (moveToTab) => {
+                onUiChange?.({ menuFor: null, moveOpen: false, chatDialog: 'moveTab', commandFor: pane.id, moveToTab })
               }
         }
         targets={targets}

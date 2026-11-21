@@ -126,3 +126,15 @@ What still differs from Figma after moving the Workbench onto the library's
   split. The icons are `ArrowRightIcon` and `ArrowDownIcon` until the
   library has split icons. This frame's fixture chats are not live, so
   its render does not change.
+- **Live move to tab (W2d, Move to tab; not drawn in this frame).** A
+  live chat's pane menu adds Move to tab… after Swap with… when its
+  workspace has another herdr tab. Its list names the other tabs by
+  their herdr labels; a tab herdr zooms is off, with "zoomed" at its
+  end. A pick opens a dialog with Place (beside the tab's focused pane,
+  or beside a named pane of that tab) and Side (Right or Below), then
+  Move. The pane moves only when the server's events bring the new
+  layout, and the workbench then shows the tab it went to. Figma draws
+  no move-to-tab control: the saved frames and their notes have only
+  Move to workspace. The row's icon is `MoveIcon` until the library has
+  a tab icon. This frame's fixture chats are not live, so its render
+  does not change.

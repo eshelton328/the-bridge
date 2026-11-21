@@ -1,16 +1,21 @@
 // The page's layout writes of live chats (slice W2): focus, zoom, swap,
-// close and split, and a split's ratio, through liveLayoutWrites.ts, loaded
+// close, split and move to another tab (W2d), and a split's ratio, through liveLayoutWrites.ts, loaded
 // when first used so a build has no live code. There is no optimistic
 // layout: after a 204 (a split's 201) the write stays pending, and its
 // control shows it, until the next layout read changes that workspace's tabs
 // (the server's `layout.changed`), or for 2.5 s, after which the page reads
-// the layout again itself, and the list after a close or a split. One write at a time
+// the layout again itself, and the list after a close, a split or a move. One write at a time
 // for a chat; a workspace's newer ratio takes the place of one that waits. A
 // focus goes only to a chat herdr does not focus already. A stale view (409
-// singlePane, otherTab) reads the layout again quietly, a 404 the list (a
+// singlePane, otherTab, sameTab) reads the layout again quietly, and 409
+// zoomedTab with its line in the status bar; a 404 reads the list (a
 // split's the layout too, a ratio's the layout only); any other miss but a close's shows one line in
 // the status bar ("Not zoomed — herdr-unavailable"), and a close's shows in
-// its dialog.
+// its dialog. A move of the open pane (`follow`) shows the tab it went to
+// once a layout read has the chat there: `onFollow` gets the workspace, the
+// chat and the page's layout of that tab, and the page's ui takes it until
+// herdr's next layout change of the workspace, as a chat opened from the
+// sidebar does.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { report } from '../../errors/reporter.ts'
 import {
@@ -22,7 +27,13 @@ import {
   tabOf,
 } from './blocks/layoutActions.ts'
 import type { WriteAnswer } from './liveLayoutWrites.ts'
-import type { WorkspacesData } from './types.ts'
+import type { WorkspaceLayout, WorkspacesData } from './types.ts'
+
+/** Shows the tab a moved chat went to: its workspace (the page's ID), the chat and the page's layout of that tab. */
+export type FollowMove = (workspace: string, chat: string, layout: WorkspaceLayout) => void
+
+/** A move of the open pane that the workbench follows: the tab it left and the tab it goes to (server IDs). */
+type Follow = { readonly from: string | undefined; readonly to: string }
 
 /** How long a write that went through waits for `layout.changed` before the page reads the layout again, in ms. */
 const layoutEventWaitMs = 2500
@@ -54,11 +65,31 @@ const closeLines = {
 } as const
 
 /** The layout writes of the live page, or none when the page shows fixtures. */
-export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrites | undefined {
+export function useLayoutWrites(live: boolean, data: WorkspacesData, onFollow?: FollowMove): LayoutWrites | undefined {
   const [pending, setPending] = useState<ReadonlyMap<string, LayoutWriteAction>>(() => new Map())
   const [line, setLine] = useState<string>()
   const dataRef = useRef(data)
   const pendingRef = useRef(new Map<string, Pending>())
+  const followRef = useRef(onFollow)
+  // A page that leaves waits for nothing: no write that answers later reads the layout again.
+  const aliveRef = useRef(true)
+  // The moves of an open pane that the server took, by local chat ID, until a layout read shows the chat out of its tab.
+  const followsRef = useRef(new Map<string, Follow>())
+  // Each follow whose chat a layout read shows in another tab ends: in the tab it went to, the workbench shows that tab.
+  const follow = useCallback(() => {
+    for (const [chat, f] of followsRef.current) {
+      const found = tabOf(dataRef.current, chat)
+      if (found?.tab.id === f.from) continue
+      followsRef.current.delete(chat)
+      const there = found?.tab.id === f.to ? found : undefined
+      if (there === undefined) continue
+      const { workspace, tab } = there
+      void import('./liveLayout.ts').then((m) => {
+        const layout = m.layoutOfLiveTab(tab, chat)
+        if (aliveRef.current && layout !== undefined) followRef.current?.(workspace, chat, layout)
+      })
+    }
+  }, [])
   // Ends the wait of `key`: of the write `entry` only, when given, as a newer ratio may have taken its place.
   const done = useCallback((key: string, entry?: Pending) => {
     const was = pendingRef.current.get(key)
@@ -67,21 +98,23 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
     pendingRef.current.delete(key)
     setPending(new Map([...pendingRef.current].map(([id, p]) => [id, p.action])))
   }, [])
-  // A page that leaves waits for nothing: no write that answers later reads the layout again.
-  const aliveRef = useRef(true)
   useEffect(() => {
     aliveRef.current = true
     const waits = pendingRef.current
+    const follows = followsRef.current
     return () => {
       aliveRef.current = false
       for (const p of waits.values()) clearTimeout(p.timer)
+      follows.clear()
     }
   }, [])
   // A new layout read of a pending write's workspace ends the wait of each write the server took.
   useLayoutEffect(() => {
     dataRef.current = data
+    followRef.current = onFollow
     for (const [chat, p] of pendingRef.current)
       if (p.timer !== undefined && tabsJson(data, p.workspace) !== p.seen) done(chat)
+    if (followsRef.current.size > 0) follow()
   })
 
   /**
@@ -113,15 +146,18 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
           else
             entry.timer = setTimeout(() => {
               readAgain(server)
-              // A close drops the chat from the list and a split adds its shell (`workspaces.changed`): the panes and the
-              // sidebar draw the list's chats.
-              if (action === 'close' || action === 'split') readAgain(server, true)
+              // A close drops the chat from the list, a split adds its shell and a move can close a tab
+              // (`workspaces.changed`): the panes and the sidebar draw the list's chats.
+              if (action === 'close' || action === 'split' || action === 'move') readAgain(server, true)
               done(key, entry)
             }, layoutEventWaitMs)
           return answer
         }
         done(key, entry)
-        if (answer.kind === 'stale') readAgain(server)
+        if (answer.kind === 'stale') {
+          readAgain(server)
+          if (answer.line !== undefined) setLine(answer.line)
+        }
         if (answer.kind === 'gone') {
           // A ratio's tab or split is gone from the layout; a chat's write finds the chat gone from the list too.
           if (action === 'ratio' || action === 'split') readAgain(server)
@@ -173,6 +209,17 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
       split: (chat, direction) => {
         void startChat(chat, 'split', (m, id) => m.splitChat(id, direction))
       },
+      move: (chat, { tab, direction, beside }, open) => {
+        const from = tabOf(dataRef.current, chat)?.tab.id
+        void startChat(chat, 'move', (m, id, machine) =>
+          m.moveChat(id, { tab, direction, ...(beside === undefined ? {} : { beside: `${machine}/${beside}` }) }),
+        )?.then((answer) => {
+          if (answer.kind !== 'done' || !open || !aliveRef.current) return
+          followsRef.current.set(chat, { from, to: tab })
+          // The event may have come before the 204: the layout read now may have the chat in its new tab.
+          follow()
+        })
+      },
       ratio: (workspace, write) =>
         start(
           ratioKey(workspace),
@@ -182,7 +229,7 @@ export function useLayoutWrites(live: boolean, data: WorkspacesData): LayoutWrit
           true,
         ) !== undefined,
     }),
-    [pending, line, start, startChat],
+    [pending, line, start, startChat, follow],
   )
   return live ? writes : undefined
 }

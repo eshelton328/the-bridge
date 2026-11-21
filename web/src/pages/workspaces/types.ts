@@ -201,10 +201,11 @@ export type WorkbenchPane = z.infer<typeof WorkbenchPane>
  * One herdr tab of a live workspace (slice W2), from its layout read: whether it is the tab the workspace shows, its
  * panes' chats by local id in tree order, the chat herdr focuses and whether herdr zooms that pane. The page draws only
  * the active tab; a zoomed tab draws only its focused pane. Its server ID and split tree (server chat IDs) are what a
- * dragged handle's ratio write names (W2c, `blocks/splitRatio.ts`).
+ * dragged handle's ratio write names (W2c, `blocks/splitRatio.ts`). Its herdr label names it in Move to tab… (W2d).
  */
 export const LiveTab = z.object({
   id: TabId.optional(),
+  label: z.string().optional(),
   root: LayoutNode.optional(),
   active: z.boolean(),
   chats: z.array(z.string()),
@@ -233,6 +234,7 @@ export const PaneAction = z.object({
     'swap',
     'splitRight',
     'splitDown',
+    'moveTab',
   ]),
   label: z.string(),
   /** `true`: the row shows and cannot be picked, such as /compact while the chat works (W5). */
@@ -975,6 +977,8 @@ export const WorkspacesUi = z.object({
    * the focused pane while the dialog is open (a live layout) does not send the command to another chat.
    */
   commandFor: z.string().nullable().optional(),
+  /** The herdr tab (its server ID) that the Move to tab… dialog of the chat in `commandFor` moves it to (W2d). */
+  moveToTab: z.string().nullable().optional(),
   /** The list of the chat's folders is open over the composer (D4). */
   foldersOpen: z.boolean().optional(),
   /** The folder picker shows beside the main chat, in place of the side chat (D4). */
