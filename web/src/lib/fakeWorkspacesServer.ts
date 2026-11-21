@@ -87,6 +87,7 @@ import {
   chatsOf,
   LayoutChangedEvent,
   type LayoutNode,
+  type ModelAlias,
   MoveChatRequest,
   RestartModelRequest,
   SetEffortRequest,
@@ -668,6 +669,10 @@ export function fakeWorkspacesServer(
     /** Answers each next effort change with `answer` until it is set to undefined. */
     answerEffort: (answer: (() => Response) | undefined) => {
       effortAnswer = answer
+    },
+    /** Lists `model` for `chat`, as the server does once a restart started the new chat (W10), and tells the streams. */
+    setModel: (chat: string, model: ModelAlias) => {
+      update((c) => (c.id === chat ? { ...c, model, modelId: model } : c))
     },
     /** Each model restart the page posted (W10), with its chat as the server read it. */
     models,

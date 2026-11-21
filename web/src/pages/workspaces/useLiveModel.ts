@@ -31,22 +31,41 @@ type ChatModel = {
 /** The text of a chat's composer while its restart runs. */
 const restartingText = modelLines.restarting
 
+/**
+ * How the list `data` ends `chat`'s `starting` restart: the line to show (none for idle or done), "That chat is gone"
+ * when it is not listed, or `undefined` while it works or starts.
+ */
+function endOf(data: WorkspacesData, chat: string): { said: string | undefined } | undefined {
+  const pane = data.panes.find((p) => p.id === chat)
+  if (pane === undefined) return { said: modelLines.gone }
+  const tone = pane.type === 'chat' ? pane.head.status.tone : undefined
+  if (tone === 'needsYou') return { said: modelLines.needsYou }
+  return tone === 'idle' || tone === 'done' ? { said: undefined } : undefined
+}
+
 /** The chats whose `starting` restart the list `data` ends: idle, done or needing the owner, or gone. */
 function settled(chats: ReadonlyMap<string, ChatModel>, data: WorkspacesData): ReadonlyMap<string, ChatModel> {
   let next: Map<string, ChatModel> | undefined
   for (const [chat, entry] of chats) {
     const waitFor = entry.restarting?.waitFor
     if (waitFor === undefined || waitFor === data) continue
-    const pane = data.panes.find((p) => p.id === chat)
-    const tone = pane?.type === 'chat' ? pane.head.status.tone : undefined
-    let said: string | undefined
-    if (tone === 'needsYou') said = modelLines.needsYou
-    else if (pane === undefined) said = modelLines.gone
-    else if (tone !== 'idle' && tone !== 'done') continue
+    const end = endOf(data, chat)
+    if (end === undefined) continue
     next ??= new Map(chats)
-    next.set(chat, { said, set: entry.set })
+    next.set(chat, { said: end.said, set: entry.set })
   }
   return next ?? chats
+}
+
+/**
+ * Whether `list`, read after the restart began (`before` is the list then), already shows the restarted chat: it lists
+ * `model` for it, which the server does only once the new chat runs, and the chat idle, done or needing the owner.
+ */
+function restartedIn(list: WorkspacesData, before: WorkspacesData, chat: string, model: ModelAlias) {
+  if (list === before) return undefined
+  const pane = list.panes.find((p) => p.id === chat)
+  if (pane?.type !== 'chat' || pane.head.modelId !== model) return undefined
+  return endOf(list, chat)
 }
 
 /** `data` with the composer of each chat whose restart runs off, saying so. */
@@ -91,6 +110,7 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
       if (inFlightRef.current.has(chat)) return
       inFlightRef.current.add(chat)
       change(chat, { restarting: {} })
+      const before = dataRef.current
       void import('./liveModel.ts')
         .then(
           (m) => m.restartModel(liveChat, model),
@@ -103,15 +123,20 @@ export function useLiveModel(on: boolean, data: WorkspacesData, onRestarted: (li
           inFlightRef.current.delete(chat)
           const list = dataRef.current
           switch (answer.kind) {
-            case 'restarted':
+            case 'restarted': {
               // The chat's transcript stream may have ended while the chat was gone from the list: read it again.
               restartedRef.current(liveChat)
+              // A list read during the request may already show the new chat settled; no event may follow it.
+              const shown = answer.state === 'starting' ? restartedIn(list, before, chat, model) : undefined
+              const waits = answer.state === 'starting' && shown === undefined
+              const said = answer.state === 'needsYou' ? modelLines.needsYou : shown?.said
               change(chat, {
                 set: { model, list },
-                ...(answer.state === 'starting' ? { restarting: { waitFor: list } } : {}),
-                ...(answer.state === 'needsYou' ? { said: modelLines.needsYou } : {}),
+                ...(waits ? { restarting: { waitFor: list } } : {}),
+                ...(said === undefined ? {} : { said }),
               })
               return
+            }
             case 'failed':
               change(chat, {})
               setFailed(answer.session)

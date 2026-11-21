@@ -337,6 +337,34 @@ describe("a live chat's model picker (W10)", () => {
     expect(fakes.list.models).toHaveLength(1)
   })
 
+  it('ends a starting restart that a list read during the request already shows', async () => {
+    const { hold, release } = gate()
+    const fakes = withChats(hold)
+    await tapWorkspaces(phone)
+    await tapChat('plan the slice')
+    fakes.list.answerModel(
+      () =>
+        new Response(JSON.stringify({ state: 'starting', chat: plan }), {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+    )
+    await pickModel('Opus 5.5 · medium effort', 'Sonnet')
+    await userEvent.click(restart())
+    await expect.element(chip('Restarting…')).toBeVisible()
+    // The new chat runs and the list says so before the answer comes; no event follows it.
+    fakes.list.setModel(plan, 'sonnet')
+    // The chip's closed menu checks the list's family, so it shows when the page has read that list.
+    await expect
+      .poll(() =>
+        [...document.querySelectorAll('[role="menuitemradio"][aria-checked="true"]')].map((e) => e.textContent),
+      )
+      .toEqual(['Sonnet'])
+    release()
+    await expect.element(chip('Sonnet · medium effort')).toBeVisible()
+    await expect.element(box()).toBeEnabled()
+  })
+
   it('says the chat needs the owner after a restart that needs him', async () => {
     const fakes = withChats()
     await tapWorkspaces(desktop)
