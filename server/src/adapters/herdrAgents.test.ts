@@ -463,6 +463,49 @@ describe('herdr agents: input to a chat', () => {
       }
     })
 
+    it('lists the set effort only for its own pane when two panes resume one session', async () => {
+      const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
+      const agents = port()
+      const efforts = async () => {
+        const listed = await agents.listWorkspaces()
+        return listed.ok ? listed.value.flatMap((w) => w.chats).map((c) => c.effort) : []
+      }
+      const first = results['agent.list'].agents.find((a) => a.pane_id === 'w17:p1')
+      if (first === undefined) throw new Error('no w17:p1 in the list')
+      // A shared session gives each pane a new chat ID; find w17:p1's by its pane.
+      const alone = await agents.listWorkspaces()
+      const pane = alone.ok ? alone.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.pane : undefined
+      // Another listed agent pane runs Claude and resumes the same session.
+      const other = results['agent.list'].agents.find((a) => a.pane_id !== 'w17:p1')
+      if (other === undefined) throw new Error('no second agent pane in the list')
+      socket.set('agent.list', {
+        ...results['agent.list'],
+        agents: results['agent.list'].agents.map((a) =>
+          a.pane_id === 'w17:p1'
+            ? { ...a, agent_status: 'idle' }
+            : a === other
+              ? { ...a, agent: 'claude', agent_session: first.agent_session, cwd: first.cwd }
+              : a,
+        ),
+      })
+      socket.set('pane.read', paneRead('w17:p1', marked('high')))
+      socket.onRequest((method) => {
+        if (method === 'agent.send_keys') socket.set('pane.read', paneRead('w17:p1', marked('xhigh')))
+      })
+      try {
+        const before = (await efforts()).filter((e) => e === 'xhigh').length
+        const listed = await agents.listWorkspaces()
+        const shared = listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.pane === pane)?.id : undefined
+        if (shared === undefined) throw new Error('no chat for w17:p1')
+        expect(await agents.setEffort(shared, 'xhigh')).toEqual({ ok: true, value: 'set' })
+        expect((await efforts()).filter((e) => e === 'xhigh').length).toBe(before + 1)
+      } finally {
+        socket.onRequest(undefined)
+        socket.set('pane.read', undefined)
+        socket.set('agent.list', undefined)
+      }
+    })
+
     it('sets low only after the screen showed medium, so keys that change nothing are not set', async () => {
       const marked = (level: string) => claudeScreen('').replace(/─{8,}/, (line) => `${line} ◐ ${level} · /effort ─`)
       const keys = () =>

@@ -422,10 +422,12 @@ export function createHerdrAgents({
   const paneIdOf = (terminal: string): PaneId => PaneId.parse(`${machine}/${hashOf(`pane:${terminal}`).slice(0, 20)}`)
 
   /**
-   * The effort that `setEffort` set for each Claude session file, with the file's change time then: the keys write
-   * nothing to the file, so the list shows this level until a newer write (the next turn) names its own.
+   * The effort that `setEffort` set for each pane and its Claude session file, with the file's change time then: the
+   * keys write nothing to the file, so the list shows this level until a newer write (the next turn) names its own.
+   * The key holds the pane too, as two panes can resume one session and each keeps its own effort.
    */
   const setEfforts = new Map<string, { readonly effort: KeyEffort; readonly mtimeMs: number }>()
+  const effortKey = (pane: string, path: string) => JSON.stringify([pane, path])
   const mtimeOf = (path: string) =>
     stat(path).then(
       (s) => s.mtimeMs,
@@ -445,9 +447,11 @@ export function createHerdrAgents({
       path === undefined
         ? { model: null, contextUsed: null, effort: null }
         : await readClaudeSession(path, undefined, windows)
-    const set = path === undefined ? undefined : setEfforts.get(path)
-    if (path !== undefined && set !== undefined && (await mtimeOf(path)) !== set.mtimeMs) setEfforts.delete(path)
-    const kept = path === undefined ? undefined : setEfforts.get(path)?.effort
+    const key = path === undefined ? undefined : effortKey(agent.pane_id, path)
+    const set = key === undefined ? undefined : setEfforts.get(key)
+    if (path !== undefined && key !== undefined && set !== undefined && (await mtimeOf(path)) !== set.mtimeMs)
+      setEfforts.delete(key)
+    const kept = key === undefined ? undefined : setEfforts.get(key)?.effort
     return {
       id: chatIdOf(agent, shared),
       kind,
@@ -849,7 +853,7 @@ export function createHerdrAgents({
     const agents = await call('agent.list', AgentList)
     const agent = agents.ok ? agents.value.agents.find((a) => a.pane_id === pane) : undefined
     const path = agent === undefined ? undefined : sessionPath(agent)
-    if (path !== undefined) setEfforts.set(path, { effort, mtimeMs: await mtimeOf(path) })
+    if (path !== undefined) setEfforts.set(effortKey(pane, path), { effort, mtimeMs: await mtimeOf(path) })
     for (const tellList of listTellers) tellList()
   }
 
