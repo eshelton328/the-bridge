@@ -295,6 +295,9 @@ const putBackReadGapMs = 100
 const submitReadGapsMs = [30, 50, 70, 100, 150, 150, 150, 150, 150, 150, 150]
 
 /** The time of each step of one send, in ms, for the log; never its text. */
+/** How long after a send an empty box, with no read that showed the prompt, counts as the prompt taken. */
+const emptyProofMs = 150
+
 type SendSteps = { boxMs?: number; promptMs?: number; checkMs?: number; checkReads?: number }
 const msSince = (start: number) => Date.now() - start
 
@@ -682,11 +685,19 @@ export function createHerdrAgents({
     steps: SendSteps,
   ): Promise<{ box: InputBox; ours: boolean } | null> => {
     let left: { box: InputBox; ours: boolean } | null = null
+    let waited = 0
     for (const gap of submitReadGapsMs) {
       await new Promise((resolve) => setTimeout(resolve, gap))
+      waited += gap
       const now = await inputBox(pane)
       steps.checkReads = (steps.checkReads ?? 0) + 1
-      if (!now.ok || now.value === null || now.value.text === '') return null
+      if (!now.ok || now.value === null) return null
+      // An empty box shows that the chat took the prompt only once the prompt showed there, or after
+      // `emptyProofMs`: an earlier read can come before the prompt shows at all.
+      if (now.value.text === '') {
+        if (left !== null || waited >= emptyProofMs) return null
+        continue
+      }
       left = { box: now.value, ours: boxKeys(now.value).some((key) => hashOf(key) === sent) }
     }
     return left
