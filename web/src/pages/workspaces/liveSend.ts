@@ -9,14 +9,19 @@
 // "Not stopped — <kind>", with Retry when the same request may work later (a
 // 5xx, no answer, a timeout, a 429). A chat that waits for an answer in its
 // terminal (409 `chat-not-ready` needsYou) and a chat that is gone (404)
-// say so. A send to a chat whose terminal input holds text, or one the
-// server cannot read (409 inputNotEmpty, W1-3: after a Stop, Claude Code
-// puts the stopped prompt back there), asks the owner to clear it, with no
+// say so. A send to a chat whose terminal input holds text (409
+// inputNotEmpty, W1-3: after a Stop, Claude Code puts the stopped prompt
+// back there) asks the owner to clear it, with no
 // Retry and no report, and offers "Clear the terminal input": `POST
 // /api/chats/:chat/input/clear` with `{}` to the same chat, which answers 204
 // once the input is empty (R28 part B); its misses say "Not cleared — …". A
 // send that Claude Code did not take (409 notSubmitted: the server typed it
-// and removed it again) says so, with Retry and no report. A Stop that finds the chat not working (409
+// and removed it again) says so, with Retry and no report. A send, a command
+// or a clear whose chat input box the server cannot find on the screen (409
+// inputUnreadable: a dialog, or a box it does not know; backend #339) sent
+// nothing and says "cannot read this chat's input box. Look at the chat on
+// the Mac.", with no Retry, no offer to clear and no report: it is a state of
+// the chat, not a fault. A Stop that finds the chat not working (409
 // notWorking) is quiet: the chat stopped already. report() gets a ChatSendMissError for a 5xx and
 // for an answer the page does not expect, with the action, the miss's kind
 // and the HTTP status only: never the message text, the chat ID or the
@@ -66,6 +71,9 @@ class ChatSendMissError extends Error {
   }
 }
 
+/** The line's words for a chat whose input box the server cannot find on the screen (409 inputUnreadable). */
+const inputUnreadableText = "cannot read this chat's input box. Look at the chat on the Mac."
+
 /** The send line's words for a chat whose terminal input holds text. */
 const inputNotEmptyText = "clear the text in the chat's terminal input, then send"
 
@@ -108,6 +116,7 @@ async function missOf(
   switch (error.kind) {
     case 'chat-not-ready':
       if (error.state === 'needsYou') return line(action, 'chat waits for an answer in the terminal', false)
+      if (error.state === 'inputUnreadable') return line(action, inputUnreadableText, false)
       if (action === 'send' && error.state === 'inputNotEmpty')
         return { ...line(action, inputNotEmptyText, false), clearInput: clear }
       if (action === 'clear' && error.state === 'inputNotEmpty') return line(action, 'the text is still there', false)
