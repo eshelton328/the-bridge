@@ -3,7 +3,8 @@
 // moves straight up until it covers none of them. The parts are every
 // library composer (`.composer__root`, its Send and Stop) and every alert,
 // which holds each error line with Retry: a send's or a stop's line under a
-// composer, a transcript's line, the live notice. The place comes from the
+// composer, a transcript's line, the live notice, and the button to a
+// chat's newest message (`[data-newest-slot]`, NewestButton). The place comes from the
 // boxes the page draws now, so it follows a composer's real height (a long
 // draft, the phone's keyboard) with no fixed offset. A tray that cannot clear
 // them all stops at the window's top.
@@ -12,7 +13,7 @@
 export type Box = { readonly top: number; readonly right: number; readonly bottom: number; readonly left: number }
 
 /** The parts the tray must never cover. */
-const keepClearSelector = '.composer__root, [role="alert"]'
+const keepClearSelector = '.composer__root, [role="alert"], [data-newest-slot]'
 
 /** The tray's distance from the window's edges at rest, in px: the `12` of its CSS. */
 export const trayInset = 12

@@ -21,6 +21,17 @@
 // keyboard (its trace shows a scroll to an old place 1.3 s after Send with no
 // touch), goes back to the end in the same frame, before the browser paints.
 // A scroll of any kind that reaches the end pins again.
+//
+// Scroll to the newest message (the owner's request, 2026-11-21): `newest`
+// says whether the reader is more than one screen above the end, and whether
+// new entries came in since he left it, as a small store that only the button
+// (`NewestButton`) reads, so a scroll renders neither the pane nor its
+// entries. Its `jump` pins the transcript and scrolls to the end smoothly (at
+// once with prefers-reduced-motion); that scroll is not the reader's, and the
+// pin does not snap it to the end while it runs, so it glides there unless
+// the reader takes over. A press on the button is not reader input. The
+// button's own slot sits in the scroller (`newestSlot`); its coming and going
+// is not a new entry and moves nothing.
 import { useCallback, useLayoutEffect, useRef, useState } from 'react'
 
 /** How near the end, in px, still counts as the end: a scroll position can be a fraction short of it. */
@@ -35,9 +46,63 @@ const readerScrollMs = 500
 /** The keys that scroll a focused scroller. */
 const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '])
 
-const atEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight <= endSlack
+/** How long a smooth scroll to the end may take before the transcript jumps there, in ms. */
+const seekLimitMs = 1200
+
+/** The attribute on the button's slot in the scroller: a change inside it is not an entry, a press in it not the reader's. */
+export const newestSlot = 'data-newest-slot'
+
+const fromEnd = (el: HTMLElement) => el.scrollHeight - el.scrollTop - el.clientHeight
+const atEnd = (el: HTMLElement) => fromEnd(el) <= endSlack
 const toEnd = (el: HTMLElement) => {
   el.scrollTop = el.scrollHeight
+}
+const ours = (node: EventTarget | Node | null) => node instanceof Element && node.closest(`[${newestSlot}]`) !== null
+const reducedMotion = () =>
+  typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+/** What the button to the newest message shows now. */
+export type NewestView = {
+  /** The reader is more than one screen above the end. */
+  readonly shown: boolean
+  /** New entries came in while the reader was away from the end. */
+  readonly unseen: boolean
+}
+
+/** The button's store: one `NewestView` object until it changes. */
+export type Newest = {
+  readonly subscribe: (listener: () => void) => () => void
+  readonly view: () => NewestView
+  /** Scrolls to the end and pins the transcript there again. */
+  readonly jump: () => void
+}
+
+const hidden: NewestView = { shown: false, unseen: false }
+
+function newestStore() {
+  const listeners = new Set<() => void>()
+  let current = hidden
+  let jumper: (() => void) | undefined
+  return {
+    subscribe: (listener: () => void) => {
+      listeners.add(listener)
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+    view: () => current,
+    jump: () => {
+      jumper?.()
+    },
+    set: (next: NewestView) => {
+      if (next.shown === current.shown && next.unseen === current.unseen) return
+      current = next.shown || next.unseen ? next : hidden
+      for (const listener of listeners) listener()
+    },
+    bind: (next: (() => void) | undefined) => {
+      jumper = next
+    },
+  }
 }
 
 /** A key press in a field types text; it does not scroll the transcript. */
@@ -45,11 +110,12 @@ const typing = (target: EventTarget | null) =>
   target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'))
 
 /**
- * Pins the transcript of the ScrollFrame around the element that gets the returned ref to its end while `enabled`.
- * A new `key` (another chat in the same pane) opens that chat at its end again.
+ * Pins the transcript of the ScrollFrame around the element that gets the returned `ref` to its end while `enabled`.
+ * A new `key` (another chat in the same pane) opens that chat at its end again. `newest` is the button's store.
  */
-export function usePinnedEnd(enabled: boolean, key: string) {
+export function usePinnedEnd(enabled: boolean, key: string): { ref: (el: HTMLElement | null) => void; newest: Newest } {
   const [scroller, setScroller] = useState<HTMLElement | null>(null)
+  const [newest] = useState(newestStore)
   const pinnedRef = useRef(true)
   const ref = useCallback((el: HTMLElement | null) => {
     const body = el?.closest('.scroll-frame__root')?.querySelector(':scope > .scroll-frame__body')
@@ -63,14 +129,34 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     // last wheel turn, scroll key, lifted finger or focus move into the transcript.
     const reader = { touching: false, dragging: false, last: Number.NEGATIVE_INFINITY }
     const readerScrolls = () => reader.touching || reader.dragging || performance.now() - reader.last < readerScrollMs
+    // New entries came in while the reader was away from the end.
+    let unseen = false
+    // The button's smooth scroll to the end runs: pinned, but not snapped to the end on each step.
+    let seeking = false
+    let seekTimer: ReturnType<typeof setTimeout> | undefined
+    const stopSeeking = () => {
+      seeking = false
+      clearTimeout(seekTimer)
+    }
+    const show = () => {
+      if (pinnedRef.current) unseen = false
+      const shown = !pinnedRef.current && fromEnd(scroller) > scroller.clientHeight
+      newest.set({ shown, unseen: shown && unseen })
+    }
     const follow = () => {
-      if (pinnedRef.current) toEnd(scroller)
+      if (pinnedRef.current && !seeking) toEnd(scroller)
     }
     const onScroll = () => {
-      if (atEnd(scroller)) pinnedRef.current = true
-      else if (readerScrolls()) pinnedRef.current = false
+      if (atEnd(scroller)) {
+        pinnedRef.current = true
+        stopSeeking()
+      } else if (readerScrolls()) {
+        pinnedRef.current = false
+        stopSeeking()
+      }
       // Pinned, and the reader did not move it: back to the end before the browser paints this frame.
       else follow()
+      show()
     }
     const onTouchMove = () => {
       reader.touching = true
@@ -81,8 +167,8 @@ export function usePinnedEnd(enabled: boolean, key: string) {
       reader.last = performance.now()
     }
     // A wheel turn, and a focus that moves into the transcript, which scrolls the focused entry into view.
-    const onReader = () => {
-      reader.last = performance.now()
+    const onReader = (event: Event) => {
+      if (!ours(event.target)) reader.last = performance.now()
     }
     const onKey = (event: KeyboardEvent) => {
       if (scrollKeys.has(event.key) && !typing(event.target)) reader.last = performance.now()
@@ -90,7 +176,7 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     // A mouse press in the transcript: on its scroll bar, or the start of a text selection, which scrolls the
     // transcript when the drag passes its top or bottom edge.
     const onPointerDown = (event: PointerEvent) => {
-      if (event.pointerType === 'mouse') reader.dragging = true
+      if (event.pointerType === 'mouse' && !ours(event.target)) reader.dragging = true
     }
     const onPointerUp = () => {
       if (!reader.dragging) return
@@ -106,12 +192,44 @@ export function usePinnedEnd(enabled: boolean, key: string) {
       resize.observe(scroller)
       for (const child of scroller.children) resize.observe(child)
     }
-    const mutation = new MutationObserver(() => {
+    const mutation = new MutationObserver((records) => {
+      const real = records.filter(
+        (r) => !ours(r.target) && !(r.target === scroller && [...r.addedNodes, ...r.removedNodes].every(ours)),
+      )
+      if (real.length === 0) return
+      if (!pinnedRef.current && real.some((r) => r.target === scroller && [...r.addedNodes].some((n) => !ours(n))))
+        unseen = true
       observeAll()
+      // An entry that comes in while the button's scroll runs moves its goal to the new end.
+      if (seeking) scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
       follow()
+      show()
+    })
+    newest.bind(() => {
+      // The button asks for the end: what the reader did before it is over.
+      reader.touching = false
+      reader.dragging = false
+      reader.last = Number.NEGATIVE_INFINITY
+      pinnedRef.current = true
+      if (reducedMotion()) {
+        stopSeeking()
+        toEnd(scroller)
+      } else {
+        seeking = true
+        clearTimeout(seekTimer)
+        // A smooth scroll that has not ended by then jumps to the end.
+        seekTimer = setTimeout(() => {
+          if (!seeking) return
+          stopSeeking()
+          follow()
+        }, seekLimitMs)
+        scroller.scrollTo({ top: scroller.scrollHeight, behavior: 'smooth' })
+      }
+      show()
     })
     follow()
     observeAll()
+    show()
     mutation.observe(scroller, { childList: true, subtree: true, characterData: true })
     const passive = { passive: true } as const
     scroller.addEventListener('scroll', onScroll, passive)
@@ -127,6 +245,9 @@ export function usePinnedEnd(enabled: boolean, key: string) {
     view.addEventListener('pageshow', onShow)
     scroller.ownerDocument.addEventListener('visibilitychange', onShow)
     return () => {
+      stopSeeking()
+      newest.bind(undefined)
+      newest.set(hidden)
       scroller.removeEventListener('scroll', onScroll)
       scroller.removeEventListener('touchmove', onTouchMove)
       scroller.removeEventListener('wheel', onReader)
@@ -142,6 +263,6 @@ export function usePinnedEnd(enabled: boolean, key: string) {
       mutation.disconnect()
       resize.disconnect()
     }
-  }, [enabled, scroller, key])
-  return ref
+  }, [enabled, scroller, key, newest])
+  return { ref, newest }
 }

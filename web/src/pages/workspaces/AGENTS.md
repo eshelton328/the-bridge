@@ -245,6 +245,16 @@ The Workbench of Figma page 89:2: frames D (desktop), T (tablet) and M
   after Send closed the keyboard (review R33); the page back from the
   background follows too.
   Fixture chats keep their scroll, so the fidelity frames do not move.
+  More than a screen above the end, a button labelled "Scroll to the
+  newest message" sticks 8 above the transcript's bottom, centred on it,
+  with a dot when entries came in meanwhile (the owner's request, 2026-11-21,
+  `blocks/NewestButton.tsx`). A tap scrolls to the end (at once with
+  prefers-reduced-motion), pins it and hides the button; the press is
+  cancelled at its start, so the composer keeps the focus and the phone
+  its keyboard. Its state is a small store that only the button reads,
+  so a scroll renders no entry; the dev ErrorTray keeps clear of it
+  (`app/WorkspacesScrollNewest.test.tsx`; LIBRARY_GAPS.md: Scroll to
+  newest).
 - A message's and a reply's text renders as Markdown in the library's
   `MarkdownView`, as the Inbox detail draws its text
   (`blocks/EntryText.tsx`): HTML in the text stays text, a link keeps
