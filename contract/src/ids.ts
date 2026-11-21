@@ -52,6 +52,13 @@ export const SendId = z
   .brand<'SendId'>()
 export type SendId = z.infer<typeof SendId>
 
+/** An artifact in the library: the first 16 hex characters of the sha256 of its link, so the link stays out of URLs. */
+export const ArtifactId = z
+  .string()
+  .regex(/^[0-9a-f]{16}$/)
+  .brand<'ArtifactId'>()
+export type ArtifactId = z.infer<typeof ArtifactId>
+
 /** The machine ID and the local part of a workspace, chat, pane or tab ID. */
 export function splitId(id: WorkspaceId | ChatId | PaneId | TabId): { machine: MachineId; local: string } {
   const at = id.indexOf('/')
