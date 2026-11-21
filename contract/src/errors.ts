@@ -30,7 +30,10 @@ export const ErrorKind = z.discriminatedUnion('kind', [
    * (`duplicateSend`; read its result instead), a new chat's folder is not under the server's chat root
    * (`folderNotAllowed`), another chat has the new chat's name (`nameTaken`), or a start with the same `createId`
    * is in progress or failed part way (`duplicateCreate`; read the chat list instead), or the chat's screen did not
-   * show the asked effort after the effort keys (`effortNotConfirmed`; look at the chat).
+   * show the asked effort after the effort keys (`effortNotConfirmed`; look at the chat), or, for a model restart,
+   * the chat's command line has a token the server does not know (`launchArgsUnknown`) or skips a permission
+   * (`skipsPermissions`), the chat runs in another folder than its pane (`folderChanged`), the chat already has
+   * that model (`sameModel`), or a restart of the chat is in progress (`restarting`, for any input to it).
    */
   z.object({
     kind: z.literal('chat-not-ready'),
@@ -53,6 +56,11 @@ export const ErrorKind = z.discriminatedUnion('kind', [
       'nameTaken',
       'duplicateCreate',
       'effortNotConfirmed',
+      'launchArgsUnknown',
+      'skipsPermissions',
+      'folderChanged',
+      'sameModel',
+      'restarting',
     ]),
     ...common,
   }),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { StartChatRequest } from './newChats.ts'
+import { RestartModelRequest, RestartModelResponse, StartChatRequest } from './newChats.ts'
 
 const place = { in: 'tab', workspace: 'test-mac/w1' }
 
@@ -22,5 +22,27 @@ describe('a start request', () => {
       { kind: 'claude', place: { ...place, cwd: '/home/dev' } },
     ])
       expect(StartChatRequest.safeParse(body).success).toBe(false)
+  })
+})
+
+describe('a model restart', () => {
+  const confirm = 'test-mac/session-a'
+  const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
+
+  it('takes a model alias and the chat ID as its confirm, and nothing else', () => {
+    expect(RestartModelRequest.safeParse({ model: 'opus', confirm }).success).toBe(true)
+    for (const body of [
+      { model: 'opus' },
+      { model: 'opus --dangerously-skip-permissions', confirm },
+      { model: 'opus', confirm, args: ['--chrome'] },
+    ])
+      expect(RestartModelRequest.safeParse(body).success).toBe(false)
+  })
+
+  it('answers a state and the chat, or failed and the session to resume', () => {
+    expect(RestartModelResponse.safeParse({ state: 'ready', chat: confirm }).success).toBe(true)
+    expect(RestartModelResponse.safeParse({ state: 'failed', session }).success).toBe(true)
+    expect(RestartModelResponse.safeParse({ state: 'failed', session: 'x; rm -rf /' }).success).toBe(false)
+    expect(RestartModelResponse.safeParse({ state: 'failed', chat: confirm }).success).toBe(false)
   })
 })

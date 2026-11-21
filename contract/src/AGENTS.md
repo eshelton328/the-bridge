@@ -52,7 +52,10 @@ with its `*.test.ts` beside it. `index.ts` exports each name.
   `claude`, a name of herdr's form, a `ModelAlias` and a place (beside
   a chat, or a workspace's new tab), never a path or a flag; the answer
   gives the pane, the chat once it has a session, and the state
-  (`newChats.test.ts`).
+  (`newChats.test.ts`). A model restart request (slice W10) is a
+  `ModelAlias` and a `confirm` that must be the chat's ID; its answer
+  is the chat and a start state, or `failed` with the `SessionId` to
+  resume in the terminal.
 - An upload request holds the file's name, size and type only (a strict
   object), never a path; the file goes up in chunks of the size the
   server gives, at most `maxUploadBytes` (1 GiB) a file, and the name
