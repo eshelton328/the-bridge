@@ -2211,3 +2211,125 @@ describe('herdr agents: a new chat (slice W3)', () => {
     await socket.close()
   })
 })
+
+describe('herdr agents: a model restart', () => {
+  const session = '0b7f2c1e-4d3a-4f6b-9a8c-1e2d3c4b5a69'
+  const chat = ChatId.parse(`${machine}/${session}`)
+  const claudeAgent = (status: string, extra: Record<string, unknown> = {}) => ({
+    agent: 'claude',
+    agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: session },
+    agent_status: status,
+    cwd,
+    name: 'marker-5150',
+    pane_id: 'w17:p1',
+    terminal_id: 'term_1',
+    workspace_id: 'w17',
+    ...extra,
+  })
+  const processes = (claude: boolean, argv: string[] = [], launchCwd = cwd) => ({
+    type: 'pane_process_info',
+    process_info: {
+      shell_pid: 10,
+      foreground_process_group_id: claude ? 11 : 10,
+      foreground_processes: claude
+        ? [{ pid: 11, name: '2.1.330', argv0: 'claude', argv, cwd: launchCwd }]
+        : [{ pid: 10, name: 'zsh', argv: ['-zsh'], cwd }],
+    },
+  })
+  const setup = async (line: string, launchCwd = cwd, resumed = session) => {
+    // A herdr that still holds the agent's name until a list read after the exit.
+    let ended = false
+    const socket = await startFakeHerdrSocket({
+      ...results,
+      'agent.list': { type: 'agent_list', agents: [claudeAgent('idle')] },
+      'pane.read': paneRead('w17:p1', claudeScreen('')),
+      'pane.process_info': processes(true, line.split(' '), launchCwd),
+      'agent.start': { type: 'agent_started', agent: { pane_id: 'w17:p1', launch_pending: true } },
+      'agent.wait': {
+        type: 'agent_info',
+        agent: claudeAgent('idle', {
+          interactive_ready: true,
+          agent_session: { agent: 'claude', kind: 'id', source: 'herdr:claude', value: resumed },
+        }),
+      },
+    })
+    socket.onRequest((method) => {
+      if (method === 'agent.send_keys') {
+        socket.set('pane.process_info', processes(false))
+        ended = true
+      } else if (method === 'agent.list' && ended) socket.set('agent.list', { type: 'agent_list', agents: [] })
+      else if (method === 'agent.start') {
+        ended = false
+        socket.set('agent.list', { type: 'agent_list', agents: [claudeAgent('idle')] })
+      }
+    })
+    const adapter = createHerdrAgents({
+      socket: socket.path,
+      machine,
+      log: memoryLogger().log,
+      claudeProjects: projects,
+      home,
+    })
+    const sent = (method: string) =>
+      socket
+        .requests()
+        .filter((r) => r.method === method)
+        .map((r) => r.params)
+    return { socket, adapter, sent }
+  }
+
+  it('ends the chat with ctrl+c and starts it again in its pane with its flags, the session and the model', async () => {
+    const { socket, adapter, sent } = await setup('claude --permission-mode acceptEdits --model sonnet --chrome')
+    const restarted = await adapter.restartModel(chat, 'opus')
+    // The session file names the old model until the next turn; the list gives the new one.
+    const listed = await adapter.listWorkspaces()
+    const again = await adapter.restartModel(chat, 'opus')
+    await socket.close()
+    expect(restarted).toEqual({ ok: true, value: { state: 'ready', chat } })
+    expect(listed.ok ? listed.value.flatMap((w) => w.chats).find((c) => c.id === chat)?.modelId : null).toBe('opus')
+    expect(again).toEqual({ ok: true, value: 'sameModel' })
+    expect(sent('agent.send_keys')).toEqual([{ target: 'w17:p1', keys: ['ctrl+c', 'ctrl+c'] }])
+    expect(sent('agent.start')).toEqual([
+      {
+        name: 'marker-5150',
+        kind: 'claude',
+        pane_id: 'w17:p1',
+        args: [
+          '--permission-mode',
+          'acceptEdits',
+          '--chrome',
+          '-n',
+          'marker-5150',
+          '--resume',
+          session,
+          '--model',
+          'opus',
+        ],
+        timeout_ms: 30_000,
+      },
+    ])
+  })
+
+  it('sends no key for a command line that skips a permission or has an unknown token, or another folder', async () => {
+    for (const [line, launchCwd, outcome] of [
+      ['claude --dangerously-skip-permissions', cwd, 'skipsPermissions'],
+      ['claude --permission-mode bypassPermissions', cwd, 'skipsPermissions'],
+      ['claude --debug', cwd, 'launchArgsUnknown'],
+      ['claude', '/home/dev/other', 'folderChanged'],
+    ]) {
+      const { socket, adapter, sent } = await setup(line ?? '', launchCwd)
+      expect(await adapter.restartModel(chat, 'opus')).toEqual({ ok: true, value: outcome })
+      expect(sent('agent.send_keys')).toEqual([])
+      await socket.close()
+    }
+  })
+
+  it('answers failed with the session when the new chat has another session, and starts no second chat', async () => {
+    const other = '1c8a3d2f-5e4b-4a7c-8b9d-2f3e4d5c6b7a'
+    const { socket, adapter, sent } = await setup('claude', cwd, other)
+    const restarted = await adapter.restartModel(chat, 'opus')
+    await socket.close()
+    expect(restarted).toEqual({ ok: true, value: { state: 'failed', session } })
+    expect(sent('agent.start')).toHaveLength(1)
+  })
+})

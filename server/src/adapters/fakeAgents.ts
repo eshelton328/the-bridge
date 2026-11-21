@@ -452,6 +452,22 @@ export function createFakeAgents(
       tell({ type: 'workspacesChanged' })
       return Promise.resolve(ok('set'))
     },
+    restartModel(chat, model) {
+      if ('error' in answer) return Promise.resolve(err(answer.error))
+      const found = chatOf(chat)
+      if (found === undefined) return Promise.resolve(ok('notFound'))
+      if (found.kind === 'shell') return Promise.resolve(ok('shell'))
+      if (found.kind === 'codex') return Promise.resolve(ok('noCommands'))
+      if (found.status === 'needsYou') return Promise.resolve(ok('needsYou'))
+      if (found.status !== 'idle' && found.status !== 'done') return Promise.resolve(ok('working'))
+      if ((drafts.get(chat) ?? '') !== '') return Promise.resolve(ok('inputNotEmpty'))
+      if (found.modelId === model) return Promise.resolve(ok('sameModel'))
+      // The same session resumes, so the chat keeps its ID.
+      found.modelId = model
+      found.model = model
+      tell({ type: 'workspacesChanged' })
+      return Promise.resolve(ok({ state: 'ready' as const, chat }))
+    },
     focusChat(chat) {
       if ('error' in answer) return Promise.resolve(err(answer.error))
       const workspace = workspaceOf(chat)

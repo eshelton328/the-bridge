@@ -214,7 +214,23 @@ client of a socket or a file sits beside them.
   settings, plugin folders, effort and `--chrome`, drops the model and
   session flags, and refuses any other token, a flag that skips a
   permission and the `bypassPermissions` mode. A chat with no name on its line gets its herdr name
-  (`claudeArgs.test.ts`).
+  (`claudeArgs.test.ts`). The herdr adapter restarts only an idle or
+  done Claude chat with an empty box whose session file names another
+  model. It reads the arguments and the folder of the pane's `claude`
+  process from herdr's `pane.process_info` (never its environment),
+  and refuses a folder that is not the agent's (`folderChanged`). It reads the status and the box once more, then
+  sends ctrl+c twice and waits up to 5 s for the process to end and for
+  herdr to list no agent on the pane, as herdr keeps the name for a
+  moment (`agent_name_taken`; else `badReply`: nothing ended). Then it starts Claude in the same pane,
+  as a new chat starts, with the kept flags, `--resume <session>` and
+  `--model`. Once the old chat has ended, a failed start or another
+  session is `failed` with the session, and nothing starts again. The
+  log line `chat restarted` holds flag names and herdr's failure code
+  only. The session file names the old model until the next turn, so
+  the list gives the new model (and drops a kept effort) until the
+  file's change time moves, and each open list stream gets
+  `workspacesChanged` (probe in test herdr session w10r, 2026-11-21;
+  `herdrAgents.test.ts`).
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

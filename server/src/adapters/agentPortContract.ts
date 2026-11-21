@@ -194,6 +194,11 @@ export function describeAgentPort(name: string, setup: () => Promise<ContractSet
       const { port, expected } = await setup()
       const { shell } = await chatsToUse(port, expected)
       expect(await port.setEffort(shell, 'high')).toEqual({ ok: true, value: 'shell' })
+      expect(await port.restartModel(shell, 'opus')).toEqual({ ok: true, value: 'shell' })
+      expect(await port.restartModel(ChatId.parse(`${port.machine}/no-such-chat`), 'opus')).toEqual({
+        ok: true,
+        value: 'notFound',
+      })
       expect(await port.setEffort(ChatId.parse(`${port.machine}/no-such-chat`), 'low')).toEqual({
         ok: true,
         value: 'notFound',
