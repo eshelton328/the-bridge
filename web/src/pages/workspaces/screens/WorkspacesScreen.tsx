@@ -50,6 +50,7 @@ import { WorkspaceSidebar } from '../blocks/WorkspaceSidebar.tsx'
 import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { TranscriptWatch } from '../blocks/ChatPane.tsx'
+import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import { WorkspacesPhone } from './WorkspacesPhone.tsx'
@@ -74,6 +75,11 @@ export type WorkspacesScreenProps = {
   transcripts?: TranscriptWatch | undefined
   /** A reply's Copy, sample or live: the page writes the clipboard, and the button shows the result (audit P-4). */
   onCopy?: CopyReply | undefined
+  /**
+   * The composer drafts by chat (review R28, draftBook.ts), which the page keeps and saves; not set, the screen keeps
+   * its own, starting from `ui.drafts`. A keystroke changes only its chat's composer, never the `ui`.
+   */
+  drafts?: DraftBook | undefined
 }
 
 export function WorkspacesScreen({
@@ -87,13 +93,12 @@ export function WorkspacesScreen({
   onRetry,
   transcripts,
   onCopy,
+  drafts: pageDrafts,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
   // Merge each change into the latest ui, not this render's: one event can report two changes, such as Rename
   // chat's pick and then the menu's close, and the second must not drop the first.
-  // The latest ui, also after this render: a send ends later, and the draft it clears must merge into the drafts the
-  // owner typed meanwhile in another chat, not into this render's.
   const latestRef = useRef(ui)
   useLayoutEffect(() => {
     latestRef.current = ui
@@ -103,13 +108,9 @@ export function WorkspacesScreen({
     setChanged((prev) => ({ of: stateUi, ui: { ...(prev.of === stateUi ? prev.ui : stateUi), ...next } }))
     onUiChange?.(next)
   }
-  // With `sent` (a send went through), the chat's draft changes only if it still holds the text sent: a send that ends
-  // after the owner opened the chat again and typed on keeps his newer draft.
-  const draft = (chat: string, text: string, sent?: string) => {
-    const saved = latestRef.current.drafts?.[chat]
-    if (sent !== undefined && saved !== undefined && saved !== sent) return
-    change({ drafts: { ...latestRef.current.drafts, [chat]: text } })
-  }
+  // The drafts outside the ui, so a keystroke renders only its composer (review R28).
+  const [ownDrafts] = useState(() => createDraftBook(stateUi.drafts))
+  const drafts = pageDrafts ?? ownDrafts
   // The notice the owner dismissed; a new load gives a new notice, which shows again.
   const [dismissed, setDismissed] = useState<WorkspacesData['liveNotice']>()
   const shownNotice = data.liveNotice === dismissed ? undefined : data.liveNotice
@@ -139,7 +140,7 @@ export function WorkspacesScreen({
           transcripts={transcripts}
           onCopy={onCopy}
           change={change}
-          draft={draft}
+          drafts={drafts}
           notice={notice}
         />
       )}
@@ -150,8 +151,8 @@ export function WorkspacesScreen({
 type WorkspacesLayoutProps = Omit<WorkspacesScreenProps, 'onUiChange' | 'onRetry'> & {
   layout: Viewport
   change: (next: Partial<WorkspacesUi>) => void
-  /** Sets one chat's draft, merged into the latest drafts. */
-  draft: (chat: string, text: string, sent?: string) => void
+  /** The composer drafts by chat (draftBook.ts). */
+  drafts: DraftBook
   /** The live-unavailable notice that the layout draws at the top of its content, or none. */
   notice: ReactNode
 }
@@ -167,7 +168,7 @@ function WorkspacesLayout({
   transcripts,
   onCopy,
   change,
-  draft,
+  drafts,
   notice,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
@@ -204,7 +205,7 @@ function WorkspacesLayout({
         ui={ui}
         onNavigate={onNavigate}
         onUiChange={change}
-        onDraftChange={draft}
+        drafts={drafts}
         onSend={onSend}
         onStop={onStop}
         transcripts={transcripts}
@@ -365,7 +366,7 @@ function WorkspacesLayout({
                   data={named}
                   ui={ui}
                   onUiChange={change}
-                  onDraftChange={draft}
+                  drafts={drafts}
                   toggle={false}
                   onSend={onSend}
                   onStop={onStop}
@@ -405,10 +406,7 @@ function WorkspacesLayout({
                     )
                   }
                   layers={data.layers}
-                  draft={ui.drafts?.[chat.id]}
-                  onTextChange={(text, sent) => {
-                    draft(chat.id, text, sent)
-                  }}
+                  drafts={drafts}
                   onSend={onSend && ((text) => onSend(chat.id, text))}
                   onStop={onStop && (() => onStop(chat.id))}
                   transcripts={transcripts}
@@ -468,7 +466,7 @@ function WorkspacesLayout({
               data={named}
               ui={ui}
               onUiChange={change}
-              onDraftChange={draft}
+              drafts={drafts}
               toggle
               onSend={onSend}
               onStop={onStop}

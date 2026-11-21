@@ -14,9 +14,10 @@ import { routeTree } from './routeTree.gen.ts'
 // Audit W-10, on the owner's path. A route crash leaves the owner a way to another page (Go to Inbox), Retry
 // used up in one boundary leaves Retry in another, and the composer's draft outlives a reload. The library's
 // AppShell throws while `crash.shell` is set (the whole page, so RouteError), TerminalLines while `crash.terminal`
-// is set (the shell pane) and Message while `crash.message` is set (the chat transcripts). The transcript entries are
-// memoised (review R28), so a keystroke renders a pane's composer and not its entries.
-const crash = vi.hoisted(() => ({ shell: false, terminal: false, message: false }))
+// is set (the shell pane), Message while `crash.message` is set (the chat transcripts) and Composer while
+// `crash.composer` is set (the chat panes). A keystroke renders only its composer (review R28): the entries are
+// memoised and the drafts live outside the page, so the page renders again on another action, Back to the list.
+const crash = vi.hoisted(() => ({ shell: false, terminal: false, message: false, composer: false }))
 
 vi.mock('@eshelton328/component-library-1701', async (importOriginal) => {
   const real = await importOriginal<typeof import('@eshelton328/component-library-1701')>()
@@ -33,6 +34,10 @@ vi.mock('@eshelton328/component-library-1701', async (importOriginal) => {
     Message: (props: Parameters<typeof real.Message>[0]) => {
       if (crash.message) throw new Error('an entry crashed on purpose')
       return real.Message(props)
+    },
+    Composer: (props: Parameters<typeof real.Composer>[0]) => {
+      if (crash.composer) throw new Error('the composer crashed on purpose')
+      return real.Composer(props)
     },
   }
 })
@@ -62,6 +67,7 @@ afterEach(async () => {
   crash.shell = false
   crash.terminal = false
   crash.message = false
+  crash.composer = false
   window.sessionStorage.clear()
   resetRetries()
   resetAllStores()
@@ -76,7 +82,8 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     const composer = page.getByRole('textbox')
     await userEvent.type(composer, 'half a thought')
     crash.shell = true
-    await userEvent.type(composer, '!')
+    // Back to the list renders the page again.
+    await page.getByRole('region', { name: 'bridge themes' }).getByRole('button', { name: 'Workspaces' }).click()
     await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
     crash.shell = false
     await page.getByRole('button', { name: 'Go to Inbox' }).click()
@@ -120,15 +127,16 @@ describe('the Workspaces route after a crash (audit W-10)', () => {
     await expect.element(page.getByRole('textbox')).toHaveValue('keep this')
   })
 
-  it('keeps the keystroke that crashed the page for the reload', async () => {
+  it('keeps the keystroke that crashed the chat for the reload', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined)
     view = await renderAt('/workspaces?source=fixtures')
     await page.getByText('bridge themes', { exact: true }).click()
     await userEvent.type(page.getByRole('textbox'), 'almost')
-    crash.shell = true
+    // The keystroke renders the composer, which now throws.
+    crash.composer = true
     await userEvent.type(page.getByRole('textbox'), '!')
-    await expect.element(page.getByRole('heading', { name: 'This page failed to load' })).toBeVisible()
-    crash.shell = false
+    await expect.element(page.getByRole('heading', { name: 'This part of the page failed to render' })).toBeVisible()
+    crash.composer = false
     await view.unmount()
     const saved = window.sessionStorage.getItem('bridge/workspaces/drafts') ?? ''
     expect(saved).toContain('almost!')

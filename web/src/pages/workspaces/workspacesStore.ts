@@ -8,6 +8,7 @@
 // page's send of a chat's message: the composer keeps its draft until it
 // resolves, and a rejected send keeps it.
 import { createAppStore } from '../../state/createAppStore.ts'
+import type { DraftBook } from './blocks/draftBook.ts'
 import type { WorkspacesUi } from './types.ts'
 
 /** The `?state=` a change belongs to; undefined is the default state. */
@@ -15,12 +16,17 @@ export type WorkspacesStateKey = string | undefined
 
 type WorkspacesUiEdits = { state: WorkspacesStateKey; ui: Partial<WorkspacesUi> }
 
+type WorkspacesDrafts = { state: WorkspacesStateKey; book: DraftBook } | undefined
+
 type WorkspacesViewState = {
   uiEdits: WorkspacesUiEdits
+  drafts: WorkspacesDrafts
   actions: {
     /** Merges a change into the state's `ui` edits. */
     setUi: (state: WorkspacesStateKey, change: Partial<WorkspacesUi>) => void
-    /** Drops the edits of the last state when another state is shown. */
+    /** Keeps `book` as the composer drafts of `state` (workspacesDraftBook). */
+    keepDrafts: (state: WorkspacesStateKey, book: DraftBook) => void
+    /** Drops the edits and drafts of the last state when another state is shown. */
     showState: (state: WorkspacesStateKey) => void
     /**
      * Sends `text` to the chat `chat`. It resolves once the message is sent and rejects when the send fails. The page
@@ -34,6 +40,7 @@ const noUi: Partial<WorkspacesUi> = {}
 
 const useWorkspacesStore = createAppStore<WorkspacesViewState>('workspaces', (set) => ({
   uiEdits: { state: undefined, ui: noUi },
+  drafts: undefined,
   actions: {
     setUi: (state, change) => {
       set(
@@ -42,9 +49,15 @@ const useWorkspacesStore = createAppStore<WorkspacesViewState>('workspaces', (se
         'workspaces/setUi',
       )
     },
+    keepDrafts: (state, book) => {
+      set({ drafts: { state, book } }, undefined, 'workspaces/keepDrafts')
+    },
     showState: (state) => {
       set(
-        (s) => ({ uiEdits: s.uiEdits.state === state ? s.uiEdits : { state, ui: noUi } }),
+        (s) => ({
+          uiEdits: s.uiEdits.state === state ? s.uiEdits : { state, ui: noUi },
+          drafts: s.drafts?.state === state ? s.drafts : undefined,
+        }),
         undefined,
         'workspaces/showState',
       )
@@ -56,6 +69,19 @@ const useWorkspacesStore = createAppStore<WorkspacesViewState>('workspaces', (se
 /** What the owner changed in `state`'s `ui`; empty keeps the state's own. */
 export const useWorkspacesUi = (state: WorkspacesStateKey): Partial<WorkspacesUi> =>
   useWorkspacesStore((s) => (s.uiEdits.state === state ? s.uiEdits.ui : noUi))
+
+/**
+ * The composer drafts of `state`, one book for every mount of the page, made with `make` the first time: a send that
+ * ends after the owner left the page and came back clears the draft his composer shows. Not subscribed, so a keystroke
+ * renders no reader.
+ */
+export const workspacesDraftBook = (state: WorkspacesStateKey, make: () => DraftBook): DraftBook => {
+  const { drafts, actions } = useWorkspacesStore.getState()
+  if (drafts !== undefined && drafts.state === state) return drafts.book
+  const book = make()
+  actions.keepDrafts(state, book)
+  return book
+}
 
 /** The Workspaces view actions; a stable reference. */
 export const useWorkspacesActions = (): WorkspacesViewState['actions'] => useWorkspacesStore((s) => s.actions)

@@ -11,23 +11,39 @@
 // page store's `send`, and a failed send is reported. A failed send keeps the composer's draft.
 // The composer drafts are saved in sessionStorage as they change and read
 // back on load, so Reload app keeps them; a sent chat's draft leaves it
-// (draftStorage.ts). Every reply's Copy, sample or live, writes the clipboard
+// (draftStorage.ts). They live in a draft book (blocks/draftBook.ts), so a keystroke never renders this page (R28).
+// Every reply's Copy, sample or live, writes the clipboard
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
+import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
-import { useWorkspacesActions, useWorkspacesUi } from './workspacesStore.ts'
+import {
+  useWorkspacesActions,
+  useWorkspacesUi,
+  workspacesDraftBook,
+  type WorkspacesStateKey,
+} from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
+
+/**
+ * A draft book for `state`, from the drafts saved before the last reload. Each change is saved in sessionStorage first,
+ * so a keystroke that crashes the page is kept for Reload app.
+ */
+const draftsFor = (state: WorkspacesStateKey) =>
+  createDraftBook(loadDrafts(state), (drafts) => {
+    saveDrafts(state, drafts)
+  })
 
 /** The live module's send or stop, loaded when first used; a module that fails to load is reported. */
 const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
@@ -68,15 +84,12 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
-  // The drafts saved before the last reload, read once; what the owner types after it wins.
-  const [saved] = useState(() => loadDrafts(search.state))
+  // The drafts of the shown state, one book for every visit: another `?state=` gets its own.
+  const drafts = workspacesDraftBook(search.state, () => draftsFor(search.state))
   // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
   // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
   const current = state.data.current
-  const ui = useMemo(() => {
-    const merged = withLoadedLayouts(state.ui, changed, current)
-    return Object.keys(saved).length === 0 ? merged : { ...merged, drafts: { ...saved, ...merged.drafts } }
-  }, [state.ui, changed, current, saved])
+  const ui = useMemo(() => withLoadedLayouts(state.ui, changed, current), [state.ui, changed, current])
   // The ui now, also for a change that comes after a later render: a send that ends after the owner opened another
   // chat clears its draft, and must keep the layouts and focus he sees then, not the ones of the render that sent it.
   const uiRef = useRef(ui)
@@ -106,9 +119,8 @@ export function WorkspacesPage() {
       data={data}
       ui={ui}
       viewport="desktop"
+      drafts={drafts}
       onUiChange={(change) => {
-        // Saved before the render, so a keystroke that crashes the page is kept for Reload app.
-        if (change.drafts !== undefined) saveDrafts(search.state, change.drafts)
         // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
         // replaces only what he changed before it came.
         const now = uiRef.current

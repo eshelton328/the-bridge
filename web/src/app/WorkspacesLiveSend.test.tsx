@@ -355,6 +355,29 @@ describe("a live Claude chat's Send (W1)", () => {
     await expect.element(box('plan the slice')).toHaveValue('')
   })
 
+  it('empties the chat when its send succeeds after the owner left Workspaces and came back', async () => {
+    const fake = withChats()
+    const answer = held()
+    fake.answerPrompts(answer.answer)
+    await openAndType(phone, 'plan the slice')
+    await userEvent.click(sendButton('plan the slice'))
+    await expect.poll(() => fake.posts.length).toBe(1)
+    // Another page and back: the Workspaces page mounts again while the send is pending.
+    await router?.navigate({ to: '/' })
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces', exact: true }))
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue(secret)
+    answer.end(noContent())
+    await expect.element(box('plan the slice')).toHaveValue('')
+    // A draft typed in another chat then saves no sent text back into this one.
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('review notes')
+    await userEvent.fill(box('review notes'), 'a note')
+    await userEvent.click(page.getByRole('button', { name: 'Workspaces' }).first())
+    await tapChat('plan the slice')
+    await expect.element(box('plan the slice')).toHaveValue('')
+  })
+
   it('posts no second send when the owner reopens the chat and taps Send while the first is pending', async () => {
     const fake = withChats()
     const answer = held()

@@ -22,9 +22,6 @@ function Panes() {
       onUiChange={(change) => {
         setUi((was) => ({ ...was, ...change }))
       }}
-      onDraftChange={(chat, text) => {
-        setUi((was) => ({ ...was, drafts: { ...was.drafts, [chat]: text } }))
-      }}
     />
   )
 }

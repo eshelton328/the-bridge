@@ -11,6 +11,7 @@ import { css } from '../../../../styled-system/css/index.js'
 import type { WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { CopyReply } from './ChatEntryView.tsx'
 import type { TranscriptWatch } from './ChatPane.tsx'
+import type { DraftBook } from './draftBook.ts'
 import { WorkbenchPanes } from './WorkbenchPanes.tsx'
 import { closeShownPane, resizeShown, shownView, shownWorkspace, switchTo } from './workspaceLayout.ts'
 import type { ComposerAnswer } from './useComposerActions.ts'
@@ -21,8 +22,8 @@ export type WorkspaceTabsProps = {
   onUiChange?: ((change: Partial<WorkspacesUi>) => void) | undefined
   /** The tab bar has the button that shows the sidebar; not when the sidebar shows. */
   toggle: boolean
-  /** Sets a chat's draft (`ui.drafts`), merged into the latest drafts, so a send that ends late clears only its chat. */
-  onDraftChange: (chat: string, text: string, sent?: string) => void
+  /** The page's drafts by chat (draftBook.ts): the composer starts from its chat's draft and sets it as the owner types. */
+  drafts?: DraftBook | undefined
   /** Sends a chat's message; resolves `false` when the send failed, and the composer keeps the draft (ChatPane). */
   onSend?: ((chat: string, text: string) => Promise<ComposerAnswer>) | undefined
   /** Stops a chat: its running composer's Stop (ChatPane `onStop`). */
@@ -46,7 +47,7 @@ export function WorkspaceTabs({
   data,
   ui,
   onUiChange,
-  onDraftChange,
+  drafts,
   toggle,
   onSend,
   onStop,
@@ -68,7 +69,7 @@ export function WorkspaceTabs({
       ui={view.ui}
       onUiChange={report}
       onClosePane={(pane) => onUiChange?.(closeShownPane(data, ui, pane))}
-      onDraftChange={onDraftChange}
+      drafts={drafts}
       onSend={onSend}
       onStop={onStop}
       transcripts={transcripts}

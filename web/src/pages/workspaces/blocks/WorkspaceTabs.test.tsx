@@ -54,15 +54,7 @@ afterEach(async () => {
 describe('the workspace tabs', () => {
   it('shows the sidebar again when the owner clicks the button that shows it', async () => {
     const changes: Partial<WorkspacesUi>[] = []
-    view = await testRender(
-      <TabsColumn
-        data={data}
-        ui={ui}
-        onUiChange={(change) => changes.push(change)}
-        onDraftChange={() => undefined}
-        toggle
-      />,
-    )
+    view = await testRender(<TabsColumn data={data} ui={ui} onUiChange={(change) => changes.push(change)} toggle />)
     await userEvent.click(page.getByRole('button', { name: 'Show the workspace sidebar' }))
     expect(changes).toEqual([{ sidebar: true }])
   })
