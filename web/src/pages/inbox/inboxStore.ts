@@ -44,6 +44,16 @@ type InboxViewState = {
     showState: (state: InboxStateKey) => void
     /** Sets one field's text for `item`; another item starts empty. */
     setDraft: (item: string | undefined, field: InboxDraftField, value: string) => void
+    /**
+     * Sends `text` to the discussion of `item`. It resolves once the message is sent and rejects when the send fails.
+     * The page has no discussion server yet, so the message goes nowhere and the send resolves.
+     */
+    send: (item: string | undefined, text: string) => Promise<void>
+    /**
+     * After a sent message: adds `text` to the state's sent messages (over `sent`, the state's own), and empties the
+     * discussion's draft only while it is still `item`'s and still holds `text`, so a newer draft is kept (audit L-3).
+     */
+    markSent: (state: InboxStateKey, sent: readonly string[], item: string | undefined, text: string) => void
   }
 }
 
@@ -104,6 +114,24 @@ const useInboxStore = createAppStore<InboxViewState>('inbox', (set) => ({
         (s) => ({ typed: { item, values: { ...(s.typed.item === item ? s.typed.values : {}), [field]: value } } }),
         undefined,
         'inbox/setDraft',
+      )
+    },
+    send: () => Promise.resolve(),
+    markSent: (state, sent, item, text) => {
+      set(
+        (s) => {
+          const kept = s.typed.item !== item || s.typed.values.discussion !== text
+          // A send that ends after another state shows leaves that state's edits as they are (Codex review of #265).
+          const shown = s.uiEdits.state === state
+          return {
+            uiEdits: shown
+              ? { state, ui: { ...s.uiEdits.ui, sent: [...(s.uiEdits.ui.sent ?? sent), text] } }
+              : s.uiEdits,
+            typed: kept ? s.typed : { item, values: { ...s.typed.values, discussion: '' } },
+          }
+        },
+        undefined,
+        'inbox/markSent',
       )
     },
   },

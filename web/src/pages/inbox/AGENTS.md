@@ -27,6 +27,10 @@ in `references/inbox/`.
   `app/InboxWide.test.tsx`).
 - On a tablet or phone a row with no detail opens `RowDetail`, and Back
   returns to the list at the scroll it had (R11).
+- A discussion's Send goes through the store's `send`: the reply box keeps the
+  draft until it resolves, a failed send is reported, and `markSent` empties
+  only the draft that still holds the sent text (audit L-3,
+  `InboxSendDraft.test.tsx`).
 - The route tests are in `app/` (`InboxRoute.test.tsx`,
   `InboxListTools.test.tsx`, `InboxPhone.test.tsx`, with
   `inboxRouteHelpers.ts`; the home in `InboxHome.test.tsx`). Run them

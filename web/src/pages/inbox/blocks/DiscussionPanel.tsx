@@ -43,8 +43,8 @@ export type DiscussionPanelProps = {
   onClose?: (() => void) | undefined
   /** Keeps the reply the owner is typing; see `InboxDrafts` in types.ts. */
   drafts?: InboxDrafts | undefined
-  /** The owner sent a message from the reply box. */
-  onSend?: ((text: string) => void) | undefined
+  /** The owner sent a message from the reply box; see `DiscussionThread`. */
+  onSend?: ((text: string) => boolean | Promise<boolean>) | undefined
 }
 
 export function DiscussionPanel({ discussion, control, onClose, drafts, onSend }: DiscussionPanelProps) {

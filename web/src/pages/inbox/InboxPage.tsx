@@ -3,6 +3,7 @@
 // and the store and passes everything to the props-only screen.
 import { getRouteApi } from '@tanstack/react-router'
 import { useEffect } from 'react'
+import { report } from '../../errors/reporter.ts'
 import {
   useInboxActions,
   useInboxDrafts,
@@ -29,8 +30,18 @@ export function InboxPage() {
   const changed = useInboxUi(search.state)
   const itemId = state.data.detail?.id
   const draftValues = useInboxDrafts(itemId)
-  const { setGroupOpen, setItemOpen, setPromptOpen, setRemoveOpen, setQuery, setUi, showState, setDraft } =
-    useInboxActions()
+  const {
+    setGroupOpen,
+    setItemOpen,
+    setPromptOpen,
+    setRemoveOpen,
+    setQuery,
+    setUi,
+    showState,
+    setDraft,
+    send,
+    markSent,
+  } = useInboxActions()
   useEffect(() => {
     showState(search.state)
   }, [showState, search.state])
@@ -82,6 +93,19 @@ export function InboxPage() {
       onUiChange={(change) => {
         setUi(search.state, change)
       }}
+      // A discussion's Send goes to the store's send; a failed send is reported, and the box keeps the draft (L-3).
+      onSend={(text) =>
+        send(itemId, text).then(
+          () => {
+            markSent(search.state, state.ui.sent, itemId, text)
+            return true
+          },
+          (error: unknown) => {
+            report(error, 'handler')
+            return false
+          },
+        )
+      }
       onFilterChange={(filter) => {
         void navigate({ search: (prev) => ({ ...prev, filter }) })
       }}
