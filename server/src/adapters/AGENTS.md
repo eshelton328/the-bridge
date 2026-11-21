@@ -203,7 +203,10 @@ client of a socket or a file sits beside them.
   `medium` first, so a chat whose keys change nothing
   (`CLAUDE_CODE_EFFORT_LEVEL`) is not `set`
   (probe in a test herdr session, 2026-11-21; `claudeInput.test.ts`,
-  `herdrAgents.test.ts`).
+  `herdrAgents.test.ts`). The keys write nothing to the session file,
+  so after a `set` the list gives the set level until the file's
+  change time moves (the next turn names its own effort), and each open
+  list stream gets `workspacesChanged` at once.
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text
