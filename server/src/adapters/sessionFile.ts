@@ -1,12 +1,18 @@
 // The model of a Claude Code chat and how much of its context window it
-// uses, from the end of its session file (a JSON line for each entry). Only
-// the last 64 KB is read, and only when a request asks, so a long
-// transcript costs the same as a short one.
-import { open } from 'node:fs/promises'
+// uses, from the end of its session file (a JSON line for each entry). It
+// reads back from the end only to the newest reply, only when a request
+// asks, and not again while the file stays the same.
+import { type FileHandle, open } from 'node:fs/promises'
 import { ChatEffort, type ModelAlias } from '@bridge/contract'
 import { z } from 'zod'
 
+/** The size of each read from the end of a session file. */
 const tailBytes = 64 * 1024
+/**
+ * The most a read takes from the end of a session file. Claude Code can write lines of 80 KB and more (a prompt
+ * snapshot) after a reply, so a reply can be far from the end; a chat whose last reply is further back shows none.
+ */
+const maxSessionBytes = 16 * 1024 * 1024
 
 const Usage = z.object({
   input_tokens: z.number().nonnegative().optional(),
@@ -74,28 +80,17 @@ function effortOf(value: unknown): ChatEffort | null {
   return null
 }
 
-/** The model, context share and effort of the session file at `path`; each null when it cannot be read. */
-export async function readClaudeSession(path: string): Promise<ClaudeSession> {
-  let text: string
-  try {
-    const handle = await open(path, 'r')
-    try {
-      const { size } = await handle.stat()
-      const start = Math.max(0, size - tailBytes)
-      const buffer = Buffer.alloc(size - start)
-      await handle.read(buffer, 0, buffer.length, start)
-      text = buffer.toString('utf8')
-    } finally {
-      await handle.close()
-    }
-  } catch {
-    return unknownSession
-  }
-  let effort: ChatEffort | null = null
-  let found: { model: string; contextUsed: number | null } | undefined
-  // From the newest line back: the model and context of the newest model entry, and the newest effort, which can be
-  // on an older line than that entry (a prompt names its turn's effort before the reply does).
-  for (const line of text.split('\n').reverse()) {
+/** What the lines of one read gave: the newest reply's model and context share, if any, and the newest effort. */
+type Scan = { found?: { model: string; contextUsed: number | null }; effort: ChatEffort | null }
+
+/**
+ * Reads `lines`, newest first, from `effort` on: the first reply ends the read, and the effort of the reply's turn
+ * may be on an older line of the same lines (a prompt names its turn's effort before the reply does).
+ */
+function scanLines(lines: readonly string[], effortSoFar: ChatEffort | null): Scan {
+  let effort = effortSoFar
+  let found: Scan['found']
+  for (const line of lines) {
     if (found !== undefined && effort !== null) break
     let value: unknown
     try {
@@ -115,10 +110,71 @@ export async function readClaudeSession(path: string): Promise<ClaudeSession> {
     const used = usage
       ? (usage.input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0)
       : undefined
-    const contextUsed = window === undefined || used === undefined ? null : Math.min(1, used / window)
-    found = { model, contextUsed }
+    found = { model, contextUsed: window === undefined || used === undefined ? null : Math.min(1, used / window) }
   }
-  return found === undefined ? { ...unknownSession, effort } : { ...found, effort }
+  return found === undefined ? { effort } : { found, effort }
+}
+
+/** The last result for each session file, with the size and change time it was read at. */
+const cache = new Map<string, { size: number; mtimeMs: number; limit: number; session: ClaudeSession }>()
+/** The most files the cache holds; the oldest entry goes first. */
+const cacheEntries = 512
+
+/**
+ * The model, context share and effort of the session file at `path`; each null when it cannot be read. It reads
+ * back from the end in chunks of 64 KB and stops at the first reply, or after `limit` bytes: Claude Code can write
+ * lines of 80 KB and more (a prompt snapshot) after a reply. A file whose size and change time are the same as at
+ * the last read is not read again.
+ */
+export async function readClaudeSession(path: string, limit = maxSessionBytes): Promise<ClaudeSession> {
+  try {
+    const handle = await open(path, 'r')
+    try {
+      const { size, mtimeMs } = await handle.stat()
+      const known = cache.get(path)
+      if (known?.size === size && known.mtimeMs === mtimeMs && known.limit === limit) return known.session
+      const session = await readBack(handle, size, limit)
+      cache.delete(path)
+      cache.set(path, { size, mtimeMs, limit, session })
+      for (const oldest of cache.keys()) {
+        if (cache.size <= cacheEntries) break
+        cache.delete(oldest)
+      }
+      return session
+    } finally {
+      await handle.close()
+    }
+  } catch {
+    return unknownSession
+  }
+}
+
+async function readBack(handle: FileHandle, size: number, limit: number): Promise<ClaudeSession> {
+  let end = size
+  let read = 0
+  // The start of a line whose rest was in the chunk before; it joins the next chunk, which holds its start.
+  let carry = Buffer.alloc(0)
+  let effort: ChatEffort | null = null
+  while (end > 0 && read < limit) {
+    const length = Math.min(tailBytes, end, limit - read)
+    const start = end - length
+    const chunk = Buffer.alloc(length)
+    await handle.read(chunk, 0, length, start)
+    end = start
+    read += length
+    const data = Buffer.concat([chunk, carry])
+    // Before the first line end, the data may be part of a line; at the start of the file it is a whole line.
+    const cut = end === 0 ? 0 : data.indexOf(10) + 1
+    if (cut === 0 && end > 0) {
+      carry = data
+      continue
+    }
+    carry = data.subarray(0, cut)
+    const scan = scanLines(data.subarray(cut).toString('utf8').split('\n').reverse(), effort)
+    effort = scan.effort
+    if (scan.found !== undefined) return { ...scan.found, effort }
+  }
+  return { ...unknownSession, effort }
 }
 
 /** Claude Code's folder name for a working directory: each character that is not a letter or digit becomes "-". */
