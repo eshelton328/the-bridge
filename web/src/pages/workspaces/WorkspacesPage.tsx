@@ -27,7 +27,8 @@
 // draws the new list (paneFollow.ts): the open chat stays open, now the new one, with an empty composer.
 // A live chat's focus, zoom, swap, close, split and move go to the server (useLayoutWrites.ts, W2), and the page waits
 // for the layout read after `layout.changed` to move a pane. A move of the open pane to another tab shows that tab
-// once the layout read has the chat there (W2d, `shownTabs.ts`).
+// once the layout read has the chat there (W2d, `shownTabs.ts`). New chat starts a live Claude chat and opens it once
+// the workspace list shows it (useNewChat.ts, W3).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
@@ -48,6 +49,7 @@ import { useLayoutWrites } from './useLayoutWrites.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
 import { useChatLink } from './useChatLink.ts'
+import { useNewChat } from './useNewChat.ts'
 import {
   useSeenPanes,
   useWorkspacesActions,
@@ -193,6 +195,80 @@ export function WorkspacesPage() {
     const pane = data.panes.find((p) => p.id === chat)
     return pane?.type === 'chat' ? pane.liveChat : undefined
   }
+  const onSend = (chat: string, text: string): Promise<ComposerAnswer> =>
+    pendingRef.current.has(`clear:${chat}`)
+      ? Promise.resolve(false)
+      : once(`send:${chat}`, () => {
+          const liveChat = liveChatOf(chat)
+          if (liveChat !== undefined) {
+            const attached = files.readyOf(chat)
+            const names = files.sending(attached)
+            // A new ID for each send: the server refuses one it has seen (409 duplicateSend).
+            const sendId = newSendId()
+            const settled = () => {
+              dropSend(search.state, sendId)
+            }
+            // A send whose request got no answer before is settled by this one: the owner acted on its text.
+            dropRestored(search.state, chat)
+            keepSend(search.state, { chat, liveChat, sendId, text, files: [...names], at: Date.now() })
+            const bubble = pendings.start(liveChat, text, names, settled)
+            const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId))
+            // An answer settles the kept send: a miss puts the text back in the draft, which is saved. With no answer
+            // the server may have it, and a reload ends the request so in the second before the page goes: the text
+            // goes back in the draft, and the kept send stays, marked, for the next load to read (keptSends.ts).
+            void posted.then(
+              (answer) => {
+                if (typeof answer === 'object' && answer.noAnswer === true) markRestored(search.state, sendId)
+                else settled()
+                if (answer === true) bubble?.sent()
+                else bubble?.missed()
+              },
+              () => {
+                settled()
+                bubble?.missed()
+              },
+            )
+            // A file removed while the send is pending is deleted only when the send did not go through.
+            void posted.then(
+              (answer) => {
+                files.settled(attached, answer === true)
+              },
+              () => {
+                files.settled(attached, false)
+              },
+            )
+            return posted.then((answer) => {
+              if (answer === true) files.sent(chat, attached)
+              else if (typeof answer === 'object' && answer.uploadConflict === true) files.conflict(chat, attached)
+              // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
+              if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
+              const clearInput = answer.clearInput
+              const sending = () => pendingRef.current.get(`send:${chat}`) ?? Promise.resolve(false)
+              return {
+                ...answer,
+                clearInput: () => once(`clear:${chat}`, () => sending().then(clearInput, clearInput)),
+              }
+            })
+          }
+          return send(chat, text).then(
+            () => true,
+            (error: unknown) => {
+              report(error, 'handler')
+              return false
+            },
+          )
+        })
+  // New chat (W3): Start chat starts a live Claude chat and opens it when the list shows it (useNewChat.ts).
+  const newChat = useNewChat(import.meta.env.DEV && live, {
+    data,
+    herdrTabs: liveData.liveTabs,
+    open: ui.newChatOpen === true,
+    ui: currentUi,
+    change: changeUi,
+    send: onSend,
+    drafts,
+    readList: () => void router.invalidate(),
+  })
   return (
     <WorkspacesScreen
       push={push}
@@ -206,70 +282,8 @@ export function WorkspacesPage() {
       transcripts={transcripts}
       skillLists={skillLists}
       onCopy={copyReply}
-      onSend={(chat, text) =>
-        pendingRef.current.has(`clear:${chat}`)
-          ? Promise.resolve(false)
-          : once(`send:${chat}`, () => {
-              const liveChat = liveChatOf(chat)
-              if (liveChat !== undefined) {
-                const attached = files.readyOf(chat)
-                const names = files.sending(attached)
-                // A new ID for each send: the server refuses one it has seen (409 duplicateSend).
-                const sendId = newSendId()
-                const settled = () => {
-                  dropSend(search.state, sendId)
-                }
-                // A send whose request got no answer before is settled by this one: the owner acted on its text.
-                dropRestored(search.state, chat)
-                keepSend(search.state, { chat, liveChat, sendId, text, files: [...names], at: Date.now() })
-                const bubble = pendings.start(liveChat, text, names, settled)
-                const posted = viaLive((m) => m.sendPrompt(liveChat, text, attached, sendId))
-                // An answer settles the kept send: a miss puts the text back in the draft, which is saved. With no answer
-                // the server may have it, and a reload ends the request so in the second before the page goes: the text
-                // goes back in the draft, and the kept send stays, marked, for the next load to read (keptSends.ts).
-                void posted.then(
-                  (answer) => {
-                    if (typeof answer === 'object' && answer.noAnswer === true) markRestored(search.state, sendId)
-                    else settled()
-                    if (answer === true) bubble?.sent()
-                    else bubble?.missed()
-                  },
-                  () => {
-                    settled()
-                    bubble?.missed()
-                  },
-                )
-                // A file removed while the send is pending is deleted only when the send did not go through.
-                void posted.then(
-                  (answer) => {
-                    files.settled(attached, answer === true)
-                  },
-                  () => {
-                    files.settled(attached, false)
-                  },
-                )
-                return posted.then((answer) => {
-                  if (answer === true) files.sent(chat, attached)
-                  else if (typeof answer === 'object' && answer.uploadConflict === true) files.conflict(chat, attached)
-                  // A clear of the terminal input is one at a time for the chat, as its send is, in any pane that shows it.
-                  if (typeof answer !== 'object' || answer.clearInput === undefined) return answer
-                  const clearInput = answer.clearInput
-                  const sending = () => pendingRef.current.get(`send:${chat}`) ?? Promise.resolve(false)
-                  return {
-                    ...answer,
-                    clearInput: () => once(`clear:${chat}`, () => sending().then(clearInput, clearInput)),
-                  }
-                })
-              }
-              return send(chat, text).then(
-                () => true,
-                (error: unknown) => {
-                  report(error, 'handler')
-                  return false
-                },
-              )
-            })
-      }
+      onSend={onSend}
+      newChat={newChat}
       filesOf={(chat) => files.filesOf(chat, liveChatOf(chat))}
       pendingOf={(chat) => pendings.pendingOf(liveChatOf(chat))}
       onStop={(chat) => {

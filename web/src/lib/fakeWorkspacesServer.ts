@@ -46,6 +46,21 @@
 // chat's own tab is 409 sameTab, a zoomed tab 409 zoomedTab, and an unknown
 // chat, a tab of another workspace or a `beside` chat of another tab 404.
 // `zoomTab` zooms a tab as herdr would from the terminal.
+//
+// W3 (backend #378 to #381): `POST /api/chats` takes the contract's
+// `StartChatRequest`. It lists a new Claude chat (`<machine>/new<n>`, or its
+// name's title) in a new tab of the workspace (a 404 for an unknown one), or
+// beside the `beside` chat in its tab (`row` right, `column` below; a 404 for
+// an unknown chat), with no focus change. It answers 201 with the pane, the
+// chat and the state `startAs` sets: `ready` (the chat idle), `needsYou`, or
+// `starting` (the chat `unknown`, no chat in the answer; `setStatus` makes it
+// ready later), and sends `workspaces.changed` and `layout.changed`. A name a
+// listed chat has is 409 nameTaken. A create ID it has answered gets the
+// same answer with 200 and starts nothing. `answerNextStart` answers the
+// next start with a test's error, after it starts the chat or not (`made`):
+// the answer lost after herdr made it. Then the same create ID is 409
+// duplicateCreate, as the server keeps it pending. `starts` records each
+// body.
 import {
   ChatId,
   type ChatSummary,
@@ -57,6 +72,8 @@ import {
   type LayoutNode,
   MoveChatRequest,
   SetSplitRatioRequest,
+  StartChatRequest,
+  type StartState,
   SplitChatRequest,
   SwapChatsRequest,
   WorkspaceLayout,
@@ -147,6 +164,12 @@ export function fakeWorkspacesServer(
   let quietWrites = false
   /** An answer in place of every write's, while set. */
   let writeAnswer: (() => Response) | undefined
+  /** W3: each start's body, the state the next starts answer, each create ID's answer, and the next start's own answer. */
+  const starts: unknown[] = []
+  let startState: StartState = 'ready'
+  let started = 0
+  const created = new Map<string, unknown>()
+  let nextStart: { readonly answer: () => Response; readonly made: boolean } | undefined
 
   /** The ID of the tab made `at`th for `workspace`; it stays while the tab lives. */
   const tabId = (workspace: string, at: number) => `${workspace}:t${String(at + 1)}`
@@ -415,6 +438,85 @@ export function fakeWorkspacesServer(
     return new Response(null, { status: 204 })
   }
 
+  /** A start (W3): the contract's checks, the create ID, the place, the new chat listed, then 201 and the events. */
+  const start = (init: RequestInit | undefined): Response => {
+    const body = bodyOf(init)
+    starts.push(body)
+    const parsed = StartChatRequest.safeParse(body)
+    if (new Headers(init?.headers).get('content-type') !== 'application/json' || !parsed.success)
+      return errorAnswer(
+        { kind: 'invalid-input', issues: ['the body'], message: 'Invalid input', requestId: 'r-400' },
+        400,
+      )
+    const { name, place, createId } = parsed.data
+    const kept = createId === undefined ? undefined : created.get(createId)
+    if (kept === 'pending') return notReady('duplicateCreate')
+    if (kept !== undefined) return json(kept)
+    const gone = () =>
+      errorAnswer({ kind: 'not-found', path: '/api/chats', message: 'Not found', requestId: 'r-404' }, 404)
+    const beside = place.in === 'split' ? placeOf(place.beside) : undefined
+    const workspace = place.in === 'split' ? beside?.workspace : place.workspace
+    if (workspace === undefined || !response.workspaces.some((w) => w.id === workspace)) return gone()
+    const listed = response.workspaces.flatMap((w) => w.chats)
+    if (name !== undefined && listed.some((c) => c.title === name)) return notReady('nameTaken')
+    const answer = nextStart
+    nextStart = undefined
+    if (answer !== undefined && !answer.made) return answer.answer()
+    started += 1
+    const chat = ChatId.parse(`${response.machine}/new${String(started)}`)
+    const state = startState
+    const pane = `${chat}-pane`
+    const at = tabsOf(workspace)
+    response = WorkspacesResponse.parse({
+      ...response,
+      workspaces: response.workspaces.map((w) =>
+        w.id === workspace
+          ? {
+              ...w,
+              chats: [
+                ...w.chats,
+                {
+                  id: chat,
+                  kind: 'claude',
+                  title: name ?? `chat-${String(started)}`,
+                  model: 'claude-opus-5-5',
+                  modelId: 'opus',
+                  effort: null,
+                  contextUsed: null,
+                  status: state === 'ready' ? 'idle' : state === 'needsYou' ? 'needsYou' : 'unknown',
+                  parent: null,
+                  pane,
+                },
+              ],
+            }
+          : w,
+      ),
+    })
+    transcripts.set(chat, [])
+    if (place.in === 'split' && beside !== undefined)
+      beside.tab.root =
+        beside.tab.root &&
+        mapPanes(beside.tab.root, (c) =>
+          c === place.beside
+            ? { kind: 'split', direction: place.direction, ratio: 0.5, first: leaf(c), second: leaf(chat) }
+            : leaf(c),
+        )
+    else
+      at.push({
+        id: tabId(workspace, at.length),
+        label: `tab ${String(at.length + 1)}`,
+        root: leaf(chat),
+        focused: undefined,
+        zoomed: false,
+      })
+    const reply = { pane, ...(state === 'starting' ? {} : { chat }), state }
+    if (createId !== undefined) created.set(createId, answer === undefined ? reply : 'pending')
+    changed()
+    layoutChanged(workspace)
+    if (answer !== undefined) return answer.answer()
+    return new Response(JSON.stringify(reply), { status: 201, headers: { 'content-type': 'application/json' } })
+  }
+
   /** Changes the list with `change`, checked against the contract, and tells the event streams unless `quiet`. */
   const update = (change: (chat: ChatSummary) => ChatSummary, quiet = false) => {
     response = WorkspacesResponse.parse({
@@ -472,6 +574,16 @@ export function fakeWorkspacesServer(
     setStatus: (chat: string, status: ChatSummary['status']) => {
       update((c) => (c.id === chat ? { ...c, status } : c))
     },
+    /** Each start's body (W3), in order. */
+    starts,
+    /** The state each next start answers (W3): `ready` unless set. */
+    startAs: (state: StartState) => {
+      startState = state
+    },
+    /** Answers the next start with `answer`, after it starts the chat when `made` (an answer lost after herdr made it). */
+    answerNextStart: (answer: () => Response, made = false) => {
+      nextStart = { answer, made }
+    },
     /** The chats of the list now. */
     chats: () => response.workspaces.flatMap((w) => w.chats),
     /** The answer to a request for `path`, or undefined when it is not a workspace route. */
@@ -483,6 +595,7 @@ export function fakeWorkspacesServer(
         return body === undefined ? undefined : json(body)
       }
       if (path === '/api/events') return events(init?.signal)
+      if (path === '/api/chats' && init?.method === 'POST') return start(init)
       const ratioPath = /^\/api\/workspaces\/([^/]+)\/layout\/ratio$/.exec(path)
       if (ratioPath !== null && init?.method === 'POST') return ratio(decodeURIComponent(ratioPath[1] ?? ''), init)
       const posted = /^\/api\/chats\/([^/]+)\/(focus|zoom|swap|close|split|move)$/.exec(path)

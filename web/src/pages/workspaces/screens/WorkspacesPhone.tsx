@@ -80,6 +80,7 @@ import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { isChatCommand, withCommands } from '../blocks/chatCommands.ts'
 import { type LayoutWrites, tabOf, withLayoutActions } from '../blocks/layoutActions.ts'
 import { modelText } from '../blocks/modelText.ts'
+import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import type { PhoneText, WorkspacesData, WorkspacesUi } from '../types.ts'
 import type { ComposerAnswer } from '../blocks/useComposerActions.ts'
 import type { PushSwitch } from '../../../lib/pushSwitch.ts'
@@ -116,6 +117,8 @@ export type WorkspacesPhoneProps = {
   notice?: ReactNode
   /** The live chats' layout writes (W2): only Close pane… here; none on a fixture. */
   layoutWrites?: LayoutWrites | undefined
+  /** Starts a live chat from New chat (W3); none on a fixture. */
+  newChat?: NewChatStarter | undefined
 }
 
 export function WorkspacesPhone({
@@ -136,6 +139,7 @@ export function WorkspacesPhone({
   onCopy,
   notice,
   layoutWrites,
+  newChat,
 }: WorkspacesPhoneProps) {
   // The tab bar's More opens the More drawer over it (Toolkit M4); picking a page navigates.
   const [moreOpen, setMoreOpen] = useState(false)
@@ -157,7 +161,7 @@ export function WorkspacesPhone({
   const actionsFor = data.workspaces.find((w) => w.id === ui.workspaceMenuFor)
   const pickWorkspaceAction = (workspace: string, label: string, action: string) => {
     if (action === 'newChat' && data.newChat !== undefined)
-      onUiChange({ newChatOpen: true, newChatWorkspace: workspace })
+      onUiChange({ newChatOpen: true, newChatWorkspace: workspace, newChatStart: null })
     if (action === 'rename' && text.done !== undefined)
       onUiChange({ editing: true, renamingChats: {}, renamingWorkspaces: { [workspace]: label } })
     if (action === 'close' && text.closeWorkspace?.workspaces[workspace] !== undefined)
@@ -168,7 +172,12 @@ export function WorkspacesPhone({
   const add = (action: 'newChat' | 'newWorkspace') => {
     if (action === 'newChat') {
       if (data.newChat !== undefined)
-        onUiChange({ addMenuOpen: false, newChatOpen: true, newChatWorkspace: data.current })
+        onUiChange({
+          addMenuOpen: false,
+          newChatOpen: true,
+          newChatWorkspace: data.current,
+          newChatStart: null,
+        })
       return
     }
     const untitled = text.addMenu?.untitled
@@ -213,10 +222,11 @@ export function WorkspacesPhone({
                 form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
                 workspaces={data.workspaces}
                 onCancel={() => {
-                  onUiChange({ newChatOpen: false, keyboardOpen: false })
+                  onUiChange({ newChatOpen: false, keyboardOpen: false, newChatStart: null })
                 }}
                 keyboardOpen={ui.keyboardOpen === true}
                 layers={data.layers?.newChatForm}
+                start={startOf(newChat, data, ui)}
               />
             </SlotBoundary>
           }
@@ -322,9 +332,9 @@ export function WorkspacesPhone({
     ui.refocusMessage === true ? { renaming: false, messageFocus: true, refocusMessage: false } : { renaming: false }
   // An action picked in the chat's actions, the phone's sheet (M4) or the tablet's menu (T2b).
   const pickChatAction = (action: string) => {
-    // T7: New chat opens in the current chat's workspace.
+    // T7: New chat opens in the current chat's workspace; a live chat starts in a new tab of it (W3).
     if (action === 'newChat' && data.newChat !== undefined)
-      onUiChange({ newChatOpen: true, newChatWorkspace: chatWorkspace })
+      onUiChange({ newChatOpen: true, newChatWorkspace: chatWorkspace, newChatStart: null })
     if (action === 'rename')
       onUiChange({ renaming: true, messageFocus: false, refocusMessage: ui.messageFocus === true })
     if (action === 'sideChat' && data.sideChat !== undefined) onUiChange({ sideChatOpen: true })
@@ -568,13 +578,15 @@ export function WorkspacesPhone({
         )}
         {device === 'phone' || data.newChat === undefined ? null : (
           <NewChatDialog
+            key={ui.newChatOpen === true ? 'open' : 'closed'}
             form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
             workspaces={data.workspaces}
             open={ui.newChatOpen === true}
             onOpenChange={(newChatOpen) => {
-              onUiChange({ newChatOpen })
+              onUiChange(newChatOpen ? { newChatOpen } : { newChatOpen, newChatStart: null })
             }}
             layers={data.layers?.newChatDialog}
+            start={startOf(newChat, data, ui)}
           />
         )}
       </Backdrop>

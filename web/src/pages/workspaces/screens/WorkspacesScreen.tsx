@@ -68,6 +68,7 @@ import { WorkspaceTabs } from '../blocks/WorkspaceTabs.tsx'
 import type { CopyReply } from '../blocks/ChatEntryView.tsx'
 import type { ChatFiles, ChatPending, TranscriptWatch } from '../blocks/ChatPane.tsx'
 import type { SkillLists } from '../blocks/skillLists.ts'
+import { type NewChatStarter, startOf } from '../blocks/newChatStart.ts'
 import { liveSkillList } from '../blocks/useSkillRows.ts'
 import { createDraftBook, type DraftBook } from '../blocks/draftBook.ts'
 import { openableChats, openChat, shownView } from '../blocks/workspaceLayout.ts'
@@ -112,6 +113,8 @@ export type WorkspacesScreenProps = {
   drafts?: DraftBook | undefined
   /** The live chats' layout writes (W2): focus, zoom, swap and close; none on a fixture. */
   layoutWrites?: LayoutWrites | undefined
+  /** Starts a live chat from New chat (W3); none on a fixture. */
+  newChat?: NewChatStarter | undefined
 }
 
 export function WorkspacesScreen({
@@ -132,6 +135,7 @@ export function WorkspacesScreen({
   onCopy,
   drafts: pageDrafts,
   layoutWrites,
+  newChat,
 }: WorkspacesScreenProps) {
   const [changed, setChanged] = useState<{ of: WorkspacesUi; ui: WorkspacesUi }>({ of: stateUi, ui: stateUi })
   const ui = changed.of === stateUi ? changed.ui : stateUi
@@ -247,13 +251,49 @@ export function WorkspacesScreen({
             drafts={drafts}
             notice={notice}
             layoutWrites={layoutWrites}
+            newChat={newChat}
           />
+          {phoneDeviceOf(layout, data) === undefined || data.phone === undefined ? (
+            <DesktopNewChat data={data} ui={ui} change={change} newChat={newChat} />
+          ) : null}
           {commandDialog}
           {closeDialog}
           {moveDialog}
         </>
       )}
     </ViewportFrame>
+  )
+}
+
+/** The device whose views the phone layout draws at `layout`: a phone, a tablet with `tabletList` (T1), else none. */
+const phoneDeviceOf = (layout: Viewport, data: WorkspacesData) =>
+  layout === 'phone' ? 'phone' : layout === 'tablet' && data.tabletList === true ? 'tablet' : undefined
+
+type DesktopNewChatProps = {
+  data: WorkspacesData
+  ui: WorkspacesUi
+  change: (next: Partial<WorkspacesUi>) => void
+  newChat: NewChatStarter | undefined
+}
+
+/**
+ * The desktop's New chat form (D3) over either layout, the sidebar's or the workbench's. Each opening mounts it again
+ * (`key`), so a live form starts empty.
+ */
+function DesktopNewChat({ data, ui, change, newChat }: DesktopNewChatProps) {
+  if (data.newChat === undefined) return null
+  return (
+    <NewChatDialog
+      key={ui.newChatOpen === true ? 'open' : 'closed'}
+      // The workspace New chat was picked for (M14, M15) stays chosen when the window widens past a phone's.
+      form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
+      workspaces={data.workspaces}
+      open={ui.newChatOpen === true}
+      onOpenChange={(open) => {
+        change(open ? { newChatOpen: true } : { newChatOpen: false, newChatStart: null })
+      }}
+      start={startOf(newChat, data, ui)}
+    />
   )
 }
 
@@ -284,6 +324,7 @@ function WorkspacesLayout({
   drafts,
   notice,
   layoutWrites,
+  newChat,
 }: WorkspacesLayoutProps) {
   // The names the owner gave chats (D21) take the place of their titles: in the sidebar, in the header of the chat
   // alone and in the panes of the workbench, with or without the sidebar.
@@ -308,8 +349,7 @@ function WorkspacesLayout({
   )
   const named = { ...data, workspaces, panes }
   // T1: a state with `tabletList` draws the phone's views at a tablet's width too, with the tablet's tab bar.
-  const phoneDevice =
-    layout === 'phone' ? 'phone' : layout === 'tablet' && data.tabletList === true ? 'tablet' : undefined
+  const phoneDevice = phoneDeviceOf(layout, data)
   if (phoneDevice !== undefined && data.phone !== undefined)
     return (
       <WorkspacesPhone
@@ -330,6 +370,7 @@ function WorkspacesLayout({
         onCopy={onCopy}
         notice={notice}
         layoutWrites={layoutWrites}
+        newChat={newChat}
       />
     )
   // The shown workspace (R6): a tab the owner picked shows its own panes, so the focused chat, the chats the sidebar can
@@ -573,17 +614,6 @@ function WorkspacesLayout({
           sideWidth={subagents === undefined ? 'side' : 'wide'}
           side={sideSlot === undefined ? undefined : <SlotBoundary contentKey={sideKey}>{sideSlot}</SlotBoundary>}
         />
-        {data.newChat === undefined ? null : (
-          <NewChatDialog
-            // The workspace New chat was picked for (M14, M15) stays chosen when the window widens past a phone's.
-            form={{ ...data.newChat, workspace: ui.newChatWorkspace ?? data.newChat.workspace }}
-            workspaces={data.workspaces}
-            open={ui.newChatOpen === true}
-            onOpenChange={(open) => {
-              change({ newChatOpen: open })
-            }}
-          />
-        )}
         {data.fork === undefined || chat === undefined ? null : (
           <ForkDialog
             form={data.fork}

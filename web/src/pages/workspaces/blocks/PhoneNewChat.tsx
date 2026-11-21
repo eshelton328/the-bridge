@@ -5,13 +5,18 @@
 // start bar stay put and only the fields scroll (d-107, `ScrollFrame`).
 // With the keyboard up (M11 147:174) the start bar keeps Start chat alone,
 // just over the keyboard: the form is one ScrollFrame straight in the
-// AppShell detail, which docks the start bar there (R20). Props only.
+// AppShell detail, which docks the start bar there (R20). A live form (W3,
+// `start`) keeps the owner's values here: Start chat hands them to the page,
+// says "Starting…" and is off while the start runs, and a miss shows its line
+// with Retry over Start chat. Props only.
 import { ArrowUpIcon, Button, ScrollFrame } from '@eshelton328/component-library-1701'
 import { useEffect, useRef } from 'react'
 import { css } from '../../../../styled-system/css/index.js'
 import type { NewChatForm, NewChatLayers, Workspace } from '../types.ts'
 import { frameRegion } from './frameRegion.ts'
 import { NewChatFields } from './NewChatFields.tsx'
+import { type NewChatStart, useNewChatValues } from './newChatStart.ts'
+import { TranscriptProblem } from './TranscriptProblem.tsx'
 
 // M7 105:3273: Cancel 16 in from the start and the title centred on the screen; the row is 39 high.
 const header = css({
@@ -33,7 +38,7 @@ const body = css({ px: '16', pt: '4', pb: '16', gap: '16' })
 const bar = css({ display: 'flex', flexDirection: 'column', gap: '8', px: '16', pt: '8', pb: '4' })
 // The summary is as wide as its text, as Figma's (147:9).
 const summary = css({ alignSelf: 'flex-start', textStyle: 'monoSm', color: 'fg.subtle', m: '0' })
-const start = css({ w: '[100%]' })
+const startButton = css({ w: '[100%]' })
 
 export type PhoneNewChatProps = {
   form: NewChatForm
@@ -46,6 +51,8 @@ export type PhoneNewChatProps = {
   keyboardOpen?: boolean | undefined
   /** The frame's Figma layers. */
   layers?: NewChatLayers | undefined
+  /** The page's start of a live chat (W3); none for a sample form. */
+  start?: NewChatStart | undefined
 }
 
 /** Fills in the summary's `{workspace}`, `{model}` and `{folders}` from the form's values. */
@@ -59,7 +66,9 @@ function summaryText(form: NewChatForm, workspaces: readonly Workspace[]): strin
     .replace('{folders}', String(form.folders.length))
 }
 
-export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen, layers }: PhoneNewChatProps) {
+export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen, layers, start }: PhoneNewChatProps) {
+  const [values, change] = useNewChatValues(form)
+  const busy = start?.busy === true
   const messageRef = useRef<HTMLDivElement>(null)
   const nameRef = useRef<HTMLDivElement>(null)
   const focus = form.focus ?? 'message'
@@ -93,14 +102,37 @@ export function PhoneNewChat({ form, workspaces, onCancel, onStart, keyboardOpen
               {line}
             </p>
           )}
-          <Button variant="primary" size="xl" className={start} onClick={onStart} data-figma={layers?.start}>
+          {start?.line === undefined ? null : (
+            <TranscriptProblem text={start.line} onRetry={start.retry === true ? start.onRetry : undefined} />
+          )}
+          <Button
+            variant="primary"
+            size="xl"
+            className={startButton}
+            disabled={busy}
+            onClick={
+              start === undefined
+                ? onStart
+                : () => {
+                    start.onStart(values)
+                  }
+            }
+            data-figma={layers?.start}
+          >
             <ArrowUpIcon size="16" />
-            {form.start}
+            {busy ? (form.live?.starting ?? form.start) : form.start}
           </Button>
         </div>
       }
     >
-      <NewChatFields form={form} workspaces={workspaces} messageRef={messageRef} nameRef={nameRef} layers={layers} />
+      <NewChatFields
+        form={form}
+        workspaces={workspaces}
+        messageRef={messageRef}
+        nameRef={nameRef}
+        layers={layers}
+        live={start === undefined ? undefined : { values, onChange: change, start }}
+      />
     </ScrollFrame>
   )
 }

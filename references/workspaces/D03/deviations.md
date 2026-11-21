@@ -94,3 +94,21 @@ frame exception that the app owns (`web/src/blocks/AppRail.tsx`,
 `web/src/blocks/NotificationsSwitch.tsx`). The screen draws the switch
 only when the page entry passes `push`; this frame's state and story pass
 none, so the checks above are unchanged.
+
+- **The live form (W3, frame exception).** Erik's priority is
+  "Workspaces on real herdr chats", so the live page's New chat starts a
+  real Claude chat (`POST /api/chats`, backend #378 to #381). The live
+  form is this frame's form with what the server can start; the Figma
+  states keep the form as Figma draws it, so the checks above are
+  unchanged. It differs from Figma in these ways: Codex and shell are
+  off (Codex waits for W8, and the server starts no shell); FOLDERS is
+  not shown, as the server starts the chat in the folder of the
+  workspace's first pane and the contract has no path; MODEL lists Default model and the contract's aliases (Fable,
+  Opus, Sonnet, Haiku), as the effort is not a start option; the first
+  message has no paperclip and no skill list, so its placeholder is
+  "What should it do?"; the phone has no summary line over Start chat,
+  as it counts folders. Two lines Figma does not draw: the WORKSPACE
+  field's hint says where the chat starts ("new tab"), and a start that missed shows
+  its line with Retry over the actions. Start chat says "Starting…" and
+  is off while the start runs. The library parts are the frame's own
+  (`TextField` with its `error`, `ErrorState` for the line).

@@ -55,9 +55,12 @@ export function PhoneAddMenu({ label, text, disabled, open, onOpenChange, onSele
       width="phone"
       iconTone="default"
       trigger={trigger}
+      // The live page lists New chat alone (W3): New workspace waits for W4.
       items={[
         { value: 'newChat', label: text.newChat, icon: icon('newChat', <PlusIcon size="20" />) },
-        { value: 'newWorkspace', label: text.newWorkspace, icon: icon('newWorkspace', <GridIcon size="20" />) },
+        ...(text.newWorkspace === undefined
+          ? []
+          : [{ value: 'newWorkspace', label: text.newWorkspace, icon: icon('newWorkspace', <GridIcon size="20" />) }]),
       ]}
     />
   )

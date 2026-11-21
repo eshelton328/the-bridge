@@ -350,10 +350,14 @@ export const NewChatForm = z.object({
   name: z.object({ placeholder: z.string(), hint: z.string(), value: z.string().optional() }),
   /** The field with the focus when the form opens: the first message unless set, the name in M11 (147:211). */
   focus: z.enum(['name', 'message']).optional(),
-  runsIn: z.object({ options: z.array(z.object({ kind: AgentKind, label: z.string() })), value: AgentKind }),
+  /** A live form (W3) turns off what the server cannot start yet (Codex until W8, a shell). */
+  runsIn: z.object({
+    options: z.array(z.object({ kind: AgentKind, label: z.string(), disabled: z.boolean().optional() })),
+    value: AgentKind,
+  }),
   /** The workspace the chat starts in, by id. */
   workspace: z.string(),
-  /** The folders the chat may read; the first is the workspace's own. */
+  /** The folders the chat may read; the first is the workspace's own. None in a live form, which hides the field (W3). */
   folders: z.array(z.string()),
   addFolder: z.string(),
   /**
@@ -374,6 +378,11 @@ export const NewChatForm = z.object({
    * `{folders}` (the number of folders) are filled in. Without it, there is no line.
    */
   summary: z.string().optional(),
+  /**
+   * A live form's words (W3): Start chat's label while the start runs, and the hint of the workspace field that says
+   * the chat starts in a new tab.
+   */
+  live: z.object({ starting: z.string(), newTab: z.string() }).optional(),
 })
 export type NewChatForm = z.infer<typeof NewChatForm>
 
@@ -560,7 +569,10 @@ export const PhoneText = z.object({
    * current workspace, and New workspace, which adds a workspace named `untitled` and opens its name as a field in
    * edit mode. Without it, + draws only.
    */
-  addMenu: z.object({ newChat: z.string(), newWorkspace: z.string(), untitled: z.string() }).optional(),
+  /** The live page (W3) names New chat alone: New workspace waits for W4. */
+  addMenu: z
+    .object({ newChat: z.string(), newWorkspace: z.string().optional(), untitled: z.string().optional() })
+    .optional(),
   /**
    * Move to… in edit mode (T1 105:1594): the button that takes the place of the status of each chat in `chats`. With
    * `rowMenu`, it opens the chat's actions with Move to workspace's list open; without it, it draws only.
@@ -1112,6 +1124,19 @@ export const WorkspacesUi = z.object({
   addedWorkspaces: z.array(z.object({ id: z.string(), label: z.string() })).optional(),
   /** The workspace New chat opens with, by id, in place of the form's own: the one New chat was picked for. */
   newChatWorkspace: z.string().nullable().optional(),
+  /**
+   * The live start of New chat (W3): it runs (`busy`), the name field's error, or the miss's line, with Retry when the
+   * same start may work again.
+   */
+  newChatStart: z
+    .object({
+      busy: z.boolean().optional(),
+      nameError: z.string().optional(),
+      line: z.string().optional(),
+      retry: z.boolean().optional(),
+    })
+    .nullable()
+    .optional(),
 })
 export type WorkspacesUi = z.infer<typeof WorkspacesUi>
 
