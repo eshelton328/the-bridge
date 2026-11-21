@@ -27,7 +27,7 @@
 // for the layout read after `layout.changed` to move a pane. A move of the open pane to another tab shows that tab
 // once the layout read has the chat there (W2d, `shownTabs.ts`).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
@@ -45,6 +45,7 @@ import { useLiveTranscripts } from './useLiveTranscripts.ts'
 import { useLayoutWrites } from './useLayoutWrites.ts'
 import { useLivePending } from './useLivePending.ts'
 import { useLiveUploads } from './useLiveUploads.ts'
+import { useChatLink } from './useChatLink.ts'
 import {
   useSeenPanes,
   useWorkspacesActions,
@@ -52,6 +53,7 @@ import {
   workspacesDraftBook,
   type WorkspacesStateKey,
 } from './workspacesStore.ts'
+import { usePushSwitch } from '../../state/pushStore.ts'
 
 const route = getRouteApi('/workspaces')
 
@@ -81,6 +83,7 @@ const copyReply = (text: string) =>
 
 export function WorkspacesPage() {
   const state = route.useLoaderData()
+  const push = usePushSwitch()
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const edits = useWorkspacesUi(search.state)
@@ -152,6 +155,12 @@ export function WorkspacesPage() {
   useEffect(() => {
     for (const old of moves.keys()) files.drop(old)
   }, [moves, files])
+  // A tap on a push notification links to one chat (`?chat=`, d-118): it opens as a tap on its row would.
+  const currentUi = useCallback(() => uiRef.current, [])
+  const clearChatLink = useCallback(() => {
+    void navigate({ search: (prev) => ({ ...prev, chat: undefined }), replace: true })
+  }, [navigate])
+  useChatLink(search.chat, data, currentUi, changeUi, clearChatLink)
   // The sends and stops in flight, by chat: a pane keeps its own guard only while it shows, so a chat opened again while
   // its send or stop is pending must not post a second one. `once` answers `false` (nothing sent) meanwhile. A send and a
   // clear of the chat's terminal input go one after the other: no send starts while a clear is pending, as the clear
@@ -174,6 +183,7 @@ export function WorkspacesPage() {
   }
   return (
     <WorkspacesScreen
+      push={push}
       data={data}
       ui={shownUi}
       viewport="desktop"
