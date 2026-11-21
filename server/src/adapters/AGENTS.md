@@ -207,6 +207,14 @@ client of a socket or a file sits beside them.
   so after a `set` the list gives the set level until the file's
   change time moves (the next turn names its own effort), and each open
   list stream gets `workspacesChanged` at once.
+- A model restart (slice W10) reads the chat's command line
+  (`claudeArgs.ts`): the program must be `claude`, and each token a
+  flag on its list. It keeps the name, permission mode, added folders,
+  agent, settings, plugin folders, effort and `--chrome`, drops the
+  model and session flags, and refuses any other token, a value with a
+  space, a flag that skips a permission and the `bypassPermissions`
+  mode. A chat with no name on its line gets its herdr name
+  (`claudeArgs.test.ts`).
 - An input clear empties a Claude chat's box with ctrl+u, for text that
   another client typed there, and reads it again: `cleared` or
   `inputNotEmpty`. A Codex chat gets `noCommands` and no key; the text

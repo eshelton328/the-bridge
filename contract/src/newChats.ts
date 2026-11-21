@@ -4,6 +4,7 @@
 // starts it only in a folder under its chat root, with no flag that skips
 // a permission, and answers no prompt of the new chat: a start that waits
 // for the owner (such as Claude's folder trust question) is `needsYou`.
+// `POST /api/chats/:chat/model` restarts a chat with a new model (slice W10).
 import { z } from 'zod'
 import { ChatId, PaneId, SendId, WorkspaceId } from './ids.ts'
 import { SplitDirection } from './layout.ts'
@@ -40,3 +41,27 @@ export type StartState = z.infer<typeof StartState>
 /** The answer to a start (201): the new pane, the chat ID once Claude has a session, and the state. */
 export const StartChatResponse = z.strictObject({ pane: PaneId, chat: ChatId.optional(), state: StartState })
 export type StartChatResponse = z.infer<typeof StartChatResponse>
+
+/**
+ * The body of `POST /api/chats/:chat/model` (slice W10): restart an idle Claude chat in its own pane with the same
+ * session and a new model, as `/model` would also save the owner's default. `confirm` must be the chat's ID. The
+ * restart keeps each flag of the chat's first command line that the server knows, and refuses one it does not
+ * know or one that skips a permission; settings from that line that are not flags (environment variables) are not
+ * kept.
+ */
+export const RestartModelRequest = z.strictObject({ model: ModelAlias, confirm: ChatId })
+export type RestartModelRequest = z.infer<typeof RestartModelRequest>
+
+/** A Claude session's ID. */
+export const SessionId = z.uuid()
+
+/**
+ * The answer to a restart: 200 with the chat (the same session, so the same chat ID) and its state as for a start,
+ * or 502 with `failed` and the session, when the old chat ended and the new one did not start with that session;
+ * the server tries no second start, and the owner resumes it in the terminal (`claude --resume <session>`).
+ */
+export const RestartModelResponse = z.union([
+  z.strictObject({ state: StartState, chat: ChatId }),
+  z.strictObject({ state: z.literal('failed'), session: SessionId }),
+])
+export type RestartModelResponse = z.infer<typeof RestartModelResponse>
