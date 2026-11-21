@@ -16,35 +16,34 @@
 // here through copyText, and its button shows Copied or Copy failed; a fault
 // is reported with the clipboard's error only, never the reply's text (audit P-4).
 import { getRouteApi, useRouter } from '@tanstack/react-router'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { report } from '../../errors/reporter.ts'
 import { copyText } from '../../lib/copyText.ts'
 import { readsLive } from '../../lib/dataSource.ts'
 import { workspacesSources } from './loadWorkspacesState.ts'
-import { createDraftBook, type DraftBook } from './blocks/draftBook.ts'
+import { createDraftBook } from './blocks/draftBook.ts'
 import { layoutsSeenOf, withLoadedLayouts } from './blocks/workspaceLayout.ts'
 import { loadDrafts, saveDrafts } from './draftStorage.ts'
 import { WorkspacesScreen } from './screens/WorkspacesScreen.tsx'
 import type { ComposerAnswer } from './blocks/useComposerActions.ts'
 import { useLiveTranscripts } from './useLiveTranscripts.ts'
-import { useWorkspacesActions, useWorkspacesUi, workspacesDrafts, type WorkspacesStateKey } from './workspacesStore.ts'
+import {
+  useWorkspacesActions,
+  useWorkspacesUi,
+  workspacesDraftBook,
+  type WorkspacesStateKey,
+} from './workspacesStore.ts'
 
 const route = getRouteApi('/workspaces')
 
 /**
- * The drafts of `state`: those saved before the last reload, then those the page store kept over a page visit, which
- * are newer. Each change is saved in sessionStorage first, so a keystroke that crashes the page is kept for Reload app.
+ * A draft book for `state`, from the drafts saved before the last reload. Each change is saved in sessionStorage first,
+ * so a keystroke that crashes the page is kept for Reload app.
  */
-const draftsFor = (
-  state: WorkspacesStateKey,
-  setDrafts: (state: WorkspacesStateKey, drafts: Readonly<Record<string, string>>) => void,
-): { state: WorkspacesStateKey; drafts: DraftBook } => ({
-  state,
-  drafts: createDraftBook({ ...loadDrafts(state), ...workspacesDrafts(state) }, (drafts) => {
+const draftsFor = (state: WorkspacesStateKey) =>
+  createDraftBook(loadDrafts(state), (drafts) => {
     saveDrafts(state, drafts)
-    setDrafts(state, drafts)
-  }),
-})
+  })
 
 /** The live module's send or stop, loaded when first used; a module that fails to load is reported. */
 const viaLive = (use: (live: typeof import('./liveSend.ts')) => Promise<ComposerAnswer>): Promise<ComposerAnswer> =>
@@ -66,7 +65,7 @@ export function WorkspacesPage() {
   const search = route.useSearch()
   const navigate = route.useNavigate()
   const changed = useWorkspacesUi(search.state)
-  const { setUi, showState, send, setDrafts } = useWorkspacesActions()
+  const { setUi, showState, send } = useWorkspacesActions()
   const router = useRouter()
   useEffect(() => {
     showState(search.state)
@@ -85,9 +84,8 @@ export function WorkspacesPage() {
       stop?.()
     }
   }, [router, live])
-  // The drafts of the shown state, made once for it: another `?state=` gets its own.
-  const [book, setBook] = useState(() => draftsFor(search.state, setDrafts))
-  if (book.state !== search.state) setBook(draftsFor(search.state, setDrafts))
+  // The drafts of the shown state, one book for every visit: another `?state=` gets its own.
+  const drafts = workspacesDraftBook(search.state, () => draftsFor(search.state))
   // One object per change, so the screen starts again from the merged ui only when the store changes. A loaded layout
   // newer than the owner's change, such as a herdr layout read again, replaces his (withLoadedLayouts).
   const current = state.data.current
@@ -121,7 +119,7 @@ export function WorkspacesPage() {
       data={data}
       ui={ui}
       viewport="desktop"
-      drafts={book.drafts}
+      drafts={drafts}
       onUiChange={(change) => {
         // Each change keeps the layouts and focus the owner sees now, and which loaded layouts he saw, so a newer one
         // replaces only what he changed before it came.
